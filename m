@@ -1,119 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbXI3MQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXI3MaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757674AbXI3MQh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 08:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbXI3MQ3
+	id S1757331AbXI3MaI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 08:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXI3M35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 08:16:29 -0400
-Received: from ns2.suse.de ([195.135.220.15]:48787 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974AbXI3MQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 08:16:28 -0400
-Date: Sun, 30 Sep 2007 14:16:26 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [patch] x86: improved memory barrier implementation
-Message-ID: <20070930121626.GD7697@wotan.suse.de>
-References: <20070928154832.GB12538@wotan.suse.de> <20070928170719.2f617a7a@the-village.bc.nu> <alpine.LFD.0.999.0709280911100.3579@woody.linux-foundation.org> <20070929131708.GD14159@wotan.suse.de> <alpine.LFD.0.999.0709290843120.3579@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 30 Sep 2007 08:29:57 -0400
+Received: from mail-in-15.arcor-online.net ([151.189.21.55]:40460 "EHLO
+	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755262AbXI3M34 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 08:29:56 -0400
+From: Florian Schmidt <mista.tapas@gmx.net>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Subject: Re: getting FUSD compiled with current kernels
+Date: Sun, 30 Sep 2007 14:29:52 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <200709291823.35868.mista.tapas@gmx.net> <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
+In-Reply-To: <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709290843120.3579@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200709301429.53101.mista.tapas@gmx.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 09:07:30AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 29 Sep 2007, Nick Piggin wrote:
-> > > 
-> > > The non-temporal stores should be basically considered to be "IO", not any 
-> > > normal memory operation.
-> > 
-> > Maybe you're thinking of uncached / WC? Non-temporal stores to cacheable
-> > RAM apparently can go out of order too, and they are being used in the kernel
-> > for some things.
-> 
-> I'm really saying that people to a first approximation should think "NT is 
-> an IO (DMA) thing". Whether cached or not. Exactly because they do not 
-> honor the normal memory ordering.
-> 
-> It may be worth noting that "clflush" falls under that heading too - even 
-> if all the actual *writes* were done with totally normal writes, if 
-> anybody does a clflush instruction, that breaks the ordering, and that 
-> turns it to "DMA ordering" again - ie we're not talking about the normal 
-> SMP ordering rules at all.
-> 
-> So all the spinlocks and all the smp_*mb() barriers have never really done 
-> *anything* for those things (in particular, "smp_wmb()" has *always* 
-> ignored them on i386!)
+On Sunday 30 September 2007, Lee Revell wrote:
+> On 9/29/07, Florian Schmidt <mista.tapas@gmx.net> wrote:
+> > My goal is to hack up oss2jack [3] to use ALSA pcm devices.. And a later
+> > goal is to create a virtual ALSA soundcard [which would multiplex access
+> > to a real non hw-mixing capable soundcard] to finally end the dmix
+> > software mixing woes linux users have to endure for the last years :)
+>
+> What problems with ALSA's userspace mixing are you trying to solve?
 
-Yes that's true. I'm just noting that in some places, we do nontemporal
-stores to cacheable RAM, and in that case we just have to remember to be
-careful of memory ordering (especially in library functions like
-copy_user_nocache where we never know exactly what it will be used for,
-even if it seems safe).
+I think that for example the aoss approach to providing software mixing to OSS 
+apps is fundamentally flawed. The LD_PRELOAD_LIBRARY mechanism does not work 
+for all applications. The OSS emultion in ALSA that does work for pretty much 
+all OSS apps is the kernel level OSS emulation [which directly provides the 
+OSS conform device files] sitting directly on an ALSA device driver module. 
+Having a virtual ALSA soundcard which would route back to userspace one could 
+make the OSS emu use this device instead providing to-userspace routing of 
+all OSS apps..
 
-Speaking of which, would it be a good idea to put an sfence before and
-after this function? It seems like the safe thing to do...
+The same argument, though in a weaker form holds for badly coded ALSA apps 
+which open soundcards "directly" via "hw:0" pcm device names. It would be 
+cool, if these could be made to play nice trivially. Here again, a virtual 
+ALSA device which routes back to userspace would be great..
 
+Simply make the virtual device card 0 in the system..
 
-> > Likewise for rep stos, apparently.
-> 
-> No. As far as I can tell, the fast string operations are unordered 
-> *within*themselves*, but not wrt the operations around it.
-> 
-> In other words, you cannot depend on the ordering of stores *in* the 
-> memcpy() or memset() when it is implemented by "rep movs/stos" - but that 
-> is 100% equivalent to the fact that you cannot depend on the ordering even 
-> when it isn't - since the "memcpy()" library routine might be copying 
-> memory backwards for all you know!
-> 
-> The Intel memory ordering paper doesn't talk about the fast string 
-> instructions (except to say that the rules it *does* speak about do not 
-> hold), but the regular IA manuals do say (for example):
-> 
->    "Code dependent upon sequential store ordering should not use the 
->     string operations for the entire data structure to be stored. Data and 
->     semaphores should be separated. Order dependent code should use a 
->     discrete semaphore uniquely stored to after any string operations to 
->     allow correctly ordered data to be seen by all processors."
-> 
-> and note how it says you should just store to the semaphore. If you think 
-> about it, that semahore will be involving all the memory ordering 
-> requirements that we *already* depend on, so if a semaphore is sufficient 
-> to order the fast string instruction, then by definition using a spinlock 
-> around them must be the same thing!
-> 
-> In other words, by Intels architecture manual, fast string instructions 
-> cannot escape a "semaphore" - but that means that they cannot escape a 
-> spinlock either (since the two are exactly the same wrt memory ordering 
-> rules! In other words, whenever the Intel docs say "semaphore", think 
-> "mutual exclusion lock", not necessarily the kernel kind of "sleeping 
-> semaphore").
-> 
-> But it might be good to have that explicitly mentioned in the IA memory 
-> ordering thing, so I'll ask the Intel people about that. However, I'd say 
-> that given our *current* documentation, string instructions may be 
-> *internally* out-of-order, but they would not escape a lock.
+Dmix wouldn't be obsoleted by this at all. I'm not sure on the details (still 
+learning), but the virtual ALSA device routing the signal back to user space 
+could then in turn use dmix on a real alsa device to provide the sw mixing 
+(it would indeed be a very thin userspace driver as it basically directly 
+uses an ALSA pcm as "slave")..
 
-OK, it's good to hear that from you :) The one tiny doubt I have left
-is that IIRC Intel talk about lock prefixed operations as semaphore
-operations sometimes? I don't suppose that would be the case here? Anyway,
-if you can get them to put something in writing, that would be grand.
+This is not thought of as a replacement for ALSA userspace libasound2.. Not at 
+all. It's just a cool thing to have (tm) in many situations, solving these 
+cases which drive some ALSA users (me included) nuts :)
 
- 
-> > But this means they are already at odds with spin_unlock, unless they 
-> > are enclosed with mfences everywhere they are used (of which I think 
-> > most are not). So this is an existing bug in the kernel.
-> 
-> See above. I do not believe that it's an existing bug, but the basic point 
-> that the change to "smp_rmb()" doesn't change our existing rules is true.
+Regards,
+Flo
 
-OK, so all that's left is to restore the locked smp_rmb case for broken
-ppro and resend the patch?
-
+-- 
+Palimm Palimm!
+http://tapas.affenbande.org
