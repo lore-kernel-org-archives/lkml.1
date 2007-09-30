@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXI3Xp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbXI3XtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbXI3Xp4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 19:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXI3Xpt
+	id S1753836AbXI3XtM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 19:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXI3Xs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 19:45:49 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:13564 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbXI3Xps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 19:45:48 -0400
-Date: Sun, 30 Sep 2007 17:45:41 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
-In-reply-to: <fa.ernzRd7lGBTxTXHl/DtyMhz/rPk@ifi.uio.no>
-To: Paolo Ornati <ornati@fastwebnet.it>
-Cc: Tejun Heo <htejun@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <47003525.7040407@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.ernzRd7lGBTxTXHl/DtyMhz/rPk@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 30 Sep 2007 19:48:58 -0400
+Received: from mail.tmr.com ([64.65.253.246]:35385 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751107AbXI3Xs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 19:48:58 -0400
+Message-ID: <47003742.5090604@tmr.com>
+Date: Sun, 30 Sep 2007 19:54:42 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Matthew <jackdachef@gmail.com>
+CC: linux-kernel@vger.kernel.org, mingo@chiara.csoma.elte.hu
+Subject: Re: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8, v2.6.22.8,
+ v2.6.21.7, v2.6.20.20
+References: <e85b9d30709290411u4f48d716o3260bab7d71261ff@mail.gmail.com>
+In-Reply-To: <e85b9d30709290411u4f48d716o3260bab7d71261ff@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ornati wrote:
-> Hi, I think you forgot to blacklist this one  :)
+Matthew wrote:
+> Hi Ingo & everbody on the list,
 > 
-> --
-> Seagate Barracuda ST380817AS has troubles with NCQ. For example,
-> unpacking a tarball on an XFS filesystem gives this:
+> first of all: many thanks for developing this great scheduler (also:
+> kudos to Con Kolivas for having developed SD & CK-patchset)
 > 
-> ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd 61/40:00:29:a3:98/00:00:00:00:00/40 tag 0 cdb 0x0 data 32768 out
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> (this is my second mail to this list and I hope I'm doing everything right)
 > 
-> More info here:
-> http://lkml.org/lkml/2007/1/21/76
->     
-> Blacklist it!
->     
-> Signed-off-by: Paolo Ornati <ornati@fastwebnet.it>
+> I'm doing some backup during work right now: rsyncing my home
+> partition (nearly 180 GB) to another harddrive locally &
+> since I'm running compiz-fusion, openoffice and gnome, therefore am in
+> some real "working environment" I thought:
+> give Ingo's new scheduler a test-ride during heavy load ;)
 > 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 772be09..be289d0 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -3781,6 +3781,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
->  	{ "Maxtor 7B250S0",	"BANC1B70",	ATA_HORKAGE_NONCQ, },
->  	{ "Maxtor 7B300S0",	"BANC1B70",	ATA_HORKAGE_NONCQ },
->  	{ "Maxtor 7V300F0",	"VA111630",	ATA_HORKAGE_NONCQ },
-> +	{ "ST380817AS",		"3.42",		ATA_HORKAGE_NONCQ },
->  	{ "HITACHI HDS7250SASUN500G 0621KTAWSD", "K2AOAJ0AHITACHI",
->  	 ATA_HORKAGE_NONCQ },
->  	/* NCQ hard hangs device under heavier load, needs hard power cycle */
+> first some impressions:
+> cpu load balancing looks great again (pretty symmetrical loading on
+> both cores - it looks pretty similar to 19.1 if not better if I recall
+> right),
+> v20 wasn't that "good-looking" ;) (with gnome-system-monitor)
 > 
+> both cpus have a continous load of ~  70% right now so I'll be
+> starting up 9 instances of glxgears, below are some output & details
+> of my system
+> (cpu frequency switching is disabled since it doesn't work right now
+> with the current bios version)
 > 
-
-Are you sure this isn't just a bum drive? Looking at the SMART listing 
-that was posted, looks like it's had some uncorrectable sector read 
-errors in the event log..
+> short summary: unfortunately after starting glxgears everything
+> stuttered a lot, don't know if it's expactable during that heavy load
+> - just wanted to let you know; after having closed each instance of
+> glxgears, everything was fine again ...
+> 
+> cat /proc/sched_debug
+> Sched Debug Version: v0.05-v22, 2.6.23-rc8-cfs-v22 #1
+> now at 3890590.670323 msecs
+>   .sysctl_sched_latency                    : 20.000000
+>   .sysctl_sched_nr_latency                 : 0.000020
+>   .sysctl_sched_wakeup_granularity         : 2.000000
+>   .sysctl_sched_batch_wakeup_granularity   : 25.000000
+>   .sysctl_sched_child_runs_first           : 0.000001
+>   .sysctl_sched_features                   : 3
+> 
+Try setting features to 14. That helps my similar issues.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
