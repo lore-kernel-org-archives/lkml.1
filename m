@@ -1,117 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbXI3UGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbXI3UNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbXI3UGf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbXI3UG1
+	id S1753005AbXI3UNU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXI3UNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:06:27 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27555 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751821AbXI3UGZ (ORCPT
+	Sun, 30 Sep 2007 16:13:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57080 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751990AbXI3UNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:06:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=3kij3C2ManmWn9KSgacS10tjJg12mFTwpyqRpeH5RUDWFez3hbqi2g0uGMx7vV+O0bmXxNNKnU5BiYxfTDfI9XSgzSSb6gfJwhXt3jM5ZRs5eXPzQIOXZL55r2b2KOzaVVqG/uGfQoVRuMr60kmMJ8/ClUa22uOzWmgN0wM6nQY=  ;
-X-YMail-OSG: e_Wp6qsVM1mSpAvG8Rix1BgeANN20s0bCAq2PbEKeOKgRLptxCAEL6e6qAEwNd1c262MhpmuGw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
-Date: Sun, 30 Sep 2007 13:34:59 +1000
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200709300521.03356.nickpiggin@yahoo.com.au> <20070930110753.19b03388.pj@sgi.com>
-In-Reply-To: <20070930110753.19b03388.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 30 Sep 2007 16:13:07 -0400
+Date: Sun, 30 Sep 2007 13:12:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+Message-Id: <20070930131218.197e55b8.akpm@linux-foundation.org>
+In-Reply-To: <200709300509.29278.nickpiggin@yahoo.com.au>
+References: <20070919033605.785839297@sgi.com>
+	<200709290619.33918.nickpiggin@yahoo.com.au>
+	<20070929122010.56228dae.akpm@linux-foundation.org>
+	<200709300509.29278.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709301335.00441.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 04:07, Paul Jackson wrote:
-> Nick wrote:
-> > The user should just be able to specify exactly the partitioning of
-> > tasks required, and cpusets should ask the scheduler to do the best
-> > job of load balancing possible.
+On Sun, 30 Sep 2007 05:09:28 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> On Sunday 30 September 2007 05:20, Andrew Morton wrote:
+> > On Sat, 29 Sep 2007 06:19:33 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
+> wrote:
+> > > On Saturday 29 September 2007 19:27, Andrew Morton wrote:
+> > > > On Sat, 29 Sep 2007 11:14:02 +0200 Peter Zijlstra
+> > > > <a.p.zijlstra@chello.nl>
+> > >
+> > > wrote:
+> > > > > > oom-killings, or page allocation failures?  The latter, one hopes.
+> > > > >
+> > > > > Linux version 2.6.23-rc4-mm1-dirty (root@dyad) (gcc version 4.1.2
+> > > > > (Ubuntu 4.1.2-0ubuntu4)) #27 Tue Sep 18 15:40:35 CEST 2007
+> > > > >
+> > > > > ...
+> > > > >
+> > > > >
+> > > > > mm_tester invoked oom-killer: gfp_mask=0x40d0, order=2, oomkilladj=0
+> > > > > Call Trace:
+> > > > > 611b3878:  [<6002dd28>] printk_ratelimit+0x15/0x17
+> > > > > 611b3888:  [<60052ed4>] out_of_memory+0x80/0x100
+> > > > > 611b38c8:  [<60054b0c>] __alloc_pages+0x1ed/0x280
+> > > > > 611b3948:  [<6006c608>] allocate_slab+0x5b/0xb0
+> > > > > 611b3968:  [<6006c705>] new_slab+0x7e/0x183
+> > > > > 611b39a8:  [<6006cbae>] __slab_alloc+0xc9/0x14b
+> > > > > 611b39b0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > > > > 611b39b8:  [<600980f2>] do_mpage_readpage+0x3b3/0x472
+> > > > > 611b39e0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > > > > 611b39f8:  [<6006cc81>] kmem_cache_alloc+0x51/0x98
+> > > > > 611b3a38:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > > > > 611b3a58:  [<6004f8e2>] add_to_page_cache+0x22/0xf7
+> > > > > 611b3a98:  [<6004f9c6>] add_to_page_cache_lru+0xf/0x24
+> > > > > 611b3ab8:  [<6009821e>] mpage_readpages+0x6d/0x109
+> > > > > 611b3ac0:  [<600d59f0>] ext3_get_block+0x0/0xf2
+> > > > > 611b3b08:  [<6005483d>] get_page_from_freelist+0x8d/0xc1
+> > > > > 611b3b88:  [<600d6937>] ext3_readpages+0x18/0x1a
+> > > > > 611b3b98:  [<60056f00>] read_pages+0x37/0x9b
+> > > > > 611b3bd8:  [<60057064>] __do_page_cache_readahead+0x100/0x157
+> > > > > 611b3c48:  [<60057196>] do_page_cache_readahead+0x52/0x5f
+> > > > > 611b3c78:  [<60050ab4>] filemap_fault+0x145/0x278
+> > > > > 611b3ca8:  [<60022b61>] run_syscall_stub+0xd1/0xdd
+> > > > > 611b3ce8:  [<6005eae3>] __do_fault+0x7e/0x3ca
+> > > > > 611b3d68:  [<6005ee60>] do_linear_fault+0x31/0x33
+> > > > > 611b3d88:  [<6005f149>] handle_mm_fault+0x14e/0x246
+> > > > > 611b3da8:  [<60120a7b>] __up_read+0x73/0x7b
+> > > > > 611b3de8:  [<60013177>] handle_page_fault+0x11f/0x23b
+> > > > > 611b3e48:  [<60013419>] segv+0xac/0x297
+> > > > > 611b3f28:  [<60013367>] segv_handler+0x68/0x6e
+> > > > > 611b3f48:  [<600232ad>] get_skas_faultinfo+0x9c/0xa1
+> > > > > 611b3f68:  [<60023853>] userspace+0x13a/0x19d
+> > > > > 611b3fc8:  [<60010d58>] fork_handler+0x86/0x8d
+> > > >
+> > > > OK, that's different.  Someone broke the vm - order-2 GFP_KERNEL
+> > > > allocations aren't supposed to fail.
+> > > >
+> > > > I'm suspecting that did_some_progress thing.
+> > >
+> > > The allocation didn't fail -- it invoked the OOM killer because the
+> > > kernel ran out of unfragmented memory.
+> >
+> > We can't "run out of unfragmented memory" for an order-2 GFP_KERNEL
+> > allocation in this workload.  We go and synchronously free stuff up to make
+> > it work.
+> >
+> > How did this get broken?
+> 
+> Either no more order-2 pages could be freed, or the ones that were being
+> freed were being used by something else (eg. other order-2 slab allocations).
+
+No.  The current design of reclaim (for better or for worse) is that for
+order 0,1,2 and 3 allocations we just keep on trying until it works.  That
+got broken and I think it got broken at a design level when that
+did_some_progress logic went in.  Perhaps something else we did later
+worsened things.
+
 >
-> If the cpusets which have 'sched_load_balance' enabled are disjoint
-> (their 'cpus' cpus_allowed masks don't overlap) then you get exactly
-> what you're asking for.  In that case there is exactly one sched domain
-> for the 'cpus' allowed by each cpuset that has sched_load_balanced
-> enabled.
+> > > Probably because higher order
+> > > allocations are the new vogue in -mm at the moment ;)
+> >
+> > That's a different bug.
+> >
+> > bug 1: We shouldn't be doing higher-order allocations in slub because of
+> > the considerable damage this does to atomic allocations.
+> >
+> > bug 2: order-2 GFP_KERNEL allocations shouldn't fail like this.
+> 
+> I think one causes 2 as well -- it isn't just considerable damage to atomic
+> allocations but to GFP_KERNEL allocations too.
 
-But you could do that just by having the current cpuset scheme able
-to properly partition the system. You can't (easily) do this now because
-you have so many tasks in the root cpuset that it is impossible to know
-whether or not you actually want to load balance them.
-
-You would do this by creating partitioning cpusets which carve up the
-root cpuset (basically -- have multiple roots).
-
-
-> But there is another case in which one does not want what you ask for.
->
-> That case involves the situation where one is running a third part
-> batch scheduler on part of ones big system, and doing other stuff
-> (perhaps Ingo's realtime stuff) on another part of the system.
-
-In this case the admin would simply not partition the system (they
-would retain a single root cpuset).
-
-Neither approach is really fundamentally more or less powerful than
-the other, but what I object to in yours is adding these flags which
-don't allow the admin to specify what they want, but to specify how they
-want it done.
-
-Moreover, sched_load_balance doesn't really sound like a good name
-for asking for a partition. It's more like you're just asking to have better
-load balancing over that set, which you could equally achieve by adding
-a second set of sched domains (and the global domains could keep
-globally balancing).
-
-Basically: the admin doesn't know best when it comes to how the
-scheduler should work; the admin knows best about how they intend
-the system to be used.
-
-
-> In that case, the system admin will be advised to turn off
-> sched_load_balance on the top cpuset.  But in that case the system
-> admin will -not- know from moment to moment what jobs the batch
-> scheduler is running on the cpus assigned to its control.  Only the
-> batch scheduler knows that.
->
-> The batch scheduler is code that was written by someone else, in
-> some other company, some other time.  That code does not get to
-> control the overall sched domain partitioning of the entire system.
-> The batch scheduler gets to say, in affect:
->
->   Here's where I need load balancing to occur, in the normal fashion,
->   and here's where I don't need it.
-
-Rather than require the admin to know the intricate details about
-how and why the scheduler load balancing gets broken, and when they
-might or might not need to use this flag, they can just specify what they
-want to be done, and the kernel can choose the optimal strategy.
-
-
-> In short, you insisting that only a single administrative point of
-> control determine the systems sched domains.  Sometimes that fits
-> the way the system is managed, and my patch lets you do that.  But
-> sometimes this is a shared responsibility, between a piece of third
-> party software and the system admin, and my patch allows for that
-> case as well.
->
-> This is a typical sort of situation that arises from having hierarchical
-> cpuset definitions, and highlights the reason (and the use case,
-> involving third party batch schedulers) that I went with a hierarchical
-> cpuset architecture in the first place.
-
-No, I'm insisting that *no* single administrative point of control
-determines the sched domains. Not directly. The kernel should.
-cpusets API should be rich enough that the kernel can derive tihs
-information from what the admin has intended.
+Well sure, because we already broke GFP_KERNEL allocations.
