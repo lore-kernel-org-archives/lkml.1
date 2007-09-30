@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbXI3SAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbXI3SIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbXI3SAN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 14:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXI3SAA
+	id S1758653AbXI3SIQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 14:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXI3SIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 14:00:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42161 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758033AbXI3R77 (ORCPT
+	Sun, 30 Sep 2007 14:08:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39910 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757773AbXI3SH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:59:59 -0400
-Date: Sun, 30 Sep 2007 10:59:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
-Message-Id: <20070930105930.1b330c84.randy.dunlap@oracle.com>
-In-Reply-To: <46FFDF7D.7080605@rtr.ca>
-References: <200709300401.l8U41AhY024890@agora.fsl.cs.sunysb.edu>
-	<46FFDF7D.7080605@rtr.ca>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 30 Sep 2007 14:07:59 -0400
+Date: Sun, 30 Sep 2007 11:07:53 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
+Message-Id: <20070930110753.19b03388.pj@sgi.com>
+In-Reply-To: <200709300521.03356.nickpiggin@yahoo.com.au>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
+	<200709300521.03356.nickpiggin@yahoo.com.au>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Sep 2007 13:40:13 -0400 Mark Lord wrote:
+Nick wrote:
+> The user should just be able to specify exactly the partitioning of
+> tasks required, and cpusets should ask the scheduler to do the best
+> job of load balancing possible.
 
-> Erez Zadok wrote:
-> > In message <alpine.LFD.0.999.0709291748160.3579@woody.linux-foundation.org>, Linus Torvalds writes:
-> >>
-> >> On Sat, 29 Sep 2007, Erez Zadok wrote:
-> >>> Would you prefer if CodingStyle was reorganized or even split into (1)
-> >>> general principles and (2) details?  Perhaps we need a CodingStylePrinciples
-> >>> and a CodingStyleDetails?
-> >> I'm certainly ok with the split into two files.
-> >>
-> >> What I'm not ok with is really important stuff (indentation), and then 
-> >> mixing in silly rules ("parenthesis are bad in printk's"?)
-> >>
-> >> 		Linus
-> > 
-> > OK, looking at CodingStyle, I see two kinds of chapters.  The first is stuff
-> > that's more generic to C, and the other is more specific to Linux and how
-> > one codes in the linux kernel.  So I propose the following:
-> > 
-> > 1. we create a new file called CodingSuggestions
-> > 
-> > 2. we keep in CodingStyle the following chapters
-> > 
-> >    Chapter 1: Indentation
-> >    Chapter 2: Breaking long lines and strings
-> >    Chapter 3: Placing Braces and Spaces
-> >    Chapter 4: Naming
-> >    Chapter 5: Typedefs
-> >    Chapter 6: Functions
-> >    Chapter 7: Centralized exiting of functions
-> >    Chapter 8: Commenting
-> >    Chapter 9: You've made a mess of it
-> > 
-> >    Note: I'd suggest we rename the title of ch9 to "Custom Editor
-> >    Programming/Indentation Modes" or something more descriptive.
-> > 
-> >    Chapter 10: Kconfig configuration files
-> >    Chapter 11: Data structures
-> >    Chapter 12: Macros, Enums and RTL
-> >    Chapter 15: The inline disease
-> >    Chapter 16: Function return values and names
-> >    Chapter 18: Editor modelines and other cruft
-> > 
-> > 3. move the following chapters to CodingSuggestions:
-> > 
-> >    Chapter 13: Printing kernel messages
-> >    Note: ch13 is the one which mentions the don't put parentheses around %d.
-> > 
-> >    Chapter 14: Allocating memory
-> >    Chapter 17: Don't re-invent the kernel macros
-> >    Chapter 19: branch prediction optimizations (the un/likely debacle)
-> 
-> Super.  And then, in the spirit of Linus's request,
-> we can submit another patch that simply removes that second file
-> completely from the kernel source tree!
+If the cpusets which have 'sched_load_balance' enabled are disjoint
+(their 'cpus' cpus_allowed masks don't overlap) then you get exactly
+what you're asking for.  In that case there is exactly one sched domain
+for the 'cpus' allowed by each cpuset that has sched_load_balanced
+enabled.
 
-or just revert CodingStyle to its contents of say 4 years ago.
+But there is another case in which one does not want what you ask for.
 
-> Yay!  The suits actually lose for once!
-> (okay, so I can fantasize if I want to).
+That case involves the situation where one is running a third part
+batch scheduler on part of ones big system, and doing other stuff
+(perhaps Ingo's realtime stuff) on another part of the system.
 
-Yep, you can.
+In that case, the system admin will be advised to turn off
+sched_load_balance on the top cpuset.  But in that case the system
+admin will -not- know from moment to moment what jobs the batch
+scheduler is running on the cpus assigned to its control.  Only the
+batch scheduler knows that.
 
-The other losers are new contributors who get rejected for not
-understanding implicit kernel coding styles and people who
-get to try to explain to them on a repeating basis (if even
-that happens).
+The batch scheduler is code that was written by someone else, in
+some other company, some other time.  That code does not get to
+control the overall sched domain partitioning of the entire system.
+The batch scheduler gets to say, in affect:
 
-or the kernel maintainers if coding style doesn't matter so much
-and uglier code begins to be merged.
+  Here's where I need load balancing to occur, in the normal fashion,
+  and here's where I don't need it.
 
----
-~Randy
+In short, you insisting that only a single administrative point of
+control determine the systems sched domains.  Sometimes that fits
+the way the system is managed, and my patch lets you do that.  But
+sometimes this is a shared responsibility, between a piece of third
+party software and the system admin, and my patch allows for that
+case as well.
+
+This is a typical sort of situation that arises from having hierarchical
+cpuset definitions, and highlights the reason (and the use case,
+involving third party batch schedulers) that I went with a hierarchical
+cpuset architecture in the first place.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
