@@ -1,90 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXI3Uu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXI3Uup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbXI3Uu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXI3UuO
+	id S1753554AbXI3Uup (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXI3Uug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:50:14 -0400
-Received: from smtp3.neobee.net ([80.74.160.52]:44977 "EHLO smtp2.neobee.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751821AbXI3UuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:50:12 -0400
-X-Greylist: delayed 709 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 16:50:11 EDT
-Message-ID: <47000BFD.5070805@bandin.homelinux.com>
-Date: Sun, 30 Sep 2007 22:50:05 +0200
-From: Sinisa Bandin <sinisa@bandin.homelinux.com>
-Reply-To: sinisa@bandin.homelinux.com
-User-Agent: Thunderbird 2.0.0.7pre (X11/20070927)
+	Sun, 30 Sep 2007 16:50:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54298 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752184AbXI3Uuf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 16:50:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-rc8-git4: Known regressions from 2.6.22
+Date: Sun, 30 Sep 2007 23:05:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       samba@lists.samba.org, submit@bugs.debian.org, contact_us@realtek.com
-Subject: Re: [Samba] 2.6.22/realtek bug in hardware, any kernel work-around?
-References: <Pine.LNX.4.64.0709291349160.5726@p34.internal.lan> <Pine.LNX.4.64.0709291434530.8080@p34.internal.lan> <4700092C.5060805@bandin.homelinux.com> <Pine.LNX.4.64.0709301639290.10027@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0709301639290.10027@p34.internal.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.2 (----)
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709302305.09861.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+This message lists some known regressions from 2.6.22 for which there are
+no fixes in the mainline that I know of.  If any of them have been fixed
+already, please let me know.
 
-Justin Piszcz wrote:
->
->
-> On Sun, 30 Sep 2007, Sinisa Bandin wrote:
->
->>
->> Justin Piszcz wrote:
->>> Package: samba
->>> Version: 3.0.26a-1
->>>>
->>>> Kernel: 2.6.22
->>>>
->>>> samba 3.0.26a-1 performance < 900 KiB/s, but FTP = 30-90 MiB/s
->>>>
->>>> Let me start out by saing this is an oddball problem:
->>>>
->>>> SAMBA:
->>>> LINUX -> WINDOWS = < 900 KiB/s (varies between 100 - 900 KiB/s)
->>>> WINDOWS -> LINUX = 30-90 MiB/s (always)
->>>>
->>>> FTP:
->>>> Either direction, 30-90 MiB/s (always)
->>>>
->>>> I do not see any nasty errors in the logs even with verbose = 5.
->>>>
->>>> Any ideas here? I am not using any special options.
->>>
->>> I found out that poor smb performance is related to a broken 
->>> udp-perfomance of the 8169 NIC in outgoing udp.
->>> But, only in Gb Mode of the 8169 NIC, with 100Mbps it is ok.
->>>
->> I had exactly the same problem with 100Mb/s also.
->>
->> Solved by disabling onboard LAN interface and inserting (US Robotics) 
->> Realtek 8139 based card (10/100 Mbps).
->>
->> Best regards,
->> Sinisa Bandin
->>
->
-> Thank you for your response, so the bottom line is Realtek 1Gbps NICs 
-> are unreliable.  Wonder what Realtek has to say about it if they even 
-> respond, added them to cc list.
->
-> Justin.
->
-Wouldnt go so far to say that they are unreliable, but there is certanly 
-some problem between Samba and 8169 driver (and maybe other driver, 
-don't remember for sure, but will check first thing in the morning)
+If you know of any other unresolved regressions from 2.6.22, please let me know
+either and I'll add them to the list.
 
-All other protocols work perfectly, I have been able to use full 1 Gbps 
-with only two concurent transfers with all of scp, rsync, http and ping 
--f -s 32000 (and any conbination of those).
+Subject:	zd1211 device is no longer configured
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
+		http://bugzilla.kernel.org/show_bug.cgi?id=8972
+Caused-By:	Daniel Drake <dsd@gentoo.org>
+		commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 
+Subject:	Oops while modprobing phy fixed module
+Submitter:	Gabriel C <nix.or.die@googlemail.com>
+References:	http://lkml.org/lkml/2007/7/14/63
+		http://bugzilla.kernel.org/show_bug.cgi?id=9060
+Handled-By:	Satyam Sharma <satyam.sharma@gmail.com>
+		Vitaly Bordug <vitb@kernel.crashing.org>
+		Tejun Heo <htejun@gmail.com>
+Patch:		http://lkml.org/lkml/2007/7/18/506
 
-Sinisa
+Subject:	ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+Submitter:	Danny ter Haar <dth@dth.net>
+References:	http://lkml.org/lkml/2007/7/27/298
+		http://lkml.org/lkml/2007/7/29/371
+		http://bugzilla.kernel.org/show_bug.cgi?id=9061
+Handled-By:	Len Brown <lenb@kernel.org>
 
+Subject:	empty suspend stopped working around 2.6.23-rc4
+Submitter:	Pavel Machek <pavel@ucw.cz>
+References:	http://lkml.org/lkml/2007/9/11/326
+		http://bugzilla.kernel.org/show_bug.cgi?id=9075
 
+Subject:	umount triggers a warning in jfs and takes almost a minute
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://lkml.org/lkml/2007/9/4/73
+		http://bugzilla.kernel.org/show_bug.cgi?id=9076
+
+Subject:	build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
+Submitter:	Toralf Förster <toralf.foerster@gmx.de>
+References:	http://lkml.org/lkml/2007/9/11/150
+		http://bugzilla.kernel.org/show_bug.cgi?id=9077
+Patch:		http://bugzilla.kernel.org/attachment.cgi?id=12963&action=view
+
+Subject:	NETDEV WATCHDOG: eth0: transmit timed out
+Submitter:	Karl Meyer <adhocrocker@gmail.com>
+References:	http://lkml.org/lkml/2007/8/13/737
+		http://bugzilla.kernel.org/show_bug.cgi?id=9079
+Handled-By:	Francois Romieu <romieu@fr.zoreil.com>
+
+Subject:	Weird network problems with 2.6.23-rc2
+Submitter:	Shish <shish@shishnet.org>
+References:	http://lkml.org/lkml/2007/8/11/40
+		http://bugzilla.kernel.org/show_bug.cgi?id=9080
+
+Subject:	powersaving degradation, (time spend in C0 goes up after a while)
+Submitter:	Christian Leber <christian@leber.de>
+References:	http://lkml.org/lkml/2007/9/2/142
+		http://lkml.org/lkml/2007/9/2/207
+		http://bugzilla.kernel.org/show_bug.cgi?id=9081
+
+Subject:	vga text console not working on 2.6.23-rc8
+Submitter:	Santiago Garcia Mantinan <manty@manty.net>
+References:	http://lkml.org/lkml/2007/9/28/342
+Handled-By:	H. Peter Anvin <hpa@zytor.com>
+		Antonino A. Daplas <adaplas@gmail.com>
+
+For details, please follow the links given in references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+I'm the owner of some of these entries, so if you want me to reassign them to
+someone else, please let me know.
+
+There also is a Bugzilla entry used for tracking the regressions from 2.6.22,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9056
+
+Please let me know if there are any Bugzilla entries that I should add to the
+list in there.
+
+Greetings,
+Rafael
