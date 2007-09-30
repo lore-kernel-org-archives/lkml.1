@@ -1,229 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbXI3TJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXI3TN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbXI3TJe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 15:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbXI3TJ1
+	id S1752374AbXI3TN2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 15:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXI3TNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 15:09:27 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57933 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750817AbXI3TJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 15:09:26 -0400
-Date: Sun, 30 Sep 2007 21:10:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: kbuild: introduce ccflags-y, asflags-y and ldflags-y
-Message-ID: <20070930191054.GA15876@uranus.ravnborg.org>
+	Sun, 30 Sep 2007 15:13:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:10720 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbXI3TNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 15:13:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ibha8ROUYojnOJ95mREIZym109ZtvmcrzvuwSOpvkADzu5eCm5T2JZbIApc7sEt3jzqBh6/g+G/e+wjovOB1dLhUaONFNUDgz0SyjFu3BW/9L8hrFJIexWUJpxmYF4UkiiJ1LSeWo0xfdhsNktbhBoY9FxXWuHDKepdKi1l4lcY=
+Subject: Re: [git] CFS-devel, latest code
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 30 Sep 2007 21:13:14 +0200
+Message-Id: <1191179594.6417.8.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have just committed following patch to kbuild.git.
-It deprecate use of EXTRA_CFLAGS, EXTRA_AFLAGS and EXTRA_LDFLAGS
-in favour of ccflags-y, asflags-y and ldflags-y.
 
-This allow us to use a more kbuild alike syntax like the following:
 
-ccflags-$(CONFIG_WHATEVER_DEBUG) := -DDEBUG
+here is a few patches on top of the recent 'sched-dev':
 
-The other kbuild enhancements discussed are put on ice for a 
-few days.
+(1) [ proposal ] make timeslices of SCHED_RR tasks constant and not
+dependent on task's static_prio;
 
-I wanted this enhancement to hit the kernel in the merge window
-so we had a better opportunity to fix the in-tree users
-of the deprecated users of EXTRA_xFLAGS before next merge window.
+(2) [ cleanup ] calc_weighted() is obsolete, remove it;
 
-	Sam
+(3) [ refactoring ] make dequeue_entity() / enqueue_entity() 
+and update_stats_dequeue() / update_stats_enqueue() look similar, structure-wise.
 
-commit 41e63e70c31365aa7c920a93eed2c570163e6eff
-Author: Sam Ravnborg <sam@neptun.(none)>
-Date:   Sun Sep 30 20:59:57 2007 +0200
+-----------------------------------
 
-    kbuild: introduce ccflags-y, asflags-y and ldflags-y
-    
-    And deprecate use of EXTRA_CFLAGS, EXTRA_AFLAGS and EXTRA_LDFLAGS
-    This patch does not touch any in-tree users - thats next round.
-    Lets get this committed first and then fix the users of the
-    deprecated variants next.
-    
-    The rationale behind this change is to introduce support for
-    makefile fragments like:
-    
-    ccflags-$(CONFIG_WHATEVER_DEBUG) := -DDEBUG
-    
-    As a replacement for the uglier:
-    ifeq ($(CONFIG_WHATEVER_DEBUG),y)
-    	EXTRA_CFLAGS := -DDEBUG
-    endif
-    
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+(1)
 
-diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-index 08fbe6c..f099b81 100644
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -276,40 +276,39 @@ more details, with real examples.
+- make timeslices of SCHED_RR tasks constant and not
+dependent on task's static_prio [1] ;
+- remove obsolete code (timeslice related bits);
+- make sched_rr_get_interval() return something more
+meaningful [2] for SCHED_OTHER tasks.
+
+[1] according to the following link, the current behavior is not compliant
+with SUSv3 (not sure though, what is the reference for us :-)
+http://lkml.org/lkml/2007/3/7/656
+
+[2] the interval is dynamic and can be depicted as follows "should a
+task be one of the runnable tasks at this particular moment, it would
+expect to run for this interval of time before being re-scheduled by the
+scheduler tick".
+
+all in all, the code doesn't increase:
+
+   text    data     bss     dec     hex filename
+  46585    5102      40   51727    ca0f ../build/kernel/sched.o.before
+  46553    5102      40   51695    c9ef ../build/kernel/sched.o
+
+yeah, this seems to require task_rq_lock/unlock() but this is not a hot
+path.
+
+what do you think?
+
+(compiles well, not functionally tested yet)
+
+Almost-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0abed89..eba7827 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -104,11 +104,9 @@ unsigned long long __attribute__((weak)) sched_clock(void)
+ /*
+  * These are the 'tuning knobs' of the scheduler:
+  *
+- * Minimum timeslice is 5 msecs (or 1 jiffy, whichever is larger),
+- * default timeslice is 100 msecs, maximum timeslice is 800 msecs.
++ * default timeslice is 100 msecs (used only for SCHED_RR tasks).
+  * Timeslices get refilled after they expire.
+  */
+-#define MIN_TIMESLICE		max(5 * HZ / 1000, 1)
+ #define DEF_TIMESLICE		(100 * HZ / 1000)
  
- --- 3.7 Compilation flags
+ #ifdef CONFIG_SMP
+@@ -132,24 +130,6 @@ static inline void sg_inc_cpu_power(struct sched_group *sg, u32 val)
+ }
+ #endif
  
--    EXTRA_CFLAGS, EXTRA_AFLAGS, EXTRA_LDFLAGS
-+    ccflags-y, asflags-y and ldflags-y
-+	The three flags listed above applies only to the kbuild makefile
-+	where they are assigned. They are used for all the normal
-+	cc, as and ld invocation happenign during a recursive build.
-+	Note: Flags with the same behaviour were previously named:
-+	EXTRA_CFLAGS, EXTRA_AFLAGS and EXTRA_LDFLAGS.
-+	They are yet supported but their use are deprecated.
- 
--	All the EXTRA_ variables apply only to the kbuild makefile
--	where they are assigned. The EXTRA_ variables apply to all
--	commands executed in the kbuild makefile.
+-#define SCALE_PRIO(x, prio) \
+-	max(x * (MAX_PRIO - prio) / (MAX_USER_PRIO / 2), MIN_TIMESLICE)
 -
--	$(EXTRA_CFLAGS) specifies options for compiling C files with
--	$(CC).
-+	ccflags-y specifies options for compiling C files with $(CC).
+-/*
+- * static_prio_timeslice() scales user-nice values [ -20 ... 0 ... 19 ]
+- * to time slice values: [800ms ... 100ms ... 5ms]
+- */
+-static unsigned int static_prio_timeslice(int static_prio)
+-{
+-	if (static_prio == NICE_TO_PRIO(19))
+-		return 1;
+-
+-	if (static_prio < NICE_TO_PRIO(0))
+-		return SCALE_PRIO(DEF_TIMESLICE * 4, static_prio);
+-	else
+-		return SCALE_PRIO(DEF_TIMESLICE, static_prio);
+-}
+-
+ static inline int rt_policy(int policy)
+ {
+ 	if (unlikely(policy == SCHED_FIFO) || unlikely(policy == SCHED_RR))
+@@ -4759,6 +4739,7 @@ asmlinkage
+ long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
+ {
+ 	struct task_struct *p;
++	unsigned int time_slice;
+ 	int retval = -EINVAL;
+ 	struct timespec t;
  
- 	Example:
- 		# drivers/sound/emu10k1/Makefile
--		EXTRA_CFLAGS += -I$(obj)
--		ifdef DEBUG
--		    EXTRA_CFLAGS += -DEMU10K1_DEBUG
--		endif
-+		ccflags-y += -I$(obj)
-+		ccflags-$(DEBUG) += -DEMU10K1_DEBUG
+@@ -4775,9 +4756,20 @@ long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
+ 	if (retval)
+ 		goto out_unlock;
  
- 
- 	This variable is necessary because the top Makefile owns the
- 	variable $(KBUILD_CFLAGS) and uses it for compilation flags for the
- 	entire tree.
- 
--	$(EXTRA_AFLAGS) is a similar string for per-directory options
-+	asflags-y is a similar string for per-directory options
- 	when compiling assembly language source.
- 
- 	Example:
- 		#arch/x86_64/kernel/Makefile
--		EXTRA_AFLAGS := -traditional
-+		asflags-y := -traditional
- 
- 
--	$(EXTRA_LDFLAGS) is a string for per-directory options to $(LD).
-+	ldflags-y is a string for per-directory options to $(LD).
- 
- 	Example:
- 		#arch/m68k/fpsp040/Makefile
--		EXTRA_LDFLAGS := -x
-+		ldflags-y := -x
- 
-     CFLAGS_$@, AFLAGS_$@
- 
-@@ -495,9 +494,9 @@ more details, with real examples.
- 
- 	Example:
- 		#fs/reiserfs/Makefile
--		EXTRA_CFLAGS := $(call cc-ifversion, -lt, 0402, -O1)
-+		ccflags-y := $(call cc-ifversion, -lt, 0402, -O1)
- 
--	In this example, EXTRA_CFLAGS will be assigned the value -O1 if the
-+	In this example, ccflags-y will be assigned the value -O1 if the
- 	$(CC) version is less than 4.2.
- 	cc-ifversion takes all the shell operators:
- 	-eq, -ne, -lt, -le, -gt, and -ge
-@@ -783,7 +782,7 @@ When kbuild executes, the following steps are followed (roughly):
- 	Example:
- 		#arch/s390/Makefile
- 		LDFLAGS         := -m elf_s390
--	Note: EXTRA_LDFLAGS can be used to further customise
-+	Note: ldflags-y can be used to further customise
- 	the flags used. See chapter 3.7.
- 
-     LDFLAGS_MODULE	Options for $(LD) when linking modules
-@@ -1100,7 +1099,7 @@ When kbuild executes, the following steps are followed (roughly):
- 
- 	When building the *.lds target, kbuild uses the variables:
- 	KBUILD_CPPFLAGS	: Set in top-level Makefile
--	EXTRA_CPPFLAGS	: May be set in the kbuild makefile
-+	cppflags-y	: May be set in the kbuild makefile
- 	CPPFLAGS_$(@F)  : Target specific flags.
- 	                  Note that the full filename is used in this
- 	                  assignment.
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 8ef1d61..c56234f 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -22,6 +22,10 @@ EXTRA_AFLAGS   :=
- EXTRA_CFLAGS   :=
- EXTRA_CPPFLAGS :=
- EXTRA_LDFLAGS  :=
-+asflags-y  :=
-+ccflags-y  :=
-+cppflags-y :=
-+ldflags-y  :=
- 
- # Read .config if it exist, otherwise ignore
- -include include/config/auto.conf
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 95e6e0f..3c5e88b 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -1,3 +1,9 @@
-+# Backward compatibility
-+asflags-y  += $(EXTRA_AFLAGS)
-+ccflags-y  += $(EXTRA_CFLAGS)
-+cppflags-y += $(EXTRA_CPPFLAGS)
-+ldflags-y  += $(EXTRA_LDFLAGS)
+-	jiffies_to_timespec(p->policy == SCHED_FIFO ?
+-				0 : static_prio_timeslice(p->static_prio), &t);
++	if (p->policy == SCHED_FIFO)
++		time_slice = 0;
++	else if (p->policy == SCHED_RR)
++		time_slice = DEF_TIMESLICE;
++	else {
++		unsigned long flags;
++		struct rq *rq;
 +
- # Figure out what we need to build from the various variables
- # ===========================================================================
++		rq = task_rq_lock(p, &flags);
++		time_slice = sched_slice(&rq->cfs, &p->se);
++		task_rq_unlock(rq, &flags);
++	}
+ 	read_unlock(&tasklist_lock);
++	jiffies_to_timespec(time_slice, &t);
+ 	retval = copy_to_user(interval, &t, sizeof(t)) ? -EFAULT : 0;
+ out_nounlock:
+ 	return retval;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index dbe4d8c..5c52881 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -206,7 +206,7 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p)
+ 	if (--p->time_slice)
+ 		return;
  
-@@ -84,9 +90,9 @@ basename_flags = -D"KBUILD_BASENAME=KBUILD_STR($(call name-fix,$(basetarget)))"
- modname_flags  = $(if $(filter 1,$(words $(modname))),\
-                  -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))")
+-	p->time_slice = static_prio_timeslice(p->static_prio);
++	p->time_slice = DEF_TIMESLICE;
  
--_c_flags       = $(KBUILD_CFLAGS) $(EXTRA_CFLAGS) $(CFLAGS_$(basetarget).o)
--_a_flags       = $(KBUILD_AFLAGS) $(EXTRA_AFLAGS) $(AFLAGS_$(basetarget).o)
--_cpp_flags     = $(KBUILD_CPPFLAGS) $(EXTRA_CPPFLAGS) $(CPPFLAGS_$(@F))
-+_c_flags       = $(KBUILD_CFLAGS) $(ccflags-y) $(CFLAGS_$(basetarget).o)
-+_a_flags       = $(KBUILD_AFLAGS) $(asflags-y) $(AFLAGS_$(basetarget).o)
-+_cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(@F))
- 
- # If building the kernel in a separate objtree expand all occurrences
- # of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
-@@ -115,7 +121,7 @@ a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
- 
- cpp_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(__cpp_flags)
- 
--ld_flags       = $(LDFLAGS) $(EXTRA_LDFLAGS)
-+ld_flags       = $(LDFLAGS) $(ldflags-y)
- 
- # Finds the multi-part object the current object will be linked into
- modname-multi = $(sort $(foreach m,$(multi-used),\
-@@ -145,7 +151,7 @@ $(obj)/%:: $(src)/%_shipped
- # ---------------------------------------------------------------------------
- 
- quiet_cmd_ld = LD      $@
--cmd_ld = $(LD) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LDFLAGS_$(@F)) \
-+cmd_ld = $(LD) $(LDFLAGS) $(ldflags-y) $(LDFLAGS_$(@F)) \
- 	       $(filter-out FORCE,$^) -o $@ 
- 
- # Objcopy
-diff --git a/scripts/makelst b/scripts/makelst
-index 4fc80f2..e658149 100755
---- a/scripts/makelst
-+++ b/scripts/makelst
-@@ -3,8 +3,8 @@
- # with correct relocations from System.map
- # Requires the following lines in makefile:
- #%.lst: %.c
--#	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(CFLAGS_$@) -g -c -o $*.o $<
--#	$(srctree)/scripts/makelst $*.o $(objtree)/System.map $(OBJDUMP)
-+#	$(CC) $(c_flags) -g -c -o $*.o $< &&
-+#	$(srctree)/scripts/makelst $*.o System.map $(OBJDUMP) > $@
- #
- # Copyright (C) 2000 IBM Corporation
- # Author(s): DJ Barrow (djbarrow@de.ibm.com,barrow_dj@yahoo.com)
+ 	/*
+ 	 * Requeue to the end of queue if we are not the only element
+
+---
 
