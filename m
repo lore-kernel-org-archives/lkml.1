@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbXI3MF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbXI3MKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbXI3MF5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 08:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXI3MFt
+	id S1756632AbXI3MKM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 08:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXI3MJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 08:05:49 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48129 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbXI3MFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 08:05:49 -0400
-Date: Sun, 30 Sep 2007 14:05:45 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul McKenney <paulmck@us.ibm.com>, David Howells <dhowells@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch] i386: remove comment about barriers
-Message-ID: <20070930120545.GB7697@wotan.suse.de>
-References: <20070929132848.GA21169@wotan.suse.de> <Pine.LNX.4.64.0709291200590.13643@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709291200590.13643@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.9i
+	Sun, 30 Sep 2007 08:09:58 -0400
+Received: from science.horizon.com ([192.35.100.1]:15389 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754821AbXI3MJ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 08:09:58 -0400
+Date: 30 Sep 2007 07:40:24 -0400
+Message-ID: <20070930114024.13626.qmail@science.horizon.com>
+From: linux@horizon.com
+To: akpm@linux-foundation.org, linux@horizon.com
+Subject: Re: 2.6.23-rc8 network problem.  Mem leak?  ip1000a?
+Cc: jesse@icplus.com.tw, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       romieu@fr.zoreil.com, s.l-h@gmx.de
+In-Reply-To: <20070930022347.37514be3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 12:12:52PM -0700, Davide Libenzi wrote:
-> On Sat, 29 Sep 2007, Nick Piggin wrote:
-> 
-> > [ This is true for x86's sfence/lfence, but raises a question about Linux's
-> > memory barriers. Does anybody expect that a sequence of smp_wmb and smp_rmb
-> > would ever provide a full smp_mb barrier? I've always assumed no, but I
-> > don't know if it is actually documented? ]
-> 
-> No, that can't be. rmb+wmb can't be considered a full mb.
+> OK.  Did you try to reproduce it without the pps patch applied?
 
-Oh I realise it doesn't work with current implementations (powerpc at
-least also would be broken I think). And I've always assumed no... But
-the question was just whether the Linux memory model requires it (it
-theoretically could require that smp_rmb is sequentially ordered WRT
-smp_wmb without actually sequentially ordering stores around itself).
+No.  But I've yanked the ip1000a driver (using old crufy vendor-supplied
+out-of-kernel module) and the problems are GONE.
+
+>> This machine receives more data than it sends, so I'd expect acks to
+>> outnumber "real" packets.  Could the ip1000a driver's transmit path be
+>> leaking skbs somehow?
+
+> Absolutely.  Normally a driver's transmit completion interrupt handler will
+> run dev_kfree_skb_irq() against the skbs which have been fully sent.
+>
+> However it'd be darned odd if the driver was leaking only tcp acks.
+
+It's leaking lots of things... you can see ARP packets in there and
+all sorts of stuff.  But the big traffic hog is BackupPC doing inbound
+rsyncs all night long, which generates a lot of acks.  Those are the
+packets it sends, so those are the packets that get leaked.
+
+> I can find no occurrence of "dev_kfree_skb" in drivers/net/ipg.c, which is
+> suspicious.
+
+Look for "IPG_DEV_KFREE_SKB", which is a wrapper macro.  (Or just add
+"-i" to your grep.)  It should probably be deleted (it just expands to
+dev_kfree_skb), but was presumably useful to someone during development.
+
+> Where did you get your ipg.c from, btw?  davem's tree?  rc8-mm1? rc8-mm2??
+
+As I wrote originally, I got it from
+http://marc.info/?l=linux-netdev&m=118980588419882
+which was a reuqest for mainline submission.
+
+If there are other patches floating around, I'm happy to try them.
+Now that I know what to look for, it's easy to spot the leak before OOM.
+
+> I assume that meminfo was not captured when the system was ooming?  There
+> isn't much slab there.
+
+Oops, sorry.  I captured slabinfo but not meminfo.
 
 
+Thank you very much!  Sorry to jump the gun and post a lot before I had
+all the data, but if it WAS a problem in -rc8, I wanted to mention it
+before -final.
 
-> There was a 
-> recent discussion about this in the thread originated by peterz scalable 
-> rw_mutex patches.
-
-OK, good to hear it has been discussed. I didn't see anything explicit
-in the documentation about it.  A lot of the literature often says that
-"barrier instructions" have a sequential ordering, so it could be useful
-to explicitly say this isn't the case for Linux for rmb vs wmb.
-
+Now, the rush is to get the ip1000a driver fixed before the merge
+window opens.  I've added all the ip1000a developers to the Cc: list in
+an attempt to speed that up.
