@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbXI3OSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbXI3OXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbXI3OSt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 10:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbXI3OSm
+	id S1757910AbXI3OXx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 10:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbXI3OXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 10:18:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:56114 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755493AbXI3OSl (ORCPT
+	Sun, 30 Sep 2007 10:23:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46045 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755030AbXI3OXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 10:18:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mPiVYLxgBdpfwZL8zRVxNfMfmACGRf8C1G72d+KdluWmh5TssJqxRDn3nyt+UmLXs0PDYpp479b/GTf34Qk7g8qdgEbE8Znb55YugzVAXQDvSmoobGNEz8XHRGshCVO1Bmdn/KzzjyP+Yj67EO44/SmbBm2TMzszmoDimxo6pJI=
-Message-ID: <46FFAFE1.2010302@gmail.com>
-Date: Sun, 30 Sep 2007 07:17:05 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
+	Sun, 30 Sep 2007 10:23:45 -0400
+Date: Sun, 30 Sep 2007 15:29:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Paolo Ornati <ornati@fastwebnet.it>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
-References: <20070930160548.235be972@localhost>
+Message-ID: <20070930152908.1f58d39d@the-village.bc.nu>
 In-Reply-To: <20070930160548.235be972@localhost>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+References: <20070930160548.235be972@localhost>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ornati wrote:
+On Sun, 30 Sep 2007 16:05:48 +0200
+Paolo Ornati <ornati@fastwebnet.it> wrote:
+
+> Hi, I think you forgot to blacklist this one  :)
+> 
+> --
 > Seagate Barracuda ST380817AS has troubles with NCQ. For example,
 > unpacking a tarball on an XFS filesystem gives this:
 > 
@@ -38,10 +42,4 @@ Paolo Ornati wrote:
 > ata1.00: cmd 61/40:00:29:a3:98/00:00:00:00:00/40 tag 0 cdb 0x0 data 32768 out
 >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
 
-Hmmm... Was there a thread about this one?  Also, please cc
-linux-ide@vger.kernel.org.
-
-Thanks.
-
--- 
-tejun
+What makes you sure that is an NCQ problem ?
