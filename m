@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbXI3Ra4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbXI3Rbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbXI3Ra4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 13:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbXI3Rar
+	id S1758749AbXI3Rbp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 13:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbXI3Rbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 13:30:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:61670 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754943AbXI3Raq (ORCPT
+	Sun, 30 Sep 2007 13:31:38 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:53632 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbXI3Rbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:30:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Fe1I6LFvhNlGIvxJreCshoBmCntDgJBVayuitkLuSSSm14I1DadYR+J8qsARTR1xgiCY25wBuw7xKQd8ReqaoYuEOjk2/lFxZhbi5z6S/tvVKQRMMCQek5/Gw/nkVjBqJPAhG2H867zlTDgI6zQn3cT9oTxvJAxs2QKAnrddknQ=
-Message-ID: <46FFDCE5.4060900@gmail.com>
-Date: Sun, 30 Sep 2007 10:29:09 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 30 Sep 2007 13:31:37 -0400
+From: "Denys" <nuclearcat@nuclearcat.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Sun, 30 Sep 2007 20:31:22 +0300
+Message-Id: <20070930173123.M36911@nuclearcat.com>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Jeff Garzik <jeff@garzik.org>, Paolo Ornati <ornati@fastwebnet.it>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
-References: <20070930160548.235be972@localhost>	<20070930152908.1f58d39d@the-village.bc.nu> <20070930164610.20818867@localhost> <46FFBB2D.6060004@garzik.org> <46FFDC5A.7070509@rtr.ca>
-In-Reply-To: <46FFDC5A.7070509@rtr.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Jeff Garzik wrote:
->> Paolo Ornati wrote:
->>> I have this problem only with XFS, and even with XFS it goes away
->>> mounting with "nobarrier"...
->>
->> This last is an interesting datapoint.
->>
->> I wonder if libata has a generic problem with NCQ + FLUSH CACHE.
-> 
-> Yeah, that's pretty suspicious.  Prior to issuing a FLUSH_CACHE op,
-> one must first drain all outstanding NCQ commands (and not issue new ones).
-> 
-> I'm sure the code must *try* to do that, but perhaps there's a bug in
-> there?
-> Or just another drive bug?
+P.S.S. 
+I tried changing clocksource from acpi_pm to tsc. No difference.
+Tried to lock eth0 by smp_affinity to single CPU (no other interrups, except 
+ioapic timer(LOC) there). No luck. I tried to change hashes in nf_conntrack, 
+no difference. Tried to change eth0 weidht - no difference.
 
-If there was such a bug, the aborted commands list should contain both
-FPDMA commands and FLUSH commands.  I don't think command filtering
-itself is broken.  Possibly another quirky firmware but it's strange
-that this is the only Seagate drive showing this problem.
+Also i notice, that exactly when softirqd start using CPU nearby 100% - 
+problems happens.
 
-Thanks.
+At this time (with or without nice - the same, also the same to ping any host 
+in network)
 
--- 
-tejun
+defaulthost ~ #nice -n -10 ping -s 10000 127.0.0.1
+PING 127.0.0.1 (127.0.0.1) 10000(10028) bytes of data.
+
+10008 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=377 ms
+10008 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=328 ms
+10008 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=329 ms
+10008 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=355 ms
+10008 bytes from 127.0.0.1: icmp_seq=5 ttl=64 time=0.047 ms
+
+Delay value is ALWAYS nearby same. 350-360ms.
+
+At same time if i ping "buggy 2.6.23-rc8" box, ping delay is perfect.
+
+100000 packets transmitted, 100000 received, 0% packet loss, time 41793ms
+rtt min/avg/max/mdev = 0.027/0.127/1.439/0.095 ms, ipg/ewma 0.417/0.065 ms
+
+There is nothing running except:
+squid, globax (TCP accelerator).
+Logs, disk cache on squid is disabled.
+Important note - there is conntract and REDIRECT used.
+
+defaulthost /config #cat /proc/net/sockstat
+sockets: used 10670
+TCP: inuse 12734 orphan 1390 tw 20248 alloc 12751 mem 9903
+UDP: inuse 5
+UDPLITE: inuse 0
+RAW: inuse 0
+FRAG: inuse 0 memory 0
+
+defaulthost /config #cat /proc/net/softnet_stat
+96c0060c 00000000 003fa90a 00000000 00000000 00000000 00000000 00000000 
+00000000
+926120af 00000000 003e8692 00000000 00000000 00000000 00000000 00000000 
+00000000
+
+defaulthost /config #cat /proc/net/ip_conntrack|wc -l
+69256
+(other host running 200K easily)
+
+What can cause delays ~350-360ms for userspace applications?
+
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
+
