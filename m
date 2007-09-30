@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbXI3OHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbXI3OIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbXI3OHj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 10:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbXI3OHa
+	id S1758114AbXI3OIc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 10:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbXI3OIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 10:07:30 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:54349 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756619AbXI3OH3 (ORCPT
+	Sun, 30 Sep 2007 10:08:24 -0400
+Received: from alnrmhc11.comcast.net ([204.127.225.91]:57971 "EHLO
+	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755912AbXI3OIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 10:07:29 -0400
-Date: Sun, 30 Sep 2007 10:07:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH] Linux Kernel Markers - Samples Coding Style Fix
-Message-ID: <20070930140725.GA18579@Krystal>
-References: <20070928142845.795281397@polymtl.ca> <20070928143159.948108939@polymtl.ca>
+	Sun, 30 Sep 2007 10:08:24 -0400
+Subject: Re: Unexpected segfaults with 2.6.23-rc-8-git4
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1191159712.6517.12.camel@localhost>
+References: <1191159712.6517.12.camel@localhost>
+Content-Type: text/plain
+Date: Sun, 30 Sep 2007 09:10:30 -0500
+Message-Id: <1191161430.6517.26.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070928143159.948108939@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:05:12 up 62 days, 14:24,  2 users,  load average: 4.31, 3.07, 1.93
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Markers - Samples Coding Style Fix
+I forgot to mention it in my initial post - although I am running an
+AMD64 CPU - I am using the 32 bit version of the system
 
-- Change struct __mark_marker to struct marker.
+On Sun, 2007-09-30 at 08:41 -0500, Chris Holvenstot wrote:
+> Good Morning - 
+> 
+> This morning I built the 2.6.23-rc8-git4 version of the kernel.  After
+> rebooting I was unable to keep my mail client (evolution) up and running
+> for more than a few minutes at a time.
+> 
+> A look in the log shows the following message when evolution aborts:
+> 
+>  kernel: [ 1716.971128] evolution[10212]: segfault at 00000054 eip
+> b74bbf63 esp bfc84b20 error 4
+> 
+>  kernel: [ 1835.797215] evolution[10335]: segfault at 00000056 eip
+> b745ef63 esp bfd9db20 error 4
+> 
+>  kernel: [ 1854.752324] evolution[10565]: segfault at 0000045f eip
+> b747ef63 esp bfa9c140 error 4
+> 
+> After falling back to 2.6.23-rc8-git3 I am no longer seeing this failure
+> (at least not yet)
+> 
+> My system is built on an AMD 64 X2 4600+ with 2 gig of memory, two SATA
+> and three PATA drives.  I am running what is basically a UBUNTU 7.04
+> system.
+> 
+> I am a certified dummy when it comes to diagnosing kernel issues so if
+> there is some additional information which would be useful let me know,
+> I would be happy to provide it.  Just be sure to send instructions on
+> how to gather it.
+> 
+> Thanks
+> 
+> Chris
+> 
 
-It applies after
-linux-kernel-markers-samples-checkpatch-fixes.patch
-in the series.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
- samples/markers/probe-example.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6-lttng/samples/markers/probe-example.c
-===================================================================
---- linux-2.6-lttng.orig/samples/markers/probe-example.c	2007-09-30 09:39:49.000000000 -0400
-+++ linux-2.6-lttng/samples/markers/probe-example.c	2007-09-30 09:40:16.000000000 -0400
-@@ -20,8 +20,8 @@ struct probe_data {
- 	marker_probe_func *probe_func;
- };
- 
--void probe_subsystem_event(const struct __mark_marker *mdata,
--		void *private, const char *format, ...)
-+void probe_subsystem_event(const struct marker *mdata, void *private,
-+	const char *format, ...)
- {
- 	va_list ap;
- 	/* Declare args */
-@@ -43,8 +43,8 @@ void probe_subsystem_event(const struct 
- 
- atomic_t eventb_count = ATOMIC_INIT(0);
- 
--void probe_subsystem_eventb(const struct __mark_marker *mdata,
--	void *private, const char *format, ...)
-+void probe_subsystem_eventb(const struct marker *mdata, void *private,
-+	const char *format, ...)
- {
- 	/* Increment counter */
- 	atomic_inc(&eventb_count);
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
