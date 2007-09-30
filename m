@@ -1,115 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXI3Uup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbXI3U5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbXI3Uup (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXI3Uug
+	id S1753141AbXI3U5R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXI3U5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:50:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54298 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbXI3Uuf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:50:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.23-rc8-git4: Known regressions from 2.6.22
-Date: Sun, 30 Sep 2007 23:05:09 +0200
+	Sun, 30 Sep 2007 16:57:07 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:35052 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751925AbXI3U5G convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 16:57:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=oEHK9JYjwUTAkECrISrZDdEWKv53kSTw/XXMg5Oi/u0Z0sRYc1fRblDp0YnXgwzx6v3n8MdIuhYdJVAKJ3w2thDwZRE0o9jW9fFsPTAuWu9VfGj4sY4L1WWhcPCumEsqTUf6QiUG2Dh7uPW0LQGwtlsxYKPoOHL+cZq6K988xD4=  ;
+X-YMail-OSG: 82TyjvMVM1lV3dXBuazV2RvQejNhhJI36VnK65O7AjE6bpirPlqZpteBqf4CKw4auOQhJIJjDYMGr5RgY1F2XaH_bA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Eric Dumazet <dada1@cosmosbay.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Sun, 30 Sep 2007 14:25:37 +1000
 User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+Cc: Denys <nuclearcat@nuclearcat.com>, linux-kernel@vger.kernel.org
+References: <20070930144443.M52139@visp.net.lb> <46FFE17C.9020202@cosmosbay.com>
+In-Reply-To: <46FFE17C.9020202@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200709302305.09861.rjw@sisk.pl>
+Message-Id: <200709301425.37564.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Denys, thanks for reporting (btw. please reply-to-all when replying
+on lkml).
 
-This message lists some known regressions from 2.6.22 for which there are
-no fixes in the mainline that I know of.  If any of them have been fixed
-already, please let me know.
+You say that SLAB is better than SLUB on an otherwise identical kernel,
+but I didn't see if you quantified the actual numbers? It sounds like there
+is still a regression with SLAB?
 
-If you know of any other unresolved regressions from 2.6.22, please let me know
-either and I'll add them to the list.
 
-Subject:	zd1211 device is no longer configured
-Submitter:	Oliver Neukum <oliver@neukum.org>
-References:	http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
-		http://bugzilla.kernel.org/show_bug.cgi?id=8972
-Caused-By:	Daniel Drake <dsd@gentoo.org>
-		commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 
-Subject:	Oops while modprobing phy fixed module
-Submitter:	Gabriel C <nix.or.die@googlemail.com>
-References:	http://lkml.org/lkml/2007/7/14/63
-		http://bugzilla.kernel.org/show_bug.cgi?id=9060
-Handled-By:	Satyam Sharma <satyam.sharma@gmail.com>
-		Vitaly Bordug <vitb@kernel.crashing.org>
-		Tejun Heo <htejun@gmail.com>
-Patch:		http://lkml.org/lkml/2007/7/18/506
-
-Subject:	ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-Submitter:	Danny ter Haar <dth@dth.net>
-References:	http://lkml.org/lkml/2007/7/27/298
-		http://lkml.org/lkml/2007/7/29/371
-		http://bugzilla.kernel.org/show_bug.cgi?id=9061
-Handled-By:	Len Brown <lenb@kernel.org>
-
-Subject:	empty suspend stopped working around 2.6.23-rc4
-Submitter:	Pavel Machek <pavel@ucw.cz>
-References:	http://lkml.org/lkml/2007/9/11/326
-		http://bugzilla.kernel.org/show_bug.cgi?id=9075
-
-Subject:	umount triggers a warning in jfs and takes almost a minute
-Submitter:	Oliver Neukum <oliver@neukum.org>
-References:	http://lkml.org/lkml/2007/9/4/73
-		http://bugzilla.kernel.org/show_bug.cgi?id=9076
-
-Subject:	build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
-Submitter:	Toralf Förster <toralf.foerster@gmx.de>
-References:	http://lkml.org/lkml/2007/9/11/150
-		http://bugzilla.kernel.org/show_bug.cgi?id=9077
-Patch:		http://bugzilla.kernel.org/attachment.cgi?id=12963&action=view
-
-Subject:	NETDEV WATCHDOG: eth0: transmit timed out
-Submitter:	Karl Meyer <adhocrocker@gmail.com>
-References:	http://lkml.org/lkml/2007/8/13/737
-		http://bugzilla.kernel.org/show_bug.cgi?id=9079
-Handled-By:	Francois Romieu <romieu@fr.zoreil.com>
-
-Subject:	Weird network problems with 2.6.23-rc2
-Submitter:	Shish <shish@shishnet.org>
-References:	http://lkml.org/lkml/2007/8/11/40
-		http://bugzilla.kernel.org/show_bug.cgi?id=9080
-
-Subject:	powersaving degradation, (time spend in C0 goes up after a while)
-Submitter:	Christian Leber <christian@leber.de>
-References:	http://lkml.org/lkml/2007/9/2/142
-		http://lkml.org/lkml/2007/9/2/207
-		http://bugzilla.kernel.org/show_bug.cgi?id=9081
-
-Subject:	vga text console not working on 2.6.23-rc8
-Submitter:	Santiago Garcia Mantinan <manty@manty.net>
-References:	http://lkml.org/lkml/2007/9/28/342
-Handled-By:	H. Peter Anvin <hpa@zytor.com>
-		Antonino A. Daplas <adaplas@gmail.com>
-
-For details, please follow the links given in references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-I'm the owner of some of these entries, so if you want me to reassign them to
-someone else, please let me know.
-
-There also is a Bugzilla entry used for tracking the regressions from 2.6.22,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9056
-
-Please let me know if there are any Bugzilla entries that I should add to the
-list in there.
-
-Greetings,
-Rafael
+On Monday 01 October 2007 03:48, Eric Dumazet wrote:
+> Denys a Ã©crit :
+> > I've moved recently one of my proxies(squid and some compressing
+> > application) from 2.6.21 to 2.6.22, and notice huge performance drop. I
+> > think this is important, cause it can cause serious regression on some
+> > other workloads like busy web-servers and etc.
+> >
+> > After some analysis of different options i can bring more exact numbers:
+> >
+> > 2.6.21 able to process 500-550 requests/second and 15-20 Mbit/s of
+> > traffic, and working great without any slowdown or instability.
+> >
+> > 2.6.22 able to process only 250-300 requests and 8-10 Mbit/s of traffic,
+> > ssh and console is "freezing" (there is delay even for typing
+> > characters).
+> >
+> > Both proxies is on identical hardware(Sun Fire X4100),
+> > configuration(small system, LFS-like, on USB flash), different only
+> > kernel.
+> >
+> > I tried to disable/enable various options and optimisations - it doesn't
+> > change anything, till i reach SLUB/SLAB option.
+> >
+> > I've loaded proxy configuration to gentoo PC with 2.6.22 (then upgraded
+> > it to 2.6.23-rc8), and having same effect.
+> > Additionally, when load reaching maximum i can notice whole system
+> > slowdown, for example ssh and scp takes much more time to run, even i do
+> > nice -n -5 for them.
+> >
+> > But even choosing 2.6.23-rc8+SLAB i noticed same "freezing" of ssh (and
+> > sure it slowdown other kind of network performance), but much less
+> > comparing with SLUB. On top i am seeing ksoftirqd taking almost 100%
+> > (sometimes ksoftirqd/0, sometimes ksoftirqd/1).
+> >
+> > I tried also different tricks with scheduler (/proc/sys/kernel/sched*),
+> > but it's also didn't help.
+> >
+> > When it freezes it looks like:
+> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> >     7 root      15  -5     0    0    0 R   64  0.0   2:47.48 ksoftirqd/1
+> >  5819 root      20   0  134m 130m  596 R   57  3.3   4:36.78 globax
+> >  5911 squid     20   0 1138m 1.1g 2124 R   26 28.9   2:24.87 squid
+> >    10 root      15  -5     0    0    0 S    1  0.0   0:01.86 events/1
+> >  6130 root      20   0  3960 2416 1592 S    0  0.1   0:08.02 oprofiled
+> >
+> >
+> > Oprofile results:
+> >
+> >
+> > Thats oprofile with 2.6.23-rc8 - SLUB
+> >
+> > 73918    21.5521  check_bytes
+> > 38361    11.1848  acpi_pm_read
+> > 14077     4.1044  init_object
+> > 13632     3.9747  ip_send_reply
+> > 8486      2.4742  __slab_alloc
+> > 7199      2.0990  nf_iterate
+> > 6718      1.9588  page_address
+> > 6716      1.9582  tcp_v4_rcv
+> > 6425      1.8733  __slab_free
+> > 5604      1.6339  on_freelist
+> >
+> >
+> > Thats oprofile with 2.6.23-rc8 - SLAB
+> >
+> > CPU: AMD64 processors, speed 2592.64 MHz (estimated)
+> > Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a
+> > unit mask of 0x00 (No unit mask) count 100000
+> > samples  %        symbol name
+> > 138991   14.0627  acpi_pm_read
+> > 52401     5.3018  tcp_v4_rcv
+> > 48466     4.9037  nf_iterate
+> > 38043     3.8491  __slab_alloc
+> > 34155     3.4557  ip_send_reply
+> > 20963     2.1210  ip_rcv
+> > 19475     1.9704  csum_partial
+> > 19084     1.9309  kfree
+> > 17434     1.7639  ip_output
+> > 17278     1.7481  netif_receive_skb
+> > 15248     1.5428  nf_hook_slow
+> >
+> > My .config is at http://www.nuclearcat.com/.config (there is SPARSEMEM
+> > enabled, it doesn't make any noticeable difference)
+> >
+> > Please CC me on reply, i am not in list.
+>
+> Could you try with SLUB but disabling CONFIG_SLUB_DEBUG ?
