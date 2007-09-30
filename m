@@ -1,137 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXI3DCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbXI3DLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbXI3DCo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 23:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXI3DCh
+	id S1755586AbXI3DLs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 23:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXI3DLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 23:02:37 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44542 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751273AbXI3DCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 23:02:37 -0400
-Date: Sun, 30 Sep 2007 05:02:58 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Extending kbuild syntax
-Message-ID: <20070930030258.GA10852@stusta.de>
-References: <20070929201145.GA20377@uranus.ravnborg.org>
+	Sat, 29 Sep 2007 23:11:40 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37603 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753144AbXI3DLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 23:11:39 -0400
+Date: Sat, 29 Sep 2007 20:11:31 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
+       dvhltc@us.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
+       a.p.zijlstra@chello.nl, bunk@kernel.org, oleg@tv-sign.ru,
+       srostedt@redhat.com
+Subject: Re: [PATCH RFC 6/9] RCU priority boosting for preemptible RCU
+Message-ID: <20070930031131.GF9119@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183901.GF3819@linux.vnet.ibm.com> <20070928225649.GA9899@in.ibm.com> <Pine.LNX.4.58.0709281901470.17405@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070929201145.GA20377@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <Pine.LNX.4.58.0709281901470.17405@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 10:11:45PM +0200, Sam Ravnborg wrote:
->...
-> The second is the more controversial suggestion.
-> In several Makefile we have simple if expression of the variants:
-> if ($(CONFIG_FOO),y)
->   obj-$(CONFIG_BAR) += fubar.o
-> endif
-> 
-> The pattern varies over this theme.
-> The suggestion here is to introduce a few helpers:
-> 
-> obj-y-if-$(CONFIG_FOO) += fubar.o
-> This one shall read:
-> if $(CONFIG_FOO) is y or m then set += to obj-y
-
-IMHO for people who are not kbuild junkies the pattern is more clear 
-with the current syntax.
-
-But you should better ask some guinea pigs who have not already seen as 
-many kernel Makefiles as I have...
-
-> In several cases we will need it to be more complicated like the this:
-> obj-y-ify-$(CONFIG_FOO) += fubar.o
-> This one shall read:
-> if $(CONFIG_FOO) is y (thats the ify thing) then += to obj-y
-> 
-> And we can mix it like the following:
-> obj-$(CONFIG_BAR)-ify-$(CONFIG_FOO) += fubar.o
-> This one shall read:
-> if $(CONFIG_FOO) equal y then += to obj-$(CONFIG_BAR)
+On Fri, Sep 28, 2007 at 07:05:14PM -0400, Steven Rostedt wrote:
 > 
 > 
-> The full list of new variables are (for obj-y):
-> obj-y-if-y
-> obj-y-if-m
->
-> obj-y-ify-y
-> obj-y-ifm-m
+> --
+> On Fri, 28 Sep 2007, Gautham R Shenoy wrote:
 > 
-> obj-y-ifn-
+> > >
+> > > +#ifdef CONFIG_PREEMPT_RCU_BOOST
+> > > +/*
+> > > + * Task state with respect to being RCU-boosted.  This state is changed
+> > > + * by the task itself in response to the following three events:
+> > 							^^^
+> > > + * 1. Preemption (or block on lock) while in RCU read-side critical section.
+> >
+> > I am wondering, can a task block on a lock while in RCU read-side
+> > critical section?
 > 
-> And similar for obj-m:
-> obj-m-if-y
-> obj-m-if-m
+> I think this may be specific to the -rt patch. In the -rt patch,
+> spin_locks turn into mutexes, and therefor can block a read-side critical
+> section.
+
+Yep!  I do need to fix the comment.
+
+> > > + * 2. Outermost rcu_read_unlock() for blocked RCU read-side critical section.
+> > > + *
+> >
+> > Event #3. is missing?
 > 
-> obj-m-ify-y
-> obj-m-ifm-m
-> 
-> obj-m-ifn-
-> 
-> The 'y' and 'm' can be replaced by $(CONFIG_FOO) but the one right
-> to the if are not supposed to be replaced.
-> 
-> 
-> To better express how to use it I have tried to update a few Makefiles
-> to use the new syntax. See below.
-> 
-> On MAJOR drawback is the linking order.
-> I have no way to keep the link order if the new syntax are sued. The
-> .o files will either be put before .o files specified with obj-y or obj-m or
-> after the same.
-> 
-> For some places this does not matter but for other places (fs/Makefile)
-> I will expect it to matter a lot.
-> 
-> Comments?
-> Is this just to magic for bare humans to grasp.
-> Or mabe the linking order is so important that we do not want it?
->...
+> I guess Paul needs to answer that one ;-)
 
-Some of the cases have the following pattern:
+An older version had three, the new one has two, and I forgot to s/three/two/.
 
-config X86_POWERNOW_K8_ACPI
-        bool
-        depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
-        depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
-        default y
-
-Your suggested syntax has to be enhanced with three additional
-variables for handling such cases.
-
-
-The complicated cases can be handled either in kconfig or in kbuild,
-and I think kconfig is the better place for them:
-
-Handling it in kconfig has the advantage that we also get a variable we 
-can use in C code.
-
-For all the *-if-m and *-m-if{,n}-* cases this is a huge advantage over 
-having to express the whole dependency in each #if.
-
-Compare
-  #if defined(CONFIG_ACPI_PROCESSOR) || (defined(CONFIG_ACPI_PROCESSOR_MODULE && defined(MODULE))
-with
-  #ifdef CONFIG_X86_POWERNOW_K8_ACPI
-
-> 	Sam
->...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+							Thanx, Paul
