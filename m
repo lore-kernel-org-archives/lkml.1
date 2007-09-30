@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXI3D2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXI3D3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbXI3D2q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 23:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbXI3D2k
+	id S1757847AbXI3D3t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 23:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXI3D3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 23:28:40 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36444 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbXI3D2j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 23:28:39 -0400
-Date: Sat, 29 Sep 2007 23:28:18 -0400
-Message-Id: <200709300328.l8U3SIl3022352@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Theodore Tso <tytso@mit.edu>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+	Sat, 29 Sep 2007 23:29:42 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:58027 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbXI3D3m (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 23:29:42 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 0/3 coding standards documentation/code updates 
-In-reply-to: Your message of "Sat, 29 Sep 2007 22:06:37 EDT."
-             <20070930020637.GA29996@thunk.org> 
-X-MailKey: Erez_Zadok
+Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
+In-Reply-To: Your message of "Sat, 29 Sep 2007 20:00:01 PDT."
+             <alpine.LFD.0.999.0709291959400.3579@woody.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <11910151223214-git-send-email-ezk@cs.sunysb.edu> <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org> <18163.1191119041@turing-police.cc.vt.edu>
+            <alpine.LFD.0.999.0709291959400.3579@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1191122973_2993P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 29 Sep 2007 23:29:33 -0400
+Message-ID: <13255.1191122973@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20070930020637.GA29996@thunk.org>, Theodore Tso writes:
-> On Sat, Sep 29, 2007 at 03:56:38PM -0400, J. Bruce Fields wrote:
-> > It'd be a start just to revert CodingStyle to its original content and
-> > move the rest to CodingStyleReference.  But someone would want to skim
-> > through the CodingStyle history for any legimate corrections that we
-> > want to keep.
+--==_Exmh_1191122973_2993P
+Content-Type: text/plain; charset=us-ascii
+
+On Sat, 29 Sep 2007 20:00:01 PDT, Linus Torvalds said:
+> On Sat, 29 Sep 2007, Valdis.Kletnieks@vt.edu wrote:
+> > I think there needs to be a "sense of fairness" attached here - CodingStyle
+> > should cover all the stuff maintainers/reviewers are allowed to whinge about.
 > 
-> How about CodingStyleSuggestions?  And let's make it clear they are
-> suggestions, and not things that checkpatch should be flaming about
-> unless people request the all of the annoying associated false
-> positives via --spam-me-harder.  :-)
+> No.
+> 
+> People whine too much as is. Don't give them *license* to do so.
 
-FWIW, the checkpatch script is woefully out of sync with CodingStyle.  I
-assume that checkpatch.pl is generally more authoritative (sans "(%d)" :-)
+I kind of meant the *maintainers* couldn't whine about things not in CodingStyle ;)
 
->        	      	      	       			  - Ted
 
-Erez.
+--==_Exmh_1191122973_2993P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG/xgdcC3lWbTT17ARAgYmAJ9TQs4Wh0d92v2Bn/B12X/nUEgsywCg9iMH
+gGYj964v7IQynfrOT9qQ7aQ=
+=ik17
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1191122973_2993P--
