@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXILTqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbXI3WAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764298AbXILTqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 15:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXILTqW
+	id S1753361AbXI3WAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 18:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXI3WAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 15:46:22 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:53947 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752031AbXILTqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 15:46:21 -0400
-Subject: [PATCH] Re: Kernel Panic - 2.6.23-rc4-mm1 ia64 - was Re: Update: 
-	[Automatic] NUMA replicated pagecache ...
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andy Whitcroft <apw@shadowen.org>, balbir@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Joachim Deguara <joachim.deguara@amd.com>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       Eric Whitney <eric.whitney@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070912154130.GS4835@shadowen.org>
-References: <20070727084252.GA9347@wotan.suse.de>
-	 <1186604723.5055.47.camel@localhost> <1186780099.5246.6.camel@localhost>
-	 <20070813074351.GA15609@wotan.suse.de> <1189543962.5036.97.camel@localhost>
-	 <46E74679.9020805@linux.vnet.ibm.com> <1189604927.5004.12.camel@localhost>
-	 <46E7F2D8.3080003@linux.vnet.ibm.com> <1189609787.5004.33.camel@localhost>
-	 <20070912154130.GS4835@shadowen.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 12 Sep 2007 15:46:14 -0400
-Message-Id: <1189626374.5004.61.camel@localhost>
+	Sun, 30 Sep 2007 18:00:44 -0400
+Received: from os.inf.tu-dresden.de ([141.76.48.99]:59942 "EHLO
+	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbXI3WAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 18:00:43 -0400
+Date: Mon, 1 Oct 2007 00:00:37 +0200
+From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.23-rc8-mm2] System hangs (loops?) during boot
+Message-ID: <20071001000037.475473bd@laptop.hypervisor.org>
+In-Reply-To: <200709302350.30612.elendil@planet.nl>
+References: <200709282225.21530.elendil@planet.nl>
+	<20070929130234.e5f0f777.akpm@linux-foundation.org>
+	<20070930154424.68e4218e@laptop.hypervisor.org>
+	<200709302350.30612.elendil@planet.nl>
+X-Mailer: X-Mailer 5.0 Gold
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/BGkjhSqaQNXMb+C8LlTUGjX";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-12 at 16:41 +0100, Andy Whitcroft wrote:
-> On Wed, Sep 12, 2007 at 11:09:47AM -0400, Lee Schermerhorn wrote:
-> 
-> > > Interesting, I don't see a memory controller function in the stack
-> > > trace, but I'll double check to see if I can find some silly race
-> > > condition in there.
-> > 
-> > right.  I noticed that after I sent the mail.  
-> > 
-> > Also, config available at:
-> > http://free.linux.hp.com/~lts/Temp/config-2.6.23-rc4-mm1-gwydyr-nomemcont
-> 
-> Be interested to know the outcome of any bisect you do.  Given its
-> tripping in reclaim.
+--Sig_/BGkjhSqaQNXMb+C8LlTUGjX
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Problem isolated to memory controller patches.  This patch seems to fix
-this particular problem.  I've only run the test for a few minutes with
-and without memory controller configured, but I did observe reclaim
-kicking in several times.  W/o this patch, system would panic as soon as
-I entered direct/zone reclaim--less than a minute.
+On Sun, 30 Sep 2007 23:50:29 +0200 Frans Pop (FP) wrote:
 
-Lee
---------------------------------
+FP> I'm not sure what you mean. I fetched the branch I think you referred t=
+o=20
+FP> [1], but when I did a merge of that on top of v2.6.23-rc8-mm2 I=20
+FP> got "Already up-to-date", so AFAICT that branch is fully merged into mm
+FP> and I'm already running with you latest code...
+FP> Please correct me if I'm doing anything wrong.
 
-PATCH 2.6.23-rc4-mm1 Memory Controller:  initialize all scan_controls'
-	isolate_pages member.
+I was suggesting to download 2.6.23-rc8 and applying the -hrt patchset at
+http://www.kernel.org/pub/linux/kernel/people/tglx/hrtimers/2.6.23-rc8/
+on top of it.
 
-We need to initialize all scan_controls' isolate_pages member.
-Otherwise, shrink_active_list() attempts to execute at undefined
-location.
+That excludes all the extra stuff in -mm and should give us a good hint
+whether HPET is really at fault.
 
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cheers,
 
- mm/vmscan.c |    2 ++
- 1 file changed, 2 insertions(+)
+	- Udo
 
-Index: Linux/mm/vmscan.c
-===================================================================
---- Linux.orig/mm/vmscan.c	2007-09-10 13:22:21.000000000 -0400
-+++ Linux/mm/vmscan.c	2007-09-12 15:30:27.000000000 -0400
-@@ -1758,6 +1758,7 @@ unsigned long shrink_all_memory(unsigned
- 		.swap_cluster_max = nr_pages,
- 		.may_writepage = 1,
- 		.swappiness = vm_swappiness,
-+		.isolate_pages = isolate_pages_global,
- 	};
- 
- 	current->reclaim_state = &reclaim_state;
-@@ -1941,6 +1942,7 @@ static int __zone_reclaim(struct zone *z
- 					SWAP_CLUSTER_MAX),
- 		.gfp_mask = gfp_mask,
- 		.swappiness = vm_swappiness,
-+		.isolate_pages = isolate_pages_global,
- 	};
- 	unsigned long slab_reclaimable;
- 
+--Sig_/BGkjhSqaQNXMb+C8LlTUGjX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
+iD8DBQFHAByFnhRzXSM7nSkRAhKEAJwKTcSXw9qTra6U9ALKgLQhjEZG3wCeL4hx
+VNyK9bLfKDlVNe3hAgqWuI4=
+=d6pw
+-----END PGP SIGNATURE-----
+
+--Sig_/BGkjhSqaQNXMb+C8LlTUGjX--
