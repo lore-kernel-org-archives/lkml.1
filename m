@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbXI3Pnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbXI3PoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758062AbXI3Pnv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 11:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbXI3Pnm
+	id S1758538AbXI3PoO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 11:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbXI3Pn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 11:43:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52339 "EHLO mail.dvmed.net"
+	Sun, 30 Sep 2007 11:43:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40851 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbXI3Pnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 11:43:42 -0400
-Message-ID: <46FFC42A.9080300@garzik.org>
-Date: Sun, 30 Sep 2007 11:43:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1756527AbXI3Pn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 11:43:58 -0400
+Date: Sun, 30 Sep 2007 17:43:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew <jackdachef@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8,
+	v2.6.22.8, v2.6.21.7, v2.6.20.20
+Message-ID: <20070930154354.GD24077@elte.hu>
+References: <e85b9d30709290411u4f48d716o3260bab7d71261ff@mail.gmail.com>
 MIME-Version: 1.0
-To: Paolo Ornati <ornati@fastwebnet.it>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
-References: <20070930160548.235be972@localhost>	<20070930152908.1f58d39d@the-village.bc.nu>	<20070930164610.20818867@localhost>	<46FFBB2D.6060004@garzik.org> <20070930172859.7fd44eab@localhost>
-In-Reply-To: <20070930172859.7fd44eab@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e85b9d30709290411u4f48d716o3260bab7d71261ff@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ornati wrote:
-> On Sun, 30 Sep 2007 11:05:17 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+
+* Matthew <jackdachef@gmail.com> wrote:
+
+> both cpus have a continous load of ~ 70% right now so I'll be starting 
+> up 9 instances of glxgears, below are some output & details of my 
+> system (cpu frequency switching is disabled since it doesn't work 
+> right now with the current bios version)
 > 
->>> I have this problem only with XFS, and even with XFS it goes away
->>> mounting with "nobarrier"...  
->> This last is an interesting datapoint.
->>
->> I wonder if libata has a generic problem with NCQ + FLUSH CACHE.
->>
->> What happens if you enable the 'fua' module parameter?  (libata.fua on 
->> kernel command line, if built in)
-> 
-> it isn't supported here:
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> short summary: unfortunately after starting glxgears everything 
+> stuttered a lot, don't know if it's expactable during that heavy load 
+> - just wanted to let you know; after having closed each instance of 
+> glxgears, everything was fine again ...
 
-Did you actually try my suggestion?
+> cpu#0, 2404.249 MHz
+> cpu#1, 2404.249 MHz
 
-That message is normal, because libata defaults to FUA==off.
+> result: most times only 2-3 of the glxgears-windows were running, the 
+> rest was stuttering / halting (no motion) mouse movement was pretty 
+> discountinous, keyboard input was also delayed
 
-	Jeff
+how does it behave without the cfs patch applied? Does it work better 
+under v20.5? The best debug output for me to look at would be to 
+download these two scripts:
 
+ http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+ http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info-clear.sh
 
+first run cfs-debug-info-clear.sh, then use the system for a few minutes 
+and make sure apps are behaving in a 'stutter-free' way. Then run 
+cfs-debug-info.sh (still no glxgears running) - it will produce a "no 
+load" debug info file. Then start the 9x glxgears instances, reproduce 
+the "stuttering" behavior in the apps, and run cfs-debug-info.sh - this 
+will produce a second "under load" output file. Please send me both 
+output files.
 
+also, what's the output of "glxgears -info" - does it render on real 3D 
+hardware, or uses the sw-mesa fallback?
+
+	Ingo
