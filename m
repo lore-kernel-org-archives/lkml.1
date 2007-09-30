@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbXI3PDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXI3PFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758075AbXI3PDo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 11:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXI3PDh
+	id S1758185AbXI3PFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 11:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbXI3PFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 11:03:37 -0400
-Received: from ns.suse.de ([195.135.220.2]:60809 "EHLO mx1.suse.de"
+	Sun, 30 Sep 2007 11:05:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54977 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755030AbXI3PDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 11:03:36 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents)
-Date: Sun, 30 Sep 2007 17:03:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <200709231257.12213.rjw@sisk.pl> <200709301158.17823.ak@suse.de> <alpine.LFD.0.9999.0709301542410.3142@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0709301542410.3142@localhost.localdomain>
+	id S1756563AbXI3PFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 11:05:24 -0400
+Message-ID: <46FFBB2D.6060004@garzik.org>
+Date: Sun, 30 Sep 2007 11:05:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paolo Ornati <ornati@fastwebnet.it>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
+References: <20070930160548.235be972@localhost>	<20070930152908.1f58d39d@the-village.bc.nu> <20070930164610.20818867@localhost>
+In-Reply-To: <20070930164610.20818867@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709301703.32388.ak@suse.de>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 September 2007 16:06:59 Thomas Gleixner wrote:
-> On Sun, 30 Sep 2007, Andi Kleen wrote:
+Paolo Ornati wrote:
+> On Sun, 30 Sep 2007 15:29:08 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> >>> OK, this explains 2) and 3). I just looked into the code and the logic
-> >>> vs. noapictimer on SMP is completely broken.
-> >
-> > noapictimer really doesn't make any sense on non SMP imho with the old
-> > timer architecture. That is why I never bothered to implement it.
-> > It's purely a UP hack.
+>>> Seagate Barracuda ST380817AS has troubles with NCQ. For example,
+>>> unpacking a tarball on an XFS filesystem gives this:
+>>>
+>>> ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
+>>> ata1.00: cmd 61/40:00:29:a3:98/00:00:00:00:00/40 tag 0 cdb 0x0 data 32768 out
+>>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)  
+>> What makes you sure that is an NCQ problem ?
 > 
-> It does not matter whether it makes sense to you or not. It is a command 
-> line option which bricks systems. 
-
-A lot of command line options do that -- if not they would be usually
-default or automatically used by the kernel.
-
-> There is neither an explanation in  
-> Dokumentation/kernel-parameters.txt nor a check in the code, which 
-> disables this completely.
-
-Fair enough. I can add a warning in the Documentation.
- 
-> It makes a lot of sense even with the existing architecture. Trouble 
-> shooting a box, where the local apic timer does not work correctly is not 
-> an UP only requirement.
-
-It should not be needed with current systems as far as I know
-(see my previous mail) 
-
-> I understand the code quite well. I'm just surprised from time to time by 
-> interesting hacks in the so clean x8664 tree.
-
-No hack in this area as far as I know.
- 
-> > [1]  Or let's call it "I trust all my time to the CPU" and no more southrbridge
-> > aka put all eggs in one basket. Given the trends in CPU power saving that
-> > is a quite dangerous strategy.
+> It goes away with:
+> echo 1 > /sys/block/sda/device/queue_depth
 > 
-> No, it's not dangerous. 
+> I have this problem only with XFS, and even with XFS it goes away
+> mounting with "nobarrier"...
 
-It definitely caused a lot of problems in the single socket multi core world;
-but yes you probably worked around all of them that I'm aware of currently.
-What I just objected to was that you complained that the current x86-64
-time code -- which works much more conservatively and thus needs less workarounds --
-doesn't have all of them. You basically tried to apply the special debugging strategies
-for clockevents to the old code and then complained that they don't work.
+This last is an interesting datapoint.
 
-> We spent quite some time to make the clock events  
-> layer flexible enough to handle the current problems and the design allows 
-> to add more infrastructure when necessary.
+I wonder if libata has a generic problem with NCQ + FLUSH CACHE.
 
-Grand words for relatively simple changes. Anyways as far as I know
-even for hypothetical future C2+ capable multi socket systems the current
-x86-64 time code should work -- it should automatically select broadcasting.
-The only thing it relies on that if there are no multi socket C1E systems
-with broken APIC timers. Since that could be only future CPUs anyways
-and I haven't seen any indication that of the upcomming CPUs will have
-such broken C1.
+What happens if you enable the 'fua' module parameter?  (libata.fua on 
+kernel command line, if built in)
 
-> The maybe new (mis)features of  
-> upcoming CPUs need to be addressed with or without clock events and they 
-> need to be done careful and not by random hacks.
+	Jeff
 
-Not sure what random hacks you refer to.
 
--Andi
+
