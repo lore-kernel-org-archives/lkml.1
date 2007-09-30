@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbXI3Jx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXI3J6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbXI3Jx3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 05:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbXI3JxU
+	id S1756619AbXI3J6b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 05:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbXI3J6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 05:53:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52034 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbXI3JxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 05:53:18 -0400
-Date: Sun, 30 Sep 2007 10:53:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: casey@schaufler-ca.com, torvalds@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, James Morris <jmorris@namei.org>,
-       Paul Moore <paul.moore@hp.com>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20070930095310.GA18642@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-	torvalds@linux-foundation.org,
-	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Andi Kleen <ak@suse.de>, James Morris <jmorris@namei.org>,
-	Paul Moore <paul.moore@hp.com>
-References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 30 Sep 2007 05:58:23 -0400
+Received: from ns.suse.de ([195.135.220.2]:60387 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751069AbXI3J6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 05:58:22 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents)
+Date: Sun, 30 Sep 2007 11:58:17 +0200
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200709231257.12213.rjw@sisk.pl> <1190842476.23376.57.camel@chaos> <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070930011618.ccb8351b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200709301158.17823.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 30, 2007 at 01:16:18AM -0700, Andrew Morton wrote:
-> reviewed the August thread from your version 1 submission and the message I
-> take away is that the code has been well-received and looks good when
-> considered on its own merits, but selinux could probably be configured to
-> do something sufficiently similar.
+
 > 
-> I'd have trouble declaring that "but" to be a reason to not merge smack.
-> I'm more thinking "let's merge it and see if people use it".
+> > OK, this explains 2) and 3). I just looked into the code and the logic
+> > vs. noapictimer on SMP is completely broken.
 
-I'm not sure this was discussed on the list, but as long as Casey doesn't
-get rid of the magic symlinks (smackfs_follow_link), there's a clear NACK
-from the VFS perspective.
+noapictimer really doesn't make any sense on non SMP imho with the old
+timer architecture. That is why I never bothered to implement it.
+It's purely a UP hack.
+ 
+> ..and thanks for the explanation.
+> 
+> Thanks for finding it so quickly guys. Sounds like this will be fixed 
+> properly in 2.6.24 with the x86 merge (which hopefully brings in the hrt 
+> patch too)
 
-Otherwise the code looks pretty well written, alhough a run through
-checkpath.pl to fix the lose end might help.  Oh, and please to compile-time
-initializations for the spinlocks and mutex currently initializes in
-smack_init.  Also the -Inet/netlabel looks rather odd, please work with
-the netlabel maintainer to move the required files to the include/
-hierachy.
+There is nothing really to fix currently.  Clockevents changes behaviour
+majorly (always using APIC timers without irq 0 backups[1]) and that causes
+problems that need new workarounds and new fixes (surprise surprise!)
+
+That merge would probably fix a few more such "Thomas doesn't understand
+the code" bugs I guess because he hacks much more on i386 than x86-64;
+but if the overall result will be really better is a totally different
+question.
+
+-Andi
+
+[1]  Or let's call it "I trust all my time to the CPU" and no more southrbridge
+aka put all eggs in one basket. Given the trends in CPU power saving that
+is a quite dangerous strategy.
