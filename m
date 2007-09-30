@@ -1,36 +1,123 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755929AbXIIA6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Sieve: CMU Sieve 2.2
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbXIIA6h (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Sat, 8 Sep 2007 20:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXIIA62
+	id S1753489AbXIZXN6 (ORCPT <rfc822;rjwysocki@sisk.pl>);
+	Wed, 26 Sep 2007 19:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXIZXNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 20:58:28 -0400
-Received: from mail.ihb.hu ([87.229.102.31]:34796 "EHLO ihb.hu"
+	Wed, 26 Sep 2007 19:13:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40833 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbXIIA62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 20:58:28 -0400
-X-Greylist: delayed 14380 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Sep 2007 20:58:27 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Hello
-Date: Sat, 8 Sep 2007 23:49:29 +0200
-From: =?UTF-8?Q?H=C3=ADrlev=C3=A9l_Szolg=C3=A1lat?= <movie@freemail.hu>
-Message-ID: <c7e8932f4f89e115264744f5e1c0b3d3@hirlevel.ihb.hu>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.72]
+	id S1751328AbXIZXNq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 19:13:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-rc8-git4: Known regressions from 2.6.22
+Date: Sun, 30 Sep 2007 22:49:17 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Message-Id: <200709302249.18090.linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+X-Length: 6549
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from quoted-printable to 8bit by imap1.linux-foundation.org id l8UKYY2r013066
 
-Szia!
+Hi,
 
-Találtam egy jó letöltő oldalt legolcsóbb, és nagy tartalom van rajta
-Filmek, Játékok, Zenék stb...
-http://speed-ware.no-ip.org
+This message lists some known regressions from 2.6.22 for which there are
+no fixes in the mainline that I know of.  If any of them have been fixed
+already, please let me know.
 
-Bocsi a zavarásért.
-Szia, Dóri
+If you know of any other unresolved regressions from 2.6.22, please let me know
+either and I'll add them to the list.
 
-U.i: én már töltök!.
+Subject:	zd1211 device is no longer configured
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
+		http://bugzilla.kernel.org/show_bug.cgi?id=8972
+Caused-By:	Daniel Drake <dsd@gentoo.org>
+		commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 
+Subject:	Oops while modprobing phy fixed module
+Submitter:	Gabriel C <nix.or.die@googlemail.com>
+References:	http://lkml.org/lkml/2007/7/14/63
+		http://bugzilla.kernel.org/show_bug.cgi?id=9060
+Handled-By:	Satyam Sharma <satyam.sharma@gmail.com>
+		Vitaly Bordug <vitb@kernel.crashing.org>
+		Tejun Heo <htejun@gmail.com>
+Patch:		http://lkml.org/lkml/2007/7/18/506
+
+Subject:	ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+Submitter:	Danny ter Haar <dth@dth.net>
+References:	http://lkml.org/lkml/2007/7/27/298
+		http://lkml.org/lkml/2007/7/29/371
+		http://bugzilla.kernel.org/show_bug.cgi?id=9061
+Handled-By:	Len Brown <lenb@kernel.org>
+
+Subject:	empty suspend stopped working around 2.6.23-rc4
+Submitter:	Pavel Machek <pavel@ucw.cz>
+References:	http://lkml.org/lkml/2007/9/11/326
+		http://bugzilla.kernel.org/show_bug.cgi?id=9075
+
+Subject:	umount triggers a warning in jfs and takes almost a minute
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://lkml.org/lkml/2007/9/4/73
+		http://bugzilla.kernel.org/show_bug.cgi?id=9076
+
+Subject:	build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
+Submitter:	Toralf F�rster <toralf.foerster@gmx.de>
+References:	http://lkml.org/lkml/2007/9/11/150
+		http://bugzilla.kernel.org/show_bug.cgi?id=9077
+Patch:		http://bugzilla.kernel.org/attachment.cgi?id=12963&action=view
+
+Subject:	NETDEV WATCHDOG: eth0: transmit timed out
+Submitter:	Karl Meyer <adhocrocker@gmail.com>
+References:	http://lkml.org/lkml/2007/8/13/737
+		http://bugzilla.kernel.org/show_bug.cgi?id=9079
+Handled-By:	Francois Romieu <romieu@fr.zoreil.com>
+
+Subject:	Weird network problems with 2.6.23-rc2
+Submitter:	Shish <shish@shishnet.org>
+References:	http://lkml.org/lkml/2007/8/11/40
+		http://bugzilla.kernel.org/show_bug.cgi?id=9080
+
+Subject:	powersaving degradation, (time spend in C0 goes up after a while)
+Submitter:	Christian Leber <christian@leber.de>
+References:	http://lkml.org/lkml/2007/9/2/142
+		http://lkml.org/lkml/2007/9/2/207
+		http://bugzilla.kernel.org/show_bug.cgi?id=9081
+
+Subject:	vga text console not working on 2.6.23-rc8
+Submitter:	Santiago Garcia Mantinan <manty@manty.net>
+References:	http://lkml.org/lkml/2007/9/28/342
+Handled-By:	H. Peter Anvin <hpa@zytor.com>
+		Antonino A. Daplas <adaplas@gmail.com>
+
+For details, please follow the links given in references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+I'm the owner of some of these entries, so if you want me to reassign them to
+someone else, please let me know.
+
+There also is a Bugzilla entry used for tracking the regressions from 2.6.22,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9056
+
+Please let me know if there are any Bugzilla entries that I should add to the
+list in there.
+
+To see all unresolved regressions in the Bugzilla, please use the following
+link:
+
+http://bugzilla.kernel.org/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=&long_desc_type=substring&long_desc=&kernel_version_type=allwordssubstr&kernel_version=&bug_status=NEW&bug_status=REOPENED&bug_status=ASSIGNED&emailassigned_to1=1&emailtype1=substring&email1=&emailassigned_to2=1&emailreporter2=1&emailcc2=1&emailtype2=substring&email2=&bugidtype=include&bug_id=&chfieldfrom=&chfieldto=Now&chfieldvalue=&regression=include&cmdtype=doit&order=Reuse+same+sort+as+last+time&field0-0-0=noop&type0-0-0=noop&value0-0-0=
+
+Greetings,
+Rafael
