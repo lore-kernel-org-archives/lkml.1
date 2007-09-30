@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbXI3US3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXI3UWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbXI3US3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbXI3USW
+	id S1753008AbXI3UWj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXI3UWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:18:22 -0400
-Received: from smtp.cce.hp.com ([161.114.21.22]:12987 "EHLO
-	ccerelrim01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbXI3USU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:18:20 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
+	Sun, 30 Sep 2007 16:22:32 -0400
+Received: from thunk.org ([69.25.196.29]:44658 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbXI3UWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 16:22:31 -0400
+Date: Sun, 30 Sep 2007 16:22:25 -0400
+From: Theodore Tso <tytso@mit.edu>
 To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-Date: Sun, 30 Sep 2007 16:18:06 -0400
-User-Agent: KMail/1.9.7
-Cc: Theodore Tso <tytso@mit.edu>, Joshua Brindle <method@manicmethod.com>,
+Cc: Joshua Brindle <method@manicmethod.com>,
        Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
        torvalds@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
-References: <46FEEBD4.5050401@schaufler-ca.com> <200709301939.57542.ak@suse.de> <20070930190742.GB9358@thunk.org>
-In-Reply-To: <20070930190742.GB9358@thunk.org>
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Paul Moore <paul.moore@hp.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20070930202225.GC9358@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <ak@suse.de>,
+	Joshua Brindle <method@manicmethod.com>,
+	Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+	torvalds@linux-foundation.org,
+	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+	James Morris <jmorris@namei.org>, Paul Moore <paul.moore@hp.com>
+References: <46FEEBD4.5050401@schaufler-ca.com> <200709301939.57542.ak@suse.de> <20070930190742.GB9358@thunk.org> <200709302205.58017.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709301618.07775.paul.moore@hp.com>
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.9.30.125322
+In-Reply-To: <200709302205.58017.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 September 2007 3:07:42 pm Theodore Tso wrote:
-> There are different kinds of security.  Not all of them involve
-> cryptography and IPSEC.  Some of them involve armed soldiers and air
-> gap firewalls.  :-)
->
-> Yes, normally the network is outside the Trusted Computing Base (TCB),
-> but a cluster of Linux machines in a rack is roughly the same size of
-> a huge Unix server tens year ago --- and it's not like Ethernet is any
-> more secure than the PCI bus.  So why do we consider communications
-> across a PCI bus secure even though they aren't encrypted?  Why,
-> because normally we assume the PCI bus is inside the trust boundary,
-> and so we don't worry about bad guys tapping communications between
-> the CPU and the hard drive on the PCI bus.
->
-> But these days, it is obviously possible to create clusters where
-> certain network interfaces are only connected to machines contained
-> completely inside the trust boundary, just like a PCI bus in a
-> traditional server.  So don't be so quick to dismiss something like
-> CIPSO out of hand, just because it doesn't use IPSEC.
+On Sun, Sep 30, 2007 at 10:05:57PM +0200, Andi Kleen wrote:
+> > but a cluster of Linux machines in a rack is roughly the same size of
+> > a huge Unix server tens year ago --- and it's not like Ethernet is any
+> > more secure than the PCI bus.  
+> 
+> PCI busses normally don't have routers to networks outside the box connected
+> to them. 
 
-Sorry I'm a bit late to the discussion (been busy doing "weekend" things), but 
-I see that Casey, Josh, and Ted have already given a pretty good explanation 
-of why CIPSO is not as "evil" as it appears at first glance.  I won't restate 
-the points they have already made, but I think there are two other points 
-worth mentioning:
+The whole *point* is that the routers are interconnecting boxes inside
+the cluster, and none of them connect to the outside world.  It's no
+different than a SCSI cable connecting to JBOD in a separate box, or a
+Fiber Channel router connected to a SAN network connecting to a
+storrage array.  The SCSI or FC buses aren't encrypted either, and the
+in the Fiber channel case we have a router --- yet people aren't
+stressing out that we're not encrpying the traffic over the Storage
+Area Network?  Why?  Because it's understood the network stays inside
+the machine room.  The same thing can true for Ethernet --- think
+iSCSI, for example.
 
-The first is that CIPSO options are immutable, which means they work 
-wonderfully with IPsec.  Label integrity can be provided through the use of 
-AH and/or tunneled ESP, label confidentiality can be provided through 
-tunneled ESP.  While the SELinux specific labeled IPsec implementation we 
-currently have in the kernel is nice if you are talking to other SELinux 
-machines, it has a very real handicap in that you can't use it to talk 
-anything else.  CIPSO, or CIPSO in combination with standard, non-labeled 
-IPsec, can be used to talk to pretty much any trusted OSs out there.  
-Adherence to standards and interoperability with other OSs have always been a 
-key factor of Linux's acceptance into new areas; support for CIPSO is just 
-another part of this drive for greater interoperability.
+> > So don't be so quick to dismiss something like 
+> > CIPSO out of hand, just because it doesn't use IPSEC.
+> 
+> With your argumentation we could also just disable all security
+> in these situations (as in null LSM to save some overhead); after all these 
+> systems are protected by armed guards.  If someone gets past the guards
+> they could connect their laptop to the network and fake all the "secured"
+> packets. If you assume that won't happen why do you need computer security at all?
 
-The second point I wanted to make is that in the course of putting together 
-the CIPSO implementation in the kernel I ended up talking with a few people 
-who were involved in the original TSIG effort and the mess with the IETF.  
->From what I could gather, the main technical complaint (other than a variety 
-of political complaints which aren't relevant to our discussion here) was 
-that CIPSO options are difficult to parse (they are, look at the format - 
-it's an option within an option format - yuck) and the intermediate node 
-vendors did not like it all (too much work to do in a fastpath ASIC).  After 
-all, look at the [R]IPSO RFC, dated only eight months earlier, and there is 
-no cryptographic "special sauce" in that protocol.
+If you get past all of the guards, you can usually reboot in single
+user mode, and get root anyway.  If you have physical access to the
+computer, you're generally doomed anyway, unless you are willing to
+pay the cost of encrypting everything on every single disk platter.
+(And yes, in the more paranoid environments, where it's too expensive
+to have 7x24 armed guards, maybe that makes sense.)
 
-CIPSO isn't for everyone, I'll be the first to admit that.  However, if you 
-look at the mailing list archive for the Linux LSPP effort, the SELinux list, 
-and to a lesser extent the netdev and LSM lists you will see that there are a 
-set of users who care very much about this functionality.  Our support of 
-CIPSO is helping Linux operate in areas it wouldn't be able to elsewhere and 
-I consider that a "win".
+The point of something like CIPSO is because you want to label the
+packets so the otherside knows how they should be treated.  We don't
+encrypt unix permission bits on most on-disk filesystems, either.  Yet
+I haven't heard people saying that just because someone could break
+into a machine room, disconnect the JBOD from the computer, hook up
+the JBOD to their laptop, and futz with the Unix permission bits,
+rehook up the JBOD and reboot, that Unix permission bits are useless,
+and we should leave all files at mode 777 --- since clearly we're not
+secure against someone who can break into the machine room.....  
 
--- 
-paul moore
-linux security @ hp
+I *hope* that sounds absurd, right?
+
+					- Ted
+
