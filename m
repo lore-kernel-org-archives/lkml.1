@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbXI3XaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbXI3XeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbXI3XaD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 19:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXI3X3y
+	id S1753439AbXI3XeP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 19:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXI3XeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 19:29:54 -0400
-Received: from smtp27.orange.fr ([80.12.242.95]:54020 "EHLO smtp27.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbXI3X3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 19:29:53 -0400
-X-ME-UUID: 20070930232952276.06BA31C0008E@mwinf2709.orange.fr
-Date: Mon, 1 Oct 2007 02:29:51 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Ryan Reading <ryanr23@gmail.com>
-Subject: [PATCH -mm] IrCOMM discovery indication simplification
-Message-ID: <20070930232951.GA18702@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
+	Sun, 30 Sep 2007 19:34:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:65169 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbXI3XeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 19:34:00 -0400
+Message-ID: <fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
+Date: Sun, 30 Sep 2007 17:33:55 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Grant Likely" <grant.likely@secretlab.ca>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       axboe@kernel.dk
+Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
+In-Reply-To: <20070930230557.GA17654@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
+	 <20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
+	 <20070930230557.GA17654@infradead.org>
+X-Google-Sender-Auth: 92abad8dbf0b57ed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
+> On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
+> > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
+> > +             goto err_plat;
+>
+>         rc = platform_driver_register(&ace_platform_driver);
+>         if (rc)
+>                  goto err_plat;
+>
+> please.
 
-Every IrCOMM socket is registered with the discovery subsystem, so we don't
-need to loop over all of them for every discovery event. We just need to
-do it for the registered IrCOMM socket.
+Okay, will do.
 
-Would you please consider this patch for -mm inclusion ?
+>
+> > +      err_plat:
+> > +     unregister_blkdev(ace_major, "xsysace");
+> > +      err_blk:
+>
+> labels should be indented zero or one space, but not more.
 
-From: Ryan Reading <ryanr23@gmail.com>
-Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
+scripts/Lindent does this.  Originally, I *didn't* have my labels
+indented.  :-)   Does Lindent need to be fixed?
 
----
- net/irda/ircomm/ircomm_tty_attach.c |   15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+Cheers,
+g.
 
-Index: net-2.6.24-quilt/net/irda/ircomm/ircomm_tty_attach.c
-===================================================================
---- net-2.6.24-quilt.orig/net/irda/ircomm/ircomm_tty_attach.c	2007-10-01 01:53:56.000000000 +0300
-+++ net-2.6.24-quilt/net/irda/ircomm/ircomm_tty_attach.c	2007-10-01 01:53:58.000000000 +0300
-@@ -381,18 +381,9 @@
- 	info.daddr = discovery->daddr;
- 	info.saddr = discovery->saddr;
- 
--	/* FIXME. We have a locking problem on the hashbin here.
--	 * We probably need to use hashbin_find_next(), but we first
--	 * need to ensure that "line" is unique. - Jean II */
--	self = (struct ircomm_tty_cb *) hashbin_get_first(ircomm_tty);
--	while (self != NULL) {
--		IRDA_ASSERT(self->magic == IRCOMM_TTY_MAGIC, return;);
--
--		ircomm_tty_do_event(self, IRCOMM_TTY_DISCOVERY_INDICATION,
--				    NULL, &info);
--
--		self = (struct ircomm_tty_cb *) hashbin_get_next(ircomm_tty);
--	}
-+	self = (struct ircomm_tty_cb *) priv;
-+	ircomm_tty_do_event(self, IRCOMM_TTY_DISCOVERY_INDICATION,
-+			    NULL, &info);
- }
- 
- /*
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
