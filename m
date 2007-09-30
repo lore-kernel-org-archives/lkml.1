@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbXI3OIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbXI3OSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbXI3OIc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 10:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbXI3OIY
+	id S1757789AbXI3OSt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 10:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbXI3OSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 10:08:24 -0400
-Received: from alnrmhc11.comcast.net ([204.127.225.91]:57971 "EHLO
-	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbXI3OIY (ORCPT
+	Sun, 30 Sep 2007 10:18:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:56114 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755493AbXI3OSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 10:08:24 -0400
-Subject: Re: Unexpected segfaults with 2.6.23-rc-8-git4
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1191159712.6517.12.camel@localhost>
-References: <1191159712.6517.12.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 30 Sep 2007 09:10:30 -0500
-Message-Id: <1191161430.6517.26.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 30 Sep 2007 10:18:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=mPiVYLxgBdpfwZL8zRVxNfMfmACGRf8C1G72d+KdluWmh5TssJqxRDn3nyt+UmLXs0PDYpp479b/GTf34Qk7g8qdgEbE8Znb55YugzVAXQDvSmoobGNEz8XHRGshCVO1Bmdn/KzzjyP+Yj67EO44/SmbBm2TMzszmoDimxo6pJI=
+Message-ID: <46FFAFE1.2010302@gmail.com>
+Date: Sun, 30 Sep 2007 07:17:05 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Paolo Ornati <ornati@fastwebnet.it>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
+References: <20070930160548.235be972@localhost>
+In-Reply-To: <20070930160548.235be972@localhost>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot to mention it in my initial post - although I am running an
-AMD64 CPU - I am using the 32 bit version of the system
+Paolo Ornati wrote:
+> Seagate Barracuda ST380817AS has troubles with NCQ. For example,
+> unpacking a tarball on an XFS filesystem gives this:
+> 
+> ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd 61/40:00:29:a3:98/00:00:00:00:00/40 tag 0 cdb 0x0 data 32768 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
 
-On Sun, 2007-09-30 at 08:41 -0500, Chris Holvenstot wrote:
-> Good Morning - 
-> 
-> This morning I built the 2.6.23-rc8-git4 version of the kernel.  After
-> rebooting I was unable to keep my mail client (evolution) up and running
-> for more than a few minutes at a time.
-> 
-> A look in the log shows the following message when evolution aborts:
-> 
->  kernel: [ 1716.971128] evolution[10212]: segfault at 00000054 eip
-> b74bbf63 esp bfc84b20 error 4
-> 
->  kernel: [ 1835.797215] evolution[10335]: segfault at 00000056 eip
-> b745ef63 esp bfd9db20 error 4
-> 
->  kernel: [ 1854.752324] evolution[10565]: segfault at 0000045f eip
-> b747ef63 esp bfa9c140 error 4
-> 
-> After falling back to 2.6.23-rc8-git3 I am no longer seeing this failure
-> (at least not yet)
-> 
-> My system is built on an AMD 64 X2 4600+ with 2 gig of memory, two SATA
-> and three PATA drives.  I am running what is basically a UBUNTU 7.04
-> system.
-> 
-> I am a certified dummy when it comes to diagnosing kernel issues so if
-> there is some additional information which would be useful let me know,
-> I would be happy to provide it.  Just be sure to send instructions on
-> how to gather it.
-> 
-> Thanks
-> 
-> Chris
-> 
+Hmmm... Was there a thread about this one?  Also, please cc
+linux-ide@vger.kernel.org.
 
+Thanks.
+
+-- 
+tejun
