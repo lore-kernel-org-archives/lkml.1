@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbXI3Qpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXI3Qpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbXI3Qpg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 12:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbXI3Qp2
+	id S1758598AbXI3Qpt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 12:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXI3Qpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 12:45:28 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:26118 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbXI3Qp1 (ORCPT
+	Sun, 30 Sep 2007 12:45:36 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49115 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757994AbXI3Qpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 12:45:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AXVdEhmwG3KevpFkr8s5Fg1lY0UueBSEs3hNFGyAQ48hnR1imejZkeThtg2C62f4YJizXmrjGy9zQISqh66228zsWjtzrpNh/OTC/QmNOYqHTZQqEROMGEnKDCdjbZEcTHLVqRQVUimXnpFUFzNyoFHY/KoHGD239+0r3ukgLQk=
-Message-ID: <e85b9d30709300945h131bed02ja009f7b7d05dd4de@mail.gmail.com>
-Date: Sun, 30 Sep 2007 18:45:26 +0200
-From: Matthew <jackdachef@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8, v2.6.22.8, v2.6.21.7, v2.6.20.20
-In-Reply-To: <e85b9d30709300943rded9801xddc6ca0a4773ff53@mail.gmail.com>
+	Sun, 30 Sep 2007 12:45:35 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46FFD286.5060209@s5r6.in-berlin.de>
+Date: Sun, 30 Sep 2007 18:44:54 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       linux1394-devel@lists.sourceforge.net,
+       Ben Collins <ben.collins@ubuntu.com>
+Subject: Re: [1/3] 2.6.23-rc6: known regressions v2 --- ieee1394, empty suspend
+ stopped working
+References: <46EB436E.6030509@googlemail.com> <46ECF8C8.5040308@s5r6.in-berlin.de> <200709161409.14908.rjw@sisk.pl>
+In-Reply-To: <200709161409.14908.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30709290411u4f48d716o3260bab7d71261ff@mail.gmail.com>
-	 <20070930154354.GD24077@elte.hu>
-	 <e85b9d30709300943rded9801xddc6ca0a4773ff53@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your answer (sorry, I didn't know your email had changed)
+Rafael J. Wysocki wrote on 2007-09-16:
+[me having trouble to set something up to reproduce the regression]
+> Can you please try "echo test > /sys/power/disk" before the hibernation?
+> 
+> After that "echo disk > /sys/power/state" should only "suspend" the box
+> for several seconds and come back to the command prompt.
+> 
+> If that fails, please try
+> 
+> # echo testproc > /sys/power/disk
+> # echo disk > /sys/power/state
+> 
+> and see if this returns to the command prompt.
 
-well, this will take some time since I don't work every day & it's
-turned off most of the time, hope that is OK
-
-before I proceed with that data-collection:
-
-do you think it is possible that it might be related to "Fair group
-CPU scheduler" being selected ?
-
-I think that one and another additional option (don't know right now
-its name, but will look for it later) was the only difference on the
-.config-file between 2.6.23-rc8 & 2.6.23-rc8-git3 (+ sched-devel)
-
-Mat
+Sorry for keeping silence, but there is too much else going on here at
+the moment.  If I find time to follow up reasonably soon, I'll do.
+Thanks for the advice.
+-- 
+Stefan Richter
+-=====-=-=== =--= ====-
+http://arcgraph.de/sr/
