@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXI3MaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXI3NhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbXI3MaI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 08:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXI3M35
+	id S1757312AbXI3NhO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 09:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbXI3NhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 08:29:57 -0400
-Received: from mail-in-15.arcor-online.net ([151.189.21.55]:40460 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755262AbXI3M34 (ORCPT
+	Sun, 30 Sep 2007 09:37:03 -0400
+Received: from smtprelay11.ispgateway.de ([80.67.29.28]:50715 "EHLO
+	smtprelay11.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755476AbXI3NhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 08:29:56 -0400
-From: Florian Schmidt <mista.tapas@gmx.net>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Subject: Re: getting FUSD compiled with current kernels
-Date: Sun, 30 Sep 2007 14:29:52 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200709291823.35868.mista.tapas@gmx.net> <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
-In-Reply-To: <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
+	Sun, 30 Sep 2007 09:37:00 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC] Extending kbuild syntax
+Date: Sun, 30 Sep 2007 15:36:55 +0200
+User-Agent: KMail/1.9.6
+Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20070929201145.GA20377@uranus.ravnborg.org>
+In-Reply-To: <20070929201145.GA20377@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709301429.53101.mista.tapas@gmx.net>
+Message-Id: <200709301536.57156.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 September 2007, Lee Revell wrote:
-> On 9/29/07, Florian Schmidt <mista.tapas@gmx.net> wrote:
-> > My goal is to hack up oss2jack [3] to use ALSA pcm devices.. And a later
-> > goal is to create a virtual ALSA soundcard [which would multiplex access
-> > to a real non hw-mixing capable soundcard] to finally end the dmix
-> > software mixing woes linux users have to endure for the last years :)
->
-> What problems with ALSA's userspace mixing are you trying to solve?
+Hi Sam,
 
-I think that for example the aoss approach to providing software mixing to OSS 
-apps is fundamentally flawed. The LD_PRELOAD_LIBRARY mechanism does not work 
-for all applications. The OSS emultion in ALSA that does work for pretty much 
-all OSS apps is the kernel level OSS emulation [which directly provides the 
-OSS conform device files] sitting directly on an ALSA device driver module. 
-Having a virtual ALSA soundcard which would route back to userspace one could 
-make the OSS emu use this device instead providing to-userspace routing of 
-all OSS apps..
+On Saturday 29 September 2007, Sam Ravnborg wrote:
+> Introducing the following new variable could make this a oneliner:
+> ccflags-y
+> 
+> ccflags-$(DEBUG) := -DDEBUG
+> 
+> grep -r -C 1 -B 1 EXTRA_CFLAGS shows that the above is a 
+> very common pattern especially in drivers/
 
-The same argument, though in a weaker form holds for badly coded ALSA apps 
-which open soundcards "directly" via "hw:0" pcm device names. It would be 
-cool, if these could be made to play nice trivially. Here again, a virtual 
-ALSA device which routes back to userspace would be great..
+ACK. Also ACK for asflags, if done the same way :-)
 
-Simply make the virtual device card 0 in the system..
+> The second is the more controversial suggestion.
 
-Dmix wouldn't be obsoleted by this at all. I'm not sure on the details (still 
-learning), but the virtual ALSA device routing the signal back to user space 
-could then in turn use dmix on a real alsa device to provide the sw mixing 
-(it would indeed be a very thin userspace driver as it basically directly 
-uses an ALSA pcm as "slave")..
+Yes, but please bear in mind, what the developers are trying
+to express in these cases.
 
-This is not thought of as a replacement for ALSA userspace libasound2.. Not at 
-all. It's just a cool thing to have (tm) in many situations, solving these 
-cases which drive some ALSA users (me included) nuts :)
+> In several Makefile we have simple if expression of the variants:
+> if ($(CONFIG_FOO),y)
+>   obj-$(CONFIG_BAR) += fubar.o
+> endif
 
-Regards,
-Flo
+This is "feature FOO of module BAR" where the feature itself
+cannot be a module. The composition scheme described in 
+section 3.3 is at least equally useful. And that is used today.
+Maybe the documentation of that scheme is not prominent enough :-)
 
--- 
-Palimm Palimm!
-http://tapas.affenbande.org
+> obj-y-ifn-
+
+This is the only one needed, because it is cumbersome to express
+negative rules in kbuild to include stubs (e.g. nommu stuff). 
+But again this can be done with composition rules right now, but
+is order dependent. If we could get rid of this requirement,
+I would be happy already. So kbuild is just lacking an "else" 
+clause here.
+
+
+Best Regards
+
+Ingo Oeser
