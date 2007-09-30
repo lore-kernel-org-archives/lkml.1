@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXI3Vmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbXI3VoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbXI3Vmv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 17:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXI3Vmn
+	id S1753449AbXI3VoI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 17:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbXI3Vn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 17:42:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40063 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752325AbXI3Vmm (ORCPT
+	Sun, 30 Sep 2007 17:43:57 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:48716 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbXI3Vn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 17:42:42 -0400
-Date: Sun, 30 Sep 2007 22:47:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Scott Simpson <simps05192@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org,
-       james.bottomley@HansenPartnership.com
-Subject: Re: Conflict when loading initio driver
-Message-ID: <20070930224755.6a4cf1c6@the-village.bc.nu>
-In-Reply-To: <786233.43251.qm@web56808.mail.re3.yahoo.com>
-References: <786233.43251.qm@web56808.mail.re3.yahoo.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 30 Sep 2007 17:43:56 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Fwd: [Suspend2-devel] [patch] 2.2.10.3 build fixes
+Date: Mon, 1 Oct 2007 07:43:52 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: nigel@suspend2.net, "Linux-pm mailing list" <uclinux-v850@lsi.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200709302144.08688.nigel@nigel.suspend2.net> <200709302156.45894.rjw@sisk.pl>
+In-Reply-To: <200709302156.45894.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710010743.52628.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    I have a scanner connected to a Initio INI-950 SCSI card and I recently upgraded from SuSE 10.2 to 10.3. The new kernel doesn't see any of my devices. I get the following in /var/log/messages:
-> 
-> 
-> 
->    
-> 
->    Sep 30 09:05:13 r2d2 kernel: ACPI: PCI Interrupt 0000:00:0a.0[A] -> GSI 17 (level, low) -> IRQ 16
-> 
->    Sep 30 09:05:13 r2d2 kernel: initio: I/O port range 0x0 is busy.
-> 
->    Sep 30 09:05:13 r2d2 kernel: ACPI: PCI interrupt for device 0000:00:0a.0 disabled
+Hi.
 
-Humm not a collision - thats a bug in the driver updating. Looks like the
-changes I made and combined with Christoph's lost a line somewhere when I
-was merging it all. Try the following
+On Monday 01 October 2007 05:56:45 Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Sunday, 30 September 2007 13:44, Nigel Cunningham wrote:
+> > Hi Rafael et al.
+> > 
+> > This looks like it will be vanilla material, maybe 2.6.23 material?
+> 
+> Well, I wouldn't like to export freezer.h .  Why exactly would that be
+> necessary?
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+A module that starts a freezeable kthread?
 
-diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/drivers/scsi/initio.c linux-2.6.23rc8-mm1/drivers/scsi/initio.c
---- linux.vanilla-2.6.23rc8-mm1/drivers/scsi/initio.c	2007-09-26 16:46:54.000000000 +0100
-+++ linux-2.6.23rc8-mm1/drivers/scsi/initio.c	2007-09-30 22:22:03.839113616 +0100
-@@ -2867,6 +2867,7 @@
- 	}
- 	host = (struct initio_host *)shost->hostdata;
- 	memset(host, 0, sizeof(struct initio_host));
-+	host->addr = pci_resource_start(pdev, 0);
- 
- 	if (!request_region(host->addr, 256, "i91u")) {
- 		printk(KERN_WARNING "initio: I/O port range 0x%x is busy.\n", host->addr);
+I can ask for more details, and will if you like.
+
+Regards,
+
+Nigel
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
