@@ -1,115 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbXI3RtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbXI3RxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbXI3RtI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 13:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXI3Rs4
+	id S1758587AbXI3RxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 13:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXI3RxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 13:48:56 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:44937 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755914AbXI3Rs4 (ORCPT
+	Sun, 30 Sep 2007 13:53:00 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:5393 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757345AbXI3Rw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:48:56 -0400
-Message-ID: <46FFE17C.9020202@cosmosbay.com>
-Date: Sun, 30 Sep 2007 19:48:44 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 30 Sep 2007 13:52:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=oHup35OG4txFhqDdFYgzKx+AKtJgodnGYZCVY46lrfIY/53T1kfru/G/Ce+m1QrbinXQIYa9PEDMMw/vZz5ZYfKdw4pqzTf7YxRBtXhdK2TLkBOcWpEvP6Q1knkqqaqf8PBgBQXxB1DGM4uIKWlbdpO14qreJp5y+l+TB0B6HFY=
+Message-ID: <46FFE218.5000607@gmail.com>
+Date: Sun, 30 Sep 2007 10:51:20 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Denys <nuclearcat@nuclearcat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
-References: <20070930144443.M52139@visp.net.lb>
-In-Reply-To: <20070930144443.M52139@visp.net.lb>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 30 Sep 2007 19:48:51 +0200 (CEST)
+To: Mark Lord <lkml@rtr.ca>
+CC: Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
+       Paolo Ornati <ornati@fastwebnet.it>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
+References: <20070930160548.235be972@localhost>	<20070930152908.1f58d39d@the-village.bc.nu> <20070930164610.20818867@localhost> <46FFBB2D.6060004@garzik.org> <46FFDC5A.7070509@rtr.ca> <46FFDCE5.4060900@gmail.com> <46FFE047.7030102@rtr.ca>
+In-Reply-To: <46FFE047.7030102@rtr.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys a écrit :
-> I've moved recently one of my proxies(squid and some compressing application) 
-> from 2.6.21 to 2.6.22, and notice huge performance drop. I think this is 
-> important, cause it can cause serious regression on some other workloads like 
-> busy web-servers and etc.
+Mark Lord wrote:
+> Tejun Heo wrote:
+>> Mark Lord wrote:
+>> If there was such a bug, the aborted commands list should contain both
+>> FPDMA commands and FLUSH commands.  I don't think command filtering
+>> itself is broken.  Possibly another quirky firmware but it's strange
+>> that this is the only Seagate drive showing this problem.
 > 
-> After some analysis of different options i can bring more exact numbers:
+> Yeah, that's the strange bit.
 > 
-> 2.6.21 able to process 500-550 requests/second and 15-20 Mbit/s of traffic, 
-> and working great without any slowdown or instability.
-> 
-> 2.6.22 able to process only 250-300 requests and 8-10 Mbit/s of traffic, ssh 
-> and console is "freezing" (there is delay even for typing characters).
-> 
-> Both proxies is on identical hardware(Sun Fire X4100), configuration(small 
-> system, LFS-like, on USB flash), different only kernel.
-> 
-> I tried to disable/enable various options and optimisations - it doesn't 
-> change anything, till i reach SLUB/SLAB option.
-> 
-> I've loaded proxy configuration to gentoo PC with 2.6.22 (then upgraded it to 
-> 2.6.23-rc8), and having same effect.
-> Additionally, when load reaching maximum i can notice whole system slowdown, 
-> for example ssh and scp takes much more time to run, even i do nice -n -5 for 
-> them.
-> 
-> But even choosing 2.6.23-rc8+SLAB i noticed same "freezing" of ssh (and sure 
-> it slowdown other kind of network performance), but much less comparing with 
-> SLUB. On top i am seeing ksoftirqd taking almost 100% (sometimes ksoftirqd/0, 
-> sometimes ksoftirqd/1).
-> 
-> I tried also different tricks with scheduler (/proc/sys/kernel/sched*), but 
-> it's also didn't help.
-> 
-> When it freezes it looks like:
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->     7 root      15  -5     0    0    0 R   64  0.0   2:47.48 ksoftirqd/1
->  5819 root      20   0  134m 130m  596 R   57  3.3   4:36.78 globax
->  5911 squid     20   0 1138m 1.1g 2124 R   26 28.9   2:24.87 squid
->    10 root      15  -5     0    0    0 S    1  0.0   0:01.86 events/1
->  6130 root      20   0  3960 2416 1592 S    0  0.1   0:08.02 oprofiled
-> 
-> 
-> Oprofile results:
-> 
-> 
-> Thats oprofile with 2.6.23-rc8 - SLUB
-> 
-> 73918    21.5521  check_bytes
-> 38361    11.1848  acpi_pm_read
-> 14077     4.1044  init_object
-> 13632     3.9747  ip_send_reply
-> 8486      2.4742  __slab_alloc
-> 7199      2.0990  nf_iterate
-> 6718      1.9588  page_address
-> 6716      1.9582  tcp_v4_rcv
-> 6425      1.8733  __slab_free
-> 5604      1.6339  on_freelist
-> 
-> 
-> Thats oprofile with 2.6.23-rc8 - SLAB
-> 
-> CPU: AMD64 processors, speed 2592.64 MHz (estimated)
-> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-> mask of 0x00 (No unit mask) count 100000
-> samples  %        symbol name
-> 138991   14.0627  acpi_pm_read
-> 52401     5.3018  tcp_v4_rcv
-> 48466     4.9037  nf_iterate
-> 38043     3.8491  __slab_alloc
-> 34155     3.4557  ip_send_reply
-> 20963     2.1210  ip_rcv
-> 19475     1.9704  csum_partial
-> 19084     1.9309  kfree
-> 17434     1.7639  ip_output
-> 17278     1.7481  netif_receive_skb
-> 15248     1.5428  nf_hook_slow
-> 
-> My .config is at http://www.nuclearcat.com/.config (there is SPARSEMEM 
-> enabled, it doesn't make any noticeable difference)
-> 
-> Please CC me on reply, i am not in list.
-> 
+> Surely someone at SuSE must have a drive like that,
+> which they could set up with XFS and reproduce the same results?
 
-Could you try with SLUB but disabling CONFIG_SLUB_DEBUG ?
+I wish we had a detailed hardware catalog.  I'll give a shot at the
+internal mailing list.
 
+Thanks.
 
+-- 
+tejun
