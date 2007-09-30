@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbXI3XeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbXI3XmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbXI3XeP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 19:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXI3XeA
+	id S1753384AbXI3XmN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 19:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXI3Xl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 19:34:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:65169 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbXI3XeA (ORCPT
+	Sun, 30 Sep 2007 19:41:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42871
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751823AbXI3Xl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 19:34:00 -0400
-Message-ID: <fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
-Date: Sun, 30 Sep 2007 17:33:55 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Grant Likely" <grant.likely@secretlab.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-       axboe@kernel.dk
-Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
-In-Reply-To: <20070930230557.GA17654@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 30 Sep 2007 19:41:58 -0400
+Date: Sun, 30 Sep 2007 16:41:58 -0700 (PDT)
+Message-Id: <20070930.164158.41661438.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com,
+       torvalds@linux-foundation.org, tglx@linutronix.de
+Subject: Re: [PATCH] robust futex thread exit race
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070930195538.GA13881@elte.hu>
+References: <20070930171121.GA10025@elte.hu>
+	<1191173530.19010.6.camel@localhost>
+	<20070930195538.GA13881@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	 <20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
-	 <20070930230557.GA17654@infradead.org>
-X-Google-Sender-Auth: 92abad8dbf0b57ed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
-> > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
-> > +             goto err_plat;
->
->         rc = platform_driver_register(&ace_platform_driver);
->         if (rc)
->                  goto err_plat;
->
-> please.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 30 Sep 2007 21:55:38 +0200
 
-Okay, will do.
+> 
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > On Sun, 2007-09-30 at 19:11 +0200, Ingo Molnar wrote:
+> > > > > > good catch! A quick preliminary review of your patch indicates it's 
+> > > > > > fine - and it might be v2.6.23 material.
+> > > > > 
+> > > > > there's a symmetric bug in kernel/compat_futex.c too.
+> > > > 
+> > > > True. I'll update the patch and send it again with the Acked-bys.
+> > > 
+> > > thanks! Logistics-wise: given that v2.6.22 has this same bug too, it's 
+> > > not a .23 regression per se and could in theory be merged after the 
+> > > 2.6.23 release too, into 2.6.23.1.
+> > 
+> > Here we go. Tested with current git and latest glibc tst-robust8 on 
+> > s390-64, native and compat.
+> 
+> excellent! This patch too looks good to me. I booted and tested it on 
+> x86 too (32-bit-native, 64-bit-native and 32-bit-compat-on-64-bit.)
 
->
-> > +      err_plat:
-> > +     unregister_blkdev(ace_major, "xsysace");
-> > +      err_blk:
->
-> labels should be indented zero or one space, but not more.
+I would personally prefer it if this patch got scheduled into
+2.6.23, it is a bug fix and it might even account for some of
+the futex weirdness we're still seeing on sparc64.
 
-scripts/Lindent does this.  Originally, I *didn't* have my labels
-indented.  :-)   Does Lindent need to be fixed?
+I'll toss this patch to some folks seeing those issues for testing.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+But even if it doesn't fix their bug, it still belongs in 2.6.23 and
+there is no reason to delay this fix.
