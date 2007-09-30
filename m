@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbXI3Ppk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbXI3PwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbXI3Ppk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 11:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbXI3Ppd
+	id S1758244AbXI3PwA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 11:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbXI3Pvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 11:45:33 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:37152 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755714AbXI3Ppc (ORCPT
+	Sun, 30 Sep 2007 11:51:53 -0400
+Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:2881 "EHLO
+	anchor-post-33.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756588AbXI3Pvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 11:45:32 -0400
-From: Florian Schmidt <mista.tapas@gmx.net>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Subject: Re: getting FUSD compiled with current kernels
-Date: Sun, 30 Sep 2007 17:45:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200709291823.35868.mista.tapas@gmx.net> <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com> <200709301429.53101.mista.tapas@gmx.net>
-In-Reply-To: <200709301429.53101.mista.tapas@gmx.net>
+	Sun, 30 Sep 2007 11:51:52 -0400
+X-Greylist: delayed 754 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 11:51:52 EDT
+Message-ID: <46FFC371.9040805@romig.demon.co.uk>
+Date: Sun, 30 Sep 2007 16:40:33 +0100
+From: Neil Romig <neil@romig.demon.co.uk>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: File corruption when using kernels 2.6.18+
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709301745.37163.mista.tapas@gmx.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 September 2007, Florian Schmidt wrote:
-> On Sunday 30 September 2007, Lee Revell wrote:
-> > On 9/29/07, Florian Schmidt <mista.tapas@gmx.net> wrote:
-> > > My goal is to hack up oss2jack [3] to use ALSA pcm devices.. And a
-> > > later goal is to create a virtual ALSA soundcard [which would multiplex
-> > > access to a real non hw-mixing capable soundcard] to finally end the
-> > > dmix software mixing woes linux users have to endure for the last years
-> > > :)
-> >
-> > What problems with ALSA's userspace mixing are you trying to solve?
+I am using kernel 2.6.17.14, and would like to use newer versions for the wireless code but I get file corruption with any kernel 
+more recent than this. My system uses a SiS645DX chipset (it is a rebadged CLEVO D400E) with 5513 IDE.
 
-[snip]
+I get this corruption with read/writes, i.e using "cp", "dd", when compiling software, writing to CD, etc etc. An example:
 
-Thinking about it some more i think the plan isn't quite as simple to 
-implement as i thought..
+cp ../Changelog-2.6.18 .
+diff Changelog-2.6.18 ../Changelog-2.6.18
 
-Some more work would have to be done than to simply provide the device file 
-infrastructure of an ALSA device driver.. Well, right now, i'm happy enough 
-to have oss2jack and kfusd built and running.. 
+16377c16377
+<       LD      .top_vmlinux1
+---
+ >       LD      .tmp_vmlinux1
+23954c23954
+< Date:   Mon Jul 1% 04:45:11 2006 -0700
+---
+ > Date:   Mon Jul 10 04:45:11 2006 -0700
+24955c24955
+<     This is generally useful, but partacularly helps see if it is the same sector
+---
+ >     This is generally useful, but particularly helps see if it is the same sector
+31879c31879
+<     [MMC] sdhci: version bump cdhci
+---
+ >     [MMC] sdhci: version bump sdhci
+42955c42955
+<     Replace `he temp makefile hacks with proper CONFIG entries, which are also
+---
+ >     Replace the temp makefile hacks with proper CONFIG entries, which are also
+49050c49050
+<       and this task is(already holding:
+---
+ >       and this task is already holding:
+[output clipped]
 
-Regards,
-Flo
+I would suspect a memory problem but memtest86+ gives no errors despite numerous passes, and I get no errors in older kernels. Does 
+anyone have any idea what changed in 2.6.18 to cause such an error?
 
--- 
-Palimm Palimm!
-http://tapas.affenbande.org
+I have tried some obvious things (see thread on linuxquestions.org: 
+http://www.linuxquestions.org/questions/showthread.php?t=578200), but I don't understand enough about the kernel to get any further.
+
+Neil.
