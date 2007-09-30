@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbXI3CTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXI3CYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbXI3CTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 22:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXI3CTI
+	id S1755800AbXI3CYR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 22:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbXI3CYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 22:19:08 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56532 "EHLO
+	Sat, 29 Sep 2007 22:24:11 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38649 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbXI3CTH (ORCPT
+	with ESMTP id S1751273AbXI3CYK (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 22:19:07 -0400
+	Sat, 29 Sep 2007 22:24:10 -0400
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] CodingStyle: Printing numbers in parentheses is fine
-In-Reply-To: Your message of "Sat, 29 Sep 2007 03:51:56 PDT."
-             <20070929035156.cd6fe860.akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
+In-Reply-To: Your message of "Sat, 29 Sep 2007 11:18:05 PDT."
+             <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
 From: Valdis.Kletnieks@vt.edu
-References: <20070929122530.5c45f743@hyperion.delvare>
-            <20070929035156.cd6fe860.akpm@linux-foundation.org>
+References: <11910151223214-git-send-email-ezk@cs.sunysb.edu>
+            <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1191118736_2993P";
+Content-Type: multipart/signed; boundary="==_Exmh_1191119041_2993P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Sat, 29 Sep 2007 22:18:56 -0400
-Message-ID: <17982.1191118736@turing-police.cc.vt.edu>
+Date: Sat, 29 Sep 2007 22:24:01 -0400
+Message-ID: <18163.1191119041@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1191118736_2993P
+--==_Exmh_1191119041_2993P
 Content-Type: text/plain; charset=us-ascii
 
-On Sat, 29 Sep 2007 03:51:56 PDT, Andrew Morton said:
+On Sat, 29 Sep 2007 11:18:05 PDT, Linus Torvalds said:
 
-> Printing something like
+> "CodingStyle" should be about the big issues, not about details. Yes, 
+> we've messed that up over the years, but let's not continue that.
 > 
-> 	bytes remaining: 0x12 (18)
-> 
-> is a quite logical thing to do, although pretty darm pointless.
+> In other words, I'd suggest *removing* lines from CodingStyle, not adding 
+> them. The file has already gone from a "good general principles" to "lots 
+> of stupid details". Let's not make it worse.
 
-On the other hand, printing this:
-
-        magic number: 0x2710
-
-probably doesn't ring any bells, but if you changed that format to be
-
-	"magic number: %x (%d)",foo,foo
-
-you'll almost certainly sit up and ask "Where the fsck did *that* come from?"
-
-(unless you're a *lot* better at doing hex conversions in your head than I).
-
-Yeah, *usually* pointless, but it has its place sometimes....
+I think there needs to be a "sense of fairness" attached here - CodingStyle
+should cover all the stuff maintainers/reviewers are allowed to whinge about.
+Otherwise, we get maintainers whinging about undocumented style rules, and
+we get code submitters who are unhappy because they have no real way to tell
+if their code really *is* stylistically lacking, or if they just have a
+jerk maintainer who wants to keep their code out-of-tree for political
+reasons.
 
 
---==_Exmh_1191118736_2993P
+--==_Exmh_1191119041_2993P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFG/weQcC3lWbTT17ARAmLsAKD3SdKRXcaj3aEpZ4w2I7wroCn+cgCdG/0M
-DO95SFsFNdiGqmoj3banUms=
-=nRDV
+iD8DBQFG/wjBcC3lWbTT17ARAuvPAKDPvwDe1tJnQQXK9D8RLZZ7YGuMdACg7A4E
+8E6JdKgaHfq1V1kRmOFzDto=
+=wSqA
 -----END PGP SIGNATURE-----
 
---==_Exmh_1191118736_2993P--
+--==_Exmh_1191119041_2993P--
