@@ -1,34 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbXI3WGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbXI3WIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbXI3WGM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 18:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbXI3WF7
+	id S1753917AbXI3WIS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 18:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXI3WIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 18:05:59 -0400
-Received: from mx1.suse.de ([195.135.220.2]:36831 "EHLO mx1.suse.de"
+	Sun, 30 Sep 2007 18:08:09 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34248 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbXI3WF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 18:05:58 -0400
-To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22.7 default kernel configuration
-References: <3f9a31f40709240411u1cc56559o90dca73ce79abf5a@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Oct 2007 00:05:56 +0200
-In-Reply-To: <3f9a31f40709240411u1cc56559o90dca73ce79abf5a@mail.gmail.com>
-Message-ID: <p73zlz37qrf.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1752841AbXI3WII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 18:08:08 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] [20/45] x86_64: Use 8 byte stack alignment when possible
+Date: Mon, 1 Oct 2007 00:07:59 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200709211044.901175000@suse.de> <20070921204502.2C61D14EFF@wotan.suse.de> <20070921211935.GW2625@devserv.devel.redhat.com>
+In-Reply-To: <20070921211935.GW2625@devserv.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710010007.59574.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jaswinder Singh" <jaswinderlinux@gmail.com> writes:
+On Friday 21 September 2007 23:19:35 Jakub Jelinek wrote:
+> On Fri, Sep 21, 2007 at 10:45:02PM +0200, Andi Kleen wrote:
+> > 
+> > Kernel doesn't use SSE2, so it doesn't need 16 byte alignment. Also
+> > the stack can be already unaligned so letting the compiler align
+> > is useless. This may make some stack frames smaller.
 > 
-> By default configuration size of vmlinux is 41 MB and it includes
-> approx 75% of useless stuff for me.
+> Shouldn't sources that are compiled into the VDSO or VSYSCALL pages
+> revert this to the default?
 
-That's not a i386 or x86-64 defconfig. i386 and x86-64 defconfigs
-are ~6.1MB and ~12MB.
+I see not reason. vdso/vsyscall don't contain any SSE code and also don't 
+do any callbacks to other user code. Except for signals and signals 
+already align the stack by themselves.
 
 -Andi
