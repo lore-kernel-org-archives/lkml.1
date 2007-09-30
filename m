@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbXI3Urq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXI3Uu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbXI3Urq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXI3Urh
+	id S1753185AbXI3Uu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXI3UuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:47:37 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:40755 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751840AbXI3Urg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:47:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=EKV6ePXRiC8ka7czzoSliB1BoFm2cnLdCcQ0Ahg7lQMswX7FpuMrROGru4V1C08BIPk4vwm/UpZX1h85dp0pfQ45syrOcJVtsRu4JbRV5kIjJfu6OYJ6dPxE2xGAg64OtRDh/Onx2WF77M82Mm0WPF4nkm0zXKOZG2cY0KISnck=  ;
-X-YMail-OSG: rof3SLQVM1kw5Pk_tx5YEEuZkU9jUVjwUTtOxrW2t44vACTtbBNtSSf4JpxEFVyv1Tm0Zap6RA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Date: Sun, 30 Sep 2007 14:16:09 +1000
-User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <20070919033605.785839297@sgi.com> <200709300509.29278.nickpiggin@yahoo.com.au> <20070930131218.197e55b8.akpm@linux-foundation.org>
-In-Reply-To: <20070930131218.197e55b8.akpm@linux-foundation.org>
+	Sun, 30 Sep 2007 16:50:14 -0400
+Received: from smtp3.neobee.net ([80.74.160.52]:44977 "EHLO smtp2.neobee.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751821AbXI3UuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 16:50:12 -0400
+X-Greylist: delayed 709 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 16:50:11 EDT
+Message-ID: <47000BFD.5070805@bandin.homelinux.com>
+Date: Sun, 30 Sep 2007 22:50:05 +0200
+From: Sinisa Bandin <sinisa@bandin.homelinux.com>
+Reply-To: sinisa@bandin.homelinux.com
+User-Agent: Thunderbird 2.0.0.7pre (X11/20070927)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200709301416.10033.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
+       samba@lists.samba.org, submit@bugs.debian.org, contact_us@realtek.com
+Subject: Re: [Samba] 2.6.22/realtek bug in hardware, any kernel work-around?
+References: <Pine.LNX.4.64.0709291349160.5726@p34.internal.lan> <Pine.LNX.4.64.0709291434530.8080@p34.internal.lan> <4700092C.5060805@bandin.homelinux.com> <Pine.LNX.4.64.0709301639290.10027@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0709301639290.10027@p34.internal.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.2 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 06:12, Andrew Morton wrote:
-> On Sun, 30 Sep 2007 05:09:28 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Sunday 30 September 2007 05:20, Andrew Morton wrote:
 
-> > > We can't "run out of unfragmented memory" for an order-2 GFP_KERNEL
-> > > allocation in this workload.  We go and synchronously free stuff up to
-> > > make it work.
-> > >
-> > > How did this get broken?
-> >
-> > Either no more order-2 pages could be freed, or the ones that were being
-> > freed were being used by something else (eg. other order-2 slab
-> > allocations).
+
+Justin Piszcz wrote:
 >
-> No.  The current design of reclaim (for better or for worse) is that for
-> order 0,1,2 and 3 allocations we just keep on trying until it works.  That
-> got broken and I think it got broken at a design level when that
-> did_some_progress logic went in.  Perhaps something else we did later
-> worsened things.
+>
+> On Sun, 30 Sep 2007, Sinisa Bandin wrote:
+>
+>>
+>> Justin Piszcz wrote:
+>>> Package: samba
+>>> Version: 3.0.26a-1
+>>>>
+>>>> Kernel: 2.6.22
+>>>>
+>>>> samba 3.0.26a-1 performance < 900 KiB/s, but FTP = 30-90 MiB/s
+>>>>
+>>>> Let me start out by saing this is an oddball problem:
+>>>>
+>>>> SAMBA:
+>>>> LINUX -> WINDOWS = < 900 KiB/s (varies between 100 - 900 KiB/s)
+>>>> WINDOWS -> LINUX = 30-90 MiB/s (always)
+>>>>
+>>>> FTP:
+>>>> Either direction, 30-90 MiB/s (always)
+>>>>
+>>>> I do not see any nasty errors in the logs even with verbose = 5.
+>>>>
+>>>> Any ideas here? I am not using any special options.
+>>>
+>>> I found out that poor smb performance is related to a broken 
+>>> udp-perfomance of the 8169 NIC in outgoing udp.
+>>> But, only in Gb Mode of the 8169 NIC, with 100Mbps it is ok.
+>>>
+>> I had exactly the same problem with 100Mb/s also.
+>>
+>> Solved by disabling onboard LAN interface and inserting (US Robotics) 
+>> Realtek 8139 based card (10/100 Mbps).
+>>
+>> Best regards,
+>> Sinisa Bandin
+>>
+>
+> Thank you for your response, so the bottom line is Realtek 1Gbps NICs 
+> are unreliable.  Wonder what Realtek has to say about it if they even 
+> respond, added them to cc list.
+>
+> Justin.
+>
+Wouldnt go so far to say that they are unreliable, but there is certanly 
+some problem between Samba and 8169 driver (and maybe other driver, 
+don't remember for sure, but will check first thing in the morning)
 
-It will keep trying until it works. It won't have stopped trying (unless
-I'm very mistaken?), it's just oom killing things merrily along the way.
+All other protocols work perfectly, I have been able to use full 1 Gbps 
+with only two concurent transfers with all of scp, rsync, http and ping 
+-f -s 32000 (and any conbination of those).
+
+
+Sinisa
+
+
