@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbXJABPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXJAB2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124AbXJABPj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 21:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXJABPc
+	id S1752794AbXJAB2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 21:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXJAB2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 21:15:32 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:1697 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbXJABPb (ORCPT
+	Sun, 30 Sep 2007 21:28:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:37670
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750757AbXJAB2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 21:15:31 -0400
-X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 21:15:31 EDT
-From: "Miquel van Smoorenburg" <miquels@cistron.nl>
-Subject: Re: F_DUPFD_CLOEXEC implementation
-References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <200709300131.49320.vda.linux@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: mikevs@n2o.xs4all.nl (Miquel van Smoorenburg)
-Date: 01 Oct 2007 00:59:14 GMT
-Message-ID: <47004662$0$241$e4fe514c@news.xs4all.nl>
-X-Trace: 1191200354 news.xs4all.nl 241 [::ffff:194.109.0.112]:41092
-X-Complaints-To: abuse@xs4all.nl
-In-Reply-To: <200709300131.49320.vda.linux@googlemail.com>
-To: linux-kernel@vger.kernel.org
+	Sun, 30 Sep 2007 21:28:14 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Documentation/x86_64/00-INDEX
+Date: Sun, 30 Sep 2007 20:28:09 -0500
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, vojtech@suse.cz
+References: <200709281944.02953.rob@landley.net> <20070930203503.GA9748@one.firstfloor.org>
+In-Reply-To: <20070930203503.GA9748@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709302028.09949.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <200709300131.49320.vda.linux@googlemail.com>,
-Denys Vlasenko  <vda.linux@googlemail.com> wrote:
->Hi Ulrich,
+On Sunday 30 September 2007 3:35:03 pm Andi Kleen wrote:
+> On Fri, Sep 28, 2007 at 07:44:02PM -0500, Rob Landley wrote:
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Add Documentation/x86_64/00-INDEX
 >
->On Friday 28 September 2007 18:34, Ulrich Drepper wrote:
->> One more small change to extend the availability of creation of
->> file descriptors with FD_CLOEXEC set.  Adding a new command to
->> fcntl() requires no new system call and the overall impact on
->> code size if minimal.
->
->Tangential question: do you have any idea how userspace can
->safely do nonblocking read or write on a potentially-shared fd?
->
->IIUC, currently it cannot be done without races:
->
->old_flags = fcntl(fd, F_GETFL);
->...other process may change flags!...
->fcntl(fd, F_SETFL, old_flags | O_NONBLOCK);
->read(fd, ...)
->...other process may see flags changed under its feet!...
->fcntl(fd, F_SETFL, old_flags);
->
->Can this be fixed?
+> What's the point of this file?
 
-This is for sockets, right ? Just use revc() instead of read().
+It's for http://kernel.org/doc/Documentation/
 
-	n = recv(filedesc, buffer, buflen, MSG_DONTWAIT);
+I have a script that converts each 00-INDEX files into an index.html file, and 
+then uses that instead of just a directory listing.  I'm trying to get 
+complete coverage (a 00-INDEX file for each directory), although what I 
+really need is no directories with _partial_ 00-INDEX files (because then 
+using index.html instead of showing the directory listing would hide files).
 
-.. is equivalent to setting O_NONBLOCK. See "man recv".
+If you want this directory to be special and _not_ have a 00-INDEX file, 
+that's fine by me.  It screws up my 404 link checker, but I can hardwire in 
+an exception for you...
 
-Mike.
+> > +boot-options.txt
+> > +	- AMD64-specific boot options.
+>
+> The architecture is not called AMD64 under Linux.
+
+That line was cut and paste from the first line of boot-options.txt.  If you'd 
+like to suggest another description, I'm all ears and can update the patch to 
+touch boot-options.txt at the same time.
+
+> > +mm.txt
+> > +	- Memory layout of x86-64 (4 level page tables, 46 bits physical).
+>
+> I don't think such details as the 46 bit number should be in an index file.
+
+*shrug*  Ok.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
