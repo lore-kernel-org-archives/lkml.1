@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbXJANWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXJAN1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbXJANWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbXJANWO
+	id S1754585AbXJAN1P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbXJAN05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:22:14 -0400
-Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:38290 "EHLO
-	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758116AbXJANWM (ORCPT
+	Mon, 1 Oct 2007 09:26:57 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:47342 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbXJAN04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:22:12 -0400
-Date: Mon, 1 Oct 2007 16:22:09 +0300
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.22.6 + oprofile oops
-Message-ID: <20071001132209.2opuueap4nih2img@m.safari.iki.fi>
-Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>
-References: <20070922112335.4wqatiewgeiottty@m.safari.iki.fi> <p73ejgf6sch.fsf@bingen.suse.de>
+	Mon, 1 Oct 2007 09:26:56 -0400
+From: "Denys" <nuclearcat@nuclearcat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Mon, 1 Oct 2007 16:26:44 +0300
+Message-Id: <20071001132644.M62419@nuclearcat.com>
+In-Reply-To: <4700ADB7.7050102@cosmosbay.com>
+References: <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com> <20071001.001259.28812610.davem@davemloft.net> <20071001080339.M21850@nuclearcat.com> <4700ADB7.7050102@cosmosbay.com>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 194.146.154.161 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73ejgf6sch.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.16 (2007-09-19)
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 12:29:18 +0200, Andi Kleen wrote:
-> Sami Farin <safari-kernel@safari.iki.fi> writes:
-... 
-> Can you reproduce it with a non tainted kernel without any patches like CFS applied?
+Resend for maillists (was discareded cause of encoding issues as SPAM).
 
-I tried without CFS and it Oopsed just as nicely,
-the only difference was that in call trace before
-:oprofile:wq_sync_buffer there's now cache_reap.
+Everything looks fine, for sure. Confirmed on second server.
 
-Call Trace:
- [<ffffffff80231988>] get_task_mm+0x18/0x50
- [<ffffffff88316b64>] :oprofile:sync_buffer+0xf4/0x450
- [<ffffffff88316650>] :oprofile:wq_sync_buffer+0x0/0x60
- [<ffffffff88316683>] :oprofile:wq_sync_buffer+0x33/0x60
- [<ffffffff80289f10>] cache_reap+0x0/0x130
- [<ffffffff80243269>] run_workqueue+0x89/0x120
- [<ffffffff80243cf7>] worker_thread+0xc7/0x130
- [<ffffffff802474d0>] autoremove_wake_function+0x0/0x40
- [<ffffffff80243c30>] worker_thread+0x0/0x130
- [<ffffffff802470cd>] kthread+0x4d/0x80
- [<ffffffff8020aa78>] child_rip+0xa/0x12
- [<ffffffff80247080>] kthread+0x0/0x80
- [<ffffffff8020aa6e>] child_rip+0x0/0x12
+On Mon, 01 Oct 2007 10:20:07 +0200, Eric Dumazet wrote
 
-> The oops happens because oprofile tries to reference a NULL task in
-> its event buffer for a context switch, which might well be a minor
-> merging mistake or similar in the CFS backport.
+> > Well, i can play a bit more on "live" servers. I have now hot-swap server with
+> > full gentoo,  where i can rebuild any kernel you want, with any applied patch.
+> > But it looks more like not overhead, load becoming high too "spiky", and it is
+> > not just permantenly higher. Also it is not normal that all system becoming
+> > unresposive (for example ping 127.0.0.1 becoming 300ms for period, when usage
+> > softirq jumps to 100%).
+> >
+> >   
+> Could you try a pristine 2.6.22.9 and some patch in 
+> secure_tcp_sequence_number() like :
+> 
+> --- drivers/char/random.c.orig 2007-10-01 10:18:42.000000000 +0200
+> +++ drivers/char/random.c 2007-10-01 10:19:58.000000000 +0200
+> @@ -1554,7 +1554,7 @@
+> * That's funny, Linux has one built in! Use it!
+> * (Networks are faster now - should this be increased?)
+> */
+> - seq += ktime_get_real().tv64;
+> + seq += ktime_get_real().tv64 / 1000;
+> #if 0
+> printk("init_seq(%lx, %lx, %d, %d) = %d\n",
+> saddr, daddr, sport, dport, seq);
+> 
+> Thank you
+> 
+> > On Mon, 01 Oct 2007 00:12:59 -0700 (PDT), David Miller wrote
+> >   
+> >> From: Eric Dumazet <dada1@cosmosbay.com>
+> >> Date: Mon, 01 Oct 2007 07:59:12 +0200
+> >>
+> >>     
+> >>> No problem here on bigger servers, so I CC David Miller and netdev
+> >>> on this one.  AFAIK do_gettimeofday() and ktime_get_real() should
+> >>> use the same underlying hardware functions on PC and no performance
+> >>> problem should happen here.
+> >>>       
+> >> One thing that jumps out at me is that on 32-bit (and to a certain
+> >> extent on 64-bit) there is a lot of stack accesses and missed
+> >> optimizations because all of the work occurs, and gets expanded,
+> >> inside of ktime_get_real().
+> >>
+> >> The timespec_to_ktime() inside of there constructs the ktime_t return
+> >> value on the stack, then returns that as an aggregate to the caller.
+> >>
+> >> That cannot be without some cost.
+> >>
+> >> ktime_get_real() is definitely a candidate for inlining especially in
+> >> these kinds of cases where we'll happily get computations in local
+> >> registers instead of all of this on-stack nonsense.  And in several
+> >> cases (if the caller only needs the tv_sec value, for example)
+> >> computations can be elided entirely.
+> >>
+> >> It would be constructive to experiment and see if this is in fact 
+> >> part of the problem.
+> >>     
+> >
+> >
+> > --
+> > Denys Fedoryshchenko
+> > Technical Manager
+> > Virtual ISP S.A.L.
+> >
+> >
+> >
 
-...
-> > 2007-09-22 13:53:32.527385634 <4>[ 3372.390442] Call Trace:
-> > 2007-09-22 13:53:32.527390314 <4>[ 3372.390457]  [<ffffffff80232b88>] get_task_mm+0x18/0x60
-> > 2007-09-22 13:53:32.527391990 <4>[ 3372.390484]  [<ffffffff8831abd4>] :oprofile:sync_buffer+0xf4/0x480
-> > 2007-09-22 13:53:32.527393666 <4>[ 3372.390544]  [<ffffffff8831a6b0>] :oprofile:wq_sync_buffer+0x0/0x60
-> > 2007-09-22 13:53:32.527399673 <4>[ 3372.390576]  [<ffffffff8831a6e3>] :oprofile:wq_sync_buffer+0x33/0x60
-> > 2007-09-22 13:53:32.527401419 <4>[ 3372.390602]  [<ffffffff80244bfd>] run_workqueue+0xcd/0x170
-> > 2007-09-22 13:53:32.527406238 <4>[ 3372.390635]  [<ffffffff802456b3>] worker_thread+0xb3/0x120
-> > 2007-09-22 13:53:32.527421324 <4>[ 3372.390652]  [<ffffffff80249000>] autoremove_wake_function+0x0/0x40
-> > 2007-09-22 13:53:32.527423140 <4>[ 3372.390684]  [<ffffffff80245600>] worker_thread+0x0/0x120
-> > 2007-09-22 13:53:32.527424816 <4>[ 3372.390697]  [<ffffffff80248bfd>] kthread+0x4d/0x80
-> > 2007-09-22 13:53:32.527426423 <4>[ 3372.390730]  [<ffffffff8020abc8>] child_rip+0xa/0x12
-> > 2007-09-22 13:53:32.527428099 <4>[ 3372.390810]  [<ffffffff80248bb0>] kthread+0x0/0x80
-> > 2007-09-22 13:53:32.527444931 <4>[ 3372.390822]  [<ffffffff8020abbe>] child_rip+0x0/0x12
 
--- 
-Do what you love because life is too short for anything else.
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
