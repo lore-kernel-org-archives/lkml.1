@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbXJALm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbXJALs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbXJALm5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 07:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbXJALmi
+	id S1753482AbXJALs4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 07:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXJALst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 07:42:38 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:60418 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbXJALmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 07:42:36 -0400
-Date: Mon, 1 Oct 2007 13:42:34 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: veerasena reddy <veerasena_b@yahoo.co.in>
-cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
-In-Reply-To: <302271.86305.qm@web8404.mail.in.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0710011341320.20679@anakin>
-References: <302271.86305.qm@web8404.mail.in.yahoo.com>
+	Mon, 1 Oct 2007 07:48:49 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40287 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751453AbXJALst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 07:48:49 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Organization: -
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] [50/50] x86_64: Remove fpu io port resource
+Date: Mon, 1 Oct 2007 13:48:42 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200709221231.836138000@suse.de> <200710011240.35802.ak@suse.de> <4700DA44.8020706@garzik.org>
+In-Reply-To: <4700DA44.8020706@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710011348.43061.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, veerasena reddy wrote:
-> In linux-2.6.18 (for MIPS24KE processor):
-> suppose if i want to do flush only then which API i
-> should use?
-
-`flush' is fuzzy terminology: some people mean invalidate, others mean
-write back, others mean both.
-
-> Similarly, if i want to do invalidation only which API
-> i should use?
-
-dma_cache_inv().
-
-> --- Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Monday 01 October 2007 13:30:12 Jeff Garzik wrote:
+> Andi Kleen wrote:
+> > So far I still maintain i386 and x86-64. If Thomas wants to take both
+> > over completely he can do that; but I won't bother handling any patches i didn't 
+> > write then anymore.
 > 
-> > On Mon, 1 Oct 2007, veerasena reddy wrote:
-> > > I have ported Linux-2.6.18 kernel on MIPS24KE
-> > > processor. I am using write back cache policy.
-> > > 
-> > > Could you please guide me under what cases the
-> > below
-> > > cache API's are being used:
-> > > - dma_cache_wback_inv() : Could you explain  what
-> > > exactly this function does
-> > 
-> > It does both write back and invalidate.
-> > 
-> > > - dma_cache_wback() : This function write back the
-> > > cache data to memory
-> > > - dma_cache_inv  : This function invalidate the
-> > cache
-> > > tags. so subsequent access will fetch from memory.
-> > 
-> > Note that 2.6.18 is old. The above functions are
-> > intended to be removed.
+> 
+> What does that mean?
 
-Gr{oetje,eeting}s,
+What I wrote.
 
-						Geert
+> Didn't we all agree that x86 and x86-64 are going to be merged?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I didn't agree no.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-Andi
