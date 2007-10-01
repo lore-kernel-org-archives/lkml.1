@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbXJAWh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXJAWh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbXJAWh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 18:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbXJAWhU
+	id S1756214AbXJAWh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 18:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXJAWhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 18:37:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46588 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbXJAWhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 18:37:19 -0400
-Date: Mon, 1 Oct 2007 15:35:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: davids@webmaster.com
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20071001153529.7c669c7a@laptopd505.fenrus.org>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEPDHCAC.davids@webmaster.com>
-References: <20071001125350.055ef9bb@laptopd505.fenrus.org>
-	<MDEHLPKNGKAHNMBLJOLKGEPDHCAC.davids@webmaster.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Oct 2007 18:37:50 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58516 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751912AbXJAWht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 18:37:49 -0400
+Message-ID: <470176B8.1000109@pobox.com>
+Date: Mon, 01 Oct 2007 18:37:44 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [regression] 2.6.23 sata_mv EH updates broke my 7042 controller
+References: <20071001220439.GA15332@lixom.net>
+In-Reply-To: <20071001220439.GA15332@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 15:17:52 -0700
-"David Schwartz" <davids@webmaster.com> wrote:
+Olof Johansson wrote:
+> Hi,
+> 
+> I just pulled out my Marvell 7042 SATA controller here to give it a spin
+> and noticed that it no longer worked (i.e. init segvs when loading from
+> it), etc. 2.6.22 is fine.
+> 
+> Bisecting (just the file drivers/ata/sata_mv.c) resulted in
+> bdd4dddee325a7dce3e84cf48201a06aa8508aa4 popping out as the culprit
+> (file version 4537deb5e90b717a725b3d74b58b4bb1d28443d0 is fine).
+> 
+> Just for sanity checking: Has anyone else used 7042/6042 with the current
+> mainline driver?
 
-> 
-> Arjan van de Ven wrote:
-> 
-> > > It can occasionally be an optimization. You may have a case where
-> > > you can do something very efficiently if a lock is not held, but
-> > > you cannot afford to wait for the lock to be released. So you
-> > > check the lock, if it's held, you yield and then check again. If
-> > > that fails, you do it the less optimal way (for example,
-> > > dispatching it to a thread that *can* afford to wait).
-> 
-> > at this point it's "use a futex" instead; once you're doing system
-> > calls you might as well use the right one for what you're trying to
-> > achieve.
-> 
-> There are two answers to this. One is that you sometimes are writing
-> POSIX code and Linux-specific optimizations don't change the fact
-> that you still need a portable implementation.
-> 
-> The other answer is that futexes don't change anything in this case.
-> In fact, in the last time I hit this, the lock was a futex on Linux.
-> Nevertheless, that doesn't change the basic issue. The lock is
-> locked, you cannot afford to wait for it, but not getting the lock is
-> expensive. The solution is to yield and check the lock again. If it's
-> still held, you dispatch to another thread, but many times, yielding
-> can avoid that.
+The update was tested extensively on 6042.  I have a 7042, but haven't 
+found a compatible PCI slot here.
 
-yielding IS blocking. Just with indeterminate fuzzyness added to it....
+
+> Hardware config in my case:
+> Highpoint 2310 controller
+> PPC (big endian)
+> WD Raptor disk
+> 
+> Works fine with the other controller I've been using (SIL24), and works
+> fine if I revert the driver.
+> 
+> It also works fine if I disable the IOMMU. This would point towards
+> either a stale dma mapping, or a missing setup of one.
+> 
+> Not being much at home in the SATA drivers I could keep digging but I
+> figured I'd bring it up first in case it rings a bell for someone.
+
+The IOMMU data point is certainly interesting.  Nothing jumps out on a 
+re-review of the patch, so keep digging and let us know ;-)
+
+	Jeff
+
+
