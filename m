@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbXJAOVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbXJAOXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbXJAOVI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 10:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXJAOU4
+	id S1754879AbXJAOXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 10:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXJAOXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 10:20:56 -0400
-Received: from styx.suse.cz ([82.119.242.94]:58479 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753776AbXJAOUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 10:20:55 -0400
-Date: Mon, 1 Oct 2007 16:20:46 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>
-Cc: jgarzik@pobox.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
- class
-Message-ID: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz>
+	Mon, 1 Oct 2007 10:23:11 -0400
+Received: from mail.tmr.com ([64.65.253.246]:36035 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752485AbXJAOXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 10:23:10 -0400
+Message-ID: <4701040E.1050604@tmr.com>
+Date: Mon, 01 Oct 2007 10:28:30 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel   2.6.22.7
+References: <46F77A85.6020202@nerdgrounds.com> <20070924104940.50a52cf3.randy.dunlap@oracle.com> <46FD7104.9070609@tmr.com> <20071001134405.GA16330@csclub.uwaterloo.ca>
+In-Reply-To: <20071001134405.GA16330@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
+Lennart Sorensen wrote:
+> On Fri, Sep 28, 2007 at 05:24:20PM -0400, Bill Davidsen wrote:
+>   
+>> I'll offer this suggestion, knowing it may piss you off, given the 
+>> difficulty of preserving whitespace on *many* mailers without using 
+>> attachments, and given that attachments can be saved easily without 
+>> prying them out of the message, why don't you (one person) switch to a 
+>> capable mail agent, if only for patches, instead of trying to teach many 
+>> people to jump through hoops to avoid whitespace issues?
+>>
+>> Not criticizing, just seems easier for everybody for you to avoid 
+>> teaching people things they don't find useful elsewhere, or getting 
+>> discouraged and not bothering.
+>>     
+>
+> Ehm, so you want people to save the patch, then when replying they
+> should load the patch into their (much better) mail client where they
+> can comment on the patch?  That is the reason the patch should be
+> inline.  People need to comment on it just as they would comment on any
+> other plain text email.
+>   
 
-PCI: nVidia's MCP61 ethernet card needs quirk for wrong class
+And in a perfect world everyone would have a mail client which made that 
+easy, no one would be force by company policy or other circumstances to 
+use a client which didn't work the way you think it should, no company 
+or ISP would filter and mangle outgoing mail, and all vendors would 
+understand that pristine patches are more important that all that stuff 
+they do to make business communications look reasonable.
 
-The MCP61 ethernet controller from nVidia (NVENET_19) contains wrong
-PCI class:
+In my world people send me attachments so they don't get mangled, and if 
+I need to quote them I know how to do so.
+> Well that and some people use git to import patches from the email in a
+> mostly automated way which also expects them to have the info at top
+> with signed-off and then the patch, which attachments also screw up.
+>
+> So yes there are good reasons for getting a non broken mail client when
+> sending patches to lkml.
+>   
 
-	00:07.0 Bridge [0680]: nVidia Corporation MCP61 Ethernet [10de:03ef] (rev a2)
+And reading them, many show attached text at the end of the message and 
+make turning it into inline text simple.
 
-i.e. it identifies itself as a bridge. Fix this.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 50f2dd9..fbf6a89 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1511,6 +1511,13 @@ static void __devinit fixup_rev1_53c810(struct pci_dev* dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NCR, PCI_DEVICE_ID_NCR_53C810, fixup_rev1_53c810);
- 
-+/* nVidia's MCP61 ethernet card has wrong PCI class (0x0680) */
-+static void __devinit fixup_nvenet_19(struct pci_dev *dev)
-+{
-+	dev->class = PCI_CLASS_NETWORK_ETHERNET << 8;
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_19, fixup_nvenet_19);
-+
- static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f, struct pci_fixup *end)
- {
- 	while (f < end) {
