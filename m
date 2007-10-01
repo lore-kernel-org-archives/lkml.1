@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbXJAKks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbXJAKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754152AbXJAKks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbXJAKkl
+	id S1753472AbXJAKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 06:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXJAKoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:40:41 -0400
-Received: from ns.suse.de ([195.135.220.2]:34985 "EHLO mx1.suse.de"
+	Mon, 1 Oct 2007 06:44:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58062 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751625AbXJAKkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:40:40 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] [50/50] x86_64: Remove fpu io port resource
-Date: Mon, 1 Oct 2007 12:40:35 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709221231.836138000@suse.de> <20070921223251.1312913DCD@wotan.suse.de> <46F44D27.4050704@garzik.org>
-In-Reply-To: <46F44D27.4050704@garzik.org>
+	id S1751328AbXJAKoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:44:21 -0400
+Date: Mon, 1 Oct 2007 12:44:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch and kernel/sched.c
+Message-ID: <20071001104406.GC15488@elte.hu>
+References: <20070928105345.GC18163@shadowen.org> <20071001064448.GA4239@elte.hu> <20071001003007.4e90143b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710011240.35802.ak@suse.de>
+In-Reply-To: <20071001003007.4e90143b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > ===================================================================
-> > --- linux.orig/arch/x86_64/kernel/setup.c
-> > +++ linux/arch/x86_64/kernel/setup.c
-> > @@ -121,8 +121,6 @@ struct resource standard_io_resources[] 
-> >  		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-> >  	{ .name = "dma2", .start = 0xc0, .end = 0xdf,
-> >  		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-> > -	{ .name = "fpu", .start = 0xf0, .end = 0xff,
-> > -		.flags = IORESOURCE_BUSY | IORESOURCE_IO }
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The patch has been dropped meanwhile BTW --  Maciej pointed
-out correctly that the south bridges likely decode it anyways.
+> > > WARNING: braces {} are not necessary for single statement blocks
+> > > #5706: FILE: home/apw/git/linux-2.6/kernel/sched.c:5703:
+> > > +	if (parent->groups == parent->groups->next) {
+> > > +		pflags &= ~(SD_LOAD_BALANCE |
+> > > +				SD_BALANCE_NEWIDLE |
+> > > +				SD_BALANCE_FORK |
+> > > +				SD_BALANCE_EXEC |
+> > > +				SD_SHARE_CPUPOWER |
+> > > +				SD_SHARE_PKG_RESOURCES);
+> > > +	}
+> > > 
+> > > Ok, this one is "correct" at least for the rules as I have them.
+> > > Perhaps the message should not be emitted for very long blocks?
+> > 
+> > If a statement is not single-line, then braces _are_ fine. Where does 
+> > CodingStyle say that it's not fine?
+> 
+> I'd disagree with checkpatch there.  Again, it might be hard to fix.  
+> Wanna rename it to checkpatch-and-suggest-stuff-to-think-about.pl?
 
-> Since we are merging x86 and x86-64, I think it would be nice at least 
-> to CC Thomas on patches that increase 32/64-bit differences...  because 
-> won't this patch have to be partial un-done when we merge i386 and x86-64?
+i think checkpatch.pl is quite close to its most useful purpose and 
+role: that of a reliable tool that i can use in an automated fashion 
+too, with only very rare false positive - and not the current 50%-80% 
+false positives rate. (And i'm fighting hard for Andy to realize the 
+true scope and purpose of this script ;-)
 
-So far I still maintain i386 and x86-64. If Thomas wants to take both
-over completely he can do that; but I won't bother handling any patches i didn't 
-write then anymore.
-
--Andi
+	Ingo
