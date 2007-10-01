@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbXJATaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbXJATut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbXJATaB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 15:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXJAT3y
+	id S1753746AbXJATut (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 15:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXJATum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 15:29:54 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42684 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbXJAT3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 15:29:53 -0400
-Date: Mon, 1 Oct 2007 21:29:52 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bill Nottingham <notting@redhat.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Antonino Daplas <adaplas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] make unicode default
-In-Reply-To: <20071001183940.GA16413@nostromo.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0710012128550.7130@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0709291034100.22032@fbirervta.pbzchgretzou.qr>
- <20071001183940.GA16413@nostromo.devel.redhat.com>
+	Mon, 1 Oct 2007 15:50:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57858 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbXJATul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 15:50:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Subject: Re: [PATCH] (repost) Fix SMP poweroff hangs
+Date: Mon, 1 Oct 2007 22:05:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+References: <46FC20B7.4000606@rtr.ca> <46FFDB29.9040400@rtr.ca> <20070930175446.GA2472@pul.manty.net>
+In-Reply-To: <20070930175446.GA2472@pul.manty.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710012205.14303.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 1 2007 14:39, Bill Nottingham wrote:
->Jan Engelhardt (jengelh@computergmbh.de) said: 
->> 
->> Make the vt return to the system default when it is reset.
->> Also make UTF-8 the system default.
->> Derived from http://lkml.org/lkml/2007/8/31/246
->> 
->> Tested and works as expected.
->
->Fine with me. I believe the original patch I sent went to -mm, so you 
->may need rediffing/changing to go with that.
+On Sunday, 30 September 2007 19:54, Santiago Garcia Mantinan wrote:
+> > I'd say your problem is more of a distro issue,
+> > in that the method you are using to shutdown
+> > is not actually requesting "poweroff".
+> 
+> > That last mess above ("System halted.") comes from kernel_halt(),
+> > rather than the expected message ("Power down.") from kernel_power_off().
+> 
+> > So, try using the "poweroff" command instead of "halt",
+> > or try using "halt -p".  If neither of those work,
+> 
+> Well it works ok with 2.6.22 powering off and saying so right before
+> powering off, with some references to ACPI. On 2.6.23-rc8 however it doesn't
+> seem to get that far.
 
-My patch is based on a pure 2.6.23; i.e. it is assumed that your 
-original patch is dropped / not-applied before patching this one (my 
-variant) in.
+There was a bug in 2.6.23-rc8 that caused this to happen.
+
+It's been fixed in the later -git kernels
+(commits 2f3f22269bdf702311342c5d106dfdd7347d1c3e,
+853298bc03ef65e3eb392f5d61265605214ee8fb).
+
+Greetings,
+Rafael
