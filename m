@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbXJAOOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbXJAOPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbXJAOOh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 10:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXJAOO3
+	id S1754630AbXJAOPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 10:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXJAOO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 10:14:29 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:57838 "EHLO e2.ny.us.ibm.com"
+	Mon, 1 Oct 2007 10:14:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:56438 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbXJAOO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 10:14:28 -0400
-Date: Mon, 1 Oct 2007 09:14:26 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Cedric Le Goater <clg@fr.ibm.com>,
-       Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] Move the user namespace under the option
-Message-ID: <20071001141426.GB30599@sergelap.austin.ibm.com>
-References: <46FA7D4D.8040808@openvz.org> <46FA8087.6060307@openvz.org> <46FBA2A4.2040909@fr.ibm.com> <Pine.LNX.4.64.0709270837220.5275@localhost.localdomain> <4700A7C5.5080005@openvz.org> <Pine.LNX.4.64.0710010440360.12789@localhost.localdomain>
+	id S1751736AbXJAOOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 10:14:55 -0400
+Date: Mon, 1 Oct 2007 16:14:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: x86_64 and AMD with C1E
+In-Reply-To: <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com>
+Message-ID: <alpine.LRH.0.999.0710011612001.7353@www.tglx.de>
+References: <20071001101532.025d652f@localhost>  <p73r6kf6uwz.fsf@bingen.suse.de>
+  <b70f2f960710010546k4658aa1ay466f243ac707c989@mail.gmail.com>
+ <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710010440360.12789@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Robert P. J. Day (rpjday@mindspring.com):
-> On Mon, 1 Oct 2007, Pavel Emelyanov wrote:
+On Mon, 1 Oct 2007, Mikhail Kshevetskiy wrote:
+> No, it boot and work normally. The only thing i bother, is the
+> additional 260 timer interrupts per seconds.
+> Here is short result:
 > 
-> > Robert P. J. Day wrote:
-> > > On Thu, 27 Sep 2007, Cedric Le Goater wrote:
-> > >
-> > >>> diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-> > >>> index b5f41d4..dda160c 100644
-> > >>> --- a/include/linux/user_namespace.h
-> > >>> +++ b/include/linux/user_namespace.h
-> > >>> @@ -17,7 +17,7 @@ struct user_namespace {
-> > >>>
-> > >>>  extern struct user_namespace init_user_ns;
-> > >>>
-> > >>> -#ifdef CONFIG_USER_NS
-> > >>> +#ifdef CONFIG_NAMESPACES_EXPERIMENTAL
-> > >
-> > > is it really a good precedent to introduce Kconfig variables that
-> > > literally include the word "EXPERIMENTAL"?
-> >
-> > How else can we call it? I proposed one config option for each
-> > namespace with "depends on EXPERIMENTAL" dependency, but everyone
-> > else said that two options are much better.
+> c1e enabled:
+>   -- power consumption about 23 watts
+>   -- there is only C1 power state enabled
+>   -- there are about 260 timer interrupts per seconds
+> tested with  x86_64(2.6.22, 2.6.23-rc8, 2.6.23-rc8-hrt1 ),
+> i386(2.6.21, 2.6.22, 2.6.23-rc5-hrt1)
 > 
-> i don't know -- perhaps something as trivially obvious as
-> NAMESPACES_V2 or something.  i just think it's awkward to take a word
-> like "EXPERIMENTAL" that already has a long and established history,
-> and start jamming it into config variable names.  but it's just an
-> observation.
+> c1e disabled:
+>   -- power consumption about 27 watts
+>   -- there are no any power state enabled (including C1)
+>   -- there are no additional 260 timer interrupts per seconds
+> tested with 2.6.23-rc6-hrt1/x86_64.
+> 
+> I want to reduce the power consumption of my notebook. I see the 2 possibility:
+>   -- remove 260 additional timer interrupts (c1e enabled case )
 
-But these really are EXPERIMENTAL, not just 'v2'.  They are not yet safe
-to use except for testing.  Once they are more complete and safe to use,
-they will fall under just CONFIG_NAMESPACES.
+There is work in progress on a patch, which allows to utilize the hpet
+timers as per cpu timers. This should solve the problem. Be patient.
 
--serge
+Thanks,
+
+	tglx
