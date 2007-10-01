@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbXJANSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXJANTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbXJANSy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXJANLk
+	id S1756550AbXJANTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXJANLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:11:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43495 "EHLO mx1.redhat.com"
+	Mon, 1 Oct 2007 09:11:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43505 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXJANLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:11:36 -0400
+	id S1754550AbXJANLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 09:11:40 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 23/30] IGET: Stop QNX4 from using iget() and read_inode()
+Subject: [PATCH 25/30] IGET: Stop the SYSV filesystem from using iget() and
+	read_inode()
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Mon, 01 Oct 2007 14:11:19 +0100
-Message-ID: <20071001131119.29339.54218.stgit@warthog.procyon.org.uk>
+Date: Mon, 01 Oct 2007 14:11:29 +0100
+Message-ID: <20071001131129.29339.61868.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
 References: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,170 +30,123 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the QNX4 filesystem from using iget() and read_inode().  Replace
-qnx4_read_inode() with qnx4_iget(), and call that instead of iget().
-qnx4_iget() then uses iget_locked() directly and returns a proper error code
+Stop the SYSV filesystem from using iget() and read_inode().  Replace
+sysv_read_inode() with sysv_iget(), and call that instead of iget().
+sysv_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
-
-qnx4_fill_super() returns any error incurred when getting the root inode
-instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/qnx4/inode.c         |   45 ++++++++++++++++++++++++++++++---------------
- fs/qnx4/namei.c         |    8 +++++---
- include/linux/qnx4_fs.h |    1 +
- 3 files changed, 36 insertions(+), 18 deletions(-)
+ fs/sysv/inode.c |   25 ++++++++++++++++---------
+ fs/sysv/namei.c |    6 +++---
+ fs/sysv/super.c |    4 ++--
+ fs/sysv/sysv.h  |    1 +
+ 4 files changed, 22 insertions(+), 14 deletions(-)
 
-diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
-index 1bc8d87..3eba8fe 100644
---- a/fs/qnx4/inode.c
-+++ b/fs/qnx4/inode.c
-@@ -125,7 +125,6 @@ static int qnx4_write_inode(struct inode *inode, int unused)
- static void qnx4_put_super(struct super_block *sb);
- static struct inode *qnx4_alloc_inode(struct super_block *sb);
- static void qnx4_destroy_inode(struct inode *inode);
--static void qnx4_read_inode(struct inode *);
- static int qnx4_remount(struct super_block *sb, int *flags, char *data);
- static int qnx4_statfs(struct dentry *, struct kstatfs *);
- 
-@@ -133,7 +132,6 @@ static const struct super_operations qnx4_sops =
- {
- 	.alloc_inode	= qnx4_alloc_inode,
- 	.destroy_inode	= qnx4_destroy_inode,
--	.read_inode	= qnx4_read_inode,
- 	.put_super	= qnx4_put_super,
- 	.statfs		= qnx4_statfs,
- 	.remount_fs	= qnx4_remount,
-@@ -357,6 +355,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
- 	struct inode *root;
- 	const char *errmsg;
- 	struct qnx4_sb_info *qs;
-+	int ret = -EINVAL;
- 
- 	qs = kzalloc(sizeof(struct qnx4_sb_info), GFP_KERNEL);
- 	if (!qs)
-@@ -396,12 +395,14 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
- 	}
- 
-  	/* does root not have inode number QNX4_ROOT_INO ?? */
-- 	root = iget(s, QNX4_ROOT_INO * QNX4_INODES_PER_BLOCK);
-- 	if (!root) {
-+ 	root = qnx4_iget(s, QNX4_ROOT_INO * QNX4_INODES_PER_BLOCK);
-+ 	if (IS_ERR(root)) {
-  		printk("qnx4: get inode failed\n");
-+		ret = PTR_ERR(root);
-  		goto out;
-  	}
- 
-+	ret = -ENOMEM;
-  	s->s_root = d_alloc_root(root);
-  	if (s->s_root == NULL)
-  		goto outi;
-@@ -417,7 +418,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
-       outnobh:
- 	kfree(qs);
- 	s->s_fs_info = NULL;
--	return -EINVAL;
-+	return ret;
+diff --git a/fs/sysv/inode.c b/fs/sysv/inode.c
+index 7c4e5d3..9d512a8 100644
+--- a/fs/sysv/inode.c
++++ b/fs/sysv/inode.c
+@@ -169,20 +169,27 @@ void sysv_set_inode(struct inode *inode, dev_t rdev)
+ 		init_special_inode(inode, inode->i_mode, rdev);
  }
  
- static void qnx4_put_super(struct super_block *sb)
-@@ -457,29 +458,37 @@ static const struct address_space_operations qnx4_aops = {
- 	.bmap		= qnx4_bmap
- };
- 
--static void qnx4_read_inode(struct inode *inode)
-+struct inode *qnx4_iget(struct super_block *sb, unsigned long ino)
+-static void sysv_read_inode(struct inode *inode)
++struct inode *sysv_iget(struct super_block *sb, unsigned int ino)
  {
- 	struct buffer_head *bh;
- 	struct qnx4_inode_entry *raw_inode;
--	int block, ino;
--	struct super_block *sb = inode->i_sb;
--	struct qnx4_inode_entry *qnx4_inode = qnx4_raw_inode(inode);
-+	int block;
-+	struct qnx4_inode_entry *qnx4_inode;
+-	struct super_block * sb = inode->i_sb;
+ 	struct sysv_sb_info * sbi = SYSV_SB(sb);
+ 	struct buffer_head * bh;
+ 	struct sysv_inode * raw_inode;
+ 	struct sysv_inode_info * si;
+-	unsigned int block, ino = inode->i_ino;
 +	struct inode *inode;
++	unsigned int block;
  
--	ino = inode->i_ino;
+ 	if (!ino || ino > sbi->s_ninodes) {
+ 		printk("Bad inode number on dev %s: %d is out of range\n",
+-		       inode->i_sb->s_id, ino);
+-		goto bad_inode;
++		       sb->s_id, ino);
++		return ERR_PTR(-EIO);
+ 	}
++
 +	inode = iget_locked(sb, ino);
 +	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
 +
-+	qnx4_inode = qnx4_raw_inode(inode);
- 	inode->i_mode = 0;
- 
- 	QNX4DEBUG(("Reading inode : [%d]\n", ino));
- 	if (!ino) {
--		printk("qnx4: bad inode number on dev %s: %d is out of range\n",
-+		printk("qnx4: bad inode number on dev %s: %lu is out of range\n",
- 		       sb->s_id, ino);
--		return;
-+		iget_failed(inode);
-+		return ERR_PTR(-EIO);
- 	}
- 	block = ino / QNX4_INODES_PER_BLOCK;
- 
- 	if (!(bh = sb_bread(sb, block))) {
- 		printk("qnx4: major problem: unable to read inode from dev "
- 		       "%s\n", sb->s_id);
--		return;
-+		iget_failed(inode);
-+		return ERR_PTR(-EIO);
- 	}
- 	raw_inode = ((struct qnx4_inode_entry *) bh->b_data) +
- 	    (ino % QNX4_INODES_PER_BLOCK);
-@@ -510,9 +519,15 @@ static void qnx4_read_inode(struct inode *inode)
- 		inode->i_op = &page_symlink_inode_operations;
- 		inode->i_mapping->a_ops = &qnx4_aops;
- 		qnx4_i(inode)->mmu_private = inode->i_size;
--	} else
--		printk("qnx4: bad inode %d on dev %s\n",ino,sb->s_id);
-+	} else {
-+		printk("qnx4: bad inode %lu on dev %s\n",ino,sb->s_id);
-+		iget_failed(inode);
-+		brelse(bh);
-+		return ERR_PTR(-EIO);
-+	}
- 	brelse(bh);
+ 	raw_inode = sysv_raw_inode(sb, ino, &bh);
+ 	if (!raw_inode) {
+ 		printk("Major problem: unable to read inode from dev %s\n",
+@@ -214,11 +221,12 @@ static void sysv_read_inode(struct inode *inode)
+ 			       old_decode_dev(fs32_to_cpu(sbi, si->i_data[0])));
+ 	else
+ 		sysv_set_inode(inode, 0);
+-	return;
 +	unlock_new_inode(inode);
 +	return inode;
+ 
+ bad_inode:
+-	make_bad_inode(inode);
+-	return;
++	iget_failed(inode);
++	return ERR_PTR(-EIO);
  }
  
- static struct kmem_cache *qnx4_inode_cachep;
-diff --git a/fs/qnx4/namei.c b/fs/qnx4/namei.c
-index 733cdf0..5e60505 100644
---- a/fs/qnx4/namei.c
-+++ b/fs/qnx4/namei.c
-@@ -128,10 +128,12 @@ struct dentry * qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nam
- 	}
- 	brelse(bh);
+ static struct buffer_head * sysv_update_inode(struct inode * inode)
+@@ -328,7 +336,6 @@ static void init_once(void *p, struct kmem_cache *cachep, unsigned long flags)
+ const struct super_operations sysv_sops = {
+ 	.alloc_inode	= sysv_alloc_inode,
+ 	.destroy_inode	= sysv_destroy_inode,
+-	.read_inode	= sysv_read_inode,
+ 	.write_inode	= sysv_write_inode,
+ 	.delete_inode	= sysv_delete_inode,
+ 	.put_super	= sysv_put_super,
+diff --git a/fs/sysv/namei.c b/fs/sysv/namei.c
+index 6bd850b..599d980 100644
+--- a/fs/sysv/namei.c
++++ b/fs/sysv/namei.c
+@@ -53,9 +53,9 @@ static struct dentry *sysv_lookup(struct inode * dir, struct dentry * dentry, st
+ 	ino = sysv_inode_by_name(dentry);
  
--	if ((foundinode = iget(dir->i_sb, ino)) == NULL) {
-+	foundinode = qnx4_iget(dir->i_sb, ino);
-+	if (IS_ERR(foundinode)) {
- 		unlock_kernel();
--		QNX4DEBUG(("qnx4: lookup->iget -> NULL\n"));
--		return ERR_PTR(-EACCES);
-+		QNX4DEBUG(("qnx4: lookup->iget -> error %ld\n",
-+			   PTR_ERR(foundinode)));
-+		return ERR_PTR(PTR_ERR(foundinode));
+ 	if (ino) {
+-		inode = iget(dir->i_sb, ino);
+-		if (!inode)
+-			return ERR_PTR(-EACCES);
++		inode = sysv_iget(dir->i_sb, ino);
++		if (IS_ERR(inode))
++			return ERR_PTR(PTR_ERR(inode));
  	}
- out:
- 	unlock_kernel();
-diff --git a/include/linux/qnx4_fs.h b/include/linux/qnx4_fs.h
-index 19bc9b8..34a196e 100644
---- a/include/linux/qnx4_fs.h
-+++ b/include/linux/qnx4_fs.h
-@@ -110,6 +110,7 @@ struct qnx4_inode_info {
- 	struct inode vfs_inode;
- };
+ 	d_add(dentry, inode);
+ 	return NULL;
+diff --git a/fs/sysv/super.c b/fs/sysv/super.c
+index 6f9707a..a92d104 100644
+--- a/fs/sysv/super.c
++++ b/fs/sysv/super.c
+@@ -332,8 +332,8 @@ static int complete_read_super(struct super_block *sb, int silent, int size)
+ 	sb->s_magic = SYSV_MAGIC_BASE + sbi->s_type;
+ 	/* set up enough so that it can read an inode */
+ 	sb->s_op = &sysv_sops;
+-	root_inode = iget(sb,SYSV_ROOT_INO);
+-	if (!root_inode || is_bad_inode(root_inode)) {
++	root_inode = sysv_iget(sb,SYSV_ROOT_INO);
++	if (IS_ERR(root_inode)) {
+ 		printk("SysV FS: get root inode failed\n");
+ 		return 0;
+ 	}
+diff --git a/fs/sysv/sysv.h b/fs/sysv/sysv.h
+index 5b4fedf..71ebdbc 100644
+--- a/fs/sysv/sysv.h
++++ b/fs/sysv/sysv.h
+@@ -138,6 +138,7 @@ extern unsigned long sysv_count_free_blocks(struct super_block *);
+ extern void sysv_truncate(struct inode *);
  
-+extern struct inode *qnx4_iget(struct super_block *, unsigned long);
- extern struct dentry *qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd);
- extern unsigned long qnx4_count_free_blocks(struct super_block *sb);
- extern unsigned long qnx4_block_map(struct inode *inode, long iblock);
+ /* inode.c */
++extern struct inode *sysv_iget(struct super_block *, unsigned int);
+ extern int sysv_write_inode(struct inode *, int);
+ extern int sysv_sync_inode(struct inode *);
+ extern int sysv_sync_file(struct file *, struct dentry *, int);
 
