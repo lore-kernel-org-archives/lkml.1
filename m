@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbXJAFxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbXJAFxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbXJAFxP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXJAFvb
+	id S1754661AbXJAFxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbXJAFvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:51:31 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40757 "EHLO
+	Mon, 1 Oct 2007 01:51:36 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40774 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbXJAFv0 (ORCPT
+	with ESMTP id S1752499AbXJAFv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:51:26 -0400
+	Mon, 1 Oct 2007 01:51:27 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 08/19] Unionfs: use page_offset() helper
-Date: Mon,  1 Oct 2007 01:50:45 -0400
-Message-Id: <11912178594178-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 05/19] Unionfs: use UNIONFS_NAME macro
+Date: Mon,  1 Oct 2007 01:50:42 -0400
+Message-Id: <1191217858948-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
@@ -27,41 +27,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/mmap.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ fs/unionfs/debug.c |    2 +-
+ fs/unionfs/main.c  |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index cf9545e..8928e99 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -179,8 +179,7 @@ static int unionfs_do_readpage(struct file *file, struct page *page)
- 	 * may be a little slower, but a lot safer, as the VFS does a lot of
- 	 * the necessary magic for us.
- 	 */
--	offset = lower_file->f_pos =
--		((loff_t) page->index << PAGE_CACHE_SHIFT);
-+	offset = lower_file->f_pos = page_offset(page);
- 	old_fs = get_fs();
- 	set_fs(KERNEL_DS);
- 	err = vfs_read(lower_file, page_data, PAGE_CACHE_SIZE,
-@@ -290,7 +289,7 @@ static int unionfs_commit_write(struct file *file, struct page *page,
- 	BUG_ON(lower_file == NULL);
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
+index b103eb9..da82a47 100644
+--- a/fs/unionfs/debug.c
++++ b/fs/unionfs/debug.c
+@@ -428,7 +428,7 @@ void __unionfs_check_nd(const struct nameidata *nd,
+ 		file = nd->intent.open.file;
+ 		if (unlikely(file->f_path.dentry &&
+ 			     strcmp(file->f_dentry->d_sb->s_type->name,
+-				    "unionfs"))) {
++				    UNIONFS_NAME))) {
+ 			PRINT_CALLER(fname, fxn, line);
+ 			printk(" CND1: lower_file of type %s\n",
+ 			       file->f_path.dentry->d_sb->s_type->name);
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index 72438fb..615617a 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -227,7 +227,7 @@ void unionfs_reinterpose(struct dentry *dentry)
+ int check_branch(struct nameidata *nd)
+ {
+ 	/* XXX: remove in ODF code -- stacking unions allowed there */
+-	if (!strcmp(nd->dentry->d_sb->s_type->name, "unionfs"))
++	if (!strcmp(nd->dentry->d_sb->s_type->name, UNIONFS_NAME))
+ 		return -EINVAL;
+ 	if (!nd->dentry->d_inode)
+ 		return -ENOENT;
+@@ -722,7 +722,7 @@ static int unionfs_get_sb(struct file_system_type *fs_type,
  
- 	page_data = (char *)kmap(page);
--	lower_file->f_pos = ((loff_t) page->index << PAGE_CACHE_SHIFT) + from;
-+	lower_file->f_pos = page_offset(page) + from;
- 
- 	/*
- 	 * We use vfs_write instead of copying page data and the
-@@ -312,7 +311,7 @@ static int unionfs_commit_write(struct file *file, struct page *page,
- 
- 	inode->i_blocks = lower_inode->i_blocks;
- 	/* we may have to update i_size */
--	pos = ((loff_t) page->index << PAGE_CACHE_SHIFT) + to;
-+	pos = page_offset(page) + to;
- 	if (pos > i_size_read(inode))
- 		i_size_write(inode, pos);
- 	/* if vfs_write succeeded above, sync up our times */
+ static struct file_system_type unionfs_fs_type = {
+ 	.owner		= THIS_MODULE,
+-	.name		= "unionfs",
++	.name		= UNIONFS_NAME,
+ 	.get_sb		= unionfs_get_sb,
+ 	.kill_sb	= generic_shutdown_super,
+ 	.fs_flags	= FS_REVAL_DOT,
 -- 
 1.5.2.2
 
