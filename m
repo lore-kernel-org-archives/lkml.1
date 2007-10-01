@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752276AbXJAAZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbXJAA1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752276AbXJAAZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 20:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbXJAAZT
+	id S1752598AbXJAA1R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 20:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbXJAA1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 20:25:19 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:43224 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbXJAAZS (ORCPT
+	Sun, 30 Sep 2007 20:27:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34757
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750698AbXJAA1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 20:25:18 -0400
-Date: Mon, 1 Oct 2007 02:24:38 +0200 (MEST)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20071001002440.15772.83520.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] softmac: Fix compiler-warning
+	Sun, 30 Sep 2007 20:27:04 -0400
+Date: Sun, 30 Sep 2007 17:27:03 -0700 (PDT)
+Message-Id: <20070930.172703.79041329.davem@davemloft.net>
+To: val@nmt.edu
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rrbranco@br.ibm.com,
+       twichell@us.ibm.com, ycai@us.ibm.com
+Subject: Re: [ANNOUNCE] ebizzy 0.2 released
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070823010626.GC11402@rainbow>
+References: <20070823010626.GC11402@rainbow>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC      net/ieee80211/softmac/ieee80211softmac_wx.o
-/home/kernel/src/net/ieee80211/softmac/ieee80211softmac_wx.c: In function ‘ieee80211softmac_wx_set_essid’:
-/home/kernel/src/net/ieee80211/softmac/ieee80211softmac_wx.c:117: warning: label ‘out’ defined but not used
+From: Valerie Henson <val@nmt.edu>
+Date: Wed, 22 Aug 2007 19:06:26 -0600
 
-due to commit: efe870f9f4ad74410a18ecbf0d9ba7c14b50a0fb. Removing the label.
+> ebizzy is designed to generate a workload resembling common web
+> application server workloads.
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested
+I downloaded this only to be basically disappointed.
 
+Any program which claims to generate workloads "resembling common web
+application server workloads", and yet does zero network activity and
+absolutely nothing with sockets is so far disconnected from reality
+that I truly question how useful it really is even in the context it
+was designed for.
 
-diff --git a/net/ieee80211/softmac/ieee80211softmac_wx.c b/net/ieee80211/softmac/ieee80211softmac_wx.c
-index 442b987..5742dc8 100644
---- a/net/ieee80211/softmac/ieee80211softmac_wx.c
-+++ b/net/ieee80211/softmac/ieee80211softmac_wx.c
-@@ -114,7 +114,7 @@ check_assoc_again:
- 	sm->associnfo.associating = 1;
- 	/* queue lower level code to do work (if necessary) */
- 	schedule_delayed_work(&sm->associnfo.work, 0);
--out:
-+
- 	mutex_unlock(&sm->associnfo.mutex);
- 
- 	return 0;
+Please describe this program differently, "a threaded cpu eater", "a
+threaded memory scanner", "a threaded hash lookup", or something
+suitably matching what it really does.
+
+I'm sure there are at least 10 or even more programs in LTP that one
+could run under "time" and get the same exact functionality.
