@@ -1,21 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbXJANJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbXJANKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752228AbXJANJs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJANJh
+	id S1753478AbXJANKJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXJANJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:09:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43028 "EHLO mx1.redhat.com"
+	Mon, 1 Oct 2007 09:09:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43065 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbXJANJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:09:36 -0400
+	id S1752049AbXJANJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 09:09:42 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 00/30] Remove iget() and read_inode()
+Subject: [PATCH 01/30] IGET: Introduce a function to register iget failure
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Mon, 01 Oct 2007 14:09:21 +0100
-Message-ID: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
+Date: Mon, 01 Oct 2007 14:09:27 +0100
+Message-ID: <20071001130927.29339.91644.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
+References: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,110 +29,79 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Introduce a function to register failure in an inode construction path.  This
+includes marking the inode under construction as bad, unlocking it and
+releasing it.
 
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Hi Christoph, Al,
+ Documentation/filesystems/porting |   18 +++++++++++++-----
+ fs/bad_inode.c                    |   14 ++++++++++++++
+ include/linux/fs.h                |    1 +
+ 3 files changed, 28 insertions(+), 5 deletions(-)
 
-Here's a set of patches that remove all calls to iget() and all read_inode()
-functions.  They should be removed for two reasons: firstly they don't lend
-themselves to good error handling, and secondly their presence is a temptation
-for code outside a filesystem to call iget() to access inodes within that
-filesystem.
+diff --git a/Documentation/filesystems/porting b/Documentation/filesystems/porting
+index dac45c9..3b0fb22 100644
+--- a/Documentation/filesystems/porting
++++ b/Documentation/filesystems/porting
+@@ -184,11 +184,19 @@ just takes the superblock and inode number as arguments and does the
+ test and set for you.
+ 
+ e.g.
+-       inode = iget_locked(sb, ino);
+-       if (inode->i_state & I_NEW) {
+-               read_inode_from_disk(inode);
+-               unlock_new_inode(inode);
+-       }
++	inode = iget_locked(sb, ino);
++	if (inode->i_state & I_NEW) {
++		err = read_inode_from_disk(inode);
++		if (err < 0) {
++			iget_failed(inode);
++			return err;
++		}
++		unlock_new_inode(inode);
++	}
++
++Note that if the process of setting up a new inode fails, then iget_failed()
++should be called on the inode to render it dead, and an appropriate error
++should be passed back to the caller.
+ 
+ ---
+ [recommended]
+diff --git a/fs/bad_inode.c b/fs/bad_inode.c
+index 521ff7c..f1c2ea8 100644
+--- a/fs/bad_inode.c
++++ b/fs/bad_inode.c
+@@ -359,3 +359,17 @@ int is_bad_inode(struct inode *inode)
+ }
+ 
+ EXPORT_SYMBOL(is_bad_inode);
++
++/**
++ * iget_failed - Mark an under-construction inode as dead and release it
++ * @inode: The inode to discard
++ *
++ * Mark an under-construction inode as dead and release it.
++ */
++void iget_failed(struct inode *inode)
++{
++	make_bad_inode(inode);
++	unlock_new_inode(inode);
++	iput(inode);
++}
++EXPORT_SYMBOL(iget_failed);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 16421f6..c24d433 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1631,6 +1631,7 @@ static inline struct inode *iget(struct super_block *sb, unsigned long ino)
+ }
+ 
+ extern void __iget(struct inode * inode);
++extern void iget_failed(struct inode *);
+ extern void clear_inode(struct inode *);
+ extern void destroy_inode(struct inode *);
+ extern struct inode *new_inode(struct super_block *);
 
-There are a few benefits to this:
-
- (1) Error handling gets simpler as you can return an error code rather than
-     having to call is_bad_inode().
-
- (2) You can now tell the difference between ENOMEM and EIO occurring in the
-     read_inode() path.
-
- (3) The code should get smaller.  iget() is an inline function that is
-     typically called 2-3 times per filesystem that uses it.  By folding the
-     iget code into the read_inode code for each filesystem, it eliminates
-     some duplication.
-
-A tarball of the patches can be retrieved from:
-
-	http://people.redhat.com/~dhowells/iget-remove.tar.bz2
-
-
-The first patch adds a function, iget_failed() that is a canned piece of code
-for killing an inode when the inode construction path fails.
-
-The second and third patches makes AFS and GFS2 use iget_failed() rather than
-interpolating the sequence directly.
-
-The fourth patch marks iget() and read_inode() as being deprecated.
-
-The final patch removes iget() and read_inode() completely.
-
-Each of the other patches modify a filesystem that used iget() and read_inode()
-to use iget_locked() instead.  The standard procedure was to convert:
-
-	void thingyfs_read_inode(struct inode *inode)
-	{
-		...
-	}
-
-into:
-
-	struct inode *thingyfs_iget(struct super_block *sp, unsigned long ino)
-	{
-		struct inode *inode;
-		int ret;
-		
-		inode = iget_locked(sb, ino);
-		if (!inode)
-			return ERR_PTR(-ENOMEM);
-		if (!(inode->i_state & I_NEW))
-			return inode;
-
-		...
-		unlock_new_inode(inode);
-		return inode;
-	error:
-		iget_failed(inode);
-		return ERR_PTR(ret);
-	}
-
-and then call thingyfs_iget() rather than iget():
-
-	ret = -EINVAL;
-	inode = iget(sb, ino);
-	if (!inode || is_bad_inode(inode))
-		goto error;
-
-becomes:
-
-	inode = thingyfs_iget(sb, ino);
-	if (IS_ERR(inode)) {
-		ret = PTR_ERR(inode);
-		goto error;
-	}
-
-There were exceptions; most notably it appeared FAT should be calling ilookup()
-not iget().
-
-Additionally, HPPFS and HOSTFS (UM-specific filesystems) really need checking:
-
- hostfs_kern.c:
-
- (*) hostfs_iget() should perhaps subsume init_inode() and hostfs_read_inode().
-
- (*) It would appear that all hostfs inodes are the same inode because iget()
-     was being called with inode number 0 - which forms the lookup key.
-
- hppfs_kern.c:
-
- (*) The HPPFS inode retains a pointer to the proc dentry it is shadowing, but
-     whilst it does appear to retain a reference to it, it doesn't appear to
-     destroy the reference if the inode goes away.
-
- (*) hppfs_iget() should perhaps subsume init_inode() and hppfs_read_inode().
-
- (*) It would appear that all hppfs inodes are the same inode because iget()
-     was being called with inode number 0, which forms the lookup key.
-
-
-David
