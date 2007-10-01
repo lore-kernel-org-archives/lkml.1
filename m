@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbXJAKh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbXJAKic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbXJAKh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXJAKhR
+	id S1753316AbXJAKic (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 06:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbXJAKi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:37:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45442 "EHLO mx2.mail.elte.hu"
+	Mon, 1 Oct 2007 06:38:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34828 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbXJAKhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:37:15 -0400
-Date: Mon, 1 Oct 2007 12:37:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch and kernel/sched.c
-Message-ID: <20071001103705.GA15488@elte.hu>
-References: <20070928105345.GC18163@shadowen.org> <20071001064448.GA4239@elte.hu> <20071001003007.4e90143b.akpm@linux-foundation.org>
+	id S1750912AbXJAKiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:38:25 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [patches] [PATCH] [13/50] x86: Fix and reenable CLFLUSH support inchange_page_attr()
+Date: Mon, 1 Oct 2007 12:38:10 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <200709221231.836138000@suse.de> <20070921223211.BB50413DCD@wotan.suse.de> <46F79021.76E4.0078.0@novell.com>
+In-Reply-To: <46F79021.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071001003007.4e90143b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200710011238.10318.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > > WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> > > #411: FILE: home/apw/git/linux-2.6/kernel/sched.c:408:
-> > > +EXPORT_SYMBOL_GPL(cpu_clock);
+On Monday 24 September 2007 10:23:29 Jan Beulich wrote:
+> >@@ -162,7 +198,7 @@ __change_page_attr(unsigned long address
+> > 	/* on x86-64 the direct mapping set at boot is not using 4k pages */
+> >  	BUG_ON(PageReserved(kpte_page));
 > > 
-> > yes, this is a legit warning and i fix it every time i see it. (I 
-> > cannot fix this one now because mainline does not have an 
-> > EXPORT_SYMBOL_GPL for cpu_clock(), it's added in -mm? But i cannot 
-> > find it in mm either. I'll fix it once i find the patch :)
+> >-	save_page(kpte_page);
+> >+	save_page(kpte_page, 0);
+> > 	if (page_private(kpte_page) == 0)
+> > 		revert_page(address, ref_prot);
+> > 	return 0;
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/broken-out/make-rcutorture-rng-use-temporal-entropy.patch
+> What is the point of continuing to launder kpte_page here? Page table pages
+> never get their caching attributes changed, nor would their direct mapping
+> ever change. (Same for i386, obviously.)
 
-ok - i have picked up the sched.c bit for sched-devel.git. (see below)
+We can only free the page table after all the TLBs have been flushed;
+otherwise other CPUs can walk already overwritten data as page tables (which can 
+then cause various problems). This is similar to the lazy TLB flush logic in the 
+standard VM.
 
-	Ingo
+We don't need to cache flush it though, that is why 0 is passed here.
 
----------------->
-Subject: sched: export cpu_clock()
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Admittedly the function argument is a little bogus because the caller
+could just do it; didn't change that yet.
 
-export cpu_clock() - the preferred API instead of sched_clock().
+-Andi
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -469,6 +469,7 @@ unsigned long long cpu_clock(int cpu)
- 
- 	return now;
- }
-+EXPORT_SYMBOL_GPL(cpu_clock);
- 
- #ifndef prepare_arch_switch
- # define prepare_arch_switch(next)	do { } while (0)
