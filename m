@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbXJANSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbXJANSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbXJANSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXJANL2
+	id S1757234AbXJANSl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXJANLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:11:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43438 "EHLO mx1.redhat.com"
+	Mon, 1 Oct 2007 09:11:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43491 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754346AbXJANLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:11:24 -0400
+	id S1753046AbXJANLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 09:11:35 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 22/30] IGET: Stop PROCFS from using iget() and read_inode()
+Subject: [PATCH 24/30] IGET: Stop ROMFS from using iget() and read_inode()
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Mon, 01 Oct 2007 14:11:14 +0100
-Message-ID: <20071001131114.29339.60243.stgit@warthog.procyon.org.uk>
+Date: Mon, 01 Oct 2007 14:11:24 +0100
+Message-ID: <20071001131124.29339.4141.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
 References: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,106 +29,140 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the PROCFS filesystem from using iget() and read_inode().  Merge
-procfs_read_inode() into procfs_get_inode(), and have that call iget_locked()
-instead of iget().
+Stop the ROMFS filesystem from using iget() and read_inode().  Replace
+romfs_read_inode() with romfs_iget(), and call that instead of iget().
+romfs_iget() then uses iget_locked() directly and returns a proper error code
+instead of an inode in the event of an error.
+
+romfs_fill_super() returns any error incurred when getting the root inode
+instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/proc/inode.c |   60 ++++++++++++++++++++++++++-----------------------------
- 1 files changed, 28 insertions(+), 32 deletions(-)
+ fs/romfs/inode.c |   45 +++++++++++++++++++++++++++++++--------------
+ 1 files changed, 31 insertions(+), 14 deletions(-)
 
-diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-index 0e4d37c..7a563c5 100644
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -78,11 +78,6 @@ static void proc_delete_inode(struct inode *inode)
+diff --git a/fs/romfs/inode.c b/fs/romfs/inode.c
+index dae7945..5071c9a 100644
+--- a/fs/romfs/inode.c
++++ b/fs/romfs/inode.c
+@@ -84,6 +84,8 @@ struct romfs_inode_info {
+ 	struct inode vfs_inode;
+ };
  
- struct vfsmount *proc_mnt;
++static struct inode *romfs_iget(struct super_block *, unsigned long);
++
+ /* instead of private superblock data */
+ static inline unsigned long romfs_maxsize(struct super_block *sb)
+ {
+@@ -117,7 +119,7 @@ static int romfs_fill_super(struct super_block *s, void *data, int silent)
+ 	struct buffer_head *bh;
+ 	struct romfs_super_block *rsb;
+ 	struct inode *root;
+-	int sz;
++	int sz, ret = -EINVAL;
  
--static void proc_read_inode(struct inode * inode)
--{
--	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
--}
--
- static struct kmem_cache * proc_inode_cachep;
+ 	/* I would parse the options here, but there are none.. :) */
  
- static struct inode *proc_alloc_inode(struct super_block *sb)
-@@ -135,7 +130,6 @@ static int proc_remount(struct super_block *sb, int *flags, char *data)
- static const struct super_operations proc_sops = {
- 	.alloc_inode	= proc_alloc_inode,
- 	.destroy_inode	= proc_destroy_inode,
--	.read_inode	= proc_read_inode,
- 	.drop_inode	= generic_delete_inode,
- 	.delete_inode	= proc_delete_inode,
- 	.statfs		= simple_statfs,
-@@ -408,39 +402,41 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
- 	if (de != NULL && !try_module_get(de->owner))
- 		goto out_mod;
+@@ -157,10 +159,13 @@ static int romfs_fill_super(struct super_block *s, void *data, int silent)
+ 	     & ROMFH_MASK;
  
--	inode = iget(sb, ino);
-+	inode = iget_locked(sb, ino);
- 	if (!inode)
- 		goto out_ino;
--
--	PROC_I(inode)->fd = 0;
--	PROC_I(inode)->pde = de;
--	if (de) {
--		if (de->mode) {
--			inode->i_mode = de->mode;
--			inode->i_uid = de->uid;
--			inode->i_gid = de->gid;
--		}
--		if (de->size)
--			inode->i_size = de->size;
--		if (de->nlink)
--			inode->i_nlink = de->nlink;
--		if (de->proc_iops)
--			inode->i_op = de->proc_iops;
--		if (de->proc_fops) {
--			if (S_ISREG(inode->i_mode)) {
-+	if (inode->i_state & I_NEW) {
-+		inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
-+		PROC_I(inode)->fd = 0;
-+		PROC_I(inode)->pde = de;
-+		if (de) {
-+			if (de->mode) {
-+				inode->i_mode = de->mode;
-+				inode->i_uid = de->uid;
-+				inode->i_gid = de->gid;
-+			}
-+			if (de->size)
-+				inode->i_size = de->size;
-+			if (de->nlink)
-+				inode->i_nlink = de->nlink;
-+			if (de->proc_iops)
-+				inode->i_op = de->proc_iops;
-+			if (de->proc_fops) {
-+				if (S_ISREG(inode->i_mode)) {
- #ifdef CONFIG_COMPAT
--				if (!de->proc_fops->compat_ioctl)
--					inode->i_fop =
--						&proc_reg_file_ops_no_compat;
--				else
-+					if (!de->proc_fops->compat_ioctl)
-+						inode->i_fop =
-+							&proc_reg_file_ops_no_compat;
-+					else
- #endif
--					inode->i_fop = &proc_reg_file_ops;
-+						inode->i_fop = &proc_reg_file_ops;
-+				}
-+				else
-+					inode->i_fop = de->proc_fops;
- 			}
--			else
--				inode->i_fop = de->proc_fops;
+ 	s->s_op	= &romfs_ops;
+-	root = iget(s, sz);
+-	if (!root)
++	root = romfs_iget(s, sz);
++	if (IS_ERR(root)) {
++		ret = PTR_ERR(root);
+ 		goto out;
++	}
+ 
++	ret = -ENOMEM;
+ 	s->s_root = d_alloc_root(root);
+ 	if (!s->s_root)
+ 		goto outiput;
+@@ -173,7 +178,7 @@ outiput:
+ out:
+ 	brelse(bh);
+ outnobh:
+-	return -EINVAL;
++	return ret;
+ }
+ 
+ /* That's simple too. */
+@@ -389,8 +394,11 @@ romfs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ 	if ((be32_to_cpu(ri.next) & ROMFH_TYPE) == ROMFH_HRD)
+ 		offset = be32_to_cpu(ri.spec) & ROMFH_MASK;
+ 
+-	if ((inode = iget(dir->i_sb, offset)))
+-		goto outi;
++	inode = romfs_iget(dir->i_sb, offset);
++	if (IS_ERR(inode)) {
++		res = PTR_ERR(inode);
++		goto out;
++	}
+ 
+ 	/*
+ 	 * it's a bit funky, _lookup needs to return an error code
+@@ -402,7 +410,7 @@ romfs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ 	 */
+ 
+ out0:	inode = NULL;
+-outi:	res = 0;
++	res = 0;
+ 	d_add (dentry, inode);
+ 
+ out:	unlock_kernel();
+@@ -478,20 +486,28 @@ static mode_t romfs_modemap[] =
+ 	S_IFBLK+0600, S_IFCHR+0600, S_IFSOCK+0644, S_IFIFO+0644
+ };
+ 
+-static void
+-romfs_read_inode(struct inode *i)
++static struct inode *
++romfs_iget(struct super_block *sb, unsigned long ino)
+ {
+-	int nextfh, ino;
++	int nextfh;
+ 	struct romfs_inode ri;
++	struct inode *i;
++
++	ino &= ROMFH_MASK;
++	i = iget_locked(sb, ino);
++	if (!i)
++		return ERR_PTR(-ENOMEM);
++	if (!(i->i_state & I_NEW))
++		return i;
+ 
+-	ino = i->i_ino & ROMFH_MASK;
+ 	i->i_mode = 0;
+ 
+ 	/* Loop for finding the real hard link */
+ 	for(;;) {
+ 		if (romfs_copyfrom(i, &ri, ino, ROMFH_SIZE) <= 0) {
+-			printk("romfs: read error for inode 0x%x\n", ino);
+-			return;
++			printk("romfs: read error for inode 0x%lx\n", ino);
++			iget_failed(i);
++			return ERR_PTR(-EIO);
  		}
-+		unlock_new_inode(inode);
- 	}
--
- 	return inode;
+ 		/* XXX: do romfs_checksum here too (with name) */
  
- out_ino:
+@@ -548,6 +564,8 @@ romfs_read_inode(struct inode *i)
+ 			init_special_inode(i, ino,
+ 					MKDEV(nextfh>>16,nextfh&0xffff));
+ 	}
++	unlock_new_inode(i);
++	return i;
+ }
+ 
+ static struct kmem_cache * romfs_inode_cachep;
+@@ -599,7 +617,6 @@ static int romfs_remount(struct super_block *sb, int *flags, char *data)
+ static const struct super_operations romfs_ops = {
+ 	.alloc_inode	= romfs_alloc_inode,
+ 	.destroy_inode	= romfs_destroy_inode,
+-	.read_inode	= romfs_read_inode,
+ 	.statfs		= romfs_statfs,
+ 	.remount_fs	= romfs_remount,
+ };
 
