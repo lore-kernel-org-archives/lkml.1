@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbXJAUzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXJAU5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbXJAUzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbXJAUzc
+	id S1756821AbXJAU5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbXJAU5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:55:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60996 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755147AbXJAUza (ORCPT
+	Mon, 1 Oct 2007 16:57:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54561
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752628AbXJAU5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:55:30 -0400
-Date: Mon, 1 Oct 2007 13:55:29 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-In-Reply-To: <20070929020049.f73f4aea.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com>
- <200709280742.38262.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
- <1191002119.18147.80.camel@lappy> <Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
- <1191003950.18147.85.camel@lappy> <20070929011311.8b51dedb.akpm@linux-foundation.org>
- <1191055632.18147.101.camel@lappy> <20070929020049.f73f4aea.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Oct 2007 16:57:10 -0400
+Date: Mon, 01 Oct 2007 13:57:10 -0700 (PDT)
+Message-Id: <20071001.135710.99174896.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: nuclearcat@nuclearcat.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4701541B.70108@cosmosbay.com>
+References: <20070930223503.M8966@nuclearcat.com>
+	<47008CB0.7010808@cosmosbay.com>
+	<4701541B.70108@cosmosbay.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Sep 2007, Andrew Morton wrote:
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Mon, 01 Oct 2007 22:10:03 +0200
 
-> > atomic allocations. And with SLUB using higher order pages, atomic !0
-> > order allocations will be very very common.
+> So maybe the following patch is necessary...
 > 
-> Oh OK.
+> I believe IPV6 & DCCP are immune to this problem.
 > 
-> I thought we'd already fixed slub so that it didn't do that.  Maybe that
-> fix is in -mm but I don't think so.
+> Thanks again Denys for spotting this.
 > 
-> Trying to do atomic order-1 allocations on behalf of arbitray slab caches
-> just won't fly - this is a significant degradation in kernel reliability,
-> as you've very easily demonstrated.
+> Eric
+> 
+> [PATCH] TCP : secure_tcp_sequence_number() should not use a too fast clock
+> 
+> TCP V4 sequence numbers are 32bits, and RFC 793 assumed a 250 KHz clock.
+> In order to follow network speed increase, we can use a faster clock, but
+> we should limit this clock so that the delay between two rollovers is
+> greater than MSL (TCP Maximum Segment Lifetime : 2 minutes)
+> 
+> Choosing a 64 nsec clock should be OK, since the rollovers occur every
+> 274 seconds.
+> 
+> Problem spotted by Denys Fedoryshchenko
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Ummm... SLAB also does order 1 allocations. We have always done them.
+Thanks a lot Eric for bringing closure to this.
 
-See mm/slab.c
-
-/*
- * Do not go above this order unless 0 objects fit into the slab.
- */
-#define BREAK_GFP_ORDER_HI      1
-#define BREAK_GFP_ORDER_LO      0
-static int slab_break_gfp_order = BREAK_GFP_ORDER_LO;
-
+I'll apply this and add a reference in the commit message to the
+changeset that introduced this problem, since it might help
+others who look at this.
