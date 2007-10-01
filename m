@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbXJARRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbXJARZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbXJARRl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXJARRe
+	id S1754460AbXJARZa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXJARZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:17:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54823 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbXJARRd (ORCPT
+	Mon, 1 Oct 2007 13:25:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41474 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbXJARZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:17:33 -0400
-Date: Mon, 1 Oct 2007 10:15:43 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jiri Kosina <jkosina@suse.cz>, Jeff Garzik <jgarzik@pobox.com>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for
-	wrong class
-Message-ID: <20071001171543.GA6653@kroah.com>
-References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com> <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com> <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz> <47010E01.2010001@pobox.com> <Pine.LNX.4.64.0710011720210.7567@jikos.suse.cz> <20071001162546.GB6051@kroah.com> <20071001170337.GJ12049@parisc-linux.org>
+	Mon, 1 Oct 2007 13:25:20 -0400
+Date: Mon, 1 Oct 2007 19:25:19 +0200
+From: Jan Kara <jack@suse.cz>
+To: Denis Cheng <crquan@gmail.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       cr_quan@163.com
+Subject: Re: [PATCH] fs/dcache.c: revamped to use a more straightforward and efficient way to operate
+Message-ID: <20071001172519.GC4178@atrey.karlin.mff.cuni.cz>
+References: <1190546051-15590-1-git-send-email-crquan@gmail.com> <1190750670-8264-1-git-send-email-crquan@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071001170337.GJ12049@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1190750670-8264-1-git-send-email-crquan@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 11:03:38AM -0600, Matthew Wilcox wrote:
-> On Mon, Oct 01, 2007 at 09:25:46AM -0700, Greg KH wrote:
-> > For config items, we don't want to modify them in any way, we just want
-> > to pass-through the data direct from the device.  Look at the sysfs and
-> > proc files for pci config spaces.  They are returning binary data stored
-> > in the device directly.  We do not want to have to start modifying that
-> > data directly just to handle messed up devices like this.
+  Hello,
+
+  thanks for the patch. I have a few comments to it:
+1) the patch should have a description in it, not only an email subject
+2) usually, if an 'if' branch ends with return, as is the case in your
+   patch, we don't use 'else' for the other branch...
+
+BTW: I'm not convinced your code would be faster (or slower) than the
+original one but you're right it will be easier to read...
+
+								Honza
+
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  fs/dcache.c |   39 ++++++++++++++++++---------------------
+>  1 files changed, 18 insertions(+), 21 deletions(-)
 > 
-> Nobody's talking about changing the raw pci data.  What we're talking
-> about is changing the value read out of
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 678d39d..05ed44a 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -1138,29 +1138,26 @@ struct dentry * d_alloc_anon(struct inode *inode)
+>  	
+>  	spin_lock(&dcache_lock);
+>  	res = __d_find_alias(inode, 0);
+> -	if (!res) {
+> -		/* attach a disconnected dentry */
+> -		res = tmp;
+> -		tmp = NULL;
+> -		spin_lock(&res->d_lock);
+> -		res->d_sb = inode->i_sb;
+> -		res->d_parent = res;
+> -		res->d_inode = inode;
+> -		res->d_flags |= DCACHE_DISCONNECTED;
+> -		res->d_flags &= ~DCACHE_UNHASHED;
+> -		list_add(&res->d_alias, &inode->i_dentry);
+> -		hlist_add_head(&res->d_hash, &inode->i_sb->s_anon);
+> -		spin_unlock(&res->d_lock);
+> -
+> -		inode = NULL; /* don't drop reference */
+> -	}
+> -	spin_unlock(&dcache_lock);
+> -
+> -	if (inode)
+> +	if (unlikely(res)) {
+> +		spin_unlock(&dcache_lock);
+>  		iput(inode);
+> -	if (tmp)
+>  		dput(tmp);
+> -	return res;
+> +		return res;
+> +	} else {
+> +		/* attach a disconnected dentry */
+> +		spin_lock(&tmp->d_lock);
+> +		tmp->d_sb = inode->i_sb;
+> +		tmp->d_parent = tmp;
+> +		tmp->d_inode = inode;
+> +		tmp->d_flags |= DCACHE_DISCONNECTED;
+> +		tmp->d_flags &= ~DCACHE_UNHASHED;
+> +		list_add(&tmp->d_alias, &inode->i_dentry);
+> +		hlist_add_head(&tmp->d_hash, &inode->i_sb->s_anon);
+> +		spin_unlock(&tmp->d_lock);
+> +
+> +		spin_unlock(&dcache_lock);
+> +		return tmp;
+> +	}
+>  }
+>  
+>  
+> -- 
+> 1.5.3.2
 > 
-> $ cat /sys/bus/pci/devices/0000\:00\:00.0/class 
-> 0x060000
-
-I know, but the next request will be to also fix up those raw values as
-someone will have a tool that only uses them :)
-
-> We do tweak at least some of the other similar values (vendor, for sure)
-> to work around bugs; not sure we have an example for changing the class
-> value yet.
-> 
-> pciutils knows that the kernel has potentially fixed up the values in
-> the individual files, and to trust those over the raw data.
-
-Ah, cool, I didn't realize that pciutils handled this kind of mismatch.
-That's good to know.
-
-thanks,
-
-greg k-h
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
