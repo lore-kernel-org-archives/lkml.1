@@ -1,112 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbXJASIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXJASIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbXJASIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 14:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXJASHw
+	id S1753280AbXJASIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 14:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXJASIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 14:07:52 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48894 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbXJASHu (ORCPT
+	Mon, 1 Oct 2007 14:08:12 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42692
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbXJASIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 14:07:50 -0400
-To: neilb@suse.de
-CC: hch@infradead.org, trond.myklebust@fys.uio.no, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <18172.27035.251565.338666@notabene.brown> (message from Neil
-	Brown on Fri, 28 Sep 2007 12:40:27 +1000)
-Subject: Re: [patch 2/2] VFS: allow filesystem to override mknod capability checks
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu>
-	<E1IZn0c-0003qS-00@dorka.pomaz.szeredi.hu> <18172.27035.251565.338666@notabene.brown>
-Message-Id: <E1IcPfE-0000Mk-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 01 Oct 2007 20:06:40 +0200
+	Mon, 1 Oct 2007 14:08:11 -0400
+Date: Mon, 1 Oct 2007 11:09:22 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: OOM killer invoked on 2.6.20.3, need help understanding why
+In-Reply-To: <1191257772.8354.3.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0710011106520.20712@asgard.lang.hm>
+References: <Pine.LNX.4.64.0710010810170.20712@asgard.lang.hm>
+ <1191257772.8354.3.camel@lappy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Monday September 24, miklos@szeredi.hu wrote:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Add a new super block flag, that results in the VFS not checking if
-> > the current process has enough privileges to do an mknod().
-> > 
-> > If this flag is set, all mounts for this super block will have the
-> > "nodev" flag implied.
-> > 
-> > This is needed on filesystems, where an unprivileged user may be able
-> > to create a device node, without causing security problems.
-> > 
-> > One such example is "mountlo" a loopback mount utility implemented
-> > with fuse and UML, which runs as an unprivileged userspace process.
-> > In this case the user does in fact have the right to create device
-> > nodes within the filesystem image, as long as the user has write
-> > access to the image.  Since the filesystem is mounted with "nodev",
-> > adding device nodes is not a security concern.
-> 
-> I must admit that I don't feel very comfortable about this.  I wonder
-> how many more flags we might be tempted to add to allow
-> user-controlled filesystems to do interesting things.  Somehow I doubt
-> this will be the last, so we should be very careful allowing it to be
-> the first (or is it the second already?)
+On Mon, 1 Oct 2007, Peter Zijlstra wrote:
 
-Or third ;)
+> On Mon, 2007-10-01 at 08:57 -0700, david@lang.hm wrote:
+>> I have a dual dual-core Opteron box running a 32 bit 2.6.20.3 kernel with
+>> 4G himem (16G in the box) serving as a iptables firewall. I's got E1000
+>> network cards and a LSI raid controller.
+>
+> OOh, 64bit machine. Seems like a good idea to run a 64bit kernel on
+> it :-)
 
-Yes, I've always argued, that permission checking needs to be pushed
-to the filesystem, since the VFS can't always do a good enough job.
+expecially with 16G of ram in it ;-)
 
-My usual example is sshfs, where it is just impossible to know the
-uid/gid mapping between the server and the client.  So any permission
-checking based on uid or gid on the client simply can't work, the only
-sane thing to do is to delegate the permission checking to the server.
-Which works beautifully, since the server is an unprivileged process,
-and everything automatically works out.
+unfortunantly the last time I tried a mixed 64/32 system I ran into 
+mysterious lockups (that I now think were the iptables interface bugs), 
+and haven't convinced management to let me try again, and I haven't 
+migrated everything to 64 bit machines to convert the standard system 
+image to 64 bit (I'm close, half a dozen machines out of a few hundred, 
+but not _quite_ there)
 
-All the fuse kernel module has to do is to basically define
-->permission() to always return success, and let the userspace
-filesystem do the permission checking.
+>> this morning it died with the message 'kernel panic, out of memory and no
+>> process to kill'
+>>
+>> gong back through it's syslogs I've got quite a few logs, but I need help
+>> in understanding what went wrong (and if it's preventable)
+>>
+>> the process that was running and triggered the OOM is a script
+>>
+>> #!/bin/bash
+>>
+>> PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+>>
+>> while :
+>> do
+>>    logger -t maxconns `cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count`
+>>    logger -t afdslog `cat /proc/sys/fs/file-nr |awk '{print $1}'`
+>>
+>>    sleep 5
+>> done
+>>
+>> since the box is a dedicated firewall there is very little running on it
+>> (a few other monitoring scripts like this)
+>>
+>> the conntrack count that was being reported was relativly low (around
+>> 34k, the max is set at 1m)
+>>
+>> if I'm reading the logs correctly it looks like it ran out of lowmem, but
+>> had a lot of himem still available. but I don't know what would have eaten
+>> up the lowmem.
+>>
+>> now the logs and other info
+>>
+>> Oct  1 06:01:04 g1a-c maxconns: 34317
+>> Oct  1 06:01:05 g1a-c kernel: printk: 1887 messages suppressed.
+>> Oct  1 06:01:05 g1a-c kernel: maxconns invoked oom-killer: gfp_mask=0x84d0, order=0, oomkilladj=0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c0147850>] out_of_memory+0x100/0x130
+>> Oct  1 06:01:05 g1a-c kernel:  [<c0148b2b>] __alloc_pages+0x22b/0x2d0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c01135b1>] pte_alloc_one+0x11/0x20
+>> Oct  1 06:01:05 g1a-c kernel:  [<c014feaa>] __pte_alloc+0x1a/0xb0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c0150369>] copy_pte_range+0x289/0x2b0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c01504b9>] copy_page_range+0x129/0x170
+>> Oct  1 06:01:05 g1a-c kernel:  [<c011e024>] dup_mm+0x214/0x2e0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c011e179>] copy_mm+0x89/0xa0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c011e91a>] copy_process+0x33a/0xc60
+>> Oct  1 06:01:05 g1a-c kernel:  [<c011f2a5>] do_fork+0x65/0x1f0
+>> Oct  1 06:01:05 g1a-c kernel:  [<c027e2c2>] copy_to_user+0x32/0x50
+>> Oct  1 06:01:05 g1a-c kernel:  [<c0101722>] sys_clone+0x32/0x40
+>> Oct  1 06:01:05 g1a-c kernel:  [<c0102a8e>] syscall_call+0x7/0xb
+>> Oct  1 06:01:05 g1a-c kernel:  =======================
+>> Oct  1 06:01:05 g1a-c kernel: Mem-info:
+>> Oct  1 06:01:05 g1a-c kernel: DMA per-cpu:
+>> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: Normal per-cpu:
+>> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 104   Cold: hi:   62, btch:  15 usd:  58
+>> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  22   Cold: hi:   62, btch:  15 usd:  52
+>> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  30   Cold: hi:   62, btch:  15 usd:  58
+>> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  15   Cold: hi:   62, btch:  15 usd:  60
+>> Oct  1 06:01:05 g1a-c kernel: HighMem per-cpu:
+>> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 105   Cold: hi:   62, btch:  15 usd:   8
+>> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  51   Cold: hi:   62, btch:  15 usd:   3
+>> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd: 122   Cold: hi:   62, btch:  15 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  42   Cold: hi:   62, btch:  15 usd:   0
+>> Oct  1 06:01:05 g1a-c kernel: Active:3496 inactive:616 dirty:16 writeback:0 unstable:0
+>> Oct  1 06:01:05 g1a-c kernel:  free:3941515 slab:6779 mapped:843 pagetables:48 bounce:0
+>> Oct  1 06:01:05 g1a-c kernel: DMA free:3548kB min:68kB low:84kB high:100kB active:16kB inactive:0kB present:16256kB pages_scanned:56 all_unreclaimable? yes
+>> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 873 16240
+>> Oct  1 06:01:05 g1a-c kernel: Normal free:3640kB min:3744kB low:4680kB high:5616kB active:148kB inactive:0kB present:894080kB pages_scanned:7196 all_unreclaimable? yes
+>> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 122936
+>> Oct  1 06:01:05 g1a-c kernel: HighMem free:15758872kB min:512kB low:17000kB high:33492kB active:13820kB inactive:2464kB present:15735808kB pages_scanned:0 all_unreclaimable? no
+>> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 0
+>> Oct  1 06:01:05 g1a-c kernel: DMA: 3*4kB 2*8kB 1*16kB 1*32kB 0*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3532kB
+>> Oct  1 06:01:05 g1a-c kernel: Normal: 0*4kB 23*8kB 6*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3640kB
+>> Oct  1 06:01:05 g1a-c kernel: HighMem: 122*4kB 658*8kB 622*16kB 464*32kB 391*64kB 336*128kB 277*256kB 226*512kB 169*1024kB 135*2048kB 3668*4096kB = 15758872kB
+>> Oct  1 06:01:05 g1a-c kernel: Swap cache: add 0, delete 0, find 0/0, race 0+0
+>> Oct  1 06:01:05 g1a-c kernel: Free swap  = 2048276kB
+>> Oct  1 06:01:05 g1a-c kernel: Total swap = 2048276kB
+>> Oct  1 06:01:05 g1a-c kernel: Free swap:       2048276kB
+>
+> Seems like it ran out of memory in zone normal. Looks like it all went to SLAB.
+> Could you run your regular workload, and append /proc/slabinfo onto a file every 5 minutes or so?
+>
+> That should tell us who is using all this memory. (assuming it reproduces...)
 
-This works fine, except a couple of things, like checking the sticky
-bit on a directory, and mknod().
+will do.
 
-> A more concrete comment on the patch:  Is it really necessary to
-> introduce IS_MNT_NODEV??  Why not simply test both the flags
-> (MS_MKNOD_NOCAP and MNT_NODEV) before allowing the mknod?
+David Lang
 
-Because we need MNT_NODEV on _all_ mounts belonging to a superblock,
-not just the one on which mknod was performed on, which would get
-really ugly.  This way it's simple: if the MS_MKNOD_NOCAP is specified
-for the super block, that implies, that devices can't be opened.
-
-> Do we actually need a new flag?  Would not a combination of MS_NODEV
-> and MS_SETUSER achieve the same thing (near enough)?
-
-See above.
-
-> Do you imagine this flag being set as a mount option (-o unprivmknod)
-> or does the filesystem set it itself?
-
-I imagine this flag to usually be set by the filesystem itself.  But
-it could be a separate mount option.  I guess it could make sense in
-some non-fuse cases as well.
-
-> If the latter, maybe this test should be moved down into the
-> filesystems ->mknod operation.  Most filesystems get
->  
-> 	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD))
->  		return -EPERM;
-> 
-> at the top of ->mknod.  fuse can do whatever it likes without
-> bothering common code.
-
-Yes, that's one of the options, but it would be a huge change, with
-nasty security implications for past and future filesystems.
-
-> According to fs.h, we only support 32 fs-independent mount-flags, and
-> over half are in use.  I'm not convinced we should spend one on such a
-> narrow requirement.
-
-I think there's consensus on the need for a new mount API.  Not just
-because the 32 bits for the flags will be exhausted sooner or later
-anyway, but the current API is limited in lots of other ways.
-
-Miklos
