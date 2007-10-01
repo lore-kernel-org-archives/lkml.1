@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXJAHdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXJAHfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbXJAHdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 03:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbXJAHd3
+	id S1754337AbXJAHfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 03:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXJAHfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 03:33:29 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45880 "EHLO il.qumranet.com"
+	Mon, 1 Oct 2007 03:35:10 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:45140 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbXJAHd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 03:33:28 -0400
-Message-ID: <4700A649.9020700@qumranet.com>
-Date: Mon, 01 Oct 2007 09:48:25 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpatch and kernel/sched.c
-References: <20070928105345.GC18163@shadowen.org>	<20071001064448.GA4239@elte.hu> <20071001003007.4e90143b.akpm@linux-foundation.org>
-In-Reply-To: <20071001003007.4e90143b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751314AbXJAHfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 03:35:09 -0400
+Subject: Re: What's in linux-leds.git for 2.6.24?
+From: Richard Purdie <rpurdie@rpsys.net>
+To: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1191196330.6115.49.camel@localhost.localdomain>
+References: <1191196330.6115.49.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 01 Oct 2007 08:34:57 +0100
+Message-Id: <1191224097.5938.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 01 Oct 2007 09:48:25 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> this is actually a false positive - as the debug code constructs a 
->> printk output _without_ \n. So the script should check whether there's 
->> any \n in the printk string - if there is none, do not emit a warning. 
->> (if you implement that then i think it can remain a warning and does not 
->> need to move to CHECK.)
->>     
->
-> Yeah, it does that sometimes.  I don't think it's fixable within the scope
-> of checkpatch.  It needs to check whether some preceding printk which might
-> not even be in the patch has a \n:
->
-> 	printk(KERN_ERR "foo");
-> 	<100 lines of whatever>
-> +	printk("bar\n");
->
-> we're screwed...
->
->   
+On Mon, 2007-10-01 at 00:52 +0100, Richard Purdie wrote:
+> The leds tree doesn't have much in it, basically some changes to the
+> cobalt LED drivers.
+> 
+> http://git.o-hand.com/?p=linux-rpurdie-leds;a=shortlog;h=for-mm
+> 
+> Yoichi Yuasa (3):
+>       leds: Rename leds-cobalt driver
+>       leds: Add Cobalt Raq series LEDs support
+>       leds: Update Cobalt Qube series front LED support
 
-Isn't that broken on SMP (or with preemption) anyway?
+The missing diffstat:
+
+ drivers/leds/Kconfig            |   13 ++-
+ drivers/leds/Makefile           |    3 
+ drivers/leds/leds-cobalt-qube.c |  102 +++++++++++++++++++++++++++++
+ drivers/leds/leds-cobalt-raq.c  |  138 ++++++++++++++++++++++++++++++++++++++++
+ drivers/leds/leds-cobalt.c      |   43 ------------
+ 5 files changed, 252 insertions(+), 47 deletions(-)
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Richard
 
