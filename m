@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbXJAStX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbXJASyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbXJAStX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 14:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXJAStO
+	id S1755343AbXJASyh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 14:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXJASy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 14:49:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:61646 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbXJAStN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 14:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ll4RVce2BT8UQdxOggs8tOdfJ/bhUbwQPZtCihW7dQryCNLlgtMpMrwjKXDffW6QU714wBcBMpdgtwNzyPlVQcXrBySLb3rUDUSxMDz2Mp1rAP0+P+PXXOtblFRGlQEqv1tRyVzrmGScpMYEAoRpRyRmfo/zw4IqFCuiD5dl2zw=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: F_DUPFD_CLOEXEC implementation
-Date: Mon, 1 Oct 2007 19:49:03 +0100
-User-Agent: KMail/1.9.1
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <200710011107.15846.vda.linux@googlemail.com> <20071001181648.GB8181@ftp.linux.org.uk>
-In-Reply-To: <20071001181648.GB8181@ftp.linux.org.uk>
+	Mon, 1 Oct 2007 14:54:29 -0400
+Received: from www.tglx.de ([62.245.132.106]:43810 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbXJASy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 14:54:28 -0400
+Date: Mon, 1 Oct 2007 20:54:21 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: David Bahi <dbahi@novell.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Gregory Haskins <GHaskins@novell.com>
+Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
+In-Reply-To: <200710011936.01528.ak@suse.de>
+Message-ID: <alpine.LFD.0.9999.0710012052310.20478@localhost.localdomain>
+References: <46FA4A800200006C000192FE@sinclair.provo.novell.com> <200710011936.01528.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710011949.03482.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 19:16, Al Viro wrote:
-> 	* it's on a bunch of cyclic lists.  Have its neighbor
-> go away while you are doing all that crap => boom
-> 	* there's that thing call current position...  It gets buggered.
-> 	* overwriting it while another task might be in the middle of
-> syscall involving it => boom
+On Mon, 1 Oct 2007, Andi Kleen wrote:
 
-Hm, I suspected that it's herecy. Any idea how to do it cleanly?
+> On Wednesday 26 September 2007 20:03:12 David Bahi wrote:
+> > Thanks to tglx and ghaskins for all the help in tracking down a very
+> > early nmi_watchdog crash on certain x86_64 machines.
+> 
+> The patch is totally bogus. irq 0 doesn't say anything about whether
+> the current CPU still works or not. You always need some local
+> interrupt. This basically disables the NMI watchdog for the non boot CPUs.
+> 
+> It's even wrong on i386 -- i wonder how that broken patch
+> made it in there. I'll remove it there.
 
-> 	* non-cooperative tasks reading *in* *parallel* from the same
-> opened file are going to have a lot more serious problems than agreeing
-> on O_NONBLOCK anyway, so I really don't understand what the hell is that for.
+Right, it's wrong for the broadcast case, but simply removing it will
+trigger false positives on the CPU which runs the broadcast timer. I
+fix this proper.
 
-They don't even need to read in parallel, just having shared fd is enough.
-Think about pipes, sockets and terminals. A real-world scenario:
-
-* a process started from shell (interactive or shell script)
-* it sets O_NONBLOCK and does a read from fd 0...
-* it gets killed (kill -9, whatever)
-* shell suddenly has it's fd 0 in O_NONBLOCK mode
-* shell and all subsequent commands started from it unexpectedly have
-  O_NONBLOCKed stdin.
---
-vda
+    tglx
