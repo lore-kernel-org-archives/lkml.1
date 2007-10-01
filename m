@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXJAPWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbXJAPWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbXJAPWG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 11:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXJAPVz
+	id S1755365AbXJAPWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 11:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXJAPV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 11:21:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53133 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbXJAPVz (ORCPT
+	Mon, 1 Oct 2007 11:21:59 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:57733 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbXJAPV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 11:21:55 -0400
-Date: Mon, 1 Oct 2007 17:21:53 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fwd: x86_64 and AMD with C1E
-Message-ID: <20071001152153.GB19797@one.firstfloor.org>
-References: <20071001101532.025d652f@localhost> <p73r6kf6uwz.fsf@bingen.suse.de> <b70f2f960710010546k4658aa1ay466f243ac707c989@mail.gmail.com> <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com> <alpine.LRH.0.999.0710011612001.7353@www.tglx.de> <20071001143225.GA19797@one.firstfloor.org> <alpine.LRH.0.999.0710011652470.7353@www.tglx.de>
+	Mon, 1 Oct 2007 11:21:58 -0400
+Date: Mon, 1 Oct 2007 21:02:47 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] Add sysfs control to modify a user's cpu share
+Message-ID: <20071001153247.GE5724@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <1190724893.13716.8.camel@Homer.simpson.net> <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.0.999.0710011652470.7353@www.tglx.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071001144402.GA3505@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 01, 2007 at 04:44:02PM +0200, Ingo Molnar wrote:
+> but there seems to be a bug in it, i get this:
+> 
+>  kobject_add failed for 500 with -EEXIST, don't try to register things with the same name in the same directory.
 
-> So if the
-> number of hpet channels is greater/equal to the number of possible
-> CPUs it's perfectly fine and does not need IPI at all.
+Looks like a remove_dir/create_dir race ..
 
-That is only a stop gap then. I don't see this being
-generally true in the future. e.g. Intel announced SMT will be soon 
-back so even a standard dual core would exceed it with
-current southbridges.
+	free_user()			alloc_uid()
 
-Also I'm not sure but I suspect non Intel HPETs have less than
-three timers. Certainly they generally miss the 64bitness.
+	   uid_hash_remove(up);
 
--Andi
+					uid_hash_insert(new, hashent);
+
+	   schedule_work()
+					user_kobject_create();
+					kobject_add();	-> Boom!
+
+	   remove_user_sysfs_dir();
+
+/me looks up sysfs programming examples ..
+
+-- 
+Regards,
+vatsa
