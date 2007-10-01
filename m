@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbXJAKo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbXJAKqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbXJAKo2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXJAKoV
+	id S1753846AbXJAKqn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 06:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbXJAKqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:44:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58062 "EHLO mx2.mail.elte.hu"
+	Mon, 1 Oct 2007 06:46:36 -0400
+Received: from tidos.tid.es ([193.145.240.2]:46558 "EHLO correo.tid.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbXJAKoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:44:21 -0400
-Date: Mon, 1 Oct 2007 12:44:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch and kernel/sched.c
-Message-ID: <20071001104406.GC15488@elte.hu>
-References: <20070928105345.GC18163@shadowen.org> <20071001064448.GA4239@elte.hu> <20071001003007.4e90143b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001003007.4e90143b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	id S1751341AbXJAKqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:46:35 -0400
+Date: Mon, 01 Oct 2007 12:46:08 +0200
+From: Miguel <mc354@tid.es>
+Subject: Re: software unplug and plug USB
+In-reply-to: <4700C649.90300@wpkg.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <1191235568.6014.58.camel@McM>
+MIME-version: 1.0
+X-Mailer: Evolution 2.10.1
+Content-type: text/plain
+Content-transfer-encoding: 7BIT
+References: <46FCF0F5.9030004@wpkg.org> <1191224165.6014.12.camel@McM>
+ <4700A44C.2010700@wpkg.org> <1191226692.6014.16.camel@McM>
+ <4700C649.90300@wpkg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+if I remove ehci_hcd / uhci_hcd / ohci_hcd , some other devices like
+touchscreen, GPS and keyboard could stop working.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+backup_modules doesn't matter here, is my personal backup. I have tried
+also to recompile some modules because some times my modem huaweis is
+recognized like usb mass storage.
 
-> > > WARNING: braces {} are not necessary for single statement blocks
-> > > #5706: FILE: home/apw/git/linux-2.6/kernel/sched.c:5703:
-> > > +	if (parent->groups == parent->groups->next) {
-> > > +		pflags &= ~(SD_LOAD_BALANCE |
-> > > +				SD_BALANCE_NEWIDLE |
-> > > +				SD_BALANCE_FORK |
-> > > +				SD_BALANCE_EXEC |
-> > > +				SD_SHARE_CPUPOWER |
-> > > +				SD_SHARE_PKG_RESOURCES);
-> > > +	}
-> > > 
-> > > Ok, this one is "correct" at least for the rules as I have them.
-> > > Perhaps the message should not be emitted for very long blocks?
-> > 
-> > If a statement is not single-line, then braces _are_ fine. Where does 
-> > CodingStyle say that it's not fine?
-> 
-> I'd disagree with checkpatch there.  Again, it might be hard to fix.  
-> Wanna rename it to checkpatch-and-suggest-stuff-to-think-about.pl?
+I will try a how to guide to do what oliver commented
 
-i think checkpatch.pl is quite close to its most useful purpose and 
-role: that of a reliable tool that i can use in an automated fashion 
-too, with only very rare false positive - and not the current 50%-80% 
-false positives rate. (And i'm fighting hard for Andy to realize the 
-true scope and purpose of this script ;-)
+"You can use the bind & unbind attributes in sysfs"
 
-	Ingo
+where can i find information about that?
+
+kindest regards
+
+
+On Mon, 2007-10-01 at 12:04 +0200, Tomasz Chmielewski wrote:
+> ehci_hcd / uhci_hcd 
+> / ohci_hcd 
+
