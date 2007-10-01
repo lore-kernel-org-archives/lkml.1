@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbXI3X7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXJAAHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752994AbXI3X7M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 19:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXI3X66
+	id S1752035AbXJAAHo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 20:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXJAAHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 19:58:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:8012 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbXI3X65 (ORCPT
+	Sun, 30 Sep 2007 20:07:37 -0400
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:48494 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750698AbXJAAHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 19:58:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=cnvbJ6JG09P86lI5//wlLCltXdXsm2WHsrcHbXGNwyeipOiFvkmBv7UqEIZ/zS8oZqMQSA3VX8TRvQa4og3EYsv938zAuAfYLcL0QVRHIFw572MMUiMBWaRBOdjXZvs4F9OIpaVrL2CpRkRlhLj/i3IRHVroHgLr+dHWsngKXaI=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: F_DUPFD_CLOEXEC implementation
-Date: Mon, 1 Oct 2007 00:58:49 +0100
-User-Agent: KMail/1.9.1
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <200709300131.49320.vda.linux@googlemail.com> <Pine.LNX.4.64.0709301605340.19355@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0709301605340.19355@alien.or.mcafeemobile.com>
+	Sun, 30 Sep 2007 20:07:36 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
+Subject: Re: [2.6.23-rc8-mm2] System hangs (loops?) during boot
+Date: Mon, 1 Oct 2007 02:07:33 +0200
+User-Agent: KMail/1.9.7
+References: <200709282225.21530.elendil@planet.nl> <200709302350.30612.elendil@planet.nl> <20071001000037.475473bd@laptop.hypervisor.org>
+In-Reply-To: <20071001000037.475473bd@laptop.hypervisor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710010058.49242.vda.linux@googlemail.com>
+Message-Id: <200710010207.34430.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Oct 2007 00:07:34.0757 (UTC) FILETIME=[11842950:01C803BF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 00:11, Davide Libenzi wrote:
-> On Sun, 30 Sep 2007, Denys Vlasenko wrote:
-> 
-> > Hi Ulrich,
-> > 
-> > On Friday 28 September 2007 18:34, Ulrich Drepper wrote:
-> > > One more small change to extend the availability of creation of
-> > > file descriptors with FD_CLOEXEC set.  Adding a new command to
-> > > fcntl() requires no new system call and the overall impact on
-> > > code size if minimal.
-> > 
-> > Tangential question: do you have any idea how userspace can
-> > safely do nonblocking read or write on a potentially-shared fd?
-> > 
-> > IIUC, currently it cannot be done without races:
-> > 
-> > old_flags = fcntl(fd, F_GETFL);
-> > ...other process may change flags!...
-> > fcntl(fd, F_SETFL, old_flags | O_NONBLOCK);
-> > read(fd, ...)
-> > ...other process may see flags changed under its feet!...
-> > fcntl(fd, F_SETFL, old_flags);
-> > 
-> > Can this be fixed?
-> 
-> I'm not sure I understood correctly your use case. But, if you have two 
-> processes/threads randomly switching O_NONBLOCK on/off, your problems 
-> arise not only the F_SETFL time.
+On Monday 01 October 2007, you wrote:
+> On Sun, 30 Sep 2007 23:50:29 +0200 Frans Pop (FP) wrote:
+> > I'm not sure what you mean. I fetched the branch I think you referred
+> > to [1], but when I did a merge of that on top of v2.6.23-rc8-mm2 I
+> > got "Already up-to-date", so AFAICT that branch is fully merged into mm
+> > and I'm already running with you latest code...
+>
+> I was suggesting to download 2.6.23-rc8 and applying the -hrt patchset at
+> http://www.kernel.org/pub/linux/kernel/people/tglx/hrtimers/2.6.23-rc8/
+> on top of it.
 
-My use case is: I want to do a nonblocking read on descriptor 0 (stdin).
-It may be a pipe or a socket.
+Ah, OK. I'm afraid that was not at all clear from your previous message :-/
 
-There may be other processes which share this descriptor with me,
-I simply cannot know that. And they, too, may want to do reads on it.
+During 'make oldconfig' I got a config question about "CPU idle support", 
+which does not seem to be in rc8-mm2; is that correct? I answered N.
 
-I want to do nonblocking read in such a way that neither those other
-processes will ever see fd switching to O_NONBLOCK and back, and
-I also want to be safe from other processes doing the same.
+> That excludes all the extra stuff in -mm and should give us a good hint
+> whether HPET is really at fault.
 
-I don't see how this can be done using standard unix primitives.
---
-vda
+The system does boot with rc8 + hrt1.
+
+Andrew: any suggestions on how to trace the "real" culprit for the hang?
+
+
+Udo: I did see one issue during boot with this rc8 + hrt1 kernel.
+     System is Debian unstable.
+Setting the system clock..
+select() to /dev/rtc to wait for clock tick timed out
+
+Also, if the patchset really is not the same as in mm, then that at least 
+partially invalidates this test.
+
+Relevant lines from dmesg diff:
+-Linux version 2.6.23-rc6 [...]
++Linux version 2.6.23-rc8-hrt1 [...]
+[...]
++hpet clockevent registered
++hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
++hpet0: 3 64-bit timers, 14318180 Hz
+ ACPI: RTC can wake from S4
+ Time: tsc clocksource has been installed.
+[...]
+-Marking TSC unstable due to: possible TSC halt in C2.
+-Time: acpi_pm clocksource has been installed.
+[...]
+-Clocksource tsc unstable (delta = -473964036 ns)
+[...]
+ Real Time Clock Driver v1.12ac
+[...]
++Marking TSC unstable due to: cpufreq changes.
++Time: hpet clocksource has been installed.
++Clocksource tsc unstable (delta = -125526392 ns)
+
+# cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+hpet acpi_pm pit jiffies tsc
+# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+hpet
+
+I noted that acpi_pm is no longer mentioned in dmesg, but is still present.
+
+Cheers,
+FJP
