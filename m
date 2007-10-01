@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbXJAIlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbXJAIoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752554AbXJAIlw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 04:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbXJAIln
+	id S1754509AbXJAIoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 04:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXJAIor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 04:41:43 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:37492 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754391AbXJAIlm (ORCPT
+	Mon, 1 Oct 2007 04:44:47 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:36956 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbXJAIoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 04:41:42 -0400
-Message-ID: <4700B2A0.9040604@aitel.hist.no>
-Date: Mon, 01 Oct 2007 10:41:04 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Mon, 1 Oct 2007 04:44:46 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 1 Oct 2007 04:42:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Pavel Emelyanov <xemul@openvz.org>
+cc: Cedric Le Goater <clg@fr.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] Move the user namespace under the option
+In-Reply-To: <4700A7C5.5080005@openvz.org>
+Message-ID: <Pine.LNX.4.64.0710010440360.12789@localhost.localdomain>
+References: <46FA7D4D.8040808@openvz.org> <46FA8087.6060307@openvz.org>
+ <46FBA2A4.2040909@fr.ibm.com> <Pine.LNX.4.64.0709270837220.5275@localhost.localdomain>
+ <4700A7C5.5080005@openvz.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: x86-64 sporadic hang in  2.6.23rc7 and 2.6.22
-References: <46F8273B.8030904@aitel.hist.no> <1190669351.4035.254.camel@chaos>	<46FE5C98.1030507@aitel.hist.no> <p734phb96cb.fsf@bingen.suse.de>
-In-Reply-To: <p734phb96cb.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Helge Hafting <helge.hafting@aitel.hist.no> writes:
->   
->> shrink_dcache_memory
->>     
->
-> That usually means random memory corruption from somewhere -- dcache
-> tends to use a lot of memory and when it is corrupted anywhere these 
-> functions tend to crash while walking the lists. 
->
-> Unfortunately memory corruption is hard to track down because
-> the messenger is usually not the one to blame.
->
-> Perhaps enable slab debugging and see if it turns
-> something up. Could be also broken hardware. Does an older kernel
-> run stable? If yes and if it can be reproduced bisecting would
-> be good.
->   
-2.6.18 had no problem compiling stuff without crashing.
-Looks like I have some work to do then.
+On Mon, 1 Oct 2007, Pavel Emelyanov wrote:
 
-Helge Hafting
+> Robert P. J. Day wrote:
+> > On Thu, 27 Sep 2007, Cedric Le Goater wrote:
+> >
+> >>> diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
+> >>> index b5f41d4..dda160c 100644
+> >>> --- a/include/linux/user_namespace.h
+> >>> +++ b/include/linux/user_namespace.h
+> >>> @@ -17,7 +17,7 @@ struct user_namespace {
+> >>>
+> >>>  extern struct user_namespace init_user_ns;
+> >>>
+> >>> -#ifdef CONFIG_USER_NS
+> >>> +#ifdef CONFIG_NAMESPACES_EXPERIMENTAL
+> >
+> > is it really a good precedent to introduce Kconfig variables that
+> > literally include the word "EXPERIMENTAL"?
+>
+> How else can we call it? I proposed one config option for each
+> namespace with "depends on EXPERIMENTAL" dependency, but everyone
+> else said that two options are much better.
+
+i don't know -- perhaps something as trivially obvious as
+NAMESPACES_V2 or something.  i just think it's awkward to take a word
+like "EXPERIMENTAL" that already has a long and established history,
+and start jamming it into config variable names.  but it's just an
+observation.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
