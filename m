@@ -1,69 +1,483 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXJAF5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXJAF5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbXJAF5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXJAFxS
+	id S1756153AbXJAF5z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXJAFyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:53:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56802 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754554AbXJAFxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:53:16 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19VRxQSfD5Vw7PZCIXIsNANXQUkKnuuwhOY6kRGqr
-	HXOiorigcxkF3N
-Subject: Re: [git] CFS-devel, latest code
-From: Mike Galbraith <efault@gmx.de>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1191179736.6417.10.camel@earth>
-References: <1191179736.6417.10.camel@earth>
-Content-Type: text/plain
-Date: Mon, 01 Oct 2007 07:53:13 +0200
-Message-Id: <1191217993.28797.5.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 1 Oct 2007 01:54:36 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40925 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755029AbXJAFye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 01:54:34 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 16/19] Unionfs: coding style: take assignments out of "if" conditions
+Date: Mon,  1 Oct 2007 01:50:53 -0400
+Message-Id: <11912178633938-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
+References: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-30 at 21:15 +0200, Dmitry Adamushko wrote:
-> 
-> remove obsolete code -- calc_weighted()
-> 
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+---
+ fs/unionfs/commonfops.c |   12 ++++++++----
+ fs/unionfs/copyup.c     |    9 ++++++---
+ fs/unionfs/dirfops.c    |    6 ++++--
+ fs/unionfs/dirhelper.c  |    3 ++-
+ fs/unionfs/file.c       |   18 ++++++++++++------
+ fs/unionfs/inode.c      |   18 ++++++++++++------
+ fs/unionfs/lookup.c     |    6 ++++--
+ fs/unionfs/main.c       |   18 ++++++++++++------
+ fs/unionfs/mmap.c       |    6 ++++--
+ fs/unionfs/rdstate.c    |    3 ++-
+ fs/unionfs/rename.c     |    6 ++++--
+ fs/unionfs/subr.c       |    3 ++-
+ fs/unionfs/super.c      |    3 ++-
+ fs/unionfs/unlink.c     |    9 ++++++---
+ 14 files changed, 80 insertions(+), 40 deletions(-)
 
-Here's another piece of low hanging obsolete fruit.
-
-Remove obsolete TASK_NONINTERACTIVE.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-
-diff -uprNX /root/dontdiff git/linux-2.6.sched-devel/fs/pipe.c linux-2.6.23-rc8.d/fs/pipe.c
---- git/linux-2.6.sched-devel/fs/pipe.c	2007-10-01 06:59:51.000000000 +0200
-+++ linux-2.6.23-rc8.d/fs/pipe.c	2007-10-01 07:41:17.000000000 +0200
-@@ -45,8 +45,7 @@ void pipe_wait(struct pipe_inode_info *p
- 	 * Pipes are system-local resources, so sleeping on them
- 	 * is considered a noninteractive wait:
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index f7da687..6f2970d 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -614,7 +614,8 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	 * This is important for open-but-unlinked files, as well as mmap
+ 	 * support.
  	 */
--	prepare_to_wait(&pipe->wait, &wait,
--			TASK_INTERRUPTIBLE | TASK_NONINTERACTIVE);
-+	prepare_to_wait(&pipe->wait, &wait, TASK_INTERRUPTIBLE);
- 	if (pipe->inode)
- 		mutex_unlock(&pipe->inode->i_mutex);
- 	schedule();
-diff -uprNX /root/dontdiff git/linux-2.6.sched-devel/include/linux/sched.h linux-2.6.23-rc8.d/include/linux/sched.h
---- git/linux-2.6.sched-devel/include/linux/sched.h	2007-10-01 07:00:25.000000000 +0200
-+++ linux-2.6.23-rc8.d/include/linux/sched.h	2007-10-01 07:25:25.000000000 +0200
-@@ -174,8 +174,7 @@ print_cfs_rq(struct seq_file *m, int cpu
- #define EXIT_ZOMBIE		16
- #define EXIT_DEAD		32
- /* in tsk->state again */
--#define TASK_NONINTERACTIVE	64
--#define TASK_DEAD		128
-+#define TASK_DEAD		64
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 	fileinfo = UNIONFS_F(file);
+@@ -707,7 +708,8 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 	unionfs_lock_dentry(dentry);
+ 	orig_bstart = dbstart(dentry);
+ 	orig_bend = dbend(dentry);
+-	if ((err = unionfs_partial_lookup(dentry)))
++	err = unionfs_partial_lookup(dentry);
++	if (err)
+ 		goto out;
+ 	bstart = dbstart(dentry);
+ 	bend = dbend(dentry);
+@@ -755,7 +757,8 @@ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
-
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 
+ 	/* check if asked for local commands */
+@@ -793,7 +796,8 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 
+ 	unionfs_read_lock(dentry->d_sb);
+ 
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
+index 560919a..98bed0b 100644
+--- a/fs/unionfs/copyup.c
++++ b/fs/unionfs/copyup.c
+@@ -394,7 +394,8 @@ int copyup_dentry(struct inode *dir, struct dentry *dentry, int bstart,
+ 
+ 	sb = dir->i_sb;
+ 
+-	if ((err = is_robranch_super(sb, new_bindex)))
++	err = is_robranch_super(sb, new_bindex);
++	if (err)
+ 		goto out;
+ 
+ 	/* Create the directory structure above this dentry. */
+@@ -465,7 +466,8 @@ int copyup_dentry(struct inode *dir, struct dentry *dentry, int bstart,
+ 
+ #ifdef CONFIG_UNION_FS_XATTR
+ 	/* Selinux uses extended attributes for permissions. */
+-	if ((err = copyup_xattrs(old_lower_dentry, new_lower_dentry)))
++	err = copyup_xattrs(old_lower_dentry, new_lower_dentry);
++	if (err)
+ 		goto out_unlink;
+ #endif /* CONFIG_UNION_FS_XATTR */
+ 
+@@ -679,7 +681,8 @@ struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
+ 
+ 	verify_locked(dentry);
+ 
+-	if ((err = is_robranch_super(dir->i_sb, bindex))) {
++	err = is_robranch_super(dir->i_sb, bindex);
++	if (err) {
+ 		lower_dentry = ERR_PTR(err);
+ 		goto out;
+ 	}
+diff --git a/fs/unionfs/dirfops.c b/fs/unionfs/dirfops.c
+index ed51540..0064723 100644
+--- a/fs/unionfs/dirfops.c
++++ b/fs/unionfs/dirfops.c
+@@ -97,7 +97,8 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 
+-	if (unlikely((err = unionfs_file_revalidate(file, false))))
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
+ 		goto out;
+ 
+ 	inode = file->f_path.dentry->d_inode;
+@@ -200,7 +201,8 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 
+-	if (unlikely((err = unionfs_file_revalidate(file, false))))
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
+ 		goto out;
+ 
+ 	rdstate = UNIONFS_F(file)->rdstate;
+diff --git a/fs/unionfs/dirhelper.c b/fs/unionfs/dirhelper.c
+index 8f4a304..7a28444 100644
+--- a/fs/unionfs/dirhelper.c
++++ b/fs/unionfs/dirhelper.c
+@@ -194,7 +194,8 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
+ 
+ 	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode));
+ 
+-	if ((err = unionfs_partial_lookup(dentry)))
++	err = unionfs_partial_lookup(dentry);
++	if (err)
+ 		goto out;
+ 
+ 	bstart = dbstart(dentry);
+diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
+index 923f134..126df5e 100644
+--- a/fs/unionfs/file.c
++++ b/fs/unionfs/file.c
+@@ -24,7 +24,8 @@ static ssize_t unionfs_read(struct file *file, char __user *buf,
+ 	int err;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, false))))
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -47,7 +48,8 @@ static ssize_t unionfs_aio_read(struct kiocb *iocb, const struct iovec *iov,
+ 	struct file *file = iocb->ki_filp;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, false))))
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -72,7 +74,8 @@ static ssize_t unionfs_write(struct file *file, const char __user *buf,
+ 	int err = 0;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -104,7 +107,8 @@ static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
+ 
+ 	/* This might be deferred to mmap's writepage */
+ 	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
+-	if (unlikely((err = unionfs_file_revalidate(file, willwrite))))
++	err = unionfs_file_revalidate(file, willwrite);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -150,7 +154,8 @@ int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
+ 	int err = -EINVAL;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -197,7 +202,8 @@ int unionfs_fasync(int fd, struct file *file, int flag)
+ 	int err = 0;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index 3b58277..4e59ace 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -51,7 +51,8 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
+ 	 * bit redundant as we don't allow branch 0 to be read-only at the
+ 	 * moment
+ 	 */
+-	if ((err = is_robranch_super(dentry->d_sb, 0))) {
++	err = is_robranch_super(dentry->d_sb, 0);
++	if (err) {
+ 		err = -EROFS;
+ 		goto out;
+ 	}
+@@ -278,7 +279,8 @@ static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
+ 
+ 	BUG_ON(dbstart(old_dentry) != dbstart(new_dentry));
+ 	lower_dir_dentry = lock_parent(lower_new_dentry);
+-	if (!(err = is_robranch(old_dentry)))
++	err = is_robranch(old_dentry);
++	if (!err)
+ 		err = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
+ 			       lower_new_dentry);
+ 	unlock_dir(lower_dir_dentry);
+@@ -401,7 +403,8 @@ static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
+ 		 */
+ 		lower_dir_dentry = lock_parent(whiteout_dentry);
+ 
+-		if (!(err = is_robranch_super(dentry->d_sb, bstart)))
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err)
+ 			err = vfs_unlink(lower_dir_dentry->d_inode,
+ 					 whiteout_dentry);
+ 		dput(whiteout_dentry);
+@@ -455,7 +458,8 @@ static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
+ 
+ 		lower_dir_dentry = lock_parent(lower_dentry);
+ 
+-		if (!(err = is_robranch_super(dentry->d_sb, bindex))) {
++		err = is_robranch_super(dentry->d_sb, bindex);
++		if (!err) {
+ 			mode = S_IALLUGO;
+ 			err = vfs_symlink(lower_dir_dentry->d_inode,
+ 					  lower_dentry, symname, mode);
+@@ -556,7 +560,8 @@ static int unionfs_mkdir(struct inode *parent, struct dentry *dentry, int mode)
+ 		lower_parent_dentry = lock_parent(whiteout_dentry);
+ 
+ 		/* found a.wh.foo entry, remove it then do vfs_mkdir */
+-		if (!(err = is_robranch_super(dentry->d_sb, bstart))) {
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err) {
+ 			args.unlink.parent = lower_parent_dentry->d_inode;
+ 			args.unlink.dentry = whiteout_dentry;
+ 			run_sioq(__unionfs_unlink, &args);
+@@ -708,7 +713,8 @@ static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
+ 		lower_parent_dentry = lock_parent(whiteout_dentry);
+ 
+ 		/* found a.wh.foo entry, remove it then do vfs_mkdir */
+-		if (!(err = is_robranch_super(dentry->d_sb, bstart)))
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err)
+ 			err = vfs_unlink(lower_parent_dentry->d_inode,
+ 					 whiteout_dentry);
+ 		dput(whiteout_dentry);
+diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
+index a2c046b..a1904c9 100644
+--- a/fs/unionfs/lookup.c
++++ b/fs/unionfs/lookup.c
+@@ -119,12 +119,14 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+ 	case INTERPOSE_PARTIAL:
+ 		break;
+ 	case INTERPOSE_LOOKUP:
+-		if (unlikely((err = new_dentry_private_data(dentry))))
++		err = new_dentry_private_data(dentry);
++		if (unlikely(err))
+ 			goto out;
+ 		break;
+ 	default:
+ 		/* default: can only be INTERPOSE_REVAL/REVAL_NEG */
+-		if (unlikely((err = realloc_dentry_private_data(dentry))))
++		err = realloc_dentry_private_data(dentry);
++		if (unlikely(err))
+ 			goto out;
+ 		break;
+ 	}
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index 2fe6aaa..ffb0da1 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -364,7 +364,8 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
+ 			goto out;
+ 		}
+ 
+-		if ((err = check_branch(&nd))) {
++		err = check_branch(&nd);
++		if (err) {
+ 			printk(KERN_ERR "unionfs: lower directory "
+ 			       "'%s' is not a valid branch\n", name);
+ 			path_release(&nd);
+@@ -648,7 +649,8 @@ static int unionfs_read_super(struct super_block *sb, void *raw_data,
+ 
+ 	/* link the upper and lower dentries */
+ 	sb->s_root->d_fsdata = NULL;
+-	if (unlikely((err = new_dentry_private_data(sb->s_root))))
++	err = new_dentry_private_data(sb->s_root);
++	if (unlikely(err))
+ 		goto out_freedpd;
+ 
+ 	/* Set the lower dentries for s_root */
+@@ -738,13 +740,17 @@ static int __init init_unionfs_fs(void)
+ 
+ 	pr_info("Registering unionfs " UNIONFS_VERSION "\n");
+ 
+-	if (unlikely((err = unionfs_init_filldir_cache())))
++	err = unionfs_init_filldir_cache();
++	if (unlikely(err))
+ 		goto out;
+-	if (unlikely((err = unionfs_init_inode_cache())))
++	err = unionfs_init_inode_cache();
++	if (unlikely(err))
+ 		goto out;
+-	if (unlikely((err = unionfs_init_dentry_cache())))
++	err = unionfs_init_dentry_cache();
++	if (unlikely(err))
+ 		goto out;
+-	if (unlikely((err = init_sioq())))
++	err = init_sioq();
++	if (unlikely(err))
+ 		goto out;
+ 	err = register_filesystem(&unionfs_fs_type);
+ out:
+diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
+index 37ad761..ac1a060 100644
+--- a/fs/unionfs/mmap.c
++++ b/fs/unionfs/mmap.c
+@@ -211,7 +211,8 @@ static int unionfs_readpage(struct file *file, struct page *page)
+ 	int err;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, false))))
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -275,7 +276,8 @@ static int unionfs_commit_write(struct file *file, struct page *page,
+ 	BUG_ON(file == NULL);
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+-	if (unlikely((err = unionfs_file_revalidate(file, true))))
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
+index e96b6bc..93ea588 100644
+--- a/fs/unionfs/rdstate.c
++++ b/fs/unionfs/rdstate.c
+@@ -72,7 +72,8 @@ static int guesstimate_hash_size(struct inode *inode)
+ 		return UNIONFS_I(inode)->hashsize;
+ 
+ 	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+-		if (!(lower_inode = unionfs_lower_inode_idx(inode, bindex)))
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode)
+ 			continue;
+ 
+ 		if (lower_inode->i_size == DENTPAGE)
+diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
+index e6a2a3c..91d41d4 100644
+--- a/fs/unionfs/rename.c
++++ b/fs/unionfs/rename.c
+@@ -75,7 +75,8 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 		}
+ 
+ 		lower_wh_dir_dentry = lock_parent(lower_wh_dentry);
+-		if (!(err = is_robranch_super(old_dentry->d_sb, bindex)))
++		err = is_robranch_super(old_dentry->d_sb, bindex);
++		if (!err)
+ 			err = vfs_unlink(lower_wh_dir_dentry->d_inode,
+ 					 lower_wh_dentry);
+ 
+@@ -196,7 +197,8 @@ static int do_unionfs_rename(struct inode *old_dir,
+ 			continue;
+ 
+ 		unlink_dir_dentry = lock_parent(unlink_dentry);
+-		if (!(err = is_robranch_super(old_dir->i_sb, bindex)))
++		err = is_robranch_super(old_dir->i_sb, bindex);
++		if (!err)
+ 			err = vfs_unlink(unlink_dir_dentry->d_inode,
+ 					 unlink_dentry);
+ 
+diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
+index ab409ce..d97086a 100644
+--- a/fs/unionfs/subr.c
++++ b/fs/unionfs/subr.c
+@@ -87,7 +87,8 @@ int create_whiteout(struct dentry *dentry, int start)
+ 		if (unlikely(err < 0))
+ 			goto out;
+ 		lower_dir_dentry = lock_parent(lower_wh_dentry);
+-		if (!(err = is_robranch_super(dentry->d_sb, bindex)))
++		err = is_robranch_super(dentry->d_sb, bindex);
++		if (!err)
+ 			err = vfs_create(lower_dir_dentry->d_inode,
+ 					 lower_wh_dentry,
+ 					 ~current->fs->umask & S_IRWXUGO,
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 45dc66e..0da9181 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -372,7 +372,8 @@ found_insertion_point:
+ 	 * because this code base doesn't support stacking unionfs: the ODF
+ 	 * code base supports that correctly.
+ 	 */
+-	if ((err = check_branch(&nd))) {
++	err = check_branch(&nd);
++	if (err) {
+ 		printk(KERN_ERR "unionfs: lower directory "
+ 		       "\"%s\" is not a valid branch\n", optarg);
+ 		path_release(&nd);
+diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
+index 61a6fe1..a8de672 100644
+--- a/fs/unionfs/unlink.c
++++ b/fs/unionfs/unlink.c
+@@ -26,7 +26,8 @@ static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
+ 	int bindex;
+ 	int err = 0;
+ 
+-	if ((err = unionfs_partial_lookup(dentry)))
++	err = unionfs_partial_lookup(dentry);
++	if (err)
+ 		goto out;
+ 
+ 	bindex = dbstart(dentry);
+@@ -39,7 +40,8 @@ static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
+ 
+ 	/* avoid destroying the lower inode if the file is in use */
+ 	dget(lower_dentry);
+-	if (!(err = is_robranch_super(dentry->d_sb, bindex)))
++	err = is_robranch_super(dentry->d_sb, bindex);
++	if (!err)
+ 		err = vfs_unlink(lower_dir_dentry->d_inode, lower_dentry);
+ 	/* if vfs_unlink succeeded, update our inode's times */
+ 	if (!err)
+@@ -127,7 +129,8 @@ static int unionfs_rmdir_first(struct inode *dir, struct dentry *dentry,
+ 
+ 	/* avoid destroying the lower inode if the file is in use */
+ 	dget(lower_dentry);
+-	if (!(err = is_robranch(dentry)))
++	err = is_robranch(dentry);
++	if (!err)
+ 		err = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
+ 	dput(lower_dentry);
+ 
+-- 
+1.5.2.2
 
