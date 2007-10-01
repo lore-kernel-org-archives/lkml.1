@@ -1,50 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbXJAQ4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbXJARBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbXJAQ4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 12:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXJAQ4D
+	id S1754070AbXJARBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXJARBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 12:56:03 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:36904 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbXJAQ4B (ORCPT
+	Mon, 1 Oct 2007 13:01:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34832 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbXJARBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 12:56:01 -0400
-Message-ID: <47012696.2010606@nortel.com>
-Date: Mon, 01 Oct 2007 10:55:50 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jarek Poplawski <jarkao2@o2.pl>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Network slowdown due to CFS
-References: <20070926133138.GA23187@elte.hu> <20070927133123.GA6901@elte.hu> <20070927144228.GC2431@ff.dom.local> <200709281610.00682.nickpiggin@yahoo.com.au> <20071001084356.GA1866@ff.dom.local> <20071001162507.GA22791@elte.hu>
-In-Reply-To: <20071001162507.GA22791@elte.hu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 1 Oct 2007 13:01:24 -0400
+Subject: Re: OOM killer invoked on 2.6.20.3, need help understanding why
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: david@lang.hm
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0710010810170.20712@asgard.lang.hm>
+References: <Pine.LNX.4.64.0710010810170.20712@asgard.lang.hm>
+Content-Type: text/plain
+Date: Mon, 01 Oct 2007 18:56:12 +0200
+Message-Id: <1191257772.8354.3.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Oct 2007 16:55:54.0962 (UTC) FILETIME=[EE72D320:01C8044B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
 
-> But, because you assert it that it's risky to "criticise sched_yield() 
-> too much", you sure must know at least one real example where it's right 
-> to use it (and cite the line and code where it's used, with 
-> specificity)?
+On Mon, 2007-10-01 at 08:57 -0700, david@lang.hm wrote:
+> I have a dual dual-core Opteron box running a 32 bit 2.6.20.3 kernel with 
+> 4G himem (16G in the box) serving as a iptables firewall. I's got E1000 
+> network cards and a LSI raid controller.
 
-It's fine to criticise sched_yield().  I agree that new apps should 
-generally be written to use proper completion mechanisms or to wait for 
-specific events.
+OOh, 64bit machine. Seems like a good idea to run a 64bit kernel on
+it :-)
 
-However, there are closed-source and/or frozen-source apps where it's 
-not practical to rewrite or rebuild the app.  Does it make sense to 
-break the behaviour of all of these?
+> this morning it died with the message 'kernel panic, out of memory and no 
+> process to kill'
+> 
+> gong back through it's syslogs I've got quite a few logs, but I need help 
+> in understanding what went wrong (and if it's preventable)
+> 
+> the process that was running and triggered the OOM is a script
+> 
+> #!/bin/bash
+> 
+> PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+> 
+> while :
+> do
+>    logger -t maxconns `cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count`
+>    logger -t afdslog `cat /proc/sys/fs/file-nr |awk '{print $1}'`
+> 
+>    sleep 5
+> done
+> 
+> since the box is a dedicated firewall there is very little running on it 
+> (a few other monitoring scripts like this)
+> 
+> the conntrack count that was being reported was relativly low (around 
+> 34k, the max is set at 1m)
+> 
+> if I'm reading the logs correctly it looks like it ran out of lowmem, but 
+> had a lot of himem still available. but I don't know what would have eaten 
+> up the lowmem.
+> 
+> now the logs and other info
+> 
+> Oct  1 06:01:04 g1a-c maxconns: 34317
+> Oct  1 06:01:05 g1a-c kernel: printk: 1887 messages suppressed.
+> Oct  1 06:01:05 g1a-c kernel: maxconns invoked oom-killer: gfp_mask=0x84d0, order=0, oomkilladj=0
+> Oct  1 06:01:05 g1a-c kernel:  [<c0147850>] out_of_memory+0x100/0x130
+> Oct  1 06:01:05 g1a-c kernel:  [<c0148b2b>] __alloc_pages+0x22b/0x2d0
+> Oct  1 06:01:05 g1a-c kernel:  [<c01135b1>] pte_alloc_one+0x11/0x20
+> Oct  1 06:01:05 g1a-c kernel:  [<c014feaa>] __pte_alloc+0x1a/0xb0
+> Oct  1 06:01:05 g1a-c kernel:  [<c0150369>] copy_pte_range+0x289/0x2b0
+> Oct  1 06:01:05 g1a-c kernel:  [<c01504b9>] copy_page_range+0x129/0x170
+> Oct  1 06:01:05 g1a-c kernel:  [<c011e024>] dup_mm+0x214/0x2e0
+> Oct  1 06:01:05 g1a-c kernel:  [<c011e179>] copy_mm+0x89/0xa0
+> Oct  1 06:01:05 g1a-c kernel:  [<c011e91a>] copy_process+0x33a/0xc60
+> Oct  1 06:01:05 g1a-c kernel:  [<c011f2a5>] do_fork+0x65/0x1f0
+> Oct  1 06:01:05 g1a-c kernel:  [<c027e2c2>] copy_to_user+0x32/0x50
+> Oct  1 06:01:05 g1a-c kernel:  [<c0101722>] sys_clone+0x32/0x40
+> Oct  1 06:01:05 g1a-c kernel:  [<c0102a8e>] syscall_call+0x7/0xb
+> Oct  1 06:01:05 g1a-c kernel:  =======================
+> Oct  1 06:01:05 g1a-c kernel: Mem-info:
+> Oct  1 06:01:05 g1a-c kernel: DMA per-cpu:
+> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: Normal per-cpu:
+> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 104   Cold: hi:   62, btch:  15 usd:  58
+> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  22   Cold: hi:   62, btch:  15 usd:  52
+> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  30   Cold: hi:   62, btch:  15 usd:  58
+> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  15   Cold: hi:   62, btch:  15 usd:  60
+> Oct  1 06:01:05 g1a-c kernel: HighMem per-cpu:
+> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 105   Cold: hi:   62, btch:  15 usd:   8
+> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  51   Cold: hi:   62, btch:  15 usd:   3
+> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd: 122   Cold: hi:   62, btch:  15 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  42   Cold: hi:   62, btch:  15 usd:   0
+> Oct  1 06:01:05 g1a-c kernel: Active:3496 inactive:616 dirty:16 writeback:0 unstable:0
+> Oct  1 06:01:05 g1a-c kernel:  free:3941515 slab:6779 mapped:843 pagetables:48 bounce:0
+> Oct  1 06:01:05 g1a-c kernel: DMA free:3548kB min:68kB low:84kB high:100kB active:16kB inactive:0kB present:16256kB pages_scanned:56 all_unreclaimable? yes
+> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 873 16240
+> Oct  1 06:01:05 g1a-c kernel: Normal free:3640kB min:3744kB low:4680kB high:5616kB active:148kB inactive:0kB present:894080kB pages_scanned:7196 all_unreclaimable? yes
+> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 122936
+> Oct  1 06:01:05 g1a-c kernel: HighMem free:15758872kB min:512kB low:17000kB high:33492kB active:13820kB inactive:2464kB present:15735808kB pages_scanned:0 all_unreclaimable? no
+> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 0
+> Oct  1 06:01:05 g1a-c kernel: DMA: 3*4kB 2*8kB 1*16kB 1*32kB 0*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3532kB
+> Oct  1 06:01:05 g1a-c kernel: Normal: 0*4kB 23*8kB 6*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3640kB
+> Oct  1 06:01:05 g1a-c kernel: HighMem: 122*4kB 658*8kB 622*16kB 464*32kB 391*64kB 336*128kB 277*256kB 226*512kB 169*1024kB 135*2048kB 3668*4096kB = 15758872kB
+> Oct  1 06:01:05 g1a-c kernel: Swap cache: add 0, delete 0, find 0/0, race 0+0
+> Oct  1 06:01:05 g1a-c kernel: Free swap  = 2048276kB
+> Oct  1 06:01:05 g1a-c kernel: Total swap = 2048276kB
+> Oct  1 06:01:05 g1a-c kernel: Free swap:       2048276kB
 
-Chris
+Seems like it ran out of memory in zone normal. Looks like it all went to SLAB.
+Could you run your regular workload, and append /proc/slabinfo onto a file every 5 minutes or so?
+
+That should tell us who is using all this memory. (assuming it reproduces...)
+
