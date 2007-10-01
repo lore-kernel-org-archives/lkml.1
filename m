@@ -1,43 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXJAUMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbXJAUNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbXJAUMe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXJAUMY
+	id S1756655AbXJAUNE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXJAUMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:12:24 -0400
-Received: from 8bytes.org ([88.198.83.132]:60878 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbXJAUMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:12:24 -0400
-Date: Mon, 1 Oct 2007 22:12:22 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [19/50] Experimental: detect if SVM is disabled by BIOS
-Message-ID: <20071001201222.GB1404@8bytes.org>
-References: <200709221231.836138000@suse.de> <20070921223218.22A8D13DCD@wotan.suse.de> <20070922091708.GD8998@8bytes.org> <200710011847.50533.andi@firstfloor.org>
+	Mon, 1 Oct 2007 16:12:50 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:49865 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753128AbXJAUMt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 16:12:49 -0400
+Date: Mon, 1 Oct 2007 14:12:47 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
+Message-ID: <20071001201247.GN12049@parisc-linux.org>
+References: <20070420204114.GL31947@austin.ibm.com> <20070420204720.GM31947@austin.ibm.com> <20070926150216.GH3899@parisc-linux.org> <20070927220022.GC18686@austin.ibm.com> <20070927221031.GY3899@parisc-linux.org> <20070927233437.GF18686@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710011847.50533.andi@firstfloor.org>
+In-Reply-To: <20070927233437.GF18686@austin.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 06:47:50PM +0200, Andi Kleen wrote:
-> On Saturday 22 September 2007 11:17:08 Joerg Roedel wrote:
-> > I don't think we need this patch. When SVM is disabled KVM will tell on
-> > module load. 
+On Thu, Sep 27, 2007 at 06:34:37PM -0500, Linas Vepstas wrote:
+> Good catch. But no ... and I had to study this a bit. Bear with me:
+
+I agree with the analysis which I've now snipped.
+
+> I think the race you describe above is harmless. The first time
+> that sym_eh_handler() will run, it will be with SYM_EH_ABORT, 
+> in it doesn't matter if we lose that, since the device is hosed
+> anyway. At some later time, it will run with SYM_EH_DEVICE_RESET
+> and then SYM_EH_BUS_RESET and then SYM_EH_HOST_RESET, and we won't 
+> miss those, since, by now, sym2_io_error_detected() will have run.
 > 
-> The point is that people often want to know in advance (before they
-> even try to use KVM or Xen) if their CPU and BIOS supports this.
+> So, by my reading, I'd say that init_completion() in
+> sym2_io_error_detected() has to stay (although perhaps
+> it should be replaced by the INIT_COMPLETION() macro.)
+> Removing it will prevent correct operation on the second 
+> and subsequent errors.
 
-If the CPU supports SVM this is visible to the user because the SVM
-feature flag does not disappear when its disabled. But because with CPUs
-having the SVM-lock feature it can be re-enabled in a secure way under
-some circumstances the information in /proc/cpuinfo will not be
-reliable. Maybe we can check for it in identify_cpu() and print to the
-kernel log if its disabled? It will be visible to the user through
-dmesg.
+I think the fundamental problem is that completions aren't really
+supposed to be used like this.  Here's one attempt at using completions
+perhaps a little more the way they're supposed to be used, although now
+I've written it, I wonder if we shouldn't just use a waitqueue instead.
 
-Joerg
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+index e8a4361..b425b89 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.c
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+@@ -602,6 +602,7 @@ static int sym_eh_handler(int op, char *opname, struct scsi_cmnd *cmd)
+ 	struct sym_hcb *np = SYM_SOFTC_PTR(cmd);
+ 	struct sym_ucmd *ucmd = SYM_UCMD_PTR(cmd);
+ 	struct Scsi_Host *host = cmd->device->host;
++	struct pci_dev *pdev = np->s.device;
+ 	SYM_QUEHEAD *qp;
+ 	int cmd_queued = 0;
+ 	int sts = -1;
+@@ -616,9 +617,19 @@ static int sym_eh_handler(int op, char *opname, struct scsi_cmnd *cmd)
+ 	 * point in hurrying; take a leisurely wait.
+ 	 */
+ #define WAIT_FOR_PCI_RECOVERY	35
+-	if (pci_channel_offline(np->s.device)) {
+-		int finished_reset = wait_for_completion_timeout(
+-			&np->s.io_reset_wait, WAIT_FOR_PCI_RECOVERY*HZ);
++	if (pci_channel_offline(pdev)) {
++		struct host_data *hostdata = shost_priv(host);
++		int finished_reset = 0;
++		init_completion(&eh_done);
++		spin_lock_irq(host->host_lock);
++		if (!hostdata->io_reset)
++			hostdata->io_reset = &eh_done;
++		if (!pci_channel_offline(pdev))
++			finished_reset = 1;
++		spin_unlock_irq(host->host_lock);
++		if (!finished_reset)
++			finished_reset = wait_for_completion_timeout(
++				hostdata->io_reset, WAIT_FOR_PCI_RECOVERY*HZ);
+ 		if (!finished_reset)
+ 			return SCSI_FAILED;
+ 	}
+@@ -1396,7 +1407,6 @@ static struct Scsi_Host * __devinit sym_attach(struct scsi_host_template *tpnt,
+ 	np->maxoffs	= dev->chip.offset_max;
+ 	np->maxburst	= dev->chip.burst_max;
+ 	np->myaddr	= dev->host_id;
+-	init_completion(&np->s.io_reset_wait);
+ 
+ 	/*
+ 	 *  Edit its name.
+@@ -1842,15 +1852,12 @@ static void __devexit sym2_remove(struct pci_dev *pdev)
+ static pci_ers_result_t sym2_io_error_detected(struct pci_dev *pdev,
+                                          enum pci_channel_state state)
+ {
+-	struct sym_hcb *np = pci_get_drvdata(pdev);
+-
+ 	/* If slot is permanently frozen, turn everything off */
+ 	if (state == pci_channel_io_perm_failure) {
+ 		sym2_remove(pdev);
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	}
+ 
+-	init_completion(&np->s.io_reset_wait);
+ 	disable_irq(pdev->irq);
+ 	pci_disable_device(pdev);
+ 
+@@ -1912,7 +1919,7 @@ static pci_ers_result_t sym2_io_slot_reset(struct pci_dev *pdev)
+ 	          sym_name(np));
+ 
+ 	if (pci_enable_device(pdev)) {
+-		printk(KERN_ERR "%s: Unable to enable afer PCI reset\n",
++		printk(KERN_ERR "%s: Unable to enable after PCI reset\n",
+ 		        sym_name(np));
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	}
+@@ -1953,7 +1960,14 @@ static pci_ers_result_t sym2_io_slot_reset(struct pci_dev *pdev)
+ static void sym2_io_resume(struct pci_dev *pdev)
+ {
+ 	struct sym_hcb *np = pci_get_drvdata(pdev);
+-	complete_all(&np->s.io_reset_wait);
++	struct Scsi_Host *shost = np->s.host;
++	struct host_data *hostdata = shost_priv(shost);
++
++	spin_lock_irq(shost->host_lock);
++	if (hostdata->io_reset)
++		complete_all(hostdata->io_reset);
++	hostdata->io_reset = NULL;
++	spin_unlock_irq(shost->host_lock);
+ }
+ 
+ static void sym2_get_signalling(struct Scsi_Host *shost)
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.h b/drivers/scsi/sym53c8xx_2/sym_glue.h
+index a172cc5..b961f70 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.h
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.h
+@@ -180,9 +180,6 @@ struct sym_shcb {
+ 	char		chip_name[8];
+ 	struct pci_dev	*device;
+ 
+-	/* Waiter for clearing of frozen PCI bus */
+-	struct completion io_reset_wait;
+-
+ 	struct Scsi_Host *host;
+ 
+ 	void __iomem *	ioaddr;		/* MMIO kernel io address	*/
+@@ -223,6 +220,7 @@ struct sym_device {
+  */
+ struct host_data {
+ 	struct sym_hcb *ncb;
++	struct completion *io_reset;		/* PCI error handling */
+ };
+ 
+ static inline struct sym_hcb * sym_get_hcb(struct Scsi_Host *host)
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
