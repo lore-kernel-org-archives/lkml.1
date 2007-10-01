@@ -1,113 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXJAUHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbXJAUK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbXJAUHH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXJAUG5
+	id S1754330AbXJAUK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXJAUKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:06:57 -0400
-Received: from n7.bullet.mud.yahoo.com ([216.252.100.58]:47949 "HELO
-	n7.bullet.mud.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751484AbXJAUG4 (ORCPT
+	Mon, 1 Oct 2007 16:10:19 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:34831 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbXJAUKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:06:56 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 600227.37843.bm@omp108.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=JFI93gjpzOHlXrYO0qKiBrK2exRN0OUN5mgune/EHusbnjKGeS2+sEvK9Tn0eMPo1KvwogV0XtXLOa8+OtabFNg6kjPzE6/DBzH/XSkEeYxjkQACFOyyLaFoaEyO6w9yo/TykbbTHV1rzLQEClIKfNh61EHkhDIwEPLSFCcJVpE=;
-X-YMail-OSG: 2Ig8bTcVM1nO9td6myIxXt9.FpWVrwmpuK_jDH2VK_Z13tLNAiMLCRCEa2vgXw9UmqssKi2L8wJOBb2MetWIWOxLM0VENOwBoLeO8r.4zPTX.bC6fUVqfh4iVQ--
-Date: Mon, 1 Oct 2007 13:10:59 +0100 (BST)
-From: veerasena reddy <veerasena_b@yahoo.co.in>
-Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071001105954.GB23647@linux-mips.org>
+	Mon, 1 Oct 2007 16:10:17 -0400
+Message-ID: <4701541B.70108@cosmosbay.com>
+Date: Mon, 01 Oct 2007 22:10:03 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <535696.48077.qm@web8403.mail.in.yahoo.com>
+To: Denys <nuclearcat@nuclearcat.com>, "David S. Miller" <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+References: <20070930144443.M52139@visp.net.lb> <46FFE17C.9020202@cosmosbay.com> <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com>
+In-Reply-To: <47008CB0.7010808@cosmosbay.com>
+Content-Type: multipart/mixed;
+ boundary="------------000902080203060001020400"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 01 Oct 2007 22:10:10 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ralf,
+This is a multi-part message in MIME format.
+--------------000902080203060001020400
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks for the reply.
+So maybe the following patch is necessary...
 
-Is there any problem if we use the below API's in
-linxu-2.6.18 
-  - dma_cache_wback_inv()
-  - dma_cache_wback()
-  - dma_cache_inv()
+I believe IPV6 & DCCP are immune to this problem.
 
-functionality wise, especially in r4k.c i dont see any
-difference between the implementation of these APIs.
+Thanks again Denys for spotting this.
 
-Can we apply the 2.6.24 patch to kill these APIs on
-2.6.18 kernel? In this case what APIs i can use for
-writeback, invalidation or both?
+Eric
 
-I couldn't find any info. related to the above API in
-DMA-API.txt. Could you please give some pointers on
-the usage/working of these APIs.
+[PATCH] TCP : secure_tcp_sequence_number() should not use a too fast clock
 
-Regards,
-Veerasena.
+TCP V4 sequence numbers are 32bits, and RFC 793 assumed a 250 KHz clock.
+In order to follow network speed increase, we can use a faster clock, but
+we should limit this clock so that the delay between two rollovers is
+greater than MSL (TCP Maximum Segment Lifetime : 2 minutes)
 
---- Ralf Baechle <ralf@linux-mips.org> wrote:
+Choosing a 64 nsec clock should be OK, since the rollovers occur every
+274 seconds.
 
-> On Mon, Oct 01, 2007 at 10:04:32AM +0100, veerasena
-> reddy wrote:
-> 
-> > I have ported Linux-2.6.18 kernel on MIPS24KE
-> > processor. I am using write back cache policy.
-> > 
-> > Could you please guide me under what cases the
-> below
-> > cache API's are being used:
-> > - dma_cache_wback_inv() : Could you explain  what
-> > exactly this function does
-> > - dma_cache_wback() : This function write back the
-> > cache data to memory
-> > - dma_cache_inv  : This function invalidate the
-> cache
-> > tags. so subsequent access will fetch from memory.
-> > 
-> > Once I looked the above function definitions in
-> > linux-2.6.18/arch/mips/mm/c-r4k.c.
-> > All these function's implemetation are same except
-> > bc_wbak_inv() is called in both
-> dma_cache_wback-inv()
-> > and dma_cache_wback(), where as bc_inv() is called
-> in
-> > case of dma_cache_inv.
-> > 
-> > Also, bc_inv()/bc_wbak_inv are define as null
-> > implementation for R4000.
-> > That means all three functions are doing same
-> > functionality in case of R4000.
-> > 
-> > What are the difference between these three
-> functions.
-> > Under what cases these functions are used. 
-> 
-> An internal only interface to be used with I/O cache
-> coherency.
-> 
-> > Please guide me if you have any links which will
-> > explain these API's.
-> 
-> Easy answer, don't use them, for 2.6.24 I've queued
-> a patch to kill this
-> API.  Documentation/DMA-API.txt documents how to
-> properly deal with I/O
-> coherency in Linux.
-> 
->   Ralf
-> 
+Problem spotted by Denys Fedoryshchenko
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
 
+--------------000902080203060001020400
+Content-Type: text/plain;
+ name="seq.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="seq.patch"
 
-      Save all your chat conversations. Find them online at http://in.messenger.yahoo.com/webmessengerpromo.php
-
+LS0tIGxpbnV4LTIuNi4yMi9kcml2ZXJzL2NoYXIvcmFuZG9tLmMJMjAwNy0xMC0wMSAxMDox
+ODo0Mi4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yMi1lZC9kcml2ZXJzL2NoYXIv
+cmFuZG9tLmMJMjAwNy0xMC0wMSAyMTo0Nzo1OC4wMDAwMDAwMDAgKzAyMDAKQEAgLTE1NTAs
+MTEgKzE1NTAsMTMgQEAgX191MzIgc2VjdXJlX3RjcF9zZXF1ZW5jZV9udW1iZXIoX19iZTMy
+IAogCSAqCUFzIGNsb3NlIGFzIHBvc3NpYmxlIHRvIFJGQyA3OTMsIHdoaWNoCiAJICoJc3Vn
+Z2VzdHMgdXNpbmcgYSAyNTAga0h6IGNsb2NrLgogCSAqCUZ1cnRoZXIgcmVhZGluZyBzaG93
+cyB0aGlzIGFzc3VtZXMgMiBNYi9zIG5ldHdvcmtzLgotCSAqCUZvciAxMCBHYi9zIEV0aGVy
+bmV0LCBhIDEgR0h6IGNsb2NrIGlzIGFwcHJvcHJpYXRlLgotCSAqCVRoYXQncyBmdW5ueSwg
+TGludXggaGFzIG9uZSBidWlsdCBpbiEgIFVzZSBpdCEKLQkgKgkoTmV0d29ya3MgYXJlIGZh
+c3RlciBub3cgLSBzaG91bGQgdGhpcyBiZSBpbmNyZWFzZWQ/KQorCSAqCUZvciAxMCBNYi9z
+IEV0aGVybmV0LCBhIDEgTUh6IGNsb2NrIGlzIGFwcHJvcHJpYXRlLgorCSAqCUZvciAxMCBH
+Yi9zIEV0aGVybmV0LCBhIDEgR0h6IGNsb2NrIHNob3VsZCBiZSBvaywgYnV0CisJICoJd2Ug
+YWxzbyBuZWVkIHRvIGxpbWl0IHRoZSByZXNvbHV0aW9uIHNvIHRoYXQgdGhlIHUzMiBzZXEK
+KwkgKglvdmVybGFwcyBsZXNzIHRoYW4gb25lIHRpbWUgcGVyIE1TTCAoMiBtaW51dGVzKS4K
+KwkgKglDaG9vc2luZyBhIGNsb2NrIG9mIDY0IG5zIHBlcmlvZCBpcyBPSy4gKHBlcmlvZCBv
+ZiAyNzQgcykKIAkgKi8KLQlzZXEgKz0ga3RpbWVfZ2V0X3JlYWwoKS50djY0OworCXNlcSAr
+PSBrdGltZV9nZXRfcmVhbCgpLnR2NjQgPj4gNjsKICNpZiAwCiAJcHJpbnRrKCJpbml0X3Nl
+cSglbHgsICVseCwgJWQsICVkKSA9ICVkXG4iLAogCSAgICAgICBzYWRkciwgZGFkZHIsIHNw
+b3J0LCBkcG9ydCwgc2VxKTsK
+--------------000902080203060001020400--
