@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbXJAVwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbXJAVxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbXJAVwq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXJAVwi
+	id S1757571AbXJAVxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXJAVxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:52:38 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45868 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753444AbXJAVwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:52:37 -0400
-Date: Mon, 1 Oct 2007 14:52:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: a.p.zijlstra@chello.nl, nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dgc@sgi.com, jens.axboe@oracle.com
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-In-Reply-To: <20071001144543.4cfa1e44.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710011448120.22169@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com>
- <200709280742.38262.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
- <1191002119.18147.80.camel@lappy> <Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
- <1191003950.18147.85.camel@lappy> <20070929011311.8b51dedb.akpm@linux-foundation.org>
- <1191055632.18147.101.camel@lappy> <20070929020049.f73f4aea.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
- <20071001143047.238dfe49.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0710011432300.20107@schroedinger.engr.sgi.com>
- <20071001144543.4cfa1e44.akpm@linux-foundation.org>
+	Mon, 1 Oct 2007 17:53:42 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:51808 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753705AbXJAVxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 17:53:41 -0400
+Date: Mon, 1 Oct 2007 23:53:30 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-10-01-04-09.tar.gz uploaded
+In-Reply-To: <47016AFB.7040307@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0710012352450.22331@twin.jikos.cz>
+References: <200710011115.l91BFRvg012762@imap1.linux-foundation.org>
+ <47016AFB.7040307@googlemail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Andrew Morton wrote:
+On Mon, 1 Oct 2007, Gabriel C wrote:
 
-> Ah.  So the already-dropped
-> slub-exploit-page-mobility-to-increase-allocation-order.patch was the
-> culprit?
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-10-01-04-09.tar.gz
+> I have a question about these snapshots , what is the right way to apply 
+> the patches ? some magic script ? =)
 
-Yes without that patch SLUB will no longer take special action if antifrag 
-is around.
+There is a 'series' file, which tells you the correct order. If you are 
+planning to make any patches on top of mm, you should use quilt for this.
 
+-- 
+Jiri Kosina
