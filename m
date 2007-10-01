@@ -1,122 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbXJARBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbXJARDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbXJARBb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXJARBY
+	id S1754863AbXJARDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXJARDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:01:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34832 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbXJARBY (ORCPT
+	Mon, 1 Oct 2007 13:03:40 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54063 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbXJARDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:01:24 -0400
-Subject: Re: OOM killer invoked on 2.6.20.3, need help understanding why
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: david@lang.hm
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0710010810170.20712@asgard.lang.hm>
-References: <Pine.LNX.4.64.0710010810170.20712@asgard.lang.hm>
-Content-Type: text/plain
-Date: Mon, 01 Oct 2007 18:56:12 +0200
-Message-Id: <1191257772.8354.3.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Oct 2007 13:03:39 -0400
+Date: Mon, 1 Oct 2007 11:03:38 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jeff Garzik <jgarzik@pobox.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong class
+Message-ID: <20071001170337.GJ12049@parisc-linux.org>
+References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com> <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com> <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz> <47010E01.2010001@pobox.com> <Pine.LNX.4.64.0710011720210.7567@jikos.suse.cz> <20071001162546.GB6051@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071001162546.GB6051@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 01, 2007 at 09:25:46AM -0700, Greg KH wrote:
+> I'll defer to Jeff's judgement here.  If the device is broken such that
+> it does not know to return the correct class, then we need to be able to
+> have a "quirk" table in the userspace tools to handle the list of
+> devices that are broken in that way.
 
-On Mon, 2007-10-01 at 08:57 -0700, david@lang.hm wrote:
-> I have a dual dual-core Opteron box running a 32 bit 2.6.20.3 kernel with 
-> 4G himem (16G in the box) serving as a iptables firewall. I's got E1000 
-> network cards and a LSI raid controller.
+I think Jeff is right on this particular point -- better to have this
+worked around in the userspace tool than in the kernel.
 
-OOh, 64bit machine. Seems like a good idea to run a 64bit kernel on
-it :-)
+> For config items, we don't want to modify them in any way, we just want
+> to pass-through the data direct from the device.  Look at the sysfs and
+> proc files for pci config spaces.  They are returning binary data stored
+> in the device directly.  We do not want to have to start modifying that
+> data directly just to handle messed up devices like this.
 
-> this morning it died with the message 'kernel panic, out of memory and no 
-> process to kill'
-> 
-> gong back through it's syslogs I've got quite a few logs, but I need help 
-> in understanding what went wrong (and if it's preventable)
-> 
-> the process that was running and triggered the OOM is a script
-> 
-> #!/bin/bash
-> 
-> PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
-> 
-> while :
-> do
->    logger -t maxconns `cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count`
->    logger -t afdslog `cat /proc/sys/fs/file-nr |awk '{print $1}'`
-> 
->    sleep 5
-> done
-> 
-> since the box is a dedicated firewall there is very little running on it 
-> (a few other monitoring scripts like this)
-> 
-> the conntrack count that was being reported was relativly low (around 
-> 34k, the max is set at 1m)
-> 
-> if I'm reading the logs correctly it looks like it ran out of lowmem, but 
-> had a lot of himem still available. but I don't know what would have eaten 
-> up the lowmem.
-> 
-> now the logs and other info
-> 
-> Oct  1 06:01:04 g1a-c maxconns: 34317
-> Oct  1 06:01:05 g1a-c kernel: printk: 1887 messages suppressed.
-> Oct  1 06:01:05 g1a-c kernel: maxconns invoked oom-killer: gfp_mask=0x84d0, order=0, oomkilladj=0
-> Oct  1 06:01:05 g1a-c kernel:  [<c0147850>] out_of_memory+0x100/0x130
-> Oct  1 06:01:05 g1a-c kernel:  [<c0148b2b>] __alloc_pages+0x22b/0x2d0
-> Oct  1 06:01:05 g1a-c kernel:  [<c01135b1>] pte_alloc_one+0x11/0x20
-> Oct  1 06:01:05 g1a-c kernel:  [<c014feaa>] __pte_alloc+0x1a/0xb0
-> Oct  1 06:01:05 g1a-c kernel:  [<c0150369>] copy_pte_range+0x289/0x2b0
-> Oct  1 06:01:05 g1a-c kernel:  [<c01504b9>] copy_page_range+0x129/0x170
-> Oct  1 06:01:05 g1a-c kernel:  [<c011e024>] dup_mm+0x214/0x2e0
-> Oct  1 06:01:05 g1a-c kernel:  [<c011e179>] copy_mm+0x89/0xa0
-> Oct  1 06:01:05 g1a-c kernel:  [<c011e91a>] copy_process+0x33a/0xc60
-> Oct  1 06:01:05 g1a-c kernel:  [<c011f2a5>] do_fork+0x65/0x1f0
-> Oct  1 06:01:05 g1a-c kernel:  [<c027e2c2>] copy_to_user+0x32/0x50
-> Oct  1 06:01:05 g1a-c kernel:  [<c0101722>] sys_clone+0x32/0x40
-> Oct  1 06:01:05 g1a-c kernel:  [<c0102a8e>] syscall_call+0x7/0xb
-> Oct  1 06:01:05 g1a-c kernel:  =======================
-> Oct  1 06:01:05 g1a-c kernel: Mem-info:
-> Oct  1 06:01:05 g1a-c kernel: DMA per-cpu:
-> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: Normal per-cpu:
-> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 104   Cold: hi:   62, btch:  15 usd:  58
-> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  22   Cold: hi:   62, btch:  15 usd:  52
-> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  30   Cold: hi:   62, btch:  15 usd:  58
-> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  15   Cold: hi:   62, btch:  15 usd:  60
-> Oct  1 06:01:05 g1a-c kernel: HighMem per-cpu:
-> Oct  1 06:01:05 g1a-c kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 105   Cold: hi:   62, btch:  15 usd:   8
-> Oct  1 06:01:05 g1a-c kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  51   Cold: hi:   62, btch:  15 usd:   3
-> Oct  1 06:01:05 g1a-c kernel: CPU    2: Hot: hi:  186, btch:  31 usd: 122   Cold: hi:   62, btch:  15 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  42   Cold: hi:   62, btch:  15 usd:   0
-> Oct  1 06:01:05 g1a-c kernel: Active:3496 inactive:616 dirty:16 writeback:0 unstable:0
-> Oct  1 06:01:05 g1a-c kernel:  free:3941515 slab:6779 mapped:843 pagetables:48 bounce:0
-> Oct  1 06:01:05 g1a-c kernel: DMA free:3548kB min:68kB low:84kB high:100kB active:16kB inactive:0kB present:16256kB pages_scanned:56 all_unreclaimable? yes
-> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 873 16240
-> Oct  1 06:01:05 g1a-c kernel: Normal free:3640kB min:3744kB low:4680kB high:5616kB active:148kB inactive:0kB present:894080kB pages_scanned:7196 all_unreclaimable? yes
-> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 122936
-> Oct  1 06:01:05 g1a-c kernel: HighMem free:15758872kB min:512kB low:17000kB high:33492kB active:13820kB inactive:2464kB present:15735808kB pages_scanned:0 all_unreclaimable? no
-> Oct  1 06:01:05 g1a-c kernel: lowmem_reserve[]: 0 0 0
-> Oct  1 06:01:05 g1a-c kernel: DMA: 3*4kB 2*8kB 1*16kB 1*32kB 0*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3532kB
-> Oct  1 06:01:05 g1a-c kernel: Normal: 0*4kB 23*8kB 6*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3640kB
-> Oct  1 06:01:05 g1a-c kernel: HighMem: 122*4kB 658*8kB 622*16kB 464*32kB 391*64kB 336*128kB 277*256kB 226*512kB 169*1024kB 135*2048kB 3668*4096kB = 15758872kB
-> Oct  1 06:01:05 g1a-c kernel: Swap cache: add 0, delete 0, find 0/0, race 0+0
-> Oct  1 06:01:05 g1a-c kernel: Free swap  = 2048276kB
-> Oct  1 06:01:05 g1a-c kernel: Total swap = 2048276kB
-> Oct  1 06:01:05 g1a-c kernel: Free swap:       2048276kB
+Nobody's talking about changing the raw pci data.  What we're talking
+about is changing the value read out of
 
-Seems like it ran out of memory in zone normal. Looks like it all went to SLAB.
-Could you run your regular workload, and append /proc/slabinfo onto a file every 5 minutes or so?
+$ cat /sys/bus/pci/devices/0000\:00\:00.0/class 
+0x060000
 
-That should tell us who is using all this memory. (assuming it reproduces...)
+We do tweak at least some of the other similar values (vendor, for sure)
+to work around bugs; not sure we have an example for changing the class
+value yet.
 
+pciutils knows that the kernel has potentially fixed up the values in
+the individual files, and to trust those over the raw data.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
