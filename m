@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbXJAOr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbXJAOuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbXJAOr4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 10:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbXJAOrs
+	id S1754430AbXJAOuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 10:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXJAOum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 10:47:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43963 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbXJAOrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 10:47:48 -0400
-Date: Mon, 1 Oct 2007 16:47:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Sami Farin <safari-kernel@safari.iki.fi>,
-       Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22.6 + oprofile oops
-Message-ID: <20071001144733.GA5975@elte.hu>
-References: <20070922112335.4wqatiewgeiottty@m.safari.iki.fi> <p73ejgf6sch.fsf@bingen.suse.de>
+	Mon, 1 Oct 2007 10:50:42 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35088 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751904AbXJAOul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 10:50:41 -0400
+Date: Mon, 1 Oct 2007 16:50:32 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
+ class
+In-Reply-To: <47010832.8010401@pobox.com>
+Message-ID: <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz>
+References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73ejgf6sch.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0264]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Oct 2007, Jeff Garzik wrote:
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+> > PCI: nVidia's MCP61 ethernet card needs quirk for wrong class
+> > The MCP61 ethernet controller from nVidia (NVENET_19) contains wrong
+> > PCI class:
+> >  00:07.0 Bridge [0680]: nVidia Corporation MCP61 Ethernet [10de:03ef] (rev
+> >  a2)
+> > i.e. it identifies itself as a bridge. Fix this.
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> What is the problem that is present without this patch?
 
-> > 2007-09-22 13:53:32.527330808 <4>[ 3372.390363] Pid: 7, comm: 
-> > events/0 Not tainted 2.6.22.6-cfs-v20.5-64-2 #7
-             ^^^^^^^^^^^
-> 
-> Can you reproduce it with a non tainted kernel without any patches 
-> like CFS applied?
+Userspace tools that are used to configure network are probable not to 
+detect this device as a network card and therefore not provide means to 
+configure the device (this is a case at least with yast, I don't know what 
+is the situation with other configurators).
 
-the kernel is not tainted, as indicated in the log message above.
+There might be also other situations, I don't know. Userspace really 
+should know the proper class of the device, shouldn't it?
 
-> The oops happens because oprofile tries to reference a NULL task in 
-> its event buffer for a context switch, which might well be a minor 
-> merging mistake or similar in the CFS backport.
+Thanks,
 
-CFS does not change that aspect of the oprofile code.
-
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs
