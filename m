@@ -1,39 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXJARyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXJARz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbXJARyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXJARyo
+	id S1755554AbXJARz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXJARzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:54:44 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3515 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbXJARyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:54:43 -0400
-Date: Mon, 1 Oct 2007 19:54:41 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071001175441.GA34594@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 1 Oct 2007 13:55:50 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:57474 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752730AbXJARzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 13:55:50 -0400
+Message-ID: <4701349A.30200@suse.de>
+Date: Mon, 01 Oct 2007 21:55:38 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070924)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Bill Davidsen <davidsen@tmr.com>, Mark Lord <lkml@rtr.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: regression in 2.6.23-rc8 - power off failed
+References: <20070929005453.GA4475@erig.dyndns.org> <46FE6E17.6070109@suse.de> <46FEB9CA.9090703@tmr.com> <200709292308.13593.rjw@sisk.pl>
+In-Reply-To: <200709292308.13593.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 09:04:44AM -0700, Linus Torvalds wrote:
-> For example, you security guys still debate "inodes" vs "pathnames", as if 
-> that was an either-or issue.
+Rafael J. Wysocki wrote:
+> On Saturday, 29 September 2007 22:47, Bill Davidsen wrote:
+>> Alexey Starikovskiy wrote:
+>>
+>>> -static void
+>>> -acpi_power_off (void)
+>>> -{
+>>> -       printk("%s called\n",__FUNCTION__);
+>>> -       /* Some SMP machines only can poweroff in boot CPU */
+>>> -       set_cpus_allowed(current, cpumask_of_cpu(0));
+>>> ACPI in kernel 2.6.12 did disable non-boot cpus too in powe_off.
+>>> Later only comment was left for some reason...
+>>>
+>> Am I midreading that code, or does it really assume that the boot cpu is 
+>> always zero? Or just that zero will be able to do the power off?
+>>
+>> In any case I have had an SMP machine which did not have a CPU zero, and 
+>> it was discussed here, I believe. Wonder what happens if you set 
+>> affinity to a CPU you don't have...
 > 
-> Quite frankly, I'm not a security person, but I can tell a bad argument 
-> from a good one. And an argument that says "inodes _or_ pathnames" is so 
-> full of shit that it's not even funny. And a person who says that it has 
-> to be one or the other is incompetent.
+> Good question, but it also caused other problems to appear, IIRC.
+> 
+> IMHO, it's better to call disable_nonboot_cpus() in an appropriate place
+> anyway.
+> 
+> Greetings,
+> Rafael
+Ok, here is commit which removed the code in question from acpi_power_off:
 
-Not so much incompetent as religious fundamentalist.  Which is worse.
+commit 6660316cb7a1a2c59a73a52870490c0f782f45c1
+Author: Eric W. Biederman <ebiederm@xmission.com>
+Date:   Tue Jul 26 12:16:00 2005 -0600
 
-  OG.
+    [PATCH] acpi_power_off: Don't switch to the boot cpu
+
+    machine_power_off on i386 and x86_64 now switch to the
+    boot cpu out of paranoia and because the MP Specification indicates it
+    is a good idea on reboot, so for those architectures it is a noop.
+    I can't see anything in the acpi spec that requires you to be on
+    the boot cpu to power off the system, so this should not be an issue
+    for ia64.  In addition ia64 has the altix a massive multi-node
+    system where switching to the boot cpu sounds insane as we may
+    hot removed the boot cpu.
+
+    Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+
+Regards,
+Alex.
