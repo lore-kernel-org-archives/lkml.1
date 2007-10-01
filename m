@@ -1,120 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXJAEJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbXJAEPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbXJAEJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 00:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbXJAEJa
+	id S1752519AbXJAEPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 00:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXJAEPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 00:09:30 -0400
-Received: from gamma.unitedhosting.co.uk ([72.249.26.4]:56686 "EHLO
-	gamma.unitedhosting.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbXJAEJ3 (ORCPT
+	Mon, 1 Oct 2007 00:15:21 -0400
+Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:47663 "HELO
+	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751098AbXJAEPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 00:09:29 -0400
-Message-ID: <470072E0.50409@aol.com>
-Date: Mon, 01 Oct 2007 00:09:04 -0400
-From: AndrewL733 <AndrewL733@aol.com>
-User-Agent: Thunderbird 1.5.0.13 (Macintosh/20070809)
+	Mon, 1 Oct 2007 00:15:19 -0400
+X-YMail-OSG: Fc.EKnwVM1kiJVKA7dk93fjzer5Bu5LLB1aZkcGOG_aMPsmhdfZVe10Cy6MOLgxm1v.WSad1VQ--
+X-RocketYMMF: rancidfat
+Date: Sun, 30 Sep 2007 21:15:18 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: "Serge E. Hallyn" <serge@hallyn.com>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+In-Reply-To: <20071001034724.GA28534@vino.hallyn.com>
 MIME-Version: 1.0
-CC: rdunlap@xenotime.net, Jim Paris <jim@jtan.com>, linas@austin.ibm.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Repost:  NMI error and Intel S5000PSL Motherboards
-References: <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>	<20070926135229.67edd4eb.rdunlap@xenotime.net>	<c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>	<46FA3092.70108@aol.com>	<20070926121655.55334682@the-village.bc.nu>	<46FA3092.70108@aol.com>	<20070925215819.c993e2d8.rdunlap@xenotime.net>	<46FA3092.70108@aol.com>	<20070925195946.cef5ae9d.rdunlap@xenotime.net>	<46FA3092.70108@aol.com>	<20070926234814.GA27743@jim.sh> <20070926170330.ee8fb5b4.rdunlap@xenotime.net> <46FD1A2F.9050801@aol.com>
-In-Reply-To: <46FD1A2F.9050801@aol.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <527669.54986.qm@web36608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a slightly edited repost of a note sent on Friday September 28, 
-as we haven't heard back from anyone yet. (I know it was the weekend!) 
-Sorry to post again but this issue caused great problems for us and I 
-want to be sure we're choosing a decent solution.
 
-Perhaps one of the people who so helpfully commented on this issue 
-earlier last week can now give their opinion on the what should be 
-concluded from our discovery that "CONFIG_PCIEAER=y" -- introduced in 
-the 2.6.19 kernel and set as the default -- leads to NMI errors on the 
-Intel S5000PSL motherboard.
+--- "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-I'm told Intel people were closely involved in the development of this 
-PCIEAER feature -- so it seems even weirder that it causes problems for 
-this Intel motherboard. But we have confirmed the problem with multiple 
-Linux distributions.
+> ...
+> > +A process can see the smack label it is running with by
+> > +reading /proc/self/attr/current. A privileged process can
+> > +set the process smack by writing there.
+> 
+> Ok, so to control smack label transitions, basically you would
+> run with CAP_MAC_OVERRIDE (see my note later) so that you're
+> allowed to change your smack label by writing to
+> /proc/self/attr/current, then you drop CAP_MAC_OVERRIDE, then you're
+> no longer able to change your label?  I.e. no inherent label changing
+> rules through smack itself?
 
-We are hoping to get some insights into the real cause. Please see below 
-where I outlined what seem to be the 3 possibilities.
-> rdunlap@xenotime.net wrote:
->> On Wed, 26 Sep 2007 19:48:14 -0400 Jim Paris wrote:
->>
->>  
->>> Hello,
->>>
->>>    
->>>> We have about 100 servers based on Intel S5000PSL-SATA 
->>>> motherboards. They have been running for anywhere between 1 and 10 
->>>> months. For the past few months, after updating them all to the 
->>>> 2.6.20.15 kernel (because of a bug in the 2.6.18 kernel), we are 
->>>> seeing some strange NMI errors. For example:
->>>>
->>>> Aug 29 09:02:10 master kernel: Uhhuh. NMI received for unknown 
->>>> reason 30.
->>>> Aug 29 09:02:10 master kernel: Do you have a strange power saving 
->>>> mode enabled?
->>>> Aug 29 09:02:10 master kernel: Dazed and confused, but trying to 
->>>> continue
->>>>       
->>> I'm also working with Andrew and Samson.  It seems that the cause of
->>> the problem is CONFIG_PCIEAER, which was introduced after 2.6.18 and
->>> defaults to y.
->>>
->>> With CONFIG_PCIEAER=n, scanpci works fine with no errors.  This is the
->>> workaround that they'll likely use for now.
->>>     
->>
->> Glad that you found it.
->>
->>  
->>> With CONFIG_PCIEAER=y, scanpci always triggers the NMI error.  The
->>> option aerdriver.forceload=1 has no effect.
->>>   
-Although running "scanpci" provoked the NMI errors 100 percent on 
-demand, the NMI errors would also occur randomly every few weeks on a 
-given system without doing anything special. I don't want anybody to 
-think we are just trying to prevent a problem from occurring because we 
-like running "scanpci".  "Scanpci" just turned out to be a reliable way 
-to reproduce an otherwise random problem.
->>
->> The 'forceload' option only forces the driver to load even when the
->> ACPI hardware initialization routine fails.
->>
->> It would be nice to be able to disable PCIEAER at boot time though.
->> Shouldn't be difficult.
->>
->>   
+That is correct. Smack task labels do not change spontaniously.
+
+> Just making sure I have that right.  If I do, then I think at least
+> defining the word 'privileged' above, given that this is mac,
+> would help.
+
+Good idea.
+
+> ...
+> > --- linux-2.6.23-rc8-base/security/smack/Kconfig	1969-12-31
+> 16:00:00.000000000 -0800
+> > +++ linux-2.6.23-rc8-smack/security/smack/Kconfig	2007-09-25
+> 15:30:38.000000000 -0700
+> > @@ -0,0 +1,10 @@
+> > +config SECURITY_SMACK
+> > +	bool "Simplified Mandatory Access Control Kernel Support"
+> > +	depends on NETLABEL && SECURITY_NETWORK
+> > +	default n
+> > +	help
+> > +	  This selects the Simplified Mandatory Access Control Kernel.
+> > +	  Smack is useful for sensitivity, integrity, and a variety
+> > +	  of other mandatory security schemes.
+> > +	  If you are unsure how to answer this question, answer N.
+> 
+> Might point out that no other modules must be compiled in along with
+> smack, and that smack will do posix capabilities.
+
+Also a good idea.
+
+> ...
+> > +/**
+> > + * smk_write_load - write() for /smack/load
+> > + * @filp: file pointer, not actually used
+> > + * @buf: where to get the data from
+> > + * @count: bytes sent
+> > + * @ppos: where to start
+> > + *
+> > + * Returns number of bytes written or error code, as appropriate
+> > + */
+> > +static ssize_t smk_write_load(struct file *file, const char __user *buf,
+> > +			      size_t count, loff_t *ppos)
+> > +{
+> > +	struct smack_rule rule;
+> > +	ssize_t rc = count;
+> > +	char *data = NULL;
+> > +	char subjectstr[SMK_LABELLEN];
+> > +	char objectstr[SMK_LABELLEN];
+> > +	char modestr[8];
+> > +	char *cp;
+> > +
+> > +
+> > +	if (!capable(CAP_MAC_OVERRIDE))
+> > +		return -EPERM;
+> > +	/*
+> > +	 * No partial writes.
+> > +	 */
+> > +	if (*ppos != 0)
+> > +		return -EINVAL;
+> > +
+> > +	/*
+> > +	 * 80 characters per line ought to be enough.
+> > +	 */
+> > +	if (count > SMACK_LIST_MAX * 80)
+> > +		return -ENOMEM;
+> > +
+> > +	data = kzalloc(count + 1, GFP_KERNEL);
+> > +	if (data == NULL)
+> > +		return -ENOMEM;
+> > +
+> > +	if (copy_from_user(data, buf, count) != 0) {
+> > +		kfree(data);
+> > +		return -EFAULT;
+> > +	}
+> > +
+> > +	*(data + count) = '\0';
+> > +
+> > +	for (cp = data - 1; cp != NULL; cp = strchr(cp + 1, '\n')) {
+> > +		if (*++cp == '\0')
+> > +			break;
+> > +		if (sscanf(cp, "%23s %23s %7s\n", subjectstr, objectstr,
+> > +			   modestr) != 3) {
+> > +			printk("%s:%d bad scan\n", __func__, __LINE__);
+> > +			break;
+> > +		}
+> > +		rule.smk_subject = smk_import(subjectstr, 0);
+> > +		if (rule.smk_subject == NULL)
+> > +			break;
+> > +		rule.smk_object = smk_import(objectstr, 0);
+> > +		if (rule.smk_object == NULL)
+> > +			break;
+> > +		rule.smk_access = 0;
+> > +		if (strpbrk(modestr, "rR") != NULL)
+> > +			rule.smk_access |= MAY_READ;
+> > +		if (strpbrk(modestr, "wW") != NULL)
+> > +			rule.smk_access |= MAY_WRITE;
+> > +		if (strpbrk(modestr, "xX") != NULL)
+> > +			rule.smk_access |= MAY_EXEC;
+> > +		if (strpbrk(modestr, "aA") != NULL)
+> > +			rule.smk_access |= MAY_APPEND;
+> > +		smk_set_access(&rule);
+> > +		printk("%s:%d rule %s %s 0x%x\n", __func__, __LINE__,
+> > +			(char *)rule.smk_subject, (char *)rule.smk_object,
+> > +			rule.smk_access);
+> 
+> Are you sure this isn't something you'd like to really audit?
+> 
+> (Sorry if that's been asked before)
+
+There is work required to audit, SELinux, and LSM that will be
+required before Smack or any other module can really use audit
+properly. Smack using audit would be nice, but there are already
+interesting cases that don't require it. I have fixing up audit
+on my todo list, and have made some proposals. It will require
+a group effort between audit, SELinux, Smack, and LSM.
+
+> ...
+> > +#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
+> 
+> We're basically inevitably going to be switching to 64-bit caps
+> "any day now".  Should we just go ahead and do it here?  Now
+> maybe we should use a less contraversial name than 'mac override'
+> like 'CAP_MAC_POLICY_ADMIN' :), but I guess CAP_MAC_OVERRIDE
+> is honest.
+> 
+> (I had started a 64-bit caps patch, but then got stuck trying to
+> decide whether something needed to be done about
+> task_capability_lock...)
+> 
+> Well, I guess you wouldn't want to bog down your patch to
+> that, but would you take your own bit once it was available,
+> or are you happy just using CAP_LINUX_IMMUTABLE?
+
+I would be delighted to have a bit of my very own. The granularity
+advocates might suggest I use more than one.
+
+Thank you for the comments.
 
 
-So, looking for some closure here, what do you think is the "root 
-cause"? Is it:
-
-1)  a defect with Intel's S5000PSL motherboards that is not seen when 
-running 2.6.18 and earlier kernels but that is exposed by this feature 
-added in 2.6.19? In which case, shouldn't we work to get Intel to 
-investigate?
-
-2)  a problem with the PCIEAER feature? And maybe "CONFIG_PCIEAER=y"  
-should NOT be the default setting?
-
-3)  just a bad interaction between a good motherboard and a good Linux 
-feature that don't play well together? (in which case isn't this a 
-"feature" that anybody compiling a kernel to run on the Intel S5000PSL 
-motherboard should know not to enable?/
-
-And in general is it a bad idea to set "CONFIG_PCIEAER to "no"". Or is 
-it something that we can really live without?
-
-
-
-
-Andrew
+Casey Schaufler
+casey@schaufler-ca.com
