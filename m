@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXJAWTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbXJAWZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbXJAWTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 18:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXJAWTL
+	id S1756657AbXJAWZE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 18:25:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXJAWYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 18:19:11 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3234 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbXJAWTJ (ORCPT
+	Mon, 1 Oct 2007 18:24:55 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56915 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbXJAWYx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 18:19:09 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Subject: RE: Network slowdown due to CFS
-Date: Mon, 1 Oct 2007 15:17:52 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEPDHCAC.davids@webmaster.com>
+	Mon, 1 Oct 2007 18:24:53 -0400
+Date: Mon, 1 Oct 2007 15:24:49 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
+       ego@in.ibm.com, srostedt@redhat.com
+Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
+Message-ID: <20071001222449.GA11367@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070926151351.GA328@tv-sign.ru> <20070927154652.GE16652@linux.vnet.ibm.com> <20070928144714.GA397@tv-sign.ru> <20070928185759.GC9153@linux.vnet.ibm.com> <20070930163102.GA374@tv-sign.ru> <Pine.LNX.4.64.0709301549160.19355@alien.or.mcafeemobile.com> <20071001013739.GB12494@linux.vnet.ibm.com> <Pine.LNX.4.64.0710011129440.25942@alien.or.mcafeemobile.com> <20071001192136.GC29100@linux.vnet.ibm.com> <Pine.LNX.4.64.0710011249390.25942@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <20071001125350.055ef9bb@laptopd505.fenrus.org>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Mon, 01 Oct 2007 15:18:13 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Mon, 01 Oct 2007 15:18:14 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710011249390.25942@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 01, 2007 at 03:09:16PM -0700, Davide Libenzi wrote:
+> On Mon, 1 Oct 2007, Paul E. McKenney wrote:
+> 
+> > That would indeed be one approach that CPU designers could take to
+> > avoid being careless or sadistic.  ;-)
+> 
+> That'd be the easier (unique maybe) approach too for them, from an silicon 
+> complexity POV. Distinguishing between different CPUs stores once inside a 
+> shared store buffer, would require tagging them in some way. That'd defeat 
+> most of the pros of having a shared store buffer ;)
 
-Arjan van de Ven wrote:
+Tagging requires but one bit per entry.  Depends on the workload -- if
+lots of barriers, bursty stores and little sharing, tagging might win.
+If lots of sharing, then your suggested approach might win.
 
-> > It can occasionally be an optimization. You may have a case where you
-> > can do something very efficiently if a lock is not held, but you
-> > cannot afford to wait for the lock to be released. So you check the
-> > lock, if it's held, you yield and then check again. If that fails,
-> > you do it the less optimal way (for example, dispatching it to a
-> > thread that *can* afford to wait).
-
-> at this point it's "use a futex" instead; once you're doing system
-> calls you might as well use the right one for what you're trying to
-> achieve.
-
-There are two answers to this. One is that you sometimes are writing POSIX
-code and Linux-specific optimizations don't change the fact that you still
-need a portable implementation.
-
-The other answer is that futexes don't change anything in this case. In
-fact, in the last time I hit this, the lock was a futex on Linux.
-Nevertheless, that doesn't change the basic issue. The lock is locked, you
-cannot afford to wait for it, but not getting the lock is expensive. The
-solution is to yield and check the lock again. If it's still held, you
-dispatch to another thread, but many times, yielding can avoid that.
-
-A futex doesn't change the fact that sometimes you can't afford to block on
-a lock but nevertheless would save significant effort if you were able to
-acquire it. Odds are the thread that holds it is about to release it anyway.
-
-That is, you need something in-between "non-blocking trylock, fail easily"
-and "blocking lock, do not fail", but you'd rather make forward progress
-without the lock than actually block/sleep.
-
-DS
-
-
+						Thanx, Paul
