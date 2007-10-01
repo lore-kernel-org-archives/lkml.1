@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbXJALs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbXJALw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbXJALs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 07:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXJALst
+	id S1753846AbXJALw0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 07:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXJALwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 07:48:49 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40287 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbXJALst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 07:48:49 -0400
-From: Andi Kleen <andi@firstfloor.org>
-Organization: -
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] [50/50] x86_64: Remove fpu io port resource
-Date: Mon, 1 Oct 2007 13:48:42 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709221231.836138000@suse.de> <200710011240.35802.ak@suse.de> <4700DA44.8020706@garzik.org>
-In-Reply-To: <4700DA44.8020706@garzik.org>
+	Mon, 1 Oct 2007 07:52:19 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:33689 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbXJALwS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 07:52:18 -0400
+From: "Denys" <nuclearcat@nuclearcat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Mon, 1 Oct 2007 14:52:03 +0300
+Message-Id: <20071001114715.M51349@nuclearcat.com>
+In-Reply-To: <20071001111441.GA17357@one.firstfloor.org>
+References: <20070930144443.M52139@visp.net.lb> <46FFE17C.9020202@cosmosbay.com> <200709301425.37564.nickpiggin@yahoo.com.au> <20070930220452.M25621@nuclearcat.com> <p73myv36tmz.fsf@bingen.suse.de> <20071001103026.M59805@nuclearcat.com> <20071001111441.GA17357@one.firstfloor.org>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 194.146.154.161 (denys@visp.net.lb)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710011348.43061.andi@firstfloor.org>
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 13:30:12 Jeff Garzik wrote:
-> Andi Kleen wrote:
-> > So far I still maintain i386 and x86-64. If Thomas wants to take both
-> > over completely he can do that; but I won't bother handling any patches i didn't 
-> > write then anymore.
+Hi
+
+No major differences. 
+Some procedures higher a bit, some lower a bit, but everything looks fine on
+both kernels.
+
+Thats what i tried first - oprofile, and only one keypoint i was able to catch
+- in top softirqd/0 or /1 shows usage 100% cpu, and in mpstat - soft% also
+reaching 100%. 
+
+
+
+On Mon, 1 Oct 2007 13:14:41 +0200, Andi Kleen wrote
+> On Mon, Oct 01, 2007 at 01:30:52PM +0300, Denys wrote:
+> > 
+> > Already i did, and it didn't show real failure point.
 > 
+> There was no difference between the profile of the working kernel
+> and the high load kernel?  Perhaps you just have legitimate higher load?
 > 
-> What does that mean?
+> -Andi
 
-What I wrote.
 
-> Didn't we all agree that x86 and x86-64 are going to be merged?
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
-I didn't agree no.
-
--Andi
