@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbXJAPWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbXJAPYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbXJAPWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 11:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXJAPV7
+	id S1754491AbXJAPYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 11:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbXJAPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 11:21:59 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:57733 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbXJAPV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 11:21:58 -0400
-Date: Mon, 1 Oct 2007 21:02:47 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] Add sysfs control to modify a user's cpu share
-Message-ID: <20071001153247.GE5724@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <1190724893.13716.8.camel@Homer.simpson.net> <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001144402.GA3505@elte.hu>
-User-Agent: Mutt/1.5.11
+	Mon, 1 Oct 2007 11:24:47 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40225 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751781AbXJAPYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 11:24:46 -0400
+Date: Mon, 1 Oct 2007 17:24:37 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
+ class
+In-Reply-To: <47010E01.2010001@pobox.com>
+Message-ID: <Pine.LNX.4.64.0710011720210.7567@jikos.suse.cz>
+References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com>
+ <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com>
+ <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz> <47010E01.2010001@pobox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 04:44:02PM +0200, Ingo Molnar wrote:
-> but there seems to be a bug in it, i get this:
-> 
->  kobject_add failed for 500 with -EEXIST, don't try to register things with the same name in the same directory.
+On Mon, 1 Oct 2007, Jeff Garzik wrote:
 
-Looks like a remove_dir/create_dir race ..
+> > > There are other network devices that do not claim 
+> > > PCI_CLASS_NETWORK_ETHERNET either.
+> > Nor any other PCI_CLASS_NETWORK subclass?
+> Correct.
 
-	free_user()			alloc_uid()
+BTW do you have some examples off the top of your head?
 
-	   uid_hash_remove(up);
+> > What would you recommend as a method for userspace to detect whether 
+> > given hardware is a network card, supposing that there is no driver 
+> > bound to it yet?
+> Note the mention of "weird cases" You come up with a general method, 
+> then you have to deal with exceptions to that general method.
 
-					uid_hash_insert(new, hashent);
+Sure. Still don't see why to do it in kernel, when it is hardware-related 
+though.
 
-	   schedule_work()
-					user_kobject_create();
-					kobject_add();	-> Boom!
+> Another example:  8139too and 8139cp both claim to support 
+> (0x10EC,0x8139) PCI IDs.  The distro installer needs additional 
+> information to know to read the PCI revision, which is what determines 
+> whether or not to use 8139cp driver.
 
-	   remove_user_sysfs_dir();
+That's also pretty ugly, sure.
 
-/me looks up sysfs programming examples ..
+> Sometimes life is just not as simple as you would like it to be :)
+
+You tell me :) There is a load of quirks for individual devices that claim 
+themselves to be HID-compliant, but break the specs in various different 
+creative ways :)
 
 -- 
-Regards,
-vatsa
+Jiri Kosina
+SUSE Labs
