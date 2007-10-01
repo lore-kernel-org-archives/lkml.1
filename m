@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbXJAQZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXJAQ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbXJAQZg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 12:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbXJAQZ3
+	id S1755893AbXJAQ0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 12:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXJAQ0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 12:25:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59755 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751781AbXJAQZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 12:25:28 -0400
-Date: Mon, 1 Oct 2007 18:25:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20071001162507.GA22791@elte.hu>
-References: <20070926133138.GA23187@elte.hu> <20070927133123.GA6901@elte.hu> <20070927144228.GC2431@ff.dom.local> <200709281610.00682.nickpiggin@yahoo.com.au> <20071001084356.GA1866@ff.dom.local>
+	Mon, 1 Oct 2007 12:26:11 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:47981
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbXJAQ0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 12:26:10 -0400
+Date: Mon, 1 Oct 2007 09:27:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Bernd Eckenfels <ecki@lina.inka.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Out of memory management in embedded systems
+In-Reply-To: <E1IcGOu-0007sH-00@calista.eckenfels.net>
+Message-ID: <Pine.LNX.4.64.0710010916570.20712@asgard.lang.hm>
+References: <E1IcGOu-0007sH-00@calista.eckenfels.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001084356.GA1866@ff.dom.local>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.1.7-deb
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1540]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Oct 2007, Bernd Eckenfels wrote:
 
-* Jarek Poplawski <jarkao2@o2.pl> wrote:
+> In article <87odfj5krj.fsf@burp.tkv.asdf.org> you wrote:
+>> Make kernel configuration option? (e.g. disable "over commit"
+>> mis-feature :-)
+>
+> # egrep . /proc/sys/vm/overcommit_*
+> /proc/sys/vm/overcommit_memory:0
+> /proc/sys/vm/overcommit_ratio:50
 
-> BTW, it looks like risky to criticise sched_yield too much: some 
-> people can misinterpret such discussions and stop using this at all, 
-> even where it's right.
+keep in mind that disabling overcommit will mean that you need to put more 
+ram in your embeded system to have it run
 
-Really, i have never seen a _single_ mainstream app where the use of 
-sched_yield() was the right choice.
+there can be very significant saving in ram from the fact that a large 
+program can do fork-exec of a small program without having to have enough 
+ram in the system for two copies of the large program.
 
-Fortunately, the sched_yield() API is already one of the most rarely 
-used scheduler functionalities, so it does not really matter. [ In my 
-experience a Linux scheduler is stabilizing pretty well when the 
-discussion shifts to yield behavior, because that shows that everything 
-else is pretty much fine ;-) ]
+you get even more savings in most systems from the fact that Linux does 
+copy-on-write when programs fork instead of allocating (and copying) all 
+the memory the program accesses. this allows programs that run multiple 
+copies to use the same memory for most of the requirements.
 
-But, because you assert it that it's risky to "criticise sched_yield() 
-too much", you sure must know at least one real example where it's right 
-to use it (and cite the line and code where it's used, with 
-specificity)?
+overcommit by default is optimistic that if the program requesting the 
+memory actually tries to use it there will be enough (both the fork-exec 
+situation and the copy-on-write memory of real forks mean that the system 
+ends up useing much less memory then is theoretically allocated).
 
-	Ingo
+switching it to be pessimistic (overcommit 2 IIRC) means that the OOM 
+handler will never kick in, but it means that programs will be told that 
+there isn't any memory when there really is enough for the program to 
+work.
+
+
+if you think the pessimistic mode makes your embeded device deterministic 
+enough to avoid OOM go for it, but keep in mind that adding the same 
+amount of additional memory would also make the system safe with 
+overcommit (if everything works properly). it's only when you would rather 
+have the system fail an allocation immedialy rather then running any risk 
+of running into trouble later that you want to disable overcommit.
+
+DavidLang
