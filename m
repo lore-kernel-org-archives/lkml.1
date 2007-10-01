@@ -1,53 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbXJANHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbXJANJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227AbXJANHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXJANHa
+	id S1752228AbXJANJs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJANJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:07:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:35794 "EHLO ozlabs.org"
+	Mon, 1 Oct 2007 09:09:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43028 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628AbXJANHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:07:30 -0400
-Date: Mon, 1 Oct 2007 08:05:40 -0500
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, tglx@timesys.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix timer_stats printout of events/sec
-Message-ID: <20071001130540.GA22646@kryten>
+	id S1751375AbXJANJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 09:09:36 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/30] Remove iget() and read_inode()
+To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Mon, 01 Oct 2007 14:09:21 +0100
+Message-ID: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
 
-When using /proc/timer_stats on ppc64 I noticed the events/sec field
-wasnt accurate. Sometimes the integer part was incorrect due to rounding
-(we werent taking the fractional seconds into consideration).
+Hi Christoph, Al,
 
-The fraction part is also wrong, we need to pad the printf statement and
-take the bottom three digits of 1000 times the value.
+Here's a set of patches that remove all calls to iget() and all read_inode()
+functions.  They should be removed for two reasons: firstly they don't lend
+themselves to good error handling, and secondly their presence is a temptation
+for code outside a filesystem to call iget() to access inodes within that
+filesystem.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+There are a few benefits to this:
 
-diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
-index 3c38fb5..c36bb7e 100644
---- a/kernel/time/timer_stats.c
-+++ b/kernel/time/timer_stats.c
-@@ -327,8 +327,9 @@ static int tstats_show(struct seq_file *m, void *v)
- 		ms = 1;
- 
- 	if (events && period.tv_sec)
--		seq_printf(m, "%ld total events, %ld.%ld events/sec\n", events,
--			   events / period.tv_sec, events * 1000 / ms);
-+		seq_printf(m, "%ld total events, %ld.%03ld events/sec\n",
-+			   events, events * 1000 / ms,
-+			   (events * 1000000 / ms) % 1000);
- 	else
- 		seq_printf(m, "%ld total events\n", events);
- 
+ (1) Error handling gets simpler as you can return an error code rather than
+     having to call is_bad_inode().
+
+ (2) You can now tell the difference between ENOMEM and EIO occurring in the
+     read_inode() path.
+
+ (3) The code should get smaller.  iget() is an inline function that is
+     typically called 2-3 times per filesystem that uses it.  By folding the
+     iget code into the read_inode code for each filesystem, it eliminates
+     some duplication.
+
+A tarball of the patches can be retrieved from:
+
+	http://people.redhat.com/~dhowells/iget-remove.tar.bz2
+
+
+The first patch adds a function, iget_failed() that is a canned piece of code
+for killing an inode when the inode construction path fails.
+
+The second and third patches makes AFS and GFS2 use iget_failed() rather than
+interpolating the sequence directly.
+
+The fourth patch marks iget() and read_inode() as being deprecated.
+
+The final patch removes iget() and read_inode() completely.
+
+Each of the other patches modify a filesystem that used iget() and read_inode()
+to use iget_locked() instead.  The standard procedure was to convert:
+
+	void thingyfs_read_inode(struct inode *inode)
+	{
+		...
+	}
+
+into:
+
+	struct inode *thingyfs_iget(struct super_block *sp, unsigned long ino)
+	{
+		struct inode *inode;
+		int ret;
+		
+		inode = iget_locked(sb, ino);
+		if (!inode)
+			return ERR_PTR(-ENOMEM);
+		if (!(inode->i_state & I_NEW))
+			return inode;
+
+		...
+		unlock_new_inode(inode);
+		return inode;
+	error:
+		iget_failed(inode);
+		return ERR_PTR(ret);
+	}
+
+and then call thingyfs_iget() rather than iget():
+
+	ret = -EINVAL;
+	inode = iget(sb, ino);
+	if (!inode || is_bad_inode(inode))
+		goto error;
+
+becomes:
+
+	inode = thingyfs_iget(sb, ino);
+	if (IS_ERR(inode)) {
+		ret = PTR_ERR(inode);
+		goto error;
+	}
+
+There were exceptions; most notably it appeared FAT should be calling ilookup()
+not iget().
+
+Additionally, HPPFS and HOSTFS (UM-specific filesystems) really need checking:
+
+ hostfs_kern.c:
+
+ (*) hostfs_iget() should perhaps subsume init_inode() and hostfs_read_inode().
+
+ (*) It would appear that all hostfs inodes are the same inode because iget()
+     was being called with inode number 0 - which forms the lookup key.
+
+ hppfs_kern.c:
+
+ (*) The HPPFS inode retains a pointer to the proc dentry it is shadowing, but
+     whilst it does appear to retain a reference to it, it doesn't appear to
+     destroy the reference if the inode goes away.
+
+ (*) hppfs_iget() should perhaps subsume init_inode() and hppfs_read_inode().
+
+ (*) It would appear that all hppfs inodes are the same inode because iget()
+     was being called with inode number 0, which forms the lookup key.
+
+
+David
