@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbXJAUK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbXJAUKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbXJAUK3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXJAUKT
+	id S1756519AbXJAUKn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXJAUKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:10:19 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34831 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbXJAUKR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:10:17 -0400
-Message-ID: <4701541B.70108@cosmosbay.com>
-Date: Mon, 01 Oct 2007 22:10:03 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Denys <nuclearcat@nuclearcat.com>, "David S. Miller" <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
-References: <20070930144443.M52139@visp.net.lb> <46FFE17C.9020202@cosmosbay.com> <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com>
-In-Reply-To: <47008CB0.7010808@cosmosbay.com>
-Content-Type: multipart/mixed;
- boundary="------------000902080203060001020400"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 01 Oct 2007 22:10:10 +0200 (CEST)
+	Mon, 1 Oct 2007 16:10:33 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50227 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755767AbXJAUKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 16:10:31 -0400
+Subject: Re: [RFC][PATCH 3/8] move mnt_want_write() out of may_open()
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+In-Reply-To: <E1IcRMo-0000Qm-00@dorka.pomaz.szeredi.hu>
+References: <20070928181330.27B367AC@kernel>
+	 <20070928181333.F3073089@kernel> <E1IcRMo-0000Qm-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Mon, 01 Oct 2007 13:10:28 -0700
+Message-Id: <1191269428.6024.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000902080203060001020400
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, 2007-10-01 at 21:55 +0200, Miklos Szeredi wrote:
+> > @@ -1687,10 +1679,8 @@ static int open_namei_create(struct name
+> >  	struct dentry *dir = nd->dentry;
+> >  
+> >  	/*
+> > -	 * This ensures that the mnt stays writable
+> > -	 * over the vfs_create() call to may_open(),
+> > -	 * which takes a more persistent
+> > -	 * mnt_want_write().
+> > +	 * This mnt_want_write() is potentially persistent,
+> > +	 * and balanced in __fput()
+> >  	 */
+> >  	error = mnt_want_write(nd->mnt);
+> >  	if (error) {
+> 
+> I'm confused: isn't it the mnt_want_write() in __dentry_open(), that
+> is balanced in __fput()?
 
-So maybe the following patch is necessary...
+This is broken.  I didn't realize that nameidata_to_filp() called
+dentry_open.  I'll rework these.
 
-I believe IPV6 & DCCP are immune to this problem.
+-- Dave
 
-Thanks again Denys for spotting this.
-
-Eric
-
-[PATCH] TCP : secure_tcp_sequence_number() should not use a too fast clock
-
-TCP V4 sequence numbers are 32bits, and RFC 793 assumed a 250 KHz clock.
-In order to follow network speed increase, we can use a faster clock, but
-we should limit this clock so that the delay between two rollovers is
-greater than MSL (TCP Maximum Segment Lifetime : 2 minutes)
-
-Choosing a 64 nsec clock should be OK, since the rollovers occur every
-274 seconds.
-
-Problem spotted by Denys Fedoryshchenko
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
-
---------------000902080203060001020400
-Content-Type: text/plain;
- name="seq.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="seq.patch"
-
-LS0tIGxpbnV4LTIuNi4yMi9kcml2ZXJzL2NoYXIvcmFuZG9tLmMJMjAwNy0xMC0wMSAxMDox
-ODo0Mi4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yMi1lZC9kcml2ZXJzL2NoYXIv
-cmFuZG9tLmMJMjAwNy0xMC0wMSAyMTo0Nzo1OC4wMDAwMDAwMDAgKzAyMDAKQEAgLTE1NTAs
-MTEgKzE1NTAsMTMgQEAgX191MzIgc2VjdXJlX3RjcF9zZXF1ZW5jZV9udW1iZXIoX19iZTMy
-IAogCSAqCUFzIGNsb3NlIGFzIHBvc3NpYmxlIHRvIFJGQyA3OTMsIHdoaWNoCiAJICoJc3Vn
-Z2VzdHMgdXNpbmcgYSAyNTAga0h6IGNsb2NrLgogCSAqCUZ1cnRoZXIgcmVhZGluZyBzaG93
-cyB0aGlzIGFzc3VtZXMgMiBNYi9zIG5ldHdvcmtzLgotCSAqCUZvciAxMCBHYi9zIEV0aGVy
-bmV0LCBhIDEgR0h6IGNsb2NrIGlzIGFwcHJvcHJpYXRlLgotCSAqCVRoYXQncyBmdW5ueSwg
-TGludXggaGFzIG9uZSBidWlsdCBpbiEgIFVzZSBpdCEKLQkgKgkoTmV0d29ya3MgYXJlIGZh
-c3RlciBub3cgLSBzaG91bGQgdGhpcyBiZSBpbmNyZWFzZWQ/KQorCSAqCUZvciAxMCBNYi9z
-IEV0aGVybmV0LCBhIDEgTUh6IGNsb2NrIGlzIGFwcHJvcHJpYXRlLgorCSAqCUZvciAxMCBH
-Yi9zIEV0aGVybmV0LCBhIDEgR0h6IGNsb2NrIHNob3VsZCBiZSBvaywgYnV0CisJICoJd2Ug
-YWxzbyBuZWVkIHRvIGxpbWl0IHRoZSByZXNvbHV0aW9uIHNvIHRoYXQgdGhlIHUzMiBzZXEK
-KwkgKglvdmVybGFwcyBsZXNzIHRoYW4gb25lIHRpbWUgcGVyIE1TTCAoMiBtaW51dGVzKS4K
-KwkgKglDaG9vc2luZyBhIGNsb2NrIG9mIDY0IG5zIHBlcmlvZCBpcyBPSy4gKHBlcmlvZCBv
-ZiAyNzQgcykKIAkgKi8KLQlzZXEgKz0ga3RpbWVfZ2V0X3JlYWwoKS50djY0OworCXNlcSAr
-PSBrdGltZV9nZXRfcmVhbCgpLnR2NjQgPj4gNjsKICNpZiAwCiAJcHJpbnRrKCJpbml0X3Nl
-cSglbHgsICVseCwgJWQsICVkKSA9ICVkXG4iLAogCSAgICAgICBzYWRkciwgZGFkZHIsIHNw
-b3J0LCBkcG9ydCwgc2VxKTsK
---------------000902080203060001020400--
