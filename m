@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXJAVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXJAVYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbXJAVXs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXJAVX2
+	id S1756903AbXJAVYE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbXJAVXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:23:28 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55803 "EHLO
+	Mon, 1 Oct 2007 17:23:33 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55811 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753521AbXJAVXZ (ORCPT
+	with ESMTP id S1756474AbXJAVXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:23:25 -0400
-Date: Mon, 1 Oct 2007 17:23:07 -0400
+	Mon, 1 Oct 2007 17:23:31 -0400
+Date: Mon, 1 Oct 2007 17:23:06 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/3] UML - arch/um/drivers formatting
-Message-ID: <20071001212307.GA10118@c2.user-mode-linux.org>
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Magotari@gail.com
+Subject: [PATCH 1/3] UML - Fix stub address calculations
+Message-ID: <20071001212306.GA10113@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,1269 +25,580 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Style fixes for the rest of the drivers.  arch/um/drivers should be
-pretty CodingStyle-compliant now.
+The calculation of CONFIG_STUB_CODE and CONFIG_STUB_DATA didn't take
+into account anything but 3G/1G and 2G/2G, leaving the other vmsplits
+out in the cold.
 
-Except for the ubd driver, which will have to be treated separately.
+I'd rather not duplicate the four known host vmsplit cases for each of
+these symbols.  I'd also like to calculate them based on the highest
+userspace address.
+
+The Kconfig language seems not to allow calculation of hex constants,
+so I moved this to as-layout.h.  CONFIG_STUB_CODE, CONFIG_STUB_DATA,
+and CONFIG_STUB_START are now gone.  In their place are STUB_CODE,
+STUB_DATA, and STUB_START in as-layout.h.
+
+i386 and x86_64 seem to differ as to whether an unadorned constant is
+an int or a long, so I cast them to unsigned long so they can be
+printed consistently.  However, they are also used in stub.S, where C
+types don't work so well.  So, there are ASM_ versions of these
+constants for use in stub.S.  I also ifdef-ed the non-asm-friendly
+portion of as-layout.h.
+
+With this in place, most of the rest of this patch is changing
+CONFIG_STUB_* to STUB_*, except in stub.S, where they are changed to
+ASM_STUB_*.
+
+defconfig has the old symbols deleted.
+
+I also print these addresses out in case there is any problem mapping
+them on the host.
+
+The two stub.S files had some trailing whitespace, so that is cleaned
+up here.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/drivers/chan_user.c      |   18 +++--
- arch/um/drivers/cow_user.c       |  133 +++++++++++++++++++--------------------
- arch/um/drivers/fd.c             |   13 +--
- arch/um/drivers/hostaudio_kern.c |  118 +++++++++++++++++-----------------
- arch/um/drivers/mconsole_user.c  |  119 +++++++++++++++-------------------
- arch/um/drivers/mmapper_kern.c   |   64 ++++++++----------
- arch/um/drivers/null.c           |    4 -
- arch/um/drivers/pty.c            |   16 ++--
- arch/um/drivers/xterm.c          |   12 ++-
- 9 files changed, 244 insertions(+), 253 deletions(-)
+ arch/um/Kconfig.i386                 |   14 --------------
+ arch/um/Kconfig.x86_64               |   14 +-------------
+ arch/um/defconfig                    |    3 ---
+ arch/um/include/as-layout.h          |   24 ++++++++++++++++++++++++
+ arch/um/include/sysdep-i386/stub.h   |   11 ++++++-----
+ arch/um/include/sysdep-x86_64/stub.h |   13 +++++++------
+ arch/um/kernel/exec.c                |    3 ++-
+ arch/um/kernel/skas/clone.c          |    6 +++---
+ arch/um/kernel/skas/mmu.c            |    5 +++--
+ arch/um/kernel/skas/process.c        |    2 +-
+ arch/um/kernel/tlb.c                 |    6 +++---
+ arch/um/kernel/um_arch.c             |    2 +-
+ arch/um/os-Linux/skas/mem.c          |    8 ++++----
+ arch/um/os-Linux/skas/process.c      |   21 +++++++++++----------
+ arch/um/sys-i386/stub.S              |    9 +++++----
+ arch/um/sys-i386/stub_segv.c         |    4 ++--
+ arch/um/sys-x86_64/stub.S            |    9 +++++----
+ arch/um/sys-x86_64/stub_segv.c       |    3 ++-
+ 18 files changed, 80 insertions(+), 77 deletions(-)
 
-Index: linux-2.6.22/arch/um/drivers/cow_user.c
+Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/drivers/cow_user.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/cow_user.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,17 +1,18 @@
--#include <stddef.h>
--#include <string.h>
--#include <errno.h>
--/* _XOPEN_SOURCE is needed for pread, but we define _GNU_SOURCE, which defines
-+/*
-+ * Copyright (C) 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
-+ * Licensed under the GPL
-+ */
-+
-+/*
-+ * _XOPEN_SOURCE is needed for pread, but we define _GNU_SOURCE, which defines
-  * that.
-  */
- #include <unistd.h>
- #include <byteswap.h>
--#include <sys/time.h>
--#include <sys/param.h>
--#include <sys/user.h>
--
--#include "os.h"
--
-+#include <errno.h>
-+#include <string.h>
-+#include <arpa/inet.h>
-+#include <asm/types.h>
- #include "cow.h"
- #include "cow_sys.h"
- 
-@@ -28,7 +29,8 @@ struct cow_header_v1 {
- 	__s32 sectorsize;
- } __attribute__((packed));
- 
--/* Define PATH_LEN_V3 as the usual value of MAXPATHLEN, just hard-code it in
-+/*
-+ * Define PATH_LEN_V3 as the usual value of MAXPATHLEN, just hard-code it in
-  * case other systems have different values for MAXPATHLEN.
-  *
-  * The same must hold for V2 - we want file format compatibility, not anything
-@@ -46,7 +48,8 @@ struct cow_header_v2 {
- 	__s32 sectorsize;
- } __attribute__((packed));
- 
--/* Changes from V2 -
-+/*
-+ * Changes from V2 -
-  *	PATH_LEN_V3 as described above
-  *	Explicitly specify field bit lengths for systems with different
-  *		lengths for the usual C types.  Not sure whether char or
-@@ -70,7 +73,8 @@ struct cow_header_v2 {
-  *	Fixed (finally!) the rounding bug
-  */
- 
--/* Until Dec2005, __attribute__((packed)) was left out from the below
-+/*
-+ * Until Dec2005, __attribute__((packed)) was left out from the below
-  * definition, leading on 64-bit systems to 4 bytes of padding after mtime, to
-  * align size to 8-byte alignment.  This shifted all fields above (no padding
-  * was present on 32-bit, no other padding was added).
-@@ -122,7 +126,7 @@ void cow_sizes(int version, __u64 size, 
- 	       int bitmap_offset, unsigned long *bitmap_len_out,
- 	       int *data_offset_out)
- {
--	if(version < 3){
-+	if (version < 3) {
- 		*bitmap_len_out = (size + sectorsize - 1) / (8 * sectorsize);
- 
- 		*data_offset_out = bitmap_offset + *bitmap_len_out;
-@@ -144,46 +148,46 @@ static int absolutize(char *to, int size
- 	char save_cwd[256], *slash;
- 	int remaining;
- 
--	if(getcwd(save_cwd, sizeof(save_cwd)) == NULL) {
-+	if (getcwd(save_cwd, sizeof(save_cwd)) == NULL) {
- 		cow_printf("absolutize : unable to get cwd - errno = %d\n",
- 			   errno);
--		return(-1);
-+		return -1;
- 	}
- 	slash = strrchr(from, '/');
--	if(slash != NULL){
-+	if (slash != NULL) {
- 		*slash = '\0';
--		if(chdir(from)){
-+		if (chdir(from)) {
- 			*slash = '/';
- 			cow_printf("absolutize : Can't cd to '%s' - "
- 				   "errno = %d\n", from, errno);
--			return(-1);
-+			return -1;
- 		}
- 		*slash = '/';
--		if(getcwd(to, size) == NULL){
-+		if (getcwd(to, size) == NULL) {
- 			cow_printf("absolutize : unable to get cwd of '%s' - "
- 			       "errno = %d\n", from, errno);
--			return(-1);
-+			return -1;
- 		}
- 		remaining = size - strlen(to);
--		if(strlen(slash) + 1 > remaining){
-+		if (strlen(slash) + 1 > remaining) {
- 			cow_printf("absolutize : unable to fit '%s' into %d "
- 			       "chars\n", from, size);
--			return(-1);
-+			return -1;
- 		}
- 		strcat(to, slash);
- 	}
- 	else {
--		if(strlen(save_cwd) + 1 + strlen(from) + 1 > size){
-+		if (strlen(save_cwd) + 1 + strlen(from) + 1 > size) {
- 			cow_printf("absolutize : unable to fit '%s' into %d "
- 			       "chars\n", from, size);
--			return(-1);
-+			return -1;
- 		}
- 		strcpy(to, save_cwd);
- 		strcat(to, "/");
- 		strcat(to, from);
- 	}
- 	chdir(save_cwd);
--	return(0);
-+	return 0;
- }
- 
- int write_cow_header(char *cow_file, int fd, char *backing_file,
-@@ -194,22 +198,23 @@ int write_cow_header(char *cow_file, int
- 	int err;
- 
- 	err = cow_seek_file(fd, 0);
--	if(err < 0){
-+	if (err < 0) {
- 		cow_printf("write_cow_header - lseek failed, err = %d\n", -err);
- 		goto out;
- 	}
- 
- 	err = -ENOMEM;
- 	header = cow_malloc(sizeof(*header));
--	if(header == NULL){
--		cow_printf("write_cow_header - failed to allocate COW V3 header\n");
-+	if (header == NULL) {
-+		cow_printf("write_cow_header - failed to allocate COW V3 "
-+			   "header\n");
- 		goto out;
- 	}
- 	header->magic = htonl(COW_MAGIC);
- 	header->version = htonl(COW_VERSION);
- 
- 	err = -EINVAL;
--	if(strlen(backing_file) > sizeof(header->backing_file) - 1){
-+	if (strlen(backing_file) > sizeof(header->backing_file) - 1) {
- 		/* Below, %zd is for a size_t value */
- 		cow_printf("Backing file name \"%s\" is too long - names are "
- 			   "limited to %zd characters\n", backing_file,
-@@ -217,12 +222,12 @@ int write_cow_header(char *cow_file, int
- 		goto out_free;
- 	}
- 
--	if(absolutize(header->backing_file, sizeof(header->backing_file),
-+	if (absolutize(header->backing_file, sizeof(header->backing_file),
- 		      backing_file))
- 		goto out_free;
- 
- 	err = os_file_modtime(header->backing_file, &modtime);
--	if(err < 0){
-+	if (err < 0) {
- 		cow_printf("write_cow_header - backing file '%s' mtime "
- 			   "request failed, err = %d\n", header->backing_file,
- 			   -err);
-@@ -230,7 +235,7 @@ int write_cow_header(char *cow_file, int
- 	}
- 
- 	err = cow_file_size(header->backing_file, size);
--	if(err < 0){
-+	if (err < 0) {
- 		cow_printf("write_cow_header - couldn't get size of "
- 			   "backing file '%s', err = %d\n",
- 			   header->backing_file, -err);
-@@ -244,7 +249,7 @@ int write_cow_header(char *cow_file, int
- 	header->cow_format = COW_BITMAP;
- 
- 	err = cow_write_file(fd, header, sizeof(*header));
--	if(err != sizeof(*header)){
-+	if (err != sizeof(*header)) {
- 		cow_printf("write_cow_header - write of header to "
- 			   "new COW file '%s' failed, err = %d\n", cow_file,
- 			   -err);
-@@ -254,14 +259,14 @@ int write_cow_header(char *cow_file, int
-  out_free:
- 	cow_free(header);
-  out:
--	return(err);
-+	return err;
- }
- 
- int file_reader(__u64 offset, char *buf, int len, void *arg)
- {
- 	int fd = *((int *) arg);
- 
--	return(pread(fd, buf, len, offset));
-+	return pread(fd, buf, len, offset);
- }
- 
- /* XXX Need to sanity-check the values read from the header */
-@@ -278,31 +283,29 @@ int read_cow_header(int (*reader)(__u64,
- 	unsigned long version, magic;
- 
- 	header = cow_malloc(sizeof(*header));
--	if(header == NULL){
-+	if (header == NULL) {
- 	        cow_printf("read_cow_header - Failed to allocate header\n");
--		return(-ENOMEM);
-+		return -ENOMEM;
- 	}
- 	err = -EINVAL;
- 	n = (*reader)(0, (char *) header, sizeof(*header), arg);
--	if(n < offsetof(typeof(header->v1), backing_file)){
-+	if (n < offsetof(typeof(header->v1), backing_file)) {
- 		cow_printf("read_cow_header - short header\n");
- 		goto out;
- 	}
- 
- 	magic = header->v1.magic;
--	if(magic == COW_MAGIC) {
-+	if (magic == COW_MAGIC)
- 		version = header->v1.version;
--	}
--	else if(magic == ntohl(COW_MAGIC)){
-+	else if (magic == ntohl(COW_MAGIC))
- 		version = ntohl(header->v1.version);
--	}
- 	/* No error printed because the non-COW case comes through here */
- 	else goto out;
- 
- 	*version_out = version;
- 
--	if(version == 1){
--		if(n < sizeof(header->v1)){
-+	if (version == 1) {
-+		if (n < sizeof(header->v1)) {
- 			cow_printf("read_cow_header - failed to read V1 "
- 				   "header\n");
- 			goto out;
-@@ -314,8 +317,8 @@ int read_cow_header(int (*reader)(__u64,
- 		*align_out = *sectorsize_out;
- 		file = header->v1.backing_file;
- 	}
--	else if(version == 2){
--		if(n < sizeof(header->v2)){
-+	else if (version == 2) {
-+		if (n < sizeof(header->v2)) {
- 			cow_printf("read_cow_header - failed to read V2 "
- 				   "header\n");
- 			goto out;
-@@ -328,8 +331,8 @@ int read_cow_header(int (*reader)(__u64,
- 		file = header->v2.backing_file;
- 	}
- 	/* This is very subtle - see above at union cow_header definition */
--	else if(version == 3 && (*((int*)header->v3.backing_file) != 0)){
--		if(n < sizeof(header->v3)){
-+	else if (version == 3 && (*((int*)header->v3.backing_file) != 0)) {
-+		if (n < sizeof(header->v3)) {
- 			cow_printf("read_cow_header - failed to read V3 "
- 				   "header\n");
- 			goto out;
-@@ -345,17 +348,18 @@ int read_cow_header(int (*reader)(__u64,
- 		*bitmap_offset_out = ROUND_UP(sizeof(header->v3), *align_out);
- 		file = header->v3.backing_file;
- 	}
--	else if(version == 3){
-+	else if (version == 3) {
- 		cow_printf("read_cow_header - broken V3 file with"
- 			   " 64-bit layout - recovering content.\n");
- 
--		if(n < sizeof(header->v3_b)){
-+		if (n < sizeof(header->v3_b)) {
- 			cow_printf("read_cow_header - failed to read V3 "
- 				   "header\n");
- 			goto out;
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-10-01 12:16:07.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-10-01 16:41:26.000000000 -0400
+@@ -191,22 +191,23 @@ static int userspace_tramp(void *stack)
+ 		int fd;
+ 		unsigned long long offset;
+ 		fd = phys_mapping(to_phys(&__syscall_stub_start), &offset);
+-		addr = mmap64((void *) UML_CONFIG_STUB_CODE, UM_KERN_PAGE_SIZE,
++		addr = mmap64((void *) STUB_CODE, UM_KERN_PAGE_SIZE,
+ 			      PROT_EXEC, MAP_FIXED | MAP_PRIVATE, fd, offset);
+ 		if (addr == MAP_FAILED) {
+-			printk(UM_KERN_ERR "mapping mmap stub failed, "
+-			       "errno = %d\n", errno);
++			printk(UM_KERN_ERR "mapping mmap stub at 0x%lx failed, "
++			       "errno = %d\n", STUB_CODE, errno);
+ 			exit(1);
  		}
  
--		/* this was used until Dec2005 - 64bits are needed to represent
-+		/*
-+		 * this was used until Dec2005 - 64bits are needed to represent
- 		 * 2038+. I.e. we can safely do this truncating cast.
- 		 *
- 		 * Additionally, we must use ntohl() instead of ntohll(), since
-@@ -381,7 +385,7 @@ int read_cow_header(int (*reader)(__u64,
- 	}
- 	err = -ENOMEM;
- 	*backing_file_out = cow_strdup(file);
--	if(*backing_file_out == NULL){
-+	if (*backing_file_out == NULL) {
- 		cow_printf("read_cow_header - failed to allocate backing "
- 			   "file\n");
- 		goto out;
-@@ -389,7 +393,7 @@ int read_cow_header(int (*reader)(__u64,
- 	err = 0;
-  out:
- 	cow_free(header);
--	return(err);
-+	return err;
- }
- 
- int init_cow_file(int fd, char *cow_file, char *backing_file, int sectorsize,
-@@ -402,7 +406,7 @@ int init_cow_file(int fd, char *cow_file
- 
- 	err = write_cow_header(cow_file, fd, backing_file, sectorsize,
- 			       alignment, &size);
--	if(err)
-+	if (err)
- 		goto out;
- 
- 	*bitmap_offset_out = ROUND_UP(sizeof(struct cow_header_v3), alignment);
-@@ -411,17 +415,18 @@ int init_cow_file(int fd, char *cow_file
- 
- 	offset = *data_offset_out + size - sizeof(zero);
- 	err = cow_seek_file(fd, offset);
--	if(err < 0){
-+	if (err < 0) {
- 		cow_printf("cow bitmap lseek failed : err = %d\n", -err);
- 		goto out;
- 	}
- 
--	/* does not really matter how much we write it is just to set EOF
-+	/*
-+	 * does not really matter how much we write it is just to set EOF
- 	 * this also sets the entire COW bitmap
- 	 * to zero without having to allocate it
- 	 */
- 	err = cow_write_file(fd, &zero, sizeof(zero));
--	if(err != sizeof(zero)){
-+	if (err != sizeof(zero)) {
- 		cow_printf("Write of bitmap to new COW file '%s' failed, "
- 			   "err = %d\n", cow_file, -err);
- 		if (err >= 0)
-@@ -429,15 +434,7 @@ int init_cow_file(int fd, char *cow_file
- 		goto out;
- 	}
- 
--	return(0);
--
-+	return 0;
-  out:
--	return(err);
-+	return err;
- }
--
--/*
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/drivers/fd.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/fd.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/fd.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,19 +1,18 @@
--/* 
-+/*
-  * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
-  * Licensed under the GPL
-  */
- 
--#include <stddef.h>
--#include <stdlib.h>
- #include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
- #include <errno.h>
- #include <termios.h>
--#include <unistd.h>
- #include "chan_user.h"
-+#include "kern_constants.h"
-+#include "os.h"
- #include "um_malloc.h"
- #include "user.h"
--#include "os.h"
--#include "kern_constants.h"
- 
- struct fd_chan {
- 	int fd;
-@@ -42,7 +41,7 @@ static void *fd_init(char *str, int devi
- 	}
- 
- 	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
--	if(data == NULL)
-+	if (data == NULL)
- 		return NULL;
- 
- 	*data = ((struct fd_chan) { .fd  	= n,
-Index: linux-2.6.22/arch/um/drivers/mmapper_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/mmapper_kern.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/mmapper_kern.c	2007-10-01 17:01:55.000000000 -0400
-@@ -9,27 +9,29 @@
-  *
-  */
- 
--#include <linux/init.h> 
--#include <linux/module.h>
--#include <linux/mm.h> 
-+#include <linux/stddef.h>
-+#include <linux/types.h>
- #include <linux/fs.h>
-+#include <linux/init.h>
- #include <linux/miscdevice.h>
-+#include <linux/module.h>
-+#include <linux/mm.h>
- #include <asm/uaccess.h>
- #include "mem_user.h"
-- 
-+
- /* These are set in mmapper_init, which is called at boot time */
- static unsigned long mmapper_size;
--static unsigned long p_buf = 0;
--static char *v_buf = NULL;
-+static unsigned long p_buf;
-+static char *v_buf;
- 
--static ssize_t
--mmapper_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
-+static ssize_t mmapper_read(struct file *file, char __user *buf, size_t count,
-+			    loff_t *ppos)
- {
- 	return simple_read_from_buffer(buf, count, ppos, v_buf, mmapper_size);
- }
- 
--static ssize_t
--mmapper_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
-+static ssize_t mmapper_write(struct file *file, const char __user *buf,
-+			     size_t count, loff_t *ppos)
- {
- 	if (*ppos > mmapper_size)
- 		return -EINVAL;
-@@ -39,48 +41,46 @@ mmapper_write(struct file *file, const c
- 
- 	if (copy_from_user(&v_buf[*ppos], buf, count))
- 		return -EFAULT;
--	
-+
- 	return count;
- }
- 
--static int 
--mmapper_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--	 unsigned long arg)
-+static int mmapper_ioctl(struct inode *inode, struct file *file,
-+			 unsigned int cmd, unsigned long arg)
- {
--	return(-ENOIOCTLCMD);
-+	return -ENOIOCTLCMD;
- }
- 
--static int 
--mmapper_mmap(struct file *file, struct vm_area_struct * vma)
-+static int mmapper_mmap(struct file *file, struct vm_area_struct * vma)
- {
- 	int ret = -EINVAL;
- 	int size;
- 
- 	if (vma->vm_pgoff != 0)
- 		goto out;
--	
-+
- 	size = vma->vm_end - vma->vm_start;
--	if(size > mmapper_size) return(-EFAULT);
-+	if (size > mmapper_size)
-+		return -EFAULT;
- 
--	/* XXX A comment above remap_pfn_range says it should only be
-+	/*
-+	 * XXX A comment above remap_pfn_range says it should only be
- 	 * called when the mm semaphore is held
- 	 */
- 	if (remap_pfn_range(vma, vma->vm_start, p_buf >> PAGE_SHIFT, size,
--			     vma->vm_page_prot))
-+			    vma->vm_page_prot))
- 		goto out;
- 	ret = 0;
- out:
- 	return ret;
- }
- 
--static int
--mmapper_open(struct inode *inode, struct file *file)
-+static int mmapper_open(struct inode *inode, struct file *file)
- {
- 	return 0;
- }
- 
--static int 
--mmapper_release(struct inode *inode, struct file *file)
-+static int mmapper_release(struct inode *inode, struct file *file)
- {
- 	return 0;
- }
-@@ -95,7 +95,9 @@ static const struct file_operations mmap
- 	.release	= mmapper_release,
- };
- 
--/* No locking needed - only used (and modified) by below initcall and exitcall. */
-+/*
-+ * No locking needed - only used (and modified) by below initcall and exitcall.
-+ */
- static struct miscdevice mmapper_dev = {
- 	.minor		= MISC_DYNAMIC_MINOR,
- 	.name		= "mmapper",
-@@ -109,13 +111,13 @@ static int __init mmapper_init(void)
- 	printk(KERN_INFO "Mapper v0.1\n");
- 
- 	v_buf = (char *) find_iomem("mmapper", &mmapper_size);
--	if(mmapper_size == 0){
-+	if (mmapper_size == 0) {
- 		printk(KERN_ERR "mmapper_init - find_iomem failed\n");
- 		goto out;
- 	}
- 
- 	err = misc_register(&mmapper_dev);
--	if(err){
-+	if (err) {
- 		printk(KERN_ERR "mmapper - misc_register failed, err = %d\n",
- 		       err);
- 		goto out;
-@@ -136,9 +138,3 @@ module_exit(mmapper_exit);
- 
- MODULE_AUTHOR("Greg Lonnon <glonnon@ridgerun.com>");
- MODULE_DESCRIPTION("DSPLinux simulator mmapper driver");
--/*
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/drivers/null.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/null.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/null.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,4 +1,4 @@
--/* 
-+/*
-  * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
-  * Licensed under the GPL
-  */
-@@ -6,8 +6,8 @@
- #include <stddef.h>
- #include <errno.h>
- #include <fcntl.h>
--#include "os.h"
- #include "chan_user.h"
-+#include "os.h"
- 
- /* This address is used only as a unique identifer */
- static int null_chan;
-Index: linux-2.6.22/arch/um/drivers/pty.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/pty.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/pty.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,4 +1,4 @@
--/* 
-+/*
-  * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
-@@ -6,16 +6,16 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <unistd.h>
--#include <string.h>
--#include <fcntl.h>
- #include <errno.h>
-+#include <fcntl.h>
-+#include <string.h>
- #include <termios.h>
- #include <sys/stat.h>
- #include "chan_user.h"
--#include "os.h"
--#include "user.h"
- #include "kern_constants.h"
-+#include "os.h"
- #include "um_malloc.h"
-+#include "user.h"
- 
- struct pty_chan {
- 	void (*announce)(char *dev_name, int dev);
-@@ -33,7 +33,7 @@ static void *pty_chan_init(char *str, in
- 	if (data == NULL)
- 		return NULL;
- 
--	*data = ((struct pty_chan) { .announce  	= opts->announce, 
-+	*data = ((struct pty_chan) { .announce  	= opts->announce,
- 				     .dev  		= device,
- 				     .raw  		= opts->raw });
- 	return data;
-@@ -101,7 +101,7 @@ static int getmaster(char *line)
- 				*tp = 't';
- 				err = access(line, R_OK | W_OK);
- 				*tp = 'p';
--				if(!err)
-+				if (!err)
- 					return master;
- 				close(master);
+ 		if (stack != NULL) {
+ 			fd = phys_mapping(to_phys(stack), &offset);
+-			addr = mmap((void *) UML_CONFIG_STUB_DATA,
++			addr = mmap((void *) STUB_DATA,
+ 				    UM_KERN_PAGE_SIZE, PROT_READ | PROT_WRITE,
+ 				    MAP_FIXED | MAP_SHARED, fd, offset);
+ 			if (addr == MAP_FAILED) {
+ 				printk(UM_KERN_ERR "mapping segfault stack "
+-				       "failed, errno = %d\n", errno);
++				       "at 0x%lx failed, errno = %d\n",
++				       STUB_DATA, errno);
+ 				exit(1);
  			}
-@@ -130,7 +130,7 @@ static int pty_open(int input, int outpu
- 			return err;
  		}
- 	}
--	
-+
- 	if (data->announce)
- 		(*data->announce)(dev, data->dev);
+@@ -214,11 +215,11 @@ static int userspace_tramp(void *stack)
+ 	if (!ptrace_faultinfo && (stack != NULL)) {
+ 		struct sigaction sa;
  
-Index: linux-2.6.22/arch/um/drivers/xterm.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/xterm.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/xterm.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,11 +1,11 @@
--/* 
-+/*
-  * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
+-		unsigned long v = UML_CONFIG_STUB_CODE +
++		unsigned long v = STUB_CODE +
+ 				  (unsigned long) stub_segv_handler -
+ 				  (unsigned long) &__syscall_stub_start;
  
- #include <stddef.h>
--#include <stdlib.h>
- #include <stdio.h>
-+#include <stdlib.h>
- #include <unistd.h>
- #include <errno.h>
- #include <string.h>
-@@ -96,8 +96,10 @@ static int xterm_open(int input, int out
- 	if (access(argv[4], X_OK) < 0)
- 		argv[4] = "port-helper";
- 
--	/* Check that DISPLAY is set, this doesn't guarantee the xterm
--	 * will work but w/o it we can be pretty sure it won't. */
-+	/*
-+	 * Check that DISPLAY is set, this doesn't guarantee the xterm
-+	 * will work but w/o it we can be pretty sure it won't.
-+	 */
- 	if (getenv("DISPLAY") == NULL) {
- 		printk(UM_KERN_ERR "xterm_open: $DISPLAY not set.\n");
- 		return -ENODEV;
-@@ -196,7 +198,7 @@ static int xterm_open(int input, int out
- static void xterm_close(int fd, void *d)
+-		set_sigstack((void *) UML_CONFIG_STUB_DATA, UM_KERN_PAGE_SIZE);
++		set_sigstack((void *) STUB_DATA, UM_KERN_PAGE_SIZE);
+ 		sigemptyset(&sa.sa_mask);
+ 		sigaddset(&sa.sa_mask, SIGIO);
+ 		sigaddset(&sa.sa_mask, SIGWINCH);
+@@ -382,10 +383,10 @@ static int __init init_thread_regs(void)
  {
- 	struct xterm_chan *data = d;
--	
-+
- 	if (data->pid != -1)
- 		os_kill_process(data->pid, 1);
- 	data->pid = -1;
-Index: linux-2.6.22/arch/um/drivers/chan_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/chan_user.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/chan_user.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,4 +1,4 @@
--/* 
-+/*
-  * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
-  * Licensed under the GPL
-  */
-@@ -82,17 +82,21 @@ int generic_console_write(int fd, const 
- 		if (err)
- 			goto error;
- 		new = save;
--		/* The terminal becomes a bit less raw, to handle \n also as
-+		/*
-+		 * The terminal becomes a bit less raw, to handle \n also as
- 		 * "Carriage Return", not only as "New Line". Otherwise, the new
--		 * line won't start at the first column.*/
-+		 * line won't start at the first column.
-+		 */
- 		new.c_oflag |= OPOST;
- 		CATCH_EINTR(err = tcsetattr(fd, TCSAFLUSH, &new));
- 		if (err)
- 			goto error;
- 	}
- 	err = generic_write(fd, buf, n, NULL);
--	/* Restore raw mode, in any case; we *must* ignore any error apart
--	 * EINTR, except for debug.*/
-+	/*
-+	 * Restore raw mode, in any case; we *must* ignore any error apart
-+	 * EINTR, except for debug.
-+	 */
- 	if (isatty(fd))
- 		CATCH_EINTR(tcsetattr(fd, TCSAFLUSH, &save));
- 	return err;
-@@ -167,13 +171,13 @@ static int winch_thread(void *arg)
- 		exit(1);
- 	}
- 
--	if(ioctl(pty_fd, TIOCSCTTY, 0) < 0){
-+	if (ioctl(pty_fd, TIOCSCTTY, 0) < 0) {
- 		printk(UM_KERN_ERR "winch_thread : TIOCSCTTY failed on "
- 		       "fd %d err = %d\n", pty_fd, errno);
- 		exit(1);
- 	}
- 
--	if(tcsetpgrp(pty_fd, os_getpid()) < 0){
-+	if (tcsetpgrp(pty_fd, os_getpid()) < 0) {
- 		printk(UM_KERN_ERR "winch_thread : tcsetpgrp failed on "
- 		       "fd %d err = %d\n", pty_fd, errno);
- 		exit(1);
-Index: linux-2.6.22/arch/um/drivers/hostaudio_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/hostaudio_kern.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/hostaudio_kern.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,16 +1,14 @@
--/* 
-- * Copyright (C) 2002 Steve Schmidtke 
-+/*
-+ * Copyright (C) 2002 Steve Schmidtke
-  * Licensed under the GPL
-  */
- 
-+#include "linux/fs.h"
- #include "linux/module.h"
--#include "linux/init.h"
- #include "linux/slab.h"
--#include "linux/fs.h"
- #include "linux/sound.h"
- #include "linux/soundcard.h"
- #include "asm/uaccess.h"
--#include "kern_util.h"
- #include "init.h"
- #include "os.h"
- 
-@@ -25,7 +23,8 @@ struct hostmixer_state {
- #define HOSTAUDIO_DEV_DSP "/dev/sound/dsp"
- #define HOSTAUDIO_DEV_MIXER "/dev/sound/mixer"
- 
--/* Changed either at boot time or module load time.  At boot, this is
-+/*
-+ * Changed either at boot time or module load time.  At boot, this is
-  * single-threaded; at module load, multiple modules would each have
-  * their own copy of these variables.
-  */
-@@ -44,7 +43,7 @@ static char *mixer = HOSTAUDIO_DEV_MIXER
- static int set_dsp(char *name, int *add)
- {
- 	dsp = name;
--	return(0);
-+	return 0;
- }
- 
- __uml_setup("dsp=", set_dsp, "dsp=<dsp device>\n" DSP_HELP);
-@@ -52,7 +51,7 @@ __uml_setup("dsp=", set_dsp, "dsp=<dsp d
- static int set_mixer(char *name, int *add)
- {
- 	mixer = name;
--	return(0);
-+	return 0;
- }
- 
- __uml_setup("mixer=", set_mixer, "mixer=<mixer device>\n" MIXER_HELP);
-@@ -77,23 +76,23 @@ static ssize_t hostaudio_read(struct fil
- 	int err;
- 
- #ifdef DEBUG
--	printk("hostaudio: read called, count = %d\n", count);
-+	printk(KERN_DEBUG "hostaudio: read called, count = %d\n", count);
- #endif
- 
- 	kbuf = kmalloc(count, GFP_KERNEL);
--	if(kbuf == NULL)
--		return(-ENOMEM);
-+	if (kbuf == NULL)
-+		return -ENOMEM;
- 
- 	err = os_read_file(state->fd, kbuf, count);
--	if(err < 0)
-+	if (err < 0)
- 		goto out;
- 
--	if(copy_to_user(buffer, kbuf, err))
-+	if (copy_to_user(buffer, kbuf, err))
- 		err = -EFAULT;
- 
- out:
- 	kfree(kbuf);
--	return(err);
-+	return err;
- }
- 
- static ssize_t hostaudio_write(struct file *file, const char __user *buffer,
-@@ -104,40 +103,40 @@ static ssize_t hostaudio_write(struct fi
- 	int err;
- 
- #ifdef DEBUG
--	printk("hostaudio: write called, count = %d\n", count);
-+	printk(KERN_DEBUG "hostaudio: write called, count = %d\n", count);
- #endif
- 
- 	kbuf = kmalloc(count, GFP_KERNEL);
--	if(kbuf == NULL)
--		return(-ENOMEM);
-+	if (kbuf == NULL)
-+		return -ENOMEM;
- 
- 	err = -EFAULT;
--	if(copy_from_user(kbuf, buffer, count))
-+	if (copy_from_user(kbuf, buffer, count))
- 		goto out;
- 
- 	err = os_write_file(state->fd, kbuf, count);
--	if(err < 0)
-+	if (err < 0)
- 		goto out;
- 	*ppos += err;
- 
-  out:
- 	kfree(kbuf);
--	return(err);
-+	return err;
- }
- 
--static unsigned int hostaudio_poll(struct file *file, 
-+static unsigned int hostaudio_poll(struct file *file,
- 				   struct poll_table_struct *wait)
- {
- 	unsigned int mask = 0;
- 
- #ifdef DEBUG
--	printk("hostaudio: poll called (unimplemented)\n");
-+	printk(KERN_DEBUG "hostaudio: poll called (unimplemented)\n");
- #endif
- 
--	return(mask);
-+	return mask;
- }
- 
--static int hostaudio_ioctl(struct inode *inode, struct file *file, 
-+static int hostaudio_ioctl(struct inode *inode, struct file *file,
- 			   unsigned int cmd, unsigned long arg)
- {
- 	struct hostaudio_state *state = file->private_data;
-@@ -145,7 +144,7 @@ static int hostaudio_ioctl(struct inode 
- 	int err;
- 
- #ifdef DEBUG
--	printk("hostaudio: ioctl called, cmd = %u\n", cmd);
-+	printk(KERN_DEBUG "hostaudio: ioctl called, cmd = %u\n", cmd);
- #endif
- 	switch(cmd){
- 	case SNDCTL_DSP_SPEED:
-@@ -154,8 +153,8 @@ static int hostaudio_ioctl(struct inode 
- 	case SNDCTL_DSP_CHANNELS:
- 	case SNDCTL_DSP_SUBDIVIDE:
- 	case SNDCTL_DSP_SETFRAGMENT:
--		if(get_user(data, (int __user *) arg))
--			return(-EFAULT);
-+		if (get_user(data, (int __user *) arg))
-+			return EFAULT;
- 		break;
- 	default:
- 		break;
-@@ -170,14 +169,14 @@ static int hostaudio_ioctl(struct inode 
- 	case SNDCTL_DSP_CHANNELS:
- 	case SNDCTL_DSP_SUBDIVIDE:
- 	case SNDCTL_DSP_SETFRAGMENT:
--		if(put_user(data, (int __user *) arg))
--			return(-EFAULT);
-+		if (put_user(data, (int __user *) arg))
-+			return -EFAULT;
- 		break;
- 	default:
- 		break;
- 	}
- 
--	return(err);
-+	return err;
- }
- 
- static int hostaudio_open(struct inode *inode, struct file *file)
-@@ -187,24 +186,26 @@ static int hostaudio_open(struct inode *
- 	int ret;
- 
- #ifdef DEBUG
--	printk("hostaudio: open called (host: %s)\n", dsp);
-+	printk(KERN_DEBUG "hostaudio: open called (host: %s)\n", dsp);
- #endif
- 
- 	state = kmalloc(sizeof(struct hostaudio_state), GFP_KERNEL);
--	if(state == NULL)
--		return(-ENOMEM);
-+	if (state == NULL)
-+		return -ENOMEM;
- 
--	if(file->f_mode & FMODE_READ) r = 1;
--	if(file->f_mode & FMODE_WRITE) w = 1;
-+	if (file->f_mode & FMODE_READ)
-+		r = 1;
-+	if (file->f_mode & FMODE_WRITE)
-+		w = 1;
- 
- 	ret = os_open_file(dsp, of_set_rw(OPENFLAGS(), r, w), 0);
--	if(ret < 0){
-+	if (ret < 0) {
- 		kfree(state);
--		return(ret);
-+		return ret;
- 	}
- 	state->fd = ret;
- 	file->private_data = state;
--	return(0);
-+	return 0;
- }
- 
- static int hostaudio_release(struct inode *inode, struct file *file)
-@@ -212,26 +213,26 @@ static int hostaudio_release(struct inod
- 	struct hostaudio_state *state = file->private_data;
- 
- #ifdef DEBUG
--	printk("hostaudio: release called\n");
-+	printk(KERN_DEBUG "hostaudio: release called\n");
- #endif
- 	os_close_file(state->fd);
- 	kfree(state);
- 
--	return(0);
-+	return 0;
- }
- 
- /* /dev/mixer file operations */
- 
--static int hostmixer_ioctl_mixdev(struct inode *inode, struct file *file, 
-+static int hostmixer_ioctl_mixdev(struct inode *inode, struct file *file,
- 				  unsigned int cmd, unsigned long arg)
- {
- 	struct hostmixer_state *state = file->private_data;
- 
- #ifdef DEBUG
--	printk("hostmixer: ioctl called\n");
-+	printk(KERN_DEBUG "hostmixer: ioctl called\n");
- #endif
- 
--	return(os_ioctl_generic(state->fd, cmd, arg));
-+	return os_ioctl_generic(state->fd, cmd, arg);
- }
- 
- static int hostmixer_open_mixdev(struct inode *inode, struct file *file)
-@@ -241,26 +242,29 @@ static int hostmixer_open_mixdev(struct 
- 	int ret;
- 
- #ifdef DEBUG
--	printk("hostmixer: open called (host: %s)\n", mixer);
-+	printk(KERN_DEBUG "hostmixer: open called (host: %s)\n", mixer);
- #endif
- 
- 	state = kmalloc(sizeof(struct hostmixer_state), GFP_KERNEL);
--	if(state == NULL) return(-ENOMEM);
-+	if (state == NULL)
-+		return -ENOMEM;
- 
--	if(file->f_mode & FMODE_READ) r = 1;
--	if(file->f_mode & FMODE_WRITE) w = 1;
-+	if (file->f_mode & FMODE_READ)
-+		r = 1;
-+	if (file->f_mode & FMODE_WRITE)
-+		w = 1;
- 
- 	ret = os_open_file(mixer, of_set_rw(OPENFLAGS(), r, w), 0);
--        
--	if(ret < 0){
--		printk("hostaudio_open_mixdev failed to open '%s', err = %d\n",
--		       dsp, -ret);
-+
-+	if (ret < 0) {
-+		printk(KERN_ERR "hostaudio_open_mixdev failed to open '%s', "
-+		       "err = %d\n", dsp, -ret);
- 		kfree(state);
--		return(ret);
-+		return ret;
- 	}
- 
- 	file->private_data = state;
--	return(0);
-+	return 0;
- }
- 
- static int hostmixer_release(struct inode *inode, struct file *file)
-@@ -268,13 +272,13 @@ static int hostmixer_release(struct inod
- 	struct hostmixer_state *state = file->private_data;
- 
- #ifdef DEBUG
--	printk("hostmixer: release called\n");
-+	printk(KERN_DEBUG "hostmixer: release called\n");
- #endif
- 
- 	os_close_file(state->fd);
- 	kfree(state);
- 
--	return(0);
-+	return 0;
- }
- 
- /* kernel module operations */
-@@ -314,13 +318,13 @@ static int __init hostaudio_init_module(
- 	       dsp, mixer);
- 
- 	module_data.dev_audio = register_sound_dsp(&hostaudio_fops, -1);
--	if(module_data.dev_audio < 0){
-+	if (module_data.dev_audio < 0) {
- 		printk(KERN_ERR "hostaudio: couldn't register DSP device!\n");
- 		return -ENODEV;
- 	}
- 
- 	module_data.dev_mixer = register_sound_mixer(&hostmixer_fops, -1);
--	if(module_data.dev_mixer < 0){
-+	if (module_data.dev_mixer < 0) {
- 		printk(KERN_ERR "hostmixer: couldn't register mixer "
- 		       "device!\n");
- 		unregister_sound_dsp(module_data.dev_audio);
-Index: linux-2.6.22/arch/um/drivers/mconsole_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/mconsole_user.c	2007-10-01 15:11:15.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/mconsole_user.c	2007-10-01 17:01:55.000000000 -0400
-@@ -1,25 +1,22 @@
- /*
-  * Copyright (C) 2001 Lennert Buytenhek (buytenh@gnu.org)
-- * Copyright (C) 2001 - 2003 Jeff Dike (jdike@addtoit.com)
-+ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
--#include <stdio.h>
--#include <stdlib.h>
- #include <errno.h>
--#include <signal.h>
-+#include <string.h>
-+#include <unistd.h>
- #include <sys/socket.h>
--#include <sys/types.h>
- #include <sys/uio.h>
- #include <sys/un.h>
--#include <unistd.h>
--#include "user.h"
--#include "sysdep/ptrace.h"
-+#include "kern_constants.h"
- #include "mconsole.h"
--#include "os.h"
-+#include "user.h"
- 
- static struct mconsole_command commands[] = {
--	/* With uts namespaces, uts information becomes process-specific, so
-+	/*
-+	 * With uts namespaces, uts information becomes process-specific, so
- 	 * we need a process context.  If we try handling this in interrupt
- 	 * context, we may hit an exiting process without a valid uts
- 	 * namespace.
-@@ -36,7 +33,7 @@ static struct mconsole_command commands[
- 	{ "go", mconsole_go, MCONSOLE_INTR },
- 	{ "log", mconsole_log, MCONSOLE_INTR },
- 	{ "proc", mconsole_proc, MCONSOLE_PROC },
--        { "stack", mconsole_stack, MCONSOLE_INTR },
-+	{ "stack", mconsole_stack, MCONSOLE_INTR },
- };
- 
- /* Initialized in mconsole_init, which is an initcall */
-@@ -44,21 +41,21 @@ char mconsole_socket_name[256];
- 
- int mconsole_reply_v0(struct mc_request *req, char *reply)
- {
--        struct iovec iov;
--        struct msghdr msg;
-+	struct iovec iov;
-+	struct msghdr msg;
- 
--        iov.iov_base = reply;
--        iov.iov_len = strlen(reply);
-+	iov.iov_base = reply;
-+	iov.iov_len = strlen(reply);
- 
--        msg.msg_name = &(req->origin);
--        msg.msg_namelen = req->originlen;
--        msg.msg_iov = &iov;
--        msg.msg_iovlen = 1;
--        msg.msg_control = NULL;
--        msg.msg_controllen = 0;
--        msg.msg_flags = 0;
-+	msg.msg_name = &(req->origin);
-+	msg.msg_namelen = req->originlen;
-+	msg.msg_iov = &iov;
-+	msg.msg_iovlen = 1;
-+	msg.msg_control = NULL;
-+	msg.msg_controllen = 0;
-+	msg.msg_flags = 0;
- 
--        return sendmsg(req->originating_fd, &msg, 0);
-+	return sendmsg(req->originating_fd, &msg, 0);
- }
- 
- static struct mconsole_command *mconsole_parse(struct mc_request *req)
-@@ -66,10 +63,10 @@ static struct mconsole_command *mconsole
- 	struct mconsole_command *cmd;
- 	int i;
- 
--	for(i = 0; i < ARRAY_SIZE(commands); i++){
-+	for (i = 0; i < ARRAY_SIZE(commands); i++) {
- 		cmd = &commands[i];
--		if(!strncmp(req->request.data, cmd->command, 
--			    strlen(cmd->command))){
-+		if (!strncmp(req->request.data, cmd->command,
-+			    strlen(cmd->command))) {
- 			return cmd;
- 		}
- 	}
-@@ -94,9 +91,9 @@ int mconsole_get_request(int fd, struct 
- 
- 	req->originating_fd = fd;
- 
--	if(req->request.magic != MCONSOLE_MAGIC){
-+	if (req->request.magic != MCONSOLE_MAGIC) {
- 		/* Unversioned request */
--		len = MIN(sizeof(req->request.data) - 1, 
-+		len = MIN(sizeof(req->request.data) - 1,
- 			  strlen((char *) &req->request));
- 		memmove(req->request.data, &req->request, len);
- 		req->request.data[len] = '\0';
-@@ -107,32 +104,33 @@ int mconsole_get_request(int fd, struct 
- 
- 		mconsole_reply_v0(req, "ERR Version 0 mconsole clients are "
- 				  "not supported by this driver");
--		return(0);
-+		return 0;
- 	}
- 
--	if(req->request.len >= MCONSOLE_MAX_DATA){
-+	if (req->request.len >= MCONSOLE_MAX_DATA) {
- 		mconsole_reply(req, "Request too large", 1, 0);
--		return(0);
-+		return 0;
- 	}
--	if(req->request.version != MCONSOLE_VERSION){
--		mconsole_reply(req, "This driver only supports version " 
--                               STRING(MCONSOLE_VERSION) " clients", 1, 0);
-+	if (req->request.version != MCONSOLE_VERSION) {
-+		mconsole_reply(req, "This driver only supports version "
-+			       STRING(MCONSOLE_VERSION) " clients", 1, 0);
- 	}
--	
-+
- 	req->request.data[req->request.len] = '\0';
- 	req->cmd = mconsole_parse(req);
--	if(req->cmd == NULL){
-+	if (req->cmd == NULL) {
- 		mconsole_reply(req, "Unknown command", 1, 0);
--		return(0);
-+		return 0;
- 	}
- 
--	return(1);
-+	return 1;
- }
- 
- int mconsole_reply_len(struct mc_request *req, const char *str, int total,
- 		       int err, int more)
- {
--	/* XXX This is a stack consumption problem.  It'd be nice to
-+	/*
-+	 * XXX This is a stack consumption problem.  It'd be nice to
- 	 * make it global and serialize access to it, but there are a
- 	 * ton of callers to this function.
+ 	get_safe_registers(thread_regs);
+ 	/* Set parent's instruction pointer to start of clone-stub */
+-	thread_regs[REGS_IP_INDEX] = UML_CONFIG_STUB_CODE +
++	thread_regs[REGS_IP_INDEX] = STUB_CODE +
+ 				(unsigned long) stub_clone_handler -
+ 				(unsigned long) &__syscall_stub_start;
+-	thread_regs[REGS_SP_INDEX] = UML_CONFIG_STUB_DATA + UM_KERN_PAGE_SIZE -
++	thread_regs[REGS_SP_INDEX] = STUB_DATA + UM_KERN_PAGE_SIZE -
+ 		sizeof(void *);
+ #ifdef __SIGNAL_FRAMESIZE
+ 	thread_regs[REGS_SP_INDEX] -= __SIGNAL_FRAMESIZE;
+@@ -443,7 +444,7 @@ int copy_context_skas0(unsigned long new
+ 	 * child's stack and check it.
  	 */
-@@ -147,7 +145,7 @@ int mconsole_reply_len(struct mc_request
+ 	wait_stub_done(pid);
+-	if (child_data->err != UML_CONFIG_STUB_DATA)
++	if (child_data->err != STUB_DATA)
+ 		panic("copy_context_skas0 - stub-child reports error %ld\n",
+ 		      child_data->err);
  
- 		len = MIN(total, MCONSOLE_MAX_DATA - 1);
+Index: linux-2.6.22/arch/um/Kconfig.i386
+===================================================================
+--- linux-2.6.22.orig/arch/um/Kconfig.i386	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig.i386	2007-10-01 13:44:18.000000000 -0400
+@@ -65,20 +65,6 @@ config 3_LEVEL_PGTABLES
+ 	However, this it experimental on 32-bit architectures, so if unsure say
+ 	N (on x86-64 it's automatically enabled, instead, as it's safe there).
  
--		if(len == total) reply.more = more;
-+		if (len == total) reply.more = more;
- 		else reply.more = 1;
- 
- 		memcpy(reply.data, str, len);
-@@ -161,9 +159,10 @@ int mconsole_reply_len(struct mc_request
- 		n = sendto(req->originating_fd, &reply, len, 0,
- 			   (struct sockaddr *) req->origin, req->originlen);
- 
--		if(n < 0) return(-errno);
--	} while(total > 0);
--	return(0);
-+		if (n < 0)
-+			return -errno;
-+	} while (total > 0);
-+	return 0;
- }
- 
- int mconsole_reply(struct mc_request *req, const char *str, int err, int more)
-@@ -187,18 +186,18 @@ int mconsole_notify(char *sock_name, int
- 	int n, err = 0;
- 
- 	lock_notify();
--	if(notify_sock < 0){
-+	if (notify_sock < 0) {
- 		notify_sock = socket(PF_UNIX, SOCK_DGRAM, 0);
--		if(notify_sock < 0){
-+		if (notify_sock < 0) {
- 			err = -errno;
--			printk("mconsole_notify - socket failed, errno = %d\n",
--			       err);
-+			printk(UM_KERN_ERR "mconsole_notify - socket failed, "
-+			       "errno = %d\n", errno);
- 		}
- 	}
- 	unlock_notify();
--	
--	if(err)
--		return(err);
-+
-+	if (err)
-+		return err;
- 
- 	target.sun_family = AF_UNIX;
- 	strcpy(target.sun_path, sock_name);
-@@ -212,22 +211,12 @@ int mconsole_notify(char *sock_name, int
- 
- 	err = 0;
- 	len = sizeof(packet) + packet.len - sizeof(packet.data);
--	n = sendto(notify_sock, &packet, len, 0, (struct sockaddr *) &target, 
-+	n = sendto(notify_sock, &packet, len, 0, (struct sockaddr *) &target,
- 		   sizeof(target));
--	if(n < 0){
-+	if (n < 0) {
- 		err = -errno;
--		printk("mconsole_notify - sendto failed, errno = %d\n", errno);
-+		printk(UM_KERN_ERR "mconsole_notify - sendto failed, "
-+		       "errno = %d\n", errno);
- 	}
--	return(err);
-+	return err;
- }
+-config STUB_CODE
+-	hex
+-	default 0xbfffe000 if !HOST_VMSPLIT_2G
+-	default 0x7fffe000 if HOST_VMSPLIT_2G
 -
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+-config STUB_DATA
+-	hex
+-	default 0xbffff000 if !HOST_VMSPLIT_2G
+-	default 0x7ffff000 if HOST_VMSPLIT_2G
+-
+-config STUB_START
+-	hex
+-	default STUB_CODE
+-
+ config ARCH_HAS_SC_SIGNALS
+ 	bool
+ 	default y
+Index: linux-2.6.22/arch/um/include/as-layout.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/as-layout.h	2007-09-27 11:47:22.000000000 -0400
++++ linux-2.6.22/arch/um/include/as-layout.h	2007-10-01 16:41:26.000000000 -0400
+@@ -6,6 +6,28 @@
+ #ifndef __START_H__
+ #define __START_H__
+ 
++#include "uml-config.h"
++#include "kern_constants.h"
++
++/*
++ * Assembly doesn't want any casting, but C does, so define these
++ * without casts here, and define new symbols with casts inside the C
++ * section.
++ */
++#define ASM_STUB_CODE (UML_CONFIG_TOP_ADDR - 2 * UM_KERN_PAGE_SIZE)
++#define ASM_STUB_DATA (UML_CONFIG_TOP_ADDR - UM_KERN_PAGE_SIZE)
++#define ASM_STUB_START ASM_STUB_CODE
++
++/*
++ * This file is included by the assembly stubs, which just want the
++ * definitions above.
++ */
++#ifndef __ASSEMBLY__
++
++#define STUB_CODE ((unsigned long) ASM_STUB_CODE)
++#define STUB_DATA ((unsigned long) ASM_STUB_DATA)
++#define STUB_START ((unsigned long) ASM_STUB_START)
++
+ #include "sysdep/ptrace.h"
+ 
+ struct cpu_task {
+@@ -32,3 +54,5 @@ extern int linux_main(int argc, char **a
+ extern void (*sig_info[])(int, struct uml_pt_regs *);
+ 
+ #endif
++
++#endif
+Index: linux-2.6.22/arch/um/include/sysdep-i386/stub.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/sysdep-i386/stub.h	2007-09-27 11:47:22.000000000 -0400
++++ linux-2.6.22/arch/um/include/sysdep-i386/stub.h	2007-10-01 13:59:56.000000000 -0400
+@@ -9,6 +9,7 @@
+ #include <sys/mman.h>
+ #include <asm/ptrace.h>
+ #include <asm/unistd.h>
++#include "as-layout.h"
+ #include "stub-data.h"
+ #include "kern_constants.h"
+ #include "uml-config.h"
+@@ -89,12 +90,12 @@ static inline void remap_stack(int fd, u
+ {
+ 	__asm__ volatile ("movl %%eax,%%ebp ; movl %0,%%eax ; int $0x80 ;"
+ 			  "movl %7, %%ebx ; movl %%eax, (%%ebx)"
+-			  : : "g" (STUB_MMAP_NR), "b" (UML_CONFIG_STUB_DATA), 
+-			    "c" (UM_KERN_PAGE_SIZE), 
++			  : : "g" (STUB_MMAP_NR), "b" (STUB_DATA),
++			    "c" (UM_KERN_PAGE_SIZE),
+ 			    "d" (PROT_READ | PROT_WRITE),
+-			    "S" (MAP_FIXED | MAP_SHARED), "D" (fd), 
+-			    "a" (offset), 
+-			    "i" (&((struct stub_data *) UML_CONFIG_STUB_DATA)->err) 
++			    "S" (MAP_FIXED | MAP_SHARED), "D" (fd),
++			    "a" (offset),
++			    "i" (&((struct stub_data *) STUB_DATA)->err)
+ 			  : "memory");
+ }
+ 
+Index: linux-2.6.22/arch/um/include/sysdep-x86_64/stub.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/stub.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/include/sysdep-x86_64/stub.h	2007-10-01 13:59:40.000000000 -0400
+@@ -9,6 +9,7 @@
+ #include <sys/mman.h>
+ #include <asm/unistd.h>
+ #include <sysdep/ptrace_user.h>
++#include "as-layout.h"
+ #include "stub-data.h"
+ #include "kern_constants.h"
+ #include "uml-config.h"
+@@ -94,13 +95,13 @@ static inline void remap_stack(long fd, 
+ {
+ 	__asm__ volatile ("movq %4,%%r10 ; movq %5,%%r8 ; "
+ 			  "movq %6, %%r9; " __syscall "; movq %7, %%rbx ; "
+-			  "movq %%rax, (%%rbx)": 
+-			  : "a" (STUB_MMAP_NR), "D" (UML_CONFIG_STUB_DATA), 
+-			    "S" (UM_KERN_PAGE_SIZE), 
+-			    "d" (PROT_READ | PROT_WRITE), 
+-                            "g" (MAP_FIXED | MAP_SHARED), "g" (fd), 
++			  "movq %%rax, (%%rbx)":
++			  : "a" (STUB_MMAP_NR), "D" (STUB_DATA),
++			    "S" (UM_KERN_PAGE_SIZE),
++			    "d" (PROT_READ | PROT_WRITE),
++                            "g" (MAP_FIXED | MAP_SHARED), "g" (fd),
+ 			    "g" (offset),
+-			    "i" (&((struct stub_data *) UML_CONFIG_STUB_DATA)->err)
++			    "i" (&((struct stub_data *) STUB_DATA)->err)
+ 			  : __syscall_clobber, "r10", "r8", "r9" );
+ }
+ 
+Index: linux-2.6.22/arch/um/kernel/exec.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/exec.c	2007-09-27 11:51:43.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/exec.c	2007-10-01 13:46:06.000000000 -0400
+@@ -11,6 +11,7 @@
+ #include "asm/current.h"
+ #include "asm/processor.h"
+ #include "asm/uaccess.h"
++#include "as-layout.h"
+ #include "mem_user.h"
+ #include "skas.h"
+ #include "os.h"
+@@ -18,7 +19,7 @@
+ void flush_thread(void)
+ {
+ 	void *data = NULL;
+-	unsigned long end = proc_mm ? task_size : CONFIG_STUB_START;
++	unsigned long end = proc_mm ? task_size : STUB_START;
+ 	int ret;
+ 
+ 	arch_flush_thread(&current->thread.arch);
+Index: linux-2.6.22/arch/um/kernel/skas/clone.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/clone.c	2007-09-27 11:51:43.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/clone.c	2007-10-01 13:49:09.000000000 -0400
+@@ -4,6 +4,7 @@
+ #include <sys/time.h>
+ #include <asm/unistd.h>
+ #include <asm/page.h>
++#include "as-layout.h"
+ #include "ptrace_user.h"
+ #include "skas.h"
+ #include "stub-data.h"
+@@ -21,12 +22,11 @@
+ void __attribute__ ((__section__ (".__syscall_stub")))
+ stub_clone_handler(void)
+ {
+-	struct stub_data *data = (struct stub_data *) UML_CONFIG_STUB_DATA;
++	struct stub_data *data = (struct stub_data *) STUB_DATA;
+ 	long err;
+ 
+ 	err = stub_syscall2(__NR_clone, CLONE_PARENT | CLONE_FILES | SIGCHLD,
+-			    UML_CONFIG_STUB_DATA + UM_KERN_PAGE_SIZE / 2 -
+-			    sizeof(void *));
++			    STUB_DATA + UM_KERN_PAGE_SIZE / 2 - sizeof(void *));
+ 	if(err != 0)
+ 		goto out;
+ 
+Index: linux-2.6.22/arch/um/kernel/skas/mmu.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/mmu.c	2007-09-27 11:51:44.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/mmu.c	2007-10-01 13:49:50.000000000 -0400
+@@ -7,6 +7,7 @@
+ #include "linux/sched.h"
+ #include "asm/pgalloc.h"
+ #include "asm/pgtable.h"
++#include "as-layout.h"
+ #include "os.h"
+ #include "skas.h"
+ 
+@@ -83,12 +84,12 @@ int init_new_context(struct task_struct 
+ 		 */
+ 		mm->pgd[USER_PTRS_PER_PGD] = __pgd(0);
+ 
+-		ret = init_stub_pte(mm, CONFIG_STUB_CODE,
++		ret = init_stub_pte(mm, STUB_CODE,
+ 				    (unsigned long) &__syscall_stub_start);
+ 		if (ret)
+ 			goto out_free;
+ 
+-		ret = init_stub_pte(mm, CONFIG_STUB_DATA, stack);
++		ret = init_stub_pte(mm, STUB_DATA, stack);
+ 		if (ret)
+ 			goto out_free;
+ 
+Index: linux-2.6.22/arch/um/kernel/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/process.c	2007-09-27 11:51:43.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/skas/process.c	2007-10-01 13:50:12.000000000 -0400
+@@ -18,7 +18,7 @@ int new_mm(unsigned long stack)
+ 		return fd;
+ 
+ 	if (skas_needs_stub)
+-		map_stub_pages(fd, CONFIG_STUB_CODE, CONFIG_STUB_DATA, stack);
++		map_stub_pages(fd, STUB_CODE, STUB_DATA, stack);
+ 
+ 	return fd;
+ }
+Index: linux-2.6.22/arch/um/kernel/tlb.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/tlb.c	2007-09-27 11:47:22.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/tlb.c	2007-10-01 13:46:37.000000000 -0400
+@@ -485,8 +485,8 @@ void __flush_tlb_one(unsigned long addr)
+ static void fix_range(struct mm_struct *mm, unsigned long start_addr,
+ 		      unsigned long end_addr, int force)
+ {
+-	if (!proc_mm && (end_addr > CONFIG_STUB_START))
+-		end_addr = CONFIG_STUB_START;
++	if (!proc_mm && (end_addr > STUB_START))
++		end_addr = STUB_START;
+ 
+ 	fix_range_common(mm, start_addr, end_addr, force);
+ }
+@@ -510,7 +510,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 	if (atomic_read(&mm->mm_users) == 0)
+ 		return;
+ 
+-	end = proc_mm ? task_size : CONFIG_STUB_START;
++	end = proc_mm ? task_size : STUB_START;
+ 	fix_range(mm, 0, end, 0);
+ }
+ 
+Index: linux-2.6.22/arch/um/kernel/um_arch.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/um_arch.c	2007-10-01 12:16:06.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/um_arch.c	2007-10-01 13:46:55.000000000 -0400
+@@ -242,7 +242,7 @@ static unsigned long set_task_sizes_skas
+ 
+ 	if (!skas_needs_stub)
+ 		*task_size_out = host_task_size;
+-	else *task_size_out = CONFIG_STUB_START & PGDIR_MASK;
++	else *task_size_out = STUB_START & PGDIR_MASK;
+ 
+ 	return host_task_size;
+ }
+Index: linux-2.6.22/arch/um/os-Linux/skas/mem.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/mem.c	2007-09-27 11:51:43.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/mem.c	2007-10-01 13:51:13.000000000 -0400
+@@ -10,6 +10,7 @@
+ #include <sys/mman.h>
+ #include "init.h"
+ #include "kern_constants.h"
++#include "as-layout.h"
+ #include "mm_id.h"
+ #include "os.h"
+ #include "proc_mm.h"
+@@ -40,7 +41,7 @@ static unsigned long syscall_regs[MAX_RE
+ static int __init init_syscall_regs(void)
+ {
+ 	get_safe_registers(syscall_regs);
+-	syscall_regs[REGS_IP_INDEX] = UML_CONFIG_STUB_CODE +
++	syscall_regs[REGS_IP_INDEX] = STUB_CODE +
+ 		((unsigned long) &batch_syscall_stub -
+ 		 (unsigned long) &__syscall_stub_start);
+ 	return 0;
+@@ -93,8 +94,7 @@ static inline long do_syscall_stub(struc
+ 	ret = *((unsigned long *) mm_idp->stack);
+ 	offset = *((unsigned long *) mm_idp->stack + 1);
+ 	if (offset) {
+-		data = (unsigned long *)(mm_idp->stack +
+-					 offset - UML_CONFIG_STUB_DATA);
++		data = (unsigned long *)(mm_idp->stack + offset - STUB_DATA);
+ 		printk(UM_KERN_ERR "do_syscall_stub : ret = %ld, offset = %ld, "
+ 		       "data = %p\n", ret, offset, data);
+ 		syscall = (unsigned long *)((unsigned long)data + data[0]);
+@@ -182,7 +182,7 @@ long syscall_stub_data(struct mm_id * mm
+ 	memcpy(stack + 1, data, data_count * sizeof(long));
+ 
+ 	*stub_addr = (void *)(((unsigned long)(stack + 1) &
+-			       ~UM_KERN_PAGE_MASK) + UML_CONFIG_STUB_DATA);
++			       ~UM_KERN_PAGE_MASK) + STUB_DATA);
+ 
+ 	return 0;
+ }
+Index: linux-2.6.22/arch/um/sys-i386/stub.S
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/stub.S	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/stub.S	2007-10-01 16:41:26.000000000 -0400
+@@ -1,4 +1,5 @@
+ #include "uml-config.h"
++#include "as-layout.h"
+ 
+ 	.globl syscall_stub
+ .section .__syscall_stub, "x"
+@@ -6,7 +7,7 @@
+ 	.globl batch_syscall_stub
+ batch_syscall_stub:
+ 	/* load pointer to first operation */
+-	mov	$(UML_CONFIG_STUB_DATA+8), %esp
++	mov	$(ASM_STUB_DATA+8), %esp
+ 
+ again:
+ 	/* load length of additional data */
+@@ -14,12 +15,12 @@ again:
+ 
+ 	/* if(length == 0) : end of list */
+ 	/* write possible 0 to header */
+-	mov	%eax, UML_CONFIG_STUB_DATA+4
++	mov	%eax, ASM_STUB_DATA+4
+ 	cmpl	$0, %eax
+ 	jz	done
+ 
+ 	/* save current pointer */
+-	mov	%esp, UML_CONFIG_STUB_DATA+4
++	mov	%esp, ASM_STUB_DATA+4
+ 
+ 	/* skip additional data */
+ 	add	%eax, %esp
+@@ -45,7 +46,7 @@ again:
+ 
+ done:
+ 	/* save return value */
+-	mov	%eax, UML_CONFIG_STUB_DATA
++	mov	%eax, ASM_STUB_DATA
+ 
+ 	/* stop */
+ 	int3
+Index: linux-2.6.22/arch/um/sys-i386/stub_segv.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-i386/stub_segv.c	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/stub_segv.c	2007-10-01 13:53:18.000000000 -0400
+@@ -6,6 +6,7 @@
+ #include <signal.h>
+ #include <sys/select.h> /* The only way I can see to get sigset_t */
+ #include <asm/unistd.h>
++#include "as-layout.h"
+ #include "uml-config.h"
+ #include "sysdep/stub.h"
+ #include "sysdep/sigcontext.h"
+@@ -17,8 +18,7 @@ stub_segv_handler(int sig)
+ 	struct sigcontext *sc = (struct sigcontext *) (&sig + 1);
+ 	int pid;
+ 
+-	GET_FAULTINFO_FROM_SC(*((struct faultinfo *) UML_CONFIG_STUB_DATA),
+-			      sc);
++	GET_FAULTINFO_FROM_SC(*((struct faultinfo *) STUB_DATA), sc);
+ 
+ 	pid = stub_syscall0(__NR_getpid);
+ 	stub_syscall2(__NR_kill, pid, SIGUSR1);
+Index: linux-2.6.22/arch/um/sys-x86_64/stub.S
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/stub.S	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/stub.S	2007-10-01 16:41:26.000000000 -0400
+@@ -1,4 +1,5 @@
+ #include "uml-config.h"
++#include "as-layout.h"
+ 
+ 	.globl syscall_stub
+ .section .__syscall_stub, "x"
+@@ -7,18 +8,18 @@ syscall_stub:
+ 	/* We don't have 64-bit constants, so this constructs the address
+ 	 * we need.
+ 	 */
+-	movq	$(UML_CONFIG_STUB_DATA >> 32), %rbx
++	movq	$(ASM_STUB_DATA >> 32), %rbx
+ 	salq	$32, %rbx
+-	movq	$(UML_CONFIG_STUB_DATA & 0xffffffff), %rcx
++	movq	$(ASM_STUB_DATA & 0xffffffff), %rcx
+ 	or	%rcx, %rbx
+ 	movq	%rax, (%rbx)
+ 	int3
+ 
+ 	.globl batch_syscall_stub
+ batch_syscall_stub:
+-	mov	$(UML_CONFIG_STUB_DATA >> 32), %rbx
++	mov	$(ASM_STUB_DATA >> 32), %rbx
+ 	sal	$32, %rbx
+-	mov	$(UML_CONFIG_STUB_DATA & 0xffffffff), %rax
++	mov	$(ASM_STUB_DATA & 0xffffffff), %rax
+ 	or	%rax, %rbx
+ 	/* load pointer to first operation */
+ 	mov	%rbx, %rsp
+Index: linux-2.6.22/arch/um/sys-x86_64/stub_segv.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/stub_segv.c	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/stub_segv.c	2007-10-01 13:53:39.000000000 -0400
+@@ -6,6 +6,7 @@
+ #include <stddef.h>
+ #include <signal.h>
+ #include <asm/unistd.h>
++#include "as-layout.h"
+ #include "uml-config.h"
+ #include "sysdep/sigcontext.h"
+ #include "sysdep/faultinfo.h"
+@@ -33,7 +34,7 @@ stub_segv_handler(int sig)
+         int pid;
+ 
+ 	__asm__ __volatile__("movq %%rdx, %0" : "=g" (uc) :);
+-	GET_FAULTINFO_FROM_SC(*((struct faultinfo *) UML_CONFIG_STUB_DATA),
++	GET_FAULTINFO_FROM_SC(*((struct faultinfo *) STUB_DATA),
+ 			      &uc->uc_mcontext);
+ 
+ 	pid = stub_syscall0(__NR_getpid);
+Index: linux-2.6.22/arch/um/Kconfig.x86_64
+===================================================================
+--- linux-2.6.22.orig/arch/um/Kconfig.x86_64	2007-09-27 11:51:43.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig.x86_64	2007-10-01 16:41:26.000000000 -0400
+@@ -17,24 +17,12 @@ config SEMAPHORE_SLEEPERS
+ 
+ config TOP_ADDR
+  	hex
+-	default 0x80000000
++	default 0x7fc0000000
+ 
+ config 3_LEVEL_PGTABLES
+        bool
+        default y
+ 
+-config STUB_CODE
+-	hex
+-	default 0x7fbfffe000
+-
+-config STUB_DATA
+-	hex
+-	default 0x7fbffff000
+-
+-config STUB_START
+-	hex
+-	default STUB_CODE
+-
+ config ARCH_HAS_SC_SIGNALS
+ 	bool
+ 	default n
+Index: linux-2.6.22/arch/um/defconfig
+===================================================================
+--- linux-2.6.22.orig/arch/um/defconfig	2007-09-27 16:21:00.000000000 -0400
++++ linux-2.6.22/arch/um/defconfig	2007-10-01 16:56:15.000000000 -0400
+@@ -59,9 +59,6 @@ CONFIG_SEMAPHORE_SLEEPERS=y
+ # CONFIG_HOST_2G_2G is not set
+ CONFIG_TOP_ADDR=0xc0000000
+ # CONFIG_3_LEVEL_PGTABLES is not set
+-CONFIG_STUB_CODE=0xbfffe000
+-CONFIG_STUB_DATA=0xbffff000
+-CONFIG_STUB_START=0xbfffe000
+ CONFIG_ARCH_HAS_SC_SIGNALS=y
+ CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
+ CONFIG_GENERIC_HWEIGHT=y
