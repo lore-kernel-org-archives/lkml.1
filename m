@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbXJARJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXJARMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbXJARJc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXJARJZ
+	id S1755552AbXJARMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXJARMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:09:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33325 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbXJARJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:09:24 -0400
-Date: Mon, 1 Oct 2007 19:09:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20071001170903.GA2492@elte.hu>
-References: <20070926133138.GA23187@elte.hu> <20070927133123.GA6901@elte.hu> <20070927144228.GC2431@ff.dom.local> <200709281610.00682.nickpiggin@yahoo.com.au> <20071001084356.GA1866@ff.dom.local> <20071001162507.GA22791@elte.hu> <47012696.2010606@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47012696.2010606@nortel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0006]
+	Mon, 1 Oct 2007 13:12:15 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55402 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbXJARMP (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 13:12:15 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm2
+In-Reply-To: Your message of "Sun, 30 Sep 2007 22:01:43 +0200."
+             <200709302201.44146.rjw@sisk.pl>
+From: Valdis.Kletnieks@vt.edu
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <18268.1191119181@turing-police.cc.vt.edu> <20070930015014.78bb88d3.akpm@linux-foundation.org>
+            <200709302201.44146.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1191258721_3768P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 01 Oct 2007 13:12:01 -0400
+Message-ID: <4202.1191258721@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1191258721_3768P
+Content-Type: text/plain; charset=us-ascii
 
-* Chris Friesen <cfriesen@nortel.com> wrote:
-
-> Ingo Molnar wrote:
+On Sun, 30 Sep 2007 22:01:43 +0200, "Rafael J. Wysocki" said:
+> On Sunday, 30 September 2007 10:50, Andrew Morton wrote:
+> > On Sat, 29 Sep 2007 22:26:21 -0400 Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > > On Thu, 27 Sep 2007 02:22:20 PDT, Andrew Morton said:
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
+> > > 
+> > > Locks up hard at very early boot on my Dell Latitude - grub says loading
+> > > kernel, the screen clears, and we lock up before we get penguins.
+> > > 
+> > > -rc8-mm1 was OK. I'm off to go bisect, figured I'd drop a heads-up.
+> > > 
+> > 
+> > It doesn't ring a bell, sorry.  hpet-force-enable-on-ich34.patch is known
+> > to be bad, but it causes failure later in the boot than that.
 > 
-> >But, because you assert it that it's risky to "criticise sched_yield() 
-> >too much", you sure must know at least one real example where it's right 
-> >to use it (and cite the line and code where it's used, with 
-> >specificity)?
-> 
-> It's fine to criticise sched_yield().  I agree that new apps should 
-> generally be written to use proper completion mechanisms or to wait 
-> for specific events.
+> http://lkml.org/lkml/2007/9/27/322, perhaps?
 
-yes.
+Yep, that was it - I applied that one patch on top of -rc8-mm2 and it
+came up without complaint.  That was certainly one that would make the CPU head
+off into the weeds very early in boot.
 
-> However, there are closed-source and/or frozen-source apps where it's 
-> not practical to rewrite or rebuild the app.  Does it make sense to 
-> break the behaviour of all of these?
+I need to figure how how I managed to botch the git bisect - it flagged the
+very last commit, when the problem was commit N-1.
 
-See the background and answers to that in:
 
-   http://lkml.org/lkml/2007/9/19/357
-   http://lkml.org/lkml/2007/9/19/328
 
-there's plenty of recourse possible to all possible kinds of apps. Tune 
-the sysctl flag in one direction or another, depending on which behavior 
-the app is expecting.
+--==_Exmh_1191258721_3768P
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHASphcC3lWbTT17ARAq2AAJ4rrS1MUs2yQNVR5HquGXHyusxWDwCg21dV
+98/lFazunadroQtsQP9mMX8=
+=kSXJ
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1191258721_3768P--
