@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXJAHWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbXJAHYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbXJAHWJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 03:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXJAHV4
+	id S1754266AbXJAHYI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 03:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXJAHX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 03:21:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34076 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbXJAHVz (ORCPT
+	Mon, 1 Oct 2007 03:23:57 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49539 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752202AbXJAHX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 03:21:55 -0400
-Subject: Re: [patch] MTD: fix cfi_interleave() build errors
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20071001071437.GA15051@elte.hu>
-References: <20071001045037.GA10564@elte.hu>
-	 <20071001050145.GA12925@elte.hu>
-	 <1191221671.2905.637.camel@pmac.infradead.org>
-	 <20071001071437.GA15051@elte.hu>
-Content-Type: text/plain
-Date: Mon, 01 Oct 2007 08:21:52 +0100
-Message-Id: <1191223312.9188.3.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8.dwmw2.1) 
+	Mon, 1 Oct 2007 03:23:56 -0400
+Date: Mon, 01 Oct 2007 17:23:50 +1000
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.23 - revert a commit
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <20071001072350.DF61C58C4C0A@chook.melbourne.sgi.com>
+From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-01 at 09:14 +0200, Ingo Molnar wrote:
-> MTD is the only code in the tree at the moment that breaks "make 
-> randconfig" tests (after ~2000 random rebuilds) - and those tests _are_ 
-> immensely useful, they catch a lot of build breakage in the scheduler 
-> git tree for example, before i push it out. So if possible it would be 
-> nice to have this in .23.
+Hi Linus,
 
-I did send it, a number of weeks ago. Linus didn't take it, so I just
-put it in the git tree for 2.6.24. Now I think it's too late, but here
-it is again in case Linus has changed his mind...
+A problem has been found for the XFS commit b394e43e995d08821588a22561c6a71a63b4ff27
+and it needs to be reverted.
+It has the potential for worse corruption than what it is meant to fix.
 
-commit 241651d04d672fb685b2874707016cbbf95931e5
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Thu Sep 6 09:40:21 2007 +0100
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-[MTD] Fix CFI build error when no map width or interleave supported
+Lachlan's description:
+    This fix is for a problem that has been in XFS since day one.
+    [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
+
+    It tries to fix an issue where log replay is replaying an inode cluster
+    initialisation transaction that should not be replayed because the inode
+    cluster on disk is more up to date.  Since we don't log file sizes (we
+    rely on inode flushing to get them to disk) then we can't just replay
+    all the transations in the log and expect the inode to be completely
+    restored.  We lose file size updates.  Unfortunately this fix is causing
+    more (serious) problems than it is fixing so please don't push this one
+    back just yet.
+
+This will update the following files:
+
+ fs/xfs/xfs_buf_item.h    |    5 ----
+ fs/xfs/xfs_log_recover.c |   51 ++-------------------------------------------
+ fs/xfs/xfs_trans_buf.c   |    1 -
+ 3 files changed, 3 insertions(+), 54 deletions(-)
+
+through these commits:
+
+commit 053c59a0a7234bac669992f5b8b933b7d7fc189d
+Author: Tim Shimmin <tes@chook.melbourne.sgi.com>
+Date:   Mon Oct 1 16:39:37 2007 +1000
+
+    Revert "[XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer."
     
-When building NOR flash support, you have compile-time options for the
-bus width and the number of individual chips which are interleaved
-together onto that bus. The code to deal with arbitrary geometry is a
-bit convoluted, and people want to just configure it for the specific
-hardware they have, to avoid the runtime overhead.
+    This reverts commit b394e43e995d08821588a22561c6a71a63b4ff27.
     
-Selecting _none_ of the available options doesn't make any sense. You
-should have at least one. This makes it build though, since people
-persist in trying.
+    SGI-PV: 969656
+    SGI-Modid: xfs-linux-melb:xfs-kern:29804a
     
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
 
-diff --git a/include/linux/mtd/cfi.h b/include/linux/mtd/cfi.h
-index 123948b..e17c534 100644
---- a/include/linux/mtd/cfi.h
-+++ b/include/linux/mtd/cfi.h
-@@ -57,6 +57,15 @@
- #define cfi_interleave_is_8(cfi) (0)
- #endif
- 
-+#ifndef cfi_interleave
-+#warning No CONFIG_MTD_CFI_Ix selected. No NOR chip support can work.
-+static inline int cfi_interleave(void *cfi)
-+{
-+	BUG();
-+	return 0;
-+}
-+#endif
-+
- static inline int cfi_interleave_supported(int i)
- {
- 	switch (i) {
-diff --git a/include/linux/mtd/map.h b/include/linux/mtd/map.h
-index 81f3a31..a9fae03 100644
---- a/include/linux/mtd/map.h
-+++ b/include/linux/mtd/map.h
-@@ -125,7 +125,15 @@
- #endif
- 
- #ifndef map_bankwidth
--#error "No bus width supported. What's the point?"
-+#warning "No CONFIG_MTD_MAP_BANK_WIDTH_xx selected. No NOR chip support can work"
-+static inline int map_bankwidth(void *map)
-+{
-+	BUG();
-+	return 0;
-+}
-+#define map_bankwidth_is_large(map) (0)
-+#define map_words(map) (0)
-+#define MAX_MAP_BANKWIDTH 1
- #endif
- 
- static inline int map_bankwidth_supported(int w)
-
--- 
-dwmw2
-
+--Tim
