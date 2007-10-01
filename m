@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXJAU2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbXJAUfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbXJAU2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXJAU2X
+	id S1753715AbXJAUfN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXJAUfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:28:23 -0400
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:22971 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752222AbXJAU2W (ORCPT
+	Mon, 1 Oct 2007 16:35:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59310 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751447AbXJAUe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:28:22 -0400
-X-YMail-OSG: BHsv0JYVM1ljlrS8UGs9LJiKotl8x6xBc.Odz8i.y0_WpPToiDGnXLFcNOUKxZj7oXusBxxNYA--
-X-RocketYMMF: rancidfat
-Date: Mon, 1 Oct 2007 13:28:21 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: Andi Kleen <ak@suse.de>, Theodore Tso <tytso@mit.edu>
-Cc: Joshua Brindle <method@manicmethod.com>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       torvalds@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Paul Moore <paul.moore@hp.com>
-In-Reply-To: <200709302205.58017.ak@suse.de>
+	Mon, 1 Oct 2007 16:34:59 -0400
+Date: Mon, 1 Oct 2007 13:34:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [Patch / 002](memory hotplug) Callback function to create
+ kmem_cache_node.
+In-Reply-To: <20071001183316.7A9B.Y-GOTO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0710011334090.19779@schroedinger.engr.sgi.com>
+References: <20071001182329.7A97.Y-GOTO@jp.fujitsu.com>
+ <20071001183316.7A9B.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <760457.44360.qm@web36609.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Oct 2007, Yasunori Goto wrote:
 
---- Andi Kleen <ak@suse.de> wrote:
+> +#ifdef CONFIG_MEMORY_HOTPLUG
+> +static void __slab_callback_offline(int nid)
+> +{
+> +	struct kmem_cache_node *n;
+> +	struct kmem_cache *s;
+> +
+> +	list_for_each_entry(s, &slab_caches, list) {
+> +		if (s->node[nid]) {
+> +			n = get_node(s, nid);
+> +			s->node[nid] = NULL;
+> +			kmem_cache_free(kmalloc_caches, n);
+> +		}
+> +	}
+> +}
 
+I think we need to bug here if there are still objects on the node that 
+are in use. This will silently discard the objects.
 
-> Anyways; if someone wants to cripple their security for some
-> performance this way they can surely do this; but i don't think we should 
-> offer it as a default configuration option (just as we don't have a 
-> CONFIG_NULL_LSM even though there are undoubtedly systems that don't
-> care about permission checking[1]) 
-> 
-> -Andi
-> 
-> [1] I bet I gave the linux-tiny crowd an idea now ;-)
-
-You would need authoritative LSM hooks for this. The current LSM
-additional restrictions model does not provide for this.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
