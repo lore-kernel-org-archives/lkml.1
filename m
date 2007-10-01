@@ -1,270 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbXJAF6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbXJAF6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbXJAF6X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXJAFyi
+	id S1756340AbXJAF6j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXJAFzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:54:38 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40926 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXJAFye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:54:34 -0400
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 19/19] Unionfs: coding style: avoid lines longer than 80 chars
-Date: Mon,  1 Oct 2007 01:50:56 -0400
-Message-Id: <11912178651441-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
-References: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
+	Mon, 1 Oct 2007 01:55:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32974 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754041AbXJAFza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 01:55:30 -0400
+Date: Mon, 1 Oct 2007 07:55:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20071001055514.GA30165@elte.hu>
+References: <1191179736.6417.10.camel@earth> <1191217993.28797.5.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191217993.28797.5.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
----
- fs/unionfs/commonfops.c |   18 ++++++-----
- fs/unionfs/debug.c      |   80 +++++++++++++++++++++++-----------------------
- fs/unionfs/dentry.c     |    3 +-
- fs/unionfs/dirfops.c    |    8 +++--
- fs/unionfs/fanout.h     |    9 +++--
- 5 files changed, 63 insertions(+), 55 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 6f2970d..7654bcb 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -339,7 +339,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
- 	if (unlikely(!d_deleted(dentry) &&
- 		     (sbgen > fgen || dbstart(dentry) != fbstart(file)))) {
- 		/* save orig branch ID */
--		int orig_brid =	UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
-+		int orig_brid =
-+			UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
- 
- 		/* First we throw out the existing files. */
- 		cleanup_file(file);
-@@ -388,7 +389,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
- 			}
- 		}
- 		atomic_set(&UNIONFS_F(file)->generation,
--			   atomic_read(&UNIONFS_I(dentry->d_inode)->generation));
-+			   atomic_read(
-+				   &UNIONFS_I(dentry->d_inode)->generation));
- 	}
- 
- 	/* Copyup on the first write to a file on a readonly branch. */
-@@ -418,6 +420,7 @@ static int __open_dir(struct inode *inode, struct file *file)
- 	struct dentry *lower_dentry;
- 	struct file *lower_file;
- 	int bindex, bstart, bend;
-+	struct vfsmount *mnt;
- 
- 	bstart = fbstart(file) = dbstart(file->f_path.dentry);
- 	bend = fbend(file) = dbend(file->f_path.dentry);
-@@ -430,10 +433,8 @@ static int __open_dir(struct inode *inode, struct file *file)
- 
- 		dget(lower_dentry);
- 		unionfs_mntget(file->f_path.dentry, bindex);
--		lower_file = dentry_open(lower_dentry,
--					 unionfs_lower_mnt_idx(file->f_path.dentry,
--							       bindex),
--					 file->f_flags);
-+		mnt = unionfs_lower_mnt_idx(file->f_path.dentry, bindex);
-+		lower_file = dentry_open(lower_dentry, mnt, file->f_flags);
- 		if (IS_ERR(lower_file))
- 			return PTR_ERR(lower_file);
- 
-@@ -679,8 +680,9 @@ static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
- 	} else if (lower_file->f_op->ioctl) {
- 		lock_kernel();
--		err = lower_file->f_op->ioctl(lower_file->f_path.dentry->d_inode,
--					      lower_file, cmd, arg);
-+		err = lower_file->f_op->ioctl(
-+			lower_file->f_path.dentry->d_inode,
-+			lower_file, cmd, arg);
- 		unlock_kernel();
- 	}
- 
-diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
-index c0d710f..68692d7 100644
---- a/fs/unionfs/debug.c
-+++ b/fs/unionfs/debug.c
-@@ -157,27 +157,26 @@ void __unionfs_check_dentry(const struct dentry *dentry,
- 					 bindex, dstart, dend);
- 			}
- 		} else {	/* lower_dentry == NULL */
--			if (bindex >= dstart && bindex <= dend) {
--				/*
--				 * Directories can have NULL lower inodes in
--				 * b/t start/end, but NOT if at the
--				 * start/end range.  Ignore this rule,
--				 * however, if this is a NULL dentry or a
--				 * deleted dentry.
--				 */
--				if (unlikely(!d_deleted((struct dentry *) dentry) &&
--					     inode &&
--					     !(inode && S_ISDIR(inode->i_mode) &&
--					       bindex > dstart && bindex < dend))) {
--					PRINT_CALLER(fname, fxn, line);
--					pr_debug(" CD2: dentry/lower=%p:%p(%p) "
--						 "bindex=%d dstart/end=%d:%d\n",
--						 dentry, lower_dentry,
--						 (lower_dentry ?
--						  lower_dentry->d_inode :
--						  (void *) -1L),
--						 bindex, dstart, dend);
--				}
-+			if (bindex < dstart || bindex > dend)
-+				continue;
-+			/*
-+			 * Directories can have NULL lower inodes in b/t
-+			 * start/end, but NOT if at the start/end range.
-+			 * Ignore this rule, however, if this is a NULL
-+			 * dentry or a deleted dentry.
-+			 */
-+			if (unlikely(!d_deleted((struct dentry *) dentry) &&
-+				     inode &&
-+				     !(inode && S_ISDIR(inode->i_mode) &&
-+				       bindex > dstart && bindex < dend))) {
-+				PRINT_CALLER(fname, fxn, line);
-+				pr_debug(" CD2: dentry/lower=%p:%p(%p) "
-+					 "bindex=%d dstart/end=%d:%d\n",
-+					 dentry, lower_dentry,
-+					 (lower_dentry ?
-+					  lower_dentry->d_inode :
-+					  (void *) -1L),
-+					 bindex, dstart, dend);
- 			}
- 		}
- 	}
-@@ -193,22 +192,22 @@ void __unionfs_check_dentry(const struct dentry *dentry,
- 					 lower_mnt, bindex, dstart, dend);
- 			}
- 		} else {	/* lower_mnt == NULL */
--			if (bindex >= dstart && bindex <= dend) {
--				/*
--				 * Directories can have NULL lower inodes in
--				 * b/t start/end, but NOT if at the
--				 * start/end range.  Ignore this rule,
--				 * however, if this is a NULL dentry.
--				 */
--				if (unlikely(inode &&
--					     !(inode && S_ISDIR(inode->i_mode) &&
--					       bindex > dstart && bindex < dend))) {
--					PRINT_CALLER(fname, fxn, line);
--					pr_debug(" CM1: dentry/lmnt=%p:%p "
--						 "bindex=%d dstart/end=%d:%d\n",
--						 dentry, lower_mnt, bindex,
--						 dstart, dend);
--				}
-+			if (bindex < dstart || bindex > dend)
-+				continue;
-+			/*
-+			 * Directories can have NULL lower inodes in b/t
-+			 * start/end, but NOT if at the start/end range.
-+			 * Ignore this rule, however, if this is a NULL
-+			 * dentry.
-+			 */
-+			if (unlikely(inode &&
-+				     !(inode && S_ISDIR(inode->i_mode) &&
-+				       bindex > dstart && bindex < dend))) {
-+				PRINT_CALLER(fname, fxn, line);
-+				pr_debug(" CM1: dentry/lmnt=%p:%p "
-+					 "bindex=%d dstart/end=%d:%d\n",
-+					 dentry, lower_mnt, bindex,
-+					 dstart, dend);
- 			}
- 		}
- 	}
-@@ -310,7 +309,8 @@ void __unionfs_check_dentry(const struct dentry *dentry,
- 	/* check if lower inode is newer than upper one (it shouldn't) */
- 	if (unlikely(is_newer_lower(dentry))) {
- 		PRINT_CALLER(fname, fxn, line);
--		for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
-+		for (bindex = ibstart(inode); bindex <= ibend(inode);
-+		     bindex++) {
- 			lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 			if (unlikely(!lower_inode))
- 				continue;
-@@ -390,8 +390,8 @@ void __unionfs_check_file(const struct file *file,
- 			if (unlikely(bindex < fstart || bindex > fend)) {
- 				PRINT_CALLER(fname, fxn, line);
- 				pr_debug(" CF5: file/lower=%p:%p bindex=%d "
--					 "fstart/end=%d:%d\n",
--					 file, lower_file, bindex, fstart, fend);
-+					 "fstart/end=%d:%d\n", file,
-+					 lower_file, bindex, fstart, fend);
- 			}
- 		} else {	/* lower_file == NULL */
- 			if (bindex >= fstart && bindex <= fend) {
-diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index 49323de..6bab9d6 100644
---- a/fs/unionfs/dentry.c
-+++ b/fs/unionfs/dentry.c
-@@ -328,7 +328,8 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
- 	 */
- 	chain = kzalloc(chain_len * sizeof(struct dentry *), GFP_KERNEL);
- 	if (unlikely(!chain)) {
--		printk(KERN_CRIT "unionfs: no more memory in %s\n", __FUNCTION__);
-+		printk(KERN_CRIT "unionfs: no more memory in %s\n",
-+		       __FUNCTION__);
- 		goto out;
- 	}
- 
-diff --git a/fs/unionfs/dirfops.c b/fs/unionfs/dirfops.c
-index 0064723..c644c13 100644
---- a/fs/unionfs/dirfops.c
-+++ b/fs/unionfs/dirfops.c
-@@ -155,7 +155,8 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 		uds->dirpos = offset;
- 
- 		/* Copy the atime. */
--		fsstack_copy_attr_atime(inode, lower_file->f_path.dentry->d_inode);
-+		fsstack_copy_attr_atime(inode,
-+					lower_file->f_path.dentry->d_inode);
- 
- 		if (err < 0)
- 			goto out;
-@@ -240,8 +241,9 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 				else
- 					err = -EINVAL;
- 			} else {
--				rdstate = find_rdstate(file->f_path.dentry->d_inode,
--						       offset);
-+				struct inode *inode;
-+				inode = file->f_path.dentry->d_inode;
-+				rdstate = find_rdstate(inode, offset);
- 				if (rdstate) {
- 					UNIONFS_F(file)->rdstate = rdstate;
- 					err = rdstate->offset;
-diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
-index 8d5f15e..ec18013 100644
---- a/fs/unionfs/fanout.h
-+++ b/fs/unionfs/fanout.h
-@@ -314,11 +314,14 @@ static inline void unionfs_copy_attr_times(struct inode *upper)
- 		lower = unionfs_lower_inode_idx(upper, bindex);
- 		if (!lower)
- 			continue; /* not all lower dir objects may exist */
--		if (unlikely(timespec_compare(&upper->i_mtime, &lower->i_mtime) < 0))
-+		if (unlikely(timespec_compare(&upper->i_mtime,
-+					      &lower->i_mtime) < 0))
- 			upper->i_mtime = lower->i_mtime;
--		if (unlikely(timespec_compare(&upper->i_ctime, &lower->i_ctime) < 0))
-+		if (unlikely(timespec_compare(&upper->i_ctime,
-+					      &lower->i_ctime) < 0))
- 			upper->i_ctime = lower->i_ctime;
--		if (unlikely(timespec_compare(&upper->i_atime, &lower->i_atime) < 0))
-+		if (unlikely(timespec_compare(&upper->i_atime,
-+					      &lower->i_atime) < 0))
- 			upper->i_atime = lower->i_atime;
- 	}
- }
--- 
-1.5.2.2
+* Mike Galbraith <efault@gmx.de> wrote:
 
+> On Sun, 2007-09-30 at 21:15 +0200, Dmitry Adamushko wrote:
+> > 
+> > remove obsolete code -- calc_weighted()
+> > 
+> 
+> Here's another piece of low hanging obsolete fruit.
+> 
+> Remove obsolete TASK_NONINTERACTIVE.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+
+thanks, applied.
+
+	Ingo
