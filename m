@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbXJAFCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXJAFv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646AbXJAFCD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXJAFBy
+	id S1752740AbXJAFv2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXJAFvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:01:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53965 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbXJAFBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:01:53 -0400
-Date: Mon, 1 Oct 2007 07:01:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch] MTD: fix cfi_interleave() build errors
-Message-ID: <20071001050145.GA12925@elte.hu>
-References: <20071001045037.GA10564@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001045037.GA10564@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 1 Oct 2007 01:51:14 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40587 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbXJAFvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 01:51:13 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: [GIT PULL -mm] 00/19 Unionfs updates/cleanups/fixes
+Date: Mon,  1 Oct 2007 01:50:37 -0400
+Message-Id: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+The following is a series of patches related to Unionfs.  The main changes
+here are compliance with coding style and assorted cleanups, based on lkml
+comments and advise.  Specifically, the un/likely updates from the previous
+series of patches was completely redone; the number of un/likely instances
+was reduced from 546 to 163 and what's left are considered highly unlikely
+(99% or higher threshold).
 
-> FYI, the attached .config fails with the build errors below. Kernel is 
-> latest 2.6.23-git. Found via make randconfig.
+These patches were tested (where appropriate) on our 2.6.23-rc8 latest code,
+as well as the backports to 2.6.{22,21,20,19,18,9} on ext2/3/4, xfs,
+reiserfs, nfs2/3/4, jffs2, ramfs, tmpfs, cramfs, and squashfs (where
+available).  See http://unionfs.filesystems.org/ to download backported
+unionfs code.
 
-the quick fix below resolves these build failures. (i guess it might be 
-cleaner/safer to solve this via excluding this .config combination via 
-Kconfig rules, but that looks too involved for now.)
+Please pull from the 'master' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/ezk/unionfs.git
 
-	Ingo
+to receive the following:
 
----------------->
-Subject: MTD: fix cfi_interleave() build errors
-From: Ingo Molnar <mingo@elte.hu>
+Erez Zadok (19):
+      Unionfs: compile if debug is off
+      Unionfs: add un/likely on conditionals
+      Unionfs: minor comment cleanups
+      Unionfs: use consistent printk prefixes
+      Unionfs: use UNIONFS_NAME macro
+      Unionfs: properly indent static struct
+      Unionfs: remove unnecessary if condition
+      Unionfs: use page_offset() helper
+      Unionfs: use pr_debug() instead of custom dprintk()
+      Unionfs: convert all appropriate printk's to pr_debug calls
+      Unionfs: add missing newlines in printk's
+      Unionfs: update/assign a KERN_* level to all printk statements
+      Unionfs: remove periods from the end of printk strings
+      Unionfs: use braces in both branches of conditionals
+      Unionfs: coding style: proper spacing
+      Unionfs: coding style: take assignments out of "if" conditions
+      Unionfs: coding style: avoid multiple assignments on same line
+      Unionfs: coding style: miscellaneous fixes
+      Unionfs: coding style: avoid lines longer than 80 chars
 
-if the .config specifies no cfi_interleave() then generate a
-run-time bug. This makes 'make randconfig' build tests work again.
+ Makefile     |    4 
+ commonfops.c |   86 ++++++------
+ copyup.c     |   31 ++--
+ debug.c      |  406 +++++++++++++++++++++++++++++------------------------------
+ dentry.c     |   66 ++++-----
+ dirfops.c    |   32 ++--
+ dirhelper.c  |   13 +
+ fanout.h     |   11 +
+ file.c       |   29 ++--
+ inode.c      |   82 ++++++-----
+ lookup.c     |   29 ++--
+ main.c       |   80 ++++++-----
+ mmap.c       |   18 +-
+ rdstate.c    |   18 +-
+ rename.c     |   59 ++++----
+ subr.c       |   13 +
+ super.c      |  102 +++++++-------
+ union.h      |   52 +++----
+ unlink.c     |   22 +--
+ xattr.c      |   16 +-
+ 20 files changed, 622 insertions(+), 547 deletions(-)
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/mtd/cfi.h |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux/include/linux/mtd/cfi.h
-===================================================================
---- linux.orig/include/linux/mtd/cfi.h
-+++ linux/include/linux/mtd/cfi.h
-@@ -57,6 +57,10 @@
- #define cfi_interleave_is_8(cfi) (0)
- #endif
- 
-+#ifndef cfi_interleave
-+# define cfi_interleave(cfi) ({ BUG_ON(1); 0; })
-+#endif
-+
- static inline int cfi_interleave_supported(int i)
- {
- 	switch (i) {
+Erez Zadok
+ezk@cs.sunysb.edu
