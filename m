@@ -1,36 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbXJAVxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbXJAVyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571AbXJAVxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXJAVxm
+	id S1757718AbXJAVyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXJAVyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:53:42 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:51808 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753705AbXJAVxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:53:41 -0400
-Date: Mon, 1 Oct 2007 23:53:30 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-10-01-04-09.tar.gz uploaded
-In-Reply-To: <47016AFB.7040307@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0710012352450.22331@twin.jikos.cz>
-References: <200710011115.l91BFRvg012762@imap1.linux-foundation.org>
- <47016AFB.7040307@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Oct 2007 17:54:15 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:3982 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755027AbXJAVyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 17:54:14 -0400
+Date: Mon, 1 Oct 2007 23:54:12 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc8 build failure: __you_cannot_kmalloc_that_much in
+ dmi_id_init
+Message-ID: <20071001235412.0737de78@hyperion.delvare>
+In-Reply-To: <20071001225447.20f989aa@hyperion.delvare>
+References: <20071001225447.20f989aa@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Gabriel C wrote:
+On Mon, 1 Oct 2007 22:54:47 +0200, Jean Delvare wrote:
+> 2.6.23-rc8 and 2.6.23-rc8-git4 fail to build on one of my test
+> machines, with:
+> 
+> drivers/built-in.o(.init.text+0x780e): In function `dmi_id_init':
+> : undefined reference to `__you_cannot_kmalloc_that_much'
+> 
+> The code is allocating sizeof(struct device) so it really shouldn't be
+> a problem. I have no idea what's wrong. That's on i386, very old
+> machine (Pentium 166MMX / Intel TX chipset), with gcc 3.2.3 and
+> binutils 2.14.90.0.6. 2.6.22.9 compiles fine on the same system (but it
+> doesn't include dmi-id so it's not very surprising).
+> 
+> .config attached.
 
-> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-10-01-04-09.tar.gz
-> I have a question about these snapshots , what is the right way to apply 
-> the patches ? some magic script ? =)
-
-There is a 'series' file, which tells you the correct order. If you are 
-planning to make any patches on top of mm, you should use quilt for this.
+More information: building the same config on a much more recent system
+works fine. This seems to point at a toolchain issue.
 
 -- 
-Jiri Kosina
+Jean Delvare
