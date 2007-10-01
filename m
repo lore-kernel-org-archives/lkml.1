@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbXJAJoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXJAJrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbXJAJoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXJAJoL
+	id S1753276AbXJAJrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXJAJrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:44:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:48499 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbXJAJoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:44:11 -0400
-Subject: Re: [RFC][PATCH] make module refcounts use percpu_counters
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070928230057.2712A579@kernel>
-References: <20070928230057.2712A579@kernel>
+	Mon, 1 Oct 2007 05:47:18 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:52006 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbXJAJrR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 05:47:17 -0400
+Subject: Re: bluetooth: hci_sysfs work queue problem
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: bluez-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a8e1da0709291846x4abf50c8g32b02a9d40240b6@mail.gmail.com>
+References: <a8e1da0709291846x4abf50c8g32b02a9d40240b6@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 01 Oct 2007 19:43:53 +1000
-Message-Id: <1191231833.26950.66.camel@localhost.localdomain>
+Date: Mon, 01 Oct 2007 11:45:56 +0200
+Message-Id: <1191231956.6484.104.camel@aeonflux.holtmann.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-28 at 16:00 -0700, Dave Hansen wrote:
-> Module refcounts currently use a percpu counter stored
-> in the 'struct module'.  However, we also have a more
-> generic implementation that does stuff like handle
-> hotplug cpus.
-> 
-> I'm not actually all that convinced that this refcount
-> actually does a lot of good, with cpus racing bumping
-> the counters at the same time that they're being
-> summed up.  But, it certainly isn't any worse than
-> what was there before.
+Hi Dave,
 
-That's why we look at the counters inside stop_machine_run().
+> The hci_sysfs uses work queue to finish the sysfs add/del fuction.
+> But when the same device connection failed, if another connection of
+> same device come in before the delete work finish, sysfs will warn
+> about duplicate filename creating.
 
-Note that (1) the module implementation handles hotplug CPUs, and (2)
-percpu_counter_sum() doesn't have to either (that's just for
-percpu_counter_read()).
+which kernel are we talking about. This problem should not exist
+anymore. However the usage of a work queue is unavoidable.
 
-But it might be a useful cleanup (although a slight de-optimization).
-If you want I'll queue for 2.6.24 (there are several other module
-patches pending too).
+Regards
 
-In an ideal world, (1) we would have percpu pointers using the same
-percpu mechanism as percpu variables, (2) we would have a modal variant
-of percpu counters which would collapse to a single counter when we
-cared about the precise value (probably using stop_machine for the
-transition).  This would be useful for many other cases.
+Marcel
 
-Cheers,
-Rusty.
 
