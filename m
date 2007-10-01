@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbXJAOuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbXJAOy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430AbXJAOuu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 10:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXJAOum
+	id S1753283AbXJAOy2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 10:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXJAOyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 10:50:42 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35088 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751904AbXJAOul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 10:50:41 -0400
-Date: Mon, 1 Oct 2007 16:50:32 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
- class
-In-Reply-To: <47010832.8010401@pobox.com>
-Message-ID: <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz>
-References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com>
+	Mon, 1 Oct 2007 10:54:17 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:29822 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbXJAOyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 10:54:16 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] ehea: DLPAR memory add fix
+Date: Mon, 1 Oct 2007 16:54:13 +0200
+User-Agent: KMail/1.8.2
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200710011633.18305.ossthema@de.ibm.com> <470107D9.2040301@garzik.org>
+In-Reply-To: <470107D9.2040301@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710011654.14067.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Jeff Garzik wrote:
+Hi,
 
-> > PCI: nVidia's MCP61 ethernet card needs quirk for wrong class
-> > The MCP61 ethernet controller from nVidia (NVENET_19) contains wrong
-> > PCI class:
-> >  00:07.0 Bridge [0680]: nVidia Corporation MCP61 Ethernet [10de:03ef] (rev
-> >  a2)
-> > i.e. it identifies itself as a bridge. Fix this.
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> What is the problem that is present without this patch?
+On Monday 01 October 2007 16:44, Jeff Garzik wrote:
+> Jan-Bernd Themann wrote:
+> > Due to stability issues in high load situations the HW queue handling
+> > has to be changed. The HW queues are now stopped and restarted again instead
+> > of destroying and allocating new HW queues. 
+> > 
+> > Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> 
+> May I presume this is for 2.6.23?
+> 
+> 	Jeff
 
-Userspace tools that are used to configure network are probable not to 
-detect this device as a network card and therefore not provide means to 
-configure the device (this is a case at least with yast, I don't know what 
-is the situation with other configurators).
+no, the patch is build against 2.6.24 upstream (new NAPI interface).
 
-There might be also other situations, I don't know. Userspace really 
-should know the proper class of the device, shouldn't it?
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Regards,
+Jan-Bernd
