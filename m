@@ -1,33 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbXJAJd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751501AbXJAJeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbXJAJd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbXJAJdu
+	id S1751501AbXJAJeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbXJAJd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:33:50 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47455 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXJAJdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:33:50 -0400
-To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86_64 and AMD with C1E
-References: <20071001101532.025d652f@localhost>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Oct 2007 11:33:48 +0200
-In-Reply-To: <20071001101532.025d652f@localhost>
-Message-ID: <p73r6kf6uwz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 1 Oct 2007 05:33:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56757 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753709AbXJAJd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 05:33:57 -0400
+Date: Mon, 01 Oct 2007 18:33:03 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [Patch / 001](memory hotplug) fix some defects of memory notifer callback interface.
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20071001182329.7A97.Y-GOTO@jp.fujitsu.com>
+References: <20071001182329.7A97.Y-GOTO@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071001183110.7A99.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com> writes:
-> 
-> The same situation can be observed for linux-2.6.22.
 
-You're saying 2.6.22/x86-64 without any patches doesn't boot out of the box 
-with C1E enabled? If yes what are the exact symptoms?
+Current memory notifier has some defects yet. (Nothing uses it.)
+This patch is to fix for them.
 
--Andi
+  - Add information of start_pfn and nr_pages for callback functions.
+    They can't do anything without those information.
+  - Add notification going-online status.
+    It is necessary for creating per node structure before the node's
+    pages are available.
+  - Fix compile error of (un)register_memory_notifier().
+
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+ drivers/base/memory.c  |   10 +++++++---
+ include/linux/memory.h |   16 ++++++++++++----
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+Index: current/drivers/base/memory.c
+===================================================================
+--- current.orig/drivers/base/memory.c	2007-09-28 11:21:00.000000000 +0900
++++ current/drivers/base/memory.c	2007-09-28 11:23:46.000000000 +0900
+@@ -155,10 +155,13 @@ memory_block_action(struct memory_block 
+ 	struct page *first_page;
+ 	int ret;
+ 	int old_state = mem->state;
++	struct memory_notify arg;
+ 
+ 	psection = mem->phys_index;
+ 	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
+ 
++	arg.start_pfn = page_to_pfn(first_page);
++	arg.nr_pages = PAGES_PER_SECTION;
+ 	/*
+ 	 * The probe routines leave the pages reserved, just
+ 	 * as the bootmem code does.  Make sure they're still
+@@ -178,12 +181,13 @@ memory_block_action(struct memory_block 
+ 
+ 	switch (action) {
+ 		case MEM_ONLINE:
++			memory_notify(MEM_GOING_ONLINE, &arg);
+ 			start_pfn = page_to_pfn(first_page);
+ 			ret = online_pages(start_pfn, PAGES_PER_SECTION);
+ 			break;
+ 		case MEM_OFFLINE:
+ 			mem->state = MEM_GOING_OFFLINE;
+-			memory_notify(MEM_GOING_OFFLINE, NULL);
++			memory_notify(MEM_GOING_OFFLINE, &arg);
+ 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+ 			ret = remove_memory(start_paddr,
+ 					    PAGES_PER_SECTION << PAGE_SHIFT);
+@@ -191,7 +195,7 @@ memory_block_action(struct memory_block 
+ 				mem->state = old_state;
+ 				break;
+ 			}
+-			memory_notify(MEM_MAPPING_INVALID, NULL);
++			memory_notify(MEM_MAPPING_INVALID, &arg);
+ 			break;
+ 		default:
+ 			printk(KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
+@@ -203,7 +207,7 @@ memory_block_action(struct memory_block 
+ 	 * For now, only notify on successful memory operations
+ 	 */
+ 	if (!ret)
+-		memory_notify(action, NULL);
++		memory_notify(action, &arg);
+ 
+ 	return ret;
+ }
+Index: current/include/linux/memory.h
+===================================================================
+--- current.orig/include/linux/memory.h	2007-09-28 11:18:25.000000000 +0900
++++ current/include/linux/memory.h	2007-09-28 11:23:46.000000000 +0900
+@@ -37,10 +37,16 @@ struct memory_block {
+ 	struct sys_device sysdev;
+ };
+ 
++struct memory_notify {
++	unsigned long start_pfn;
++	unsigned long nr_pages;
++};
++
+ /* These states are exposed to userspace as text strings in sysfs */
+-#define	MEM_ONLINE		(1<<0) /* exposed to userspace */
+-#define	MEM_GOING_OFFLINE	(1<<1) /* exposed to userspace */
+-#define	MEM_OFFLINE		(1<<2) /* exposed to userspace */
++#define MEM_GOING_ONLINE	(1<<0) /* exposed to userspace */
++#define	MEM_ONLINE		(1<<1) /* exposed to userspace */
++#define	MEM_GOING_OFFLINE	(1<<2) /* exposed to userspace */
++#define	MEM_OFFLINE		(1<<3) /* exposed to userspace */
+ 
+ /*
+  * All of these states are currently kernel-internal for notifying
+@@ -52,7 +58,7 @@ struct memory_block {
+  * pfn_to_page() stop working.  Any notifiers that want to be called
+  * after that should have priority <0.
+  */
+-#define	MEM_MAPPING_INVALID	(1<<3)
++#define	MEM_MAPPING_INVALID	(1<<4)
+ 
+ struct notifier_block;
+ struct mem_section;
+@@ -70,6 +76,8 @@ static inline void unregister_memory_not
+ {
+ }
+ #else
++extern int register_memory_notifier(struct notifier_block *nb);
++extern void unregister_memory_notifier(struct notifier_block *nb);
+ extern int register_new_memory(struct mem_section *);
+ extern int unregister_memory_section(struct mem_section *);
+ extern int memory_dev_init(void);
+
+-- 
+Yasunori Goto 
+
+
