@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751866AbXJAJKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXJAJLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751866AbXJAJKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXJAJKW
+	id S1752581AbXJAJLK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXJAJK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:10:22 -0400
-Received: from n7.bullet.mud.yahoo.com ([216.252.100.58]:34402 "HELO
-	n7.bullet.mud.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750912AbXJAJKW (ORCPT
+	Mon, 1 Oct 2007 05:10:57 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:63712 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbXJAJK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:10:22 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 308028.42910.bm@omp101.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=lUVapiL1EKJnQozhcUV8Go1a4BzqxjAdmJst7d0WMrogji9z0oVMERAXx+UfrPvswLbvpLf0XOZ+w1tVryHaTjv8c3sM6Zv/onTj/4igs0/ESJNfAOBRkcDZNRbsLhMZpz2WEjS1p0SEIvzxLxc4AnKs0gM6tTACvHc1QatGQFg=;
-X-YMail-OSG: OvqjJSIVM1k_lSVRAynBOP_A43iN1H_VzB1zKuh_Bsd6U_rNdd8hCJ7YDDBBBSvEl6mpv3CG8S3CblaZVZjTJfBgdqq9I4fWKvzRWeEnf3bX9SghKLoaIpCUk2P1HQ--
-Date: Mon, 1 Oct 2007 10:04:32 +0100 (BST)
-From: veerasena reddy <veerasena_b@yahoo.co.in>
-Subject: linux cache routines for Write-back cache policy on  MIPS24KE
-To: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
+	Mon, 1 Oct 2007 05:10:56 -0400
+Message-ID: <4700B966.1030508@anagramm.de>
+Date: Mon, 01 Oct 2007 11:09:58 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <119374.35234.qm@web8401.mail.in.yahoo.com>
+To: Alexander Sabourenkov <screwdriver@lxnt.info>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Promise SATA300 TX4: errors, oops in ext3 code
+References: <47009BF6.5000208@lxnt.info>
+In-Reply-To: <47009BF6.5000208@lxnt.info>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18DMTi4sCG/VrjueP62NPrL/8b9ZborxyyE9fw
+ fCZeRa9NhK8fH66jSTwixQI42Znq6WWna974sLdzjzmnHpmtkN
+ 7DX0PM2gNUrJk/UfdLKhQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Alexander Sabourenkov schrieb:
+ > Hardware:  Athlon64, Asus A8V, Promise SATA300 TX4, 2xSeagate 7200.10
+ > 320G, jumper-limited to SATA150.
+ > Kernel : 2.6.22.9 amd64
+ >
+ > Problem:
+ > Heavy load causes errors and triggers oops.
 
-I have ported Linux-2.6.18 kernel on MIPS24KE
-processor. I am using write back cache policy.
+Have you checked your memory already (memtest86)?
 
-Could you please guide me under what cases the below
-cache API's are being used:
-- dma_cache_wback_inv() : Could you explain  what
-exactly this function does
-- dma_cache_wback() : This function write back the
-cache data to memory
-- dma_cache_inv  : This function invalidate the cache
-tags. so subsequent access will fetch from memory.
+We have several applications with Promise controllers on strange
+hardware and we never had integrity problems with i.e. not so standard
+SATA connections over custom vaccum-tight connectors.
 
-Once I looked the above function definitions in
-linux-2.6.18/arch/mips/mm/c-r4k.c.
-All these function's implemetation are same except
-bc_wbak_inv() is called in both dma_cache_wback-inv()
-and dma_cache_wback(), where as bc_inv() is called in
-case of dma_cache_inv.
+ > Problems were blamed:
+ >   - SATA300 being too 'hot'  (jumpered the drives)
 
-Also, bc_inv()/bc_wbak_inv are define as null
-implementation for R4000.
-That means all three functions are doing same
-functionality in case of R4000.
+Is this a common known problem with your harddrives or controller?
+(ask google) Otherwise, it sounds like a problem with broken hardware.
 
-What are the difference between these three functions.
-Under what cases these functions are used. 
+ >   - cables (work perfectly on onboard controller)
+ >   - interrupt sharing (found the only slot which does not share
+ > interrupt line)
+ >   - cooling (3 fans installed, smartctl-reported temperature at max load
+ > dropped to 35C)
 
-Please guide me if you have any links which will
-explain these API's.
-Thanks in advance.
+Try to heat up your memory a little (your wife's hair blower).
+If it fails more often, your memory is most likely broken.
 
+ >   - weak PSU (installed 600W FSP)
+ >   - kernel bugs (upgraded to 2.6.22.9)
+ >
+ > All those measures significantly dropped error rate (from about 20 to
+ > 2-4 per mirror rebuild) but did not eliminate the problem.
+
+Again... sounds like bad memory to me.
+
+Juat my $0.05.
 Regards,
-Veerasena.
 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
 
-      Forgot the famous last words? Access your message archive online at http://in.messenger.yahoo.com/webmessengerpromo.php
 
