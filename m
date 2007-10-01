@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbXJAF4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbXJAF44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbXJAF4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXJAFwK
+	id S1755917AbXJAF44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXJAFwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:52:10 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40807 "EHLO
+	Mon, 1 Oct 2007 01:52:13 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40806 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXJAFvh (ORCPT
+	with ESMTP id S1753130AbXJAFvg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:51:37 -0400
+	Mon, 1 Oct 2007 01:51:36 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 13/19] Unionfs: remove periods from the end of printk strings
-Date: Mon,  1 Oct 2007 01:50:50 -0400
-Message-Id: <1191217861181-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 15/19] Unionfs: coding style: proper spacing
+Date: Mon,  1 Oct 2007 01:50:52 -0400
+Message-Id: <1191217862337-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
@@ -27,103 +27,318 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/lookup.c |    2 +-
- fs/unionfs/main.c   |    2 +-
- fs/unionfs/rename.c |    4 ++--
- fs/unionfs/super.c  |   10 +++++-----
- 4 files changed, 9 insertions(+), 9 deletions(-)
+ fs/unionfs/copyup.c |    2 +-
+ fs/unionfs/debug.c  |   22 +++++++++++-----------
+ fs/unionfs/dentry.c |    8 ++++----
+ fs/unionfs/fanout.h |    2 +-
+ fs/unionfs/super.c  |   14 +++++++-------
+ fs/unionfs/union.h  |   38 +++++++++++++++++++-------------------
+ 6 files changed, 43 insertions(+), 43 deletions(-)
 
-diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index 981c0d9..929f15b 100644
---- a/fs/unionfs/lookup.c
-+++ b/fs/unionfs/lookup.c
-@@ -215,7 +215,7 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
- 			}
- 			err = -EIO;
- 			printk(KERN_ERR "unionfs: EIO: invalid whiteout "
--			       "entry type %d.\n",
-+			       "entry type %d\n",
- 			       wh_lower_dentry->d_inode->i_mode);
- 			dput(wh_lower_dentry);
- 			dput(first_lower_dentry);
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index 25d1461..25ac851 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -485,7 +485,7 @@ static struct unionfs_dentry_info *unionfs_parse_options(
- 		 * don't, above this check.
- 		 */
- 		if (!optarg) {
--			printk(KERN_ERR "unionfs: %s requires an argument.\n",
-+			printk(KERN_ERR "unionfs: %s requires an argument\n",
- 			       optname);
- 			err = -EINVAL;
- 			goto out_error;
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index c90405d..81121f0 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -294,14 +294,14 @@ revert:
- 	local_err = unionfs_refresh_lower_dentry(new_dentry, old_bstart);
- 	if (local_err) {
- 		printk(KERN_ERR "unionfs: revert failed in rename: "
--		       "the new refresh failed.\n");
-+		       "the new refresh failed\n");
- 		eio = -EIO;
+diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
+index fb6fcae..560919a 100644
+--- a/fs/unionfs/copyup.c
++++ b/fs/unionfs/copyup.c
+@@ -875,7 +875,7 @@ void unionfs_postcopyup_release(struct dentry *dentry)
+ 	int bindex;
+ 
+ 	BUG_ON(S_ISDIR(dentry->d_inode->i_mode));
+-	for (bindex=dbstart(dentry)+1; bindex<=dbend(dentry); bindex++) {
++	for (bindex = dbstart(dentry)+1; bindex <= dbend(dentry); bindex++) {
+ 		if (unionfs_lower_mnt_idx(dentry, bindex)) {
+ 			unionfs_mntput(dentry, bindex);
+ 			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
+index 984f940..c0d710f 100644
+--- a/fs/unionfs/debug.c
++++ b/fs/unionfs/debug.c
+@@ -20,7 +20,7 @@
+ #define PRINT_CALLER(fname, fxn, line)					\
+ 	do {								\
+ 		if (!printed_caller) {					\
+-			pr_debug("PC:%s:%s:%d\n",(fname),(fxn),(line));	\
++			pr_debug("PC:%s:%s:%d\n", (fname), (fxn), (line)); \
+ 			printed_caller = 1;				\
+ 		}							\
+ 	} while (0)
+@@ -310,7 +310,7 @@ void __unionfs_check_dentry(const struct dentry *dentry,
+ 	/* check if lower inode is newer than upper one (it shouldn't) */
+ 	if (unlikely(is_newer_lower(dentry))) {
+ 		PRINT_CALLER(fname, fxn, line);
+-		for (bindex=ibstart(inode); bindex <= ibend(inode); bindex++) {
++		for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+ 			lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 			if (unlikely(!lower_inode))
+ 				continue;
+@@ -413,7 +413,7 @@ void __unionfs_check_file(const struct file *file,
+ 		}
  	}
  
- 	local_err = unionfs_refresh_lower_dentry(old_dentry, old_bstart);
- 	if (local_err) {
- 		printk(KERN_ERR "unionfs: revert failed in rename: "
--		       "the old refresh failed.\n");
-+		       "the old refresh failed\n");
- 		eio = -EIO;
- 		goto revert_out;
+-	__unionfs_check_dentry(dentry,fname,fxn,line);
++	__unionfs_check_dentry(dentry, fname, fxn, line);
+ }
+ 
+ void __unionfs_check_nd(const struct nameidata *nd,
+@@ -445,14 +445,14 @@ void __show_branch_counts(const struct super_block *sb,
+ 	struct vfsmount *mnt;
+ 
+ 	pr_debug("BC:");
+-	for (i=0; i<sbmax(sb); i++) {
++	for (i = 0; i < sbmax(sb); i++) {
+ 		if (likely(sb->s_root))
+ 			mnt = UNIONFS_D(sb->s_root)->lower_paths[i].mnt;
+ 		else
+ 			mnt = NULL;
+ 		pr_debug("%d:", (mnt ? atomic_read(&mnt->mnt_count) : -99));
  	}
+-	pr_debug("%s:%s:%d\n",file,fxn,line);
++	pr_debug("%s:%s:%d\n", file, fxn, line);
+ }
+ 
+ void __show_inode_times(const struct inode *inode,
+@@ -461,12 +461,12 @@ void __show_inode_times(const struct inode *inode,
+ 	struct inode *lower_inode;
+ 	int bindex;
+ 
+-	for (bindex=ibstart(inode); bindex <= ibend(inode); bindex++) {
++	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (unlikely(!lower_inode))
+ 			continue;
+ 		pr_debug("IT(%lu:%d): ", inode->i_ino, bindex);
+-		pr_debug("%s:%s:%d ",file,fxn,line);
++		pr_debug("%s:%s:%d ", file, fxn, line);
+ 		pr_debug("um=%lu/%lu lm=%lu/%lu ",
+ 			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
+ 			 lower_inode->i_mtime.tv_sec,
+@@ -485,13 +485,13 @@ void __show_dinode_times(const struct dentry *dentry,
+ 	struct inode *lower_inode;
+ 	int bindex;
+ 
+-	for (bindex=ibstart(inode); bindex <= ibend(inode); bindex++) {
++	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (!lower_inode)
+ 			continue;
+ 		pr_debug("DT(%s:%lu:%d): ", dentry->d_name.name, inode->i_ino,
+ 			 bindex);
+-		pr_debug("%s:%s:%d ",file,fxn,line);
++		pr_debug("%s:%s:%d ", file, fxn, line);
+ 		pr_debug("um=%lu/%lu lm=%lu/%lu ",
+ 			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
+ 			 lower_inode->i_mtime.tv_sec,
+@@ -513,7 +513,7 @@ void __show_inode_counts(const struct inode *inode,
+ 		pr_debug("SiC: Null inode\n");
+ 		return;
+ 	}
+-	for (bindex=sbstart(inode->i_sb); bindex <= sbend(inode->i_sb);
++	for (bindex = sbstart(inode->i_sb); bindex <= sbend(inode->i_sb);
+ 	     bindex++) {
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (unlikely(!lower_inode))
+@@ -521,6 +521,6 @@ void __show_inode_counts(const struct inode *inode,
+ 		pr_debug("SIC(%lu:%d:%d): ", inode->i_ino, bindex,
+ 			 atomic_read(&(inode)->i_count));
+ 		pr_debug("lc=%d ", atomic_read(&(lower_inode)->i_count));
+-		pr_debug("%s:%s:%d\n",file,fxn,line);
++		pr_debug("%s:%s:%d\n", file, fxn, line);
+ 	}
+ }
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 8891c53..49323de 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -337,7 +337,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 	 * if failed, then sleep for a little, then retry.
+ 	 */
+ 	dtmp = dentry->d_parent;
+-	for (i=chain_len-1; i>=0; i--) {
++	for (i = chain_len-1; i >= 0; i--) {
+ 		chain[i] = dget(dtmp);
+ 		dtmp = dtmp->d_parent;
+ 	}
+@@ -346,7 +346,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 	 * call __unionfs_d_revalidate_one() on each dentry, but in parent
+ 	 * to child order.
+ 	 */
+-	for (i=0; i<chain_len; i++) {
++	for (i = 0; i < chain_len; i++) {
+ 		unionfs_lock_dentry(chain[i]);
+ 		saved_bstart = dbstart(chain[i]);
+ 		saved_bend = dbend(chain[i]);
+@@ -409,7 +409,7 @@ out_this:
+ out_free:
+ 	/* unlock/dput all dentries in chain and return status */
+ 	if (chain_len > 0) {
+-		for (i=0; i<chain_len; i++)
++		for (i = 0; i < chain_len; i++)
+ 			dput(chain[i]);
+ 		kfree(chain);
+ 	}
+@@ -467,7 +467,7 @@ static void unionfs_d_release(struct dentry *dentry)
+ 		dput(unionfs_lower_dentry_idx(dentry, bindex));
+ 		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
+ 		/* NULL lower mnt is ok if this is a negative dentry */
+-		if (!dentry->d_inode && !unionfs_lower_mnt_idx(dentry,bindex))
++		if (!dentry->d_inode && !unionfs_lower_mnt_idx(dentry, bindex))
+ 			continue;
+ 		unionfs_mntput(dentry, bindex);
+ 		unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
+diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
+index 536a51f..8d5f15e 100644
+--- a/fs/unionfs/fanout.h
++++ b/fs/unionfs/fanout.h
+@@ -310,7 +310,7 @@ static inline void unionfs_copy_attr_times(struct inode *upper)
+ 
+ 	if (!upper || ibstart(upper) < 0)
+ 		return;
+-	for (bindex=ibstart(upper); bindex <= ibend(upper); bindex++) {
++	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
+ 		lower = unionfs_lower_inode_idx(upper, bindex);
+ 		if (!lower)
+ 			continue; /* not all lower dir objects may exist */
 diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 798def9..647b08c 100644
+index 647b08c..45dc66e 100644
 --- a/fs/unionfs/super.c
 +++ b/fs/unionfs/super.c
-@@ -173,18 +173,18 @@ static noinline int do_remount_mode_option(char *optarg, int cur_branches,
- 	/* by now, optarg contains the branch name */
- 	if (!*optarg) {
- 		printk(KERN_ERR
--		       "unionfs: no branch specified for mode change.\n");
-+		       "unionfs: no branch specified for mode change\n");
+@@ -202,7 +202,7 @@ static noinline int do_remount_mode_option(char *optarg, int cur_branches,
+ 		       optarg, err);
  		goto out;
  	}
- 	if (!modename) {
--		printk(KERN_ERR "unionfs: branch \"%s\" requires a mode.\n",
-+		printk(KERN_ERR "unionfs: branch \"%s\" requires a mode\n",
- 		       optarg);
+-	for (idx=0; idx<cur_branches; idx++)
++	for (idx = 0; idx < cur_branches; idx++)
+ 		if (nd.mnt == new_lower_paths[idx].mnt &&
+ 		    nd.dentry == new_lower_paths[idx].dentry)
+ 			break;
+@@ -245,7 +245,7 @@ static noinline int do_remount_del_option(char *optarg, int cur_branches,
+ 		       optarg, err);
  		goto out;
  	}
- 	*modename++ = '\0';
- 	perms = __parse_branch_mode(modename);
- 	if (perms == 0) {
--		printk(KERN_ERR "unionfs: invalid mode \"%s\" for \"%s\".\n",
-+		printk(KERN_ERR "unionfs: invalid mode \"%s\" for \"%s\"\n",
- 		       modename, optarg);
+-	for (idx=0; idx < cur_branches; idx++)
++	for (idx = 0; idx < cur_branches; idx++)
+ 		if (nd.mnt == new_lower_paths[idx].mnt &&
+ 		    nd.dentry == new_lower_paths[idx].dentry)
+ 			break;
+@@ -329,7 +329,7 @@ static noinline int do_remount_add_option(char *optarg, int cur_branches,
+ 		       optarg, err);
  		goto out;
  	}
-@@ -584,7 +584,7 @@ static int unionfs_remount_fs(struct super_block *sb, int *flags,
- 		 */
- 		if (!optarg || !*optarg) {
- 			printk(KERN_ERR "unionfs: all remount options require "
--			       "an argument (%s).\n", optname);
-+			       "an argument (%s)\n", optname);
- 			err = -EINVAL;
- 			goto out_release;
- 		}
-@@ -634,7 +634,7 @@ static int unionfs_remount_fs(struct super_block *sb, int *flags,
- 		 */
- 		if (!strcmp("dirs", optname)) {
- 			printk(KERN_WARNING
--			       "unionfs: remount ignoring option \"%s\".\n",
-+			       "unionfs: remount ignoring option \"%s\"\n",
- 			       optname);
- 			continue;
- 		}
+-	for (idx=0; idx < cur_branches; idx++)
++	for (idx = 0; idx < cur_branches; idx++)
+ 		if (nd.mnt == new_lower_paths[idx].mnt &&
+ 		    nd.dentry == new_lower_paths[idx].dentry)
+ 			break;
+@@ -540,7 +540,7 @@ static int unionfs_remount_fs(struct super_block *sb, int *flags,
+ 	       cur_branches * sizeof(struct unionfs_data));
+ 	memcpy(tmp_lower_paths, UNIONFS_D(sb->s_root)->lower_paths,
+ 	       cur_branches * sizeof(struct path));
+-	for (i=0; i<cur_branches; i++)
++	for (i = 0; i < cur_branches; i++)
+ 		pathget(&tmp_lower_paths[i]); /* drop refs at end of fxn */
+ 
+ 	/*******************************************************************
+@@ -743,14 +743,14 @@ out_no_change:
+ 	 * Update lower inodes: 3 steps
+ 	 * 1. grab ref on all new lower inodes
+ 	 */
+-	for (i=dbstart(sb->s_root); i<=dbend(sb->s_root); i++) {
++	for (i = dbstart(sb->s_root); i <= dbend(sb->s_root); i++) {
+ 		struct dentry *lower_dentry =
+ 			unionfs_lower_dentry_idx(sb->s_root, i);
+ 		igrab(lower_dentry->d_inode);
+ 		new_lower_inodes[i] = lower_dentry->d_inode;
+ 	}
+ 	/* 2. release reference on all older lower inodes */
+-	for (i=old_ibstart; i<=old_ibend; i++) {
++	for (i = old_ibstart; i <= old_ibend; i++) {
+ 		iput(unionfs_lower_inode_idx(sb->s_root->d_inode, i));
+ 		unionfs_set_lower_inode_idx(sb->s_root->d_inode, i, NULL);
+ 	}
+@@ -785,7 +785,7 @@ out_no_change:
+ out_release:
+ 	/* no need to cleanup/release anything in tmp_data */
+ 	if (tmp_lower_paths)
+-		for (i=0; i<new_branches; i++)
++		for (i = 0; i < new_branches; i++)
+ 			pathput(&tmp_lower_paths[i]);
+ out_free:
+ 	kfree(tmp_lower_paths);
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index bd1a0f3..ee8324c 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -392,7 +392,7 @@ static inline int is_robranch_super(const struct super_block *sb, int index)
+ {
+ 	int ret;
+ 
+-  	ret = (!(branchperms(sb, index) & MAY_WRITE)) ? -EROFS : 0;
++	ret = (!(branchperms(sb, index) & MAY_WRITE)) ? -EROFS : 0;
+ 	return ret;
+ }
+ 
+@@ -507,24 +507,24 @@ static inline void unionfs_mntput(struct dentry *dentry, int bindex)
+ #ifdef CONFIG_UNION_FS_DEBUG
+ 
+ /* useful for tracking code reachability */
+-#define UDBG pr_debug("DBG:%s:%s:%d\n",__FILE__,__FUNCTION__,__LINE__)
++#define UDBG pr_debug("DBG:%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__)
+ 
+ #define unionfs_check_inode(i)	__unionfs_check_inode((i),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define unionfs_check_dentry(d)	__unionfs_check_dentry((d),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define unionfs_check_file(f)	__unionfs_check_file((f),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define unionfs_check_nd(n)	__unionfs_check_nd((n),		\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define show_branch_counts(sb)	__show_branch_counts((sb),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define show_inode_times(i)	__show_inode_times((i),		\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define show_dinode_times(d)	__show_dinode_times((d),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ #define show_inode_counts(i)	__show_inode_counts((i),	\
+-	__FILE__,__FUNCTION__,__LINE__)
++	__FILE__, __FUNCTION__, __LINE__)
+ 
+ extern void __unionfs_check_inode(const struct inode *inode, const char *fname,
+ 				  const char *fxn, int line);
+@@ -542,19 +542,19 @@ extern void __show_inode_times(const struct inode *inode,
+ extern void __show_dinode_times(const struct dentry *dentry,
+ 				const char *file, const char *fxn, int line);
+ extern void __show_inode_counts(const struct inode *inode,
+-			        const char *file, const char *fxn, int line);
++				const char *file, const char *fxn, int line);
+ 
+ #else /* not CONFIG_UNION_FS_DEBUG */
+ 
+ /* we leave useful hooks for these check functions throughout the code */
+-#define unionfs_check_inode(i)		do { } while(0)
+-#define unionfs_check_dentry(d)		do { } while(0)
+-#define unionfs_check_file(f)		do { } while(0)
+-#define unionfs_check_nd(n)		do { } while(0)
+-#define show_branch_counts(sb)		do { } while(0)
+-#define show_inode_times(i)		do { } while(0)
+-#define show_dinode_times(d)		do { } while(0)
+-#define show_inode_counts(i)		do { } while(0)
++#define unionfs_check_inode(i)		do { } while (0)
++#define unionfs_check_dentry(d)		do { } while (0)
++#define unionfs_check_file(f)		do { } while (0)
++#define unionfs_check_nd(n)		do { } while (0)
++#define show_branch_counts(sb)		do { } while (0)
++#define show_inode_times(i)		do { } while (0)
++#define show_dinode_times(d)		do { } while (0)
++#define show_inode_counts(i)		do { } while (0)
+ 
+ #endif /* not CONFIG_UNION_FS_DEBUG */
+ 
 -- 
 1.5.2.2
 
