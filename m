@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbXJAK7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbXJALAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbXJAK7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXJAK71
+	id S1753796AbXJALAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 07:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXJAK76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:59:27 -0400
-Received: from mail.suse.de ([195.135.220.2]:36224 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751354AbXJAK70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:59:26 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [PATCH] [13/50] x86: Fix and reenable CLFLUSH support in change_page_attr()
-Date: Mon, 1 Oct 2007 12:59:20 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200709221231.836138000@suse.de> <20070921223211.BB50413DCD@wotan.suse.de> <E1IYxqR-0004uA-EA@flower>
-In-Reply-To: <E1IYxqR-0004uA-EA@flower>
+	Mon, 1 Oct 2007 06:59:58 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:46847 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbXJAK76 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:59:58 -0400
+Date: Mon, 1 Oct 2007 11:59:54 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: veerasena reddy <veerasena_b@yahoo.co.in>
+Cc: linux-mips <linux-mips@linux-mips.org>,
+       "linux-kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
+Message-ID: <20071001105954.GB23647@linux-mips.org>
+References: <119374.35234.qm@web8401.mail.in.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710011259.20561.ak@suse.de>
+In-Reply-To: <119374.35234.qm@web8401.mail.in.yahoo.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 September 2007 07:47:59 Oleg Verych wrote:
-> * Sat, 22 Sep 2007 00:32:11 +0200 (CEST)
-> []
-> > -	flush_map(&l);
-> > +	flush_map(&arg);
-> 
->   +	flush_map(&arg.l);
-> 
->   CC      arch/x86_64/mm/pageattr.o
-> arch/x86_64/mm/pageattr.c: In function 'global_flush_tlb':
-> arch/x86_64/mm/pageattr.c:274: warning: passing argument 1 of 'flush_map' from incompatible pointer type
+On Mon, Oct 01, 2007 at 10:04:32AM +0100, veerasena reddy wrote:
 
-That was already fixed; hmm perhaps that was an old patch.
+> I have ported Linux-2.6.18 kernel on MIPS24KE
+> processor. I am using write back cache policy.
+> 
+> Could you please guide me under what cases the below
+> cache API's are being used:
+> - dma_cache_wback_inv() : Could you explain  what
+> exactly this function does
+> - dma_cache_wback() : This function write back the
+> cache data to memory
+> - dma_cache_inv  : This function invalidate the cache
+> tags. so subsequent access will fetch from memory.
+> 
+> Once I looked the above function definitions in
+> linux-2.6.18/arch/mips/mm/c-r4k.c.
+> All these function's implemetation are same except
+> bc_wbak_inv() is called in both dma_cache_wback-inv()
+> and dma_cache_wback(), where as bc_inv() is called in
+> case of dma_cache_inv.
+> 
+> Also, bc_inv()/bc_wbak_inv are define as null
+> implementation for R4000.
+> That means all three functions are doing same
+> functionality in case of R4000.
+> 
+> What are the difference between these three functions.
+> Under what cases these functions are used. 
 
--Andi
+An internal only interface to be used with I/O cache coherency.
+
+> Please guide me if you have any links which will
+> explain these API's.
+
+Easy answer, don't use them, for 2.6.24 I've queued a patch to kill this
+API.  Documentation/DMA-API.txt documents how to properly deal with I/O
+coherency in Linux.
+
+  Ralf
