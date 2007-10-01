@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbXJARGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbXJARGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbXJARGm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXJARGc
+	id S1756163AbXJARGy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXJARGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:06:32 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54254 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbXJARGb (ORCPT
+	Mon, 1 Oct 2007 13:06:34 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:35938 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbXJARGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Oct 2007 13:06:31 -0400
-Date: Sun, 30 Sep 2007 18:37:39 -0700
+Date: Sun, 30 Sep 2007 18:41:42 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, dipankar@in.ibm.com,
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
        josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
        tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
        ego@in.ibm.com, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-Message-ID: <20071001013739.GB12494@linux.vnet.ibm.com>
+Subject: Re: [PATCH RFC 5/9] RCU: CPU hotplug support for preemptible RCU
+Message-ID: <20071001014142.GC12494@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070923173807.GA292@tv-sign.ru> <20070924001509.GG11123@linux.vnet.ibm.com> <20070926151351.GA328@tv-sign.ru> <20070927154652.GE16652@linux.vnet.ibm.com> <20070928144714.GA397@tv-sign.ru> <20070928185759.GC9153@linux.vnet.ibm.com> <20070930163102.GA374@tv-sign.ru> <Pine.LNX.4.64.0709301549160.19355@alien.or.mcafeemobile.com>
+References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183622.GE3819@linux.vnet.ibm.com> <20070930163849.GB374@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709301549160.19355@alien.or.mcafeemobile.com>
+In-Reply-To: <20070930163849.GB374@tv-sign.ru>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 30, 2007 at 04:02:09PM -0700, Davide Libenzi wrote:
-> On Sun, 30 Sep 2007, Oleg Nesterov wrote:
+On Sun, Sep 30, 2007 at 08:38:49PM +0400, Oleg Nesterov wrote:
+> On 09/10, Paul E. McKenney wrote:
+> >
+> > --- linux-2.6.22-d-schedclassic/kernel/rcupreempt.c	2007-08-22 15:45:28.000000000 -0700
+> > +++ linux-2.6.22-e-hotplugcpu/kernel/rcupreempt.c	2007-08-22 15:56:22.000000000 -0700
+> > @@ -125,6 +125,8 @@ enum rcu_mb_flag_values {
+> >  };
+> >  static DEFINE_PER_CPU(enum rcu_mb_flag_values, rcu_mb_flag) = rcu_mb_done;
+> >
+> > +static cpumask_t rcu_cpu_online_map = CPU_MASK_NONE;
 > 
-> > Ah, but I asked the different question. We must see CPU 1's stores by
-> > definition, but what about CPU 0's stores (which could be seen by CPU 1)?
-> > 
-> > Let's take a "real life" example,
-> > 
-> >                 A = B = X = 0;
-> >                 P = Q = &A;
-> > 
-> > CPU_0           CPU_1           CPU_2
-> > 
-> > P = &B;         *P = 1;         if (X) {
-> >                 wmb();                  rmb();
-> >                 X = 1;                  BUG_ON(*P != 1 && *Q != 1);
-> >                                 }
-> > 
-> > So, is it possible that CPU_1 sees P == &B, but CPU_2 sees P == &A ?
+> I'd suggest to append "__read_mostly"
+
+Makes sense!
+
+> > +void rcu_offline_cpu_rt(int cpu)
+> > +{
+> > [...snip...]
+> > +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, oldirq);
+> > +	rcu_check_mb(cpu);
+> > +	if (per_cpu(rcu_flip_flag, cpu) == rcu_flipped) {
+> > +		smp_mb();  /* Subsequent counter accesses must see new value */
+> > +		per_cpu(rcu_flip_flag, cpu) = rcu_flip_seen;
+> > +		smp_mb();  /* Subsequent RCU read-side critical sections */
+> > +			   /*  seen -after- acknowledgement. */
 > 
-> That can't be. CPU_2 sees X=1, that happened after (or same time at most - 
-> from a cache inv. POV) to *P=1, that must have happened after P=&B (in 
-> order for *P to assign B). So P=&B happened, from a pure time POV, before 
-> the rmb(), and the rmb() should guarantee that CPU_2 sees P=&B too.
+> Imho, all these barriers are unneeded and confusing, we can't do them on behalf
+> of a dead CPU anyway. Can't we just do
+> 
+> 	per_cpu(rcu_mb_flag, cpu) = rcu_mb_done;
+> 	per_cpu(rcu_flip_flag, cpu) = rcu_flip_seen;
+> ?
 
-Actually, CPU designers have to go quite a ways out of their way to
-prevent this BUG_ON from happening.  One way that it would happen
-naturally would be if the cache line containing P were owned by CPU 2,
-and if CPUs 0 and 1 shared a store buffer that they both snooped.  So,
-here is what could happen given careless or sadistic CPU designers:
+You are likely correct, but this is a slow path, extremely hard to
+stress test, and I am freakin' paranoid about this sort of thing.
 
-o	CPU 0 stores &B to P, but misses the cache, so puts the
-	result in the store buffer.  This means that only CPUs 0 and 1
-	can see it.
+> Why can't we also do
+> 
+> 	__get_cpu_var(rcu_flipctr)[0] += per_cpu(rcu_flipctr, cpu)[0];
+> 	per_cpu(rcu_flipctr, cpu)[0] = 0;	
+> 	__get_cpu_var(rcu_flipctr)[1] += per_cpu(rcu_flipctr, cpu)[1];
+> 	per_cpu(rcu_flipctr, cpu)[1] = 0;	
+> 
+> ? This way rcu_try_flip_waitzero() can also use rcu_cpu_online_map. This cpu
+> is dead, nobody can modify per_cpu(rcu_flipctr, cpu). And we can't confuse
+> rcu_try_flip_waitzero(), we are holding rcu_ctrlblk.fliplock.
 
-o	CPU 1 fetches P, and sees &B, so stores a 1 to B.  Again,
-	this value for P is visible only to CPUs 0 and 1.
+Very good point!!!  This would reduce latencies on systems where
+the number of possible CPUs greatly exceeds that of the number of
+online CPUs, so seems quite worthwhile.
 
-o	CPU 1 executes a wmb(), which forces CPU 1's stores to happen
-	in order.  But it does nothing about CPU 0's stores, nor about CPU
-	1's loads, for that matter (and the only reason that POWER ends
-	up working the way you would like is because wmb() turns into
-	"sync" rather than the "eieio" instruction that would have been
-	used for smp_wmb() -- which is maybe what Oleg was thinking of,
-	but happened to abbreviate.  If my analysis is buggy, Anton and
-	Paulus will no doubt correct me...)
+> > +void __devinit rcu_online_cpu_rt(int cpu)
+> > +{
+> > +	unsigned long oldirq;
+> > +
+> > +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, oldirq);
+> > +	cpu_set(cpu, rcu_cpu_online_map);
+> 
+> What if _cpu_up() fails? I think rcu_cpu_notify(CPU_UP_CANCELED) should call
+> rcu_offline_cpu_rt() too.
 
-o	CPU 1 stores to X.
+Good catch, will fix!!!
 
-o	CPU 2 loads X, and sees that the value is 1.
-
-o	CPU 2 does an rmb(), which orders its loads, but does nothing
-	about anyone else's loads or stores.
-
-o	CPU 2 fetches P from its cached copy, which still points to A,
-	which is still zero.  So the BUG_ON fires.
-
-o	Some time later, CPU 0 gets the cache line containing P from
-	CPU 2, and updates it from the value in the store buffer, but
-	too late...
-
-Unfortunately, cache-coherence protocols don't care much about pure
-time...  It is possible to make a 16-CPU machine believe that a single
-variable has more than ten different values -at- -the- -same- -time-.
-This is easy to do -- have all the CPUs store different values to the
-same variable at the same time, then reload, collecting timestamps
-between each pair of operations.  On a large SMP, the values will sit
-in the store buffers for many hundreds of nanoseconds, perhaps even
-several microseconds, while the cache line containing the variable
-being stored to shuttles around among the CPUs.  ;-)
-
-						Thanx, Paul
+							Thanx, Paul
