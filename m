@@ -1,52 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXJAJdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbXJAJd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbXJAJdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbXJAJdF
+	id S1751518AbXJAJd6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbXJAJdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:33:05 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:53752 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbXJAJdD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:33:03 -0400
-Date: Mon, 1 Oct 2007 11:33:01 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: roel <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] removes array_size duplicates
-In-Reply-To: <20071001022653.40bd5714.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710011132470.20679@anakin>
-References: <46FC33E1.8010309@tiscali.nl> <20071001022653.40bd5714.akpm@linux-foundation.org>
+	Mon, 1 Oct 2007 05:33:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47455 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbXJAJdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 05:33:50 -0400
+To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86_64 and AMD with C1E
+References: <20071001101532.025d652f@localhost>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 01 Oct 2007 11:33:48 +0200
+In-Reply-To: <20071001101532.025d652f@localhost>
+Message-ID: <p73r6kf6uwz.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Andrew Morton wrote:
-> On Fri, 28 Sep 2007 00:51:13 +0200 roel <12o3l@tiscali.nl> wrote:
-> > This patch removes some ARRAY_SIZE macro duplicates. There is also one in
-> > arch/um/include/user.h, which isn't fixed here because comments in that file
-> > explicitly state a preference for the 'less fancy' version. If that's the
-> > case as well for any of the other replacements please comment.
+Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com> writes:
 > 
-> I got a bunch of rejects against various development trees, a 
-> build error in net/ipv4/ipvs/ip_vs_proto_udp.c and now
-> 
-> net/netfilter/xt_sctp.c: In function 'match_packet':
-> net/netfilter/xt_sctp.c:58: error: size of array 'type name' is negative
-> net/netfilter/xt_sctp.c:106: error: size of array 'type name' is negative
+> The same situation can be observed for linux-2.6.22.
 
-However, arch/m68k/amiga/amisound.c:
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+You're saying 2.6.22/x86-64 without any patches doesn't boot out of the box 
+with C1E enabled? If yes what are the exact symptoms?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-Andi
