@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbXJAPLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXJAPWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbXJAPLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 11:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXJAPLJ
+	id S1753369AbXJAPWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 11:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXJAPVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 11:11:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44270 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbXJAPLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 11:11:08 -0400
-Message-ID: <47010E01.2010001@pobox.com>
-Date: Mon, 01 Oct 2007 11:10:57 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
- class
-References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com> <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com> <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Mon, 1 Oct 2007 11:21:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53133 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbXJAPVz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 11:21:55 -0400
+Date: Mon, 1 Oct 2007 17:21:53 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fwd: x86_64 and AMD with C1E
+Message-ID: <20071001152153.GB19797@one.firstfloor.org>
+References: <20071001101532.025d652f@localhost> <p73r6kf6uwz.fsf@bingen.suse.de> <b70f2f960710010546k4658aa1ay466f243ac707c989@mail.gmail.com> <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com> <alpine.LRH.0.999.0710011612001.7353@www.tglx.de> <20071001143225.GA19797@one.firstfloor.org> <alpine.LRH.0.999.0710011652470.7353@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.0.999.0710011652470.7353@www.tglx.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Mon, 1 Oct 2007, Jeff Garzik wrote:
-> 
->> There are other network devices that do not claim 
->> PCI_CLASS_NETWORK_ETHERNET either.  
-> 
-> Nor any other PCI_CLASS_NETWORK subclass?
 
-Correct.
+> So if the
+> number of hpet channels is greater/equal to the number of possible
+> CPUs it's perfectly fine and does not need IPI at all.
 
+That is only a stop gap then. I don't see this being
+generally true in the future. e.g. Intel announced SMT will be soon 
+back so even a standard dual core would exceed it with
+current southbridges.
 
->> Since this is a purely cosmetic issue -- said userland tools would need 
->> to support weird cases _anyway_ -- I am not inclined to apply the patch.
-> 
-> What would you recommend as a method for userspace to detect whether given 
-> hardware is a network card, supposing that there is no driver bound to it 
-> yet?
+Also I'm not sure but I suspect non Intel HPETs have less than
+three timers. Certainly they generally miss the 64bitness.
 
-Note the mention of "weird cases"
-
-You come up with a general method, then you have to deal with exceptions 
-to that general method.
-
-Another example:  8139too and 8139cp both claim to support 
-(0x10EC,0x8139) PCI IDs.  The distro installer needs additional 
-information to know to read the PCI revision, which is what determines 
-whether or not to use 8139cp driver.
-
-Sometimes life is just not as simple as you would like it to be :)
-
-	Jeff
-
+-Andi
