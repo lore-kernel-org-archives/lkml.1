@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbXJAOy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXJAPAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbXJAOy7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 10:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbXJAOyv
+	id S1753897AbXJAPAR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 11:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXJAPAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 10:54:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46731 "EHLO mail.dvmed.net"
+	Mon, 1 Oct 2007 11:00:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:39010 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbXJAOyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 10:54:50 -0400
-Message-ID: <47010A34.9000709@pobox.com>
-Date: Mon, 01 Oct 2007 10:54:44 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1751365AbXJAPAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 11:00:03 -0400
+Date: Mon, 1 Oct 2007 16:59:55 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fwd: x86_64 and AMD with C1E
+In-Reply-To: <20071001143225.GA19797@one.firstfloor.org>
+Message-ID: <alpine.LRH.0.999.0710011652470.7353@www.tglx.de>
+References: <20071001101532.025d652f@localhost> <p73r6kf6uwz.fsf@bingen.suse.de>
+ <b70f2f960710010546k4658aa1ay466f243ac707c989@mail.gmail.com>
+ <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com>
+ <alpine.LRH.0.999.0710011612001.7353@www.tglx.de>
+ <20071001143225.GA19797@one.firstfloor.org>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
- class
-References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com> <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Mon, 1 Oct 2007, Jeff Garzik wrote:
+On Mon, 1 Oct 2007, Andi Kleen wrote:
+> > There is work in progress on a patch, which allows to utilize the hpet
+> > timers as per cpu timers. This should solve the problem. Be patient.
 > 
->>> PCI: nVidia's MCP61 ethernet card needs quirk for wrong class
->>> The MCP61 ethernet controller from nVidia (NVENET_19) contains wrong
->>> PCI class:
->>>  00:07.0 Bridge [0680]: nVidia Corporation MCP61 Ethernet [10de:03ef] (rev
->>>  a2)
->>> i.e. it identifies itself as a bridge. Fix this.
->>> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
->> What is the problem that is present without this patch?
+> Given that e.g. ICH8 only has 3 HPET timers that seems doubtful
+> except for the special case of single-socket non hyper threaded dual core.
+> You'll probably do a lot of broadcasting and IPI'ing still.
 > 
-> Userspace tools that are used to configure network are probable not to 
-> detect this device as a network card and therefore not provide means to 
-> configure the device (this is a case at least with yast, I don't know what 
-> is the situation with other configurators).
-> 
-> There might be also other situations, I don't know. Userspace really 
-> should know the proper class of the device, shouldn't it?
+> Also you'll likely make user space unhappy which often requires 
+> at least one free HPET timer for /dev/rtc. Ok I suppose that 
+> could be replaced with a hrtimer.
 
-There are other network devices that do not claim 
-PCI_CLASS_NETWORK_ETHERNET either.  Since this is a purely cosmetic 
-issue -- said userland tools would need to support weird cases _anyway_ 
-  -- I am not inclined to apply the patch.
+Yes, we can replace rtc with a hrtimer. Also HPET can operate in non
+legacy irq mode, so the legacy rtc is still available. So if the
+number of hpet channels is greater/equal to the number of possible
+CPUs it's perfectly fine and does not need IPI at all.
 
-The kernel could do a lot to make things "prettier," but that would lead 
-to lots of additional code bloat.  It's easier to export the world as it 
-is, and let the chips fall where they may.
+Thanks,
 
-	Jeff
-
-
+	tglx
 
