@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbXJASKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbXJASPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbXJASKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 14:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXJASKF
+	id S1755352AbXJASPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 14:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJASPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 14:10:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55433 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752176AbXJASKD (ORCPT
+	Mon, 1 Oct 2007 14:15:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49351 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751817AbXJASPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 14:10:03 -0400
-Date: Mon, 1 Oct 2007 11:08:14 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH] Uninline fork.c/exit.c
-Message-ID: <20071001110814.4e137e03@laptopd505.fenrus.org>
-In-Reply-To: <20071001121553.GA6153@localhost.sw.ru>
-References: <20071001121553.GA6153@localhost.sw.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+	Mon, 1 Oct 2007 14:15:33 -0400
+Date: Mon, 1 Oct 2007 11:15:28 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
+Message-Id: <20071001111528.5487b4f4.pj@sgi.com>
+In-Reply-To: <200709301335.00441.nickpiggin@yahoo.com.au>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
+	<200709300521.03356.nickpiggin@yahoo.com.au>
+	<20070930110753.19b03388.pj@sgi.com>
+	<200709301335.00441.nickpiggin@yahoo.com.au>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 16:15:53 +0400
-Alexey Dobriyan <adobriyan@sw.ru> wrote:
+Nick wrote:
+> which you could equally achieve by adding
+> a second set of sched domains (and the global domains could keep
+> globally balancing).
 
-> Save ~650 bytes here.
-> 
-> add/remove: 4/0 grow/shrink: 0/7 up/down: 430/-1088 (-658)
-> function                                     old     new   delta
-> __copy_fs_struct                               -     202    +202
-> __put_fs_struct                                -     112    +112
-> __exit_fs                                      -      58     +58
-> __exit_files                                   -      58     +58
-> exit_files                                    58       2     -56
-> put_fs_struct                                112       5    -107
-> exit_fs                                      161       2    -159
-> sys_unshare                                  774     590    -184
-> copy_process                                4031    3840    -191
-> do_exit                                     1791    1597    -194
-> copy_fs_struct                               202       5    -197
-> 
-> No difference in lmbench lat_proc tests on 2-way Opteron 246.
-> Smaaaal degradation on UP P4 (within errors).
-> 
+Hmmm ... this could be the key to this discussion.
 
-is there any impact on stack usage?
+Nick - can two sched domains overlap?  And if they do, what does that
+mean on any user or application behaviour.
+
+>From the cpuset side - this patch handles overlap by joining the 'cpus'
+into one sched domain.  If two cpusets with overlapping 'cpus' are both
+marked 'sched_load_balance', then this patch forms a single, combined
+sched domain.
+
+As best as I can tell, you and I are actually in agreement in the
+case that there is no overlap.  If the several cpusets which have
+'sched_load_balance' enabled have mutually disjoint 'cpus' (no
+overlap), then my patch forms exactly one sched domain for each such
+cpuset, having the same 'cpus'.
+
+The issue is the overlapping cases - are overlapping sched domains
+allowed, and if so, how do they affect user space?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
