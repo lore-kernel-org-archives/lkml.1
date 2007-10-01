@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbXJAIBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXJAIE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbXJAIBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 04:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXJAIBJ
+	id S1753909AbXJAIE3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 04:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXJAIER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 04:01:09 -0400
-Received: from sacred.ru ([62.205.161.221]:39725 "EHLO sacred.ru"
+	Mon, 1 Oct 2007 04:04:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41530 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbXJAIBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 04:01:08 -0400
-Message-ID: <4700A7C5.5080005@openvz.org>
-Date: Mon, 01 Oct 2007 11:54:45 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Cedric Le Goater <clg@fr.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] Move the user namespace under the option
-References: <46FA7D4D.8040808@openvz.org> <46FA8087.6060307@openvz.org> <46FBA2A4.2040909@fr.ibm.com> <Pine.LNX.4.64.0709270837220.5275@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0709270837220.5275@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 01 Oct 2007 11:57:12 +0400 (MSD)
+	id S1750966AbXJAIEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 04:04:15 -0400
+Date: Mon, 1 Oct 2007 10:05:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: "Elyse M. Grasso" <emgrasso@data-raptors.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net,
+       Andreas Herrmann <aherrman@arcor.de>,
+       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
+Message-ID: <20071001080540.GC23965@uranus.ravnborg.org>
+References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org> <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IcFgK-0005oI-5p@flower>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Thu, 27 Sep 2007, Cedric Le Goater wrote:
+Hi Oleg.
 > 
->>> diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
->>> index b5f41d4..dda160c 100644
->>> --- a/include/linux/user_namespace.h
->>> +++ b/include/linux/user_namespace.h
->>> @@ -17,7 +17,7 @@ struct user_namespace {
->>>
->>>  extern struct user_namespace init_user_ns;
->>>
->>> -#ifdef CONFIG_USER_NS
->>> +#ifdef CONFIG_NAMESPACES_EXPERIMENTAL
-> 
-> is it really a good precedent to introduce Kconfig variables that
-> literally include the word "EXPERIMENTAL"?
+> Today's kconfig was proposed and accepted in a very unpleasant
+> circumstances, has very poor design, development and no working
+> alternative (for 5+ years now).
 
-How else can we call it? I proposed one config option for
-each namespace with "depends on EXPERIMENTAL" dependency,
-but everyone else said that two options are much better.
+I have read all your mails about this subject - but I still miss what
+is so bad about current design.
 
-> rday
+Could you try to stay down on the earth and be very specific about
+what you see as so bad in current design.
+"With stay down on earth" I try to say that what I have read before
+I could not dechiper so be specific, please.
 
+	Sam
