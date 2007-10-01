@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbXJAFzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbXJAFzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbXJAFzT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 01:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXJAFvt
+	id S1755383AbXJAFzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 01:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXJAFvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 01:51:49 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40814 "EHLO
+	Mon, 1 Oct 2007 01:51:32 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40753 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177AbXJAFvi (ORCPT
+	with ESMTP id S1751727AbXJAFv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 01:51:38 -0400
+	Mon, 1 Oct 2007 01:51:26 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 14/19] Unionfs: use braces in both branches of conditionals
-Date: Mon,  1 Oct 2007 01:50:51 -0400
-Message-Id: <11912178623778-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 09/19] Unionfs: use pr_debug() instead of custom dprintk()
+Date: Mon,  1 Oct 2007 01:50:46 -0400
+Message-Id: <11912178601007-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
@@ -25,312 +25,99 @@ References: <1191217856647-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As per CodingStyle, if one branch of an if-then-else has braces because it
-has multiple statements, then the other branch should have braces too, even
-if the other branch has only one statement in it.
+Also turn on DEBUG if CONFIG_UNION_FS_DEBUG is on
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |    6 ++++--
- fs/unionfs/dentry.c     |    8 ++++----
- fs/unionfs/dirfops.c    |    6 ++++--
- fs/unionfs/dirhelper.c  |    4 ++--
- fs/unionfs/inode.c      |    6 ++++--
- fs/unionfs/lookup.c     |    7 ++++---
- fs/unionfs/main.c       |    4 ++--
- fs/unionfs/rdstate.c    |    4 ++--
- fs/unionfs/rename.c     |   21 ++++++++++++---------
- fs/unionfs/unlink.c     |    9 +++++----
- 10 files changed, 43 insertions(+), 32 deletions(-)
+ fs/unionfs/Makefile     |    4 ++++
+ fs/unionfs/commonfops.c |    4 ++--
+ fs/unionfs/dentry.c     |    6 +++---
+ fs/unionfs/lookup.c     |    2 +-
+ fs/unionfs/union.h      |    6 +-----
+ 5 files changed, 11 insertions(+), 11 deletions(-)
 
+diff --git a/fs/unionfs/Makefile b/fs/unionfs/Makefile
+index 38fed90..17ca4a7 100644
+--- a/fs/unionfs/Makefile
++++ b/fs/unionfs/Makefile
+@@ -7,3 +7,7 @@ unionfs-y := subr.o dentry.o file.o inode.o main.o super.o \
+ unionfs-$(CONFIG_UNION_FS_XATTR) += xattr.o
+ 
+ unionfs-$(CONFIG_UNION_FS_DEBUG) += debug.o
++
++ifeq ($(CONFIG_UNION_FS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
 diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index b42a6f4..f7da687 100644
+index 8550a34..16df572 100644
 --- a/fs/unionfs/commonfops.c
 +++ b/fs/unionfs/commonfops.c
-@@ -182,8 +182,9 @@ static int open_all_files(struct file *file)
- 		if (IS_ERR(lower_file)) {
- 			err = PTR_ERR(lower_file);
- 			goto out;
--		} else
-+		} else {
- 			unionfs_set_lower_file_idx(file, bindex, lower_file);
-+		}
- 	}
- out:
- 	return err;
-@@ -484,8 +485,9 @@ static int __open_file(struct inode *inode, struct file *file)
- 					break;
- 			}
- 			return err;
--		} else
-+		} else {
- 			lower_flags &= ~(OPEN_WRITE_FLAGS);
-+		}
+@@ -394,8 +394,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
+ 	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
+ 	    is_robranch(dentry)) {
+-		dprintk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
+-			dentry->d_name.name);
++		pr_debug("unionfs: do delay copyup of \"%s\"\n",
++			 dentry->d_name.name);
+ 		err = do_delayed_copyup(file);
  	}
  
- 	dget(lower_dentry);
 diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index 248c79d..8891c53 100644
+index 89f6a91..5dde6af 100644
 --- a/fs/unionfs/dentry.c
 +++ b/fs/unionfs/dentry.c
-@@ -299,9 +299,9 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
- 		 * always be valid, but its lower inode times don't have to
- 		 * be, so sync up the times only.
- 		 */
--		if (IS_ROOT(dtmp))
-+		if (IS_ROOT(dtmp)) {
- 			unionfs_copy_attr_times(dtmp->d_inode);
--		else {
-+		} else {
- 			/*
- 			 * reset generation number to zero, guaranteed to be
- 			 * "old"
-@@ -376,9 +376,9 @@ out_this:
+@@ -46,9 +46,9 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
  
- 	if (unlikely(is_newer_lower(dentry))) {
- 		/* root dentry special case as aforementioned */
--		if (IS_ROOT(dentry))
-+		if (IS_ROOT(dentry)) {
- 			unionfs_copy_attr_times(dentry->d_inode);
--		else {
-+		} else {
- 			/*
- 			 * reset generation number to zero, guaranteed to be
- 			 * "old"
-diff --git a/fs/unionfs/dirfops.c b/fs/unionfs/dirfops.c
-index da0fcdb..ed51540 100644
---- a/fs/unionfs/dirfops.c
-+++ b/fs/unionfs/dirfops.c
-@@ -174,8 +174,9 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 		free_rdstate(uds);
- 		UNIONFS_F(file)->rdstate = NULL;
- 		file->f_pos = DIREOF;
--	} else
-+	} else {
- 		file->f_pos = rdstate2offset(uds);
-+	}
- 
- out:
- 	unionfs_read_unlock(file->f_path.dentry->d_sb);
-@@ -242,8 +243,9 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 				if (rdstate) {
- 					UNIONFS_F(file)->rdstate = rdstate;
- 					err = rdstate->offset;
--				} else
-+				} else {
- 					err = -EINVAL;
-+				}
- 			}
- 			break;
- 		case SEEK_CUR:
-diff --git a/fs/unionfs/dirhelper.c b/fs/unionfs/dirhelper.c
-index f0e1fee..8f4a304 100644
---- a/fs/unionfs/dirhelper.c
-+++ b/fs/unionfs/dirhelper.c
-@@ -111,9 +111,9 @@ int delete_whiteouts(struct dentry *dentry, int bindex,
- 	BUG_ON(!S_ISDIR(lower_dir->i_mode));
- 
- 	mutex_lock(&lower_dir->i_mutex);
--	if (!permission(lower_dir, MAY_WRITE | MAY_EXEC, NULL))
-+	if (!permission(lower_dir, MAY_WRITE | MAY_EXEC, NULL)) {
- 		err = do_delete_whiteouts(dentry, bindex, namelist);
--	else {
-+	} else {
- 		args.deletewh.namelist = namelist;
- 		args.deletewh.dentry = dentry;
- 		args.deletewh.bindex = bindex;
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 49b5baf..3b58277 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -571,8 +571,9 @@ static int unionfs_mkdir(struct inode *parent, struct dentry *dentry, int mode)
- 			if (!IS_COPYUP_ERR(err))
- 				goto out;
- 			bstart--;
--		} else
-+		} else {
- 			whiteout_unlinked = 1;
-+		}
+ 	/* if the dentry is unhashed, do NOT revalidate */
+ 	if (d_deleted(dentry)) {
+-		dprintk(KERN_DEBUG "unionfs: unhashed dentry being "
+-			"revalidated: %*s\n",
+-			dentry->d_name.len, dentry->d_name.name);
++		pr_debug("unionfs: unhashed dentry being "
++			 "revalidated: %*s\n",
++			 dentry->d_name.len, dentry->d_name.name);
+ 		goto out;
  	}
  
- 	for (bindex = bstart; bindex >= 0; bindex--) {
-@@ -718,8 +719,9 @@ static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
- 			if (!IS_COPYUP_ERR(err))
- 				goto out;
- 			bstart--;
--		} else
-+		} else {
- 			whiteout_unlinked = 1;
-+		}
- 	}
- 
- 	for (bindex = bstart; bindex >= 0; bindex--) {
 diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index 929f15b..a2c046b 100644
+index 53668d6..9c6fd56 100644
 --- a/fs/unionfs/lookup.c
 +++ b/fs/unionfs/lookup.c
-@@ -47,11 +47,11 @@ static noinline int is_opaque_dir(struct dentry *dentry, int bindex)
- 
- 	mutex_lock(&lower_inode->i_mutex);
- 
--	if (!permission(lower_inode, MAY_EXEC, NULL))
-+	if (!permission(lower_inode, MAY_EXEC, NULL)) {
- 		wh_lower_dentry =
- 			lookup_one_len(UNIONFS_DIR_OPAQUE, lower_dentry,
- 				       sizeof(UNIONFS_DIR_OPAQUE) - 1);
--	else {
-+	} else {
- 		args.is_opaque.dentry = lower_dentry;
- 		run_sioq(__is_opaque_dir, &args);
- 		wh_lower_dentry = args.ret;
-@@ -250,8 +250,9 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
- 				first_lower_mnt =
- 					unionfs_mntget(parent_dentry, bindex);
- 				first_dentry_offset = bindex;
--			} else
-+			} else {
- 				dput(lower_dentry);
-+			}
- 
- 			continue;
- 		}
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index 25ac851..2fe6aaa 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -149,9 +149,9 @@ skip:
+@@ -629,7 +629,7 @@ int init_lower_nd(struct nameidata *nd, unsigned int flags)
+ 		 * We should never get here, for now.
+ 		 * We can add new cases here later on.
+ 		 */
+-		dprintk("unionfs: unknown nameidata flag 0x%x\n", flags);
++		pr_debug("unionfs: unknown nameidata flag 0x%x\n", flags);
+ 		BUG();
  		break;
- 	case INTERPOSE_LOOKUP:
- 		spliced = d_splice_alias(inode, dentry);
--		if (IS_ERR(spliced))
-+		if (IS_ERR(spliced)) {
- 			err = PTR_ERR(spliced);
--		else if (spliced && spliced != dentry) {
-+		} else if (spliced && spliced != dentry) {
- 			/*
- 			 * d_splice can return a dentry if it was
- 			 * disconnected and had to be moved.  We must ensure
-diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
-index 46cf2df..e96b6bc 100644
---- a/fs/unionfs/rdstate.c
-+++ b/fs/unionfs/rdstate.c
-@@ -260,9 +260,9 @@ int add_filldir_node(struct unionfs_dir_state *rdstate, const char *name,
- 	new->bindex = bindex;
- 	new->whiteout = whiteout;
- 
--	if (namelen < DNAME_INLINE_LEN_MIN)
-+	if (namelen < DNAME_INLINE_LEN_MIN) {
- 		new->name = new->iname;
--	else {
-+	} else {
- 		new->name = kmalloc(namelen + 1, GFP_KERNEL);
- 		if (unlikely(!new->name)) {
- 			kmem_cache_free(unionfs_filldir_cachep, new);
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 81121f0..e6a2a3c 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -83,8 +83,9 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		unlock_dir(lower_wh_dir_dentry);
- 		if (err)
- 			goto out;
--	} else
-+	} else {
- 		dput(lower_wh_dentry);
-+	}
- 
- 	dget(lower_old_dentry);
- 	lower_old_dir_dentry = dget_parent(lower_old_dentry);
-@@ -178,8 +179,9 @@ static int do_unionfs_rename(struct inode *old_dir,
- 		if (!IS_COPYUP_ERR(err))
- 			goto out;
- 		do_copyup = old_bstart - 1;
--	} else
-+	} else {
- 		revert = 1;
-+	}
- 
- 	/*
- 	 * Unlink all instances of destination that exist to the left of
-@@ -271,9 +273,9 @@ static int do_unionfs_rename(struct inode *old_dir,
- 		local_err = vfs_create(lower_parent->d_inode, wh_old, S_IRUGO,
- 				       &nd);
- 		unlock_dir(lower_parent);
--		if (!local_err)
-+		if (!local_err) {
- 			set_dbopaque(old_dentry, bwh_old);
--		else {
-+		} else {
- 			/*
- 			 * we can't fix anything now, so we cop-out and use
- 			 * -EIO.
-@@ -392,8 +394,9 @@ static int may_rename_dir(struct dentry *dentry)
- 	if (err == -ENOTEMPTY) {
- 		if (is_robranch(dentry))
- 			return -EXDEV;
--	} else if (err)
-+	} else if (err) {
- 		return err;
-+	}
- 
- 	bstart = dbstart(dentry);
- 	if (dbend(dentry) == bstart || dbopaque(dentry) == bstart)
-@@ -443,9 +446,9 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	 * simply override it even if the whited-out dir is not empty.
- 	 */
- 	wh_dentry = lookup_whiteout(new_dentry);
--	if (!IS_ERR(wh_dentry))
-+	if (!IS_ERR(wh_dentry)) {
- 		dput(wh_dentry);
--	else if (new_dentry->d_inode) {
-+	} else if (new_dentry->d_inode) {
- 		if (S_ISDIR(old_dentry->d_inode->i_mode) !=
- 		    S_ISDIR(new_dentry->d_inode->i_mode)) {
- 			err = S_ISDIR(old_dentry->d_inode->i_mode) ?
-@@ -473,10 +476,10 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
  	}
- 	err = do_unionfs_rename(old_dir, old_dentry, new_dir, new_dentry);
- out:
--	if (err)
-+	if (err) {
- 		/* clear the new_dentry stuff created */
- 		d_drop(new_dentry);
--	else {
-+	} else {
- 		/*
- 		 * force re-lookup since the dir on ro branch is not renamed,
- 		 * and lower dentries still indicate the un-renamed ones.
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
-index c5f6ed5..61a6fe1 100644
---- a/fs/unionfs/unlink.c
-+++ b/fs/unionfs/unlink.c
-@@ -55,11 +55,12 @@ static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
- 		if (dbstart(dentry) == 0)
- 			goto out;
- 		err = create_whiteout(dentry, dbstart(dentry) - 1);
--	} else if (dbopaque(dentry) != -1)
-+	} else if (dbopaque(dentry) != -1) {
- 		/* There is a lower lower-priority file with the same name. */
- 		err = create_whiteout(dentry, dbopaque(dentry));
--	else
-+	} else {
- 		err = create_whiteout(dentry, dbstart(dentry));
-+	}
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 91f7f1e..4e3cb53 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -508,10 +508,8 @@ static inline void unionfs_mntput(struct dentry *dentry, int bindex)
  
- out:
- 	if (!err)
-@@ -161,9 +162,9 @@ int unionfs_rmdir(struct inode *dir, struct dentry *dentry)
+ #ifdef CONFIG_UNION_FS_DEBUG
  
- 	err = unionfs_rmdir_first(dir, dentry, namelist);
- 	/* create whiteout */
--	if (!err)
-+	if (!err) {
- 		err = create_whiteout(dentry, dbstart(dentry));
--	else {
-+	} else {
- 		int new_err;
+-#define dprintk(args...)		printk(args)
+-
+ /* useful for tracking code reachability */
+-#define UDBG printk("DBG:%s:%s:%d\n",__FILE__,__FUNCTION__,__LINE__)
++#define UDBG pr_debug("DBG:%s:%s:%d\n",__FILE__,__FUNCTION__,__LINE__)
  
- 		if (dbstart(dentry) == 0)
+ #define unionfs_check_inode(i)	__unionfs_check_inode((i),	\
+ 	__FILE__,__FUNCTION__,__LINE__)
+@@ -550,8 +548,6 @@ extern void __show_inode_counts(const struct inode *inode,
+ 
+ #else /* not CONFIG_UNION_FS_DEBUG */
+ 
+-#define dprintk(args...)		do { } while (0)
+-
+ /* we leave useful hooks for these check functions throughout the code */
+ #define unionfs_check_inode(i)		do { } while(0)
+ #define unionfs_check_dentry(d)		do { } while(0)
 -- 
 1.5.2.2
 
