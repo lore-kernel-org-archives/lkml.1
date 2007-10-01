@@ -1,92 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXJCU22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbXJCU35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbXJCU22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbXJCU2U
+	id S1758302AbXJCU35 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXJCU3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:28:20 -0400
-Received: from 1wt.eu ([62.212.114.60]:2781 "EHLO 1wt.eu"
+	Wed, 3 Oct 2007 16:29:48 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:59913 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755208AbXJCU2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:28:19 -0400
-Date: Wed, 3 Oct 2007 22:24:46 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Frans Pop <elendil@planet.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-Subject: Re: Decreasing stime running confuses top (was: top displaying 9999% CPU usage)
-Message-ID: <20071003202446.GQ10199@1wt.eu>
-References: <200710031433.34504.elendil@planet.nl> <Pine.LNX.4.64.0710031731030.27745@kivilampi-30.cs.helsinki.fi> <Pine.LNX.4.64.0710031746260.27745@kivilampi-30.cs.helsinki.fi> <200710032127.42147.elendil@planet.nl>
+	id S1752958AbXJCU3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 16:29:47 -0400
+Subject: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 01 Oct 2007 11:46:51 -0400
+Message-Id: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200710032127.42147.elendil@planet.nl>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 03 Oct 2007 20:29:23.0516 (UTC) FILETIME=[15C48FC0:01C805FC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 09:27:41PM +0200, Frans Pop wrote:
-> On Wednesday 03 October 2007, you wrote:
-> > On Wed, 3 Oct 2007, Ilpo Järvinen wrote:
-> > > On Wed, 3 Oct 2007, Frans Pop wrote:
-> > > > The only change is in 2 consecutive columns: "2911 502" -> "2912
-> > > > 500". Is processor usage calculated from those? Can someone explain
-> > > > how?
-> > >
-> > > The latter seems to be utime ...decreasing. No wonder if arithmetics
-> > > will give strange results (probably top is using unsigned delta?)...
-> >
-> > Hmm, minor miscounting from my side, stime seems more appropriate...
-> 
-> Here is a series showing utime and stime for kontact over 2 minutes.
-> 
-> Values were obtained using (identical values removed):
-> $ while true; do awk '{print $14" "$15}' /proc/5269/stat; sleep 1; done | ts
-> 
-> Oct 03 21:17:12 12220 1593
-> Oct 03 21:17:18 12221 1594
-> Oct 03 21:17:26 12222 1593  <--
-> Oct 03 21:17:34 12223 1594
-> Oct 03 21:17:43 12224 1594
-> Oct 03 21:17:51 12224 1595
-> Oct 03 21:17:59 12225 1596
-> Oct 03 21:18:07 12226 1595  <--
-> Oct 03 21:18:15 12227 1596
-> Oct 03 21:18:18 12228 1596
-> Oct 03 21:18:22 12229 1595  <--
-> Oct 03 21:18:31 12230 1596
-> Oct 03 21:18:39 12230 1597
-> Oct 03 21:18:44 12231 1597
-> Oct 03 21:18:48 12232 1596  <--
-> Oct 03 21:18:56 12233 1597
-> Oct 03 21:19:04 12234 1596  <--
-> Oct 03 21:19:11 12235 1597
-> 
-> So, is it normal that stime decreases sometimes or a kernel bug?
-> /me expects the last...
+Driver will skip physical devices scan for the first time if the fast_load is set. This is to reduce time for loading driver.
 
-Let me guess... Dual core AMD64 ?
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-I'm 99.99% sure that if you boot with "notsc", the problem disappears. If
-so, you have one of those wonderful AMD64 with unsynced clock and without
-HPET to sync with. I wrote a simple program in the past to exhibit the
-problem. It would bsimply run "date +%s" in a busy loops and display each
-time it would change. Amazing. It could jump back and forth by up to 3
-seconds!
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
+ 1 files changed, 55 insertions(+), 14 deletions(-)
 
-Basically, it looked like this :
-
-old=$(date +%s)
-while : ; do
-   x=$(date +%s)
-   if [ $x != $old ]; then
-      echo "$old -> $x"
-      old=$x
-   fi
-done
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:03:59.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:12:54.000000000 -0700
+@@ -46,6 +46,22 @@
+ #include <scsi/scsi_host.h>
+ #include "megaraid_sas.h"
  
-Regards,
-Willy
++/*
++ * Module parameters
++ */
++
++/*
++ * Fast driver load option, skip scanning for physical devices during
++ * load.  This would result in physical devices being skipped during
++ * driver load time. These can be later added though,
++ * using /proc/scsi/scsi
++ */
++static unsigned int fast_load;
++module_param_named(fast_load, fast_load, int, 0);
++MODULE_PARM_DESC(fast_load,
++	"megasas: Faster loading of the driver, skips physical devices! "\
++	"(default = 0)");
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -1094,6 +1110,44 @@ megasas_service_aen(struct megasas_insta
+ 	megasas_return_cmd(instance, cmd);
+ }
+ 
++static struct megasas_instance *megasas_lookup_instance(u16 host_no)
++{
++	int i;
++
++	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++		if ((megasas_mgmt_info.instance[i]) &&
++			(megasas_mgmt_info.instance[i]->host->host_no
++			== host_no))
++			return megasas_mgmt_info.instance[i];
++	}
++
++	return NULL;
++}
++
++static int megasas_slave_alloc(struct scsi_device *sdev)
++{
++	struct megasas_instance *instance;
++	int tmp_fastload = fast_load;
++
++	instance = megasas_lookup_instance(sdev->host->host_no);
++
++	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
++		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
++			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
++
++		/*
++		 * If fast load option was set and scan for last device is
++		 * over, reset the fast_load flag so that during a possible
++		 * next scan, devices can be made available
++		 */
++			fast_load = 0;
++		}
++		return -ENXIO;
++	}
++
++	return 0;
++}
++
+ /*
+  * Scsi host template for megaraid_sas driver
+  */
+@@ -1103,6 +1157,7 @@ static struct scsi_host_template megasas
+ 	.name = "LSI Logic SAS based MegaRAID driver",
+ 	.proc_name = "megaraid_sas",
+ 	.slave_configure = megasas_slave_configure,
++	.slave_alloc = megasas_slave_alloc,
+ 	.queuecommand = megasas_queue_command,
+ 	.eh_device_reset_handler = megasas_reset_device,
+ 	.eh_bus_reset_handler = megasas_reset_bus_host,
+@@ -2961,20 +3016,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	return error;
+ }
+ 
+-static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+-{
+-	int i;
+-
+-	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+-
+-		if ((megasas_mgmt_info.instance[i]) &&
+-		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
+-			return megasas_mgmt_info.instance[i];
+-	}
+-
+-	return NULL;
+-}
+-
+ static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
+ {
+ 	struct megasas_iocpacket __user *user_ioc =
+
 
