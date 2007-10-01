@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbXJAVnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXJAVqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbXJAVnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXJAVnj
+	id S1757346AbXJAVqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbXJAVqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:43:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47948 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753175AbXJAVni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:43:38 -0400
-From: Andi Kleen <ak@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
-Date: Mon, 1 Oct 2007 23:41:52 +0200
-User-Agent: KMail/1.9.1
-Cc: Arjan van de Ven <arjan@infradead.org>, David Bahi <dbahi@novell.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <GHaskins@novell.com>
-References: <46FA4A800200006C000192FE@sinclair.provo.novell.com> <20071001125626.32eb6d0b@laptopd505.fenrus.org> <alpine.LFD.0.9999.0710012207270.20478@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710012207270.20478@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 1 Oct 2007 17:46:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41694 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753811AbXJAVqO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 17:46:14 -0400
+Date: Mon, 1 Oct 2007 14:45:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: a.p.zijlstra@chello.nl, nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dgc@sgi.com, jens.axboe@oracle.com
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+Message-Id: <20071001144543.4cfa1e44.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0710011432300.20107@schroedinger.engr.sgi.com>
+References: <20070919033605.785839297@sgi.com>
+	<20070919033643.763818012@sgi.com>
+	<200709280742.38262.nickpiggin@yahoo.com.au>
+	<Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+	<1191002119.18147.80.camel@lappy>
+	<Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
+	<1191003950.18147.85.camel@lappy>
+	<20070929011311.8b51dedb.akpm@linux-foundation.org>
+	<1191055632.18147.101.camel@lappy>
+	<20070929020049.f73f4aea.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
+	<20071001143047.238dfe49.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0710011432300.20107@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710012341.53169.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Oct 2007 14:38:55 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> IRQ_NOBALANCING is not preventing cpu unplug. It moves the affinity to the
-> next CPU, but the check in NMI watchdog for CPU == 0 would not longer
-> work.
+> On Mon, 1 Oct 2007, Andrew Morton wrote:
+> 
+> > Do slab and slub use the same underlying page size for each slab?
+> 
+> SLAB cannot pack objects as dense as SLUB and they have different 
+> algorithm to make the choice of order. Thus the number of objects per slab 
+> may vary between SLAB and SLUB and therefore also the choice of order to 
+> store these objects.
+> 
+> > Single data point: the CONFIG_SLAB boxes which I have access to here are
+> > using order-0 for radix_tree_node, so they won't be failing in the way in
+> > which Peter's machine is.
+> 
+> Upstream SLUB uses order 0 allocations for the radix tree.
 
-That cannot happen right now because cpu_disable() on both i386/x86-64
-reject CPU #0. So just setting IRQ_NOBALANCING is sufficient and both
-do that already. I was wrong earlier in being concerned about this.
+OK, that's a relief.
 
->  int tick_do_broadcast(cpumask_t mask)
-> @@ -137,6 +147,7 @@ int tick_do_broadcast(cpumask_t mask)
->  		cpu_clear(cpu, mask);
->  		td = &per_cpu(tick_cpu_device, cpu);
->  		td->evtdev->event_handler(td->evtdev);
-> +		tick_broadcast_account(cpu);
+> MM varies 
+> because the use of higher order allocs is more loose if the mobility 
+> algorithms are found to be active:
+> 
+> 2.6.23-rc8:
+> 
+> Name                   Objects Objsize    Space Slabs/Part/Cpu  O/S O %Fr %Ef Flg\
+> radix_tree_node          14281     552     9.9M     2432/948/1    7 0  38  79
 
-That would not handle the case with a single CPU running only
-irq  0 but not broadcasting I think.
-
-I believe ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/fix-watchdog
-is the correct fix
-
--Andi
+Ah.  So the already-dropped
+slub-exploit-page-mobility-to-increase-allocation-order.patch was the
+culprit?
