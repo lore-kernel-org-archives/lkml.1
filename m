@@ -1,113 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbXJAQMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXJAQNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbXJAQMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 12:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXJAQMd
+	id S1754368AbXJAQNF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 12:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXJAQMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 12:12:33 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55120 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbXJAQMc (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 12:12:32 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm2
-In-Reply-To: Your message of "Sun, 30 Sep 2007 01:50:14 PDT."
-             <20070930015014.78bb88d3.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <18268.1191119181@turing-police.cc.vt.edu>
-            <20070930015014.78bb88d3.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1191255147_2870P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Oct 2007 12:12:27 -0400
-Message-ID: <773.1191255147@turing-police.cc.vt.edu>
+	Mon, 1 Oct 2007 12:12:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50610 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbXJAQMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 12:12:51 -0400
+Date: Mon, 1 Oct 2007 12:12:21 -0400
+From: Dave Jones <davej@redhat.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] Add sysfs control to modify a user's cpu share
+Message-ID: <20071001161221.GB23969@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Mike Galbraith <efault@gmx.de>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+	lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Sudhir Kumar <skumar@linux.vnet.ibm.com>
+References: <1190723327.7112.5.camel@Homer.simpson.net> <1190724893.13716.8.camel@Homer.simpson.net> <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071001140454.GA19439@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1191255147_2870P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <760.1191255138.1@turing-police.cc.vt.edu>
+On Mon, Oct 01, 2007 at 07:34:54PM +0530, Dhaval Giani wrote:
+ > Hi Ingo,
+ > 
+ > Adds tunables in sysfs to modify a user's cpu share.
+ > 
+ > A directory is created in sysfs for each new user in the system.
+ > 
+ > 	/sys/kernel/uids/<uid>/cpu_share
+ > 
+ > Reading this file returns the cpu shares granted for the user.
+ > Writing into this file modifies the cpu share for the user. Only an 
+ > administrator is allowed to modify a user's cpu share.
+ > 
+ > Ex: 
+ > 	# cd /sys/kernel/uids/
+ > 	# cat 512/cpu_share
+ > 	1024
+ > 	# echo 2048 > 512/cpu_share
+ > 	# cat 512/cpu_share
+ > 	2048
+ > 	#
 
-On Sun, 30 Sep 2007 01:50:14 PDT, Andrew Morton said:
-> On Sat, 29 Sep 2007 22:26:21 -0400 Valdis.Kletnieks@vt.edu wrote:
-> 
-> > On Thu, 27 Sep 2007 02:22:20 PDT, Andrew Morton said:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
-> > 
-> > Locks up hard at very early boot on my Dell Latitude - grub says loading
-> > kernel, the screen clears, and we lock up before we get penguins.
-> > 
-> > -rc8-mm1 was OK. I'm off to go bisect, figured I'd drop a heads-up.
-> > 
-> 
-> It doesn't ring a bell, sorry.  hpet-force-enable-on-ich34.patch is known
-> to be bad, but it causes failure later in the boot than that.
+Can we start adding stuff to Documentation/ for new files created
+in sysfs ?  There's so much undocumented stuff in there now that
+it's unfunny.
 
-OK, now I'm confoozled.  I built -rc8-mm2, and it bricked.  Usually my first
-test is then using quilt to push just origin.patch, so I know if I'm needing
-to bisect Linus git or Andrew -mm.
+A great start would be 'wtf is a cpu_share and why would I want to
+change it' ?
 
-Starting with a clean 23-rc8, and using 'quilt push origin.patch' to just add
-the Linus changes *also* gets me a brick.  So I did a git bisect between 23-rc8 and
-the first commit listed in origin.patch, and got down to this:
+	Dave
 
-f7f847b01571e86044dc77e03d92f43699652f8d is first bad commit
-commit f7f847b01571e86044dc77e03d92f43699652f8d
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Wed Sep 26 15:21:33 2007 -0700
-
-(Here's the 'git bisect log':
-git-bisect start
-# good: [4942de4a0e914f205d351a81873f4f63986bcc3c] Linux 2.6.23-rc8
-git-bisect good 4942de4a0e914f205d351a81873f4f63986bcc3c
-# bad: [f7f847b01571e86044dc77e03d92f43699652f8d] Revert "x86-64: Disable local APIC timer use on AMD systems with C1E"
-git-bisect bad f7f847b01571e86044dc77e03d92f43699652f8d
-# good: [4d3fac08718b49fc256bdb447a479d089ca97b78] Merge branch 'upstream-linus' of master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev
-git-bisect good 4d3fac08718b49fc256bdb447a479d089ca97b78
-# good: [d85f57938ad1d674dff8077a2e6a36a45dbe0e22] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-git-bisect good d85f57938ad1d674dff8077a2e6a36a45dbe0e22
-# good: [d8c4a2f9d9e7827362fd7ab0b5d9637c6af5ac5b] mv643xx_eth: duplicate methods in initializer
-git-bisect good d8c4a2f9d9e7827362fd7ab0b5d9637c6af5ac5b
-# good: [255129d1e9ca0ed3d69d5517fae3e03d7ab4b806] NLM: Fix a circular lock dependency in lockd
-git-bisect good 255129d1e9ca0ed3d69d5517fae3e03d7ab4b806
-# good: [e66485d747505e9d960b864fc6c37f8b2afafaf0] x86-64: Disable local APIC timer use on AMD systems with C1E
-git-bisect good e66485d747505e9d960b864fc6c37f8b2afafaf0
-# good: [df912ea4ae7233d1504fbd861ee127bd7ee5781d] xen: execve's error paths don't pin the mm before unpinning
-git-bisect good df912ea4ae7233d1504fbd861ee127bd7ee5781d
-
-And diffing the 2 trees (linus -git and my "origin.patch" tree shows only
-the following 2 differences:
-
-commit f7f847b01571e86044dc77e03d92f43699652f8d
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Wed Sep 26 15:21:33 2007 -0700
-
-    Revert "x86-64: Disable local APIC timer use on AMD systems with C1E"
-
-commit 2efa33f81ef56e7700c09a3d8a881c96692149e5
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Sep 26 14:11:43 2007 -0700
-
-    [x86 setup] Handle case of improperly terminated E820 chain
-
-So I'm having a pretty good case of WTF? going at the moment...
-
-
-
---==_Exmh_1191255147_2870P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHARxrcC3lWbTT17ARAga2AJ923UDhLjtVC3M4JXMmHVwyI4VthgCgxyUm
-GZN+5jrxQ/Nxhpg4F3SnkKQ=
-=6oEN
------END PGP SIGNATURE-----
-
---==_Exmh_1191255147_2870P--
+-- 
+http://www.codemonkey.org.uk
