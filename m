@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXJAWyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXJAW4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbXJAWyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 18:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbXJAWyD
+	id S1755970AbXJAW4I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 18:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbXJAWz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 18:54:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59131 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbXJAWyB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 18:54:01 -0400
-Date: Mon, 1 Oct 2007 15:52:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <ak@suse.de>, David Bahi <dbahi@novell.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <GHaskins@novell.com>
-Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
-Message-ID: <20071001155202.56c348c8@laptopd505.fenrus.org>
-In-Reply-To: <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
-References: <46FA4A800200006C000192FE@sinclair.provo.novell.com>
-	<200710012341.53169.ak@suse.de>
-	<alpine.LFD.0.9999.0710012349160.20478@localhost.localdomain>
-	<200710020007.09864.ak@suse.de>
-	<alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Oct 2007 18:55:57 -0400
+Received: from mx1.suse.de ([195.135.220.2]:44788 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbXJAWz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 18:55:57 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC] Extending kbuild syntax
+Date: Tue, 2 Oct 2007 00:57:07 +0200
+User-Agent: KMail/1.9.5
+Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20070929201145.GA20377@uranus.ravnborg.org>
+In-Reply-To: <20070929201145.GA20377@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200710020057.07322.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007 00:47:12 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Saturday 29 September 2007 22:11, Sam Ravnborg wrote:
+> The second is the more controversial suggestion.
+> In several Makefile we have simple if expression of the variants:
+> if ($(CONFIG_FOO),y)
+>   obj-$(CONFIG_BAR) += fubar.o
+> endif
 
-> On Tue, 2 Oct 2007, Andi Kleen wrote:
-> > 
-> > > OTOH, the accounting hook would allow us to remove the IRQ#0 ->
-> > > CPU#0 restriction. Not sure whether it's worth the trouble.
-> > 
-> > Some SIS chipsets hang the machine when you migrate irq 0 to another
-> > CPU. It's better to keep that Also I wouldn't be surprised if there
-> > are some other assumptions about this elsewhere.
-> > 
-> > Ok in theory it could be done only on SIS, but that probably would
-> > really not be worth the trouble
-> 
-> Agreed.
-> 
-> I just got a x8664-hrt report, where I found the following oddity:
-> 
->  0:       1197     172881   IO-APIC-edge      timer
-> 
-> That's one of those infamous AMD C1E boxen. Strange, all my systems
-> have IRQ#0 on CPU#0 and nowhere else. Any idea ?
+Sometimes substitution looks acceptable:
 
-2 things;
-the current irq balancers don't balance the timer interrupt, in fact
-they'll leave it alone (so the chipset might balance)
-older ones pin it to cpu 0 or rotate it....
+> -nfsd-$(CONFIG_NFSD)		:= nfsctl.o
+> -obj-y				+= $(nfsd-y) $(nfsd-m)
+> +obj-y-if-$(CONFIG_NFSD)		+= nfsctl.o
+
+obj-$(CONFIG_NFSD:m=y) += nfsctl.o
+
+
+But for the nontrivial cases, things get pretty ugly:
+
+> -ifeq ($(CONFIG_PROC_FS),y)
+> -obj-$(CONFIG_LOCKDEP) += lockdep_proc.o
+> -endif
+
+obj-$(CONFIG_PROC_FS:y=$(CONFIG_LOCKDEP)) += lockdep_proc.o
+
+Andreas
