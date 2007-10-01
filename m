@@ -1,71 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbXJAHYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbXJAHbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754266AbXJAHYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 03:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXJAHX5
+	id S1753728AbXJAHbA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 03:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXJAHaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 03:23:57 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49539 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752202AbXJAHX4 (ORCPT
+	Mon, 1 Oct 2007 03:30:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46023 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750912AbXJAHav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 03:23:56 -0400
-Date: Mon, 01 Oct 2007 17:23:50 +1000
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.23 - revert a commit
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Oct 2007 03:30:51 -0400
+Date: Mon, 1 Oct 2007 00:30:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch and kernel/sched.c
+Message-Id: <20071001003007.4e90143b.akpm@linux-foundation.org>
+In-Reply-To: <20071001064448.GA4239@elte.hu>
+References: <20070928105345.GC18163@shadowen.org>
+	<20071001064448.GA4239@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071001072350.DF61C58C4C0A@chook.melbourne.sgi.com>
-From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 1 Oct 2007 08:44:48 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-A problem has been found for the XFS commit b394e43e995d08821588a22561c6a71a63b4ff27
-and it needs to be reverted.
-It has the potential for worse corruption than what it is meant to fix.
+> 
+> (lkml Cc:-ed - this might be of interest to others too)
+> 
+> * Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+> > WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+> > #411: FILE: home/apw/git/linux-2.6/kernel/sched.c:408:
+> > +EXPORT_SYMBOL_GPL(cpu_clock);
+> 
+> yes, this is a legit warning and i fix it every time i see it. (I cannot 
+> fix this one now because mainline does not have an EXPORT_SYMBOL_GPL for 
+> cpu_clock(), it's added in -mm? But i cannot find it in mm either. I'll 
+> fix it once i find the patch :)
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/broken-out/make-rcutorture-rng-use-temporal-entropy.patch
 
-Lachlan's description:
-    This fix is for a problem that has been in XFS since day one.
-    [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
+> > WARNING: printk() should include KERN_ facility level
+> > #4838: FILE: home/apw/git/linux-2.6/kernel/sched.c:4835:
+> > +	printk("%-13.13s %c", p->comm,
+> > 
+> > WARNING: printk() should include KERN_ facility level
+> > #5622: FILE: home/apw/git/linux-2.6/kernel/sched.c:5619:
+> > +				printk("\n");
+> > 
+> > WARNING: printk() should include KERN_ facility level
+> > #5633: FILE: home/apw/git/linux-2.6/kernel/sched.c:5630:
+> > +				printk("\n");
+> > 
+> > WARNING: printk() should include KERN_ facility level
+> > #5640: FILE: home/apw/git/linux-2.6/kernel/sched.c:5637:
+> > +			printk(" %s", str);
+> > 
+> > These are actually only in debug code and so are unimportant, but 
+> > technically they are wrong.  This check is a very difficult one in the 
+> > face of these constructs.  But in this case I think it has got the 
+> > report right.
+> 
+> this is actually a false positive - as the debug code constructs a 
+> printk output _without_ \n. So the script should check whether there's 
+> any \n in the printk string - if there is none, do not emit a warning. 
+> (if you implement that then i think it can remain a warning and does not 
+> need to move to CHECK.)
 
-    It tries to fix an issue where log replay is replaying an inode cluster
-    initialisation transaction that should not be replayed because the inode
-    cluster on disk is more up to date.  Since we don't log file sizes (we
-    rely on inode flushing to get them to disk) then we can't just replay
-    all the transations in the log and expect the inode to be completely
-    restored.  We lose file size updates.  Unfortunately this fix is causing
-    more (serious) problems than it is fixing so please don't push this one
-    back just yet.
+Yeah, it does that sometimes.  I don't think it's fixable within the scope
+of checkpatch.  It needs to check whether some preceding printk which might
+not even be in the patch has a \n:
 
-This will update the following files:
+	printk(KERN_ERR "foo");
+	<100 lines of whatever>
++	printk("bar\n");
 
- fs/xfs/xfs_buf_item.h    |    5 ----
- fs/xfs/xfs_log_recover.c |   51 ++-------------------------------------------
- fs/xfs/xfs_trans_buf.c   |    1 -
- 3 files changed, 3 insertions(+), 54 deletions(-)
+we're screwed...
 
-through these commits:
+> > At this point _if_ we took an error we would not have _DEBUG open and so
+> > a start would be required, otherwise not.
+> > 
+> >                         printk(" %s", str);
+> > 
+> > To be 100% correct I assume it would need to have a 
+> > printk(KERN_DEBUG); after each of the KERN_ERR printk's.
+> 
+> i've fixed this in my tree. But i dont think checkpatch.pl notices this 
+> level of bug - it just detects the missing KERN_ prefix in printk(), 
+> right?
+> 
+> > WARNING: braces {} are not necessary for single statement blocks
+> > #5706: FILE: home/apw/git/linux-2.6/kernel/sched.c:5703:
+> > +	if (parent->groups == parent->groups->next) {
+> > +		pflags &= ~(SD_LOAD_BALANCE |
+> > +				SD_BALANCE_NEWIDLE |
+> > +				SD_BALANCE_FORK |
+> > +				SD_BALANCE_EXEC |
+> > +				SD_SHARE_CPUPOWER |
+> > +				SD_SHARE_PKG_RESOURCES);
+> > +	}
+> > 
+> > Ok, this one is "correct" at least for the rules as I have them.
+> > Perhaps the message should not be emitted for very long blocks?
+> 
+> If a statement is not single-line, then braces _are_ fine. Where does 
+> CodingStyle say that it's not fine?
 
-commit 053c59a0a7234bac669992f5b8b933b7d7fc189d
-Author: Tim Shimmin <tes@chook.melbourne.sgi.com>
-Date:   Mon Oct 1 16:39:37 2007 +1000
+I'd disagree with checkpatch there.  Again, it might be hard to fix.  Wanna
+rename it to checkpatch-and-suggest-stuff-to-think-about.pl?
 
-    Revert "[XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer."
-    
-    This reverts commit b394e43e995d08821588a22561c6a71a63b4ff27.
-    
-    SGI-PV: 969656
-    SGI-Modid: xfs-linux-melb:xfs-kern:29804a
-    
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
+> > WARNING: no space between function name and open parenthesis '('
+> > #5768: FILE: home/apw/git/linux-2.6/kernel/sched.c:5765:
+> > +__setup ("isolcpus=", isolated_cpu_setup);
+> > 
+> > Almost all other instances of __setup do not have a space, so I assume
+> > this is a reasonable report.
+> 
+> yes. I have just fixed it in my tree.
+> 
+> > WARNING: externs should be avoided in .c files
+> > #6545: FILE: home/apw/git/linux-2.6/kernel/sched.c:6542:
+> > +	extern char __sched_text_start[], __sched_text_end[];
+> > 
+> > That one ... dunno.  This check is a difficult one.  Should it be a 
+> > CHECK?
+> 
+> no, this is a legitimate warning - externs in .c files should move into 
+> the proper .h file. So i'd suggest to keep this a WARNING.
 
---Tim
+Yes.  When the symbol is defined in .S or vmlinux.lds we have
+traditionally declared it in .c.
+
+But why?  It _is_ a global symbol.  We might as well declare it in .h. 
+That's consistent, and prevents duplicated declarations from popping up
+later on.
+
