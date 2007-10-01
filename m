@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXJAQ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbXJAQ0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbXJAQ0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 12:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXJAQ0L
+	id S1756053AbXJAQ0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 12:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXJAQ0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 12:26:11 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:47981
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbXJAQ0K (ORCPT
+	Mon, 1 Oct 2007 12:26:30 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47958 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752643AbXJAQ03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 12:26:10 -0400
-Date: Mon, 1 Oct 2007 09:27:20 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Bernd Eckenfels <ecki@lina.inka.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Out of memory management in embedded systems
-In-Reply-To: <E1IcGOu-0007sH-00@calista.eckenfels.net>
-Message-ID: <Pine.LNX.4.64.0710010916570.20712@asgard.lang.hm>
-References: <E1IcGOu-0007sH-00@calista.eckenfels.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 1 Oct 2007 12:26:29 -0400
+Date: Mon, 1 Oct 2007 22:07:24 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Dave Jones <davej@redhat.com>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] Add sysfs control to modify a user's cpu share
+Message-ID: <20071001163721.GF5724@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <1190724893.13716.8.camel@Homer.simpson.net> <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001161221.GB23969@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071001161221.GB23969@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Bernd Eckenfels wrote:
+On Mon, Oct 01, 2007 at 12:12:21PM -0400, Dave Jones wrote:
+> Can we start adding stuff to Documentation/ for new files created
+> in sysfs ?  There's so much undocumented stuff in there now that
+> it's unfunny.
 
-> In article <87odfj5krj.fsf@burp.tkv.asdf.org> you wrote:
->> Make kernel configuration option? (e.g. disable "over commit"
->> mis-feature :-)
->
-> # egrep . /proc/sys/vm/overcommit_*
-> /proc/sys/vm/overcommit_memory:0
-> /proc/sys/vm/overcommit_ratio:50
+Hi Dave,
+	We will in the next version of the patch. At this point, the patch was 
+sent out to get an idea of whether sysfs is the right place for this interface 
+or not.
 
-keep in mind that disabling overcommit will mean that you need to put more 
-ram in your embeded system to have it run
+> A great start would be 'wtf is a cpu_share and why would I want to
+> change it' ?
 
-there can be very significant saving in ram from the fact that a large 
-program can do fork-exec of a small program without having to have enough 
-ram in the system for two copies of the large program.
+Quick answer before we release the next version : This has to do with
+the CONFIG_FAIR_USER_SCHED feature which allows dividing CPU bandwidth
+equally between all users of a system. Before this patch, CPU bandwidth was 
+divided equally among all non-root users. After this patch, it will
+be possible to control CPU bandwidth allocation to each user separately.
 
-you get even more savings in most systems from the fact that Linux does 
-copy-on-write when programs fork instead of allocating (and copying) all 
-the memory the program accesses. this allows programs that run multiple 
-copies to use the same memory for most of the requirements.
-
-overcommit by default is optimistic that if the program requesting the 
-memory actually tries to use it there will be enough (both the fork-exec 
-situation and the copy-on-write memory of real forks mean that the system 
-ends up useing much less memory then is theoretically allocated).
-
-switching it to be pessimistic (overcommit 2 IIRC) means that the OOM 
-handler will never kick in, but it means that programs will be told that 
-there isn't any memory when there really is enough for the program to 
-work.
+For ex: by setting user "vatsa"'s cpu_share to be twice that of user
+"guest", it would be possible for user "vatsa" to get 2x CPU bandwidth that of 
+user "guest"
 
 
-if you think the pessimistic mode makes your embeded device deterministic 
-enough to avoid OOM go for it, but keep in mind that adding the same 
-amount of additional memory would also make the system safe with 
-overcommit (if everything works properly). it's only when you would rather 
-have the system fail an allocation immedialy rather then running any risk 
-of running into trouble later that you want to disable overcommit.
-
-DavidLang
+--
+Regards,
+vatsa
