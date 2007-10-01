@@ -1,84 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbXJASGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbXJASIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbXJASGu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 14:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXJASGl
+	id S1755790AbXJASIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 14:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXJASHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 14:06:41 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37782 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbXJASGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 14:06:40 -0400
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070924124233.9197d6b6.akpm@linux-foundation.org>
-References: <20070920195249.852667D5@kernel>
-	 <20070920195320.38C8E20D@kernel> <20070924175411.GA2314@infradead.org>
-	 <1190662091.26982.246.camel@localhost>
-	 <20070924124233.9197d6b6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 01 Oct 2007 11:06:37 -0700
-Message-Id: <1191261997.6024.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Oct 2007 14:07:52 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48894 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXJASHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 14:07:50 -0400
+To: neilb@suse.de
+CC: hch@infradead.org, trond.myklebust@fys.uio.no, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <18172.27035.251565.338666@notabene.brown> (message from Neil
+	Brown on Fri, 28 Sep 2007 12:40:27 +1000)
+Subject: Re: [patch 2/2] VFS: allow filesystem to override mknod capability checks
+References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu>
+	<E1IZn0c-0003qS-00@dorka.pomaz.szeredi.hu> <18172.27035.251565.338666@notabene.brown>
+Message-Id: <E1IcPfE-0000Mk-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 01 Oct 2007 20:06:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 12:42 -0700, Andrew Morton wrote: 
-> On Mon, 24 Sep 2007 12:28:11 -0700
-> Dave Hansen <haveblue@us.ibm.com> wrote:
-> > On Mon, 2007-09-24 at 18:54 +0100, Christoph Hellwig wrote:
-> > > As we already say in various messages the percpu counters in here
-> > > look rather fishy.  I'd recomment to take a look at the per-cpu
-> > > superblock counters in XFS as they've been debugged quite well
-> > > now and could probably be lifted into a generic library for this
-> > > kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
-> > > can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
-> > > 
-> > > It also handles cases like hotplug cpu nicely that this code
-> > > seems to work around by always iterating over all possible cpus
-> > > which might not be nice on a dual core laptop with a distro kernel
-> > > that also has to support big iron.
+> On Monday September 24, miklos@szeredi.hu wrote:
+> > From: Miklos Szeredi <mszeredi@suse.cz>
 > > 
-> > I'll take a look at xfs to see what I can get out of it.
-> 
-> And at include/linux/percpu_counter.h, please.
-
-The basic incompatibility with what that provides and what I need is
-that percpu_counters allow some fuzziness in the numbers.  One cpu can
-be summing the numbers up while another is still adding to the local
-percpu counters.  That's fine for statistics, but horrible for questions
-like, "can anybody write to and corrupt my FS right now?"
-
-It could probably be modified to do what I want, but it would still have
-a the "invented your own lock" problem, and would likely impact the
-scalability of the existing "fuzzy" users.
-
-We could introduce fuzzy and coherent variants of the function calls,
-but that would probably introduce more code than what I have now for the
-very specific mnt_writer_lock.
-
-> > There are basically two times when you have to do this
-> > for_each_possible_cpu() stuff:
-> > 1. when doing a r/w->r/o transition, which is rare, and
-> >    certainly not a fast path
-> > 2. Where the per-cpu writer count underflows.  This requires
-> >    a _minimum_ of 1<<16 file opens (configurable) each of which
-> >    is closed on a different cpu than it was opened on.  Even
-> >    if you were trying, I'm not sure you'd notice the overhead.
+> > Add a new super block flag, that results in the VFS not checking if
+> > the current process has enough privileges to do an mknod().
 > > 
+> > If this flag is set, all mounts for this super block will have the
+> > "nodev" flag implied.
+> > 
+> > This is needed on filesystems, where an unprivileged user may be able
+> > to create a device node, without causing security problems.
+> > 
+> > One such example is "mountlo" a loopback mount utility implemented
+> > with fuse and UML, which runs as an unprivileged userspace process.
+> > In this case the user does in fact have the right to create device
+> > nodes within the filesystem image, as long as the user has write
+> > access to the image.  Since the filesystem is mounted with "nodev",
+> > adding device nodes is not a security concern.
 > 
-> Sounds like what you're doing is more akin to the local_t-based module
-> refcounting.  `grep local_ kernel/module.c'.
+> I must admit that I don't feel very comfortable about this.  I wonder
+> how many more flags we might be tempted to add to allow
+> user-controlled filesystems to do interesting things.  Somehow I doubt
+> this will be the last, so we should be very careful allowing it to be
+> the first (or is it the second already?)
+
+Or third ;)
+
+Yes, I've always argued, that permission checking needs to be pushed
+to the filesystem, since the VFS can't always do a good enough job.
+
+My usual example is sshfs, where it is just impossible to know the
+uid/gid mapping between the server and the client.  So any permission
+checking based on uid or gid on the client simply can't work, the only
+sane thing to do is to delegate the permission checking to the server.
+Which works beautifully, since the server is an unprivileged process,
+and everything automatically works out.
+
+All the fuse kernel module has to do is to basically define
+->permission() to always return success, and let the userspace
+filesystem do the permission checking.
+
+This works fine, except a couple of things, like checking the sticky
+bit on a directory, and mknod().
+
+> A more concrete comment on the patch:  Is it really necessary to
+> introduce IS_MNT_NODEV??  Why not simply test both the flags
+> (MS_MKNOD_NOCAP and MNT_NODEV) before allowing the mknod?
+
+Because we need MNT_NODEV on _all_ mounts belonging to a superblock,
+not just the one on which mknod was performed on, which would get
+really ugly.  This way it's simple: if the MS_MKNOD_NOCAP is specified
+for the super block, that implies, that devices can't be opened.
+
+> Do we actually need a new flag?  Would not a combination of MS_NODEV
+> and MS_SETUSER achieve the same thing (near enough)?
+
+See above.
+
+> Do you imagine this flag being set as a mount option (-o unprivmknod)
+> or does the filesystem set it itself?
+
+I imagine this flag to usually be set by the filesystem itself.  But
+it could be a separate mount option.  I guess it could make sense in
+some non-fuse cases as well.
+
+> If the latter, maybe this test should be moved down into the
+> filesystems ->mknod operation.  Most filesystems get
+>  
+> 	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD))
+>  		return -EPERM;
 > 
-> That code should be converted from NR_CPUS to for_each_possible_cpu()..
+> at the top of ->mknod.  fuse can do whatever it likes without
+> bothering common code.
 
-I think that can get converted to use the percpu_counters pretty easily.
-I've coded that up, and sent it [RFC] to lkml.  Rusty will forward on
-into mainline.
+Yes, that's one of the options, but it would be a huge change, with
+nasty security implications for past and future filesystems.
 
--- Dave
+> According to fs.h, we only support 32 fs-independent mount-flags, and
+> over half are in use.  I'm not convinced we should spend one on such a
+> narrow requirement.
 
+I think there's consensus on the need for a new mount API.  Not just
+because the 32 bits for the flags will be exhausted sooner or later
+anyway, but the current API is limited in lots of other ways.
+
+Miklos
