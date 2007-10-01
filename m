@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbXJARpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXJARqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbXJARpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXJARpg
+	id S1755777AbXJARqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXJARps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:45:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44627 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751661AbXJARpf (ORCPT
+	Mon, 1 Oct 2007 13:45:48 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:49327 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754462AbXJARpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:45:35 -0400
-Date: Mon, 1 Oct 2007 10:44:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Zach Brown <zab@zabbo.net>
-cc: David Howells <dhowells@redhat.com>, hch@infradead.org,
-       viro@ftp.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and
- read_inode()
-In-Reply-To: <20071001173930.GA7718@mami.zabbo.net>
-Message-ID: <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org>
-References: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
- <20071001130958.29339.31669.stgit@warthog.procyon.org.uk>
- <20071001173930.GA7718@mami.zabbo.net>
+	Mon, 1 Oct 2007 13:45:47 -0400
+Message-ID: <4701323F.3000500@nortel.com>
+Date: Mon, 01 Oct 2007 11:45:35 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jarek Poplawski <jarkao2@o2.pl>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Michlmayr <tbm@cyrius.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Network slowdown due to CFS
+References: <20070926133138.GA23187@elte.hu> <20070927133123.GA6901@elte.hu> <20070927144228.GC2431@ff.dom.local> <200709281610.00682.nickpiggin@yahoo.com.au> <20071001084356.GA1866@ff.dom.local> <20071001162507.GA22791@elte.hu> <47012696.2010606@nortel.com> <20071001170903.GA2492@elte.hu>
+In-Reply-To: <20071001170903.GA2492@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Oct 2007 17:45:39.0540 (UTC) FILETIME=[E1654940:01C80452]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Chris Friesen <cfriesen@nortel.com> wrote:
 
-
-On Mon, 1 Oct 2007, Zach Brown wrote:
->
-> If you're soliciting opinions, I think I tend to prefer the feel of the
-> code paths after the changes.  I don't know the benefits of the change
-> are worth the risk in unmaintained file systems, though.
+>>However, there are closed-source and/or frozen-source apps where it's 
+>>not practical to rewrite or rebuild the app.  Does it make sense to 
+>>break the behaviour of all of these?
 > 
-> > +		return ERR_PTR(PTR_ERR(inode));
 > 
-> This caught my eye.  Surely we can do better :).  It seems to happen a
-> few times in the patches, the instance in this patch was the first that
-> I noticed.
+> See the background and answers to that in:
+> 
+>    http://lkml.org/lkml/2007/9/19/357
+>    http://lkml.org/lkml/2007/9/19/328
+> 
+> there's plenty of recourse possible to all possible kinds of apps. Tune 
+> the sysctl flag in one direction or another, depending on which behavior 
+> the app is expecting.
 
-Yeah. The above obviously *should* be the same as
+Yeah, I read those threads.
 
-	return inode;
+It seems like the fundamental source of the disconnect is that the tasks 
+used to be sorted by priority (thus making it easy to bump a yielding 
+task to the end of that priority level) while now they're organized by 
+time (making it harder to do anything priority-based).  Do I have that 
+right?
 
-apart from a few casts. But if the casts matter, there's something else 
-wrong.
-
-		Linus
+Chris
