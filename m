@@ -1,119 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJARug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXJARyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXJARug (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXJARu2
+	id S1754504AbXJARyu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXJARyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:50:28 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56696 "EHLO e3.ny.us.ibm.com"
+	Mon, 1 Oct 2007 13:54:44 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:3515 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752176AbXJARu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:50:27 -0400
-Message-ID: <4701335E.6080906@linux.vnet.ibm.com>
-Date: Mon, 01 Oct 2007 12:50:22 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-Reply-To: brking@linux.vnet.ibm.com
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: "Yang, Bo" <Bo.Yang@lsi.com>
-CC: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, "Patro, Sumant" <Sumant.Patro@lsi.com>
-Subject: Re: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
- cmd_per_lun
-References: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com> <46FD727C.3090008@linux.vnet.ibm.com> <9738BCBE884FDB42801FAD8A7769C265010A09BF@NAMAIL1.ad.lsil.com>
-In-Reply-To: <9738BCBE884FDB42801FAD8A7769C265010A09BF@NAMAIL1.ad.lsil.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751738AbXJARyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 13:54:43 -0400
+Date: Mon, 1 Oct 2007 19:54:41 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20071001175441.GA34594@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yang, Bo wrote:
-> Brian,
->  
-> Thanks for your review.  What is your objection to the current
-> implementation by using bin_attribute?
+On Mon, Oct 01, 2007 at 09:04:44AM -0700, Linus Torvalds wrote:
+> For example, you security guys still debate "inodes" vs "pathnames", as if 
+> that was an either-or issue.
+> 
+> Quite frankly, I'm not a security person, but I can tell a bad argument 
+> from a good one. And an argument that says "inodes _or_ pathnames" is so 
+> full of shit that it's not even funny. And a person who says that it has 
+> to be one or the other is incompetent.
 
-Binary attributes are generally used for data which cannot
-be parsed by the user. Since this attribute is simply a
-single decimal value, it makes most sense to just use a regular
-class_device_attribute. Additionally, if you use the
-existing shost_attrs infrastructure in the scsi_host_template,
-you can simplify your code, since you don't need to manually
-create and destroy the sysfs files as scsi core will do this for
-you.
+Not so much incompetent as religious fundamentalist.  Which is worse.
 
--Brian
-
->  
-> Bo Yang
-> 
-> ------------------------------------------------------------------------
-> *From:* Brian King [mailto:brking@linux.vnet.ibm.com]
-> *Sent:* Fri 9/28/2007 3:30 PM
-> *To:* Yang, Bo
-> *Cc:* linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
-> akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant
-> *Subject:* Re: [PATCH 3/8] scsi: megaraid_sas - add module param
-> max_sectors, cmd_per_lun
-> 
-> bo yang wrote:
-> 
->> +static ssize_t
->> +sysfs_max_sectors_read(struct kobject *kobj,
->> +                     struct bin_attribute *bin_attr,
->> +                     char *buf, loff_t off, size_t count)
->> +{
->> +     struct Scsi_Host *host = class_to_shost(container_of(kobj,
->> +                                     struct class_device, kobj));
->> +     struct megasas_instance *instance =
->> +                             (struct megasas_instance *)host->hostdata;
->> +
->> +     count = sprintf(buf, "%u\n", instance->max_sectors_per_req);
->> +
->> +     return count+1;
->> +}
->> +
->> +static struct bin_attribute sysfs_max_sectors_attr = {
->> +     .attr = {
->> +             .name = "max_sectors",
->> +             .mode = S_IRUSR|S_IRGRP|S_IROTH,
->> +             .owner = THIS_MODULE,
->> +     },
->> +     .size = 7,
->> +     .read = sysfs_max_sectors_read,
->> +};
-> 
-> Why is this implemented as a binary sysfs attribute? Also, can you use
-> the existing shost_attrs infrastructure that's in the scsi_host_template
-> like megaraid_mbox uses?
-> 
-> 
->> +
->> +     /*
->> +      * Check if the module parameter value for max_sectors can be used
->> +      */
->> +     if (max_sectors && max_sectors <= instance->max_sectors_per_req)
->> +             instance->max_sectors_per_req = max_sectors;
->> +     else {
->> +             if (max_sectors)
->> +                     printk(KERN_INFO
->> +                             "megasas: max_sectors should be > 0 and"
->> +                             "<= %d\n",
->> +                             instance->max_sectors_per_req);
->> +     }
-> 
-> Could be simplified to an else if, which would remove one indent level...
-> 
-> -Brian
-> 
-> --
-> Brian King
-> Linux on Power Virtualization
-> IBM Linux Technology Center
-> 
-
-
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+  OG.
