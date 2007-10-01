@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXJARMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbXJARRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbXJARMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXJARMP
+	id S1754609AbXJARRl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXJARRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:12:15 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55402 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751703AbXJARMP (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:12:15 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm2
-In-Reply-To: Your message of "Sun, 30 Sep 2007 22:01:43 +0200."
-             <200709302201.44146.rjw@sisk.pl>
-From: Valdis.Kletnieks@vt.edu
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <18268.1191119181@turing-police.cc.vt.edu> <20070930015014.78bb88d3.akpm@linux-foundation.org>
-            <200709302201.44146.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1191258721_3768P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Oct 2007 13:12:01 -0400
-Message-ID: <4202.1191258721@turing-police.cc.vt.edu>
+	Mon, 1 Oct 2007 13:17:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54823 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbXJARRd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 13:17:33 -0400
+Date: Mon, 1 Oct 2007 10:15:43 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jeff Garzik <jgarzik@pobox.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for
+	wrong class
+Message-ID: <20071001171543.GA6653@kroah.com>
+References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com> <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com> <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz> <47010E01.2010001@pobox.com> <Pine.LNX.4.64.0710011720210.7567@jikos.suse.cz> <20071001162546.GB6051@kroah.com> <20071001170337.GJ12049@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071001170337.GJ12049@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1191258721_3768P
-Content-Type: text/plain; charset=us-ascii
-
-On Sun, 30 Sep 2007 22:01:43 +0200, "Rafael J. Wysocki" said:
-> On Sunday, 30 September 2007 10:50, Andrew Morton wrote:
-> > On Sat, 29 Sep 2007 22:26:21 -0400 Valdis.Kletnieks@vt.edu wrote:
-> > 
-> > > On Thu, 27 Sep 2007 02:22:20 PDT, Andrew Morton said:
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
-> > > 
-> > > Locks up hard at very early boot on my Dell Latitude - grub says loading
-> > > kernel, the screen clears, and we lock up before we get penguins.
-> > > 
-> > > -rc8-mm1 was OK. I'm off to go bisect, figured I'd drop a heads-up.
-> > > 
-> > 
-> > It doesn't ring a bell, sorry.  hpet-force-enable-on-ich34.patch is known
-> > to be bad, but it causes failure later in the boot than that.
+On Mon, Oct 01, 2007 at 11:03:38AM -0600, Matthew Wilcox wrote:
+> On Mon, Oct 01, 2007 at 09:25:46AM -0700, Greg KH wrote:
+> > For config items, we don't want to modify them in any way, we just want
+> > to pass-through the data direct from the device.  Look at the sysfs and
+> > proc files for pci config spaces.  They are returning binary data stored
+> > in the device directly.  We do not want to have to start modifying that
+> > data directly just to handle messed up devices like this.
 > 
-> http://lkml.org/lkml/2007/9/27/322, perhaps?
+> Nobody's talking about changing the raw pci data.  What we're talking
+> about is changing the value read out of
+> 
+> $ cat /sys/bus/pci/devices/0000\:00\:00.0/class 
+> 0x060000
 
-Yep, that was it - I applied that one patch on top of -rc8-mm2 and it
-came up without complaint.  That was certainly one that would make the CPU head
-off into the weeds very early in boot.
+I know, but the next request will be to also fix up those raw values as
+someone will have a tool that only uses them :)
 
-I need to figure how how I managed to botch the git bisect - it flagged the
-very last commit, when the problem was commit N-1.
+> We do tweak at least some of the other similar values (vendor, for sure)
+> to work around bugs; not sure we have an example for changing the class
+> value yet.
+> 
+> pciutils knows that the kernel has potentially fixed up the values in
+> the individual files, and to trust those over the raw data.
 
+Ah, cool, I didn't realize that pciutils handled this kind of mismatch.
+That's good to know.
 
+thanks,
 
---==_Exmh_1191258721_3768P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHASphcC3lWbTT17ARAq2AAJ4rrS1MUs2yQNVR5HquGXHyusxWDwCg21dV
-98/lFazunadroQtsQP9mMX8=
-=kSXJ
------END PGP SIGNATURE-----
-
---==_Exmh_1191258721_3768P--
+greg k-h
