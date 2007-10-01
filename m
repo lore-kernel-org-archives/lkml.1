@@ -1,40 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbXJAKBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbXJAKE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbXJAKBc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXJAKBZ
+	id S1753832AbXJAKE5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 06:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXJAKEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:01:25 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49600 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbXJAKBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:01:25 -0400
-To: "Denys" <nuclearcat@nuclearcat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
-References: <20070930144443.M52139@visp.net.lb>
-	<46FFE17C.9020202@cosmosbay.com>
-	<200709301425.37564.nickpiggin@yahoo.com.au>
-	<20070930220452.M25621@nuclearcat.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Oct 2007 12:01:24 +0200
-In-Reply-To: <20070930220452.M25621@nuclearcat.com>
-Message-ID: <p73myv36tmz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 1 Oct 2007 06:04:50 -0400
+Received: from rusty.kulnet.kuleuven.ac.be ([134.58.240.42]:49215 "EHLO
+	rusty.kulnet.kuleuven.ac.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751200AbXJAKEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:04:49 -0400
+X-Greylist: delayed 1651 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Oct 2007 06:04:49 EDT
+Message-ID: <4700BE87.2040107@joow.be>
+Date: Mon, 01 Oct 2007 11:31:51 +0200
+X-Kuleuven: This mail passed the K.U.Leuven mailcluster
+From: Pieter Palmers <pieterp@joow.be>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: adopt read cycle timer ABI from raw1394
+References: <tkrat.9b780b2f580f1733@s5r6.in-berlin.de> <tkrat.4aa1f1b5ce7df936@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.4aa1f1b5ce7df936@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Denys" <nuclearcat@nuclearcat.com> writes:
+Stefan Richter wrote:
+>> This duplicates the read cycle timer feature of raw1394 (added in Linux
+>> 2.6.21) in firewire-core's userspace ABI.
+> 
+> Kristian and Pieter, does this simple duplication of the ioctl make
+> sense on its own?  AFAIU rawiso's iso packet buffers look different from
+> fw-cdevs's. It seems to me as if rawiso always put the cycle into a user
+> buffer for each iso packet received...
+> 
+> raw1394.h::struct raw1394_iso_packet_info {
+> 	__u32 offset;
+> 	__u16 len;
+> 	__u16 cycle;   /* recv only */
+> 	__u8  channel; /* recv only */
+> 	__u8  tag;
+> 	__u8  sy;
+> };
+> 
+> raw1394.c::raw1394_iso_recv_packets()
+> 
+> 	/* copy the packet_infos out */
+> 	for (i = 0; i < upackets.n_packets; i++) {
+> 		if (__copy_to_user(&upackets.infos[i],
+> 				   &fi->iso_handle->infos[packet],
+> 				   sizeof(struct raw1394_iso_packet_info)))
+> 			return -EFAULT;
+> 
+> 		packet = (packet + 1) % fi->iso_handle->buf_packets;
+> 	}
+> 
+> ...while the Juju ABI returns the cycle only for those packets whose
+> fw_cdev_iso_packet.control had the FW_CDEV_ISO_INTERRUPT flag set.
+> The cycle is then written out in the fw_cdev_event_iso_interrupt event
+> which happens when this particular packet was received.  Right?
+> 
+> Pieter, do applications like yours need the cycle counter only for a few
+> predetermined packets or for each and every packet?
 
-> by mistake i will miss a point (it can detect bug easily, IF softirq in 
-> mpstat 1 will jump up to 30+%. On 2.6.21 it is always staying +-10%, on 
-> "buggy" version it jumps up to 100%. Now cause less load at night up to 30-
-> 50%, so on hardware it is not very noticeable (thats why maybe not much 
-> feedbacks), i am trying to utilise hardware maximum as possible - so i feel 
-> regressions much more.
+We need it for every packet for two reasons:
+1) it's the only way to determine how many packets were dropped when 
+packet drops are flagged in the callback
+2) we convert the 16-bit SYT timestamp of a packet to a full 32-bit 
+cycle counter value. This because the range of the 16-bit SYT is too 
+small (only 16 packets) for systems that have large buffering.
 
-You could use oprofile to find where the CPU time is spent
+In short: yes we use it for every packet.
 
--Andi
+Pieter
