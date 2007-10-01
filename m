@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbXJAIHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbXJAIIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbXJAIHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 04:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXJAIGt
+	id S1754658AbXJAIIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 04:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXJAIHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 04:06:49 -0400
-Received: from burp.tkv.asdf.org ([212.16.99.49]:48376 "EHLO burp.tkv.asdf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbXJAIGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 04:06:48 -0400
-X-Greylist: delayed 501 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Oct 2007 04:06:47 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Re: Out of memory management in embedded systems
-References: <98nC1-6aM-9@gated-at.bofh.it> <98nVg-6QQ-21@gated-at.bofh.it>
-	<98oeB-7gA-9@gated-at.bofh.it> <98oHC-8ai-5@gated-at.bofh.it>
-	<98oRk-8mt-21@gated-at.bofh.it> <98pNu-1pp-17@gated-at.bofh.it>
-	<98v6u-1h1-9@gated-at.bofh.it> <98Qu9-170-1@gated-at.bofh.it>
-From: Markku Savela <msa@moth.iki.fi>
-Date: Mon, 01 Oct 2007 10:58:24 +0300
-In-Reply-To: <98Qu9-170-1@gated-at.bofh.it> (Abhishek Sagar's message of "Sat\, 29 Sep 2007 21\:50\:05 +0200")
-Message-ID: <87odfj5krj.fsf@burp.tkv.asdf.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Mon, 1 Oct 2007 04:07:47 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:59208 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbXJAIHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 04:07:46 -0400
+From: "Denys" <nuclearcat@nuclearcat.com>
+To: David Miller <davem@davemloft.net>, dada1@cosmosbay.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Mon, 1 Oct 2007 11:07:34 +0300
+Message-Id: <20071001080339.M21850@nuclearcat.com>
+In-Reply-To: <20071001.001259.28812610.davem@davemloft.net>
+References: <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com> <20071001.001259.28812610.davem@davemloft.net>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 194.146.154.161 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about just simple solution? Make it possible that "malloc" works
-as it was originally intended: return NULL, if memory not available,
-non-NULL only if allocation truly succeeded and is guaranteed..
+Well, i can play a bit more on "live" servers. I have now hot-swap server with
+full gentoo,  where i can rebuild any kernel you want, with any applied patch.
+But it looks more like not overhead, load becoming high too "spiky", and it is
+not just permantenly higher. Also it is not normal that all system becoming
+unresposive (for example ping 127.0.0.1 becoming 300ms for period, when usage
+softirq jumps to 100%).
 
-Make kernel configuration option? (e.g. disable "over commit"
-mis-feature :-)
+On Mon, 01 Oct 2007 00:12:59 -0700 (PDT), David Miller wrote
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Mon, 01 Oct 2007 07:59:12 +0200
+> 
+> > No problem here on bigger servers, so I CC David Miller and netdev
+> > on this one.  AFAIK do_gettimeofday() and ktime_get_real() should
+> > use the same underlying hardware functions on PC and no performance
+> > problem should happen here.
+> 
+> One thing that jumps out at me is that on 32-bit (and to a certain
+> extent on 64-bit) there is a lot of stack accesses and missed
+> optimizations because all of the work occurs, and gets expanded,
+> inside of ktime_get_real().
+> 
+> The timespec_to_ktime() inside of there constructs the ktime_t return
+> value on the stack, then returns that as an aggregate to the caller.
+> 
+> That cannot be without some cost.
+> 
+> ktime_get_real() is definitely a candidate for inlining especially in
+> these kinds of cases where we'll happily get computations in local
+> registers instead of all of this on-stack nonsense.  And in several
+> cases (if the caller only needs the tv_sec value, for example)
+> computations can be elided entirely.
+> 
+> It would be constructive to experiment and see if this is in fact 
+> part of the problem.
 
--- 
-Markku Savela
+
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
+
