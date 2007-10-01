@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbXJAIIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbXJAIJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbXJAIIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 04:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXJAIHr
+	id S1753453AbXJAIJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 04:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXJAIJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 04:07:47 -0400
-Received: from usermail.globalproof.net ([194.146.153.18]:59208 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXJAIHq (ORCPT
+	Mon, 1 Oct 2007 04:09:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:55687 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbXJAIJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 04:07:46 -0400
-From: "Denys" <nuclearcat@nuclearcat.com>
-To: David Miller <davem@davemloft.net>, dada1@cosmosbay.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
-Date: Mon, 1 Oct 2007 11:07:34 +0300
-Message-Id: <20071001080339.M21850@nuclearcat.com>
-In-Reply-To: <20071001.001259.28812610.davem@davemloft.net>
-References: <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com> <20071001.001259.28812610.davem@davemloft.net>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 194.146.154.161 (denys@visp.net.lb)
+	Mon, 1 Oct 2007 04:09:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=HJRnlY/tEnke+COFFXfhe0WvXXYJCsOra/qEoW5anuJ85a1z6CzOhAWnXHYfqFPQ5Xwpo3FhIXparhDszHykU3jGi8eOwrfYa9MoLLvs9enoT02mYBYhRTk/t+ToPFEpEIQJ2Hqrdb0NrWuYodEP+lPX7saH4O9nvq/7e/mCuTg=
+Message-ID: <4700AB1E.9020800@gmail.com>
+Date: Mon, 01 Oct 2007 10:09:02 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Paolo Ornati <ornati@fastwebnet.it>, Tejun Heo <htejun@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
+References: <fa.ernzRd7lGBTxTXHl/DtyMhz/rPk@ifi.uio.no> <47003525.7040407@shaw.ca>
+In-Reply-To: <47003525.7040407@shaw.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, i can play a bit more on "live" servers. I have now hot-swap server with
-full gentoo,  where i can rebuild any kernel you want, with any applied patch.
-But it looks more like not overhead, load becoming high too "spiky", and it is
-not just permantenly higher. Also it is not normal that all system becoming
-unresposive (for example ping 127.0.0.1 becoming 300ms for period, when usage
-softirq jumps to 100%).
+On 10/01/2007 01:45 AM, Robert Hancock wrote:
+> Are you sure this isn't just a bum drive? Looking at the SMART listing
+> that was posted, looks like it's had some uncorrectable sector read
+> errors in the event log..
 
-On Mon, 01 Oct 2007 00:12:59 -0700 (PDT), David Miller wrote
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Mon, 01 Oct 2007 07:59:12 +0200
-> 
-> > No problem here on bigger servers, so I CC David Miller and netdev
-> > on this one.  AFAIK do_gettimeofday() and ktime_get_real() should
-> > use the same underlying hardware functions on PC and no performance
-> > problem should happen here.
-> 
-> One thing that jumps out at me is that on 32-bit (and to a certain
-> extent on 64-bit) there is a lot of stack accesses and missed
-> optimizations because all of the work occurs, and gets expanded,
-> inside of ktime_get_real().
-> 
-> The timespec_to_ktime() inside of there constructs the ktime_t return
-> value on the stack, then returns that as an aggregate to the caller.
-> 
-> That cannot be without some cost.
-> 
-> ktime_get_real() is definitely a candidate for inlining especially in
-> these kinds of cases where we'll happily get computations in local
-> registers instead of all of this on-stack nonsense.  And in several
-> cases (if the caller only needs the tv_sec value, for example)
-> computations can be elided entirely.
-> 
-> It would be constructive to experiment and see if this is in fact 
-> part of the problem.
+Seagate is known to report wrong numbers in smart.
 
-
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
-
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
