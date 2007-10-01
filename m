@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbXJAJXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbXJAJ1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbXJAJXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXJAJXJ
+	id S1752293AbXJAJ1P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbXJAJ1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:23:09 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:59541 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbXJAJXI (ORCPT
+	Mon, 1 Oct 2007 05:27:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45882 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750713AbXJAJ1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:23:08 -0400
-Date: Mon, 1 Oct 2007 11:23:05 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: veerasena reddy <veerasena_b@yahoo.co.in>
-cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
-In-Reply-To: <119374.35234.qm@web8401.mail.in.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0710011121300.20679@anakin>
-References: <119374.35234.qm@web8401.mail.in.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Oct 2007 05:27:00 -0400
+Date: Mon, 1 Oct 2007 02:26:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: roel <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] removes array_size duplicates
+Message-Id: <20071001022653.40bd5714.akpm@linux-foundation.org>
+In-Reply-To: <46FC33E1.8010309@tiscali.nl>
+References: <46FC33E1.8010309@tiscali.nl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, veerasena reddy wrote:
-> I have ported Linux-2.6.18 kernel on MIPS24KE
-> processor. I am using write back cache policy.
-> 
-> Could you please guide me under what cases the below
-> cache API's are being used:
-> - dma_cache_wback_inv() : Could you explain  what
-> exactly this function does
+On Fri, 28 Sep 2007 00:51:13 +0200 roel <12o3l@tiscali.nl> wrote:
 
-It does both write back and invalidate.
+> This patch removes some ARRAY_SIZE macro duplicates. There is also one in
+> arch/um/include/user.h, which isn't fixed here because comments in that file
+> explicitly state a preference for the 'less fancy' version. If that's the
+> case as well for any of the other replacements please comment.
 
-> - dma_cache_wback() : This function write back the
-> cache data to memory
-> - dma_cache_inv  : This function invalidate the cache
-> tags. so subsequent access will fetch from memory.
+I got a bunch of rejects against various development trees, a 
+build error in net/ipv4/ipvs/ip_vs_proto_udp.c and now
 
-Note that 2.6.18 is old. The above functions are intended to be removed.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+net/netfilter/xt_sctp.c: In function 'match_packet':
+net/netfilter/xt_sctp.c:58: error: size of array 'type name' is negative
+net/netfilter/xt_sctp.c:106: error: size of array 'type name' is negative
