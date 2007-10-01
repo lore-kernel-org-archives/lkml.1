@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbXJAVyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbXJAV7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757718AbXJAVyW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXJAVyP
+	id S1756444AbXJAV7T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXJAV7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:54:15 -0400
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:3982 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755027AbXJAVyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:54:14 -0400
-Date: Mon, 1 Oct 2007 23:54:12 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc8 build failure: __you_cannot_kmalloc_that_much in
- dmi_id_init
-Message-ID: <20071001235412.0737de78@hyperion.delvare>
-In-Reply-To: <20071001225447.20f989aa@hyperion.delvare>
-References: <20071001225447.20f989aa@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Oct 2007 17:59:10 -0400
+Received: from www.tglx.de ([62.245.132.106]:36501 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751596AbXJAV7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 17:59:09 -0400
+Date: Mon, 1 Oct 2007 23:58:07 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: Arjan van de Ven <arjan@infradead.org>, David Bahi <dbahi@novell.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <GHaskins@novell.com>
+Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
+In-Reply-To: <200710012341.53169.ak@suse.de>
+Message-ID: <alpine.LFD.0.9999.0710012349160.20478@localhost.localdomain>
+References: <46FA4A800200006C000192FE@sinclair.provo.novell.com> <20071001125626.32eb6d0b@laptopd505.fenrus.org> <alpine.LFD.0.9999.0710012207270.20478@localhost.localdomain> <200710012341.53169.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 22:54:47 +0200, Jean Delvare wrote:
-> 2.6.23-rc8 and 2.6.23-rc8-git4 fail to build on one of my test
-> machines, with:
+On Mon, 1 Oct 2007, Andi Kleen wrote:
 > 
-> drivers/built-in.o(.init.text+0x780e): In function `dmi_id_init':
-> : undefined reference to `__you_cannot_kmalloc_that_much'
+> > IRQ_NOBALANCING is not preventing cpu unplug. It moves the affinity to the
+> > next CPU, but the check in NMI watchdog for CPU == 0 would not longer
+> > work.
 > 
-> The code is allocating sizeof(struct device) so it really shouldn't be
-> a problem. I have no idea what's wrong. That's on i386, very old
-> machine (Pentium 166MMX / Intel TX chipset), with gcc 3.2.3 and
-> binutils 2.14.90.0.6. 2.6.22.9 compiles fine on the same system (but it
-> doesn't include dmi-id so it's not very surprising).
+> That cannot happen right now because cpu_disable() on both i386/x86-64
+> reject CPU #0. So just setting IRQ_NOBALANCING is sufficient and both
+> do that already. I was wrong earlier in being concerned about this.
 > 
-> .config attached.
+> >  int tick_do_broadcast(cpumask_t mask)
+> > @@ -137,6 +147,7 @@ int tick_do_broadcast(cpumask_t mask)
+> >  		cpu_clear(cpu, mask);
+> >  		td = &per_cpu(tick_cpu_device, cpu);
+> >  		td->evtdev->event_handler(td->evtdev);
+> > +		tick_broadcast_account(cpu);
+> 
+> That would not handle the case with a single CPU running only
+> irq  0 but not broadcasting I think.
 
-More information: building the same config on a much more recent system
-works fine. This seems to point at a toolchain issue.
+Hmm. The only situation where this can happen is when you add
+"nolapic_timer" to the command line on a single CPU system. We do not
+register the lapic "dummy" clock event device then.
 
--- 
-Jean Delvare
+> I believe 
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/fix-watchdog
+> is the correct fix
+
+Yup, I completely missed the fact, that we reject CPU#0 unplugging, so
+your fix seems indeed to be more correct and simpler.
+
+OTOH, the accounting hook would allow us to remove the IRQ#0 -> CPU#0
+restriction. Not sure whether it's worth the trouble.
+
+     tglx
