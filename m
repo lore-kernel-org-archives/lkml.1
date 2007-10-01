@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbXJADP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbXJADXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbXJADP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 23:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXJADPv
+	id S1752730AbXJADXS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 23:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbXJADXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 23:15:51 -0400
-Received: from [222.122.15.10] ([222.122.15.10]:45369 "HELO geninetworks.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751341AbXJADPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 23:15:50 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 23:15:49 EDT
-Subject: [PATCH] PCI hotplug : Switch to pci_get_bus_and_slot instead of
-	deprecated pci_find_slot.
-From: JoonwooPark <joonwpark81@gmail.com>
-Reply-To: joonwpark81@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, kristen.c.accardi@intel.com
-Content-Type: text/plain; charset=UTF-8
-Organization: GeniNetworks
-Date: Mon, 01 Oct 2007 12:09:07 +0900
-Message-Id: <1191208147.6123.11.camel@joonwpark-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 30 Sep 2007 23:23:08 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55167
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750947AbXJADXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 23:23:06 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: [PATCH] Add missing entries to Documentation/arm/00-INDEX
+Date: Sun, 30 Sep 2007 22:23:01 -0500
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709302223.01788.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes these warnings:
+From: Rob Landley <rob@landley.net>
 
-drivers/pci/hotplug/cpqphp_pci.c: In function ‘cpqhp_configure_device’:
-drivers/pci/hotplug/cpqphp_pci.c:92: warning: ‘pci_find_slot’ is deprecated (declared at include/linux/pci.h:481)
-drivers/pci/hotplug/cpqphp_pci.c:102: warning: ‘pci_find_slot’ is deprecated (declared at include/linux/pci.h:481)
-drivers/pci/hotplug/cpqphp_pci.c: In function ‘cpqhp_unconfigure_device’:
-drivers/pci/hotplug/cpqphp_pci.c:126: warning: ‘pci_find_slot’ is deprecated (declared at include/linux/pci.h:481)
-drivers/pci/hotplug/cpqphp_pci.c: In function ‘cpqhp_save_config’:
-drivers/pci/hotplug/cpqphp_pci.c:420: warning: ‘pci_find_slot’ is deprecated (declared at include/linux/pci.h:481)
+Add several missing entries to Documentation/arm/00-INDEX
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
----
- drivers/pci/hotplug/cpqphp_pci.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Makefile b/Makefile
-diff --git a/drivers/pci/hotplug/cpqphp_pci.c b/drivers/pci/hotplug/cpqphp_pci.c
-index fc7c74d..c05d34a 100644
---- a/drivers/pci/hotplug/cpqphp_pci.c
-+++ b/drivers/pci/hotplug/cpqphp_pci.c
-@@ -89,7 +89,7 @@ int cpqhp_configure_device (struct controller* ctrl, struct pci_func* func)
- 	int num;
- 
- 	if (func->pci_dev == NULL)
--		func->pci_dev = pci_find_slot(func->bus, PCI_DEVFN(func->device, func->function));
-+		func->pci_dev = pci_get_bus_and_slot(func->bus, PCI_DEVFN(func->device, func->function));
- 
- 	/* No pci device, we need to create it then */
- 	if (func->pci_dev == NULL) {
-@@ -99,7 +99,7 @@ int cpqhp_configure_device (struct controller* ctrl, struct pci_func* func)
- 		if (num)
- 			pci_bus_add_devices(ctrl->pci_dev->bus);
- 
--		func->pci_dev = pci_find_slot(func->bus, PCI_DEVFN(func->device, func->function));
-+		func->pci_dev = pci_get_bus_and_slot(func->bus, PCI_DEVFN(func->device, func->function));
- 		if (func->pci_dev == NULL) {
- 			dbg("ERROR: pci_dev still null\n");
- 			return 0;
-@@ -123,7 +123,7 @@ int cpqhp_unconfigure_device(struct pci_func* func)
- 	dbg("%s: bus/dev/func = %x/%x/%x\n", __FUNCTION__, func->bus, func->device, func->function);
- 
- 	for (j=0; j<8 ; j++) {
--		struct pci_dev* temp = pci_find_slot(func->bus, PCI_DEVFN(func->device, j));
-+		struct pci_dev *temp = pci_get_bus_and_slot(func->bus, PCI_DEVFN(func->device, j));
- 		if (temp)
- 			pci_remove_bus_device(temp);
- 	}
-@@ -417,7 +417,7 @@ int cpqhp_save_config(struct controller *ctrl, int busnumber, int is_hot_plug)
- 				new_slot->switch_save = 0x10;
- 				// In case of unsupported board
- 				new_slot->status = DevError;
--				new_slot->pci_dev = pci_find_slot(new_slot->bus, (new_slot->device << 3) | new_slot->function);
-+				new_slot->pci_dev = pci_get_bus_and_slot(new_slot->bus, (new_slot->device << 3) | new_slot->function);
- 
- 				for (cloop = 0; cloop < 0x20; cloop++) {
- 					rc = pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(device, function), cloop << 2, (u32 *) & (new_slot-> config_space [cloop]));
+Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
-Thanks.
-Joonwoo Park
+ Documentation/arm/00-INDEX |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
+diff -r f4ca99897c12 Documentation/arm/00-INDEX
+--- a/Documentation/arm/00-INDEX	Sat Sep 29 10:00:15 2007 -0700
++++ b/Documentation/arm/00-INDEX	Sun Sep 30 22:16:06 2007 -0500
+@@ -4,19 +4,29 @@ Booting
+ 	- requirements for booting
+ Interrupts
+ 	- ARM Interrupt subsystem documentation
++IXP2000
++	- Release Notes for Linux on Intel's IXP2000 Network Processor
+ Netwinder
+ 	- Netwinder specific documentation
++Porting
++       - Symbol definitions for porting Linux to a new ARM machine.
++Setup
++       - Kernel initialization parameters on ARM Linux
+ README
+ 	- General ARM documentation
+-SA1100
++SA1100/
+ 	- SA1100 documentation
+-XScale
+-	- XScale documentation
+-empeg
+-	- Empeg documentation
++Samsung-S3C24XX
++	- S3C24XX ARM Linux Overview
++Sharp-LH
++	- Linux on Sharp LH79524 and LH7A40X System On a Chip (SOC)
++VFP/
++	- Release notes for Linux Kernel Vector Floating Point support code
++empeg/
++	- Ltd's Empeg MP3 Car Audio Player
+ mem_alignment
+ 	- alignment abort handler documentation
+ memory.txt
+ 	- description of the virtual memory layout
+-nwfpe
++nwfpe/
+ 	- NWFPE floating point emulator documentation
 
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
