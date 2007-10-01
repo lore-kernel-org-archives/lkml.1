@@ -1,222 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXJCVAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbXJCVBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbXJCVAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 17:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbXJCVAe
+	id S1758892AbXJCVBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 17:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbXJCVBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 17:00:34 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:39958 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbXJCVAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 17:00:33 -0400
-Subject: [PATCH] RCU torture update for preemption
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Wed, 3 Oct 2007 17:01:42 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:62674 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752371AbXJCVBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 17:01:40 -0400
+Subject: [PATCH 8/8] scsi: megaraid_sas - Update version and changelog
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
 Content-Type: text/plain
-Date: Wed, 03 Oct 2007 16:59:51 -0400
-Message-Id: <1191445191.11881.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
+Date: Mon, 01 Oct 2007 12:18:52 -0400
+Message-Id: <1191255532.5850.38.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 03 Oct 2007 21:01:24.0776 (UTC) FILETIME=[8EED9280:01C80600]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
+Update version and changelog. 
+Updated "LSI Logic" to new name "LSI"
 
-I ran your original preemption test of RCU torture, and after several
-minutes, my preempt boost patch had one Preemption stall.  I then
-disabled preemption boosting, and ran the preempt torture again, and it
-seemed to never stall.  Something seemed strange, so I took a look.
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-Looks like you have a single thread that will run at max prio that runs
-for 10 secs and then sleeps again. This thread seems to only push rcu
-readers around. But it doesn't seem to do much else. That is a good test
-to see if RCU readers can handle being pushed around, but it doesn't
-test preemption boosting.
+---
+ Documentation/scsi/ChangeLog.megaraid_sas |  160 ++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.c      |   10 -
+ drivers/scsi/megaraid/megaraid_sas.h      |    8 -
+ 3 files changed, 169 insertions(+), 9 deletions(-)
 
-To do that, I modified the test to create CPUS-1 preempt boost hogs (or
-1 if it is UP). But instead of putting it at max prio, I set it to the
-lowest RT prio of 1. This way it's still at a higher priority than the
-readers. I also switched the writers to run at 1+n where n increases for
-every fake writer there is.
-
-Without preempt boosting, after a couple of minutes I had 83 preemption
-stalls.  When I turned my boosting back on, after several minutes (still
-running as I type this) it has no preemption stalls.
-
-This seems to be a good test for RCU preemption boosting.
-
--- Steve
-
-PS. I got rid of your rcu_preeempt_task for rcu_preempt_tasks ;-)
-
-(No the above is _not_ a typo)
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.23-rc9-rt1/kernel/rcutorture.c
-===================================================================
---- linux-2.6.23-rc9-rt1.orig/kernel/rcutorture.c
-+++ linux-2.6.23-rc9-rt1/kernel/rcutorture.c
-@@ -54,6 +54,7 @@ MODULE_AUTHOR("Paul E. McKenney <paulmck
- 
- static int nreaders = -1;	/* # reader threads, defaults to 2*ncpus */
- static int nfakewriters = 4;	/* # fake writer threads */
-+static int npreempthogs = -1; 	/* # preempt hogs to run (defaults to ncpus-1) or 1 */
- static int stat_interval;	/* Interval between stats, in seconds. */
- 				/*  Defaults to "only at end of test". */
- static int verbose;		/* Print more debug info. */
-@@ -90,9 +91,11 @@ MODULE_PARM_DESC(torture_type, "Type of 
- static char printk_buf[4096];
- 
- static int nrealreaders;
-+static int nrealpreempthogs;
- static struct task_struct *writer_task;
- static struct task_struct **fakewriter_tasks;
- static struct task_struct **reader_tasks;
-+static struct task_struct **rcu_preempt_tasks;
- static struct task_struct *stats_task;
- static struct task_struct *shuffler_task;
- 
-@@ -264,7 +267,6 @@ static void rcu_torture_deferred_free(st
- 	call_rcu(&p->rtort_rcu, rcu_torture_cb);
- }
- 
--static struct task_struct *rcu_preeempt_task;
- static unsigned long rcu_torture_preempt_errors;
- 
- static int rcu_torture_preempt(void *arg)
-@@ -274,7 +276,7 @@ static int rcu_torture_preempt(void *arg
- 	time_t gcstart;
- 	struct sched_param sp;
- 
--	sp.sched_priority = MAX_RT_PRIO - 1;
-+	sp.sched_priority = 1;
- 	err = sched_setscheduler(current, SCHED_RR, &sp);
- 	if (err != 0)
- 		printk(KERN_ALERT "rcu_torture_preempt() priority err: %d\n",
-@@ -297,24 +299,43 @@ static int rcu_torture_preempt(void *arg
- static long rcu_preempt_start(void)
- {
- 	long retval = 0;
-+	int i;
- 
--	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
--					"rcu_torture_preempt");
--	if (IS_ERR(rcu_preeempt_task)) {
--		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
--		retval = PTR_ERR(rcu_preeempt_task);
--		rcu_preeempt_task = NULL;
-+	rcu_preempt_tasks = kzalloc(nrealpreempthogs * sizeof(rcu_preempt_tasks[0]),
-+				GFP_KERNEL);
-+	if (rcu_preempt_tasks == NULL) {
-+		VERBOSE_PRINTK_ERRSTRING("out of memory");
-+		retval = -ENOMEM;
-+		goto out;
- 	}
+diff -uprN linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+--- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas	2007-10-01 00:03:59.000000000 -0700
++++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas	2007-10-01 00:03:59.000000000 -0700
+@@ -1,3 +1,163 @@
++1 Release Date    : Thur. Sep. 27 10:09:32 PDT 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
 +
-+	for (i=0; i < nrealpreempthogs; i++) {
-+		rcu_preempt_tasks[i] = kthread_run(rcu_torture_preempt, NULL,
-+						"rcu_torture_preempt");
-+		if (IS_ERR(rcu_preempt_tasks[i])) {
-+			VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
-+			retval = PTR_ERR(rcu_preempt_tasks[i]);
-+			rcu_preempt_tasks[i] = NULL;
-+			break;
-+		}
-+	}
-+ out:
- 	return retval;
- }
- 
- static void rcu_preempt_end(void)
- {
--	if (rcu_preeempt_task != NULL) {
--		VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
--		kthread_stop(rcu_preeempt_task);
-+	int i;
-+	if (rcu_preempt_tasks) {
-+		for (i=0; i < nrealpreempthogs; i++) {
-+			if (rcu_preempt_tasks[i] != NULL) {
-+				VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
-+				kthread_stop(rcu_preempt_tasks[i]);
-+			}
-+			rcu_preempt_tasks[i] = NULL;
-+		}
-+		kfree(rcu_preempt_tasks);
- 	}
--	rcu_preeempt_task = NULL;
- }
- 
- static int rcu_preempt_stats(char *page)
-@@ -613,10 +634,20 @@ rcu_torture_writer(void *arg)
- static int
- rcu_torture_fakewriter(void *arg)
- {
-+	struct sched_param sp;
-+	long id = (long) arg;
-+	int err;
- 	DEFINE_RCU_RANDOM(rand);
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
--	set_user_nice(current, 19);
-+	/*
-+	 * Set up at a higher prio than the readers.
-+	 */
-+	sp.sched_priority = 1 + id;
-+	err = sched_setscheduler(current, SCHED_RR, &sp);
-+	if (err != 0)
-+		printk(KERN_ALERT "rcu_torture_writer() priority err: %d\n",
-+		       err);
- 
- 	do {
- 		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
-@@ -849,9 +880,11 @@ rcu_torture_print_module_parms(char *tag
- {
- 	printk(KERN_ALERT "%s" TORTURE_FLAG
- 		"--- %s: nreaders=%d nfakewriters=%d "
-+	        "npreempthogs=%d "
- 		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
- 		"shuffle_interval=%d preempt_torture=%d\n",
- 		torture_type, tag, nrealreaders, nfakewriters,
-+		nrealpreempthogs,
- 		stat_interval, verbose, test_no_idle_hz, shuffle_interval,
- 		preempt_torture);
- }
-@@ -925,7 +958,7 @@ rcu_torture_cleanup(void)
- static int __init
- rcu_torture_init(void)
- {
--	int i;
-+	long i;
- 	int cpu;
- 	int firsterr = 0;
- 	static struct rcu_torture_ops *torture_ops[] =
-@@ -953,6 +986,12 @@ rcu_torture_init(void)
- 	rcu_torture_print_module_parms("Start of test");
- 	fullstop = 0;
- 
-+	if (npreempthogs >= 0)
-+		nrealpreempthogs = npreempthogs;
-+	else
-+		nrealpreempthogs = num_online_cpus() == 1 ? 1 :
-+			num_online_cpus() - 1;
++2 Current Version : 00.00.03.16-rc1
++3 Older Version   : 00.00.03.15
 +
- 	/* Set up the freelist. */
++1. Increased MFI_POLL_TIMEOUT_SECS to 60 seconds from 10. FW may take a max of 60 seconds to 
++	respond to the INIT cmd.
++
++1 Release Date    : Fri. Sep. 07 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.15
++3 Older Version   : 00.00.03.14
++
++1. Added module parameter "poll_mode_io" to support for "polling" (reduced interrupt operation).
++	In this mode, IO completion interrupts are delayed. At the end of initiating IOs,
++	the driver schedules for cmd completion if there are pending cmds to be completed.
++	A timer-based interrupt has also been added to prevent IO completion processing from
++	being delayed indefinitely in the case that no new IOs are initiated.
++
++1 Release Date    : Fri. Sep. 07 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.14
++3 Older Version   : 00.00.03.13
++
++1. Setting the max_sectors_per_req based on max SGL supported by the FW. Prior versions calculated 
++	this value from controller info (max_sectors_1, max_sectors_2). For certain controllers/FW,
++	this was resulting in a value greater than max SGL supported by the FW. Issue was first
++	reported by users running LUKS+XFS with megaraid_sas.
++	Thanks to RB for providing the logs and duplication steps that helped to get to the root 
++	cause of the issue.
++2. Increased MFI_POLL_TIMEOUT_SECS to 60 seconds from 10. FW may take a max of 60 seconds to 
++	respond to the INIT cmd.
++
++1 Release Date    : Fri. June. 15 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.13
++3 Older Version   : 00.00.03.12
++
++1. Added the megasas_reset_timer routine to intercept cmd timeout and throttle io.
++
++On Fri, 2007-03-16 at 16:44 -0600, James Bottomley wrote:
++It looks like megaraid_sas at least needs this to throttle its commands
++> as they begin to time out.  The code keeps the existing transport
++> template use of eh_timed_out (and allows the transport to override the
++> host if they both have this callback).
++> 
++> James
++
++1 Release Date    : Sat May. 12 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.12
++3 Older Version   : 00.00.03.11
++
++1.  When MegaSAS driver receives reset call from OS, driver waits in reset
++routine for max 3 minutes for all pending command completion. Now driver will
++call completion routine every 5 seconds from the reset routine instead of
++waiting for depending on cmd completion from isr path.
++
++1 Release Date    : Mon Apr. 30 10:25:52 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.11
++3 Older Version   : 00.00.03.09
++
++	1. Following module parameters added -
++		fast_load: Faster loading of the driver, skips physical devices scanning thereby
++			reducing the time to load driver.
++		cmd_per_lun: Maximum number of commands per logical unit
++		max_sectors: Maximum number of sectors per IO command
++	2. Memory Manager for IOCTL removed for 2.6 kernels.
++	   pci_alloc_consistent replaced by dma_alloc_coherent. With this 
++	   change there is no need of memory manager in the driver code
++
++	On Wed, 2007-02-07 at 13:30 -0800, Andrew Morton wrote:
++	> I suspect all this horror is due to stupidity in the DMA API.
++	>
++	> pci_alloc_consistent() just goes and assumes GFP_ATOMIC, whereas
++	> the caller (megasas_mgmt_fw_ioctl) would have been perfectly happy
++	> to use GFP_KERNEL.
++	>
++	> I bet this fixes it
++
++	It does, but the DMA API was expanded to cope with this exact case, so
++	use dma_alloc_coherent() directly in the megaraid code instead.  The dev
++	is just &pci_dev->dev.
++
++	James <James.Bottomley@SteelEye.com>
++
++	3. SYNCHRONIZE_CACHE is not supported by FW and thus blocked by driver.
++	4. Hibernation support added
++	5. Performing diskdump while running IO in RHEL 4 was failing. Fixed.
++		
++1 Release Date    : Fri Feb. 09 14:36:28 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++
++2 Current Version : 00.00.03.09
++3 Older Version   : 00.00.03.08
++
++i.	Under heavy IO mid-layer prints "DRIVER_TIMEOUT" errors  
++
++	The driver now waits for 10 seconds to elapse instead of 5 (as in
++	previous release) to resume IO.
++
++1 Release Date    : Mon Feb. 05 11:35:24 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang 
++2 Current Version : 00.00.03.08
++3 Older Version   : 00.00.03.07
++
++i.	Under heavy IO mid-layer prints "DRIVER_TIMEOUT" errors  
++
++	Fix:	The driver is now throttling IO.
++	Checks added in megasas_queue_command to know if FW is able to 
++	process commands within timeout period. If number of retries
++	is 2 or greater,the driver stops sending cmd to FW temporarily. IO is
++	resumed if pending cmd count reduces to 16 or 5 seconds has elapsed
++	from the time cmds were last sent to FW.
++
++ii.	FW enables WCE bit in Mode Sense cmd for drives that are configured 
++	as WriteBack. The OS may send "SYNCHRONIZE_CACHE" cmd when Logical
++	Disks are exposed with WCE=1. User is advised to enable Write Back
++	mode only when the controller has battery backup. At this time 
++	Synhronize cache is not supported by the FW. Driver will short-cycle 
++	the cmd and return sucess without sending down to FW.
++
++1 Release Date    : Sun Jan. 14 11:21:32 PDT 2007 -
++		 Sumant Patro <Sumant.Patro@lsil.com>/Bo Yang
++2 Current Version : 00.00.03.07
++3 Older Version   : 00.00.03.06
++
++i.	bios_param entry added in scsi_host_template that returns disk geometry
++	information.
++
++1 Release Date    : Fri Oct 20 11:21:32 PDT 2006 - Sumant Patro <Sumant.Patro@lsil.com>/Bo Yang
++2 Current Version : 00.00.03.06
++3 Older Version   : 00.00.03.05
++
++1. Added new memory management module to support the IOCTL memory allocation. For IOCTL we try to allocate from the memory pool created during driver initialization. If mem pool is empty then we allocate at run time.
++2. Added check in megasas_queue_command and dpc/isr routine to see if we have already declared adapter dead
++   (hw_crit_error=1). If hw_crit_error==1, now we donot accept any processing of pending cmds/accept any cmd from OS
  
- 	INIT_LIST_HEAD(&rcu_torture_freelist);
-@@ -1000,7 +1039,7 @@ rcu_torture_init(void)
+ 1 Release Date    : Mon Oct 02 11:21:32 PDT 2006 - Sumant Patro <Sumant.Patro@lsil.com>
+ 2 Current Version : 00.00.03.05
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-02 23:33:56.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-02 23:33:30.000000000 -0700
+@@ -2,7 +2,7 @@
+  *
+  *		Linux MegaRAID driver for SAS based RAID controllers
+  *
+- * Copyright (c) 2003-2005  LSI Logic Corporation.
++ * Copyright (c) 2003-2005  LSI Corporation.
+  *
+  *	   This program is free software; you can redistribute it and/or
+  *	   modify it under the terms of the GNU General Public License
+@@ -10,7 +10,7 @@
+  *	   2 of the License, or (at your option) any later version.
+  *
+  * FILE		: megaraid_sas.c
+- * Version	: v00.00.03.10-rc5
++ * Version	: v00.00.03.16-rc1
+  *
+  * Authors:
+  *	(email-id : megaraidlinux@lsi.com)
+@@ -90,7 +90,7 @@ MODULE_PARM_DESC(poll_mode_io,
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+-MODULE_DESCRIPTION("LSI Logic MegaRAID SAS Driver");
++MODULE_DESCRIPTION("LSI MegaRAID SAS Driver");
+ 
+ /*
+  * PCI ID table for all supported controllers
+@@ -1270,7 +1270,7 @@ static struct class_device_attribute *me
+ static struct scsi_host_template megasas_template = {
+ 
+ 	.module = THIS_MODULE,
+-	.name = "LSI Logic SAS based MegaRAID driver",
++	.name = "LSI SAS based MegaRAID driver",
+ 	.proc_name = "megaraid_sas",
+ 	.slave_configure = megasas_slave_configure,
+ 	.slave_alloc = megasas_slave_alloc,
+@@ -2055,7 +2055,7 @@ static int megasas_init_mfi(struct megas
+ 	 */
+ 	instance->base_addr = pci_resource_start(instance->pdev, 0);
+ 
+-	if (pci_request_regions(instance->pdev, "megasas: LSI Logic")) {
++	if (pci_request_regions(instance->pdev, "megasas: LSI")) {
+ 		printk(KERN_DEBUG "megasas: IO memory region busy!\n");
+ 		return -EBUSY;
  	}
- 	for (i = 0; i < nfakewriters; i++) {
- 		VERBOSE_PRINTK_STRING("Creating rcu_torture_fakewriter task");
--		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, NULL,
-+		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, (void*)i,
- 		                                  "rcu_torture_fakewriter");
- 		if (IS_ERR(fakewriter_tasks[i])) {
- 			firsterr = PTR_ERR(fakewriter_tasks[i]);
-
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-10-02 22:55:37.000000000 -0700
+@@ -2,7 +2,7 @@
+  *
+  *		Linux MegaRAID driver for SAS based RAID controllers
+  *
+- * Copyright (c) 2003-2005  LSI Logic Corporation.
++ * Copyright (c) 2003-2005  LSI Corporation.
+  *
+  *		This program is free software; you can redistribute it and/or
+  *		modify it under the terms of the GNU General Public License
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION				"00.00.03.10-rc5"
+-#define MEGASAS_RELDATE				"May 17, 2007"
+-#define MEGASAS_EXT_VERSION			"Thu May 17 10:09:32 PDT 2007"
++#define MEGASAS_VERSION				"00.00.03.16-rc1"
++#define MEGASAS_RELDATE				"Sep. 27, 2007"
++#define MEGASAS_EXT_VERSION			"Thu. Sep. 27 10:09:32 PDT 2007"
+ 
+ /*
+  * Device IDs
 
