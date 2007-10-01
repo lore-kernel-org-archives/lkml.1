@@ -1,67 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXJAWh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXJAWiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXJAWh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 18:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXJAWhu
+	id S1756570AbXJAWiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 18:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbXJAWin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 18:37:50 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58516 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbXJAWht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 18:37:49 -0400
-Message-ID: <470176B8.1000109@pobox.com>
-Date: Mon, 01 Oct 2007 18:37:44 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 1 Oct 2007 18:38:43 -0400
+Received: from ara.aytolacoruna.es ([212.51.63.12]:36468 "EHLO
+	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbXJAWim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 18:38:42 -0400
+Date: Tue, 2 Oct 2007 00:38:35 +0200
+From: Santiago Garcia Mantinan <manty@manty.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] (repost) Fix SMP poweroff hangs
+Message-ID: <20071001223835.GB2455@pul.manty.net>
+References: <46FC20B7.4000606@rtr.ca> <46FFDB29.9040400@rtr.ca> <20070930175446.GA2472@pul.manty.net> <200710012205.14303.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [regression] 2.6.23 sata_mv EH updates broke my 7042 controller
-References: <20071001220439.GA15332@lixom.net>
-In-Reply-To: <20071001220439.GA15332@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710012205.14303.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson wrote:
-> Hi,
+> There was a bug in 2.6.23-rc8 that caused this to happen.
 > 
-> I just pulled out my Marvell 7042 SATA controller here to give it a spin
-> and noticed that it no longer worked (i.e. init segvs when loading from
-> it), etc. 2.6.22 is fine.
-> 
-> Bisecting (just the file drivers/ata/sata_mv.c) resulted in
-> bdd4dddee325a7dce3e84cf48201a06aa8508aa4 popping out as the culprit
-> (file version 4537deb5e90b717a725b3d74b58b4bb1d28443d0 is fine).
-> 
-> Just for sanity checking: Has anyone else used 7042/6042 with the current
-> mainline driver?
+> It's been fixed in the later -git kernels
+> (commits 2f3f22269bdf702311342c5d106dfdd7347d1c3e,
+> 853298bc03ef65e3eb392f5d61265605214ee8fb).
 
-The update was tested extensively on 6042.  I have a 7042, but haven't 
-found a compatible PCI slot here.
+You are right, I have downloaded current head of git and seems to work ok.
 
+Sorry for the lost time :-(
 
-> Hardware config in my case:
-> Highpoint 2310 controller
-> PPC (big endian)
-> WD Raptor disk
-> 
-> Works fine with the other controller I've been using (SIL24), and works
-> fine if I revert the driver.
-> 
-> It also works fine if I disable the IOMMU. This would point towards
-> either a stale dma mapping, or a missing setup of one.
-> 
-> Not being much at home in the SATA drivers I could keep digging but I
-> figured I'd bring it up first in case it rings a bell for someone.
-
-The IOMMU data point is certainly interesting.  Nothing jumps out on a 
-re-review of the patch, so keep digging and let us know ;-)
-
-	Jeff
-
-
+Regards...
+-- 
+Manty/BestiaTester -> http://manty.net
