@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXJAT6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXJAT6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXJAT6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 15:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXJAT6H
+	id S1756510AbXJAT6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 15:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbXJAT6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 15:58:07 -0400
-Received: from woody.df.uba.ar ([157.92.11.66]:45850 "EHLO woody.df.uba.ar"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbXJAT6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 15:58:05 -0400
-X-Greylist: delayed 2428 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Oct 2007 15:58:03 EDT
-Message-ID: <47014740.5080002@df.uba.ar>
-Date: Mon, 01 Oct 2007 16:15:12 -0300
-From: Hernan Gustavo Solari <solari@df.uba.ar>
-Reply-To: hgsolari@gmail.com
-Organization: Universidad de Buenos Aires
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040113
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: Serial ATA does not find partitions (Hitachi HD, new? ATI controller)
- where old SATA works
-References: <46FC4384.7080607@df.uba.ar> <46FCCD57.2020507@gmail.com>
-In-Reply-To: <46FCCD57.2020507@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 1 Oct 2007 15:58:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51879 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755688AbXJAT6S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 15:58:18 -0400
+Date: Mon, 1 Oct 2007 12:56:26 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, David Bahi <dbahi@novell.com>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Gregory Haskins <GHaskins@novell.com>
+Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
+Message-ID: <20071001125626.32eb6d0b@laptopd505.fenrus.org>
+In-Reply-To: <alpine.LFD.0.9999.0710012124420.20478@localhost.localdomain>
+References: <46FA4A800200006C000192FE@sinclair.provo.novell.com>
+	<200710011936.01528.ak@suse.de>
+	<alpine.LFD.0.9999.0710012052310.20478@localhost.localdomain>
+	<200710012116.59356.ak@suse.de>
+	<alpine.LFD.0.9999.0710012124420.20478@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun
+On Mon, 1 Oct 2007 21:27:39 +0200 (CEST)
 
-    netconsole, pritty nice debunging system... but (yes, there is 
-always a but) it does not get to run.
-    the method was well implemented, adding the acpi=off it sends the 
-information to the receiving machine (I can even see passing a 
-netconsole probing message in the machine under testing), but without 
-turning off acpi it does not reach the point of loading and, 
-consequently, it does not send a byte to the receiving machine.
+> > I already did this here by checking for cpu != 0. But it also needs
+> > either tracking or forbidding migrations of irq 0. I can take care
+> > of the patch.
+> 
+> I was thinking about the same fix. On i386 we already have the irq 
+> migration / balancing of irq 0 disabled. That's why we setup IRQ0 with
+> IRQ_NOBALANCING.
 
-Hence, result: empty output.
-
-Hernan
-
-
--- 
-Hernan G. Solari (solari@df.uba.ar http://www.df.uba.ar/~solari)
+btw doing this is a problem if the user decides to hot(un)plug cpu 0...
+he then can't move the irqs away to do that
