@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXJAHfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbXJAHgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbXJAHfW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 03:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXJAHfK
+	id S1754479AbXJAHgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 03:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXJAHgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 03:35:10 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:45140 "EHLO tim.rpsys.net"
+	Mon, 1 Oct 2007 03:36:35 -0400
+Received: from tidos.tid.es ([193.145.240.2]:58768 "EHLO correo.tid.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbXJAHfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 03:35:09 -0400
-Subject: Re: What's in linux-leds.git for 2.6.24?
-From: Richard Purdie <rpurdie@rpsys.net>
-To: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1191196330.6115.49.camel@localhost.localdomain>
-References: <1191196330.6115.49.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 01 Oct 2007 08:34:57 +0100
-Message-Id: <1191224097.5938.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1751098AbXJAHge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 03:36:34 -0400
+Date: Mon, 01 Oct 2007 09:36:05 +0200
+From: Miguel <mc354@tid.es>
+Subject: Re: software unplug and plug USB
+In-reply-to: <46FCF0F5.9030004@wpkg.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <1191224165.6014.12.camel@McM>
+MIME-version: 1.0
+X-Mailer: Evolution 2.10.1
+Content-type: text/plain
+Content-transfer-encoding: 7BIT
+References: <46FCF0F5.9030004@wpkg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-01 at 00:52 +0100, Richard Purdie wrote:
-> The leds tree doesn't have much in it, basically some changes to the
-> cobalt LED drivers.
+actually, I have a USB keyboard, could that be the problem? why?
+
+removing and adding modules doesn't solve my problem... The USB has
+several functions: modem and usb mass storage and only the storage one
+is recognized 
+:(
+
+any thoughts?
+
+On Fri, 2007-09-28 at 14:17 +0200, Tomasz Chmielewski wrote:
+> > I'm using a huawei E220 modem and occasionally it doesn't work and I
+> > must unplug and plug it again, run the scripts connection to make it
+> > works again.
+> > how can I unplug an plug an USB modem via software?
 > 
-> http://git.o-hand.com/?p=linux-rpurdie-leds;a=shortlog;h=for-mm
+> If the modem doesn't have any other power sources than USB, just 
+> removing the modem's and USB modules, and the modprobing them again 
+> should help.
 > 
-> Yoichi Yuasa (3):
->       leds: Rename leds-cobalt driver
->       leds: Add Cobalt Raq series LEDs support
->       leds: Update Cobalt Qube series front LED support
-
-The missing diffstat:
-
- drivers/leds/Kconfig            |   13 ++-
- drivers/leds/Makefile           |    3 
- drivers/leds/leds-cobalt-qube.c |  102 +++++++++++++++++++++++++++++
- drivers/leds/leds-cobalt-raq.c  |  138 ++++++++++++++++++++++++++++++++++++++++
- drivers/leds/leds-cobalt.c      |   43 ------------
- 5 files changed, 252 insertions(+), 47 deletions(-)
-
--- 
-Richard
+> Just take care if you have it connected to the PC with a USB keyboard ;)
+> 
+> 
 
