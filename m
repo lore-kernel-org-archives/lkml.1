@@ -1,53 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbXJCUVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbXJCUX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbXJCUVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXJCUVe
+	id S1757929AbXJCUX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXJCUXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:21:34 -0400
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:44854 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752694AbXJCUVd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:21:33 -0400
-X-YMail-OSG: yOY5RecVM1m5KN9Cv6RDZBGXNyCcDRGjtUdHpVXbESaH_Gci4D8b7WHtj8_aMxqdRaLAJ0405w--
-X-RocketYMMF: rancidfat
-Date: Wed, 3 Oct 2007 13:21:32 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ftp.linux.org.uk>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, paul.moore@hp.com
-In-Reply-To: <20071003191735.4d92c593@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <342112.80881.qm@web36601.mail.mud.yahoo.com>
+	Wed, 3 Oct 2007 16:23:49 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:59398 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753993AbXJCUXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 16:23:47 -0400
+Subject: [PATCH 1/8] scsi: megaraid_sas - add hibernation support
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 01 Oct 2007 11:40:56 -0400
+Message-Id: <1191253256.5850.4.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 03 Oct 2007 20:23:28.0491 (UTC) FILETIME=[42280BB0:01C805FB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adding hibernation support. suspend, resume routine implemented.
 
---- Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-> > Absolute paths in that kind of thing are _wrong_.  You know where the
-> things
-> > are on your fs.  You don't know if anything else will be visible, let alone
-> > whether it will be at the same place in all chroots or namespaces.  And no,
-> > you _can't_ make sure that fs is visible only in one place.  No fs can or
-> > has any business even trying.
-> 
-> What I don't understand here is why we need the hacks when we already
-> support sufficient mount magic to give each login session its own
-> private /tmp ?
+---
+ drivers/scsi/megaraid/megaraid_sas.c |  302 +++++++++++++++++++------
+ drivers/scsi/megaraid/megaraid_sas.h |    1
+ 2 files changed, 233 insertions(+), 70 deletions(-)
 
-An embedded system that does not have user logins but that does
-have applications that require separation, perhaps a moble communication
-device with application download capability, is just one example
-where the smack symlink implementation provides the required
-function without requiring application support.
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:03:59.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:03:59.000000000 -0700
+@@ -1802,6 +1802,81 @@ static void megasas_complete_cmd_dpc(uns
+ }
  
+ /**
++ * megasas_issue_init_mfi -	Initializes the FW
++ * @instance:		Adapter soft state
++ *
++ * Issues the INIT MFI cmd
++ */
++static int
++megasas_issue_init_mfi(struct megasas_instance *instance)
++{
++	u32 context;
++
++	struct megasas_cmd *cmd;
++
++	struct megasas_init_frame *init_frame;
++	struct megasas_init_queue_info *initq_info;
++	dma_addr_t init_frame_h;
++	dma_addr_t initq_info_h;
++
++	/*
++	 * Prepare a init frame. Note the init frame points to queue info
++	 * structure. Each frame has SGL allocated after first 64 bytes. For
++	 * this frame - since we don't need any SGL - we use SGL's space as
++	 * queue info structure
++	 *
++	 * We will not get a NULL command below. We just created the pool.
++	 */
++	cmd = megasas_get_cmd(instance);
++
++	init_frame = (struct megasas_init_frame *)cmd->frame;
++	initq_info = (struct megasas_init_queue_info *)
++		((unsigned long)init_frame + 64);
++
++	init_frame_h = cmd->frame_phys_addr;
++	initq_info_h = init_frame_h + 64;
++
++	context = init_frame->context;
++	memset(init_frame, 0, MEGAMFI_FRAME_SIZE);
++	memset(initq_info, 0, sizeof(struct megasas_init_queue_info));
++	init_frame->context = context;
++
++	initq_info->reply_queue_entries = instance->max_fw_cmds + 1;
++	initq_info->reply_queue_start_phys_addr_lo = instance->reply_queue_h;
++
++	initq_info->producer_index_phys_addr_lo = instance->producer_h;
++	initq_info->consumer_index_phys_addr_lo = instance->consumer_h;
++
++	init_frame->cmd = MFI_CMD_INIT;
++	init_frame->cmd_status = 0xFF;
++	init_frame->queue_info_new_phys_addr_lo = initq_info_h;
++
++	init_frame->data_xfer_len = sizeof(struct megasas_init_queue_info);
++
++	/*
++	 * disable the intr before firing the init frame to FW
++	 */
++	instance->instancet->disable_intr(instance->reg_set);
++
++	/*
++	 * Issue the init frame in polled mode
++	 */
++
++	if (megasas_issue_polled(instance, cmd)) {
++		printk(KERN_ERR "megasas: Failed to init firmware\n");
++		megasas_return_cmd(instance, cmd);
++		goto fail_fw_init;
++	}
++
++	megasas_return_cmd(instance, cmd);
++
++	return 0;
++
++fail_fw_init:
++	return -EINVAL;
++}
++
++/**
+  * megasas_init_mfi -	Initializes the FW
+  * @instance:		Adapter soft state
+  *
+@@ -1814,15 +1889,7 @@ static int megasas_init_mfi(struct megas
+ 	u32 max_sectors_1;
+ 	u32 max_sectors_2;
+ 	struct megasas_register_set __iomem *reg_set;
+-
+-	struct megasas_cmd *cmd;
+ 	struct megasas_ctrl_info *ctrl_info;
+-
+-	struct megasas_init_frame *init_frame;
+-	struct megasas_init_queue_info *initq_info;
+-	dma_addr_t init_frame_h;
+-	dma_addr_t initq_info_h;
+-
+ 	/*
+ 	 * Map the message registers
+ 	 */
+@@ -1899,52 +1966,8 @@ static int megasas_init_mfi(struct megas
+ 		goto fail_reply_queue;
+ 	}
+ 
+-	/*
+-	 * Prepare a init frame. Note the init frame points to queue info
+-	 * structure. Each frame has SGL allocated after first 64 bytes. For
+-	 * this frame - since we don't need any SGL - we use SGL's space as
+-	 * queue info structure
+-	 *
+-	 * We will not get a NULL command below. We just created the pool.
+-	 */
+-	cmd = megasas_get_cmd(instance);
+-
+-	init_frame = (struct megasas_init_frame *)cmd->frame;
+-	initq_info = (struct megasas_init_queue_info *)
+-	    ((unsigned long)init_frame + 64);
+-
+-	init_frame_h = cmd->frame_phys_addr;
+-	initq_info_h = init_frame_h + 64;
+-
+-	memset(init_frame, 0, MEGAMFI_FRAME_SIZE);
+-	memset(initq_info, 0, sizeof(struct megasas_init_queue_info));
+-
+-	initq_info->reply_queue_entries = instance->max_fw_cmds + 1;
+-	initq_info->reply_queue_start_phys_addr_lo = instance->reply_queue_h;
+-
+-	initq_info->producer_index_phys_addr_lo = instance->producer_h;
+-	initq_info->consumer_index_phys_addr_lo = instance->consumer_h;
+-
+-	init_frame->cmd = MFI_CMD_INIT;
+-	init_frame->cmd_status = 0xFF;
+-	init_frame->queue_info_new_phys_addr_lo = initq_info_h;
+-
+-	init_frame->data_xfer_len = sizeof(struct megasas_init_queue_info);
+-
+-	/*
+-	 * disable the intr before firing the init frame to FW
+-	 */
+-	instance->instancet->disable_intr(instance->reg_set);
+-
+-	/*
+-	 * Issue the init frame in polled mode
+-	 */
+-	if (megasas_issue_polled(instance, cmd)) {
+-		printk(KERN_DEBUG "megasas: Failed to init firmware\n");
++	if (megasas_issue_init_mfi(instance))
+ 		goto fail_fw_init;
+-	}
+-
+-	megasas_return_cmd(instance, cmd);
+ 
+ 	ctrl_info = kmalloc(sizeof(struct megasas_ctrl_info), GFP_KERNEL);
+ 
+@@ -1980,7 +2003,6 @@ static int megasas_init_mfi(struct megas
+ 	return 0;
+ 
+       fail_fw_init:
+-	megasas_return_cmd(instance, cmd);
+ 
+ 	pci_free_consistent(instance->pdev, reply_q_sz,
+ 			    instance->reply_queue, instance->reply_queue_h);
+@@ -2262,6 +2284,28 @@ static int megasas_io_attach(struct mega
+ 	return 0;
+ }
+ 
++static int
++megasas_set_dma_mask(struct pci_dev *pdev)
++{
++	/*
++	 * All our contollers are capable of performing 64-bit DMA
++	 */
++	if (IS_DMA64) {
++		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) != 0) {
++
++			if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
++				goto fail_set_dma_mask;
++		}
++	} else {
++		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
++			goto fail_set_dma_mask;
++	}
++	return 0;
++
++fail_set_dma_mask:
++	return 1;
++}
++
+ /**
+  * megasas_probe_one -	PCI hotplug entry point
+  * @pdev:		PCI device structure
+@@ -2295,19 +2339,8 @@ megasas_probe_one(struct pci_dev *pdev, 
+ 
+ 	pci_set_master(pdev);
+ 
+-	/*
+-	 * All our contollers are capable of performing 64-bit DMA
+-	 */
+-	if (IS_DMA64) {
+-		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) != 0) {
+-
+-			if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
+-				goto fail_set_dma_mask;
+-		}
+-	} else {
+-		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
+-			goto fail_set_dma_mask;
+-	}
++	if (megasas_set_dma_mask(pdev))
++		goto fail_set_dma_mask;
+ 
+ 	host = scsi_host_alloc(&megasas_template,
+ 			       sizeof(struct megasas_instance));
+@@ -2489,8 +2522,10 @@ static void megasas_flush_cache(struct m
+ /**
+  * megasas_shutdown_controller -	Instructs FW to shutdown the controller
+  * @instance:				Adapter soft state
++ * @opcode:				Shutdown/Hibernate
+  */
+-static void megasas_shutdown_controller(struct megasas_instance *instance)
++static void megasas_shutdown_controller(struct megasas_instance *instance,
++					u32 opcode)
+ {
+ 	struct megasas_cmd *cmd;
+ 	struct megasas_dcmd_frame *dcmd;
+@@ -2513,7 +2548,7 @@ static void megasas_shutdown_controller(
+ 	dcmd->flags = MFI_FRAME_DIR_NONE;
+ 	dcmd->timeout = 0;
+ 	dcmd->data_xfer_len = 0;
+-	dcmd->opcode = MR_DCMD_CTRL_SHUTDOWN;
++	dcmd->opcode = opcode;
+ 
+ 	megasas_issue_blocked_cmd(instance, cmd);
+ 
+@@ -2523,6 +2558,131 @@ static void megasas_shutdown_controller(
+ }
+ 
+ /**
++ * megasas_suspend -    driver suspend entry point
++ * @pdev:               PCI device structure
++ * @state:		PCI power state to suspend routine
++ */
++static int __devinit
++megasas_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	struct Scsi_Host *host;
++	struct megasas_instance *instance;
++
++	instance = pci_get_drvdata(pdev);
++	host = instance->host;
++
++	megasas_flush_cache(instance);
++	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
++	tasklet_kill(&instance->isr_tasklet);
++
++	pci_set_drvdata(instance->pdev, instance);
++	instance->instancet->disable_intr(instance->reg_set);
++	free_irq(instance->pdev->irq, instance);
++
++	pci_save_state(pdev);
++	pci_disable_device(pdev);
++
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++
++	return 0;
++}
++
++/**
++ * megasas_resume-      driver resume entry point
++ * @pdev:               PCI device structure
++ */
++static int __devinit
++megasas_resume(struct pci_dev *pdev)
++{
++	int rval;
++	struct Scsi_Host *host;
++	struct megasas_instance *instance;
++
++	instance = pci_get_drvdata(pdev);
++	host = instance->host;
++	pci_set_power_state(pdev, PCI_D0);
++	pci_enable_wake(pdev, PCI_D0, 0);
++	pci_restore_state(pdev);
++
++	/*
++	 * PCI prepping: enable device set bus mastering and dma mask
++	 */
++	rval = pci_enable_device(pdev);
++
++	if (rval) {
++		printk(KERN_ERR "megasas: Enable device failed\n");
++		return rval;
++	}
++
++	pci_set_master(pdev);
++
++	if (megasas_set_dma_mask(pdev))
++		goto fail_set_dma_mask;
++
++	/*
++	 * Initialize MFI Firmware
++	 */
++
++	*instance->producer = 0;
++	*instance->consumer = 0;
++
++	atomic_set(&instance->fw_outstanding, 0);
++
++	/*
++	 * We expect the FW state to be READY
++	 */
++	if (megasas_transition_to_ready(instance))
++		goto fail_ready_state;
++
++	if (megasas_issue_init_mfi(instance))
++		goto fail_init_mfi;
++
++	tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
++			(unsigned long)instance);
++
++	/*
++	 * Register IRQ
++	 */
++	if (request_irq(pdev->irq, megasas_isr, IRQF_SHARED,
++		"megasas", instance)) {
++		printk(KERN_ERR "megasas: Failed to register IRQ\n");
++		goto fail_irq;
++	}
++
++	instance->instancet->enable_intr(instance->reg_set);
++
++	/*
++	 * Initiate AEN (Asynchronous Event Notification)
++	 */
++	if (megasas_start_aen(instance))
++		printk(KERN_ERR "megasas: Start AEN failed\n");
++
++	return 0;
++
++fail_irq:
++fail_init_mfi:
++	if (instance->evt_detail)
++		pci_free_consistent(pdev, sizeof(struct megasas_evt_detail),
++				instance->evt_detail,
++				instance->evt_detail_h);
++
++	if (instance->producer)
++		pci_free_consistent(pdev, sizeof(u32), instance->producer,
++				instance->producer_h);
++	if (instance->consumer)
++		pci_free_consistent(pdev, sizeof(u32), instance->consumer,
++				instance->consumer_h);
++	scsi_host_put(host);
++
++fail_set_dma_mask:
++fail_ready_state:
++
++	pci_disable_device(pdev);
++
++	return -ENODEV;
++}
++
++/**
+  * megasas_detach_one -	PCI hot"un"plug entry point
+  * @pdev:		PCI device structure
+  */
+@@ -2537,7 +2697,7 @@ static void megasas_detach_one(struct pc
+ 
+ 	scsi_remove_host(instance->host);
+ 	megasas_flush_cache(instance);
+-	megasas_shutdown_controller(instance);
++	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+ 	tasklet_kill(&instance->isr_tasklet);
+ 
+ 	/*
+@@ -2976,6 +3136,8 @@ static struct pci_driver megasas_pci_dri
+ 	.id_table = megasas_pci_table,
+ 	.probe = megasas_probe_one,
+ 	.remove = __devexit_p(megasas_detach_one),
++	.suspend = megasas_suspend,
++	.resume = megasas_resume,
+ 	.shutdown = megasas_shutdown,
+ };
+ 
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
+@@ -117,6 +117,7 @@
+ #define MR_FLUSH_DISK_CACHE			0x02
+ 
+ #define MR_DCMD_CTRL_SHUTDOWN			0x01050000
++#define MR_DCMD_HIBERNATE_SHUTDOWN		0x01060000
+ #define MR_ENABLE_DRIVE_SPINDOWN		0x01
+ 
+ #define MR_DCMD_CTRL_EVENT_GET_INFO		0x01040100
 
-Casey Schaufler
-casey@schaufler-ca.com
