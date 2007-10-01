@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXJAWJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbXJAWLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXJAWJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 18:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbXJAWJV
+	id S1757904AbXJAWLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 18:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXJAWLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 18:09:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:35520 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756272AbXJAWJT (ORCPT
+	Mon, 1 Oct 2007 18:11:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:42475 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbXJAWLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 18:09:19 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 1 Oct 2007 15:09:16 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
-       ego@in.ibm.com, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-In-Reply-To: <20071001192136.GC29100@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0710011249390.25942@alien.or.mcafeemobile.com>
-References: <20070923173807.GA292@tv-sign.ru> <20070924001509.GG11123@linux.vnet.ibm.com>
- <20070926151351.GA328@tv-sign.ru> <20070927154652.GE16652@linux.vnet.ibm.com>
- <20070928144714.GA397@tv-sign.ru> <20070928185759.GC9153@linux.vnet.ibm.com>
- <20070930163102.GA374@tv-sign.ru> <Pine.LNX.4.64.0709301549160.19355@alien.or.mcafeemobile.com>
- <20071001013739.GB12494@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0710011129440.25942@alien.or.mcafeemobile.com>
- <20071001192136.GC29100@linux.vnet.ibm.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 1 Oct 2007 18:11:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qSi2PJFZj8DlLQSsk4NZ5IEIABs/dat7ejCIRgiyzfOEG89Lp7VIdpW5cbLvgpRMkqb5osTMhKzHPBE7DJ1Bcu90CmikHLelkunzw2GQClTvKFPdhcdv6fTDE1s6OYMyLfiwpHOjdVyyMFaLvY6Psp72Xc1w+Ea39/YyqmyW4ZU=
+Message-ID: <47016FEE.6090608@googlemail.com>
+Date: Tue, 02 Oct 2007 00:08:46 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-10-01-04-09.tar.gz uploaded
+References: <200710011115.l91BFRvg012762@imap1.linux-foundation.org> <47016AFB.7040307@googlemail.com> <Pine.LNX.4.64.0710012352450.22331@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0710012352450.22331@twin.jikos.cz>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Paul E. McKenney wrote:
+Jiri Kosina wrote:
+> On Mon, 1 Oct 2007, Gabriel C wrote:
+> 
+>>>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-10-01-04-09.tar.gz
+>> I have a question about these snapshots , what is the right way to apply 
+>> the patches ? some magic script ? =)
+> 
+> There is a 'series' file, which tells you the correct order. If you are 
+> planning to make any patches on top of mm, you should use quilt for this.
 
-> That would indeed be one approach that CPU designers could take to
-> avoid being careless or sadistic.  ;-)
+Thx for your quick reply  but I cannot find any series file in this tarball.
 
-That'd be the easier (unique maybe) approach too for them, from an silicon 
-complexity POV. Distinguishing between different CPUs stores once inside a 
-shared store buffer, would require tagging them in some way. That'd defeat 
-most of the pros of having a shared store buffer ;)
+Regards,
 
-
-
-- Davide
-
-
+Gabriel
