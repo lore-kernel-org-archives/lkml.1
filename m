@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbXJAUQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXJAUZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbXJAUQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 16:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbXJAUQF
+	id S1755141AbXJAUZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 16:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXJAUZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 16:16:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57948 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbXJAUQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 16:16:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: regression in 2.6.23-rc8 - power off failed
-Date: Mon, 1 Oct 2007 22:30:22 +0200
+	Mon, 1 Oct 2007 16:25:51 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:40776 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751806AbXJAUZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 16:25:50 -0400
+X-IronPort-AV: i="4.21,217,1188792000"; 
+   d="scan'208"; a="52957390:sNHT314405350"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: david@lang.hm
+Subject: Re: Out of memory management in embedded systems
+Date: Mon, 1 Oct 2007 16:25:47 -0400
 User-Agent: KMail/1.9.5
-Cc: Bill Davidsen <davidsen@tmr.com>, Mark Lord <lkml@rtr.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-References: <20070929005453.GA4475@erig.dyndns.org> <200709292308.13593.rjw@sisk.pl> <4701349A.30200@suse.de>
-In-Reply-To: <4701349A.30200@suse.de>
+Cc: "Bernd Eckenfels" <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
+References: <E1IcGOu-0007sH-00@calista.eckenfels.net> <Pine.LNX.4.64.0710010916570.20712@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0710010916570.20712@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710012230.23650.rjw@sisk.pl>
+Message-Id: <200710011625.47466.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Oct 2007 20:25:09.0340 (UTC) FILETIME=[2970E1C0:01C80469]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 1 October 2007 19:55, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 29 September 2007 22:47, Bill Davidsen wrote:
-> >> Alexey Starikovskiy wrote:
-> >>
-> >>> -static void
-> >>> -acpi_power_off (void)
-> >>> -{
-> >>> -       printk("%s called\n",__FUNCTION__);
-> >>> -       /* Some SMP machines only can poweroff in boot CPU */
-> >>> -       set_cpus_allowed(current, cpumask_of_cpu(0));
-> >>> ACPI in kernel 2.6.12 did disable non-boot cpus too in powe_off.
-> >>> Later only comment was left for some reason...
-> >>>
-> >> Am I midreading that code, or does it really assume that the boot cpu is 
-> >> always zero? Or just that zero will be able to do the power off?
-> >>
-> >> In any case I have had an SMP machine which did not have a CPU zero, and 
-> >> it was discussed here, I believe. Wonder what happens if you set 
-> >> affinity to a CPU you don't have...
-> > 
-> > Good question, but it also caused other problems to appear, IIRC.
-> > 
-> > IMHO, it's better to call disable_nonboot_cpus() in an appropriate place
-> > anyway.
-> > 
-> > Greetings,
-> > Rafael
-> Ok, here is commit which removed the code in question from acpi_power_off:
+On Mon 1 Oct 2007 12:27, david@lang.hm pondered:
+> overcommit by default is optimistic that if the program requesting the 
+> memory actually tries to use it there will be enough (both the fork-exec
+> situation and the copy-on-write memory of real forks mean that the
+> system ends up useing much less memory then is theoretically allocated).
 > 
-> commit 6660316cb7a1a2c59a73a52870490c0f782f45c1
-> Author: Eric W. Biederman <ebiederm@xmission.com>
-> Date:   Tue Jul 26 12:16:00 2005 -0600
-> 
->     [PATCH] acpi_power_off: Don't switch to the boot cpu
-> 
->     machine_power_off on i386 and x86_64 now switch to the
->     boot cpu out of paranoia and because the MP Specification indicates it
->     is a good idea on reboot, so for those architectures it is a noop.
->     I can't see anything in the acpi spec that requires you to be on
->     the boot cpu to power off the system, so this should not be an issue
->     for ia64.  In addition ia64 has the altix a massive multi-node
->     system where switching to the boot cpu sounds insane as we may
->     hot removed the boot cpu.
-> 
->     Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> switching it to be pessimistic (overcommit 2 IIRC) means that the OOM 
+> handler will never kick in, but it means that programs will be told that
+> there isn't any memory when there really is enough for the program to 
+> work.
 
-I see. :-)
+I have set it to 2, and still get the OOM if I malloc too much... I never get 
+a null back from malloc, no matter what I try.
 
-Anyway, I think we should atually go UP before executing sysdev_shutdown().
-
-How we are going to do that is another matter.
-
-Greetings,
-Rafael
+-Robin
