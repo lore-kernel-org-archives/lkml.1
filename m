@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbXJATzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXJAT4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbXJATzw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 15:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXJATzo
+	id S1756057AbXJAT4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 15:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbXJAT4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 15:55:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51849 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbXJATzo (ORCPT
+	Mon, 1 Oct 2007 15:56:04 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45790 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbXJAT4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 15:55:44 -0400
-Date: Mon, 1 Oct 2007 12:53:50 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: davids@webmaster.com
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20071001125350.055ef9bb@laptopd505.fenrus.org>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGENHHCAC.davids@webmaster.com>
-References: <20071001162507.GA22791@elte.hu>
-	<MDEHLPKNGKAHNMBLJOLKGENHHCAC.davids@webmaster.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 1 Oct 2007 15:56:02 -0400
+To: haveblue@us.ibm.com
+CC: linux-kernel@vger.kernel.org, hch@infradead.org, miklos@szeredi.hu,
+       haveblue@us.ibm.com
+In-reply-to: <20070928181333.F3073089@kernel> (message from Dave Hansen on
+	Fri, 28 Sep 2007 11:13:33 -0700)
+Subject: Re: [RFC][PATCH 3/8] move mnt_want_write() out of may_open()
+References: <20070928181330.27B367AC@kernel> <20070928181333.F3073089@kernel>
+Message-Id: <E1IcRMo-0000Qm-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 01 Oct 2007 21:55:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 09:49:35 -0700
-"David Schwartz" <davids@webmaster.com> wrote:
+> @@ -1687,10 +1679,8 @@ static int open_namei_create(struct name
+>  	struct dentry *dir = nd->dentry;
+>  
+>  	/*
+> -	 * This ensures that the mnt stays writable
+> -	 * over the vfs_create() call to may_open(),
+> -	 * which takes a more persistent
+> -	 * mnt_want_write().
+> +	 * This mnt_want_write() is potentially persistent,
+> +	 * and balanced in __fput()
+>  	 */
+>  	error = mnt_want_write(nd->mnt);
+>  	if (error) {
 
-> 
-> > * Jarek Poplawski <jarkao2@o2.pl> wrote:
-> >
-> > > BTW, it looks like risky to criticise sched_yield too much: some
-> > > people can misinterpret such discussions and stop using this at
-> > > all, even where it's right.
-> 
-> > Really, i have never seen a _single_ mainstream app where the use of
-> > sched_yield() was the right choice.
-> 
-> It can occasionally be an optimization. You may have a case where you
-> can do something very efficiently if a lock is not held, but you
-> cannot afford to wait for the lock to be released. So you check the
-> lock, if it's held, you yield and then check again. If that fails,
-> you do it the less optimal way (for example, dispatching it to a
-> thread that *can* afford to wait).
+I'm confused: isn't it the mnt_want_write() in __dentry_open(), that
+is balanced in __fput()?
 
-
-at this point it's "use a futex" instead; once you're doing system
-calls you might as well use the right one for what you're trying to
-achieve.
+Miklos
