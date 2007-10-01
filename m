@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXJAB2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXJACYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbXJAB2X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 21:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXJAB2P
+	id S1752682AbXJACYq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 22:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXJACYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 21:28:15 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:37670
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750757AbXJAB2O (ORCPT
+	Sun, 30 Sep 2007 22:24:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43842 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751496AbXJACYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 21:28:14 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Documentation/x86_64/00-INDEX
-Date: Sun, 30 Sep 2007 20:28:09 -0500
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, vojtech@suse.cz
-References: <200709281944.02953.rob@landley.net> <20070930203503.GA9748@one.firstfloor.org>
-In-Reply-To: <20070930203503.GA9748@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 30 Sep 2007 22:24:38 -0400
+Date: Sun, 30 Sep 2007 19:24:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.23-rc8-mm2] System hangs (loops?) during boot
+Message-Id: <20070930192419.c8b6e96b.akpm@linux-foundation.org>
+In-Reply-To: <200710010207.34430.elendil@planet.nl>
+References: <200709282225.21530.elendil@planet.nl>
+	<200709302350.30612.elendil@planet.nl>
+	<20071001000037.475473bd@laptop.hypervisor.org>
+	<200710010207.34430.elendil@planet.nl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709302028.09949.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 September 2007 3:35:03 pm Andi Kleen wrote:
-> On Fri, Sep 28, 2007 at 07:44:02PM -0500, Rob Landley wrote:
-> > From: Rob Landley <rob@landley.net>
-> >
-> > Add Documentation/x86_64/00-INDEX
->
-> What's the point of this file?
+On Mon, 1 Oct 2007 02:07:33 +0200 Frans Pop <elendil@planet.nl> wrote:
 
-It's for http://kernel.org/doc/Documentation/
+> > That excludes all the extra stuff in -mm and should give us a good hint
+> > whether HPET is really at fault.
+> 
+> The system does boot with rc8 + hrt1.
+> 
+> Andrew: any suggestions on how to trace the "real" culprit for the hang?
 
-I have a script that converts each 00-INDEX files into an index.html file, and 
-then uses that instead of just a directory listing.  I'm trying to get 
-complete coverage (a 00-INDEX file for each directory), although what I 
-really need is no directories with _partial_ 00-INDEX files (because then 
-using index.html instead of showing the directory listing would hide files).
+Not really.  Ordinarily one could move hpet-force-enable-on-ich34.patch to
+start-of-series, then verify that mainline+hpet-force-enable-on-ich34.patch
+works correctly, then just bisect all the other patches.
 
-If you want this directory to be special and _not_ have a 00-INDEX file, 
-that's fine by me.  It screws up my 404 link checker, but I can hardwire in 
-an exception for you...
+But tht doesn't work because hpet-force-enable-on-ich34.patch has a
+dependency on other patches in the hrt-related patch series, and it could
+be that the bug which you've exposed is already in mainline anyway.
 
-> > +boot-options.txt
-> > +	- AMD64-specific boot options.
->
-> The architecture is not called AMD64 under Linux.
+If you had a minimal, standalone hpet-force-enable-on-ich34.patch against
+mainline then you could test that against mainline.  If that also failed
+then you could git-bisect mainline, applying
+hpet-force-enable-on-ich34.patch each time (I've done that before).  But
+this assumes that you're searching for a regression in minaline.  It may
+never have worked.
 
-That line was cut and paste from the first line of boot-options.txt.  If you'd 
-like to suggest another description, I'm all ears and can update the patch to 
-touch boot-options.txt at the same time.
 
-> > +mm.txt
-> > +	- Memory layout of x86-64 (4 level page tables, 46 bits physical).
->
-> I don't think such details as the 46 bit number should be in an index file.
-
-*shrug*  Ok.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
