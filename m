@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbXJAPDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbXJAPDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbXJAPDH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 11:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXJAPC4
+	id S1755481AbXJAPDW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 11:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXJAPDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 11:02:56 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37494 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751806AbXJAPCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 11:02:55 -0400
-Date: Mon, 1 Oct 2007 17:01:50 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: nVidia's MCP61 ethernet card needs quirk for wrong
- class
-In-Reply-To: <47010A34.9000709@pobox.com>
-Message-ID: <Pine.LNX.4.64.0710011656090.7567@jikos.suse.cz>
-References: <Pine.LNX.4.64.0710011615390.7567@jikos.suse.cz> <47010832.8010401@pobox.com>
- <Pine.LNX.4.64.0710011647000.7567@jikos.suse.cz> <47010A34.9000709@pobox.com>
+	Mon, 1 Oct 2007 11:03:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56255 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754895AbXJAPDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 11:03:10 -0400
+Date: Mon, 1 Oct 2007 08:02:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tim Shimmin <tes@sgi.com>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.23 - revert a commit
+In-Reply-To: <20071001072350.DF61C58C4C0A@chook.melbourne.sgi.com>
+Message-ID: <alpine.LFD.0.999.0710010753500.3579@woody.linux-foundation.org>
+References: <20071001072350.DF61C58C4C0A@chook.melbourne.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Jeff Garzik wrote:
 
-> There are other network devices that do not claim 
-> PCI_CLASS_NETWORK_ETHERNET either.  
 
-Nor any other PCI_CLASS_NETWORK subclass?
+On Mon, 1 Oct 2007, Tim Shimmin wrote:
+> 
+> Lachlan's description:
+>     This fix is for a problem that has been in XFS since day one.
+>     [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
+	...
 
-> Since this is a purely cosmetic issue -- said userland tools would need 
-> to support weird cases _anyway_ -- I am not inclined to apply the patch.
+Why wasn't this in the commit logs? Now it just says it was reverted, with 
+no actual reasoning *why*. And it apparently wasn't so obvious that no 
+such reasoning is needed.
 
-What would you recommend as a method for userspace to detect whether given 
-hardware is a network card, supposing that there is no driver bound to it 
-yet?
+Gah. I ended up amending the commit and updating it with the comment.
 
-> The kernel could do a lot to make things "prettier," but that would lead 
-> to lots of additional code bloat.  It's easier to export the world as it 
-> is, and let the chips fall where they may.
-
-OK, I don't seem to agree with you on this matter, let's wait for Greg's 
-oppinion.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+		Linus
