@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXJARz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbXJAR45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbXJARz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 13:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXJARzu
+	id S1755938AbXJAR45 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 13:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbXJAR4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 13:55:50 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:57474 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752730AbXJARzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 13:55:50 -0400
-Message-ID: <4701349A.30200@suse.de>
-Date: Mon, 01 Oct 2007 21:55:38 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070924)
+	Mon, 1 Oct 2007 13:56:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43993 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752469AbXJAR4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 13:56:49 -0400
+Message-ID: <470134CC.3080100@redhat.com>
+Date: Mon, 01 Oct 2007 13:56:28 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Bill Davidsen <davidsen@tmr.com>, Mark Lord <lkml@rtr.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: regression in 2.6.23-rc8 - power off failed
-References: <20070929005453.GA4475@erig.dyndns.org> <46FE6E17.6070109@suse.de> <46FEB9CA.9090703@tmr.com> <200709292308.13593.rjw@sisk.pl>
-In-Reply-To: <200709292308.13593.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fwd: x86_64 and AMD with C1E
+References: <20071001101532.025d652f@localhost> <p73r6kf6uwz.fsf@bingen.suse.de> <b70f2f960710010546k4658aa1ay466f243ac707c989@mail.gmail.com> <b70f2f960710010550i30ae48bu31f137fe46d70611@mail.gmail.com> <alpine.LRH.0.999.0710011612001.7353@www.tglx.de> <20071001143225.GA19797@one.firstfloor.org> <alpine.LRH.0.999.0710011652470.7353@www.tglx.de> <20071001152153.GB19797@one.firstfloor.org>
+In-Reply-To: <20071001152153.GB19797@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 29 September 2007 22:47, Bill Davidsen wrote:
->> Alexey Starikovskiy wrote:
->>
->>> -static void
->>> -acpi_power_off (void)
->>> -{
->>> -       printk("%s called\n",__FUNCTION__);
->>> -       /* Some SMP machines only can poweroff in boot CPU */
->>> -       set_cpus_allowed(current, cpumask_of_cpu(0));
->>> ACPI in kernel 2.6.12 did disable non-boot cpus too in powe_off.
->>> Later only comment was left for some reason...
->>>
->> Am I midreading that code, or does it really assume that the boot cpu is 
->> always zero? Or just that zero will be able to do the power off?
->>
->> In any case I have had an SMP machine which did not have a CPU zero, and 
->> it was discussed here, I believe. Wonder what happens if you set 
->> affinity to a CPU you don't have...
+On 10/01/2007 11:21 AM, Andi Kleen wrote:
 > 
-> Good question, but it also caused other problems to appear, IIRC.
+> Also I'm not sure but I suspect non Intel HPETs have less than
+> three timers. Certainly they generally miss the 64bitness.
 > 
-> IMHO, it's better to call disable_nonboot_cpus() in an appropriate place
-> anyway.
-> 
-> Greetings,
-> Rafael
-Ok, here is commit which removed the code in question from acpi_power_off:
 
-commit 6660316cb7a1a2c59a73a52870490c0f782f45c1
-Author: Eric W. Biederman <ebiederm@xmission.com>
-Date:   Tue Jul 26 12:16:00 2005 -0600
+nVidia C51/MCP51 chipset, AMD Turion X2:
 
-    [PATCH] acpi_power_off: Don't switch to the boot cpu
+hpet0: 3 32-bit timers, 25000000 Hz
 
-    machine_power_off on i386 and x86_64 now switch to the
-    boot cpu out of paranoia and because the MP Specification indicates it
-    is a good idea on reboot, so for those architectures it is a noop.
-    I can't see anything in the acpi spec that requires you to be on
-    the boot cpu to power off the system, so this should not be an issue
-    for ia64.  In addition ia64 has the altix a massive multi-node
-    system where switching to the boot cpu sounds insane as we may
-    hot removed the boot cpu.
-
-    Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-Regards,
-Alex.
