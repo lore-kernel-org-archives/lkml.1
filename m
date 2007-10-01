@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXJAVqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXJAVrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbXJAVqY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbXJAVqP
+	id S1757447AbXJAVrR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXJAVrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:46:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41694 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753811AbXJAVqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:46:14 -0400
-Date: Mon, 1 Oct 2007 14:45:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: a.p.zijlstra@chello.nl, nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dgc@sgi.com, jens.axboe@oracle.com
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Message-Id: <20071001144543.4cfa1e44.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710011432300.20107@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com>
-	<20070919033643.763818012@sgi.com>
-	<200709280742.38262.nickpiggin@yahoo.com.au>
-	<Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
-	<1191002119.18147.80.camel@lappy>
-	<Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
-	<1191003950.18147.85.camel@lappy>
-	<20070929011311.8b51dedb.akpm@linux-foundation.org>
-	<1191055632.18147.101.camel@lappy>
-	<20070929020049.f73f4aea.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
-	<20071001143047.238dfe49.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0710011432300.20107@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Oct 2007 17:47:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:48575 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436AbXJAVrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 17:47:06 -0400
+From: Andi Kleen <ak@suse.de>
+To: patches@x86-64.org
+Subject: Re: [patches] [PATCH] [19/50] Experimental: detect if SVM is disabled by BIOS
+Date: Mon, 1 Oct 2007 23:45:22 +0200
+User-Agent: KMail/1.9.1
+Cc: Joerg Roedel <joro@8bytes.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+References: <200709221231.836138000@suse.de> <200710011847.50533.andi@firstfloor.org> <20071001201222.GB1404@8bytes.org>
+In-Reply-To: <20071001201222.GB1404@8bytes.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710012345.22851.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 14:38:55 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Mon, 1 Oct 2007, Andrew Morton wrote:
-> 
-> > Do slab and slub use the same underlying page size for each slab?
-> 
-> SLAB cannot pack objects as dense as SLUB and they have different 
-> algorithm to make the choice of order. Thus the number of objects per slab 
-> may vary between SLAB and SLUB and therefore also the choice of order to 
-> store these objects.
-> 
-> > Single data point: the CONFIG_SLAB boxes which I have access to here are
-> > using order-0 for radix_tree_node, so they won't be failing in the way in
-> > which Peter's machine is.
-> 
-> Upstream SLUB uses order 0 allocations for the radix tree.
 
-OK, that's a relief.
+> feature flag does not disappear when its disabled. But because with CPUs
+> having the SVM-lock feature it can be re-enabled in a secure way under
+> some circumstances
 
-> MM varies 
-> because the use of higher order allocs is more loose if the mobility 
-> algorithms are found to be active:
-> 
-> 2.6.23-rc8:
-> 
-> Name                   Objects Objsize    Space Slabs/Part/Cpu  O/S O %Fr %Ef Flg\
-> radix_tree_node          14281     552     9.9M     2432/948/1    7 0  38  79
+Who would reenable it in what circumstances? 
 
-Ah.  So the already-dropped
-slub-exploit-page-mobility-to-increase-allocation-order.patch was the
-culprit?
+-Andi
+
