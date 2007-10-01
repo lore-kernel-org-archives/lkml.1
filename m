@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbXJAVcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbXJAVex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbXJAVcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 17:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXJAVcC
+	id S1756529AbXJAVex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 17:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXJAVep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 17:32:02 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34922 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752628AbXJAVcA (ORCPT
+	Mon, 1 Oct 2007 17:34:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44817 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752913AbXJAVep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 17:32:00 -0400
-Date: Mon, 1 Oct 2007 14:30:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: a.p.zijlstra@chello.nl, nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dgc@sgi.com, jens.axboe@oracle.com
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Message-Id: <20071001143047.238dfe49.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com>
-	<20070919033643.763818012@sgi.com>
-	<200709280742.38262.nickpiggin@yahoo.com.au>
-	<Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
-	<1191002119.18147.80.camel@lappy>
-	<Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
-	<1191003950.18147.85.camel@lappy>
-	<20070929011311.8b51dedb.akpm@linux-foundation.org>
-	<1191055632.18147.101.camel@lappy>
-	<20070929020049.f73f4aea.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0710011354480.19779@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 1 Oct 2007 17:34:45 -0400
+Date: Mon, 1 Oct 2007 14:34:43 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: wibbling over the cpuset shed domain connnection
+Message-Id: <20071001143443.b873f70d.pj@sgi.com>
+In-Reply-To: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 13:55:29 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Sat, 29 Sep 2007, Andrew Morton wrote:
+In -mm merge plans for 2.6.24, Andrew wrote:
+> cpuset-remove-sched-domain-hooks-from-cpusets.patch
 > 
-> > > atomic allocations. And with SLUB using higher order pages, atomic !0
-> > > order allocations will be very very common.
-> > 
-> > Oh OK.
-> > 
-> > I thought we'd already fixed slub so that it didn't do that.  Maybe that
-> > fix is in -mm but I don't think so.
-> > 
-> > Trying to do atomic order-1 allocations on behalf of arbitray slab caches
-> > just won't fly - this is a significant degradation in kernel reliability,
-> > as you've very easily demonstrated.
-> 
-> Ummm... SLAB also does order 1 allocations. We have always done them.
-> 
-> See mm/slab.c
-> 
-> /*
->  * Do not go above this order unless 0 objects fit into the slab.
->  */
-> #define BREAK_GFP_ORDER_HI      1
-> #define BREAK_GFP_ORDER_LO      0
-> static int slab_break_gfp_order = BREAK_GFP_ORDER_LO;
+>   Paul continues to wibble over this.  Hold, I guess.
 
-Do slab and slub use the same underlying page size for each slab?
+Oh dear ... after looking at the following to figure out what
+a wibble is, I wonder which one Andrew had in mind:
 
-Single data point: the CONFIG_SLAB boxes which I have access to here are
-using order-0 for radix_tree_node, so they won't be failing in the way in
-which Peter's machine is.
+  http://www.urbandictionary.com/define.php?term=wibble
 
-I've never ever before seen reports of page allocation failures in the
-radix-tree node allocation code, and that's the bottom line.  This is just
-a drop-dead must-fix show-stopping bug.  We cannot rely upon atomic order-1
-allocations succeeding so we cannot use them for radix-tree nodes.  Nor for
-lots of other things which we have no chance of identifying.
+The insanity, the rubbish, being overwhelmed, ... ?
 
-Peter, is this bug -mm only, or is 2.6.23 similarly failing?
+<grin>
+
+If one of Nick or I can knock some sense into the others head,
+then this saga should come to a close soon.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
