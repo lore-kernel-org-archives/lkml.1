@@ -1,172 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXJAMQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbXJAMdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbXJAMQS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 08:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXJAMQK
+	id S1752140AbXJAMdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 08:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXJAMdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 08:16:10 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:37201 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbXJAMQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 08:16:09 -0400
-Date: Mon, 1 Oct 2007 16:15:53 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] Uninline fork.c/exit.c
-Message-ID: <20071001121553.GA6153@localhost.sw.ru>
+	Mon, 1 Oct 2007 08:33:08 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:3894 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbXJAMdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 08:33:06 -0400
+Date: Mon, 1 Oct 2007 14:32:30 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Pierre-Yves Paulus <py@idlum.be>
+Cc: linux-kernel@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
+       BlueZ development <bluez-devel@lists.sourceforge.net>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: Warnings and Oops on 2.6.23-rc6 while activily using rfcomm
+ links (mm/slab.c)
+Message-ID: <20071001143230.3c370b2e@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <46FD2CA0.3050704@idlum.be>
+References: <46F92364.3080603@idlum.be>
+	<46F952BD.4010009@redhat.com>
+	<46FA5E2E.3010300@idlum.be>
+	<20070927085658.1c66f1c8@gondolin.boeblingen.de.ibm.com>
+	<46FBC1AE.4020404@idlum.be>
+	<46FBF17A.6030009@idlum.be>
+	<20070928085438.4eb5a38f@gondolin.boeblingen.de.ibm.com>
+	<46FD1200.9020407@idlum.be>
+	<46FD1670.5070109@idlum.be>
+	<46FD2CA0.3050704@idlum.be>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Save ~650 bytes here.
+On Fri, 28 Sep 2007 18:32:32 +0200,
+Pierre-Yves Paulus <py@idlum.be> wrote:
 
-add/remove: 4/0 grow/shrink: 0/7 up/down: 430/-1088 (-658)
-function                                     old     new   delta
-__copy_fs_struct                               -     202    +202
-__put_fs_struct                                -     112    +112
-__exit_fs                                      -      58     +58
-__exit_files                                   -      58     +58
-exit_files                                    58       2     -56
-put_fs_struct                                112       5    -107
-exit_fs                                      161       2    -159
-sys_unshare                                  774     590    -184
-copy_process                                4031    3840    -191
-do_exit                                     1791    1597    -194
-copy_fs_struct                               202       5    -197
+This looks more informational, thanks.
 
-No difference in lmbench lat_proc tests on 2-way Opteron 246.
-Smaaaal degradation on UP P4 (within errors).
+> DEV: Unregistering device. ID = 'rfcomm0'
+> PM: Removing info for No Bus:rfcomm0
+> kobject_uevent_env
+> fill_kobj_path: path = '/class/tty/rfcomm0'
+> fill_kobj_path: path = 
+> '/devices/pci0000:00/0000:00:0f.4/usb1/1-1/1-1.5/1-1.5.1/1-1.5.1:1.0/hci2/acl00126253F906'
+> kobject rfcomm0: cleaning up
+> device_create_release called for rfcomm0
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+Here rfcomm0 was unregistered and released.
 
- kernel/exit.c |    6 +++---
- kernel/fork.c |   20 ++++++++++----------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+> bus bluetooth: remove device acl00126253F906
+> PM: Removing info for bluetooth:acl00126253F906
+> kobject_uevent_env
+> fill_kobj_path: path = 
+> '/devices/pci0000:00/0000:00:0f.4/usb1/1-1/1-1.5/1-1.5.1/1-1.5.1:1.0/hci2/acl00126253F906'
+> kobject acl00126253F906: cleaning up
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -493,7 +493,7 @@ void reset_files_struct(struct task_struct *tsk, struct files_struct *files)
- }
- EXPORT_SYMBOL(reset_files_struct);
- 
--static inline void __exit_files(struct task_struct *tsk)
-+static void __exit_files(struct task_struct *tsk)
- {
- 	struct files_struct * files = tsk->files;
- 
-@@ -510,7 +510,7 @@ void exit_files(struct task_struct *tsk)
- 	__exit_files(tsk);
- }
- 
--static inline void __put_fs_struct(struct fs_struct *fs)
-+static void __put_fs_struct(struct fs_struct *fs)
- {
- 	/* No need to hold fs->lock if we are killing it */
- 	if (atomic_dec_and_test(&fs->count)) {
-@@ -531,7 +531,7 @@ void put_fs_struct(struct fs_struct *fs)
- 	__put_fs_struct(fs);
- }
- 
--static inline void __exit_fs(struct task_struct *tsk)
-+static void __exit_fs(struct task_struct *tsk)
- {
- 	struct fs_struct * fs = tsk->fs;
- 
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -195,7 +195,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
- }
- 
- #ifdef CONFIG_MMU
--static inline int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
-+static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
- {
- 	struct vm_area_struct *mpnt, *tmp, **pprev;
- 	struct rb_node **rb_link, *rb_parent;
-@@ -573,7 +573,7 @@ fail_nomem:
- 	return retval;
- }
- 
--static inline struct fs_struct *__copy_fs_struct(struct fs_struct *old)
-+static struct fs_struct *__copy_fs_struct(struct fs_struct *old)
- {
- 	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
- 	/* We don't need to lock fs - think why ;-) */
-@@ -605,7 +605,7 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
- 
- EXPORT_SYMBOL_GPL(copy_fs_struct);
- 
--static inline int copy_fs(unsigned long clone_flags, struct task_struct * tsk)
-+static int copy_fs(unsigned long clone_flags, struct task_struct * tsk)
- {
- 	if (clone_flags & CLONE_FS) {
- 		atomic_inc(&current->fs->count);
-@@ -808,7 +808,7 @@ int unshare_files(void)
- 
- EXPORT_SYMBOL(unshare_files);
- 
--static inline int copy_sighand(unsigned long clone_flags, struct task_struct * tsk)
-+static int copy_sighand(unsigned long clone_flags, struct task_struct * tsk)
- {
- 	struct sighand_struct *sig;
- 
-@@ -831,7 +831,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
- 		kmem_cache_free(sighand_cachep, sighand);
- }
- 
--static inline int copy_signal(unsigned long clone_flags, struct task_struct * tsk)
-+static int copy_signal(unsigned long clone_flags, struct task_struct * tsk)
- {
- 	struct signal_struct *sig;
- 	int ret;
-@@ -911,7 +911,7 @@ void __cleanup_signal(struct signal_struct *sig)
- 	kmem_cache_free(signal_cachep, sig);
- }
- 
--static inline void cleanup_signal(struct task_struct *tsk)
-+static void cleanup_signal(struct task_struct *tsk)
- {
- 	struct signal_struct *sig = tsk->signal;
- 
-@@ -921,7 +921,7 @@ static inline void cleanup_signal(struct task_struct *tsk)
- 		__cleanup_signal(sig);
- }
- 
--static inline void copy_flags(unsigned long clone_flags, struct task_struct *p)
-+static void copy_flags(unsigned long clone_flags, struct task_struct *p)
- {
- 	unsigned long new_flags = p->flags;
- 
-@@ -939,7 +939,7 @@ asmlinkage long sys_set_tid_address(int __user *tidptr)
- 	return current->pid;
- }
- 
--static inline void rt_mutex_init_task(struct task_struct *p)
-+static void rt_mutex_init_task(struct task_struct *p)
- {
- 	spin_lock_init(&p->pi_lock);
- #ifdef CONFIG_RT_MUTEXES
-@@ -1338,7 +1338,7 @@ struct task_struct * __cpuinit fork_idle(int cpu)
- 	return task;
- }
- 
--static inline int fork_traceflag (unsigned clone_flags)
-+static int fork_traceflag (unsigned clone_flags)
- {
- 	if (clone_flags & CLONE_UNTRACED)
- 		return 0;
-@@ -1468,7 +1468,7 @@ void __init proc_caches_init(void)
-  * Check constraints on flags passed to the unshare system call and
-  * force unsharing of additional process context as appropriate.
-  */
--static inline void check_unshare_flags(unsigned long *flags_ptr)
-+static void check_unshare_flags(unsigned long *flags_ptr)
- {
- 	/*
- 	 * If unsharing a thread from a thread group, must also
+And here the corresponding physdev.
 
+> BUG: unable to handle kernel NULL pointer dereference at virtual address 
+> 00000000
+>   printing eip:
+> c0249e29
+> *pde = 00000000
+> Oops: 0000 [#1]
+> Modules linked in: rfcomm l2cap battery ipv6 dm_snapshot dm_mirror 
+> dm_mod softdog loop parport_pc parport floppy rtc pcspkr ac button 
+> psmouse serio_raw snd_cs5535audio snd_ac97_codec ac97_bus snd_pcm 
+> snd_timer snd soundcore snd_page_alloc geode_rng cs5535_gpio hci_usb 
+> bluetooth geode_aes blkcipher tsdev evdev usbhid hid reiserfs ide_disk 
+> generic amd74xx ide_core ohci_hcd sata_via ata_generic 8139cp libata 
+> 8139too usbcore mii scsi_mod thermal processor fan
+> CPU:    0
+> EIP:    0060:[<c0249e29>]    Not tainted VLI
+> EFLAGS: 00010017   (2.6.23-rc8 #1)
+> EIP is at skb_dequeue+0x23/0x4a
+> eax: 00000282   ebx: 00000282   ecx: 00000000   edx: caf8ab8c
+> esi: c8428d48   edi: c8428c00   ebp: c8428c0c   esp: c124ff60
+> ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> Process events/0 (pid: 5, ti=c124e000 task=c1243500 task.ti=c124e000)
+> Stack: caf8ab8c c024b0a1 c8428c00 d02f4075 c8428d60 c020eb8d c08978a8 
+> 00000000
+>         00000000 00000000 cf7ab680 c8428d48 c020eac4 00000000 c01279a9 
+> c124ffb4
+>         00000046 c1243500 cf7ab680 cf7ab680 c0127ffe c124ffd0 c01280b0 
+> 00000000
+> Call Trace:
+>   [<c024b0a1>] skb_queue_purge+0x11/0x17
+>   [<d02f4075>] rfcomm_tty_flush_buffer+0x1c/0x33 [rfcomm]
+>   [<c020eb8d>] do_tty_hangup+0xc9/0x2d0
+>   [<c020eac4>] do_tty_hangup+0x0/0x2d0
+>   [<c01279a9>] run_workqueue+0x7d/0x103
+>   [<c0127ffe>] worker_thread+0x0/0xbe
+>   [<c01280b0>] worker_thread+0xb2/0xbe
+>   [<c012a510>] autoremove_wake_function+0x0/0x35
+>   [<c012a363>] kthread+0x36/0x5b
+>   [<c012a32d>] kthread+0x0/0x5b
+>   [<c0104e17>] kernel_thread_helper+0x7/0x10
+>   =======================
+
+rfcomm0 is already freed, maybe this code is still trying to access it?
+
+> Code: 89 42 0a 5b 5e 5f 5d c3 53 89 c2 9c 58 90 8d b4 26 00 00 00 00 89 
+> c3 fa 90 8d b4 26 00 00 00 00 90 8b 0a 39 d1 75 04 31 c9 eb 17 <8b> 01 
+> ff 4a 08 89 02 89 50 04 c7 01 00 00 00 00 c7 41 04 00 00
+> EIP: [<c0249e29>] skb_dequeue+0x23/0x4a SS:ESP 0068:c124ff60
+> WARNING: at lib/kref.c:33 kref_get()
+>   [<c01c6db7>] kref_get+0x34/0x3d
+>   [<c01c61a9>] kobject_get+0xf/0x13
+>   [<c022578d>] get_device+0xe/0x14
+>   [<c02257a6>] device_move+0x13/0x114
+>   [<d02f4b7c>] rfcomm_tty_close+0x23/0x61 [rfcomm]
+>   [<c020f88d>] release_dev+0x1c0/0x54e
+>   [<d02f40e5>] rfcomm_dev_destruct+0x59/0x65 [rfcomm]
+>   [<d02f4725>] rfcomm_dev_ioctl+0x329/0x4d0 [rfcomm]
+>   [<c0130c96>] tick_program_event+0x2a/0x49
+>   [<c0248124>] release_sock+0xc/0x74
+>   [<c020fc22>] tty_release+0x7/0xa
+>   [<c015dabd>] __fput+0x93/0x147
+>   [<c015b66a>] filp_close+0x51/0x58
+>   [<c02a8b0e>] __sched_text_start+0x1d6/0x245
+>   [<c015c70b>] sys_close+0x54/0x83
+>   [<c0103c72>] syscall_call+0x7/0xb
+>   =======================
+> DEVICE: moving 'rfcomm0' to '<NULL>'
+> kobject <NULL>: cleaning up
+> device_create_release called for rfcomm0
+
+But here someone still tries to move rfcomm0 around? It already is gone
+and released... The code path has no reference on rfcomm0. (Well,
+device_move() tries to get a reference on the device to be moved, but
+that doesn't help since the device is already gone.)
+
+This looks like a race inside rfcomm. The device_unregister() either
+needs to be delayed until after device_move() has finished, or the
+thread calling device_move() needs to have a reference. (device_move()
+on an unregistered device should just fail but not oops.) Marcel?
