@@ -1,108 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbXJAMKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXJAMQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbXJAMKn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 08:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXJAMKe
+	id S1753643AbXJAMQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 08:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXJAMQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 08:10:34 -0400
-Received: from usermail.globalproof.net ([194.146.153.18]:58496 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbXJAMKd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 08:10:33 -0400
-From: "Denys" <nuclearcat@nuclearcat.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
-Date: Mon, 1 Oct 2007 15:10:15 +0300
-Message-Id: <20071001120859.M37178@nuclearcat.com>
-In-Reply-To: <4700ADB7.7050102@cosmosbay.com>
-References: <200709301425.37564.nickpiggin@yahoo.com.au> <20070930223503.M8966@nuclearcat.com> <47008CB0.7010808@cosmosbay.com> <20071001.001259.28812610.davem@davemloft.net> <20071001080339.M21850@nuclearcat.com> <4700ADB7.7050102@cosmosbay.com>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 194.146.154.161 (denys@visp.net.lb)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+	Mon, 1 Oct 2007 08:16:10 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37201 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751453AbXJAMQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 08:16:09 -0400
+Date: Mon, 1 Oct 2007 16:15:53 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] Uninline fork.c/exit.c
+Message-ID: <20071001121553.GA6153@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not able to compile kernel with patch
+Save ~650 bytes here.
 
-drivers/built-in.o: In function `secure_tcp_sequence_number':
-(.text+0x3ad02): undefined reference to `__divdi3'
-make: *** [.tmp_vmlinux1] Error 1
+add/remove: 4/0 grow/shrink: 0/7 up/down: 430/-1088 (-658)
+function                                     old     new   delta
+__copy_fs_struct                               -     202    +202
+__put_fs_struct                                -     112    +112
+__exit_fs                                      -      58     +58
+__exit_files                                   -      58     +58
+exit_files                                    58       2     -56
+put_fs_struct                                112       5    -107
+exit_fs                                      161       2    -159
+sys_unshare                                  774     590    -184
+copy_process                                4031    3840    -191
+do_exit                                     1791    1597    -194
+copy_fs_struct                               202       5    -197
 
-On Mon, 01 Oct 2007 10:20:07 +0200, Eric Dumazet wrote
-> Denys a :
-> > Well, i can play a bit more on "live" servers. I have now hot-swap server with
-> > full gentoo,  where i can rebuild any kernel you want, with any applied patch.
-> > But it looks more like not overhead, load becoming high too "spiky", and it is
-> > not just permantenly higher. Also it is not normal that all system becoming
-> > unresposive (for example ping 127.0.0.1 becoming 300ms for period, when usage
-> > softirq jumps to 100%).
-> >
-> >   
-> Could you try a pristine 2.6.22.9 and some patch in 
-> secure_tcp_sequence_number() like :
-> 
-> --- drivers/char/random.c.orig 2007-10-01 10:18:42.000000000 +0200
-> +++ drivers/char/random.c 2007-10-01 10:19:58.000000000 +0200
-> @@ -1554,7 +1554,7 @@
-> * That's funny, Linux has one built in! Use it!
-> * (Networks are faster now - should this be increased?)
-> */
-> - seq += ktime_get_real().tv64;
-> + seq += ktime_get_real().tv64 / 1000;
-> #if 0
-> printk("init_seq(%lx, %lx, %d, %d) = %d\n",
-> saddr, daddr, sport, dport, seq);
-> 
-> Thank you
-> 
-> > On Mon, 01 Oct 2007 00:12:59 -0700 (PDT), David Miller wrote
-> >   
-> >> From: Eric Dumazet <dada1@cosmosbay.com>
-> >> Date: Mon, 01 Oct 2007 07:59:12 +0200
-> >>
-> >>     
-> >>> No problem here on bigger servers, so I CC David Miller and netdev
-> >>> on this one.  AFAIK do_gettimeofday() and ktime_get_real() should
-> >>> use the same underlying hardware functions on PC and no performance
-> >>> problem should happen here.
-> >>>       
-> >> One thing that jumps out at me is that on 32-bit (and to a certain
-> >> extent on 64-bit) there is a lot of stack accesses and missed
-> >> optimizations because all of the work occurs, and gets expanded,
-> >> inside of ktime_get_real().
-> >>
-> >> The timespec_to_ktime() inside of there constructs the ktime_t return
-> >> value on the stack, then returns that as an aggregate to the caller.
-> >>
-> >> That cannot be without some cost.
-> >>
-> >> ktime_get_real() is definitely a candidate for inlining especially in
-> >> these kinds of cases where we'll happily get computations in local
-> >> registers instead of all of this on-stack nonsense.  And in several
-> >> cases (if the caller only needs the tv_sec value, for example)
-> >> computations can be elided entirely.
-> >>
-> >> It would be constructive to experiment and see if this is in fact 
-> >> part of the problem.
-> >>     
-> >
-> >
-> > --
-> > Denys Fedoryshchenko
-> > Technical Manager
-> > Virtual ISP S.A.L.
-> >
-> >
-> >
+No difference in lmbench lat_proc tests on 2-way Opteron 246.
+Smaaaal degradation on UP P4 (within errors).
 
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+ kernel/exit.c |    6 +++---
+ kernel/fork.c |   20 ++++++++++----------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -493,7 +493,7 @@ void reset_files_struct(struct task_struct *tsk, struct files_struct *files)
+ }
+ EXPORT_SYMBOL(reset_files_struct);
+ 
+-static inline void __exit_files(struct task_struct *tsk)
++static void __exit_files(struct task_struct *tsk)
+ {
+ 	struct files_struct * files = tsk->files;
+ 
+@@ -510,7 +510,7 @@ void exit_files(struct task_struct *tsk)
+ 	__exit_files(tsk);
+ }
+ 
+-static inline void __put_fs_struct(struct fs_struct *fs)
++static void __put_fs_struct(struct fs_struct *fs)
+ {
+ 	/* No need to hold fs->lock if we are killing it */
+ 	if (atomic_dec_and_test(&fs->count)) {
+@@ -531,7 +531,7 @@ void put_fs_struct(struct fs_struct *fs)
+ 	__put_fs_struct(fs);
+ }
+ 
+-static inline void __exit_fs(struct task_struct *tsk)
++static void __exit_fs(struct task_struct *tsk)
+ {
+ 	struct fs_struct * fs = tsk->fs;
+ 
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -195,7 +195,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ }
+ 
+ #ifdef CONFIG_MMU
+-static inline int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
++static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+ {
+ 	struct vm_area_struct *mpnt, *tmp, **pprev;
+ 	struct rb_node **rb_link, *rb_parent;
+@@ -573,7 +573,7 @@ fail_nomem:
+ 	return retval;
+ }
+ 
+-static inline struct fs_struct *__copy_fs_struct(struct fs_struct *old)
++static struct fs_struct *__copy_fs_struct(struct fs_struct *old)
+ {
+ 	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
+ 	/* We don't need to lock fs - think why ;-) */
+@@ -605,7 +605,7 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
+ 
+ EXPORT_SYMBOL_GPL(copy_fs_struct);
+ 
+-static inline int copy_fs(unsigned long clone_flags, struct task_struct * tsk)
++static int copy_fs(unsigned long clone_flags, struct task_struct * tsk)
+ {
+ 	if (clone_flags & CLONE_FS) {
+ 		atomic_inc(&current->fs->count);
+@@ -808,7 +808,7 @@ int unshare_files(void)
+ 
+ EXPORT_SYMBOL(unshare_files);
+ 
+-static inline int copy_sighand(unsigned long clone_flags, struct task_struct * tsk)
++static int copy_sighand(unsigned long clone_flags, struct task_struct * tsk)
+ {
+ 	struct sighand_struct *sig;
+ 
+@@ -831,7 +831,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
+ 		kmem_cache_free(sighand_cachep, sighand);
+ }
+ 
+-static inline int copy_signal(unsigned long clone_flags, struct task_struct * tsk)
++static int copy_signal(unsigned long clone_flags, struct task_struct * tsk)
+ {
+ 	struct signal_struct *sig;
+ 	int ret;
+@@ -911,7 +911,7 @@ void __cleanup_signal(struct signal_struct *sig)
+ 	kmem_cache_free(signal_cachep, sig);
+ }
+ 
+-static inline void cleanup_signal(struct task_struct *tsk)
++static void cleanup_signal(struct task_struct *tsk)
+ {
+ 	struct signal_struct *sig = tsk->signal;
+ 
+@@ -921,7 +921,7 @@ static inline void cleanup_signal(struct task_struct *tsk)
+ 		__cleanup_signal(sig);
+ }
+ 
+-static inline void copy_flags(unsigned long clone_flags, struct task_struct *p)
++static void copy_flags(unsigned long clone_flags, struct task_struct *p)
+ {
+ 	unsigned long new_flags = p->flags;
+ 
+@@ -939,7 +939,7 @@ asmlinkage long sys_set_tid_address(int __user *tidptr)
+ 	return current->pid;
+ }
+ 
+-static inline void rt_mutex_init_task(struct task_struct *p)
++static void rt_mutex_init_task(struct task_struct *p)
+ {
+ 	spin_lock_init(&p->pi_lock);
+ #ifdef CONFIG_RT_MUTEXES
+@@ -1338,7 +1338,7 @@ struct task_struct * __cpuinit fork_idle(int cpu)
+ 	return task;
+ }
+ 
+-static inline int fork_traceflag (unsigned clone_flags)
++static int fork_traceflag (unsigned clone_flags)
+ {
+ 	if (clone_flags & CLONE_UNTRACED)
+ 		return 0;
+@@ -1468,7 +1468,7 @@ void __init proc_caches_init(void)
+  * Check constraints on flags passed to the unshare system call and
+  * force unsharing of additional process context as appropriate.
+  */
+-static inline void check_unshare_flags(unsigned long *flags_ptr)
++static void check_unshare_flags(unsigned long *flags_ptr)
+ {
+ 	/*
+ 	 * If unsharing a thread from a thread group, must also
 
