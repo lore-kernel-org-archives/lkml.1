@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXJAJLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbXJAJXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbXJAJLK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 05:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXJAJK5
+	id S1752075AbXJAJXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 05:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXJAJXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 05:10:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63712 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750713AbXJAJK4 (ORCPT
+	Mon, 1 Oct 2007 05:23:09 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:59541 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbXJAJXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 05:10:56 -0400
-Message-ID: <4700B966.1030508@anagramm.de>
-Date: Mon, 01 Oct 2007 11:09:58 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 1 Oct 2007 05:23:08 -0400
+Date: Mon, 1 Oct 2007 11:23:05 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: veerasena reddy <veerasena_b@yahoo.co.in>
+cc: linux-mips <linux-mips@linux-mips.org>,
+       "linux-kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
+In-Reply-To: <119374.35234.qm@web8401.mail.in.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0710011121300.20679@anakin>
+References: <119374.35234.qm@web8401.mail.in.yahoo.com>
 MIME-Version: 1.0
-To: Alexander Sabourenkov <screwdriver@lxnt.info>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Promise SATA300 TX4: errors, oops in ext3 code
-References: <47009BF6.5000208@lxnt.info>
-In-Reply-To: <47009BF6.5000208@lxnt.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX18DMTi4sCG/VrjueP62NPrL/8b9ZborxyyE9fw
- fCZeRa9NhK8fH66jSTwixQI42Znq6WWna974sLdzjzmnHpmtkN
- 7DX0PM2gNUrJk/UfdLKhQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Sabourenkov schrieb:
- > Hardware:  Athlon64, Asus A8V, Promise SATA300 TX4, 2xSeagate 7200.10
- > 320G, jumper-limited to SATA150.
- > Kernel : 2.6.22.9 amd64
- >
- > Problem:
- > Heavy load causes errors and triggers oops.
+On Mon, 1 Oct 2007, veerasena reddy wrote:
+> I have ported Linux-2.6.18 kernel on MIPS24KE
+> processor. I am using write back cache policy.
+> 
+> Could you please guide me under what cases the below
+> cache API's are being used:
+> - dma_cache_wback_inv() : Could you explain  what
+> exactly this function does
 
-Have you checked your memory already (memtest86)?
+It does both write back and invalidate.
 
-We have several applications with Promise controllers on strange
-hardware and we never had integrity problems with i.e. not so standard
-SATA connections over custom vaccum-tight connectors.
+> - dma_cache_wback() : This function write back the
+> cache data to memory
+> - dma_cache_inv  : This function invalidate the cache
+> tags. so subsequent access will fetch from memory.
 
- > Problems were blamed:
- >   - SATA300 being too 'hot'  (jumpered the drives)
+Note that 2.6.18 is old. The above functions are intended to be removed.
 
-Is this a common known problem with your harddrives or controller?
-(ask google) Otherwise, it sounds like a problem with broken hardware.
+Gr{oetje,eeting}s,
 
- >   - cables (work perfectly on onboard controller)
- >   - interrupt sharing (found the only slot which does not share
- > interrupt line)
- >   - cooling (3 fans installed, smartctl-reported temperature at max load
- > dropped to 35C)
+						Geert
 
-Try to heat up your memory a little (your wife's hair blower).
-If it fails more often, your memory is most likely broken.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- >   - weak PSU (installed 600W FSP)
- >   - kernel bugs (upgraded to 2.6.22.9)
- >
- > All those measures significantly dropped error rate (from about 20 to
- > 2-4 per mirror rebuild) but did not eliminate the problem.
-
-Again... sounds like bad memory to me.
-
-Juat my $0.05.
-Regards,
-
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
