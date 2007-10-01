@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbXJAKLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXJAKYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbXJAKLs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 06:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXJAKLl
+	id S1752545AbXJAKYj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 06:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXJAKYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 06:11:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50470 "EHLO mx2.suse.de"
+	Mon, 1 Oct 2007 06:24:30 -0400
+Received: from mx1.caravan.ru ([217.23.130.2]:63122 "EHLO mx1.caravan.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbXJAKLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 06:11:40 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/2] ACPI: disable lower idle C-states across suspend/resume
-References: <20070922220347.586903979@linutronix.de>
-	<20070922222118.882356049@linutronix.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Oct 2007 12:11:37 +0200
-In-Reply-To: <20070922222118.882356049@linutronix.de>
-Message-ID: <p73ir5r6t5y.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1751314AbXJAKY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 06:24:29 -0400
+Message-ID: <4700CB54.7000206@lxnt.info>
+Date: Mon, 01 Oct 2007 14:26:28 +0400
+From: Alexander Sabourenkov <screwdriver@lxnt.info>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Clemens Koller <clemens.koller@anagramm.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Promise SATA300 TX4: errors, oops in ext3 code
+References: <47009BF6.5000208@lxnt.info> <4700B966.1030508@anagramm.de>
+In-Reply-To: <4700B966.1030508@anagramm.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
->  
-> +/*
-> + * Suspend / resume control
-> + */
-> +static int acpi_idle_suspend;
-> +
-> +int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
-> +{
-> +	acpi_idle_suspend = 1;
-> +	return 0;
-> +}
-> +
-> +int acpi_processor_resume(struct acpi_device * device)
-> +{
-> +	acpi_idle_suspend = 0;
-> +	return 0;
-> +}
+Clemens Koller wrote:
+> Alexander Sabourenkov schrieb:
+>  > Hardware:  Athlon64, Asus A8V, Promise SATA300 TX4, 2xSeagate 7200.10
+>  > 320G, jumper-limited to SATA150.
+>  > Kernel : 2.6.22.9 amd64
+>  >
+>  > Problem:
+>  > Heavy load causes errors and triggers oops.
+> 
+> Have you checked your memory already (memtest86)?
 
-Instead of the ugly global variable you could you could just change 
-pm_idle back to NULL (= default_idle) and then later restore it.
+Last run was about a year ago.
 
--Andi
+This box gets regularly updated (rebuild of all installed software),
+so I'm reasonably certain that memory is ok - gcc being almost as 
+sensitive as memtest.
+
+Will recheck anyway.
+
+> 
+> We have several applications with Promise controllers on strange
+> hardware and we never had integrity problems with i.e. not so standard
+> SATA connections over custom vaccum-tight connectors.
+
+Judging from linux and freebsd mailing lists, the TX4 is now quite 
+well-known for
+intermittent problems, which are hard to reproduce on different hardware.
+
+I have two machines with those controllers, one FreeBSD-6.2 on MSI 
+K8Neo2 motherboard (ATI chipset),
+  and this one. FreeBSD box does not exhibit this problem under the 
+little load it gets, but
+6-STABLE and 7-CURRENT branches do have similar symptoms since around 19 
+April 2007,
+with rare occurences (but not unheard of) before.
+
+Thus I am unable to keep machines up to date, and before having to dump 
+$140 worth of hardware,
+I'd like to try to help fix this problem or at least be certain that 
+those controllers are indeed unusable.
+
+
+>  > Problems were blamed:
+>  >   - SATA300 being too 'hot'  (jumpered the drives)
+> 
+> Is this a common known problem with your harddrives or controller?
+> (ask google) Otherwise, it sounds like a problem with broken hardware.
+
+This is a common problem with at least VIA onboard controllers and 
+Seagate disks,
+and I think with SATA150 controllers and speed negotiation in general.
+
+This step was suggested in some mailing list as a general precaution, but
+actually made no difference to error rate.
+
+I did not unjumper drivers back to SATA300 so that I can easily connect 
+the drives
+to the onboard controller.
+
+-- 
+
+./lxnt
+
+
