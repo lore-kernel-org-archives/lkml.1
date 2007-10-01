@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbXJASPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbXJASRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbXJASPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 14:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJASPe
+	id S1756075AbXJASRE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 14:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJASQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 14:15:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49351 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751817AbXJASPd (ORCPT
+	Mon, 1 Oct 2007 14:16:55 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:32914 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXJASQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 14:15:33 -0400
-Date: Mon, 1 Oct 2007 11:15:28 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
-Message-Id: <20071001111528.5487b4f4.pj@sgi.com>
-In-Reply-To: <200709301335.00441.nickpiggin@yahoo.com.au>
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
-	<200709300521.03356.nickpiggin@yahoo.com.au>
-	<20070930110753.19b03388.pj@sgi.com>
-	<200709301335.00441.nickpiggin@yahoo.com.au>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Mon, 1 Oct 2007 14:16:54 -0400
+Date: Mon, 1 Oct 2007 19:16:48 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: F_DUPFD_CLOEXEC implementation
+Message-ID: <20071001181648.GB8181@ftp.linux.org.uk>
+References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <200710010058.49242.vda.linux@googlemail.com> <Pine.LNX.4.64.0709301709490.19355@alien.or.mcafeemobile.com> <200710011107.15846.vda.linux@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710011107.15846.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick wrote:
-> which you could equally achieve by adding
-> a second set of sched domains (and the global domains could keep
-> globally balancing).
+On Mon, Oct 01, 2007 at 11:07:15AM +0100, Denys Vlasenko wrote:
+> Also attached is ndelaytest.c which can be used to test that
+> send(MSG_DONTWAIT) indeed is failing with EAGAIN if write would block
+> and that other processes never see O_NONBLOCK set.
+> 
+> Comments?
 
-Hmmm ... this could be the key to this discussion.
+Never send patches during or approaching hangover?
+	* it's on a bunch of cyclic lists.  Have its neighbor
+go away while you are doing all that crap => boom
+	* there's that thing call current position...  It gets buggered.
+	* overwriting it while another task might be in the middle of
+syscall involving it => boom
+	* non-cooperative tasks reading *in* *parallel* from the same
+opened file are going to have a lot more serious problems than agreeing
+on O_NONBLOCK anyway, so I really don't understand what the hell is that for.
 
-Nick - can two sched domains overlap?  And if they do, what does that
-mean on any user or application behaviour.
-
->From the cpuset side - this patch handles overlap by joining the 'cpus'
-into one sched domain.  If two cpusets with overlapping 'cpus' are both
-marked 'sched_load_balance', then this patch forms a single, combined
-sched domain.
-
-As best as I can tell, you and I are actually in agreement in the
-case that there is no overlap.  If the several cpusets which have
-'sched_load_balance' enabled have mutually disjoint 'cpus' (no
-overlap), then my patch forms exactly one sched domain for each such
-cpuset, having the same 'cpus'.
-
-The issue is the overlapping cases - are overlapping sched domains
-allowed, and if so, how do they affect user space?
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
