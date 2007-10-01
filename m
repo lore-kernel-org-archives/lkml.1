@@ -1,116 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbXJANWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbXJANWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbXJANWE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 09:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbXJANTr
+	id S1758174AbXJANWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 09:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbXJANWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 09:19:47 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:42198 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757520AbXJANTp (ORCPT
+	Mon, 1 Oct 2007 09:22:14 -0400
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:38290 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758116AbXJANWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 09:19:45 -0400
-Date: Mon, 1 Oct 2007 08:19:21 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Cedric Le Goater <clg@fr.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Make initializer for statically declared krefs
-Message-ID: <20071001131921.GA30599@sergelap.austin.ibm.com>
-References: <4700CB8C.7030007@openvz.org>
+	Mon, 1 Oct 2007 09:22:12 -0400
+Date: Mon, 1 Oct 2007 16:22:09 +0300
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.22.6 + oprofile oops
+Message-ID: <20071001132209.2opuueap4nih2img@m.safari.iki.fi>
+Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070922112335.4wqatiewgeiottty@m.safari.iki.fi> <p73ejgf6sch.fsf@bingen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4700CB8C.7030007@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <p73ejgf6sch.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.16 (2007-09-19)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> Since the struct kref already has the _get, _put and _init 
-> routines, this seems useful to have an initializer for those
-> statically declared (like for atomic_t or spinlock_t).
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+On Mon, Oct 01, 2007 at 12:29:18 +0200, Andi Kleen wrote:
+> Sami Farin <safari-kernel@safari.iki.fi> writes:
+... 
+> Can you reproduce it with a non tainted kernel without any patches like CFS applied?
 
-Sure.
+I tried without CFS and it Oopsed just as nicely,
+the only difference was that in call trace before
+:oprofile:wq_sync_buffer there's now cache_reap.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Call Trace:
+ [<ffffffff80231988>] get_task_mm+0x18/0x50
+ [<ffffffff88316b64>] :oprofile:sync_buffer+0xf4/0x450
+ [<ffffffff88316650>] :oprofile:wq_sync_buffer+0x0/0x60
+ [<ffffffff88316683>] :oprofile:wq_sync_buffer+0x33/0x60
+ [<ffffffff80289f10>] cache_reap+0x0/0x130
+ [<ffffffff80243269>] run_workqueue+0x89/0x120
+ [<ffffffff80243cf7>] worker_thread+0xc7/0x130
+ [<ffffffff802474d0>] autoremove_wake_function+0x0/0x40
+ [<ffffffff80243c30>] worker_thread+0x0/0x130
+ [<ffffffff802470cd>] kthread+0x4d/0x80
+ [<ffffffff8020aa78>] child_rip+0xa/0x12
+ [<ffffffff80247080>] kthread+0x0/0x80
+ [<ffffffff8020aa6e>] child_rip+0x0/0x12
 
-> ---
-> 
-> diff --git a/include/linux/kref.h b/include/linux/kref.h
-> index 6fee353..a84c582 100644
-> --- a/include/linux/kref.h
-> +++ b/include/linux/kref.h
-> @@ -24,6 +24,8 @@ struct kref {
->  	atomic_t refcount;
->  };
-> 
-> +#define INIT_KREF(count)	{ .refcount = ATOMIC_INIT(count), }
-> +
->  void kref_init(struct kref *kref);
->  void kref_get(struct kref *kref);
->  int kref_put(struct kref *kref, void (*release) (struct kref *kref));
-> diff --git a/init/version.c b/init/version.c
-> index 9d17d70..53d2ca7 100644
-> --- a/init/version.c
-> +++ b/init/version.c
-> @@ -19,9 +19,7 @@
->  int version_string(LINUX_VERSION_CODE);
-> 
->  struct uts_namespace init_uts_ns = {
-> -	.kref = {
-> -		.refcount	= ATOMIC_INIT(2),
-> -	},
-> +	.kref = INIT_KREF(2),
->  	.name = {
->  		.sysname	= UTS_SYSNAME,
->  		.nodename	= UTS_NODENAME,
-> diff --git a/ipc/util.c b/ipc/util.c
-> index fd29246..526aa14 100644
-> --- a/ipc/util.c
-> +++ b/ipc/util.c
-> @@ -45,9 +45,7 @@ struct ipc_proc_iface {
->  };
-> 
->  struct ipc_namespace init_ipc_ns = {
-> -	.kref = {
-> -		.refcount	= ATOMIC_INIT(2),
-> -	},
-> +	.kref = INIT_KREF(2),
->  };
-> 
->  static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index d7388d7..e9d3ff1 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -69,9 +69,7 @@ static inline int mk_pid(struct pid_name
->   * the scheme scales to up to 4 million PIDs, runtime.
->   */
->  struct pid_namespace init_pid_ns = {
-> -	.kref = {
-> -		.refcount       = ATOMIC_INIT(2),
-> -	},
-> +	.kref = INIT_KREF(2),
->  	.pidmap = {
->  		[ 0 ... PIDMAP_ENTRIES-1] = { ATOMIC_INIT(BITS_PER_PAGE), NULL }
->  	},
-> diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-> index 7af90fc..33d21e0 100644
-> --- a/kernel/user_namespace.c
-> +++ b/kernel/user_namespace.c
-> @@ -11,9 +11,7 @@
->  #include <linux/user_namespace.h>
-> 
->  struct user_namespace init_user_ns = {
-> -	.kref = {
-> -		.refcount	= ATOMIC_INIT(2),
-> -	},
-> +	.kref = INIT_KREF(2),
->  	.root_user = &root_user,
->  };
+> The oops happens because oprofile tries to reference a NULL task in
+> its event buffer for a context switch, which might well be a minor
+> merging mistake or similar in the CFS backport.
+
+...
+> > 2007-09-22 13:53:32.527385634 <4>[ 3372.390442] Call Trace:
+> > 2007-09-22 13:53:32.527390314 <4>[ 3372.390457]  [<ffffffff80232b88>] get_task_mm+0x18/0x60
+> > 2007-09-22 13:53:32.527391990 <4>[ 3372.390484]  [<ffffffff8831abd4>] :oprofile:sync_buffer+0xf4/0x480
+> > 2007-09-22 13:53:32.527393666 <4>[ 3372.390544]  [<ffffffff8831a6b0>] :oprofile:wq_sync_buffer+0x0/0x60
+> > 2007-09-22 13:53:32.527399673 <4>[ 3372.390576]  [<ffffffff8831a6e3>] :oprofile:wq_sync_buffer+0x33/0x60
+> > 2007-09-22 13:53:32.527401419 <4>[ 3372.390602]  [<ffffffff80244bfd>] run_workqueue+0xcd/0x170
+> > 2007-09-22 13:53:32.527406238 <4>[ 3372.390635]  [<ffffffff802456b3>] worker_thread+0xb3/0x120
+> > 2007-09-22 13:53:32.527421324 <4>[ 3372.390652]  [<ffffffff80249000>] autoremove_wake_function+0x0/0x40
+> > 2007-09-22 13:53:32.527423140 <4>[ 3372.390684]  [<ffffffff80245600>] worker_thread+0x0/0x120
+> > 2007-09-22 13:53:32.527424816 <4>[ 3372.390697]  [<ffffffff80248bfd>] kthread+0x4d/0x80
+> > 2007-09-22 13:53:32.527426423 <4>[ 3372.390730]  [<ffffffff8020abc8>] child_rip+0xa/0x12
+> > 2007-09-22 13:53:32.527428099 <4>[ 3372.390810]  [<ffffffff80248bb0>] kthread+0x0/0x80
+> > 2007-09-22 13:53:32.527444931 <4>[ 3372.390822]  [<ffffffff8020abbe>] child_rip+0x0/0x12
+
+-- 
+Do what you love because life is too short for anything else.
+
