@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXJBQkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXJBQpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbXJBQkf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 12:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXJBQk0
+	id S1754048AbXJBQpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 12:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXJBQpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 12:40:26 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:61391 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752657AbXJBQkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 12:40:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oJENdwzdbcr41E/z7ogWl6ZXe+UnpW42/Rsi0196zzWO6IcYU74tzCJ3MnYDOgunPdwQV2t/1qpUNm72Bc2RPgph31fqAOwWrEp4WRL7tPCkjYEbIog2SNucgl4vjdAwJDcpUgbNS/T2vJ7xK1am3rbVM3+RKYSPnyXqXbwYWjg=
-Message-ID: <29495f1d0710020940o1278aca5h14d5daf89eb554f3@mail.gmail.com>
-Date: Tue, 2 Oct 2007 09:40:23 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, "Huang, Ying" <ying.huang@intel.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Christoph Lameter" <clameter@sgi.com>, apw@shadowen.org,
-       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20071002163624.74534e7f.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 2 Oct 2007 12:45:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56745 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752102AbXJBQpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 12:45:04 -0400
+Message-ID: <4702758A.20205@redhat.com>
+Date: Tue, 02 Oct 2007 12:44:58 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
+To: William Cattey <wdc@MIT.EDU>
+CC: Andi Kleen <andi@firstfloor.org>, Chuck Anderson <cra@WPI.EDU>,
+       linux-kernel@vger.kernel.org
+Subject: Re: vm86.c audit_syscall_exit() call trashes registers
+References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu> <20070814212858.GB23308@one.firstfloor.org> <07759638-DE7C-4341-A642-D611A897614F@MIT.EDU> <20070814214622.GE23308@one.firstfloor.org> <6655DD8B-D9C6-495D-9E22-2FDF6B375C9D@MIT.EDU> <20070814221927.GH23308@one.firstfloor.org> <9D5ACA40-5F33-4F49-8255-D51F554889E7@MIT.EDU>
+In-Reply-To: <9D5ACA40-5F33-4F49-8255-D51F554889E7@MIT.EDU>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <p733awu6nva.fsf@bingen.suse.de>
-	 <20071001233225.88c67e8b.akpm@linux-foundation.org>
-	 <20071002070110.GA30490@one.firstfloor.org>
-	 <20071002001809.0a814d0b.akpm@linux-foundation.org>
-	 <20071002163624.74534e7f.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/2/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Tue, 2 Oct 2007 00:18:09 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > >
-> > > > How come?  Memoryless node can and do occur in real-world machines.  Kernel
-> > > > should support that?
-> > >
-> > > But a node is just defined by its memory?
-> >
-> > Don't think so.  A node is a lump of circuitry which can have zero or more
-> > CPUs, IO and memory.
-> >
-> > It may initially have been conceived as a memory-only concept in the Linux
-> > kernel, but that doesn't fully map onto reality (does it?)
-> >
-> > There was a real-world need for this, I think from the Fujitsu guys.  That
-> > should be spelled out in the changelog but isn't.
->
-> Yes, Fujitsu and HP guys really need this memory-less-node support.
+On 09/25/2007 07:38 PM, William Cattey wrote:
+> 
+> I'd feel a lot more confident we were on the right track if I could just
+> correctly patch Fitzhardinge's cleanup into the test setup I have now.
+> 
 
-Anton's post (http://marc.info/?l=linux-mm&m=118133042025995&w=2) (and
-my subsequent reposts) may have helped prompt this full series, which
-then was picked up and shown to be useful to other folks. NUMA systems
-with memoryless nodes exist in the wild and Linux did not do the right
-thing there. Admittedly, Anton's case is hugetlb-specific, but the fix
-I've been proposing (and hope to repost soon) depends on Christoph's
-patches, especially the THISNODE fix.
+I think you need to zero both registers if you're using 2.6.16, and force
+%eax as the source so it doesn't choose %ebp?
 
-Thanks,
-Nish
+--- a/arch/i386/kernel/vm86.c
++++ b/arch/i386/kernel/vm86.c
+@@ -306,19 +334,19 @@ static void do_sys_vm86(struct kernel_vm86_struct *info, struct task_struct *tsk
+ 	tsk->thread.screen_bitmap = info->screen_bitmap;
+ 	if (info->flags & VM86_SCREEN_BITMAP)
+ 		mark_screen_rdonly(tsk->mm);
+-	__asm__ __volatile__("xorl %eax,%eax; movl %eax,%fs; movl %eax,%gs\n\t");
+-	__asm__ __volatile__("movl %%eax, %0\n" :"=r"(eax));
+ 
+ 	/*call audit_syscall_exit since we do not exit via the normal paths */
+ 	if (unlikely(current->audit_context))
+-		audit_syscall_exit(AUDITSC_RESULT(eax), eax);
++		audit_syscall_exit(AUDITSC_RESULT(0), 0);
+ 
+ 	__asm__ __volatile__(
+ 		"movl %0,%%esp\n\t"
+ 		"movl %1,%%ebp\n\t"
++		"mov  %2, %%fs\n\t"
++		"mov  %2, %%gs\n\t"
+ 		"jmp resume_userspace"
+ 		: /* no outputs */
+-		:"r" (&info->regs), "r" (task_thread_info(tsk)));
++		:"r" (&info->regs), "r" (task_thread_info(tsk)), "a" (0));
+ 	/* we never return here */
+ }
+ 
