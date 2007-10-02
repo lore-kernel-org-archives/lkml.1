@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbXJBNXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXJBN1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbXJBNXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXJBNXm
+	id S1755873AbXJBN1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXJBN1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:23:42 -0400
-Received: from rtr.ca ([76.10.145.34]:4270 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbXJBNXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:23:41 -0400
-Message-ID: <4702465C.7030207@rtr.ca>
-Date: Tue, 02 Oct 2007 09:23:40 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 2 Oct 2007 09:27:10 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:37180 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752958AbXJBN1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:27:09 -0400
+Message-ID: <391331626.16970@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 2 Oct 2007 21:27:02 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Greg KH <gregkh@suse.de>,
+       Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Krzysztof Oledzki <olel@ans.pl>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       richard kennedy <richard@rsk.demon.co.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] writeback: avoid possible balance_dirty_pages() lockup
+	on a light-load bdi
+Message-ID: <20071002132702.GA10967@mail.ustc.edu.cn>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com> <391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com> <391290444.23950@ustc.edu.cn> <20071001191457.2f7c7538.akpm@linux-foundation.org> <20071002121327.GA5718@mail.ustc.edu.cn>
 MIME-Version: 1.0
-To: gogi-k@gogi.tv
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: One process with multiple user ids.
-References: <200710021256.08469.gogi-k@gogi.tv> <Pine.LNX.4.64.0710021322110.7130@fbirervta.pbzchgretzou.qr> <200710021334.34950.gogi-k@gogi.tv>
-In-Reply-To: <200710021334.34950.gogi-k@gogi.tv>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071002121327.GA5718@mail.ustc.edu.cn>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giuliano Gagliardi wrote:
-> On Tuesday 02 October 2007, Jan Engelhardt wrote:
->> On Oct 2 2007 12:56, Giuliano Gagliardi wrote:
->>> I have a server that has to switch to different user ids, but because it
->>> does other complex things, I would rather not have it run as root. I only
->>> need the server to be able to switch to certain pre-defined user ids.
->> All you need is CAP_SETUID. Also see man setresuid,
->> where you could, I think, use saved_uid=0 if you do not
->> like to use real_uid=0 effective_uid=non-0.
-> 
-> But CAP_SETUID would let me change to any uid, would it not? I would like my 
-> process to have no possibility to change to any uid, except some predefined 
-> set, so that in case of a security hole only those uids could be compromised.
+On Tue, Oct 02, 2007 at 08:13:27PM +0800, Fengguang Wu wrote:
+[...]
+> One more serious problem is, a busy writer could also drain all the
+> dirty pages and make (nr_writeback == dirty_limit+1MB). In that case,
+> I suspect the light-load sdb writer still have good chance to
+> make progress(need confirmation).
 
-It really sounds like the app should be restructured.
-If security is that important to it, then it shouldn't
-be changing uids back and forth on the fly (too risky).
+Well it seems to be a really tricky issue without knowing the per-bdi
+numbers. Maybe we could just encourage users to upgrade to 2.6.24...
 
-There's probably a nice redesign possible where it just
-forks off 3 sub-processes, one for each UID,
-and then farms out the work to each as required.
-
-Cheers
