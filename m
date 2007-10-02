@@ -1,35 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbXJBI2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbXJBIcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbXJBI2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 04:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXJBI2i
+	id S1754962AbXJBIcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 04:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbXJBIcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 04:28:38 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:50142 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751878AbXJBI2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 04:28:37 -0400
-Message-ID: <391313714.31041@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 2 Oct 2007 16:28:31 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+	Tue, 2 Oct 2007 04:32:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54886 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751596AbXJBIcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 04:32:24 -0400
+Date: Tue, 2 Oct 2007 01:31:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-Message-ID: <20071002082831.GA19954@mail.ustc.edu.cn>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <1191313025.13204.30.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <20071002013148.18958af2.akpm@linux-foundation.org>
 In-Reply-To: <1191313025.13204.30.camel@twins>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	<1191313025.13204.30.camel@twins>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 10:17:05AM +0200, Peter Zijlstra wrote:
+On Tue, 02 Oct 2007 10:17:05 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
+
 > On Mon, 2007-10-01 at 14:22 -0700, Andrew Morton wrote:
 > 
 > > nfs-remove-congestion_end.patch
@@ -62,15 +61,19 @@ On Tue, Oct 02, 2007 at 10:17:05AM +0200, Peter Zijlstra wrote:
 > 
 > 
 > I'm not sure polluting /sys/block/<foo>/queue/ like that is The Right
-> Thing. These patches sure were handy when debugging this, but not sure
+> Thing.
+
+hm, I suppose not.  It leaves nowhere for nfs, for a start.
+
+> These patches sure were handy when debugging this, but not sure
 > they want to move to maineline.
- 
+> 
 > Maybe we want /sys/bdi/<foo>/ or maybe /debug/bdi/<foo>/
+> 
 
-I'd vote for /sys/bdi/.
+If you think we'll need this stuff for support/debug during 2.6.24-rcX then
+sure - we can always take it out prior to 2.6.24-final.
 
-It will be more than debug variables.  It's good to expose per-bdi
-tunable parameters and allow one to view bdi states.
-
-It would also allow one to tune things like NFS readahead :-)
+otoh, if we're going to take that approach we might as well leave things in
+/sys/block/<foo>/queue.
 
