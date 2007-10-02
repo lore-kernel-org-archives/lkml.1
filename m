@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbXJBKrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbXJBKsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbXJBKrr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 06:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXJBKrk
+	id S1756056AbXJBKsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 06:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXJBKsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 06:47:40 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:38499 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751924AbXJBKrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 06:47:40 -0400
-Message-ID: <391322057.11200@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 2 Oct 2007 18:47:34 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-Message-ID: <20071002104734.GA9410@mail.ustc.edu.cn>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <1191313025.13204.30.camel@twins> <20071002013148.18958af2.akpm@linux-foundation.org> <1191314911.13204.41.camel@twins> <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com> <1191321861.13204.53.camel@twins>
+	Tue, 2 Oct 2007 06:48:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:41428 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753332AbXJBKsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 06:48:11 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+Date: Tue, 2 Oct 2007 12:48:05 +0200
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org > <200710021121.36443.ak@suse.de> <47021F83.4070609@garzik.org>
+In-Reply-To: <47021F83.4070609@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1191321861.13204.53.camel@twins>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710021248.06050.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 12:44:21PM +0200, Peter Zijlstra wrote:
-> On Tue, 2007-10-02 at 12:31 +0200, Kay Sievers wrote:
+On Tuesday 02 October 2007 12:37:55 Jeff Garzik wrote:
+> Andi Kleen wrote:
+> > On Tuesday 02 October 2007 11:17:02 Thomas Gleixner wrote:
+> >>> This is also a good time to warn about the fact that we're doing the x86 
+> >>> merge very soon (as in the next day or two) after 2.6.23 is out, so if you 
+> >>> have pending patches for the next series that touch arch/i386 or x86-64, 
+> >>> you should get in touch with Thomas Gleixner and Ingo Molnar, who are the 
+> >>> keepers of the merge scripts, and will help you prepare..
+> > 
+> > 
+> > Yes I have ~100 patches for arch/x86_64, arch/i386
+> > 
+> > Should I just drop them?
 > 
-> > What would be the point in another top-level tree for device
-> > information? All devices you are exporting information for, are
-> > already in the sysfs tree, right?
-> 
-> Never did find NFS mounts/servers/superblocks or whatever constitutes a
-> BDI for NFS in there. Same goes for all other networked filesystems for
-> that matter.
+> Why don't you work with Thomas and Ingo to make sure everything is in 
+> sync and prepped for 2.6.24?
 
-And loop/md/dm devices...
+The easiest way to do that would be to first merge all the queued and
+collected patches from the last months. Once they are in people
+can then create whatever mess they like.
 
+The other way round  (adapting 100+ patches to a possibly completely
+different tree) will be a huge amount of work which I am
+frankly not very motivated to do because I think it's quite unnecessary. 
+
+I would probably just push the work back to all the patch submitters -- that is 
+what I meant with dropping the patches.
+
+I assume mess up first would be also a minor catastrophe for Andrew --
+in addition to my patches he also has a large number of patches
+touching {x86_64,i386}
+
+-Andi
