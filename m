@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbXJBP2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbXJBP2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbXJBP2P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXJBP2B
+	id S1755145AbXJBP2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbXJBP2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:28:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39469 "EHLO mx2.mail.elte.hu"
+	Tue, 2 Oct 2007 11:28:38 -0400
+Received: from owa.c2.net ([207.235.78.2]:12446 "EHLO email.c2.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbXJBP2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:28:00 -0400
-Date: Tue, 2 Oct 2007 17:27:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <20071002152727.GA18550@elte.hu>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <alpine.LRH.0.999.0710021250510.23586@www.tglx.de> <20071002140711.GA29395@elte.hu> <200710021623.09966.ak@suse.de> <20071002143115.GA4867@elte.hu> <20071002145806.GA3567@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071002145806.GA3567@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752625AbXJBP2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 11:28:37 -0400
+Subject: Re: [discuss] [PATCH] Inconsistent mmap()/mremap() flags
+From: Thayne Harbaugh <thayne@c2.net>
+Reply-To: thayne@c2.net
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andi Kleen <ak@suse.de>, discuss@x86-64.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0710021505400.2156@blonde.wat.veritas.com>
+References: <1190958393.5128.85.camel@phantasm.home.enterpriseandprosperity.com>
+	 <1191308772.5200.66.camel@phantasm.home.enterpriseandprosperity.com>
+	 <Pine.LNX.4.64.0710021304230.26719@blonde.wat.veritas.com>
+	 <200710021545.32556.ak@suse.de>
+	 <Pine.LNX.4.64.0710021505400.2156@blonde.wat.veritas.com>
+Content-Type: text/plain
+Organization: C2
+Date: Tue, 02 Oct 2007 09:21:26 -0600
+Message-Id: <1191338486.5200.71.camel@phantasm.home.enterpriseandprosperity.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Oct 2007 15:28:36.0434 (UTC) FILETIME=[E674A320:01C80508]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Tue, Oct 02, 2007 at 04:31:15PM +0200, Ingo Molnar wrote:
+On Tue, 2007-10-02 at 15:16 +0100, Hugh Dickins wrote:
+> On Tue, 2 Oct 2007, Andi Kleen wrote:
 > > 
-> > * Andi Kleen <ak@suse.de> wrote:
+> > > First call mmap with a low hint address, the new size you'll be wanting
+> > > from the mremap, PROT_NONE, MAP_ANONYMOUS, -1, 0.  Then call mremap with
+> > > old address, old size, new size, MREMAP_MAYMOVE|MREMAP_FIXED, and new
+> > > address as returned by the preparatory mmap.
 > > 
-> > > > Andi, could you please send us the list of patches from the 
-> > > > current.tar.gz queue above that you consider 2.6.24 candidates?
-> > > 
-> > > Everything in principle except the patches marked with TBD.
-> > 
-> > ok, the ones marked TBD are:
-> > 
-> >  cflags-probe
-> >  cpa-clflush
-> >  sched-clock-share
-> >  svm-disabled
-> >  unwinder
-> > 
-> > > > (and please add to the list if there's anything else pending)
-> > > 
-> > > I'm still merging/fixing etc. so the list is not final yet.
-> > 
-> > please merge it ontop of the arch/x86 tree so that we can start 
-> > reviewing and testing it based on the unified tree ASAP. (but sending us 
-> > a queue to the old layout is fine too - whichever variant you can do 
-> > fastest) Thanks,
+> > That's racy unfortunately in a multithreaded process. They would need to loop.
 > 
-> Hi Andi/Ingo.
+> Perhaps.  Though I don't see what your loop would be doing;
+> and the mapping established by the first thread would only
+> be vulnerable to another thread if that were really set on
+> interfering (an un-FIXED mmap by another thread will keep
+> away from the area assigned to the first).
 > 
-> I plan to integrate cflags-probe in kbuild.git if there is no 
-> objection. And I will address any x86 issues when I do so. On top of 
-> that I will most likely do the same change for i386.
+> Certainly a two-stage procedure has to be weaker than one stage,
+> but it is just how MAP_FIXED is normally used (isn't it?): first
+> stake out an arena for all that's needed without MAP_FIXED, then
+> fit into it the actual mappings required using MAP_FIXED.  Blind
+> use of MAP_FIXED is always in danger of unmapping something vital.
+> 
+> But whether the two-stage procedure is good enough for Thayne's
+> purpose, he'll have to judge for himself.
 
-great. I think that's the most straightforward merge path for such 
-Makefile updates. Andi, Thomas, any objections?
+I think my eyes have been opened enough so that I can get things to work
+- it's certainly better in many respects than using MAP_32BIT with its
+many limitations.
 
-	Ingo
+Thank you.
+
