@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbXJBWNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbXJBWU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbXJBWNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXJBWNn
+	id S1754539AbXJBWU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXJBWUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:13:43 -0400
-Received: from mail.tmr.com ([64.65.253.246]:37260 "EHLO gaimboi.tmr.com"
+	Tue, 2 Oct 2007 18:20:18 -0400
+Received: from waste.org ([66.93.16.53]:33024 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbXJBWNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:13:42 -0400
-Message-ID: <4702C401.4050009@tmr.com>
-Date: Tue, 02 Oct 2007 18:19:45 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1750843AbXJBWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:20:17 -0400
+Date: Tue, 2 Oct 2007 17:20:03 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: pgd_none_or_clear_bad strangeness?
+Message-ID: <20071002222003.GL19691@waste.org>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: shutdown -h now, 2.6.23-rc8 & 9
-References: <200710020650.02613.gene.heskett@gmail.com>
-In-Reply-To: <200710020650.02613.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> Greetings everybody;
-> 
-> After seeing a message indicating that rc8 no longer did a powerdown, I 
-> thought I'd check that since I needed to, my tv card wasn't even showing up 
-> in the lspci report. It was partially backed out of the pci slot, this case 
-> seems to encourage that.
-> 
-I have rc8-git3 running on several machines, and I'm delighted to say 
-that it powers down, reboots, and suspends to mem/disk without bothering 
-to patch in suspend2. I saw the same message, but perhaps git3 had the 
-fix, since machines go down correctly. I'm going to boot a laptop off CD 
-  and try the rc9 on that to see if the wireless issues I had to patch 
-around are fixed as promised. If so I'll go to the newest kernel for 
-power saving.
+In lib/pagewalk.c, I've been using the various forms of
+{pgd,pud,pmd}_none_or_clear_bad while walking page tables as that
+seemed the canonical way to do things. Lately (eg with -rc7-mm1),
+these have been triggering messages like "bad pgd 0x01e3" and causing
+nasty double faults. It appears this is actually triggered at the pmd
+level (mm/memory.c:116), though it appears to produce the wrong
+message.
 
-> Indeed it went to the system halted message and just sat there.  I hadn't yet 
-> booted to rc9 as amanda was running, so I did just a few minutes ago.
-> 
-> After the reboot to rc9, I ran a make xconfig again to check that the option 
-> was enabled, but it seems to have disappeared from the menus in xconfig.
-> 
-> Why was this removed?  Or if moved, where to?
-> 
-What? Was what removed?
+Has something changed here? I'm pretty sure this used to work! Is this
+not a kosher thing to do? Does it make any sense I'd repeatedly run
+into a bad pmd in the middle of bash's page table right after boot?
+The simple _none variant seems to work, but I worry that it's papering
+over a real problem.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Mathematics is the supreme nostalgia of our time.
