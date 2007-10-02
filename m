@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbXJBCVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbXJBC0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbXJBCVe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 22:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXJBCV1
+	id S1753130AbXJBC0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 22:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXJBC0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 22:21:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51136 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbXJBCV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 22:21:26 -0400
-Date: Tue, 02 Oct 2007 11:20:43 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [Patch / 002](memory hotplug) Callback function to create kmem_cache_node.
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0710011334090.19779@schroedinger.engr.sgi.com>
-References: <20071001183316.7A9B.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710011334090.19779@schroedinger.engr.sgi.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071002105422.2790.Y-GOTO@jp.fujitsu.com>
+	Mon, 1 Oct 2007 22:26:07 -0400
+Received: from lixom.net ([66.141.50.11]:52243 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751596AbXJBC0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 22:26:05 -0400
+Date: Mon, 1 Oct 2007 21:30:01 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [regression] 2.6.23 sata_mv EH updates broke my 7042 controller
+Message-ID: <20071002023000.GA19286@lixom.net>
+References: <20071001220439.GA15332@lixom.net> <470176B8.1000109@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <470176B8.1000109@pobox.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 1 Oct 2007, Yasunori Goto wrote:
-> 
-> > +#ifdef CONFIG_MEMORY_HOTPLUG
-> > +static void __slab_callback_offline(int nid)
-> > +{
-> > +	struct kmem_cache_node *n;
-> > +	struct kmem_cache *s;
-> > +
-> > +	list_for_each_entry(s, &slab_caches, list) {
-> > +		if (s->node[nid]) {
-> > +			n = get_node(s, nid);
-> > +			s->node[nid] = NULL;
-> > +			kmem_cache_free(kmalloc_caches, n);
-> > +		}
-> > +	}
-> > +}
-> 
-> I think we need to bug here if there are still objects on the node that 
-> are in use. This will silently discard the objects.
-> 
-Here is just the rollback code for an allocation failure of
-kmem_cache_node in halfway.
-So, there is a case some of them are not allocated yet.
-Any slabs don't use new kmem_cache_node before the new nodes page is
-available --so far--.
-But, in the future, here will be useful for node hot-unplug code,
-and its check will be necessary.  Ok. I'll add its check.
+On Mon, Oct 01, 2007 at 06:37:44PM -0400, Jeff Garzik wrote:
+> Olof Johansson wrote:
+>> Hardware config in my case:
+>> Highpoint 2310 controller
+>> PPC (big endian)
+>> WD Raptor disk
+>> Works fine with the other controller I've been using (SIL24), and works
+>> fine if I revert the driver.
+>> It also works fine if I disable the IOMMU. This would point towards
+>> either a stale dma mapping, or a missing setup of one.
+>> Not being much at home in the SATA drivers I could keep digging but I
+>> figured I'd bring it up first in case it rings a bell for someone.
+>
+> The IOMMU data point is certainly interesting.  Nothing jumps out on a 
+> re-review of the patch, so keep digging and let us know ;-)
 
-Do you mean that just nr_slabs should be checked like followings?
-I'm not sure this is enough.
+Looks like it's caused by enabling vmerge (which tends to be on for the
+common PPC defconfigs). If I disable it, things look OK.
 
-    :
-if (s->node[nid]) {
-	n = get_node(s, nid);
-	if (!atomic_read(&n->nr_slabs)) {
-		s->node[nid] = NULL;
-		kmem_cache_free(kmalloc_caches, n);
-	}
-}
-    :
-    :
+Perhaps the Marvell controller doesn't like requests larger than 64K,
+or wrapping some boundary. Do you have access to erratas/docs?
 
-Thanks.
-
--- 
-Yasunori Goto 
+I have verified it on a powermac now as well (had a quick scare that it
+might have been some problem with the PA Semi IOMMU, but no).
 
 
+-Olof
