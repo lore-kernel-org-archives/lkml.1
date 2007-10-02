@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXJBPq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbXJBPrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbXJBPq1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXJBPqT
+	id S1756040AbXJBPrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbXJBPrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:46:19 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:53372 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbXJBPqS (ORCPT
+	Tue, 2 Oct 2007 11:47:15 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:17885 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752422AbXJBPrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:46:18 -0400
+	Tue, 2 Oct 2007 11:47:14 -0400
+Date: Tue, 2 Oct 2007 16:46:04 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
+In-Reply-To: <4701C737.8070906@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+ <4701C737.8070906@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18178.26534.805731.389480@stoffel.org>
-Date: Tue, 2 Oct 2007 11:45:42 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: "John Stoffel" <john@stoffel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-In-Reply-To: <18178.22876.980673.839094@stoffel.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-	<18178.22876.980673.839094@stoffel.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2 Oct 2007, Balbir Singh wrote:
+> Andrew Morton wrote:
+> > memory-controller-add-documentation.patch
+> > ...
+> > kswapd-should-only-wait-on-io-if-there-is-io.patch
+> > 
+> >   Hold.  This needs a serious going-over by page reclaim people.
+> 
+> I mostly agree with your decision. I am a little concerned however
+> that as we develop and add more features (a.k.a better statistics/
+> forced reclaim), which are very important; the code base gets larger,
+> the review takes longer :)
 
-Linus> I said I was hoping that -rc8 was the last -rc, and I hate
-Linus> doing this, but we've had more changes since -rc8 than we had
-Linus> in -rc8. And while most of them are pretty trivial, I really
-Linus> couldn't face doing a 2.6.23 release and take the risk of some
-Linus> really stupid brown-paper-bag thing.
+I agree with putting the memory controller stuff on hold from 2.6.24.
 
-Linus> So there's a final -rc out there, and right now my plan is to
-Linus> make this series really short, and release 2.6.23 in a few
-Linus> days. So please do give it a last good testing, and holler
-Linus> about any issues you find!
+Sorry, Balbir, I've failed to get back to you, still attending to
+priorities.  Let me briefly summarize my issue with the mem controller:
+you've not yet given enough attention to swap.
 
-John> Just to let people know, I was running 2.6.23-rc for over 53
-John> days without any issues.  Mix of SCSI, Sata, tape drives, disks,
-John> MD, LVM, SMP, etc.  I suspect we've got a pretty darn stable
-John> release coming out soon.
+I accept that full swap control is something you're intending to add
+incrementally later; but the current state doesn't make sense to me.
 
-2.6.23-rc2 is what I meant.  Oops...
+The problems are swapoff and swapin readahead.  These pull pages into
+the swap cache, which are assigned to the cgroup (or the whatever-we-
+call-the-remainder-outside-all-the-cgroups) which is running swapoff
+or faulting in its own page; yet they very clearly don't (in general)
+belong to that cgroup, but to other cgroups which will be discovered
+later.
+
+I did try removing the cgroup mods to mm/swap_state.c, so swap pages
+get assigned to a cgroup only once it's really known; but that's not
+enough by itself, because cgroup RSS reclaim doesn't touch those
+pages, so the cgroup can easily OOM much too soon.  I was thinking
+that you need a "limbo" cgroup for these pages, which can be attacked
+for reclaim along with any cgroup being reclaimed, but from which
+pages are readily migrated to their real cgroup once that's known.
+
+But I had to switch over to other work before trying that out:
+perhaps the idea doesn't really fly at all.  And it might well
+be no longer needed once full mem+swap control is there.
+
+So in the current memory controller, that unuse_pte mem charge I was
+originally worried about failing (I hadn't at that point delved in
+to see how it tries to reclaim) actually never fails (and never
+does anything): the page is already assigned to some cgroup-or-
+whatever and is never charged to vma->vm_mm at that point.
+
+And small point: once that is sorted out and the page is properly
+assigned in unuse_pte, you'll be needing to pte_unmap_unlock and
+pte_offset_map_lock around the mem_cgroup_charge call there -
+you're right to call it with GFP_KERNEL, but cannot do so while
+holding the page table locked and mapped.  (But because the page
+lock is held, there shouldn't be any raciness to dropping and
+retaking the ptl.)
+
+Hugh
