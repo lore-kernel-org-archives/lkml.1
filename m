@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbXJBFtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbXJBFvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752464AbXJBFtL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 01:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXJBFs6
+	id S1752865AbXJBFvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 01:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXJBFvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 01:48:58 -0400
-Received: from il.qumranet.com ([82.166.9.18]:60990 "EHLO il.qumranet.com"
+	Tue, 2 Oct 2007 01:51:48 -0400
+Received: from mx1.suse.de ([195.135.220.2]:44783 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbXJBFs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 01:48:58 -0400
-Message-ID: <4701DBB9.9020202@qumranet.com>
-Date: Tue, 02 Oct 2007 07:48:41 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1750799AbXJBFvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 01:51:47 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
+Date: Tue, 2 Oct 2007 07:51:42 +0200
+User-Agent: KMail/1.9.6
+Cc: Arjan van de Ven <arjan@infradead.org>, David Bahi <dbahi@novell.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <GHaskins@novell.com>
+References: <46FA4A800200006C000192FE@sinclair.provo.novell.com> <200710020007.09864.ak@suse.de> <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>
-Subject: Re: [PATCH RFC] paravirt: cleanup lazy mode handling
-References: <470186C4.5080208@goop.org>
-In-Reply-To: <470186C4.5080208@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Disposition: inline
+Message-Id: <200710020751.42994.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Currently, the set_lazy_mode pv_op is overloaded with 5 functions:
->  1. enter lazy cpu mode
->  2. leave lazy cpu mode
->  3. enter lazy mmu mode
->  4. leave lazy mmu mode
->  5. flush pending batched operations
->
-> This complicates each paravirt backend, since it needs to deal with
-> all the possible state transitions, handling flushing, etc. In
-> particular, flushing is quite distinct from the other 4 functions, and
-> seems to just cause complication.
->
-> This patch removes the set_lazy_mode operation, and adds "enter" and
-> "leave" lazy mode operations on mmu_ops and cpu_ops.  All the logic
-> associated with enter and leaving lazy states is now in common code
-> (basically BUG_ONs to make sure that no mode is current when entering
-> a lazy mode, and make sure that the mode is current when leaving).
-> Also, flush is handled in a common way, by simply leaving and
-> re-entering the lazy mode.
->
-> The result is that the Xen and VMI lazy mode implementations are much
-> simpler; as would lguest's be.
->
->   
 
-The code doesn't support having both lazy modes active at once.  Maybe 
-that's not an issue, but aren't the two modes orthogonal?
+> Agreed.
+> 
+> I just got a x8664-hrt report, where I found the following oddity:
+> 
+>  0:       1197     172881   IO-APIC-edge      timer
+> 
+> That's one of those infamous AMD C1E boxen. Strange, all my systems have 
+> IRQ#0 on CPU#0 and nowhere else. Any idea ?
 
-> --- a/arch/i386/xen/multicalls.h
-> +++ b/arch/i386/xen/multicalls.h
-> @@ -35,7 +35,7 @@ void xen_mc_flush(void);
->  /* Issue a multicall if we're not in a lazy mode */
->  static inline void xen_mc_issue(unsigned mode)
->  {
-> -	if ((xen_get_lazy_mode() & mode) == 0)
-> +	if ((paravirt_get_lazy_mode() & mode) == 0)
->  		xen_mc_flush();
+Hmm, in lowestpriority mode it would be possible that the APIC changes
+the CPU to #1 once; but IRQ 0 is always set to fixed mode. Also even 
+if that happens you should have them all on 1.
 
-This snippet looks like it wants to support concurrently active lazy modes.
+Maybe the chipset is just ignoring the IO-APIC configuration in this case?
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+Is it always the same chipset? Is it seen on i386 too?
+
+The problem is really that if this happens it's more than the NMI watchdog
+that is broken. If you don't run an additional APIC timer interrupt on CPU #0
+it's possible that CPU #0 won't schedule at all.
+
+The only workaround for chipsets ignoring IRQ affinity would be to keep
+track on which CPU irq 0 happens and then restart APIC timer interrupts
+on the others (or send IPIs) as needed. But that would be fairly ugly.
+
+IRQ 0 is unfortunately an generally under-validated area because Windows doesn't
+use it.
+
+-Andi
 
