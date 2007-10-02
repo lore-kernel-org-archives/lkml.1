@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbXJBTki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbXJBTtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbXJBTki (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 15:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXJBTk3
+	id S1755212AbXJBTtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 15:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXJBTtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 15:40:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34179 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbXJBTk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 15:40:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Burton Windle <bwindle@fint.org>
-Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
-Date: Tue, 2 Oct 2007 21:55:19 +0200
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Sumant Patro <sumant.patro@lsi.com>,
-       James Bottomley <James.Bottomley@steeleye.com>, megaraidlinux@lsi.com,
-       linux-scsi@vger.kernel.org
-References: <Pine.LNX.4.64.0710021242510.6275@postal> <20071002181518.GC10852@stusta.de> <Pine.LNX.4.64.0710021442450.6275@postal>
-In-Reply-To: <Pine.LNX.4.64.0710021442450.6275@postal>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 2 Oct 2007 15:49:33 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:16023 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752661AbXJBTtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 15:49:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=MKjV6RHaq/REhT1aBz6Rmiilf5yE02NOXmcF0cff+bWXIMZDByAY8RScGp2U+jT9+5K3S/Iiqh/285YX1O0nqQbXfa7THXiOmOkJ5j2aVME1THvV87t84H+mtA5zvbWbclwnPgxWeP7Wwf6Qti60ZuZGWx2iqdviEljstil17wY=
+Subject: Re: [git] CFS-devel, latest code
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 21:49:16 +0200
+Message-Id: <1191354556.5664.7.camel@earth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710022155.20287.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 2 October 2007 20:46, Burton Windle wrote:
-> On Tue, 2 Oct 2007, Adrian Bunk wrote:
+
+On 01/10/2007, Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > Cc's added, the complete bug report is at
-> >  http://lkml.org/lkml/2007/10/2/243
-> >
-> > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
-> >> 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
-> >>
-> >> System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
-> >> ...
-> >
-> > Thanks for your report.
-> >
-> > Does reverting the commit below fix the problem?
-> >
-> > cu
-> > Adrian
-> >
-> >
-> > commit 3f6270ef76f2ce5c134615a470685d6c2a66c07e
-> > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date:   Mon May 14 20:17:27 2007 +0900
-> >
+> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 > 
-> Confirmed; reverting the above (snipped) patch does fix the issue.
+> > here is a few patches on top of the recent 'sched-dev':
+> >
+> > (1) [ proposal ] make timeslices of SCHED_RR tasks constant and not
+> > dependent on task's static_prio;
+> >
+> > (2) [ cleanup ] calc_weighted() is obsolete, remove it;
+> >
+> > (3) [ refactoring ] make dequeue_entity() / enqueue_entity()
+> > and update_stats_dequeue() / update_stats_enqueue() look similar, structure-wise.
+> 
+> thanks - i've applied all 3 patches of yours.
+> 
+> > (compiles well, not functionally tested yet)
+> 
+> (it boots fine here and SCHED_RR seems to work - but i've not tested
+> getinterval.)
 
-I've created a bugzilla entry for your report at:
+/me is guilty... it was a bit broken :-/ here is the fix.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9113
+results:
 
-Please add a summary of your observations in there.
+(SCHED_FIFO)
 
-Greetings,
-Rafael
+dimm@earth:~/storage/prog$ sudo chrt -f 10 ./rr_interval 
+time_slice: 0 : 0
+
+(SCHED_RR)
+
+dimm@earth:~/storage/prog$ sudo chrt 10 ./rr_interval 
+time_slice: 0 : 99984800
+
+(SCHED_NORMAL)
+
+dimm@earth:~/storage/prog$ ./rr_interval 
+time_slice: 0 : 19996960
+
+(SCHED_NORMAL + a cpu_hog of similar 'weight' on the same CPU --- so should be a half of the previous result)
+
+dimm@earth:~/storage/prog$ taskset 1 ./rr_interval 
+time_slice: 0 : 9998480
+
+
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index d835cd2..cce22ff 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4745,11 +4745,12 @@ long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
+ 	else if (p->policy == SCHED_RR)
+ 		time_slice = DEF_TIMESLICE;
+ 	else {
++		struct sched_entity *se = &p->se;
+ 		unsigned long flags;
+ 		struct rq *rq;
+ 
+ 		rq = task_rq_lock(p, &flags);
+-		time_slice = sched_slice(&rq->cfs, &p->se);
++		time_slice = NS_TO_JIFFIES(sched_slice(cfs_rq_of(se), se));
+ 		task_rq_unlock(rq, &flags);
+ 	}
+ 	read_unlock(&tasklist_lock);
+
+---
+
+
+
