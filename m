@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXJBAOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbXJBARW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbXJBAOG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 20:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXJBAN4
+	id S1753194AbXJBARW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 20:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbXJBARP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 20:13:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43207 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752072AbXJBANz (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 20:13:55 -0400
-Message-ID: <47018D3C.9070409@sgi.com>
-Date: Tue, 02 Oct 2007 10:13:48 +1000
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Mon, 1 Oct 2007 20:17:15 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:35813 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbXJBARO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 20:17:14 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Fwd: [Suspend2-devel] [patch] 2.2.10.3 build fixes
+Date: Tue, 2 Oct 2007 10:17:08 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: nigel@suspend2.net, "Linux-pm mailing list" <uclinux-v850@lsi.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200709302144.08688.nigel@nigel.suspend2.net> <200710010743.52628.nigel@nigel.suspend2.net> <200710010028.03519.rjw@sisk.pl>
+In-Reply-To: <200710010028.03519.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.23 - revert a commit
-References: <20071001072350.DF61C58C4C0A@chook.melbourne.sgi.com> <alpine.LFD.0.999.0710010753500.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710010753500.3579@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710021017.09495.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 1 Oct 2007, Tim Shimmin wrote:
->> Lachlan's description:
->>     This fix is for a problem that has been in XFS since day one.
->>     [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
-> 	...
-> 
-> Why wasn't this in the commit logs? Now it just says it was reverted, with 
-> no actual reasoning *why*. And it apparently wasn't so obvious that no 
-> such reasoning is needed.
-> 
-> Gah. I ended up amending the commit and updating it with the comment.
-> 
-> 		Linus
+Hi.
 
-Yeah, sorry about that.
-It occurred to me later on.
-I initially converted the sgi-mod (undo mod) to a git commit and
-then discovered git-revert and thought, hey I'll use that
-instead but then forgot to add all the text into it.
-D'oh. Thanks for the fixup.
+On Monday 01 October 2007 08:28:02 Rafael J. Wysocki wrote:
+> On Sunday, 30 September 2007 23:43, Nigel Cunningham wrote:
+> > On Monday 01 October 2007 05:56:45 Rafael J. Wysocki wrote:
+> > > On Sunday, 30 September 2007 13:44, Nigel Cunningham wrote:
+> > > > Hi Rafael et al.
+> > > > 
+> > > > This looks like it will be vanilla material, maybe 2.6.23 material?
+> > > 
+> > > Well, I wouldn't like to export freezer.h .  Why exactly would that be
+> > > necessary?
+> > 
+> > A module that starts a freezeable kthread?
+> > 
+> > I can ask for more details, and will if you like.
+> 
+> Yes, please.
 
---Tim
+Ah. My bad. I should have looked at it more carefully before forwarding; it's 
+a result of my modifications for fuse support.
+
+Sorry for the noise.
+
+Nigel
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
