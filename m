@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXJBPog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXJBPpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbXJBPog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJBPo2
+	id S1755933AbXJBPpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJBPpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:44:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33292 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751514AbXJBPo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:44:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [PATCH 2/2] ACPICA: hw: Don't carry spinlock over suspend
-Date: Tue, 2 Oct 2007 17:59:05 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-api@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200710020807.41325.arvidjaar@mail.ru>
-In-Reply-To: <200710020807.41325.arvidjaar@mail.ru>
+	Tue, 2 Oct 2007 11:45:21 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41389 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751514AbXJBPpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 11:45:20 -0400
+Date: Tue, 2 Oct 2007 17:45:19 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Joe Perches <joe@perches.com>
+cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] printk: add KERN_CONT annotation
+In-Reply-To: <1191339692.13170.18.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0710021744060.7130@fbirervta.pbzchgretzou.qr>
+References: <20070928105345.GC18163@shadowen.org>  <20071001064448.GA4239@elte.hu>
+  <20071001003007.4e90143b.akpm@linux-foundation.org>  <20071002043408.GM10199@1wt.eu>
+  <20071002051852.GC28345@elte.hu> <1191339692.13170.18.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710021759.05583.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 2 October 2007 06:07, Andrey Borzenkov wrote:
-> > On Sunday, 30 September 2007 20:39, Alexey Starikovskiy wrote:
-> > > ACPI uses acpi_get_register() in order to get into suspend.
-> > > This function is guarded by acpi_gbl_hardware_lock, which will be carried
-> > > into resume phase.
-> > > At resume interrupts are enabled and first ACPI interrupt deadlocks on
-> > > this lock.
-> >
-> > Ouch.  That might have bitten quite some people, I guess.
-> >
-> > > Solution seems to be to not lock register read, as there are no
-> > > concurrent activity at this point.
-> > >
-> > > Reference: http://bugzilla.kernel.org/show_bug.cgi?id=7499
-> > >
-> > > Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-> >
-> > Do you think it's -stable material?
-> 
-> As someone who *has* been bitten by this bug - by all means.
-> 
-> I'd like to emphasize one more point - we were able to debug it only because 
-> old kernel at least displayed debug messages. Current kernel deadlocks 
-> absolutely dead (pun intended). No output to console, no indication what 
-> happens. I consider this regression. If at all possible, we should make sure 
-> that console output is available as early as possible.
 
-Compile with DISABLE_CONSOLE_SUSPEND set and it should work.
+On Oct 2 2007 08:41, Joe Perches wrote:
+>On Tue, 2007-10-02 at 07:18 +0200, Ingo Molnar wrote:
+>> +#define	KERN_CONT	""
+>
+>This doesn't work with printk(char** array[index]) continuations
+>or with strings with embedded KERN_ prefixes.
 
-There's a patch queued up for 2.6.24 that adds a command line switch for that.
-
-Greetings,
-Rafael
+Huh?
+...Ah. Yeah, pasting a string literal with a variable won't work.
+But then again, you should not use printk(var) directly, but always
+use printk("%s", var)
