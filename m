@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbXJBARW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXJBAfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbXJBARW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 20:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbXJBARP
+	id S1752938AbXJBAfT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 20:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXJBAfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 20:17:15 -0400
-Received: from home.nigel.suspend2.net ([203.171.70.205]:35813 "EHLO
-	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbXJBARO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 20:17:14 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fwd: [Suspend2-devel] [patch] 2.2.10.3 build fixes
-Date: Tue, 2 Oct 2007 10:17:08 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: nigel@suspend2.net, "Linux-pm mailing list" <uclinux-v850@lsi.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200709302144.08688.nigel@nigel.suspend2.net> <200710010743.52628.nigel@nigel.suspend2.net> <200710010028.03519.rjw@sisk.pl>
-In-Reply-To: <200710010028.03519.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 1 Oct 2007 20:35:05 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:46408 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbXJBAfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 20:35:02 -0400
+Subject: [PATCH 1/2] ext4: Support large blocksize up to PAGESIZE
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Cc: sho@tnes.nec.co.jp, Jan Kara <jack@suse.cz>, clameter@sgi.com,
+       tytso@mit.edu
+In-Reply-To: <1188434857.3799.76.camel@localhost.localdomain>
+References: <20070828190551.415127746@sgi.com>
+	 <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+	 <1188434857.3799.76.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 01 Oct 2007 17:34:58 -0700
+Message-Id: <1191285298.11737.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710021017.09495.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Support large blocksize up to PAGESIZE (max 64KB) for ext4. 
 
-On Monday 01 October 2007 08:28:02 Rafael J. Wysocki wrote:
-> On Sunday, 30 September 2007 23:43, Nigel Cunningham wrote:
-> > On Monday 01 October 2007 05:56:45 Rafael J. Wysocki wrote:
-> > > On Sunday, 30 September 2007 13:44, Nigel Cunningham wrote:
-> > > > Hi Rafael et al.
-> > > > 
-> > > > This looks like it will be vanilla material, maybe 2.6.23 material?
-> > > 
-> > > Well, I wouldn't like to export freezer.h .  Why exactly would that be
-> > > necessary?
-> > 
-> > A module that starts a freezeable kthread?
-> > 
-> > I can ask for more details, and will if you like.
-> 
-> Yes, please.
+From: Takashi Sato <sho@tnes.nec.co.jp>
 
-Ah. My bad. I should have looked at it more carefully before forwarding; it's 
-a result of my modifications for fuse support.
+This patch set supports large block size(>4k, <=64k) in ext4,
+just enlarging the block size limit. But it is NOT possible to have 64kB
+blocksize on ext4 without some changes to the directory handling
+code.  The reason is that an empty 64kB directory block would have a
+rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
+the filesystem.  The proposed solution is treat 64k rec_len
+with a an impossible value like rec_len = 0xffff to handle this.
 
-Sorry for the noise.
+The Patch-set consists of the following 2 patches.
+  [1/2]  ext4: enlarge blocksize
+         - Allow blocksize up to pagesize
 
-Nigel
--- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+  [2/2]  ext4: fix rec_len overflow
+         - prevent rec_len from overflow with 64KB blocksize
+
+Now on 64k page ppc64 box runs with this patch set we could create a 64k
+block size ext4dev, and able to handle empty directory block.
+Patch consider to be merge to 2.6.24-rc1.
+
+Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+---
+
+ fs/ext4/super.c         |    5 +++++
+ include/linux/ext4_fs.h |    4 ++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 619db84..d8bb279 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1548,6 +1548,11 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 		goto out_fail;
+ 	}
+ 
++	if (!sb_set_blocksize(sb, blocksize)) {
++		printk(KERN_ERR "EXT4-fs: bad blocksize %d.\n", blocksize);
++		goto out_fail;
++	}
++
+ 	/*
+ 	 * The ext4 superblock will not be buffer aligned for other than 1kB
+ 	 * block sizes.  We need to calculate the offset from buffer start.
+diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
+index f9881b6..d15a15e 100644
+--- a/include/linux/ext4_fs.h
++++ b/include/linux/ext4_fs.h
+@@ -77,8 +77,8 @@
+  * Macro-instructions used to manage several block sizes
+  */
+ #define EXT4_MIN_BLOCK_SIZE		1024
+-#define	EXT4_MAX_BLOCK_SIZE		4096
+-#define EXT4_MIN_BLOCK_LOG_SIZE		  10
++#define	EXT4_MAX_BLOCK_SIZE		65536
++#define EXT4_MIN_BLOCK_LOG_SIZE		10
+ #ifdef __KERNEL__
+ # define EXT4_BLOCK_SIZE(s)		((s)->s_blocksize)
+ #else
+
+
