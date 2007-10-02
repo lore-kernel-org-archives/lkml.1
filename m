@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbXJBIjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbXJBInU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbXJBIjf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 04:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXJBIj2
+	id S1755419AbXJBInU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 04:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXJBInF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 04:39:28 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:55872 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751788AbXJBIj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 04:39:28 -0400
-Message-ID: <391314365.29871@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 2 Oct 2007 16:39:22 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: writeback fixes
-Message-ID: <20071002083922.GA28892@mail.ustc.edu.cn>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	Tue, 2 Oct 2007 04:43:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:59568 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbXJBInD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 04:43:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=TP0kpiK13L+AURLJBrUs0BegdErZ+prpp/k/VfTgquhp+YRS/aaNHZsRjkF0qF1FcAYzFhe9l+9yp1G150HEcuOYH2I8Bn1j1+UDtrx6wXEjcGiL1bQVZ4yKaGeZwhTKpNVqF1UbrCh15nqsmH6t+9pTWvTBdholfJ1GDSKKdrg=
+Message-ID: <4701EA71.2000609@gmail.com>
+Date: Tue, 02 Oct 2007 15:51:29 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: hgsolari@gmail.com
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: Serial ATA does not find partitions (Hitachi HD, new? ATI controller)
+ where old SATA works
+References: <46FC4384.7080607@df.uba.ar> <46FCCD57.2020507@gmail.com> <47014740.5080002@df.uba.ar>
+In-Reply-To: <47014740.5080002@df.uba.ar>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 02:22:22PM -0700, Andrew Morton wrote:
-[...] 
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-2.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-3.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-4.patch
-> writeback-fix-comment-use-helper-function.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-5.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-6.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-7.patch
-
-> writeback-fix-periodic-superblock-dirty-inode-flushing.patch
-
-I have 4 more patches on writeback, 3 of them fix *new* problems that
-was introduced by the above patch. I'd recommend to merge them as a
-whole - either for 2.6.24 or for 2.6.25.
-
-I'll post them right now.
-
-Fengguang
-
-> introduce-i_sync.patch
-> introduce-i_sync-fix.patch
-> writeback-remove-unnecessary-wait-in-throttle_vm_writeout.patch
+Hernan Gustavo Solari wrote:
+> Tejun
 > 
->   Merge
+>    netconsole, pritty nice debunging system... but (yes, there is always
+> a but) it does not get to run.
+>    the method was well implemented, adding the acpi=off it sends the
+> information to the receiving machine (I can even see passing a
+> netconsole probing message in the machine under testing), but without
+> turning off acpi it does not reach the point of loading and,
+> consequently, it does not send a byte to the receiving machine.
+> 
+> Hence, result: empty output.
+
+Hmmm.. Are netconsole support and network driver built into the kernel?
+
+-- 
+tejun
 
