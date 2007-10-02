@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXJBM7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbXJBNFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbXJBM7a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 08:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbXJBM7D
+	id S1753359AbXJBNFr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbXJBNFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 08:59:03 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:51258 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbXJBM67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 08:58:59 -0400
-Date: Tue, 02 Oct 2007 22:00:43 +0900 (JST)
-Message-Id: <20071002.220043.89768361.yoshfuji@linux-ipv6.org>
-To: penguin-kernel@I-love.SAKURA.ne.jp
-Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org,
-       yoshfuji@linux-ipv6.org
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-References: <4701F419.8080103@nttdata.co.jp>
-	<Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
-	<200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+	Tue, 2 Oct 2007 09:05:38 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52227 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751277AbXJBNFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:05:37 -0400
+Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and
+	read_inode()
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Zach Brown <zab@zabbo.net>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, viro@ftp.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <11826.1191328350@redhat.com>
+References: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net>
+	 <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
+	 <20071001130958.29339.31669.stgit@warthog.procyon.org.uk>
+	 <20071001173930.GA7718@mami.zabbo.net>
+	 <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org>
+	 <20071001180601.GA9417@infradead.org>   <11826.1191328350@redhat.com>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 13:02:12 +0000
+Message-Id: <1191330132.11136.2.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp> (at Tue, 2 Oct 2007 21:44:57 +0900), Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> says:
+On Tue, 2007-10-02 at 13:32 +0100, David Howells wrote:
+> Zach Brown <zab@zabbo.net> wrote:
+> 
+> > /* haha, continuing the fine tradition of terrible names in this  api..  */
+> > static inline void *PTR_PTR(void *err_ptr) {
+> > 	BUG_ON(!IS_ERR(err_ptr) || !err_ptr);
+> > 	return err_ptr;
+> > }
+> 
+> How about ERR_CAST() instead?  Or maybe CAST_ERR()?
 
-> If I use "struct hlist_node" which has two pointers,
-> it needs more memory than "struct something" which has one pointer.
-> It is possible to use API defined in include/linux/list.h ,
-> but to reduce memory usage, I dare not use these API.
-> Singly-linked list's rule in TOMOYO Linux is quite simple,
-> "ptr->next is NULL if the last element" and "non-NULL if not".
+It's a better name than PTR_PTR(). :-)
+> 
+> 	struct dentry *blah(...)
+> 	{
+> 		struct inode *inode;
+> 
+> 		inode = thing(...);
+> 		if (IS_ERR(inode))
+> 			return ERR_CAST(inode);
+> 	}
+> 
+> Where ERR_CAST is defined as:
+> 
+> 	static inline void *ERR_CAST(const void *error)
+> 	{
+> 		return (void *) x;
+> 	}
 
-Introducing your own list is not good.
-Please use hlist or introduce new "slist".
+Of course, the cast is unnecessary, and I'm sure you meant to return
+error:
 
---yoshfuji
+static inline void *ERR_CAST(const void *error)
+{
+	return error;
+}
+
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
