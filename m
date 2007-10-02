@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbXJCMxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbXJCNCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbXJCMxV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXJCMw7
+	id S1755239AbXJCNCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXJCNB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:52:59 -0400
-Received: from rosi.naasa.net ([212.8.0.13]:38852 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755506AbXJCMw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:52:58 -0400
-From: Joerg Platte <lists@naasa.net>
-Reply-To: jplatte@naasa.net
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rcX SG_GET_SCSI_ID regression?
-Date: Wed, 3 Oct 2007 14:52:54 +0200
-User-Agent: KMail/1.9.7
-References: <200710031258.46266.lists@naasa.net>
-In-Reply-To: <200710031258.46266.lists@naasa.net>
+	Wed, 3 Oct 2007 09:01:57 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:33177 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752686AbXJCNB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 09:01:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5maQZNaXLf+a7wUDFXPo7z5hbBAhj0hqz6aOftmicgsvKGaXQCoSw2bm2q0WRJdXlhj4T1DDhdptzzciW3MOYOYMS+f7GRgUlF+jcbiydDJH9v2EghoECU2gr7dxkzewMcDkmEp+miQ6pd0GxTHdczjBU/s4Jyu+/mCdOi3Zx1Y=  ;
+X-YMail-OSG: 89evzJwVM1mISm_k2Y4StyOmfe7mrDJRuE_9lItkD8m1KlaniB921CJsKQPBRECjhw6Ue8JfBg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
+Date: Wed, 3 Oct 2007 06:30:19 +1000
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200710030553.27822.nickpiggin@yahoo.com.au> <20071003054149.a18b0547.pj@sgi.com>
+In-Reply-To: <20071003054149.a18b0547.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710031452.55506.lists@naasa.net>
+Message-Id: <200710030630.19850.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 3. Oktober 2007 schrieb Joerg Platte:
-Hi,
-
-> 2.6.22.8:
-> open("/dev/scanner", O_RDWR|O_NONBLOCK|O_EXCL) = 3
-> ioctl(3, SG_SET_TIMEOUT, 0xbfe40624)    = 0
-> ioctl(3, SG_GET_VERSION_NUM, 0x8063fa4) = 0
-> ioctl(3, SG_GET_SCSI_ID, 0xbfe405e0)    = 0
+On Wednesday 03 October 2007 22:41, Paul Jackson wrote:
+> > pdflush
+> > is not pinned at all and can be dynamically created and destroyed. Ditto
+> > for kjournald, as well as many others.
 >
-> 2.6.23-rc9:
-> open("/dev/scanner", O_RDWR|O_NONBLOCK|O_EXCL) = 3
-> ioctl(3, SG_SET_TIMEOUT, 0xbf84a834)    = 0
-> ioctl(3, SG_GET_VERSION_NUM, 0x8062524) = 0
-> ioctl(3, SG_GET_SCSI_ID, 0xbf84a7f0)    = -1 ENOTTY (Inappropriate ioctl
-> for device)
+> Whatever is not pinned is moved out of the top cpuset, on the kind of
+> systems I'm most familiar with.  They are put in a smaller cpuset, with
+> load balancing, that is sized for the workload they might present, but
+> kept separate from the main jobs.
 
-After some reboots and tests I discovered, that this error occurs only when 
-the scanner was turned off during system boot and was discovered later by 
-invoking the following script:
-for device in /sys/class/scsi_host/host*/scan ; do
-        echo "0 - -" > $device
-done
-With 2.6.22 and before the scanner was fully functional when discovered by a 
-bus rescan.
+So if a new pdflush is spawned, it get's moved to some cpuset? That
+probably isn't something these realtime systems want to do (ie. the
+non-realtime portion probably doesn't want to have any sort of scheduler
+or even worry about cpusets at all).
 
-regards,
-Jörg
 
--- 
-PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
-PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
+> > Basically: it doesn't feel like a satisfactory solution to brush
+> > these under the carpet.
+>
+> We don't do a whole lot of brushing under the carpet on these kind of
+> systems.  If I gave you the impression we do, then I misled you - sorry.
 
+No, not on your systems. I'm worried about the smaller ones that don't
+get so much attention (eg. hard partitioning for realtime).
