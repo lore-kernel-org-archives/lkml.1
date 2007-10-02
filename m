@@ -1,40 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbXJBNpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXJBNrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbXJBNpo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbXJBNph
+	id S1757539AbXJBNrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXJBNrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:45:37 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60111 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbXJBNpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:45:36 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: discuss@x86-64.org
-Subject: Re: [discuss] [PATCH] Inconsistent mmap()/mremap() flags
-Date: Tue, 2 Oct 2007 15:45:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Hugh Dickins <hugh@veritas.com>, Thayne Harbaugh <thayne@c2.net>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <1190958393.5128.85.camel@phantasm.home.enterpriseandprosperity.com> <1191308772.5200.66.camel@phantasm.home.enterpriseandprosperity.com> <Pine.LNX.4.64.0710021304230.26719@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0710021304230.26719@blonde.wat.veritas.com>
+	Tue, 2 Oct 2007 09:47:06 -0400
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:62191 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbXJBNrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:47:04 -0400
+Message-ID: <4701F285.5000206@nttdata.co.jp>
+Date: Tue, 02 Oct 2007 16:25:57 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+CC: chrisw@sous-sol.org
+Subject: [TOMOYO 00/15](repost) TOMOYO Linux - MAC based on process invocation
+ history.
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710021545.32556.ak@suse.de>
+X-OriginalArrivalTime: 02 Oct 2007 07:25:58.0402 (UTC) FILETIME=[7A1F9E20:01C804C5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"TOMOYO Linux" is our work in the field of security enhanced Linux.
+This is the repeated post of second submission of TOMOYO Linux
+( http://lkml.org/lkml/2007/8/24/116 ).
 
-> First call mmap with a low hint address, the new size you'll be wanting
-> from the mremap, PROT_NONE, MAP_ANONYMOUS, -1, 0.  Then call mremap with
-> old address, old size, new size, MREMAP_MAYMOVE|MREMAP_FIXED, and new
-> address as returned by the preparatory mmap.
+Unfortunately it was just before the Kernel Summit.
+We could not receive any suggestions about our codes.
+Before this posting, we changed the program to use
+securityfs (Kyle's comment) and re-generated patches
+with the current git tree.
 
-That's racy unfortunately in a multithreaded process. They would need to loop.
 
--Andi
+When we posted our first proposal to LKML, TOMOYO Linux's MAC was
+limited to file access control. Now TOMOYO Linux has access control
+functionality not only for files but also for networking, signal
+transmission and namespace manipulation and we got the source code
+cleaned-up.
+
+Patches consist of four types.
+    * [TOMOYO 01/15]:    Mandatory modifications against standard kernel.
+    * [TOMOYO 02-13/15]: LSM implementation of TOMOYO Linux.
+    * [TOMOYO 14/15]:    Optional modifications against standard kernel.
+    * [TOMOYO 15/15]:    Makefile and Kconfig .
+
+
+<<What you can do with TOMOYO Linux.>>
+
+The fundamental concept of TOMOYO Linux is "tracking process
+invocation history".
+
+The "struct task_struct"->security member holds a pointer to the
+"process invocation history". Thus, every process (the kernel,
+/sbin/init process and any children/descendant of /sbin/init) knows
+its "process invocation history" (or ancestors). Since every process
+knows its ancestors, TOMOYO Linux can enforce access control over all
+processes.
+
+TOMOYO Linux splits domains using "process invocation history" and the
+process transits to a different domain whenever execution of a program
+(i.e. do_execve()) is requested. By transiting to a different domain
+whenever execution of a program is requested, each domain will have
+the minimal permissions that are essential for processes in that
+domain to do their roles.
+
+You don't need to define domains beforehand. TOMOYO Linux kernel will
+automatically define new domains whenever execution of a program is
+requested, and the process will automatically transit to the new
+domain. (If the process's domain is in enforcing mode, TOMOYO Linux
+kernel will not define new domains to avoid memory consumption attack.)
+
+TOMOYO Linux can restrict the following requests on a per-a-domain basis:
+
+    * opening files
+    * communicating via PF_INET sockets
+    * sending signals
+
+TOMOYO Linux can also restrict the following namespace manipulation requests.
+
+    * mounting filesystems
+    * unmounting filesystems
+    * using pivot_root
+
+
+<<Example>>
+
+The tree below shows a part of domain transitions generated using
+Debian Etch. The domain a process is in is determined based on the
+process's "process invocation history". Each domain has permissions
+(or ACL), and the behavior (or requests shown above) of a process is
+restricted by the ACL of the domain that the process is in.
+
+    <kernel>
+      + /sbin/init
+          + /etc/init.d/rc
+              + /etc/init.d/apache2
+                  + /usr/bin/env
+                      + /usr/sbin/apache2ctl
+                          + /usr/sbin/apache2
+
+You can assign different access control modes (or profiles) on a
+per-a-domain basis. Thus, you can enforce access control partially or
+entirely. Also, by assigning "learning mode" to a domain, ACL that are
+requested by processes in that domain are automatically (i.e. in
+real-time) accumulated. The following ACL are an excerpt from
+/usr/sbin/apache2 domain generated using "learning mode".
+
+    4 /etc/apache2/apache2.conf
+    4 /var/www/apache2-default/index.html
+    allow_create /var/run/apache2.pid
+    allow_unlink /var/run/apache2.pid
+    allow_network TCP bind 192.168.1.135 80
+    allow_network TCP listen 192.168.1.135 80
+    allow_network TCP accept 192.168.1.1 2389
+
+The above ACL allows Apache to do the following behavior.
+
+    * Opening /etc/apache2/apache2.conf and
+      /var/www/apache2-default/index.html for reading.
+    * Creating and deleting /var/run/apache2.pid .
+    * Binding to local address (IP = 192.168.1.135, port = 80).
+    * Listening at local address (IP = 192.168.1.135, port = 80).
+    * Accepting from remote address (IP = 192.168.1.1, port = 2389).
+
+You may use wildcards for pathnames, ranges for IP addresses and port
+numbers, groups of pathnames and IP addresses for flexible definition.
+
+
+<<Features of TOMOYO Linux.>>
+
+TOMOYO Linux is an implementation of MAC, but you can use TOMOYO Linux
+not only for MAC, but also to analyze a system's behavior, since
+TOMOYO Linux can accumulate access requests raised by applications
+sorted by each "process invocation history".
+
+TOMOYO Linux and AppArmor are alike from the point of view of pathname
+based access control, but TOMOYO Linux has differences in the
+following points:
+
+    * TOMOYO Linux can apply access control over the whole process
+      (from the execution of /sbin/init at the startup procedure,
+      till the power failure at the shutdown procedure).
+    * TOMOYO Linux can apply access control not only over files but
+      also over networking, signals, namespace manipulations.
+    * TOMOYO Linux can accumulate ACL in real-time using
+      "learning mode".
+
+    * TOMOYO Linux allows the administrator to switch the access
+      control mode on a per-domain and per-functionality basis.
+    * TOMOYO Linux allows the administrator to judge (grant/reject)
+      requests which that violated ACL manually while operating in
+      "enforcing mode" without once rejecting these requests.
+    * TOMOYO Linux supports conditional ACL (e.g. owner of
+      process/files etc.).
+
+Documents about installing and experiencing TOMOYO Linux are available
+at http://tomoyo.sourceforge.jp/en/2.1.x/ . Please try TOMOYO Linux.
+Feedbacks are most welcome.
+
+
+<<Related links>>
+
+OLS BoF material: http://sourceforge.jp/projects/tomoyo/document/ols2007-tomoyo-20070629.pdf
+Previous submissions: http://lkml.org/lkml/2007/6/13/58 , http://lkml.org/lkml/2007/6/14/55, http://lkml.org/lkml/2007/8/24/116
+
+Kentaro Takeda
+NTT DATA CORPORATION
 
