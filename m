@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXJBPpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXJBPq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbXJBPpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJBPpV
+	id S1755928AbXJBPq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXJBPqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:45:21 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41389 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbXJBPpU (ORCPT
+	Tue, 2 Oct 2007 11:46:19 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:53372 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbXJBPqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:45:20 -0400
-Date: Tue, 2 Oct 2007 17:45:19 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Joe Perches <joe@perches.com>
-cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] printk: add KERN_CONT annotation
-In-Reply-To: <1191339692.13170.18.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0710021744060.7130@fbirervta.pbzchgretzou.qr>
-References: <20070928105345.GC18163@shadowen.org>  <20071001064448.GA4239@elte.hu>
-  <20071001003007.4e90143b.akpm@linux-foundation.org>  <20071002043408.GM10199@1wt.eu>
-  <20071002051852.GC28345@elte.hu> <1191339692.13170.18.camel@localhost>
+	Tue, 2 Oct 2007 11:46:18 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18178.26534.805731.389480@stoffel.org>
+Date: Tue, 2 Oct 2007 11:45:42 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: "John Stoffel" <john@stoffel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+In-Reply-To: <18178.22876.980673.839094@stoffel.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+	<18178.22876.980673.839094@stoffel.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Oct 2 2007 08:41, Joe Perches wrote:
->On Tue, 2007-10-02 at 07:18 +0200, Ingo Molnar wrote:
->> +#define	KERN_CONT	""
->
->This doesn't work with printk(char** array[index]) continuations
->or with strings with embedded KERN_ prefixes.
+Linus> I said I was hoping that -rc8 was the last -rc, and I hate
+Linus> doing this, but we've had more changes since -rc8 than we had
+Linus> in -rc8. And while most of them are pretty trivial, I really
+Linus> couldn't face doing a 2.6.23 release and take the risk of some
+Linus> really stupid brown-paper-bag thing.
 
-Huh?
-...Ah. Yeah, pasting a string literal with a variable won't work.
-But then again, you should not use printk(var) directly, but always
-use printk("%s", var)
+Linus> So there's a final -rc out there, and right now my plan is to
+Linus> make this series really short, and release 2.6.23 in a few
+Linus> days. So please do give it a last good testing, and holler
+Linus> about any issues you find!
+
+John> Just to let people know, I was running 2.6.23-rc for over 53
+John> days without any issues.  Mix of SCSI, Sata, tape drives, disks,
+John> MD, LVM, SMP, etc.  I suspect we've got a pretty darn stable
+John> release coming out soon.
+
+2.6.23-rc2 is what I meant.  Oops...
