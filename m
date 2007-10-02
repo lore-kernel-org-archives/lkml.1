@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbXJBOo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbXJBOvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbXJBOo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 10:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbXJBOou
+	id S1753719AbXJBOvP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 10:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbXJBOvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 10:44:50 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:52343 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416AbXJBOou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 10:44:50 -0400
+	Tue, 2 Oct 2007 10:51:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:37620 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750843AbXJBOvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 10:51:00 -0400
+To: James Morris <jmorris@namei.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+References: <4701F285.5000206@nttdata.co.jp> <4701F419.8080103@nttdata.co.jp>
+	<Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
+	<200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
+	<Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 02 Oct 2007 16:50:57 +0200
+In-Reply-To: <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
+Message-ID: <p73sl4t604u.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18178.22876.980673.839094@stoffel.org>
-Date: Tue, 2 Oct 2007 10:44:44 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-In-Reply-To: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Morris <jmorris@namei.org> writes:
+> 
+> All linked lists (at least, new ones) must use the standard kernel list
+> API.
 
-Linus> I said I was hoping that -rc8 was the last -rc, and I hate
-Linus> doing this, but we've had more changes since -rc8 than we had
-Linus> in -rc8. And while most of them are pretty trivial, I really
-Linus> couldn't face doing a 2.6.23 release and take the risk of some
-Linus> really stupid brown-paper-bag thing.
+Really? Why? That rule is new to me.
 
-Linus> So there's a final -rc out there, and right now my plan is to
-Linus> make this series really short, and release 2.6.23 in a few
-Linus> days. So please do give it a last good testing, and holler
-Linus> about any issues you find!
+Would also seem very limiting especially since the standard kernel lists
+do not allow to express important patterns (like single linked lists) 
 
-Just to let people know, I was running 2.6.23-rc for over 53 days
-without any issues.  Mix of SCSI, Sata, tape drives, disks, MD, LVM,
-SMP, etc.  I suspect we've got a pretty darn stable release coming out
-soon.
+I don't think that is a requirement.
 
-John
+-Andi
