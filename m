@@ -1,52 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbXJBUd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXJBUi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbXJBUd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 16:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbXJBUdt
+	id S1754672AbXJBUi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 16:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbXJBUiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 16:33:49 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:3798 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753497AbXJBUds (ORCPT
+	Tue, 2 Oct 2007 16:38:17 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:57664 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753248AbXJBUiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 16:33:48 -0400
-X-IronPort-AV: E=Sophos;i="4.21,221,1188802800"; 
-   d="scan'208";a="403492269"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
-       torvalds@linux-foundation.org, mingo@elte.hu, ak@suse.de,
-       greg@kroah.com, rusty@rustcorp.com.au, sam@ravnborg.org, hpa@zytor.com,
-       peterz@infradead.org, venkatesh.pallipadi@intel.com, travis@sgi.com,
-       avi@qumranet.com, jason.wessel@windriver.com, jeremy@goop.org,
-       glommer@gmail.com, chrisw@sous-sol.org, clameter@sgi.com,
-       ebiederm@xmission.com, anil.s.keshavamurthy@intel.com, zach@vmware.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-X-Message-Flag: Warning: May contain useful information
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-	<alpine.LRH.0.999.0710021019310.23586@www.tglx.de>
-	<200710022212.15219.rjw@sisk.pl>
-	<20071002131131.6066eabe.akpm@linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 02 Oct 2007 13:32:36 -0700
-In-Reply-To: <20071002131131.6066eabe.akpm@linux-foundation.org> (Andrew Morton's message of "Tue, 2 Oct 2007 13:11:31 -0700")
-Message-ID: <adaejgdgsuz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Oct 2007 20:32:37.0071 (UTC) FILETIME=[5EB8F5F0:01C80533]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Tue, 2 Oct 2007 16:38:16 -0400
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Burton Windle <bwindle@fint.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Sumant Patro <sumant.patro@lsi.com>, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20071002181518.GC10852@stusta.de>
+References: <Pine.LNX.4.64.0710021242510.6275@postal>
+	 <20071002181518.GC10852@stusta.de>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 15:38:13 -0500
+Message-Id: <1191357493.3530.129.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The one problem with this is that I will have trouble repulling and remerging
- > the 81 subsystem tree which are part of -mm until their owners have fixed
- > everything up - I'll either need to temporarily drop them or will need to
- > fix them up with Thomas's script each time I fetch them.
+On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
+> Cc's added, the complete bug report is at
+>   http://lkml.org/lkml/2007/10/2/243
+> 
+> On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
+> > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
+> >
+> > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
+> >...
+> 
+> Thanks for your report.
+> 
+> Diff'ing the dmesg's shows:
+> 
+> <--  snip  -->
+> 
+>  scsi0: scanning scsi channel 4 [P0] for physical devices.
+>  scsi0: scanning scsi channel 5 [P1] for physical devices.
+>  st: Version 20070203, fixed bufsize 32768, s/g segs 256
+> -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+>  sd 0:0:0:0: [sda] Write Protect is off
+>  sd 0:0:0:0: [sda] Asking for cache data failed
+>  sd 0:0:0:0: [sda] Assuming drive cache: write through
+> -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+>  sd 0:0:0:0: [sda] Write Protect is off
+>  sd 0:0:0:0: [sda] Asking for cache data failed
+>  sd 0:0:0:0: [sda] Assuming drive cache: write through
+>   sda: sda1
+> + sda: p1 exceeds device capacity
+> 
+> <--  snip  -->
+> 
+> -	case MEGA_BULK_DATA:
+> -		if (scb->cmd->use_sg == 0)
+> -			length = scb->cmd->request_bufflen;
+> -		else {
+> -			struct scatterlist *sgl =
+> -				(struct scatterlist *)scb->cmd->request_buffer;
+> -			length = sgl->length;
+> -		}
+> -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
+> -			       length, scb->dma_direction);
+> -		break;
+> -
 
-FWIW, I just pulled Thomas's x86 branch into my for-2.6.24 branch and
-test-booted that on one of my systems with no obvious problems.  (Hey,
-it compiled, ship it...)
+This is the problem piece I think.  We've reintroduced a very old bug:
 
- - R.
+commit 51c928c34fa7cff38df584ad01de988805877dba
+Author: James Bottomley <James.Bottomley@SteelEye.com>
+Date:   Sat Oct 1 09:38:05 2005 -0500
+
+    [SCSI] Legacy MegaRAID: Fix READ CAPACITY
+    
+    Some Legacy megaraid cards can't actually cope with the scatter/gather
+    version of the READ CAPACITY command (which is what we now send them
+    since altering all SCSI internal I/O to go via the block layer).  Fix
+    this (and a few other broken megaraid driver assumptions) by sending
+    the non-sg version of the command if the sg list only has a single
+    element.
+    
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+
+So what we have to do is put back the check for use_sg == 1 and send
+that as a bulk transfer command.
+
+James
+
+
