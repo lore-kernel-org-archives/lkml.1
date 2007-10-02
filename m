@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbXJBH7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbXJBIAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbXJBH7q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 03:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbXJBH7h
+	id S1755707AbXJBIAW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 04:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXJBIAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 03:59:37 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:53322 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755520AbXJBH7f (ORCPT
+	Tue, 2 Oct 2007 04:00:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52263 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbXJBIAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 03:59:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=n7AqkVrh5OT9IDmHgOk1+bpqQa0LDY1BEo8EV6FQAFvY/yV5kN9au3BI6atIFOgc7PIRMdwlwvAa2GXyqZ/BfMSwhxYl+zu/oBYrAScYnrVv+2zrddiKG7wpAqAP6QkiCTw6NvM3O7E/zJyEXWCAfmWz4mayROvOLxg1jmd/knA=
-Message-ID: <4701FA63.5080504@gmail.com>
-Date: Tue, 02 Oct 2007 09:59:31 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 2 Oct 2007 04:00:04 -0400
+Date: Tue, 2 Oct 2007 10:00:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Mukker, Atul" <Atul.Mukker@lsi.com>
+Cc: Linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: kdump detection in SCSI drivers
+Message-ID: <20071002080000.GA5743@atrey.karlin.mff.cuni.cz>
+References: <9738BCBE884FDB42801FAD8A7769C26501B2C44C@NAMAIL1.ad.lsil.com> <20070920104249.GB12157@atrey.karlin.mff.cuni.cz> <9738BCBE884FDB42801FAD8A7769C26501B2C7D8@NAMAIL1.ad.lsil.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>
-Subject: v4l-stk11xx* [Was: -mm merge plans for 2.6.24]
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-In-Reply-To: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9738BCBE884FDB42801FAD8A7769C26501B2C7D8@NAMAIL1.ad.lsil.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2007 11:22 PM, Andrew Morton wrote:
-> v4l-stk11xx-add-a-new-webcam-driver.patch
-> v4l-stk11xx-use-array_size-in-another-2-cases.patch
-> v4l-stk11xx-use-retval-from-stk11xx_check_device.patch
-> v4l-stk11xx-add-static-to-tables.patch
+Hi!
 
-No, hold it please, until v4l extension will be developped and bayer->rgb
-conversion dismiss from the driver.
+> How do we "know" when little memory is available?
 
-> bw-qcam-use-data_reverse-instead-of-manually-poking-the-control-register-fix.patch
-> git-dvb-build-fix.patch
+Kernel already scales its hash tables according to total RAM
+available, perhaps you can use similar mechanism?
+
+> Other suggestion which came about was to parse the kernel command line
+> and look for "elfcorehdr=". Is this ok? Is kernel command line visible
+> to the SCSI drivers?
+
+Kernel command line probably is visible, but I'd recommend against
+doing that.
+
+							Pavel
+
+> Cc: Linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: kdump detection in SCSI drivers
 > 
->   Send to mchehab
+> > Hi,
+> > 
+> > Is there a standard way for drivers (RAID) to detect if the current
+> > kernel is running in kdump mode? We would like to adjust driver
+> behavior
+> > dynamically when kdump is active by scaling down resources.
+> 
+> Perhaps you should be automatically using little resources when little
+> memory is available, or something? 
+> 
+> With upcomping kjump patches, it is more "interesting" than kdump
+> vs. no kdump.
+> 	
+> Pavel
 
-thanks,
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
