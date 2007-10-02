@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbXJBOvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbXJBOya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbXJBOvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 10:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbXJBOvA
+	id S1754265AbXJBOya (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 10:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXJBOyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 10:51:00 -0400
-Received: from mail.suse.de ([195.135.220.2]:37620 "EHLO mx1.suse.de"
+	Tue, 2 Oct 2007 10:54:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37963 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbXJBOvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 10:51:00 -0400
-To: James Morris <jmorris@namei.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-References: <4701F285.5000206@nttdata.co.jp> <4701F419.8080103@nttdata.co.jp>
-	<Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
-	<200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-	<Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 02 Oct 2007 16:50:57 +0200
-In-Reply-To: <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
-Message-ID: <p73sl4t604u.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1752579AbXJBOyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 10:54:22 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+Date: Tue, 2 Oct 2007 16:54:18 +0200
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <200710021623.09966.ak@suse.de> <20071002143115.GA4867@elte.hu>
+In-Reply-To: <20071002143115.GA4867@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200710021654.18216.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris <jmorris@namei.org> writes:
-> 
-> All linked lists (at least, new ones) must use the standard kernel list
-> API.
 
-Really? Why? That rule is new to me.
+> please merge it ontop of the arch/x86 tree so that we can start 
+> reviewing and testing it based on the unified tree ASAP. (but sending us 
+> a queue to the old layout is fine too - whichever variant you can do 
+> fastest)
 
-Would also seem very limiting especially since the standard kernel lists
-do not allow to express important patterns (like single linked lists) 
-
-I don't think that is a requirement.
+It will be uploaded to the usual location.
 
 -Andi
+
