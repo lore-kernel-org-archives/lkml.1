@@ -1,68 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXJBJ0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbXJBJ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbXJBJ0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 05:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJBJ01
+	id S1755869AbXJBJ1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 05:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXJBJ1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 05:26:27 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4908 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbXJBJ01 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 05:26:27 -0400
-Date: Tue, 2 Oct 2007 10:26:01 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, "Huang, Ying" <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
-Message-ID: <20071002092601.GA30636@shadowen.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <p733awu6nva.fsf@bingen.suse.de> <20071001233225.88c67e8b.akpm@linux-foundation.org> <20071002070110.GA30490@one.firstfloor.org>
+	Tue, 2 Oct 2007 05:27:05 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:13279 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbXJBJ1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 05:27:02 -0400
+Date: Tue, 2 Oct 2007 11:28:56 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, abhishekrai@google.com,
+       Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net
+Subject: Re: [PATCH] Fix blktrace setup 32-bit ioctl on 64-bit kernels
+Message-ID: <20071002092856.GG5236@kernel.dk>
+References: <20071002073943.GC5236@kernel.dk> <200710021015.33203.arnd@arndb.de> <20071002083758.GD5236@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071002070110.GA30490@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+In-Reply-To: <20071002083758.GD5236@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 09:01:10AM +0200, Andi Kleen wrote:
+Hi Arnd,
 
-> x86_64-sparsemem_vmemmap-2m-page-size-support.patch
-> x86_64-sparsemem_vmemmap-vmemmap-x86_64-convert-to-new-helper-based-initialisation.patch          
-> Look like these two should be merged together
->
-> Also I'm concerned about a third variant of memmappery. Can we agree
-> to only merge that when the old sparsemem support is removed from x86-64? 
-> 
-> Otherwise it looks good to me.
+Updated patch below. I kept the code in compat_ioctl.c, to me it seems
+like the cleanest approach. I need the BLKTRACESETUP32 define both in
+compat_ioctl.c and blktrace.c if I move it, and I need to hard-core the
+struct size or define it in both places. And guard the code in
+blktrace.c with an ifdef for CONFIG_COMPAT. Not pretty, imho.
 
-sparsemem vmemmap is a sparsemem variant.  By that I mean that it uses all
-the same infrastructure as sparsemem.  That sparsemem code is generic code
-and shared with the other architectures.  There essentially is no code to
-remove which is not generic and currently in use by other architectures.
-The patches as they stand select the vmemmap variant unconditionally
-when sparsemem is selected, we are not adding a new option for x86_64
-overall -- in that sense classic sparsemem is already removed for x86_64
-by these patches.
+I haven't tested this one yet, but at least it compiles and the sizing
+seems right. The u16 padding was an artifact of the
+__attribute__((packed)) so that could be removed.
 
-The longer plan is to pull out the other memory models where they are
-no longer beneficial with a view to ending up with only one.  A good
-example is the private virtual memory map implemented on ia64, which
-is an early target.  As discussed at VM summit, we are also looking at
-removing discontigmem for x86.  That review will continue.
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index 5a5b711..54162e5 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -2052,6 +2052,44 @@ static int raw_ioctl(unsigned fd, unsigned cmd, unsigned long arg)
+         }
+         return ret;
+ }
++
++struct blk_user_trace_setup32 {
++	char name[32];
++	u16 act_mask;
++	u32 buf_size;
++	u32 buf_nr;
++	compat_u64 start_lba;
++	compat_u64 end_lba;
++	u32 pid;
++};
++
++#define BLKTRACESETUP32 _IOWR(0x12,115,struct blk_user_trace_setup32)
++
++static int blktrace32_setup(int fd, unsigned cmd, unsigned long arg)
++{
++	struct blk_user_trace_setup __user *buts = compat_alloc_user_space(sizeof(*buts));
++	struct blk_user_trace_setup32 __user *buts32 = compat_ptr(arg);
++	int err;
++
++	if (copy_in_user(&buts->name, &buts32->name, 32) ||
++	    get_user(buts->act_mask, &buts32->act_mask) ||
++	    get_user(buts->buf_size, &buts32->buf_size) ||
++	    get_user(buts->buf_nr, &buts32->buf_nr) ||
++	    get_user(buts->start_lba, &buts32->start_lba) ||
++	    get_user(buts->end_lba, &buts32->end_lba) ||
++	    get_user(buts->pid, &buts32->pid))
++		return -EFAULT;
++
++	err = sys_ioctl(fd, cmd, (unsigned long) buts);
++	if (err)
++		return err;
++
++	if (copy_to_user(&buts32->name, &buts->name, 32))
++		return -EFAULT;
++
++	return err;
++}
++
+ #endif /* CONFIG_BLOCK */
+ 
+ struct serial_struct32 {
+@@ -2555,7 +2593,7 @@ COMPATIBLE_IOCTL(BLKSECTSET)
+ COMPATIBLE_IOCTL(BLKSSZGET)
+ COMPATIBLE_IOCTL(BLKTRACESTART)
+ COMPATIBLE_IOCTL(BLKTRACESTOP)
+-COMPATIBLE_IOCTL(BLKTRACESETUP)
++HANDLE_IOCTL(BLKTRACESETUP32, blktrace32_setup)
+ COMPATIBLE_IOCTL(BLKTRACETEARDOWN)
+ ULONG_IOCTL(BLKRASET)
+ ULONG_IOCTL(BLKFRASET)
 
-> > How come?  Memoryless node can and do occur in real-world machines.  Kernel
-> > should support that?
-> 
-> But a node is just defined by its memory? 
+-- 
+Jens Axboe
 
-I thought that a node was a unit of numa locality.  Cirtainly some
-machines seem to express themselves as memory only nodes and cpu only
-nodes; in the past I am sure we have also heard of IO only nodes
-representing "io drawers" and the like.
-
--apw
