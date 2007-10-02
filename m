@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbXJBNFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXJBNHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbXJBNFr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbXJBNFi
+	id S1754188AbXJBNHc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbXJBNHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:05:38 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52227 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbXJBNFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:05:37 -0400
-Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and
-	read_inode()
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Zach Brown <zab@zabbo.net>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, viro@ftp.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <11826.1191328350@redhat.com>
-References: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net>
-	 <20071001130921.29339.72876.stgit@warthog.procyon.org.uk>
-	 <20071001130958.29339.31669.stgit@warthog.procyon.org.uk>
-	 <20071001173930.GA7718@mami.zabbo.net>
-	 <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org>
-	 <20071001180601.GA9417@infradead.org>   <11826.1191328350@redhat.com>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 13:02:12 +0000
-Message-Id: <1191330132.11136.2.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Oct 2007 09:07:25 -0400
+Received: from namei.org ([69.55.235.186]:51503 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752958AbXJBNHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:07:24 -0400
+Date: Tue, 2 Oct 2007 06:07:08 -0700 (PDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+In-Reply-To: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
+Message-ID: <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
+References: <4701F285.5000206@nttdata.co.jp> <4701F419.8080103@nttdata.co.jp>
+ <Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
+ <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-02 at 13:32 +0100, David Howells wrote:
-> Zach Brown <zab@zabbo.net> wrote:
-> 
-> > /* haha, continuing the fine tradition of terrible names in this  api..  */
-> > static inline void *PTR_PTR(void *err_ptr) {
-> > 	BUG_ON(!IS_ERR(err_ptr) || !err_ptr);
-> > 	return err_ptr;
-> > }
-> 
-> How about ERR_CAST() instead?  Or maybe CAST_ERR()?
+On Tue, 2 Oct 2007, Tetsuo Handa wrote:
 
-It's a better name than PTR_PTR(). :-)
+> Hello.
 > 
-> 	struct dentry *blah(...)
-> 	{
-> 		struct inode *inode;
+> Thank you for your comment.
 > 
-> 		inode = thing(...);
-> 		if (IS_ERR(inode))
-> 			return ERR_CAST(inode);
-> 	}
+> James Morris wrote:
+> > Why do you need to avoid spinlocks for these manipulations?
 > 
-> Where ERR_CAST is defined as:
+> I don't need to use spinlocks here.
+> What I need to do here is avoid read/write reordering,
+> so mb() will be appropriate here.
 > 
-> 	static inline void *ERR_CAST(const void *error)
-> 	{
-> 		return (void *) x;
-> 	}
+> struct something {
+>   struct something *next;
+>   void *data;
+> };
+> 
+> struct something *prev_ptr = ...;
+> struct something *new_ptr = kmalloc(sizeof(*new_ptr), GFP_KERNEL);
+> new_ptr->next = NULL;
+> new_ptr->data = some_value;
+> mb();
+> prev_ptr->next = new_ptr;
 
-Of course, the cast is unnecessary, and I'm sure you meant to return
-error:
+You're introducing a custom API, which is open-coded repeatedly throughout 
+your module.
 
-static inline void *ERR_CAST(const void *error)
-{
-	return error;
-}
+All linked lists (at least, new ones) must use the standard kernel list
+API.
 
-Shaggy
+> Performance is not critical because this mb() is called
+> only when appending new entry to the singly-linked list.
+
+Most of these uses appear to be slow path or nested inside other locks, 
+while overall, performance is likely to be dominated by your string 
+matching and permission checking.  Use of mb(), which is typically 
+considered less understandable, in this case does not appear to be 
+justified vs. normal locking, and you also need to use the standard list 
+API.  If performance really is an issue, then consider RCU.
+
+
+- James
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+James Morris
+<jmorris@namei.org>
