@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbXJBPUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbXJBPZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbXJBPUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbXJBPUo
+	id S1754019AbXJBPZb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXJBPZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:20:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50723 "EHLO mail.dvmed.net"
+	Tue, 2 Oct 2007 11:25:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35721 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751761AbXJBPUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:20:43 -0400
-Message-ID: <470261C9.3000700@garzik.org>
-Date: Tue, 02 Oct 2007 11:20:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752260AbXJBPZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 11:25:24 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+Date: Tue, 2 Oct 2007 17:24:11 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071002143115.GA4867@elte.hu> <20071002145806.GA3567@uranus.ravnborg.org>
+In-Reply-To: <20071002145806.GA3567@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] libata: add human-readable error value decoding v3
-References: <46B36D59.7060803@shaw.ca>
-In-Reply-To: <46B36D59.7060803@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200710021724.11623.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> This adds human-readable decoding of the ATA status and error registers
-> (similar to what drivers/ide does) as well as the SATA Serror register to
-> libata error handling output.  This prevents the need to pore through
-> standards documents to figure out the meaning of the bits in these
-> registers when looking at error reports.  Some bits that drivers/ide
-> decoded are not decoded here, since the bits are either command-dependent
-> or obsolete, and properly parsing them would add too much complexity.
-> 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-> 
-> ---
-> 
-> Rebased to apply to 2.6.23-rc1-mm2.
 
-I'm applying this manually....   sorry it took so long, the asymmetry of 
-"{DRDY }" bugged me, so I did a few cleanups.
+> 
+> I plan to integrate cflags-probe in kbuild.git if there is no objection.
 
+Fine for me. Please take what you want.
 
+-Andi
