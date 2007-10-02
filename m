@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbXJBOg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbXJBOio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469AbXJBOg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 10:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXJBOgu
+	id S1754602AbXJBOio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 10:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXJBOih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 10:36:50 -0400
-Received: from namei.org ([69.55.235.186]:54823 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751845AbXJBOgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 10:36:50 -0400
-Date: Tue, 2 Oct 2007 07:36:32 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Kentaro Takeda <takedakn@nttdata.co.jp>
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [TOMOYO 14/15](repost) LSM expansion for TOMOYO Linux.
-In-Reply-To: <4701F5CC.7040209@nttdata.co.jp>
-Message-ID: <Xine.LNX.4.64.0710020653470.28698@us.intercode.com.au>
-References: <4701F285.5000206@nttdata.co.jp> <4701F5CC.7040209@nttdata.co.jp>
+	Tue, 2 Oct 2007 10:38:37 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:13483 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbXJBOig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 10:38:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=A+WrXeqeYi+x+bIBUwyiGelSfSe01dEC+bp5e7A1rGmlD1y1dTc3qKAggygzYy6AqPaLu+hNf77phSZSLKKOB+C2mlKqeOCEgzMuYpdNq9PXrarx30Z7lShtZxD8iD3JV1+2JNj7evSxuFW8/+weZi5XTZoNATBWruvQ6MY1/a0=
+Message-ID: <3ae72650710020738g7c80135au8618cf2dd2850eb@mail.gmail.com>
+Date: Tue, 2 Oct 2007 16:38:24 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Fengguang Wu" <fengguang.wu@gmail.com>, greg@kroah.com
+In-Reply-To: <1191325226.13204.63.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <1191313025.13204.30.camel@twins>
+	 <20071002013148.18958af2.akpm@linux-foundation.org>
+	 <1191314911.13204.41.camel@twins>
+	 <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com>
+	 <1191321861.13204.53.camel@twins>
+	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+	 <1191325226.13204.63.camel@twins>
+X-Google-Sender-Auth: 81aed3ccf7aac9c8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007, Kentaro Takeda wrote:
+On 10/2/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, 2007-10-02 at 13:21 +0200, Kay Sievers wrote:
+> > On 10/2/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > On Tue, 2007-10-02 at 12:31 +0200, Kay Sievers wrote:
+> > >
+> > > > What would be the point in another top-level tree for device
+> > > > information? All devices you are exporting information for, are
+> > > > already in the sysfs tree, right?
+> > >
+> > > Never did find NFS mounts/servers/superblocks or whatever constitutes a
+> > > BDI for NFS in there. Same goes for all other networked filesystems for
+> > > that matter.
+> >
+> > How about adding this information to the tree then, instead of
+> > creating a new top-level hack, just because something that you think
+> > you need doesn't exist.
+>
+> So you suggest adding all the various network filesystems in there
+> (where?), and adding the concept of a BDI, and ensuring all are properly
+> linked together - somehow. Feel free to do so.
 
+No, I propose to add only sane new userspace interfaces. That you miss
+infrastructure to use, should never be the reason to add conceptually
+broken new interfaces. A new device related top-level directory in
+/sys is not going to happen. Better don't add new stuff, if you can't
+do it right.
 
-> --- linux-2.6.orig/net/core/datagram.c	2007-10-02 11:11:51.000000000 +0900
-> +++ linux-2.6/net/core/datagram.c	2007-10-02 11:26:23.000000000 +0900
-> @@ -55,6 +55,7 @@
->  #include <net/checksum.h>
->  #include <net/sock.h>
->  #include <net/tcp_states.h>
-> +#include <linux/security.h>
->  
->  /*
->   *	Is a socket 'connection oriented' ?
-> @@ -178,6 +179,27 @@ struct sk_buff *skb_recv_datagram(struct
->  		} else
->  			skb = skb_dequeue(&sk->sk_receive_queue);
->  
-> +		error = security_post_recv_datagram(sk, skb, flags);
-> +		if (error) {
-> +			unsigned long cpu_flags;
-> +
-> +			if (!(flags & MSG_PEEK))
-> +				goto no_peek;
-> +
-> +			spin_lock_irqsave(&sk->sk_receive_queue.lock,
-> +					  cpu_flags);
-> +			if (skb == skb_peek(&sk->sk_receive_queue)) {
-> +				__skb_unlink(skb,
-> +					     &sk->sk_receive_queue);
-> +				atomic_dec(&skb->users);
-> +			}
-> +			spin_unlock_irqrestore(&sk->sk_receive_queue.lock,
-> +					       cpu_flags);
-> +no_peek:
-> +			skb_free_datagram(sk, skb);
-> +			goto no_packet;
-> +		}
-> +
->  		if (skb)
->  			return skb;
+> > You called sysfs a mess, seems you work on that topic too. :)
+>
+> I called the in-kernel API to create sysfs files a mess. Not that I have
+> another opinion on the content of /sys though, always takes to damn long
+> to find anything in there.
 
-I'm guessing you need this to determine the receiving process, rather than 
-the socket (which is available via security_sock_rcv_skb()).
+Sure, it's a mess, we are trying to clean that up, it's hard, and
+therefore we can not accept stuff like you propose, that makes it even
+harder.
 
-If so, is this to interactively determine from the user or admin whether 
-the packet should be accepted/denied for the receiving process?
+Use debugfs, if you can't add a sane interface. There are no rules,
+you can do whatever you want there. If over time the stuff you need
+gets added, you can always switch over.
 
+Or add an attribute group to the existing devices, and leave the ones
+out, which are not in sysfs right now, until they are added.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+Or use a device class and use the existing devices as parents. If you
+don't have a parent, they will show up in "virtual" until someone adds
+the right parent devices. (If you are going to do this, make sure
+nothing depends on a device being "virtual", it must be allowed to
+re-parent these device with any future kernel release.)
+
+Thanks,
+Kay
