@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbXJBVKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbXJBVNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbXJBVKF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 17:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbXJBVJw
+	id S1756456AbXJBVNG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 17:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbXJBVMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 17:09:52 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:27693 "EHLO
-	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751451AbXJBVJw (ORCPT
+	Tue, 2 Oct 2007 17:12:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:63764 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754990AbXJBVMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 17:09:52 -0400
-X-Trace: 629825498-mk-filter-3.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
-X-SBRS: None
-X-RemoteIP: 81.1.76.66
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAPpIAkdRAUxC/2dsb2JhbACBWQ
-Subject: [PATCH] Fix SH DMAC code to handle PVR2 cascade
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>,
-       linux-sh <linuxsh-dev@lists.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 22:09:27 +0100
-Message-Id: <1191359367.17654.24.camel@localhost.localdomain>
+	Tue, 2 Oct 2007 17:12:54 -0400
+Date: Tue, 2 Oct 2007 14:12:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, dmitry.torokhov@gmail.com
+Cc: linux-input@atrey.karlin.mff.cuni.cz, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] input: move gameports out of SERIO menu
+Message-Id: <20071002141225.d503cdbb.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix SH DMAC code to correctly handle PVR2 cascade DMA.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-This updates http://lkml.org/lkml/2007/10/2/276
+Move the gameport support menu out of the SERIO menu and put it
+between touchscreens and misc. devices in the main input layer menu.
+Change it to use menuconfig instead of config.
 
-(I decided it was better to have the true size of the transfer put in
-via the API and refactor this here. And calc_xmit_shift(chan) should
-return 5 but only returns 3 so I've not used it here)
+Or was it meant to be listed under Hardware I/O ports?
+It sure seems odd there to me.
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/input/Kconfig          |    4 ++--
+ drivers/input/gameport/Kconfig |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
---- arch/sh/drivers/dma/dma-sh.c	2007/09/22 18:34:42	1.1
-+++ arch/sh/drivers/dma/dma-sh.c	2007/10/02 20:53:49	1.3
-@@ -150,6 +150,13 @@ static void sh_dmac_disable_dma(struct d
+--- linux-2.6.23-rc8-mm1.orig/drivers/input/Kconfig
++++ linux-2.6.23-rc8-mm1/drivers/input/Kconfig
+@@ -171,6 +171,8 @@ source "drivers/input/tablet/Kconfig"
  
- static int sh_dmac_xfer_dma(struct dma_channel *chan)
- {
-+	/* Handle Dreamcast PVR cascade */
-+	if (mach_is_dreamcast() && chan->chan == PVR2_CASCADE_CHAN) {
-+		ctrl_outl(chan->sar, SAR[chan->chan]);
-+		/* Transfer in 32 byte blocks */
-+		ctrl_outl((chan->count) >> 5, DMATCR[chan->chan]);
-+		return 0;
-+	}
- 	/*
- 	 * If we haven't pre-configured the channel with special flags, use
- 	 * the defaults.
-@@ -159,26 +166,9 @@ static int sh_dmac_xfer_dma(struct dma_c
+ source "drivers/input/touchscreen/Kconfig"
  
- 	sh_dmac_disable_dma(chan);
++source "drivers/input/gameport/Kconfig"
++
+ source "drivers/input/misc/Kconfig"
  
--	/*
--	 * Single-address mode usage note!
--	 *
--	 * It's important that we don't accidentally write any value to SAR/DAR
--	 * (this includes 0) that hasn't been directly specified by the user if
--	 * we're in single-address mode.
--	 *
--	 * In this case, only one address can be defined, anything else will
--	 * result in a DMA address error interrupt (at least on the SH-4),
--	 * which will subsequently halt the transfer.
--	 *
--	 * Channel 2 on the Dreamcast is a special case, as this is used for
--	 * cascading to the PVR2 DMAC. In this case, we still need to write
--	 * SAR and DAR, regardless of value, in order for cascading to work.
--	 */
--	if (chan->sar || (mach_is_dreamcast() &&
--			  chan->chan == PVR2_CASCADE_CHAN))
-+	if (chan->sar)
- 		ctrl_outl(chan->sar, SAR[chan->chan]);
--	if (chan->dar || (mach_is_dreamcast() &&
--			  chan->chan == PVR2_CASCADE_CHAN))
-+	if (chan->dar)
- 		ctrl_outl(chan->dar, DAR[chan->chan]);
+ endif
+@@ -179,8 +181,6 @@ menu "Hardware I/O ports"
  
- 	ctrl_outl(chan->count >> calc_xmit_shift(chan), DMATCR[chan->chan]);
+ source "drivers/input/serio/Kconfig"
+ 
+-source "drivers/input/gameport/Kconfig"
+-
+ endmenu
+ 
+ endmenu
+--- linux-2.6.23-rc8-mm1.orig/drivers/input/gameport/Kconfig
++++ linux-2.6.23-rc8-mm1/drivers/input/gameport/Kconfig
+@@ -1,8 +1,8 @@
+ #
+ # Gameport configuration
+ #
+-config GAMEPORT
+-	tristate "Gameport support"
++menuconfig GAMEPORT
++	bool "Gameport support"
+ 	---help---
+ 	  Gameport support is for the standard 15-pin PC gameport. If you
+ 	  have a joystick, gamepad, gameport card, a soundcard with a gameport
