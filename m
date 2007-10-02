@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbXJBXLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXJBXOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbXJBXLK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 19:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXJBXK5
+	id S1753967AbXJBXOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 19:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXJBXOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 19:10:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:58007 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbXJBXK4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 19:10:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=H2RHHGudqIHiPcTVXyf6+ZUpZ5gDCZjkTZofeyNrYQwWM7UMspZwWaAOkX1Qqm1Dzo/P6UG0hTqy9kjJx0OQ8ON1pWniLDcCtPOeOk41/vYslxJZyXN36b3LQxj6c6uK9vtDW7YtbSgMgns5XrZ+QXqHnzwhTwiWRhrfOKQ7SP0=
-Date: Wed, 3 Oct 2007 01:07:30 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-Id: <20071003010730.2fb7ec5c.diegocg@gmail.com>
-In-Reply-To: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Oct 2007 19:14:06 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20553 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750766AbXJBXOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 19:14:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,221,1188802800"; 
+   d="scan'208";a="161087759"
+Message-ID: <4702D086.3000005@linux.intel.com>
+Date: Tue, 02 Oct 2007 16:13:10 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Anders_Bostr=F6m?= <anders@bostrom.dyndns.org>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+Subject: Re: PROBLEM: high load average when idle
+References: <20071002.233731.119908363.anders@bostrom.dyndns.org>
+In-Reply-To: <20071002.233731.119908363.anders@bostrom.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, 1 Oct 2007 20:41:49 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> escribió:
+Anders Boström wrote:
+> Hi!
+> 
+> My computer suffers from high load average when the system is idle,
+> introduced by commit 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 .
+> 
+> Long story:
+> 
+> 2.6.20 and all later versions I've tested, including 2.6.21 and
+> 2.6.22, make the load average high. Even when the computer is totally
+> idle (I've tested in single user mode), the load average end up
+> at ~0.30. The computer is still responsive, and the only fault seems
+> to be the too high load average. All versions up to and including
+> 2.6.19.7 is fine, and don't suffer from the problem.
+> 
 
-> So there's a final -rc out there, and right now my plan is to make this 
-> series really short, and release 2.6.23 in a few days. So please do give 
-> it a last good testing, and holler about any issues you find!
 
-Also...if someone dislikes something in http://kernelnewbies.org/Linux_2_6_23 ,
-or wants to fix my english, do it soon :)
+can you tell me if you're tuning ext3 in any way to have a much 
+shorter timeout than the standard 5 seconds?
