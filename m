@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbXJCBJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbXJCBO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbXJCBJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 21:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbXJCBJE
+	id S1755089AbXJCBO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXJCBOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 21:09:04 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:49057 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751467AbXJCBJC (ORCPT
+	Tue, 2 Oct 2007 21:14:47 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:39696 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750766AbXJCBOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 21:09:02 -0400
+	Tue, 2 Oct 2007 21:14:46 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DLq5bi+ng1JtKdDr+7rUfMhNq8s0brCdpGo8TYnt4JQn2wLzrYqTYvOfVVL6G/j6chnKTYpHNI7ykm1MPpPwtUNaAifEZigcIcTo2wiE74/e1MtATON65zEqyyyPIds0Oo+8uWCJTWprEKkTAPvf5KOvemx3fK7vNb4XFd6yAUI=  ;
-X-YMail-OSG: skld1.gVM1k9I.T14Yye6sUs7LxnB2RmUnApj7VrFBnaTvWTA1VfDW0daGQaOSjtXLbGCvPQlw--
+  b=ycQSKfWrfYoV5fmoEm2pLLVS7P8nFDn6AYI8OarzIVRjSJeivS14Rf3pVm15AXc5aV35Aii1AOtqG/H7vZ4mOC1DjilJfPSQecfuTDeYFS8JjU1CBlV19GgXevyZvbjGoMu96VlkdXVnC1gIUyv3UAXW0rbOAfVIyE4b6S+Hlg4=  ;
+X-YMail-OSG: gZY71CcVM1mDWcqTcAj3TrYurkQelIdP_BJx4JuWnqpSG0kYsremXm5ltYdBwj6Cjn9jp6PWAA--
 From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Christoph Lameter <clameter@sgi.com>
 Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Date: Tue, 2 Oct 2007 18:37:24 +1000
+Date: Tue, 2 Oct 2007 18:43:14 +1000
 User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org
-References: <20070919033605.785839297@sgi.com> <1191055513.18147.97.camel@lappy> <Pine.LNX.4.64.0710011358350.19779@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710011358350.19779@schroedinger.engr.sgi.com>
+Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
+References: <20070919033605.785839297@sgi.com> <200709281514.48293.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710011343020.19779@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710011343020.19779@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710021837.24772.nickpiggin@yahoo.com.au>
+Message-Id: <200710021843.15241.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 October 2007 07:01, Christoph Lameter wrote:
-> On Sat, 29 Sep 2007, Peter Zijlstra wrote:
-> > On Fri, 2007-09-28 at 11:20 -0700, Christoph Lameter wrote:
-> > > Really? That means we can no longer even allocate stacks for forking.
-> >
-> > I think I'm running with 4k stacks...
+On Tuesday 02 October 2007 06:50, Christoph Lameter wrote:
+> On Fri, 28 Sep 2007, Nick Piggin wrote:
+> > I thought it was slower. Have you fixed the performance regression?
+> > (OK, I read further down that you are still working on it but not
+> > confirmed yet...)
 >
-> 4k stacks will never fly on an SGI x86_64 NUMA configuration given the
-> additional data that may be kept on the stack. We are currently
-> considering to go from 8k to 16k (or even 32k) to make things work. So
-> having the ability to put the stacks in vmalloc space may be something to
-> look at.
+> The problem is with the weird way of Intel testing and communication.
+> Every 3-6 month or so they will tell you the system is X% up or down on
+> arch Y (and they wont give you details because its somehow secret). And
+> then there are conflicting statements by the two or so performance test
+> departments. One of them repeatedly assured me that they do not see any
+> regressions.
 
-i386 and x86-64 already used 8K stacks for years and they have never
-really been much problem before.
+Just so long as there aren't known regressions that would require higher
+order allocations to fix them.
 
-They only started failing when contiguous memory is getting used up
-by other things, _even with_ those anti-frag patches in there.
 
-Bottom line is that you do not use higher order allocations when you do
-not need them.
+> > OK, so long as it isn't going to depend on using higher order pages,
+> > that's fine. (if they help even further as an optional thing, that's fine
+> > too. You can turn them on your huge systems and not even bother about
+> > adding this vmap fallback -- you won't have me to nag you about these
+> > purely theoretical issues).
+>
+> Well the vmap fallback is generally useful AFAICT. Higher order
+> allocations are common on some of our platforms. Order 1 failures even
+> affect essential things like stacks that have nothing to do with SLUB and
+> the LBS patchset.
+
+I don't know if it is worth the trouble, though. The best thing to do is to
+ensure that contiguous memory is not wasted on frivolous things... a few
+order-1 or 2 allocations aren't too much of a problem.
+
+The only high order allocation failure I've seen from fragmentation for a
+long time IIRC are the order-3 failures coming from e1000. And obviously
+they cannot use vmap.
