@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbXJBJZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXJBJ0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbXJBJZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 05:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbXJBJZF
+	id S1755563AbXJBJ0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 05:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJBJ01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 05:25:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54544 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbXJBJZD (ORCPT
+	Tue, 2 Oct 2007 05:26:27 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4908 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbXJBJ01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 05:25:03 -0400
-Message-ID: <47020E6D.6070902@anagramm.de>
-Date: Tue, 02 Oct 2007 11:25:01 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 2 Oct 2007 05:26:27 -0400
+Date: Tue, 2 Oct 2007 10:26:01 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mpm@selenic.com, "Huang, Ying" <ying.huang@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
+Message-ID: <20071002092601.GA30636@shadowen.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <p733awu6nva.fsf@bingen.suse.de> <20071001233225.88c67e8b.akpm@linux-foundation.org> <20071002070110.GA30490@one.firstfloor.org>
 MIME-Version: 1.0
-To: Alexander Sabourenkov <screwdriver@lxnt.info>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Promise SATA300 TX4: errors, oops in ext3 code
-References: <47009BF6.5000208@lxnt.info>
-In-Reply-To: <47009BF6.5000208@lxnt.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1+k7P1FR7qTXPw4NTqAaiMpEqTVHsd/ayqL8a+
- XJfl2NhxcIzUKeGQj4Y0+MXawEkzfyp+WqRjpOmaV2ri9VNeef
- /C2NpaVTujj9baRNWlCNA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071002070110.GA30490@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Sabourenkov schrieb:
- > Hardware:  Athlon64, Asus A8V, Promise SATA300 TX4, 2xSeagate 7200.10
- > 320G, jumper-limited to SATA150.
- > Kernel : 2.6.22.9 amd64
- >
- > Problem:
- > Heavy load causes errors and triggers oops.
- >
- > History:
- > Problems were first encountered on kernel 2.6.19, both i686 ("old"
- > system) and amd64 (gentoo installation CD).
- > Can't say anything about older kernels. Most probably they have same
- > issues (or worse).
- >
- > Problems were blamed:
- >   - SATA300 being too 'hot'  (jumpered the drives)
+On Tue, Oct 02, 2007 at 09:01:10AM +0200, Andi Kleen wrote:
 
-Did you turn it back to SATA300 and does it basically still work?
-Then cool it actively and see if the error rate depends on it.
+> x86_64-sparsemem_vmemmap-2m-page-size-support.patch
+> x86_64-sparsemem_vmemmap-vmemmap-x86_64-convert-to-new-helper-based-initialisation.patch          
+> Look like these two should be merged together
+>
+> Also I'm concerned about a third variant of memmappery. Can we agree
+> to only merge that when the old sparsemem support is removed from x86-64? 
+> 
+> Otherwise it looks good to me.
 
-In one of my Promise HDD (PDC20275) controller designs I forgot to connect
-the thermal pad (they call it E-PAD) properly to a GND plane so it just
-worked with lots of errors which were also temperature sensitive (so, a
-typical hardware design flaw :-).
-On a PCI add-on card with the same chip, the E-PAD also didn't look
-soldered over it's whole E-PAD area but it was working.
+sparsemem vmemmap is a sparsemem variant.  By that I mean that it uses all
+the same infrastructure as sparsemem.  That sparsemem code is generic code
+and shared with the other architectures.  There essentially is no code to
+remove which is not generic and currently in use by other architectures.
+The patches as they stand select the vmemmap variant unconditionally
+when sparsemem is selected, we are not adding a new option for x86_64
+overall -- in that sense classic sparsemem is already removed for x86_64
+by these patches.
 
-As you might have noticed, I am more into hardware debugging.
-Propably some kernel gurus might have other ideas (related to software).
+The longer plan is to pull out the other memory models where they are
+no longer beneficial with a view to ending up with only one.  A good
+example is the private virtual memory map implemented on ia64, which
+is an early target.  As discussed at VM summit, we are also looking at
+removing discontigmem for x86.  That review will continue.
 
-Regards,
+> > How come?  Memoryless node can and do occur in real-world machines.  Kernel
+> > should support that?
+> 
+> But a node is just defined by its memory? 
 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+I thought that a node was a unit of numa locality.  Cirtainly some
+machines seem to express themselves as memory only nodes and cpu only
+nodes; in the past I am sure we have also heard of IO only nodes
+representing "io drawers" and the like.
 
-
+-apw
