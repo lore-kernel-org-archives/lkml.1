@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbXJBWEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXJBWHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbXJBWEu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbXJBWEm
+	id S1756560AbXJBWHS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbXJBWHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:04:42 -0400
-Received: from mail.tmr.com ([64.65.253.246]:37249 "EHLO gaimboi.tmr.com"
+	Tue, 2 Oct 2007 18:07:05 -0400
+Received: from mail.tmr.com ([64.65.253.246]:37252 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459AbXJBWEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:04:42 -0400
-Message-ID: <4702C1AD.3090701@tmr.com>
-Date: Tue, 02 Oct 2007 18:09:49 -0400
+	id S1754593AbXJBWHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:07:04 -0400
+Message-ID: <4702C276.3080400@tmr.com>
+Date: Tue, 02 Oct 2007 18:13:10 -0400
 From: Bill Davidsen <davidsen@tmr.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Mel Gorman <mel@skynet.ie>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
+To: John Stoffel <john@stoffel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <1191326858.28962.8.camel@localhost> <20071002121556.GA22864@elte.hu> <20071002172135.GA12182@skynet.ie>
-In-Reply-To: <20071002172135.GA12182@skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <18178.22876.980673.839094@stoffel.org>
+In-Reply-To: <18178.22876.980673.839094@stoffel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On (02/10/07 14:15), Ingo Molnar didst pronounce:
->> * Mel Gorman <mel@csn.ul.ie> wrote:
->>
->>> Dirt. Booting with "profile=sleep,2" is broken in 2.6.23-rc9 and 
->>> 2.6.23-rc8 but working in 2.6.22. I was checking it out as part of a 
->>> discussion in another thread and noticed it broken in -mm as well 
->>> (2.6.23-rc8-mm2). Bisect is in progress but suggestions as to the 
->>> prime candidates are welcome or preferably, pointing out that I'm an 
->>> idiot because I missed twiddling some config change.
->> Mel, does the patch below fix this bug for you? (Note: you will need to 
->> enable CONFIG_SCHEDSTATS=y too.)
->>
+John Stoffel wrote:
+> Linus> I said I was hoping that -rc8 was the last -rc, and I hate
+> Linus> doing this, but we've had more changes since -rc8 than we had
+> Linus> in -rc8. And while most of them are pretty trivial, I really
+> Linus> couldn't face doing a 2.6.23 release and take the risk of some
+> Linus> really stupid brown-paper-bag thing.
 > 
-> Nice one Ingo - got it first try. The problem commit was
-> dd41f596cda0d7d6e4a8b139ffdfabcefdd46528 and it's clear that the code removed
-> in this commit is put back by this latest patch.  When applied, profile=sleep
-> works as long as CONFIG_SCHEDSTAT is set.
+> Linus> So there's a final -rc out there, and right now my plan is to
+> Linus> make this series really short, and release 2.6.23 in a few
+> Linus> days. So please do give it a last good testing, and holler
+> Linus> about any issues you find!
 > 
-And if it isn't set? I can easily see building a new kernel with stats 
-off and forgetting to change the boot options.
+> Just to let people know, I was running 2.6.23-rc for over 53 days
+> without any issues.  Mix of SCSI, Sata, tape drives, disks, MD, LVM,
+> SMP, etc.  I suspect we've got a pretty darn stable release coming out
+> soon.
+> 
+I've been running rc8-git3 since it came out, and while I've built git-5 
+and will build rc9, I probably will continue testing until I find a bug 
+or have to boot for some other reason. Running really well, even with a 
+lot of kvm stuff going on, kernel builds for other machines, etc.
 
 -- 
 Bill Davidsen <davidsen@tmr.com>
