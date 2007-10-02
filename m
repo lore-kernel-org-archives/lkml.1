@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbXJBL2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbXJBLbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbXJBL2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 07:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXJBL2J
+	id S1756541AbXJBLbQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 07:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXJBLa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 07:28:09 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:58199 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752646AbXJBL2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 07:28:06 -0400
-Message-ID: <391324486.02635@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 2 Oct 2007 19:28:02 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-Message-ID: <20071002112802.GA12607@mail.ustc.edu.cn>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <1191313025.13204.30.camel@twins> <20071002013148.18958af2.akpm@linux-foundation.org> <1191314911.13204.41.camel@twins> <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com> <1191321861.13204.53.camel@twins> <391322057.11200@ustc.edu.cn> <3ae72650710020422r5d873289j3d1565dfa21e1ede@mail.gmail.com>
+	Tue, 2 Oct 2007 07:30:59 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:58194 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754242AbXJBLa6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 07:30:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=frQm0GpaDb7DDitIxghtACBMUAu+dw1W9k4AzgLPvuYU0yRCiiU0pJs6UF5824v4h8VDJvxGKi04rXX1uWbTGAS52owLVWnmWfV9vQJpTxO5aBezAV9rG3Sgfmln45lpqb+A53+Cbuk8vfmx9Y1vCIPhdhBIoiq1mNfHaB53GoI=
+Message-ID: <a425f86c0710020430o3507eeb2veb104dc936f230dd@mail.gmail.com>
+Date: Tue, 2 Oct 2007 14:30:42 +0300
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, bryan.wu@analog.com
+Subject: Blackfin Ethernet MAC driver compile error
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <3ae72650710020422r5d873289j3d1565dfa21e1ede@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Google-Sender-Auth: b7cc814dfc400689
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 01:22:32PM +0200, Kay Sievers wrote:
-> On 10/2/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > On Tue, Oct 02, 2007 at 12:44:21PM +0200, Peter Zijlstra wrote:
-> > > On Tue, 2007-10-02 at 12:31 +0200, Kay Sievers wrote:
-> > >
-> > > > What would be the point in another top-level tree for device
-> > > > information? All devices you are exporting information for, are
-> > > > already in the sysfs tree, right?
-> > >
-> > > Never did find NFS mounts/servers/superblocks or whatever constitutes a
-> > > BDI for NFS in there. Same goes for all other networked filesystems for
-> > > that matter.
-> >
-> > And loop/md/dm devices...
-> 
-> Hmm, /sys/block/mdX, /sys/block/loopX, /sys/block/dm-X are all there today.
+The Blackfin Ethernet MAC driver does not compile. It seems the driver is
+missing some pinmux defines.
 
-Yes, but they have no /queue/ subdir, which (for sda etc.) exports both
-elevator and bdi variables. Now we want to access these bdi variables...
-
+  CC      drivers/net/bfin_mac.o
+drivers/net/bfin_mac.c: In function 'setup_pin_mux':
+drivers/net/bfin_mac.c:275: error: 'P_MII0' undeclared (first use in
+this function)
+drivers/net/bfin_mac.c:275: error: (Each undeclared identifier is
+reported only once
+drivers/net/bfin_mac.c:275: error: for each function it appears in.)
+drivers/net/bfin_mac.c:279: error: implicit declaration of function
+'peripheral_request_list'
+drivers/net/bfin_mac.c:285: error: implicit declaration of function
+'peripheral_free_list'
+make[2]: *** [drivers/net/bfin_mac.o] Error 1
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
