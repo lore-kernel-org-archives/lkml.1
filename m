@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXJBH7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbXJBH7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbXJBH7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 03:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXJBH70
+	id S1752588AbXJBH7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 03:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbXJBH7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 03:59:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51130 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbXJBH7Z (ORCPT
+	Tue, 2 Oct 2007 03:59:37 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:53322 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755520AbXJBH7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 03:59:25 -0400
-Date: Tue, 2 Oct 2007 09:59:24 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
-Message-ID: <20071002075924.GB30490@one.firstfloor.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <p733awu6nva.fsf@bingen.suse.de> <20071001233225.88c67e8b.akpm@linux-foundation.org> <20071002070110.GA30490@one.firstfloor.org> <20071002001809.0a814d0b.akpm@linux-foundation.org> <20071002075549.GH19691@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071002075549.GH19691@waste.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 2 Oct 2007 03:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=n7AqkVrh5OT9IDmHgOk1+bpqQa0LDY1BEo8EV6FQAFvY/yV5kN9au3BI6atIFOgc7PIRMdwlwvAa2GXyqZ/BfMSwhxYl+zu/oBYrAScYnrVv+2zrddiKG7wpAqAP6QkiCTw6NvM3O7E/zJyEXWCAfmWz4mayROvOLxg1jmd/knA=
+Message-ID: <4701FA63.5080504@gmail.com>
+Date: Tue, 02 Oct 2007 09:59:31 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux and Kernel Video <video4linux-list@redhat.com>
+Subject: v4l-stk11xx* [Was: -mm merge plans for 2.6.24]
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+In-Reply-To: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Grumble. The options are:
-> 
-> a) export it in the kernel's native size and have userspace figure it
-> out
-> b) add a header
-> c) lie to 32-bit apps on 64-bit kernels
-> d) always export 32 bits
-> e) always export 64 bits
-> 
-> I started with (a), switched to (b), and then Alan and Dave convinced
-> me to switch back to (a). I don't think (c) is desireable, especially
-> as it means having two code paths. (d) would work until memory got
-> large enough that PFNs didn't fit in 32 bits. (e) would be ok all
-> around, except for the extra overhead. Ho hum.
+On 10/01/2007 11:22 PM, Andrew Morton wrote:
+> v4l-stk11xx-add-a-new-webcam-driver.patch
+> v4l-stk11xx-use-array_size-in-another-2-cases.patch
+> v4l-stk11xx-use-retval-from-stk11xx_check_device.patch
+> v4l-stk11xx-add-static-to-tables.patch
 
-If the overhead of (e) is ok for 64bit it should be ok for 32bit too.
+No, hold it please, until v4l extension will be developped and bayer->rgb
+conversion dismiss from the driver.
 
--Andi
+> bw-qcam-use-data_reverse-instead-of-manually-poking-the-control-register-fix.patch
+> git-dvb-build-fix.patch
+> 
+>   Send to mchehab
+
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
