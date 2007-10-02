@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXJBWdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbXJBWeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbXJBWdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbXJBWd1
+	id S1756262AbXJBWeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbXJBWeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:33:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46543 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751350AbXJBWd1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:33:27 -0400
-Date: Tue, 2 Oct 2007 15:32:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Anders Bostr?m <anders@bostrom.dyndns.org>, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com
-Subject: Re: PROBLEM: high load average when idle
-In-Reply-To: <20071002150748.906970bc.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0710021514040.3579@woody.linux-foundation.org>
-References: <20071002.233731.119908363.anders@bostrom.dyndns.org>
- <20071002150748.906970bc.akpm@linux-foundation.org>
+	Tue, 2 Oct 2007 18:34:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58930 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbXJBWeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:34:07 -0400
+Message-ID: <4702C756.8090108@redhat.com>
+Date: Tue, 02 Oct 2007 18:33:58 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: =?ISO-8859-1?Q?Anders_Bostr=F6m?= <anders@bostrom.dyndns.org>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       torvalds@linux-foundation.org
+Subject: Re: PROBLEM: high load average when idle
+References: <20071002.233731.119908363.anders@bostrom.dyndns.org> <20071002150748.906970bc.akpm@linux-foundation.org>
+In-Reply-To: <20071002150748.906970bc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 2 Oct 2007, Andrew Morton wrote:
+On 10/02/2007 06:07 PM, Andrew Morton wrote:
+> On Tue, 02 Oct 2007 23:37:31 +0200 (CEST)
+> Anders Bostr__m <anders@bostrom.dyndns.org> wrote:
+> 
+>> My computer suffers from high load average when the system is idle,
+>> introduced by commit 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 .
+>>
+>> Long story:
+>>
+>> 2.6.20 and all later versions I've tested, including 2.6.21 and
+>> 2.6.22, make the load average high. Even when the computer is totally
+>> idle (I've tested in single user mode), the load average end up
+>> at ~0.30. The computer is still responsive, and the only fault seems
+>> to be the too high load average. All versions up to and including
+>> 2.6.19.7 is fine, and don't suffer from the problem.
+>>
+>> I git bisect between 2.6.19 and 2.6.20 gave me
+>> 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 "[PATCH] user of the jiffies
+>> rounding code: JBD" as the first patch with the
+>> problem. 2.6.20 with 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 reverted
+>> works fine. 2.6.23-rc8 with 44d306e1508fef6fa7a6eb15a1aba86ef68389a6
+>> reverted also works fine.
+>>
+>> This fixes the problem:
+>>
+>> -------------------------- fs/jbd/transaction.c -----------------------------
+>> index cceaf57..d38e0d5 100644
+>> @@ -55,7 +55,7 @@ get_transaction(journal_t *journal, transaction_t *transaction)
+>>  	spin_lock_init(&transaction->t_handle_lock);
+>>  
+>>  	/* Set up the commit timer for the new transaction. */
+>> -	journal->j_commit_timer.expires = round_jiffies(transaction->t_expires);
+>> +	journal->j_commit_timer.expires = transaction->t_expires;
+>>  	add_timer(&journal->j_commit_timer);
+>>  
+>>  	J_ASSERT(journal->j_running_transaction == NULL);
+>>
+>>
+>> I've only seen this problem on my home desktop computer. My work
+>> desktop computer and several other computers at work don't suffer from
+>> this problem. However, all other computers I've tested on is using
+>> AMD64 as architecture, and not i386 as my home desktop computer.
+>>
+>> Please let me know how I can assist in further debugging of this, if
+>> needed.
 > 
 > This is unexpected.  High load average is due to either a task chewing a
 > lot of CPU time or a task stuck in uninterruptible sleep.
+> 
 
-Not necessarily.
-
-We saw high loadaverages with the timer bogosity with "gettimeofday()" and 
-"select()" not agreeing, so they would do things like
-
-	date = time(..)
-	select(.. , timeout = <time + 1> )
-
-and when "date" wasn't taking the jiffies offset into account, and thus 
-mixing these kinds of different time sources, the select ended up 
-returning immediately because they effectively used different clocks, and 
-suddenly we had some applications chewing up 30% CPU time, because they 
-were in a loop that *tried* to sleep.
-
-And I wonder if the same kind thing is effectively happening here: the 
-code is written so that it *tries* to sleep, but the rounding of the clock 
-basically means that it's trying to sleep using a different clock than the 
-one we're using to wake things up with, so some percentage of the time it 
-doesn't sleep at all!
-
-I wonder if the whole "round_jiffies()" thing should be written so that it 
-never rounds down, or at least never rounds down to before the current 
-second!
-
-I have to say, I also think it's a bit iffy to do "round_jiffies()" at all 
-in that per-CPU kind of way. The "per-cpu" thing is quite possibly going 
-to change by the time we actually add the timer, so the goal of trying to 
-get wakeups to happen in "bunches" per CPU should really be done by 
-setting a flag on the timer itself - so that we could do that rounding 
-when the timer is actually added to the per-cpu queues!
-
-Now, I think the JBD "t_expires" field should never be "near" in seconds, 
-so I do find it a bit surprising that this rounding can have any effect, 
-but on the other hand it clearly *does* have some effect, so.. It migt 
-just be interacting with some other use, of course.
-
-		Linus
+Or, everybody wakes up at once right when we are taking a sample.  :)
