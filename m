@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXJBMcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbXJBMpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXJBMcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 08:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXJBMco
+	id S1752685AbXJBMpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 08:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbXJBMpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 08:32:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43730 "EHLO mx1.redhat.com"
+	Tue, 2 Oct 2007 08:45:03 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:58788 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbXJBMcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 08:32:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net>
-References: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net> <20071001130921.29339.72876.stgit@warthog.procyon.org.uk> <20071001130958.29339.31669.stgit@warthog.procyon.org.uk> <20071001173930.GA7718@mami.zabbo.net> <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org> <20071001180601.GA9417@infradead.org> 
-To: Zach Brown <zab@zabbo.net>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, Christoph Hellwig <hch@infradead.org>,
-       viro@ftp.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and read_inode()
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 02 Oct 2007 13:32:30 +0100
-Message-ID: <11826.1191328350@redhat.com>
+	id S1751116AbXJBMpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 08:45:01 -0400
+To: jmorris@namei.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <4701F285.5000206@nttdata.co.jp>
+	<4701F419.8080103@nttdata.co.jp>
+	<Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
+In-Reply-To: <Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
+Message-Id: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 2 Oct 2007 21:44:57 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zach Brown <zab@zabbo.net> wrote:
+Hello.
 
-> /* haha, continuing the fine tradition of terrible names in this  api..  */
-> static inline void *PTR_PTR(void *err_ptr) {
-> 	BUG_ON(!IS_ERR(err_ptr) || !err_ptr);
-> 	return err_ptr;
-> }
+Thank you for your comment.
 
-How about ERR_CAST() instead?  Or maybe CAST_ERR()?
+James Morris wrote:
+> Why do you need to avoid spinlocks for these manipulations?
 
-	struct dentry *blah(...)
-	{
-		struct inode *inode;
+I don't need to use spinlocks here.
+What I need to do here is avoid read/write reordering,
+so mb() will be appropriate here.
 
-		inode = thing(...);
-		if (IS_ERR(inode))
-			return ERR_CAST(inode);
-	}
+struct something {
+  struct something *next;
+  void *data;
+};
 
-Where ERR_CAST is defined as:
+struct something *prev_ptr = ...;
+struct something *new_ptr = kmalloc(sizeof(*new_ptr), GFP_KERNEL);
+new_ptr->next = NULL;
+new_ptr->data = some_value;
+mb();
+prev_ptr->next = new_ptr;
 
-	static inline void *ERR_CAST(const void *error)
-	{
-		return (void *) x;
-	}
+TOMOYO Linux doesn't use locks for reading singly-linked list.
+Thus, new_ptr->data has to be made visible to other CPUs
+before new_ptr is appended at the tail of singly-linked list.
+Otherwise, other CPU may read undefined new_ptr->data values.
 
-David
+Performance is not critical because this mb() is called
+only when appending new entry to the singly-linked list.
+
+> Please use standard kernel list handling, per include/linux/list.h
+
+Since new_ptr never be removed, new_ptr needn't to know
+it's previous element's address, thus having only ->next pointer is enough.
+new_ptr->next is assigned *only once*
+(initialized with NULL, and assigned non-NULL later),
+indicating "if ptr->next == NULL, ptr is the last element" and
+"if ptr->next != NULL, ptr is not the last element".
+
+If I use "struct hlist_node" which has two pointers,
+it needs more memory than "struct something" which has one pointer.
+It is possible to use API defined in include/linux/list.h ,
+but to reduce memory usage, I dare not use these API.
+Singly-linked list's rule in TOMOYO Linux is quite simple,
+"ptr->next is NULL if the last element" and "non-NULL if not".
+
+Regards.
+
