@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbXJBTFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbXJBTZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbXJBTFS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 15:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXJBTFB
+	id S1755237AbXJBTZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 15:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXJBTZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 15:05:01 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:34230 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752559AbXJBTFA (ORCPT
+	Tue, 2 Oct 2007 15:25:32 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58905 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbXJBTZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 15:05:00 -0400
-Subject: Re: [git patch] SCSI aic94xx fix
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <470293C7.6080906@garzik.org>
-References: <20071002172151.GA28579@havoc.gtf.org>
-	 <1191350862.3530.114.camel@localhost.localdomain>
-	 <470293C7.6080906@garzik.org>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 14:04:58 -0500
-Message-Id: <1191351898.3530.116.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Tue, 2 Oct 2007 15:25:31 -0400
+Message-ID: <47029A32.7010803@zytor.com>
+Date: Tue, 02 Oct 2007 12:21:22 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Kirill Korotaev <dev@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] mark read_crX() asm code as volatile
+References: <470250E0.5090706@openvz.org> <20071002082856.3c478e66@laptopd505.fenrus.org>
+In-Reply-To: <20071002082856.3c478e66@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-02 at 14:53 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > Sure, I'll state my case:  This is a bug, but it has no affected users,
-> > nor will it because the aic94xx doesn't work on non-x86 architectures by
-> > reason of other longstanding bugs (and TODEVICE/FROMDEVICE only matters
+Arjan van de Ven wrote:
+> On Tue, 02 Oct 2007 18:08:32 +0400
+> Kirill Korotaev <dev@openvz.org> wrote:
 > 
-> False.  It fails to work on _some_ non-x86 platforms.
+>> Some gcc versions (I checked at least 4.1.1 from RHEL5 & 4.1.2 from
+>> gentoo) can generate incorrect code with read_crX()/write_crX()
+>> functions mix up, due to cached results of read_crX().
+>>
+> 
+> I'm not so sure volatile is the right answer, as compared to giving the
+> asm more strict contraints....
+> 
+> asm volatile tends to mean something else than "the result has
+> changed"....
+> 
 
-OK, it fails to work on everything I can test, which is parisc, ia64 and
-ppc.  However, I'm fairly certain there are no other non-x86 users
-because we have no bug reports.
+One of the aspect of volatility is "the result will change in ways you 
+(gcc) just don't understand."
 
-James
-
-
+	-hpa
