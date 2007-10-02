@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXJBB1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbXJBBeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbXJBB1l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 21:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbXJBB1d
+	id S1752950AbXJBBeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 21:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbXJBBen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 21:27:33 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:44813 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbXJBB1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 21:27:32 -0400
-Date: Mon, 1 Oct 2007 19:27:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linas Vepstas <linas@austin.ibm.com>
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
-Message-ID: <20071002012730.GO12049@parisc-linux.org>
-References: <20070420204114.GL31947@austin.ibm.com> <20070420204720.GM31947@austin.ibm.com> <20070926150216.GH3899@parisc-linux.org> <20070927220022.GC18686@austin.ibm.com> <20070927221031.GY3899@parisc-linux.org> <20070927233437.GF18686@austin.ibm.com> <20071001201247.GN12049@parisc-linux.org> <20071001224132.GH4338@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071001224132.GH4338@austin.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 1 Oct 2007 21:34:43 -0400
+Received: from ozlabs.org ([203.10.76.45]:34302 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751082AbXJBBem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Oct 2007 21:34:42 -0400
+Subject: Re: [PATCH RFC] paravirt: cleanup lazy mode handling
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
+       Avi Kivity <avi@qumranet.com>, Anthony Liguori <anthony@codemonkey.ws>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>
+In-Reply-To: <470186C4.5080208@goop.org>
+References: <470186C4.5080208@goop.org>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 11:34:17 +1000
+Message-Id: <1191288858.6979.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 05:41:32PM -0500, Linas Vepstas wrote:
-> On Mon, Oct 01, 2007 at 02:12:47PM -0600, Matthew Wilcox wrote:
-> > I think the fundamental problem is that completions aren't really
-> > supposed to be used like this.  Here's one attempt at using completions
-> > perhaps a little more the way they're supposed to be used, 
-> 
-> Yes, that looks very good to me.  I see it solves a bug that
-> I hadn't been quite aware of. I don't understand why 
-> struct host_data is preferable to struct sym_shcb (is it because 
-> this is the structure that is "naturally protectected" by the 
-> spinlock?)
+On Mon, 2007-10-01 at 16:46 -0700, Jeremy Fitzhardinge wrote:
+> This patch removes the set_lazy_mode operation, and adds "enter" and
+> "leave" lazy mode operations on mmu_ops and cpu_ops.  All the logic
+> associated with enter and leaving lazy states is now in common code
+> (basically BUG_ONs to make sure that no mode is current when entering
+> a lazy mode, and make sure that the mode is current when leaving).
+> Also, flush is handled in a common way, by simply leaving and
+> re-entering the lazy mode.
 
-The thing to remember is that sym2 is in transition from being a dual
-BSD/Linux driver to being a purely Linux driver.  I know, it's been more
-than two years, and I'm still not done.
+That's good, but this code does lose on native because we no longer
+simply replace the entire thing with noops.
 
-My latest thing I'm looking at fixing is to make Scsi_Host very
-much the primary entity in the sym2 driver, and leave just the
-device/scripts-accessible stuff in the hcb.
+Perhaps inverting this and having (inline) helpers is the way to go?
+I'm thinking something like:
 
-> My gut instinct is to say "ack", although prudence dictates that 
-> I should test first. Which might take a few days...
+static inline void paravirt_enter_lazy(enum paravirt_lazy_mode mode)
+{
+	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
+	BUG_ON(preemptible());
 
-Fine by me.  Do you have the ability to produce failures on a whim on
-your platforms?  I've been vaguely musing a PCI device failure patch for
-x86, just so people can test driver failure paths.
+	x86_write_percpu(paravirt_lazy_mode, mode);
+}
 
-> I thought that earlier versions of the driver used waitqueues (I vaguely
-> remember "eh_wait" in the code), which were later converted to 
-> completions (I also vaguely recall thinking that the new code was
-> more elegant/simpler). I converted my patch to use the completions 
-> likewise, and, as you've clearly shown, did a rather sloppy job in 
-> the conversion.
+static inline void paravirt_exit_lazy(enum paravirt_lazy_mode mode)
+{
+	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != mode);
+	BUG_ON(preemptible());
 
-eh_wait (when I removed it) contained a completion ... I think it used
-to be a semaphore, some time before 2.6.12
+	x86_write_percpu(paravirt_lazy_mode, PARAVIRT_LAZY_NONE);
+}
 
-> I'm tempted to go with this patch; but if you prod, I could attempt
-> a wait-queue based patch.
+The only trick would be that the flushes are so rarely required it's
+probably worth putting the unlikely() in the top level:
 
-Let's leave it with a completion for now.  I think it works out more
-efficiently in the end.
+static void arch_flush_lazy_cpu_mode(void)
+{
+	if (unlikely(x86_read_percpu(paravirt_lazy_mode)) {
+		PVOP_VCALL0(cpu_ops.enter_lazy);
+		PVOP_VCALL0(cpu_ops.exit_lazy);
+	}
+}
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+static void arch_flush_lazy_mmy_mode(void)
+{
+	if (unlikely(x86_read_percpu(paravirt_lazy_mode)) {
+		PVOP_VCALL0(mmu_ops.enter_lazy);
+		PVOP_VCALL0(mmu_ops.exit_lazy);
+	}
+}
+
+Thoughts?
+Rusty.
+
