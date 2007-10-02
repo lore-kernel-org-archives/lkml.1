@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbXJBPxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbXJBPxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbXJBPxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXJBPwa
+	id S1756636AbXJBPxk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXJBPwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:52:30 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:58956 "EHLO
+	Tue, 2 Oct 2007 11:52:32 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:58971 "EHLO
 	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbXJBPw3 (ORCPT
+	with ESMTP id S1753947AbXJBPwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:52:29 -0400
-Message-Id: <20071002155219.527920814@szeredi.hu>
+	Tue, 2 Oct 2007 11:52:31 -0400
+Message-Id: <20071002155217.370453674@szeredi.hu>
 References: <20071002155026.650555479@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 02 Oct 2007 17:50:33 +0200
+Date: Tue, 02 Oct 2007 17:50:31 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 07/12] fuse: add atomic open+truncate support
-Content-Disposition: inline; filename=fuse_atomic_open_truncate.patch
+Subject: [patch 05/12] VFS: allow filesystems to implement atomic open+truncate
+Content-Disposition: inline; filename=vfs_atomic_open_truncate.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-This patch allows fuse filesystems to implement open(..., O_TRUNC) as
-a single request, instead of separate truncate and open requests.
+Add a new attribute flag ATTR_OPEN, with the meaning: "truncation was
+initiated by open() due to the O_TRUNC flag".
+
+This way filesystems wanting to implement truncation within their
+->open() method can ignore such truncate requests.
+
+This is a quick & dirty hack, but it comes for free.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/dir.c
+Index: linux/fs/namei.c
 ===================================================================
---- linux.orig/fs/fuse/dir.c	2007-09-26 23:32:53.000000000 +0200
-+++ linux/fs/fuse/dir.c	2007-09-27 00:41:38.000000000 +0200
-@@ -1083,6 +1083,9 @@ static int fuse_do_setattr(struct dentry
- 			return err;
- 	}
- 
-+	if ((attr->ia_valid & ATTR_OPEN) && fc->atomic_o_trunc)
-+		return 0;
+--- linux.orig/fs/namei.c	2007-09-25 21:32:04.000000000 +0200
++++ linux/fs/namei.c	2007-09-25 21:56:30.000000000 +0200
+@@ -1667,8 +1667,10 @@ int may_open(struct nameidata *nd, int a
+ 		error = locks_verify_locked(inode);
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+-			
+-			error = do_truncate(dentry, 0, ATTR_MTIME|ATTR_CTIME, NULL);
 +
- 	if (attr->ia_valid & ATTR_SIZE) {
- 		unsigned long limit;
- 		if (IS_SWAPFILE(inode))
-Index: linux/fs/fuse/file.c
++			error = do_truncate(dentry, 0,
++					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
++					    NULL);
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/fs/fuse/file.c	2007-09-26 23:32:53.000000000 +0200
-+++ linux/fs/fuse/file.c	2007-09-27 00:41:41.000000000 +0200
-@@ -28,7 +28,9 @@ static int fuse_send_open(struct inode *
- 		return PTR_ERR(req);
+--- linux.orig/include/linux/fs.h	2007-09-25 21:32:05.000000000 +0200
++++ linux/include/linux/fs.h	2007-09-25 21:56:30.000000000 +0200
+@@ -337,6 +337,7 @@ typedef void (dio_iodone_t)(struct kiocb
+ #define ATTR_KILL_SGID	4096
+ #define ATTR_FILE	8192
+ #define ATTR_KILL_PRIV	16384
++#define ATTR_OPEN	32768	/* Truncating from open(O_TRUNC) */
  
- 	memset(&inarg, 0, sizeof(inarg));
--	inarg.flags = file->f_flags & ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
-+	inarg.flags = file->f_flags & ~(O_CREAT | O_EXCL | O_NOCTTY);
-+	if (!fc->atomic_o_trunc)
-+		inarg.flags &= ~O_TRUNC;
- 	req->in.h.opcode = isdir ? FUSE_OPENDIR : FUSE_OPEN;
- 	req->in.h.nodeid = get_node_id(inode);
- 	req->in.numargs = 1;
-Index: linux/fs/fuse/fuse_i.h
-===================================================================
---- linux.orig/fs/fuse/fuse_i.h	2007-09-26 23:32:53.000000000 +0200
-+++ linux/fs/fuse/fuse_i.h	2007-09-27 00:41:40.000000000 +0200
-@@ -320,6 +320,9 @@ struct fuse_conn {
- 	/** Do readpages asynchronously?  Only set in INIT */
- 	unsigned async_read : 1;
- 
-+	/** Do not send separate SETATTR request before open(O_TRUNC)  */
-+	unsigned atomic_o_trunc : 1;
-+
- 	/*
- 	 * The following bitfields are only for optimization purposes
- 	 * and hence races in setting them will not cause malfunction
-Index: linux/fs/fuse/inode.c
-===================================================================
---- linux.orig/fs/fuse/inode.c	2007-09-26 23:32:53.000000000 +0200
-+++ linux/fs/fuse/inode.c	2007-09-27 00:41:40.000000000 +0200
-@@ -548,6 +548,8 @@ static void process_init_reply(struct fu
- 				fc->async_read = 1;
- 			if (!(arg->flags & FUSE_POSIX_LOCKS))
- 				fc->no_lock = 1;
-+			if (arg->flags & FUSE_ATOMIC_O_TRUNC)
-+				fc->atomic_o_trunc = 1;
- 		} else {
- 			ra_pages = fc->max_read / PAGE_CACHE_SIZE;
- 			fc->no_lock = 1;
-@@ -570,7 +572,8 @@ static void fuse_send_init(struct fuse_c
- 	arg->major = FUSE_KERNEL_VERSION;
- 	arg->minor = FUSE_KERNEL_MINOR_VERSION;
- 	arg->max_readahead = fc->bdi.ra_pages * PAGE_CACHE_SIZE;
--	arg->flags |= FUSE_ASYNC_READ | FUSE_POSIX_LOCKS | FUSE_FILE_OPS;
-+	arg->flags |= FUSE_ASYNC_READ | FUSE_POSIX_LOCKS | FUSE_FILE_OPS |
-+		FUSE_ATOMIC_O_TRUNC;
- 	req->in.h.opcode = FUSE_INIT;
- 	req->in.numargs = 1;
- 	req->in.args[0].size = sizeof(*arg);
-Index: linux/include/linux/fuse.h
-===================================================================
---- linux.orig/include/linux/fuse.h	2007-09-26 23:32:53.000000000 +0200
-+++ linux/include/linux/fuse.h	2007-09-27 00:41:47.000000000 +0200
-@@ -101,6 +101,7 @@ struct fuse_file_lock {
- #define FUSE_ASYNC_READ		(1 << 0)
- #define FUSE_POSIX_LOCKS	(1 << 1)
- #define FUSE_FILE_OPS		(1 << 2)
-+#define FUSE_ATOMIC_O_TRUNC	(1 << 3)
- 
- /**
-  * Release flags
+ /*
+  * This is the Inode Attributes structure, used for notify_change().  It
 
 --
