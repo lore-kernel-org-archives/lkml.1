@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXJBKoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbXJBKpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbXJBKoe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 06:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbXJBKo2
+	id S1755201AbXJBKpT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 06:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXJBKpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 06:44:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59064 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbXJBKo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 06:44:27 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
-In-Reply-To: <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <1191313025.13204.30.camel@twins>
-	 <20071002013148.18958af2.akpm@linux-foundation.org>
-	 <1191314911.13204.41.camel@twins>
-	 <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com>
+	Tue, 2 Oct 2007 06:45:04 -0400
+Received: from david.siemens.de ([192.35.17.14]:17190 "EHLO david.siemens.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752816AbXJBKpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 06:45:01 -0400
+X-Greylist: delayed 2779 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Oct 2007 06:45:01 EDT
+Subject: [PATCH] Fallback to ipv4 if we try to add join IPv4 multicast
+	group via ipv4-mapped address.
+From: Dmitry Baryshkov <Dmitry.Baryshkov@siemens.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 12:44:21 +0200
-Message-Id: <1191321861.13204.53.camel@twins>
+Date: Tue, 02 Oct 2007 13:59:42 +0400
+Message-Id: <1191319182.28331.6.camel@doriath.ww600.siemens.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-02 at 12:31 +0200, Kay Sievers wrote:
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 
-> What would be the point in another top-level tree for device
-> information? All devices you are exporting information for, are
-> already in the sysfs tree, right?
-
-Never did find NFS mounts/servers/superblocks or whatever constitutes a
-BDI for NFS in there. Same goes for all other networked filesystems for
-that matter.
-
-
+diff --git a/net/ipv6/mcast.c b/net/ipv6/mcast.c
+index ae98818..c70a87d 100644
+--- a/net/ipv6/mcast.c
++++ b/net/ipv6/mcast.c
+@@ -38,6 +38,7 @@
+ #include <linux/times.h>
+ #include <linux/net.h>
+ #include <linux/in.h>
++#include <linux/igmp.h>
+ #include <linux/in6.h>
+ #include <linux/netdevice.h>
+ #include <linux/if_arp.h>
+@@ -183,6 +184,17 @@ int ipv6_sock_mc_join(struct sock *sk, int ifindex, struct in6_addr *addr)
+ 	struct ipv6_mc_socklist *mc_lst;
+ 	struct ipv6_pinfo *np = inet6_sk(sk);
+ 	int err;
++	int addr_type = ipv6_addr_type(addr);
++
++	if (addr_type == IPV6_ADDR_MAPPED) {
++		__be32 v4addr = addr->s6_addr32[3];
++		struct ip_mreqn mreq;
++		mreq.imr_multiaddr.s_addr = v4addr;
++		mreq.imr_address.s_addr = INADDR_ANY;
++		mreq.imr_ifindex = ifindex;
++
++		return ip_mc_join_group(sk, &mreq);
++	}
+ 
+ 	if (!ipv6_addr_is_multicast(addr))
+ 		return -EINVAL;
+@@ -256,6 +268,18 @@ int ipv6_sock_mc_drop(struct sock *sk, int ifindex, struct in6_addr *addr)
+ 	struct ipv6_pinfo *np = inet6_sk(sk);
+ 	struct ipv6_mc_socklist *mc_lst, **lnk;
+ 
++	int addr_type = ipv6_addr_type(addr);
++
++	if (addr_type == IPV6_ADDR_MAPPED) {
++		__be32 v4addr = addr->s6_addr32[3];
++		struct ip_mreqn mreq;
++		mreq.imr_multiaddr.s_addr = v4addr;
++		mreq.imr_address.s_addr = INADDR_ANY;
++		mreq.imr_ifindex = ifindex;
++
++		return ip_mc_leave_group(sk, &mreq);
++	}
++
+ 	write_lock_bh(&ipv6_sk_mc_lock);
+ 	for (lnk = &np->ipv6_mc_list; (mc_lst = *lnk) !=NULL ; lnk = &mc_lst->next) {
+ 		if ((ifindex == 0 || mc_lst->ifindex == ifindex) &&
 
