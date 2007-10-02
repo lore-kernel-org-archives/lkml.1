@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbXJBLjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbXJBLkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbXJBLjr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 07:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJBLjl
+	id S1756842AbXJBLkl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 07:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXJBLkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 07:39:41 -0400
-Received: from snape.gogi.tv ([217.160.142.238]:2885 "EHLO snape.gogi.tv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbXJBLjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 07:39:40 -0400
-From: Giuliano Gagliardi <gogi-k@gogi.tv>
-Reply-To: gogi-k@gogi.tv
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: One process with multiple user ids.
-Date: Tue, 2 Oct 2007 13:39:31 +0200
-User-Agent: KMail/1.9.7
-References: <200710021256.08469.gogi-k@gogi.tv> <200710021333.05826.gogi-k@gogi.tv> <Pine.LNX.4.64.0710021334130.7130@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710021334130.7130@fbirervta.pbzchgretzou.qr>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 2 Oct 2007 07:40:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56597 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbXJBLkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 07:40:33 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
+In-Reply-To: <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <1191313025.13204.30.camel@twins>
+	 <20071002013148.18958af2.akpm@linux-foundation.org>
+	 <1191314911.13204.41.camel@twins>
+	 <3ae72650710020331o2ce5bd20wccc1964855279796@mail.gmail.com>
+	 <1191321861.13204.53.camel@twins>
+	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 13:40:26 +0200
+Message-Id: <1191325226.13204.63.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710021339.31332.gogi-k@gogi.tv>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 October 2007, Jan Engelhardt wrote:
-> On Oct 2 2007 13:33, Giuliano Gagliardi wrote:
-> >Date: Tue, 2 Oct 2007 13:33:05 +0200
-> >From: Giuliano Gagliardi <gogi-k@gogi.tv>
-> >To: Jan Engelhardt <jengelh@computergmbh.de>
-> >Subject: Re: One process with multiple user ids.
+On Tue, 2007-10-02 at 13:21 +0200, Kay Sievers wrote:
+> On 10/2/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, 2007-10-02 at 12:31 +0200, Kay Sievers wrote:
 > >
-> >On Tuesday 02 October 2007, Jan Engelhardt wrote:
-> >> On Oct 2 2007 12:56, Giuliano Gagliardi wrote:
-> >> >I have a server that has to switch to different user ids, but because
-> >> > it does other complex things, I would rather not have it run as root.
-> >> > I only need the server to be able to switch to certain pre-defined
-> >> > user ids.
-> >>
-> >> All you need is CAP_SETUID. Also see man setresuid,
-> >> where you could, I think, use saved_uid=0 if you do not
-> >> like to use real_uid=0 effective_uid=non-0.
+> > > What would be the point in another top-level tree for device
+> > > information? All devices you are exporting information for, are
+> > > already in the sysfs tree, right?
 > >
-> >But CAP_SETUID would let me change to any uid, would it not? I would like
-> > my process to have no possibility to change to any uid, except some
-> > predefined set, so that in case of a security hole only those uids could
-> > be compromised.
->
-> You could write up a LSM that restricts UID changing.
+> > Never did find NFS mounts/servers/superblocks or whatever constitutes a
+> > BDI for NFS in there. Same goes for all other networked filesystems for
+> > that matter.
+> 
+> How about adding this information to the tree then, instead of
+> creating a new top-level hack, just because something that you think
+> you need doesn't exist.
 
-Would you not consider it more useful to let one process have multiple user 
-ids? I do not see why they can have multiple group ids, but only (and 
-exactly) three user ids.
+So you suggest adding all the various network filesystems in there
+(where?), and adding the concept of a BDI, and ensuring all are properly
+linked together - somehow. Feel free to do so.
+
+> You called sysfs a mess, seems you work on that topic too. :)
+
+I called the in-kernel API to create sysfs files a mess. Not that I have
+another opinion on the content of /sys though, always takes to damn long
+to find anything in there.
+
