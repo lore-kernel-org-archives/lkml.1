@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbXJBSSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbXJBSTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbXJBSSr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJBSSk
+	id S1756163AbXJBSTE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJBSSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:18:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48374 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752478AbXJBSSk (ORCPT
+	Tue, 2 Oct 2007 14:18:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:58810 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756000AbXJBSSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:18:40 -0400
-Date: Tue, 2 Oct 2007 11:18:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, "Huang, Ying" <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, apw@shadowen.org,
-       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
-Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
-In-Reply-To: <20071002171631.46888326.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0710021116560.30615@schroedinger.engr.sgi.com>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <p733awu6nva.fsf@bingen.suse.de> <20071001233225.88c67e8b.akpm@linux-foundation.org>
- <20071002070110.GA30490@one.firstfloor.org> <20071002001809.0a814d0b.akpm@linux-foundation.org>
- <20071002163624.74534e7f.kamezawa.hiroyu@jp.fujitsu.com>
- <20071002004324.be030b63.akpm@linux-foundation.org>
- <20071002171631.46888326.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Oct 2007 14:18:52 -0400
+In-Reply-To: <Pine.LNX.4.58.0710021407200.7829@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0709241700290.13164@gandalf.stny.rr.com> <20071001195256.GB7718@mami.zabbo.net> <1191271156.5574.9.camel@lappy> <AE007B59-E6EB-4E4F-BAC4-7D49D61D1932@oracle.com> <Pine.LNX.4.58.0710021407200.7829@gandalf.stny.rr.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A29B0F5C-522C-4A6D-83B4-1F6EB419C7C2@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, mingo@goodmis.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [HACK] convert i_alloc_sem for direct_io.c craziness!
+Date: Tue, 2 Oct 2007 11:18:16 -0700
+To: Steven Rostedt <rostedt@goodmis.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007, KAMEZAWA Hiroyuki wrote:
+> This looks more like a completion. Actually, completions don't have PI
+> either, but they are usually OK.
 
-> For fujitsu, problem is called "empty" node.
+Yeah, true.
 
-Future SGI platforms (actually also current one can have but nothing like 
-that is deployed to my knowledge) have nodes with only cpus. Current SGI 
-platforms have nodes with just I/O that we so far cannot manage in the 
-core. So the arch code maps them to the nearest memory node.
+> When more info becomes available, I will definitely CC the linux- 
+> fsdevel
+> list. Thanks for letting me know about it. (I usually get confused  
+> by all
+> the different lists that are out there).
+
+OK, thanks.  (Yeah, it's not a great situation.)
+
+- z
