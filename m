@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbXJBVib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXJBVsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbXJBVib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 17:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXJBViU
+	id S1756580AbXJBVsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 17:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbXJBVsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 17:38:20 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:63403 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbXJBViQ (ORCPT
+	Tue, 2 Oct 2007 17:48:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50199 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752656AbXJBVsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 17:38:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IphMt0TwvJcYLSq35Uh1k00yEorwRHqMd5PcYLcEC6TbvFKhOcjJCnw1RFlPYrX8VgplG8yLck+GrRBeC6AO/klBHGWdykS4Uq0SkoRa6EiGamPwhMi7sUCM1EyHPN8eyQ7KRf0M041o4KL0z8rKAvFo09sgnEM4Q1ZPIkihEPU=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] input: move gameports out of SERIO menu
-Date: Tue, 2 Oct 2007 17:38:11 -0400
-User-Agent: KMail/1.9.7
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-input@atrey.karlin.mff.cuni.cz,
-       akpm <akpm@linux-foundation.org>
-References: <20071002141225.d503cdbb.randy.dunlap@oracle.com>
-In-Reply-To: <20071002141225.d503cdbb.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Oct 2007 17:48:05 -0400
+Date: Wed, 3 Oct 2007 07:47:45 +1000
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to indicate more io
+Message-ID: <20071002214736.GJ995458@sgi.com>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710021738.11349.dmitry.torokhov@gmail.com>
+In-Reply-To: <20071002090254.987182999@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+On Tue, Oct 02, 2007 at 04:41:48PM +0800, Fengguang Wu wrote:
+>  		wbc.pages_skipped = 0;
+> @@ -560,8 +561,9 @@ static void background_writeout(unsigned
+>  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+>  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+>  			/* Wrote less than expected */
+> -			congestion_wait(WRITE, HZ/10);
+> -			if (!wbc.encountered_congestion)
+> +			if (wbc.encountered_congestion || wbc.more_io)
+> +				congestion_wait(WRITE, HZ/10);
+> +			else
+>  				break;
+>  		}
 
-On Tuesday 02 October 2007, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Move the gameport support menu out of the SERIO menu and put it
-> between touchscreens and misc. devices in the main input layer menu.
-> Change it to use menuconfig instead of config.
-> 
-> Or was it meant to be listed under Hardware I/O ports?
-> It sure seems odd there to me.
+Why do you call congestion_wait() if there is more I/O to issue?  If
+we have a fast filesystem, this might cause the device queues to
+fill, then drain on congestion_wait(), then fill again, etc. i.e. we
+will have trouble keeping the queues full, right?
 
-Yes, they are meant to be under "Hardware I/O" ports. Like serio ports
-they represent hardware ports to which devices (such as gamepads or
-a joysticks can be connected to).
+Cheers,
 
+Dave.
 -- 
-Dmitry
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
