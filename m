@@ -1,276 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbXJBHib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXJBHit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbXJBHib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 03:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbXJBHh6
+	id S1756135AbXJBHit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 03:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbXJBHi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 03:37:58 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:54707 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755397AbXJBHh5 (ORCPT
+	Tue, 2 Oct 2007 03:38:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49752 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756017AbXJBHi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 03:37:57 -0400
-Message-ID: <4701F549.6060602@nttdata.co.jp>
-Date: Tue, 02 Oct 2007 16:37:45 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-CC: chrisw@sous-sol.org
-Subject: [TOMOYO 11/15](repost) Signal transmission control functions.
-References: <4701F285.5000206@nttdata.co.jp>
-In-Reply-To: <4701F285.5000206@nttdata.co.jp>
+	Tue, 2 Oct 2007 03:38:27 -0400
+Date: Tue, 2 Oct 2007 17:38:09 +1000
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       byron.bbradley@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: XFS Fails Quality Assurance Tests on ARM
+Message-ID: <20071002073809.GA995458@sgi.com>
+References: <fb80ve$i5q$1@sea.gmane.org> <20070830.213901.48806818.davem@davemloft.net> <p73ps12vxrl.fsf@bingen.suse.de> <200709280740.48723.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2007 07:37:46.0159 (UTC) FILETIME=[1FFAC3F0:01C804C7]
+Content-Disposition: inline
+In-Reply-To: <200709280740.48723.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signal control functions for TOMOYO Linux.
-TOMOYO Linux checks sending signal by signal number and
-the domain of target process. In order to check signal
-permission, LSM expansion patch [TOMOYO 14/15] is needed.
+On Fri, Sep 28, 2007 at 07:40:48AM +1000, Nick Piggin wrote:
+> On Sunday 02 September 2007 08:14, Andi Kleen wrote:
+> > David Miller <davem@davemloft.net> writes:
+> > > From: Byron Bradley <byron.bbradley@gmail.com>
+> > > Date: Fri, 31 Aug 2007 03:12:46 +0000 (UTC)
+> > > > Anybody got any ideas of how we fix this?
+> > >
+> > > I don't know how much testing XFS gets on ARM, but one thing that some
+> > > ARM chips have is D-cache aliasing problems and one thing XFS uses a
+> > > lot is virtual remapping of various data structures via vmap().
+> > >
+> > > This might be what is causing the problems.
+> >
+> > AFAIK XFS uses vmap() mainly during log replay. If David's theory
+> > was true then the failures must be seen during tests that do
+> > this.
+> 
+> I think it can also do vmap for directory lookups, and it crashed
+> in some directory lookup AFAIKS.
+> 
+> One way to verify would be to create the XFS filesystem with PAGE_SIZE
+> directory blocks (mkfs.xfs -nsize=PAGE_SIZE) I believe. Dave will correct
+> me if I'm wrong.
 
-Each permission can be automatically accumulated into
-the policy of each domain using 'learning mode'.
+By default the directory block size is the same as the filesystem
+block size which means it will be <= PAGE_SIZE unless some
+special mkfs.xfs goo was used. What is the output of 'xfs_info <mntpt>'
+on the machine in question?
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- security/tomoyo/signal.c |  229 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 229 insertions(+)
+Cheers,
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/signal.c	2007-10-02 11:26:22.000000000 +0900
-@@ -0,0 +1,229 @@
-+/*
-+ * security/tomoyo/signal.c
-+ *
-+ * Signal access contol functions for TOMOYO Linux.
-+ */
-+
-+#include "tomoyo.h"
-+#include "realpath.h"
-+
-+/*************************  AUDIT FUNCTIONS  *************************/
-+
-+static int tmy_audit_signal_log(const int signal,
-+				const struct path_info *dest_domain,
-+				const u8 is_granted,
-+				const u8 is_enforce)
-+{
-+	char *buf;
-+	int len;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	len = dest_domain->total_len;
-+	buf = tmy_init_audit_log(&len);
-+
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	snprintf(buf + strlen(buf),
-+		 len - strlen(buf) - 1,
-+		 "%s%d %s",
-+		 TMY_ALLOW_SIGNAL, signal, dest_domain->name);
-+
-+	return tmy_write_audit_log(buf, is_granted, is_enforce);
-+}
-+
-+/*************************  SIGNAL ACL HANDLER  *************************/
-+
-+static int tmy_add_signal_entry(const u16 sig, const char *dest_pattern,
-+				struct domain_info *domain,
-+				const struct condition_list *cond,
-+				const u8 is_delete)
-+{
-+	struct acl_info *ptr;
-+	const struct path_info *saved_dest_pattern;
-+	int error = -ENOMEM;
-+
-+	if (!domain)
-+		return -EINVAL;
-+	if (!dest_pattern ||
-+	    !tmy_is_correct_domain(dest_pattern, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved_dest_pattern = tmy_save_name(dest_pattern);
-+	if (!saved_dest_pattern)
-+		return -ENOMEM;
-+
-+	down(&domain_acl_lock);
-+
-+	if (is_delete)
-+		goto remove;
-+
-+	ptr = domain->first_acl_ptr;
-+	if (!ptr)
-+		goto first_entry;
-+
-+	while (1) {
-+		struct signal_acl *acl = (struct signal_acl *) ptr;
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && acl->sig == sig
-+		    && ptr->cond == cond
-+		    && !tmy_pathcmp(acl->domainname, saved_dest_pattern)) {
-+			ptr->is_deleted = 0;
-+			/* Found. Nothing to do. */
-+			error = 0;
-+			break;
-+		}
-+
-+		if (ptr->next) {
-+			ptr = ptr->next;
-+			continue;
-+		}
-+
-+first_entry: ;
-+		/* Not found. Append it to the tail. */
-+		acl = tmy_alloc_element(sizeof(*acl));
-+		if (!acl)
-+			break;
-+
-+		acl->head.type = TMY_TYPE_SIGNAL_ACL;
-+		acl->head.cond = cond;
-+		acl->sig = sig;
-+		acl->domainname = saved_dest_pattern;
-+		error = tmy_add_acl(ptr, domain, (struct acl_info *) acl);
-+		break;
-+	}
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	for (ptr = domain->first_acl_ptr; ptr; ptr = ptr->next) {
-+		struct signal_acl *acl = (struct signal_acl *) ptr;
-+		if (ptr->type != TMY_TYPE_SIGNAL_ACL || ptr->cond != cond ||
-+		    ptr->is_deleted || acl->sig != sig ||
-+		    tmy_pathcmp(acl->domainname, saved_dest_pattern))
-+			continue;
-+		error = tmy_del_acl(ptr);
-+		break;
-+	}
-+
-+ok: ;
-+	up(&domain_acl_lock);
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_signal_acl - check permission for kill(2)/tkill(2)/tgkill(2).
-+ * @sig:  signal number.
-+ * @pid:  pid of destination process.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_signal_acl(const int sig, const int pid)
-+{
-+	struct domain_info *domain = TMY_SECURITY->domain;
-+	struct domain_info *dest = NULL;
-+	const char *dest_pattern;
-+	struct acl_info *ptr;
-+	const u16 hash = sig;
-+	const u8 is_enforce = tmy_enforce(TMY_MAC_FOR_SIGNAL);
-+
-+	if (!tmy_flags(TMY_MAC_FOR_SIGNAL))
-+		return 0;
-+	if (!sig)
-+		return 0; /* No check for NULL signal. */
-+	if (current->pid == pid) {
-+		tmy_audit_signal_log(sig, domain->domainname, 1, is_enforce);
-+		return 0; /* No check for self. */
-+	}
-+
-+	{ /* Simplified checking. */
-+		struct task_struct *p = NULL;
-+		read_lock(&tasklist_lock);
-+		if (pid > 0)
-+			p = find_task_by_pid((pid_t) pid);
-+		else if (pid == 0)
-+			p = current;
-+		else if (pid == -1)
-+			dest = &KERNEL_DOMAIN;
-+		else
-+			p = find_task_by_pid((pid_t) -pid);
-+		if (p)
-+			/* "struct task_struct"->security is not NULL. */
-+			dest = ((struct tmy_security *) p->security)->domain;
-+		read_unlock(&tasklist_lock);
-+		if (!dest)
-+			return 0; /* I can't find destinatioin. */
-+	}
-+
-+	if (domain == dest) {
-+		tmy_audit_signal_log(sig, dest->domainname, 1, is_enforce);
-+		return 0;
-+	}
-+
-+	dest_pattern = dest->domainname->name;
-+	for (ptr = domain->first_acl_ptr; ptr; ptr = ptr->next) {
-+		struct signal_acl *acl = (struct signal_acl *) ptr;
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && ptr->is_deleted == 0
-+		    && acl->sig == hash &&
-+		    tmy_check_condition(ptr->cond, NULL) == 0) {
-+			const int len = acl->domainname->total_len;
-+
-+			if (strncmp(acl->domainname->name,
-+				    dest_pattern, len) == 0
-+			    && (dest_pattern[len] == ' ' ||
-+				dest_pattern[len] == '\0'))
-+				break;
-+
-+		}
-+	}
-+
-+	if (ptr) {
-+		tmy_audit_signal_log(sig, dest->domainname, 1, is_enforce);
-+		return 0;
-+	}
-+
-+	tmy_audit_signal_log(sig, dest->domainname, 0, is_enforce);
-+	if (is_enforce)
-+		return tmy_supervisor("%s\n" TMY_ALLOW_SIGNAL "%d %s\n",
-+				      domain->domainname->name,
-+				      sig, dest_pattern);
-+	if (tmy_accept(TMY_MAC_FOR_SIGNAL, domain))
-+		tmy_add_signal_entry(sig, dest_pattern, domain, NULL, 0);
-+
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_signal_policy - add or delete signal policy.
-+ * @data:      a line to parse.
-+ * @domain:    pointer to "struct domain_info".
-+ * @cond:      pointer to "struct condition_list". May be NULL.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const u8 is_delete)
-+{
-+	int sig;
-+	char *domainname = strchr(data, ' ');
-+
-+	if (sscanf(data, "%d", &sig) == 1 && domainname &&
-+	    tmy_is_domain_def(domainname + 1))
-+		return tmy_add_signal_entry(sig, domainname + 1, domain,
-+					    cond, is_delete);
-+
-+	return -EINVAL;
-+}
-
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
