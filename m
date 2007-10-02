@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbXJBWIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXJBWKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757087AbXJBWIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbXJBWI3
+	id S1756904AbXJBWKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXJBWKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:08:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59324 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754577AbXJBWI2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:08:28 -0400
-Date: Tue, 2 Oct 2007 15:07:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anders =?ISO-8859-1?Q?Bostr=F6m?= <anders@bostrom.dyndns.org>
-Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       torvalds@linux-foundation.org
-Subject: Re: PROBLEM: high load average when idle
-Message-Id: <20071002150748.906970bc.akpm@linux-foundation.org>
-In-Reply-To: <20071002.233731.119908363.anders@bostrom.dyndns.org>
-References: <20071002.233731.119908363.anders@bostrom.dyndns.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Oct 2007 18:10:39 -0400
+Received: from mail.dbmail.dk ([82.143.192.7]:7583 "EHLO mail.dbmail.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753684AbXJBWKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:10:38 -0400
+X-Greylist: delayed 1293 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Oct 2007 18:10:38 EDT
+Message-ID: <4702BCD0.4010202@dusted.dk>
+Date: Tue, 02 Oct 2007 23:49:04 +0200
+From: Jimmy <lists@dusted.dk>
+User-Agent: Icedove 1.5.0.12 (X11/20070730)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Point of gpl-only modules (flame)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Oct 2007 23:37:31 +0200 (CEST)
-Anders Bostr__m <anders@bostrom.dyndns.org> wrote:
+I know I'll be getting hell for this, I must be a masochist.
 
-> My computer suffers from high load average when the system is idle,
-> introduced by commit 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 .
-> 
-> Long story:
-> 
-> 2.6.20 and all later versions I've tested, including 2.6.21 and
-> 2.6.22, make the load average high. Even when the computer is totally
-> idle (I've tested in single user mode), the load average end up
-> at ~0.30. The computer is still responsive, and the only fault seems
-> to be the too high load average. All versions up to and including
-> 2.6.19.7 is fine, and don't suffer from the problem.
-> 
-> I git bisect between 2.6.19 and 2.6.20 gave me
-> 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 "[PATCH] user of the jiffies
-> rounding code: JBD" as the first patch with the
-> problem. 2.6.20 with 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 reverted
-> works fine. 2.6.23-rc8 with 44d306e1508fef6fa7a6eb15a1aba86ef68389a6
-> reverted also works fine.
-> 
-> This fixes the problem:
-> 
-> -------------------------- fs/jbd/transaction.c -----------------------------
-> index cceaf57..d38e0d5 100644
-> @@ -55,7 +55,7 @@ get_transaction(journal_t *journal, transaction_t *transaction)
->  	spin_lock_init(&transaction->t_handle_lock);
->  
->  	/* Set up the commit timer for the new transaction. */
-> -	journal->j_commit_timer.expires = round_jiffies(transaction->t_expires);
-> +	journal->j_commit_timer.expires = transaction->t_expires;
->  	add_timer(&journal->j_commit_timer);
->  
->  	J_ASSERT(journal->j_running_transaction == NULL);
-> 
-> 
-> I've only seen this problem on my home desktop computer. My work
-> desktop computer and several other computers at work don't suffer from
-> this problem. However, all other computers I've tested on is using
-> AMD64 as architecture, and not i386 as my home desktop computer.
-> 
-> Please let me know how I can assist in further debugging of this, if
-> needed.
+Anyway, I've been trying to figure out what purpose the gpl-only code 
+serves.
+What good comes out of disabling people from probing modules that do not 
+have a gpl-compatible license?
+Of cause, I would love to see more hardware manufactures release either 
+full specs, or GPL'd drivers, and I'm sure it will happen, in time.
+But until then, why are people wasting time writing code to inhibit 
+those who do not agree with them on licensing?
 
-This is unexpected.  High load average is due to either a task chewing a
-lot of CPU time or a task stuck in uninterruptible sleep.
+It seems pretty childish to try and force some license on people, 
+imagine trying to install firefox on Windows Vista, an error-dialog box 
+appears:
+"This application has been denied access to the Windows API as its 
+license are compatible with the Microsoft Philosophy" ?
 
-Can you please work out which of these is happening?  Run `top' on an idle
-system.  Is the CPU less than 1% loaded?
+Now, i don't want to waste clock cycles on executing code that serves no 
+purpose but restraining me from using my $1500 gfx card as intended, so 
+will me removing that crap from the source result in somebody trying to 
+obfuscate it to a point where neither of us know what is what?
 
-Run
+Also, how about a list of PROS, explain to me whats so cool about it?
 
-	ps aux | grep " D"
-
-or something like that on an idle system, see if you can spot a task which
-is spending time in D state.
-
-If there's a task whcih is spending time in D state, try running
-
- echo w > /proc/sysrq-trigger ; dmesg -c > foo
-
-the check "foo" to see if it has a task in D state (search foo for " D "). 
-If it's not there, do the sysrq again, repeat until you've managed to
-capture a trace of the blocked task.
-
-If it turns out that the CPU really is spending excess amounts of time
-being busy then a kernel profile would be a good way of finding out where
-it is spinning.  Or run sysrq-P from the keyboard a few times.
-
+ - Jimmy
