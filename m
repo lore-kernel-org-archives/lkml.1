@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbXJBX2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbXJBXco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbXJBX2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 19:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbXJBX20
+	id S1756129AbXJBXco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 19:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXJBXcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 19:28:26 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43606 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756420AbXJBX2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 19:28:25 -0400
-Date: Tue, 2 Oct 2007 18:28:19 -0500
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Message-ID: <20071002232819.GN4338@austin.ibm.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <20070924123531.GC30855@shadowen.org>
+	Tue, 2 Oct 2007 19:32:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41565 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753124AbXJBXcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 19:32:35 -0400
+Date: Tue, 2 Oct 2007 16:32:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Diego Calleja <diegocg@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+In-Reply-To: <20071003010730.2fb7ec5c.diegocg@gmail.com>
+Message-ID: <alpine.LFD.0.999.0710021630560.3579@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+ <20071003010730.2fb7ec5c.diegocg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924123531.GC30855@shadowen.org>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 01:35:31PM +0100, Andy Whitcroft wrote:
-> Seeing the following from an older power LPAR, pretty sure we had
-> this in the previous -mm also:
 
-I haven't forgetten about this ... and am looking at it now.
-Seems that whenever I go to reserve the machine pSeries-102,
-someone else is using it :-)
 
---linas
+On Wed, 3 Oct 2007, Diego Calleja wrote:
+> 
+> Also...if someone dislikes something in http://kernelnewbies.org/Linux_2_6_23 ,
+> or wants to fix my english, do it soon :)
+
+Heh. The "remove sk98lin driver" bullet is sadly wrong. We had to 
+reinstate it because it supported some cards that the skge driver doesn't 
+handle.
+
+		Linus
