@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbXJBP4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbXJBQEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbXJBP4m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbXJBPxp
+	id S1754451AbXJBQEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 12:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXJBQEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:53:45 -0400
-Received: from station18k.dscga.com ([192.24.222.18]:43754 "EHLO
-	suzuka.mcnaught.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755617AbXJBPxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:53:44 -0400
-X-Greylist: delayed 1765 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Oct 2007 11:53:44 EDT
-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "David Schwartz" <davids@webmaster.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: yield API
-References: <20071001173159.GB2492@elte.hu>
-	<MDEHLPKNGKAHNMBLJOLKOEOBHCAC.davids@webmaster.com>
-	<20071002064620.GA26638@elte.hu>
-	<Pine.LNX.4.61.0710020733270.16314@chaos.analogic.com>
-From: Douglas McNaught <doug@mcnaught.org>
-Date: Tue, 02 Oct 2007 11:24:18 -0400
-In-Reply-To: <Pine.LNX.4.61.0710020733270.16314@chaos.analogic.com> (linux-os@analogic.com's
- message of "Tue, 2 Oct 2007 07:50:39 -0400")
-Message-ID: <878x6lwndp.fsf@suzuka.mcnaught.org>
-User-Agent: Gnus/5.1006 (Gnus v5.10.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Oct 2007 12:04:42 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3071 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751514AbXJBQEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 12:04:41 -0400
+Subject: Re: [patch] printk: add KERN_CONT annotation
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0710021744060.7130@fbirervta.pbzchgretzou.qr>
+References: <20070928105345.GC18163@shadowen.org>
+	 <20071001064448.GA4239@elte.hu>
+	 <20071001003007.4e90143b.akpm@linux-foundation.org>
+	 <20071002043408.GM10199@1wt.eu> <20071002051852.GC28345@elte.hu>
+	 <1191339692.13170.18.camel@localhost>
+	 <Pine.LNX.4.64.0710021744060.7130@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 09:03:38 -0700
+Message-Id: <1191341018.13170.27.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"linux-os \(Dick Johnson\)" <linux-os@analogic.com> writes:
+On Tue, 2007-10-02 at 17:45 +0200, Jan Engelhardt wrote:
+> always use printk("%s", var)
 
-> Whether or not there is a POSIX definition of sched_yield(),
-> there is a need for something that will give up the CPU
-> and not busy-wait. There are many control applications
-> where state-machines are kept in user-mode code. The code
-> waits for an event. It shouldn't be spinning, wasting
-> CPU time, when the kernel can be doing file and network
-> I/O with the wasted CPU cycles.
+You have to use indirect arguments to log something?
+Don't you think that's a stupid rule?
 
-These "control applications" would be real-time processes, for which
-(AIUI) sched_yield() behavior is completely well-defined and
-implemented as such by Linux.  The question here is how useful the
-call is for SCHED_OTHER (non-real-time) processes, for which it has no
-well-defined semantics.
+Look at the version strings that are used as __devinitdata.
 
--Doug
+
