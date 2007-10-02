@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXJBVtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXJBVzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbXJBVtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 17:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbXJBVtM
+	id S1756654AbXJBVzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 17:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbXJBVze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 17:49:12 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64254 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752478AbXJBVtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 17:49:11 -0400
-To: jmorris@namei.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org, davem@davemloft.net
-Subject: Re: [TOMOYO 14/15](repost) LSM expansion for TOMOYO Linux.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <4701F285.5000206@nttdata.co.jp>
-	<4701F5CC.7040209@nttdata.co.jp>
-	<Xine.LNX.4.64.0710020653470.28698@us.intercode.com.au>
-In-Reply-To: <Xine.LNX.4.64.0710020653470.28698@us.intercode.com.au>
-Message-Id: <200710030649.GJE84023.QtFSLOVJMOHOFF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Wed, 3 Oct 2007 06:49:06 +0900
+	Tue, 2 Oct 2007 17:55:34 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50710 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754229AbXJBVzd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 17:55:33 -0400
+Date: Wed, 3 Oct 2007 07:55:18 +1000
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 4/5] writeback: remove pages_skipped accounting in __block_write_full_page()
+Message-ID: <20071002215518.GK995458@sgi.com>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.873023041@mail.ustc.edu.cn>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071002090254.873023041@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> 
+> do not quite agree with each other. The page writeback should be skipped for
+> 'locked buffer', but here it is 'clean buffer'!
 
-Thank you for your comment.
+Ok, so that means we need an equivalent fix in xfs_start_page_writeback()
+as it will skip pages with clean buffers just like this. Something like
+this (untested)?
 
-James Morris wrote:
-> I'm guessing you need this to determine the receiving process, rather than 
-> the socket (which is available via security_sock_rcv_skb()).
-Use of security_sock_rcv_skb() was discussed at http://lkml.org/lkml/2007/8/28/74 ,
-and answer is at http://lkml.org/lkml/2007/10/2/56 .
+---
+ fs/xfs/linux-2.6/xfs_aops.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> If so, is this to interactively determine from the user or admin whether 
-> the packet should be accepted/denied for the receiving process?
-Yes, it is to determine whether the packet should be accepted/denied
-based on the receiving process (like what anti-virus software's firewall does).
+Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_aops.c	2007-10-02 16:12:56.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_aops.c	2007-10-03 07:53:27.866602431 +1000
+@@ -420,10 +420,9 @@ xfs_start_page_writeback(
+ 		clear_page_dirty_for_io(page);
+ 	set_page_writeback(page);
+ 	unlock_page(page);
+-	if (!buffers) {
++	/* If no buffers on the page are to be written, finish it here */
++	if (!buffers)
+ 		end_page_writeback(page);
+-		wbc->pages_skipped++;	/* We didn't write this page */
+-	}
+ }
+ 
+ static inline int bio_add_buffer(struct bio *bio, struct buffer_head *bh)
 
-Regards.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
 
