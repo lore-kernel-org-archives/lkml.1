@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXJBV0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbXJBVib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbXJBV0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 17:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXJBV0q
+	id S1756402AbXJBVib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 17:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXJBViU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 17:26:46 -0400
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:59742 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755762AbXJBV0q (ORCPT
+	Tue, 2 Oct 2007 17:38:20 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:63403 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753078AbXJBViQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 17:26:46 -0400
-Date: Tue, 2 Oct 2007 23:26:42 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc8 build failure: __you_cannot_kmalloc_that_much in
- dmi_id_init
-Message-ID: <20071002232642.568ea660@hyperion.delvare>
-In-Reply-To: <20071001235412.0737de78@hyperion.delvare>
-References: <20071001225447.20f989aa@hyperion.delvare>
-	<20071001235412.0737de78@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Oct 2007 17:38:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=IphMt0TwvJcYLSq35Uh1k00yEorwRHqMd5PcYLcEC6TbvFKhOcjJCnw1RFlPYrX8VgplG8yLck+GrRBeC6AO/klBHGWdykS4Uq0SkoRa6EiGamPwhMi7sUCM1EyHPN8eyQ7KRf0M041o4KL0z8rKAvFo09sgnEM4Q1ZPIkihEPU=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] input: move gameports out of SERIO menu
+Date: Tue, 2 Oct 2007 17:38:11 -0400
+User-Agent: KMail/1.9.7
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-input@atrey.karlin.mff.cuni.cz,
+       akpm <akpm@linux-foundation.org>
+References: <20071002141225.d503cdbb.randy.dunlap@oracle.com>
+In-Reply-To: <20071002141225.d503cdbb.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710021738.11349.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 23:54:12 +0200, Jean Delvare wrote:
-> On Mon, 1 Oct 2007 22:54:47 +0200, Jean Delvare wrote:
-> > 2.6.23-rc8 and 2.6.23-rc8-git4 fail to build on one of my test
-> > machines, with:
-> > 
-> > drivers/built-in.o(.init.text+0x780e): In function `dmi_id_init':
-> > : undefined reference to `__you_cannot_kmalloc_that_much'
-> > 
-> > The code is allocating sizeof(struct device) so it really shouldn't be
-> > a problem. I have no idea what's wrong. That's on i386, very old
-> > machine (Pentium 166MMX / Intel TX chipset), with gcc 3.2.3 and
-> > binutils 2.14.90.0.6. 2.6.22.9 compiles fine on the same system (but it
-> > doesn't include dmi-id so it's not very surprising).
-> > 
-> > .config attached.
+Hi Randy,
+
+On Tuesday 02 October 2007, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> More information: building the same config on a much more recent system
-> works fine. This seems to point at a toolchain issue.
+> Move the gameport support menu out of the SERIO menu and put it
+> between touchscreens and misc. devices in the main input layer menu.
+> Change it to use menuconfig instead of config.
+> 
+> Or was it meant to be listed under Hardware I/O ports?
+> It sure seems odd there to me.
 
-More information:
-* No improvement in 2.6.23-rc9.
-* Building the same config on a different system with the same
-  toolchain, fails the same. So it's not just one system acting weirdly,
-  the bug can be reproduced.
-* I tried arbitrary values for the kzalloc() in dmi-id.c, the bottom line
-  is that anything above 64 bytes triggers the bug.
-* The same kzalloc() in a different driver doesn't trigger the bug.
-
-I'm puzzled, no idea what to try next.
+Yes, they are meant to be under "Hardware I/O" ports. Like serio ports
+they represent hardware ports to which devices (such as gamepads or
+a joysticks can be connected to).
 
 -- 
-Jean Delvare
+Dmitry
