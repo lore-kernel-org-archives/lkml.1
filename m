@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXJBDmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXJBDo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbXJBDmA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 23:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXJBDlw
+	id S1753544AbXJBDo7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Oct 2007 23:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXJBDov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 23:41:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43253 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750920AbXJBDlv (ORCPT
+	Mon, 1 Oct 2007 23:44:51 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51416
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751985AbXJBDou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 23:41:51 -0400
-Date: Mon, 1 Oct 2007 20:41:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+	Mon, 1 Oct 2007 23:44:50 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Add Documentation/power/00-INDEX
+Date: Mon, 1 Oct 2007 22:44:46 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       pavel@suse.cz, rjw@sisk.pl
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710012244.46869.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rob Landley <rob@landley.net>
 
-I said I was hoping that -rc8 was the last -rc, and I hate doing this, but 
-we've had more changes since -rc8 than we had in -rc8. And while most of 
-them are pretty trivial, I really couldn't face doing a 2.6.23 release and 
-take the risk of some really stupid brown-paper-bag thing.
+Add Documentation/power/00-INDEX
 
-So there's a final -rc out there, and right now my plan is to make this 
-series really short, and release 2.6.23 in a few days. So please do give 
-it a last good testing, and holler about any issues you find!
+Signed-off-by: Rob Landley <rob@landley.net>
+---
+All my pending 00-INDEX patches are at http://landley.net/kdocs/make/patches
 
-This is also a good time to warn about the fact that we're doing the x86 
-merge very soon (as in the next day or two) after 2.6.23 is out, so if you 
-have pending patches for the next series that touch arch/i386 or x86-64, 
-you should get in touch with Thomas Gleixner and Ingo Molnar, who are the 
-keepers of the merge scripts, and will help you prepare..
+ Documentation/power/00-INDEX |   34 +++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-Doing it as early as possible in the 2.6.24-rc4 series (basically I'll do 
-it first thing) will mean that we'll have the maximum amount of time to 
-sort out any issues, and the thing is, Thomas and Ingo already have a tree 
-ready to go, so people can check their work against that, and don't need 
-to think that they have to do any fixups after it his *my* tree. It would 
-be much better if everybody was just ready for it, and not taken by 
-surprise.
+--- /dev/null	2007-04-23 10:59:00.000000000 -0500
++++ hg/Documentation/power/00-INDEX	2007-10-01 22:35:36.000000000 -0500
+@@ -0,0 +1,34 @@
++00-INDEX
++	- This file
++basic-pm-debugging.txt
++	- Debugging suspend and resume
++devices.txt
++	- How drivers interact with system-wide power management
++drivers-testing.txt
++	- Testing suspend and resume support in device drivers
++freezing-of-tasks.txt
++	- How processes and controlled during suspend
++interface.txt
++	- Power management user interface in /sys/power
++notifiers.txt
++	- Registering suspend notifiers in device drivers
++pci.txt
++	- How the PCI Subsystem Does Power Management
++s2ram.txt
++	- How to get suspend to ram working (and debug it when it isn't)
++states.txt
++	- System power management states
++swsusp-and-swap-files.txt
++	- Using swap files with software suspend (to disk)
++swsusp-dmcrypt.txt
++	- How to use dm-crypt and software suspend (to disk) together
++swsusp.txt
++	- Goals, implementation, and usage of software suspend (ACPI S3)
++tricks.txt
++	- How to trick software suspend (to disk) into working when it isn't
++userland-swsusp.txt
++	- Experimental implementation of software suspend in userspace
++video_extension.txt
++	- ACPI video extensions
++video.txt
++	- Video issues during resume from suspend
 
-In other words, people who know they may be affected and would want to 
-prepare can look at (for example)
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git x86
-
-and generally get ready for the switch-over. 
-
-			Linus
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
