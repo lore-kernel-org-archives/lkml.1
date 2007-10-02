@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXJBNHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXJBNRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbXJBNHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbXJBNHZ
+	id S1754459AbXJBNRq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbXJBNRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:07:25 -0400
-Received: from namei.org ([69.55.235.186]:51503 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752958AbXJBNHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:07:24 -0400
-Date: Tue, 2 Oct 2007 06:07:08 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-In-Reply-To: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-Message-ID: <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
-References: <4701F285.5000206@nttdata.co.jp> <4701F419.8080103@nttdata.co.jp>
- <Xine.LNX.4.64.0710020355260.6760@us.intercode.com.au>
- <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Oct 2007 09:17:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51138 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbXJBNRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:17:36 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071002102401.GB25647@atrey.karlin.mff.cuni.cz>
+References: <20071002102401.GB25647@atrey.karlin.mff.cuni.cz> <20071001130921.29339.72876.stgit@warthog.procyon.org.uk> <20071001131023.29339.51838.stgit@warthog.procyon.org.uk>
+To: Jan Kara <jack@suse.cz>
+Cc: dhowells@redhat.com, hch@infradead.org, viro@ftp.linux.org.uk,
+       torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 12/30] IGET: Stop EXT3 from using iget() and read_inode()
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Tue, 02 Oct 2007 14:16:59 +0100
+Message-ID: <24599.1191331019@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007, Tetsuo Handa wrote:
+Jan Kara <jack@suse.cz> wrote:
 
-> Hello.
-> 
-> Thank you for your comment.
-> 
-> James Morris wrote:
-> > Why do you need to avoid spinlocks for these manipulations?
-> 
-> I don't need to use spinlocks here.
-> What I need to do here is avoid read/write reordering,
-> so mb() will be appropriate here.
-> 
-> struct something {
->   struct something *next;
->   void *data;
-> };
-> 
-> struct something *prev_ptr = ...;
-> struct something *new_ptr = kmalloc(sizeof(*new_ptr), GFP_KERNEL);
-> new_ptr->next = NULL;
-> new_ptr->data = some_value;
-> mb();
-> prev_ptr->next = new_ptr;
+>   But if you 'goto out' in some branches, we loose the ext3_warning()
+> which we probably don't want.
 
-You're introducing a custom API, which is open-coded repeatedly throughout 
-your module.
+Ugh.  Okay, I need to rework the changes to that function.
 
-All linked lists (at least, new ones) must use the standard kernel list
-API.
+> >  			return ERR_PTR(-EACCES);
+>   Wouldn't here -EIO be more appropriate?
 
-> Performance is not critical because this mb() is called
-> only when appending new entry to the singly-linked list.
+I would have thought so, but -EACCES was what it returned before I touched it.
+OTOH, it's calling ext3_error(), so EIO ought to be the right thing to do.
+I'll alter it and see if anyone complains.
 
-Most of these uses appear to be slow path or nested inside other locks, 
-while overall, performance is likely to be dominated by your string 
-matching and permission checking.  Use of mb(), which is typically 
-considered less understandable, in this case does not appear to be 
-justified vs. normal locking, and you also need to use the standard list 
-API.  If performance really is an issue, then consider RCU.
+>   Why don't we use PTR_ERR() always? Is there some reason not to return
+> -EIO?
 
+I do wonder why it used to return EINVAL rather than EIO.  It's understandable
+if the magic number doesn't match, but if it appears to be an otherwise
+corrupt filesystem, then yes, I guess it should return EIO.  I'll change it.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+David
