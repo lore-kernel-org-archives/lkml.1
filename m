@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbXJBPiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbXJBPnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbXJBPiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXJBPip
+	id S1755026AbXJBPnN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXJBPm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:38:45 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46876 "EHLO pasmtpA.tele.dk"
+	Tue, 2 Oct 2007 11:42:59 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3050 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751671AbXJBPip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:38:45 -0400
-Date: Tue, 2 Oct 2007 17:40:13 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <20071002154013.GA3886@uranus.ravnborg.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <alpine.LRH.0.999.0710021250510.23586@www.tglx.de> <20071002140711.GA29395@elte.hu> <200710021623.09966.ak@suse.de> <20071002143115.GA4867@elte.hu> <20071002145806.GA3567@uranus.ravnborg.org> <alpine.LRH.0.999.0710021728060.23586@www.tglx.de>
+	id S1751817AbXJBPm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 11:42:59 -0400
+Subject: Re: [patch] printk: add KERN_CONT annotation
+From: Joe Perches <joe@perches.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Willy Tarreau <w@1wt.eu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071002051852.GC28345@elte.hu>
+References: <20070928105345.GC18163@shadowen.org>
+	 <20071001064448.GA4239@elte.hu>
+	 <20071001003007.4e90143b.akpm@linux-foundation.org>
+	 <20071002043408.GM10199@1wt.eu>  <20071002051852.GC28345@elte.hu>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 08:41:32 -0700
+Message-Id: <1191339692.13170.18.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.0.999.0710021728060.23586@www.tglx.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 05:30:27PM +0200, Thomas Gleixner wrote:
-> Sam,
-> 
-> On Tue, 2 Oct 2007, Sam Ravnborg wrote:
-> > Hi Andi/Ingo.
-> > 
-> > I plan to integrate cflags-probe in kbuild.git if there is no objection.
-> > And I will address any x86 issues when I do so.
-> > On top of that I will most likely do the same change for i386.
+On Tue, 2007-10-02 at 07:18 +0200, Ingo Molnar wrote:
+> +#define	KERN_CONT	""
 
-By the way - that patch depends on a few other patches in Andi's queue
-but I will await until they are included.
+This doesn't work with printk(char** array[index]) continuations
+or with strings with embedded KERN_ prefixes.
 
-> 
-> Makes sense. While you are at it, can you please have an eye on the
-> Build system changes I did to make arch/x86 with the two stub
-> directories arch/i386 and arch/x86_64 work.
-Thats on my TODO list - but I do not think I will find time before the merge.
+printk(array[index])
+printk(version)
 
-	Sam
+
