@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbXJBWbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbXJBWdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbXJBWbH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJBWa4
+	id S1755523AbXJBWdB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXJBWcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:30:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58855 "EHLO mx1.redhat.com"
+	Tue, 2 Oct 2007 18:32:54 -0400
+Received: from mail.tmr.com ([64.65.253.246]:37274 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbXJBWaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:30:55 -0400
-Message-ID: <4702C694.10402@redhat.com>
-Date: Tue, 02 Oct 2007 18:30:44 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1752082AbXJBWcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:32:54 -0400
+Message-ID: <4702C882.9090105@tmr.com>
+Date: Tue, 02 Oct 2007 18:38:58 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Neil Romig <neil@romig.demon.co.uk>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: File corruption when using kernels 2.6.18+
-References: <46FFC371.9040805@romig.demon.co.uk>
-In-Reply-To: <46FFC371.9040805@romig.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: gogi-k@gogi.tv
+CC: linux-kernel@vger.kernel.org
+Subject: Re: One process with multiple user ids.
+References: <200710021256.08469.gogi-k@gogi.tv>
+In-Reply-To: <200710021256.08469.gogi-k@gogi.tv>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/2007 11:40 AM, Neil Romig wrote:
-> I am using kernel 2.6.17.14, and would like to use newer versions for
-> the wireless code but I get file corruption with any kernel more recent
-> than this. My system uses a SiS645DX chipset (it is a rebadged CLEVO
-> D400E) with 5513 IDE.
+Giuliano Gagliardi wrote:
+> Hello,
 > 
-> I get this corruption with read/writes, i.e using "cp", "dd", when
-> compiling software, writing to CD, etc etc. An example:
+> I have a server that has to switch to different user ids, but because it does 
+> other complex things, I would rather not have it run as root. I only need the 
+> server to be able to switch to certain pre-defined user ids.
 > 
-> cp ../Changelog-2.6.18 .
-> diff Changelog-2.6.18 ../Changelog-2.6.18
+> I have seen that two possible solutions have already been suggested here on 
+> the LKML, but it was some years ago, and nothing like it has been 
+> implemented.
 > 
-> 16377c16377
-> <       LD      .top_vmlinux1
-> ---
->>       LD      .tmp_vmlinux1
-> 23954c23954
-> < Date:   Mon Jul 1% 04:45:11 2006 -0700
-> ---
->> Date:   Mon Jul 10 04:45:11 2006 -0700
+> (1) Having supplementary user ids like there are supplementary group ids and 
+> system calls getuids() and setuids() that work like getgroups() and 
+> setgroups()
+> 
+> (2) Allowing processes to pass user and group ids via sockets.
+> 
+> Both (1) and (2) would solve my problem. Now my question is whether there are 
+> any fundamental flaws with (1) or (2), or whether the right way to solve my 
+> problem is another one.
+> 
+Changing to a limited set of IDs is interesting, I have never looked at 
+what happens when a thread does setuid, and neither the man page or a 
+very quick look at the code tells me. But the portable way is to do the 
+things needed for init, then fork into three processes and give each a 
+UID as needed. I would really evaluate the design which made this 
+necessary, to see if some IPC could be used. Certainly that's more 
+likely to be portable.
 
-Is there some pattern to the corruption, like maybe it occurs once every
-N bytes in the file?
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
