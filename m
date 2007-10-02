@@ -1,75 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbXJBXCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXJBXDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbXJBXCI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 19:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbXJBXB4
+	id S1756847AbXJBXDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 19:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXJBXD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 19:01:56 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58387 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbXJBXBz (ORCPT
+	Tue, 2 Oct 2007 19:03:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:46136 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbXJBXD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 19:01:55 -0400
-Date: Wed, 3 Oct 2007 01:01:54 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jimmy <lists@dusted.dk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Point of gpl-only modules (flame)
-In-Reply-To: <4702BCD0.4010202@dusted.dk>
-Message-ID: <Pine.LNX.4.64.0710030051350.28124@fbirervta.pbzchgretzou.qr>
-References: <4702BCD0.4010202@dusted.dk>
+	Tue, 2 Oct 2007 19:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TDaw21kgO1sPDHHEHiv6Ga+8KU97CylTtAQ3xmF9Tz/WJDobHsBmBO9Y6YA7OkhdQ+5DIHUlsIrdWfKk9G/sgKimH6I+emvSnSFoW8LSUbmRgxDKQv3K4C1Aef3f2lLMYW/peYRQ2S+3qqWYPVw7oBDJU+MxKLzZfZCt4oM1ycw=
+Message-ID: <3d8471ca0710021603x2288fbe9h78e3568235140d7c@mail.gmail.com>
+Date: Wed, 3 Oct 2007 01:03:26 +0200
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Andrew Morton" <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Handle errors in sync_sb_inodes()
+In-Reply-To: <20071003005706.0fbacb94@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071003005706.0fbacb94@localhost.localdomain>
+X-Google-Sender-Auth: 84e07e707ddb6d93
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +               mapping_set_error(mapping, ret);
 
-On Oct 2 2007 23:49, Jimmy wrote:
->
-> Anyway, I've been trying to figure out what purpose the gpl-only code serves.
-> What good comes out of disabling people from probing modules that do not have a
-> gpl-compatible license?
+And of course, s/ret/err/ :-(
 
-find /lib/modules/`uname -r` -iname '*.ko' | wc -l:
-
-	2021
-
-Proprietary modules that I can think of:
-
-	5 to 10
-
-It's not even 1/2 a !#$ percent. (Though knowing that many modules are for
-not-so-common hw.)
-
-> It seems pretty childish to try and force some license on people, imagine
-> trying to install firefox on Windows Vista, an error-dialog box appears:
-> "This application has been denied access to the Windows API as its license are
-> compatible with the Microsoft Philosophy" ?
-
-Not a kernel problem.
-
-(That said, MS would probably face yet another antitrust charge if it did that.
-Or better yet, people would just thankfully stop using it.)
-
-> Now, i don't want to waste clock cycles on executing code that serves no
-> purpose but restraining me from using my $1500 gfx card as intended,
-
-Perhaps you intended to buy a game console instead?
-
-That said, no one is restraining you. You can edit the kernel source
-and rip out all the GPL checks. On top, it's not like the ati or
-nvidia blob-ola would not load in today's kernel.
-
-01:00 ichi:~ > lsmod | grep nv
-nvidia               4717076  22 
-
-Oh yeah, my kernel (unpatched, btw) really tries to stop me hard
-from loading it.
-
-> so will me
-> removing that crap from the source result in somebody trying to obfuscate it to
-> a point where neither of us know what is what?
->
-> Also, how about a list of PROS, explain to me whats so cool about it?
->
-> - Jimmy
+-- 
+Guillaume
