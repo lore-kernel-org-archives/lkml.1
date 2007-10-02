@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbXJBHmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXJBHoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbXJBHmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 03:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbXJBHmh
+	id S1755547AbXJBHoz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 03:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXJBHos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 03:42:37 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:56204 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbXJBHmf (ORCPT
+	Tue, 2 Oct 2007 03:44:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39774 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751455AbXJBHor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 03:42:35 -0400
-Message-ID: <4701F660.8080008@nttdata.co.jp>
-Date: Tue, 02 Oct 2007 16:42:24 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-CC: chrisw@sous-sol.org
-Subject: Re: [TOMOYO 00/15](repost) TOMOYO Linux - MAC based on process invocation
- history.
-References: <4701F285.5000206@nttdata.co.jp>
-In-Reply-To: <4701F285.5000206@nttdata.co.jp>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Oct 2007 03:44:47 -0400
+Date: Tue, 2 Oct 2007 00:43:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       mpm@selenic.com, "Huang, Ying" <ying.huang@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <clameter@sgi.com>, apw@shadowen.org,
+       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
+Subject: Re: x86 patches was Re: -mm merge plans for 2.6.24
+Message-Id: <20071002004324.be030b63.akpm@linux-foundation.org>
+In-Reply-To: <20071002163624.74534e7f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	<p733awu6nva.fsf@bingen.suse.de>
+	<20071001233225.88c67e8b.akpm@linux-foundation.org>
+	<20071002070110.GA30490@one.firstfloor.org>
+	<20071002001809.0a814d0b.akpm@linux-foundation.org>
+	<20071002163624.74534e7f.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2007 07:42:25.0280 (UTC) FILETIME=[C6594000:01C804C7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007/08/27 21:11, Kyle Moffett wrote:
->This is probably not acceptable; I doubt there's a chance in hell
->that TOMOYO will get merged as long as it has text-based-language
->parsing in the kernel.  You also have $NEW_RANDOM_ABUSE_OF_PROCFS and
->$PATH_BASED_LSM_ISSUES.  See the long flamewars on AppArmor for
->discussion on the latter.
+On Tue, 2 Oct 2007 16:36:24 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-About problems of pathname-based access control and countermeasures:
+> On Tue, 2 Oct 2007 00:18:09 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > How come?  Memoryless node can and do occur in real-world machines.  Kernel
+> > > > should support that?
+> > > 
+> > > But a node is just defined by its memory? 
+> > 
+> > Don't think so.  A node is a lump of circuitry which can have zero or more
+> > CPUs, IO and memory.
+> > 
+> > It may initially have been conceived as a memory-only concept in the Linux
+> > kernel, but that doesn't fully map onto reality (does it?)
+> > 
+> > There was a real-world need for this, I think from the Fujitsu guys.  That
+> > should be spelled out in the changelog but isn't.
+> 
+> Yes, Fujitsu and HP guys really need this memory-less-node support. 
+> 
 
-TOMOYO Linux has many countermeasures that prevents many of pathname-based access control's problems.
-In short, in TOMOYO Linux, attackers can't create link freely, can't rename freely,
-can't manipulate namespace freely.
-
-Not all problems can be solved (some of causes are current LSM specification),
-but is enough for SOHO (Small Office/Home Office)/personal systems.
-
-Last discussion log is at http://lkml.org/lkml/2007/8/28/113 .
-
-About policy file handling:
-
-Common implementations treat policy file on the filesystem as the up-to-date data,
-and the kernel keeps a copy of policy file in kernel's memory.
-But TOMOYO's implementation is opposite.
-
-TOMOYO Linux has "learning mode" feature that helps administrator develop ACL (access control list).
-Since the "learning mode" automatically appends entries to in-memory datastructure,
-TOMOYO Linux implements in-memory datastructure using a singly-linked list
-using a kind of DBMS (DataBase Management System).
-
-TOMOYO Linux regards the ACL in kernel's DBMS as the up-to-date data
-and the ACL in the policy file as a backup.
-TOMOYO Linux's policy file consists of instructions for reproducing a snapshot of
-ACL entries in kernel's DBMS which was saved in the past.
-
-This is the reason why TOMOYO Linux doesn't use binary (offset-from-start-of-policy) format
-for policy file, and in-kernel policy parser exists.
-
-Last discussion log is at http://marc.info/?l=linux-security-module&m=119039218805158&w=2 .
-
-On 2007/08/27 23:49, Paul Moore wrote:
->This has been discussed several times on various lists and is not considered 
->an acceptable solution to blocking incoming stream connection attempts.  
->Please take a look at the existing LSM stream connection request hooks as 
->well as how SELinux makes use of them.
-(snip)
->Can you explain to me why this is not possible using the existing 
->security_socket_sock_rcv_skb() LSM hook?
-
-About network hook expansion:
-
-TOMOYO Linux makes use of userspace intervention to allow/reject connections and/or packets
-based on the application's domain.
-Current network-related LSM hooks can't know the final recipient of connections and/or packets.
-
-This is the reason why TOMOYO Linux wants to add post-accept() and post-recvmsg() hooks.
-
-Last discussion log is at http://lkml.org/lkml/2007/9/5/98 .
-
-
+For what reason, please?
