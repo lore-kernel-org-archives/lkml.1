@@ -1,64 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbXJBWwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXJBW6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbXJBWwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 18:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXJBWvx
+	id S1755281AbXJBW6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 18:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXJBW6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 18:51:53 -0400
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:43371 "EHLO
-	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750843AbXJBWvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 18:51:52 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Date: Tue, 2 Oct 2007 23:51:48 +0100
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Tue, 2 Oct 2007 18:58:31 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:4174 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbXJBW6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 18:58:30 -0400
+Date: Wed, 3 Oct 2007 00:58:28 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Point of gpl-only modules (flame)
+Message-ID: <20071002225827.GA77866@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	linux-kernel@vger.kernel.org
+References: <4702BCD0.4010202@dusted.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 2064
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710022351.48971.alistair@devzero.co.uk>
+In-Reply-To: <4702BCD0.4010202@dusted.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 October 2007 04:41:49 Linus Torvalds wrote:
-[snip]
-> In other words, people who know they may be affected and would want to
-> prepare can look at (for example)
->
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git x86
->
-> and generally get ready for the switch-over.
+On Tue, Oct 02, 2007 at 11:49:04PM +0200, Jimmy wrote:
+> Also, how about a list of PROS, explain to me whats so cool about it?
 
-This is certainly a tool issue, but if I use Debian's kernel-image "make-kpkg" 
-wrapper around the kernel build system, it fails with:
+People who do binary-only drivers have a much better chance of not
+doing a derivative work when they only use non-EXPORT_GPL exports, and
+as a result not being in the wrong legally.
 
-cp: cannot stat `arch/x86_64/boot/bzImage': No such file or directory
-
-Obviously, this file has moved to arch/x86/boot, but it seems like possibly 
-unnecessary breakage. I've been copying bzImage for years from 
-arch/x86_64/boot, and I'm sure there's a handful of scripts (other than 
-Debian's kernel-image) doing this too.
-
-For now, I hacked the tool[1]. Maybe, if we care, a symlink could be set up 
-between arch/x86/boot and arch/$ARCH/boot ? Or would papering over this be 
-more trouble than it's worth?
-
-[1] http://devzero.co.uk/~alistair/kernel-package-changes.diff
-
--- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+  OG.
 
