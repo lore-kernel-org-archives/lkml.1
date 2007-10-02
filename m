@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbXJBPbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbXJBPcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbXJBPbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 11:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbXJBPb3
+	id S1755335AbXJBPcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 11:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXJBPbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 11:31:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:57962 "EHLO www.tglx.de"
+	Tue, 2 Oct 2007 11:31:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38808 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbXJBPb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 11:31:28 -0400
-Date: Tue, 2 Oct 2007 17:30:27 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-In-Reply-To: <20071002145806.GA3567@uranus.ravnborg.org>
-Message-ID: <alpine.LRH.0.999.0710021728060.23586@www.tglx.de>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
- <alpine.LRH.0.999.0710021250510.23586@www.tglx.de> <20071002140711.GA29395@elte.hu>
- <200710021623.09966.ak@suse.de> <20071002143115.GA4867@elte.hu>
- <20071002145806.GA3567@uranus.ravnborg.org>
+	id S1752888AbXJBPbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 11:31:51 -0400
+Message-ID: <47026464.5060209@garzik.org>
+Date: Tue, 02 Oct 2007 11:31:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Peer Chen <peerchen@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ahci: Add MCP79 support to AHCI driver
+References: <200709211406065332552@gmail.com>, <20070921113908.180cd154@the-village.bc.nu> <200709241016214230742@gmail.com>
+In-Reply-To: <200709241016214230742@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam,
-
-On Tue, 2 Oct 2007, Sam Ravnborg wrote:
-> Hi Andi/Ingo.
+Peer Chen wrote:
+> Code change, remove some Device IDs.
 > 
-> I plan to integrate cflags-probe in kbuild.git if there is no objection.
-> And I will address any x86 issues when I do so.
-> On top of that I will most likely do the same change for i386.
+> Signed-off-by: Peer Chen <peerchen@gmail.com>
+> ---
+> --- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
+> +++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-24 10:08:03.000000000 -0400
+> @@ -472,6 +472,14 @@ static const struct pci_device_id ahci_p
+>  	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
+>  	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
+>  	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0ab8), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0ab9), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0aba), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0abb), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0abc), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0abd), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0abe), board_ahci },		/* MCP79 */
+> +	{ PCI_VDEVICE(NVIDIA, 0x0abf), board_ahci },		/* MCP79 */
 
-Makes sense. While you are at it, can you please have an eye on the
-Build system changes I did to make arch/x86 with the two stub
-directories arch/i386 and arch/x86_64 work.
+applied
 
-Thanks,
-
-	tglx
 
