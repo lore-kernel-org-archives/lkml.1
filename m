@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbXJBSyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbXJBSz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbXJBSyW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbXJBSyE
+	id S1756761AbXJBSz7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXJBSzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:54:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53655 "EHLO mail.dvmed.net"
+	Tue, 2 Oct 2007 14:55:51 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36874 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbXJBSyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:54:01 -0400
-Message-ID: <470293C7.6080906@garzik.org>
-Date: Tue, 02 Oct 2007 14:53:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patch] SCSI aic94xx fix
-References: <20071002172151.GA28579@havoc.gtf.org> <1191350862.3530.114.camel@localhost.localdomain>
-In-Reply-To: <1191350862.3530.114.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754693AbXJBSzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 14:55:50 -0400
+Subject: [PATCH 0/3] A kernel tracing interface
+From: "David J. Wilder" <dwilder@us.ibm.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: randy.dunlap@oracle.com, hch@infradead.org, systemtap@sources.redhat.com
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 11:55:46 -0700
+Message-Id: <1191351347.31351.18.camel@lc4eb748232119.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Sure, I'll state my case:  This is a bug, but it has no affected users,
-> nor will it because the aic94xx doesn't work on non-x86 architectures by
-> reason of other longstanding bugs (and TODEVICE/FROMDEVICE only matters
+These patches provide a kernel tracing interface called "trace".
 
-False.  It fails to work on _some_ non-x86 platforms.
+(update) Updated documentation and added configuration dependency
+on KPROBES for trace sample code.
 
-	Jeff
+The motivation for "trace" is to:
+- Provide a simple set of tracing primitives that will utilize the high-
+  performance and low-overhead of relayfs for passing traces data from
+  kernel to user space.
+- Provide a common user interface for managing kernel traces.
+- Allow for binary as well as ascii trace data.
+- Incorporate features from the systemtap runtime that are
+  useful to others.
+
+Patches are against 2.6.23-rc8-mm2
+
+Summary of patches:
+[patch 1/3]  Trace code and documentation
+[patch 2/3]  Relay Reset Consumed
+[patch 3/3]  Trace sample
+
+Note: Patch 2/3 provides a service used by patch 1/3
+thus must be applied first or at the same time.
+
+Note: The following patches must be applied prior to 3/3.
+[patch 3/5] Add samples subdir
+	http://lkml.org/lkml/2007/9/28/178
+
+[patch 4/5] Linux Kernel Markers - Samples
+	http://lkml.org/lkml/2007/9/28/189
+
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
 
 
