@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXJBMbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXJBMcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbXJBMbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 08:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXJBMbl
+	id S1757847AbXJBMcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 08:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXJBMco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 08:31:41 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48864 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753119AbXJBMbk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 08:31:40 -0400
-Date: Tue, 2 Oct 2007 06:31:39 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org
-Cc: David Miller <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Make DMA-mapping more coherent
-Message-ID: <20071002123138.GR12049@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 2 Oct 2007 08:32:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43730 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbXJBMcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 08:32:43 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net>
+References: <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net> <20071001130921.29339.72876.stgit@warthog.procyon.org.uk> <20071001130958.29339.31669.stgit@warthog.procyon.org.uk> <20071001173930.GA7718@mami.zabbo.net> <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org> <20071001180601.GA9417@infradead.org> 
+To: Zach Brown <zab@zabbo.net>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, Christoph Hellwig <hch@infradead.org>,
+       viro@ftp.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and read_inode()
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Tue, 02 Oct 2007 13:32:30 +0100
+Message-ID: <11826.1191328350@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Zach Brown <zab@zabbo.net> wrote:
 
-A couple of updates haven't considered whether the documentation makes
-sense as a whole any more.  Three changes here:
+> /* haha, continuing the fine tradition of terrible names in this  api..  */
+> static inline void *PTR_PTR(void *err_ptr) {
+> 	BUG_ON(!IS_ERR(err_ptr) || !err_ptr);
+> 	return err_ptr;
+> }
 
- - Remove the reference to the "DAC Addressing for Address Space Hungry
-   Devices" section which was deleted by Jan Beulich.
- - Remove the comment about DMA_24BIT_MASK which became obsolete when
-   Tobias Klauser changed the code to actually use DMA_24BIT_MASK.
- - Remove the section "64-bit DMA and DAC cycle support" since it's
-   fully covered above, and contains a reference to the section deleted
-   by Jan.
+How about ERR_CAST() instead?  Or maybe CAST_ERR()?
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+	struct dentry *blah(...)
+	{
+		struct inode *inode;
 
-diff --git a/Documentation/DMA-mapping.txt b/Documentation/DMA-mapping.txt
-index e07f253..a7d944d 100644
---- a/Documentation/DMA-mapping.txt
-+++ b/Documentation/DMA-mapping.txt
-@@ -189,12 +189,6 @@ smaller mask as pci_set_dma_mask(). However for the rare case that a
- device driver only uses consistent allocations, one would have to
- check the return value from pci_set_consistent_dma_mask().
- 
--If your 64-bit device is going to be an enormous consumer of DMA
--mappings, this can be problematic since the DMA mappings are a
--finite resource on many platforms.  Please see the "DAC Addressing
--for Address Space Hungry Devices" section near the end of this
--document for how to handle this case.
--
- Finally, if your device can only drive the low 24-bits of
- address during PCI bus mastering you might do something like:
- 
-@@ -203,8 +197,6 @@ address during PCI bus mastering you might do something like:
- 		       "mydev: 24-bit DMA addressing not available.\n");
- 		goto ignore_this_device;
- 	}
--[Better use DMA_24BIT_MASK instead of 0x00ffffff.
--See linux/include/dma-mapping.h for reference.]
- 
- When pci_set_dma_mask() is successful, and returns zero, the PCI layer
- saves away this mask you have provided.  The PCI layer will use this
-@@ -652,18 +644,6 @@ It is planned to completely remove virt_to_bus() and bus_to_virt() as
- they are entirely deprecated.  Some ports already do not provide these
- as it is impossible to correctly support them.
- 
--		64-bit DMA and DAC cycle support
--
--Do you understand all of the text above?  Great, then you already
--know how to use 64-bit DMA addressing under Linux.  Simply make
--the appropriate pci_set_dma_mask() calls based upon your cards
--capabilities, then use the mapping APIs above.
--
--It is that simple.
--
--Well, not for some odd devices.  See the next section for information
--about that.
--
- 		Optimizing Unmap State Space Consumption
- 
- On many platforms, pci_unmap_{single,page}() is simply a nop.
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+		inode = thing(...);
+		if (IS_ERR(inode))
+			return ERR_CAST(inode);
+	}
+
+Where ERR_CAST is defined as:
+
+	static inline void *ERR_CAST(const void *error)
+	{
+		return (void *) x;
+	}
+
+David
