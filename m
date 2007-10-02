@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbXJBOME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXJBOMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbXJBOME (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 10:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXJBOLy
+	id S1752069AbXJBOMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 10:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJBOMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 10:11:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:4525 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbXJBOLw (ORCPT
+	Tue, 2 Oct 2007 10:12:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53490 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbXJBOMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 10:11:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZqnP6Ry5kK6R0o4eWZQhM78FSA3HIkD75uRaKKo3yEwQ8by8Mk/Wz3qeHLxSiC4DcwNnBXry7zQTaoOPh7QhfrnCDbBYE1Oq7704Di6ju2n9R/HugdA0OtVu5/D5y819CMxJsKPUQ8nEbFKWzAW8ihqOiGrK67UqyIAcNTLn2Ic=
-Message-ID: <b6fcc0a0710020711o49f54053h23ff183194f266a0@mail.gmail.com>
-Date: Tue, 2 Oct 2007 18:11:49 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [patch] menuconfig - lift the fs menu
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0710021549421.7130@fbirervta.pbzchgretzou.qr>
+	Tue, 2 Oct 2007 10:12:08 -0400
+Date: Tue, 2 Oct 2007 07:15:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Paul Mundt <lethal@linux-sh.org>, Kentaro Takeda <takedakn@nttdata.co.jp>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 04/15](repost) Utility functions and securityfs
+	interface for policy manipulation.
+Message-ID: <20071002141515.GA11723@kroah.com>
+References: <4701F285.5000206@nttdata.co.jp> <4701F3E4.7030901@nttdata.co.jp> <20071002080544.GA14313@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0710021549421.7130@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20071002080544.GA14313@linux-sh.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> Lift the FS menu a bit by moving filesystem-specific
-> parts into their own menu.
+On Tue, Oct 02, 2007 at 05:05:44PM +0900, Paul Mundt wrote:
+> On Tue, Oct 02, 2007 at 04:31:48PM +0900, Kentaro Takeda wrote:
+> > Common functions for TOMOYO Linux.
+> > 
+> > TOMOYO Linux uses /sys/kernel/security/tomoyo interface for configuration.
+> > 
+> This seems like a bit of an abuse of sysfs.
 
-I personally prefer fs menu as-is. There is only one reiserfs,
-only one XFS. only three ext filesystems...
+This is not sysfs, it is securityfs, big difference.
+
+> Isn't this precisely what configfs is for?
+
+Possibly, but you can do the same thing in securityfs if needed.
+
+thanks,
+
+greg k-h
