@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXJBDo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXJBEHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbXJBDo7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Oct 2007 23:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXJBDov
+	id S1752082AbXJBEHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 00:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXJBEHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Oct 2007 23:44:51 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51416
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751985AbXJBDou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Oct 2007 23:44:50 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Add Documentation/power/00-INDEX
-Date: Mon, 1 Oct 2007 22:44:46 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       pavel@suse.cz, rjw@sisk.pl
+	Tue, 2 Oct 2007 00:07:45 -0400
+Received: from mx27.mail.ru ([194.67.23.64]:5407 "EHLO mx27.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750766AbXJBEHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 00:07:45 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-api@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ACPICA: hw: Don't carry spinlock over suspend
+Date: Tue, 2 Oct 2007 08:07:36 +0400
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1430908.ZjkePZXmro";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710012244.46869.rob@landley.net>
+Message-Id: <200710020807.41325.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+--nextPart1430908.ZjkePZXmro
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Add Documentation/power/00-INDEX
+> On Sunday, 30 September 2007 20:39, Alexey Starikovskiy wrote:
+> > ACPI uses acpi_get_register() in order to get into suspend.
+> > This function is guarded by acpi_gbl_hardware_lock, which will be carri=
+ed
+> > into resume phase.
+> > At resume interrupts are enabled and first ACPI interrupt deadlocks on
+> > this lock.
+>
+> Ouch.  That might have bitten quite some people, I guess.
+>
+> > Solution seems to be to not lock register read, as there are no
+> > concurrent activity at this point.
+> >
+> > Reference: http://bugzilla.kernel.org/show_bug.cgi?id=3D7499
+> >
+> > Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+>
+> Do you think it's -stable material?
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
-All my pending 00-INDEX patches are at http://landley.net/kdocs/make/patches
+As someone who *has* been bitten by this bug - by all means.
 
- Documentation/power/00-INDEX |   34 +++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+I'd like to emphasize one more point - we were able to debug it only becaus=
+e=20
+old kernel at least displayed debug messages. Current kernel deadlocks=20
+absolutely dead (pun intended). No output to console, no indication what=20
+happens. I consider this regression. If at all possible, we should make sur=
+e=20
+that console output is available as early as possible.
 
---- /dev/null	2007-04-23 10:59:00.000000000 -0500
-+++ hg/Documentation/power/00-INDEX	2007-10-01 22:35:36.000000000 -0500
-@@ -0,0 +1,34 @@
-+00-INDEX
-+	- This file
-+basic-pm-debugging.txt
-+	- Debugging suspend and resume
-+devices.txt
-+	- How drivers interact with system-wide power management
-+drivers-testing.txt
-+	- Testing suspend and resume support in device drivers
-+freezing-of-tasks.txt
-+	- How processes and controlled during suspend
-+interface.txt
-+	- Power management user interface in /sys/power
-+notifiers.txt
-+	- Registering suspend notifiers in device drivers
-+pci.txt
-+	- How the PCI Subsystem Does Power Management
-+s2ram.txt
-+	- How to get suspend to ram working (and debug it when it isn't)
-+states.txt
-+	- System power management states
-+swsusp-and-swap-files.txt
-+	- Using swap files with software suspend (to disk)
-+swsusp-dmcrypt.txt
-+	- How to use dm-crypt and software suspend (to disk) together
-+swsusp.txt
-+	- Goals, implementation, and usage of software suspend (ACPI S3)
-+tricks.txt
-+	- How to trick software suspend (to disk) into working when it isn't
-+userland-swsusp.txt
-+	- Experimental implementation of software suspend in userspace
-+video_extension.txt
-+	- ACPI video extensions
-+video.txt
-+	- Video issues during resume from suspend
+--nextPart1430908.ZjkePZXmro
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHAcQIR6LMutpd94wRApkLAKCHk2/Wr9BQRbuExiyXNPjSvFrrWACfXUM1
+dhjBrNRh3tnl9D497S+bEFc=
+=2QT6
+-----END PGP SIGNATURE-----
+
+--nextPart1430908.ZjkePZXmro--
