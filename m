@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXJBKGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbXJBKJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbXJBKGX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 06:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXJBKGN
+	id S1753973AbXJBKJS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 06:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXJBKJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 06:06:13 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54777 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbXJBKGM (ORCPT
+	Tue, 2 Oct 2007 06:09:08 -0400
+Received: from lazybastard.de ([212.112.238.170]:46790 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXJBKJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 06:06:12 -0400
-Date: Tue, 2 Oct 2007 12:06:10 +0200
-From: Jan Kara <jack@suse.cz>
-To: David Howells <dhowells@redhat.com>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 11/30] IGET: Stop EXT2 from using iget() and read_inode()
-Message-ID: <20071002100610.GA25647@atrey.karlin.mff.cuni.cz>
-References: <20071001130921.29339.72876.stgit@warthog.procyon.org.uk> <20071001131018.29339.40931.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Oct 2007 06:09:07 -0400
+Date: Tue, 2 Oct 2007 12:04:42 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Willy Tarreau <w@1wt.eu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] printk: add KERN_CONT annotation
+Message-ID: <20071002100441.GB5361@lazybastard.org>
+References: <20070928105345.GC18163@shadowen.org> <20071001064448.GA4239@elte.hu> <20071001003007.4e90143b.akpm@linux-foundation.org> <20071002043408.GM10199@1wt.eu> <20071002051852.GC28345@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071001131018.29339.40931.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071002051852.GC28345@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> index 0079b2c..d8fb795 100644
-> --- a/fs/ext2/inode.c
-> +++ b/fs/ext2/inode.c
-...
-> +
-> +	raw_inode = ext2_get_inode(inode->i_sb, ino, &bh);
->  	if (IS_ERR(raw_inode))
->   		goto bad_inode;
-  Hmm, why don't you use the return value from raw_inode? It can be
-either -EIO or -EINVAL if 'ino' was invalid...
-  Otherwise the patch looks fine.
+On Tue, 2 October 2007 07:18:52 +0200, Ingo Molnar wrote:
+> 
+> ah, this is even nicer than the raw_printk() thing i suggested, and it 
+> also nicely documents the intention of the author. Patch attached below.
 
-								Honza
+KERN_CONT was brought up in the linux-tiny discussion.  Not sure if you
+want to get involved in that, but there may be value in adding one
+variant of KERN_CONT per debug level:
+http://lkml.org/lkml/2007/9/30/151
+
+> And i'd like to stress the principle that is followed here: in this 
+> particular case the checkpatch.pl warning is very useful, but still 
+> there are false positives. Fortunately they are so rare that it's worth 
+> annotating those few exceptions in the source. Note that the goal is 
+> still to be able to achieve 100% warning-free source code. _That_ should 
+> be the driving principle behind checkpatch.pl warnings.
+
+Thank you for working on this.  I had nearly given up on checkpatch
+before.
+
+Jörn
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+When people work hard for you for a pat on the back, you've got
+to give them that pat.
+-- Robert Heinlein
