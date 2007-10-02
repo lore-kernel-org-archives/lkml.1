@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbXJBIsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbXJBIso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbXJBIsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 04:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXJBIsK
+	id S1755797AbXJBIso (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 04:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbXJBIse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 04:48:10 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:44565
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752431AbXJBIsJ (ORCPT
+	Tue, 2 Oct 2007 04:48:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52054 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbXJBIse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 04:48:09 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Add Documentation/power/00-INDEX
-Date: Tue, 2 Oct 2007 03:48:03 -0500
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, rjw@sisk.pl
-References: <200710012244.46869.rob@landley.net> <20071002071022.GA29559@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071002071022.GA29559@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 2 Oct 2007 04:48:34 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>
+In-Reply-To: <20071002013148.18958af2.akpm@linux-foundation.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <1191313025.13204.30.camel@twins>
+	 <20071002013148.18958af2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 10:48:31 +0200
+Message-Id: <1191314911.13204.41.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710020348.03470.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 October 2007 2:10:22 am Pavel Machek wrote:
-> > +swsusp.txt
-> > +	- Goals, implementation, and usage of software suspend (ACPI S3)
->
-> But please delete (ACPI S3) remark. It is ACPI S4, if anything.
-> 								Pavel
+On Tue, 2007-10-02 at 01:31 -0700, Andrew Morton wrote:
+> On Tue, 02 Oct 2007 10:17:05 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Mon, 2007-10-01 at 14:22 -0700, Andrew Morton wrote:
+> > 
+> > > nfs-remove-congestion_end.patch
+> > > lib-percpu_counter_add.patch
+> > > lib-percpu_counter_sub.patch
+> > > lib-percpu_counter-variable-batch.patch
+> > > lib-make-percpu_counter_add-take-s64.patch
+> > > lib-percpu_counter_set.patch
+> > > lib-percpu_counter_sum_positive.patch
+> > > lib-percpu_count_sum.patch
+> > > lib-percpu_counter_init-error-handling.patch
+> > > lib-percpu_counter_init_irq.patch
+> > > mm-bdi-init-hooks.patch
+> > > mm-scalable-bdi-statistics-counters.patch
+> > > mm-count-reclaimable-pages-per-bdi.patch
+> > > mm-count-writeback-pages-per-bdi.patch
+> > 
+> > This one:
+> > > mm-expose-bdi-statistics-in-sysfs.patch
+> > 
+> > > lib-floating-proportions.patch
+> > > mm-per-device-dirty-threshold.patch
+> > > mm-per-device-dirty-threshold-warning-fix.patch
+> > > mm-per-device-dirty-threshold-fix.patch
+> > > mm-dirty-balancing-for-tasks.patch
+> > > mm-dirty-balancing-for-tasks-warning-fix.patch
+> > 
+> > And, this one:
+> > > debug-sysfs-files-for-the-current-ratio-size-total.patch
+> > 
+> > 
+> > I'm not sure polluting /sys/block/<foo>/queue/ like that is The Right
+> > Thing.
+> 
+> hm, I suppose not.  It leaves nowhere for nfs, for a start.
+> 
+> > These patches sure were handy when debugging this, but not sure
+> > they want to move to maineline.
+> > 
+> > Maybe we want /sys/bdi/<foo>/ or maybe /debug/bdi/<foo>/
+> > 
+> 
+> If you think we'll need this stuff for support/debug during 2.6.24-rcX then
+> sure - we can always take it out prior to 2.6.24-final.
+> 
+> otoh, if we're going to take that approach we might as well leave things in
+> /sys/block/<foo>/queue.
 
-I got that from Documentation/power/video.txt, which starts "Video issues with 
-S3 resume".  Is it correct in that file?
+People seem to have tested the code in various demanding scenarios (both
+-mm and the back-port to .22), so I'm fairly confident that this part
+works well (famous last words,.. I know I'll regret having said this).
 
-I've removed it from the patch in http://landley.net/kdocs/make/patches
+Also the NFS issue bothers me to no end.
 
-Thanks,
+I'll try and come up with a /sys/bdi/<foo> thing. SLUB should have some
+sysfs code I can copy from - last time I looked at doing sysfs I just
+gave up. God awful mess that is.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
