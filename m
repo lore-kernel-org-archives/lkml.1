@@ -1,165 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbXJBJDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbXJBJDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018AbXJBJDQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 05:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXJBJDB
+	id S1755059AbXJBJDa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 05:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbXJBJDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 05:03:01 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:39059 "HELO ustc.edu.cn"
+	Tue, 2 Oct 2007 05:03:03 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:39075 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751737AbXJBJDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752049AbXJBJDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Oct 2007 05:03:00 -0400
-Message-ID: <391315778.14430@ustc.edu.cn>
+Message-ID: <391315778.77181@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20071002090254.489150786@mail.ustc.edu.cn>
+Message-Id: <20071002090254.728493507@mail.ustc.edu.cn>
 References: <20071002084143.110486039@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Oct 2007 16:41:44 +0800
+Date: Tue, 02 Oct 2007 16:41:46 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Anton Altaparmakov <aia21@cantab.net>,
+       Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: Michael Rubin <mrubin@google.com>
-Subject: [PATCH 1/5] revert check_dirty_inode_list.patch
-Content-Disposition: inline; filename=revert-check_dirty_inode_list.patch
+Subject: [PATCH 3/5] writeback: fix ntfs with sb_has_dirty_inodes()
+Content-Disposition: inline; filename=nfs-dirty-inodes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Revert the check_dirty_inode_list.patch.
-I'm pretty sure the time ordering problem has gone.
+NTFS's if-condition on dirty inodes is not complete.
+Fix it with sb_has_dirty_inodes().
 
+Cc: Anton Altaparmakov <aia21@cantab.net>
+Cc: Ken Chen <kenchen@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
- fs/fs-writeback.c |   62 --------------------------------------------
- kernel/sysctl.c   |    8 -----
- 2 files changed, 1 insertion(+), 69 deletions(-)
+---
+ fs/fs-writeback.c  |   10 +++++++++-
+ fs/ntfs/super.c    |    4 ++--
+ include/linux/fs.h |    1 +
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
+--- linux-2.6.23-rc8-mm2.orig/fs/ntfs/super.c
++++ linux-2.6.23-rc8-mm2/fs/ntfs/super.c
+@@ -2381,14 +2381,14 @@ static void ntfs_put_super(struct super_
+ 	 */
+ 	ntfs_commit_inode(vol->mft_ino);
+ 	write_inode_now(vol->mft_ino, 1);
+-	if (!list_empty(&sb->s_dirty)) {
++	if (sb_has_dirty_inodes(sb)) {
+ 		const char *s1, *s2;
+ 
+ 		mutex_lock(&vol->mft_ino->i_mutex);
+ 		truncate_inode_pages(vol->mft_ino->i_mapping, 0);
+ 		mutex_unlock(&vol->mft_ino->i_mutex);
+ 		write_inode_now(vol->mft_ino, 1);
+-		if (!list_empty(&sb->s_dirty)) {
++		if (sb_has_dirty_inodes(sb)) {
+ 			static const char *_s1 = "inodes";
+ 			static const char *_s2 = "";
+ 			s1 = _s1;
+--- linux-2.6.23-rc8-mm2.orig/include/linux/fs.h
++++ linux-2.6.23-rc8-mm2/include/linux/fs.h
+@@ -1794,6 +1794,7 @@ extern int bdev_read_only(struct block_d
+ extern int set_blocksize(struct block_device *, int);
+ extern int sb_set_blocksize(struct super_block *, int);
+ extern int sb_min_blocksize(struct super_block *, int);
++extern int sb_has_dirty_inodes(struct super_block *);
+ 
+ extern int generic_file_mmap(struct file *, struct vm_area_struct *);
+ extern int generic_file_readonly_mmap(struct file *, struct vm_area_struct *);
 --- linux-2.6.23-rc8-mm2.orig/fs/fs-writeback.c
 +++ linux-2.6.23-rc8-mm2/fs/fs-writeback.c
-@@ -25,57 +25,6 @@
- #include <linux/buffer_head.h>
- #include "internal.h"
- 
--int sysctl_inode_debug __read_mostly;
--
--static int __check(struct super_block *sb, int print_stuff)
--{
--	struct list_head *cursor = &sb->s_dirty;
--	unsigned long dirtied_when = 0;
--
--	while ((cursor = cursor->prev) != &sb->s_dirty) {
--		struct inode *inode = list_entry(cursor, struct inode, i_list);
--		if (print_stuff) {
--			printk("%p:%lu\n", inode, inode->dirtied_when);
--		} else {
--			if (dirtied_when &&
--			    time_before(inode->dirtied_when, dirtied_when))
--				return 1;
--			dirtied_when = inode->dirtied_when;
--		}
--	}
--	return 0;
--}
--
--static void __check_dirty_inode_list(struct super_block *sb,
--			struct inode *inode, const char *file, int line)
--{
--	if (!sysctl_inode_debug)
--		return;
--
--	if (__check(sb, 0)) {
--		sysctl_inode_debug = 0;
--		if (inode)
--			printk("%s:%d: s_dirty got screwed up.  inode=%p:%lu\n",
--					file, line, inode, inode->dirtied_when);
--		else
--			printk("%s:%d: s_dirty got screwed up\n", file, line);
--		__check(sb, 1);
--	}
--}
--
--#define check_dirty_inode_list(sb)					\
--	do {								\
--		if (unlikely(sysctl_inode_debug))			\
--		__check_dirty_inode_list(sb, NULL, __FILE__, __LINE__);	\
--	} while (0)
--
--#define check_dirty_inode(inode)					\
--	do {								\
--		if (unlikely(sysctl_inode_debug))			\
--			__check_dirty_inode_list(inode->i_sb, inode,	\
--						__FILE__, __LINE__);	\
--	} while (0)
--
- /**
-  *	__mark_inode_dirty -	internal function
-  *	@inode: inode to mark
-@@ -174,10 +123,8 @@ void __mark_inode_dirty(struct inode *in
- 		 * reposition it (that would break s_dirty time-ordering).
- 		 */
- 		if (!was_dirty) {
--			check_dirty_inode(inode);
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &sb->s_dirty);
--			check_dirty_inode(inode);
- 		}
- 	}
- out:
-@@ -206,7 +153,6 @@ static void redirty_tail(struct inode *i
- {
- 	struct super_block *sb = inode->i_sb;
- 
--	check_dirty_inode(inode);
- 	if (!list_empty(&sb->s_dirty)) {
- 		struct inode *tail_inode;
- 
-@@ -216,7 +162,6 @@ static void redirty_tail(struct inode *i
- 			inode->dirtied_when = jiffies;
- 	}
- 	list_move(&inode->i_list, &sb->s_dirty);
--	check_dirty_inode(inode);
+@@ -208,6 +208,14 @@ static void queue_io(struct super_block 
+ 	move_expired_inodes(&sb->s_dirty, &sb->s_io, older_than_this);
  }
  
++int sb_has_dirty_inodes(struct super_block *sb)
++{
++	return !list_empty(&sb->s_dirty) ||
++	       !list_empty(&sb->s_io) ||
++	       !list_empty(&sb->s_more_io);
++}
++EXPORT_SYMBOL(sb_has_dirty_inodes);
++
  /*
-@@ -430,11 +375,8 @@ int generic_sync_sb_inodes(struct super_
- 
- 	spin_lock(&inode_lock);
- 
--	if (!wbc->for_kupdate || list_empty(&sb->s_io)) {
--		check_dirty_inode_list(sb);
-+	if (!wbc->for_kupdate || list_empty(&sb->s_io))
- 		list_splice_init(&sb->s_dirty, &sb->s_io);
--		check_dirty_inode_list(sb);
--	}
- 
- 	while (!list_empty(&sb->s_io)) {
- 		int err;
-@@ -499,10 +441,8 @@ int generic_sync_sb_inodes(struct super_
- 		if (!ret)
- 			ret = err;
- 		if (wbc->sync_mode == WB_SYNC_HOLD) {
--			check_dirty_inode(inode);
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &sb->s_dirty);
--			check_dirty_inode(inode);
- 		}
- 		if (current_is_pdflush())
- 			writeback_release(bdi);
---- linux-2.6.23-rc8-mm2.orig/kernel/sysctl.c
-+++ linux-2.6.23-rc8-mm2/kernel/sysctl.c
-@@ -1206,14 +1206,6 @@ static struct ctl_table fs_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
--	{
--		.ctl_name	= CTL_UNNUMBERED,
--		.procname	= "inode_debug",
--		.data		= &sysctl_inode_debug,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
- #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
+  * Write a single inode's dirty pages and inode data out to disk.
+  * If `wait' is set, wait on the writeout.
+@@ -522,7 +530,7 @@ int writeback_inodes(struct writeback_co
+ restart:
+ 	sb = sb_entry(super_blocks.prev);
+ 	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
+-		if (!list_empty(&sb->s_dirty) || !list_empty(&sb->s_io)) {
++		if (sb_has_dirty_inodes(sb)) {
+ 			/* we're making our own get_super here */
+ 			sb->s_count++;
+ 			spin_unlock(&sb_lock);
 
 -- 
