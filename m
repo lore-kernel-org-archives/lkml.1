@@ -1,606 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbXJBNgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbXJBNg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbXJBNgO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbXJBNfw
+	id S1757922AbXJBNg2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbXJBNgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:35:52 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:46198 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755618AbXJBNfs (ORCPT
+	Tue, 2 Oct 2007 09:36:07 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:41249 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757118AbXJBNgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:35:48 -0400
-Message-ID: <4701F36D.1040506@nttdata.co.jp>
-Date: Tue, 02 Oct 2007 16:29:49 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-CC: chrisw@sous-sol.org
-Subject: [TOMOYO 02/15](repost) Data structures and prototypes definition.
-References: <4701F285.5000206@nttdata.co.jp>
-In-Reply-To: <4701F285.5000206@nttdata.co.jp>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2007 07:29:50.0556 (UTC) FILETIME=[047F81C0:01C804C6]
+	Tue, 2 Oct 2007 09:36:05 -0400
+Subject: Re: A unresponsive file system can hang all I/O in the system on
+	linux-2.6.23-rc6 (dirty_thresh problem?)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070928121642.56a380ce.akpm@linux-foundation.org>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
+	 <1190998853.6702.17.camel@heimdal.trondhjem.org>
+	 <20070928114930.2c201324.akpm@linux-foundation.org>
+	 <1191005339.18147.89.camel@lappy>
+	 <20070928121642.56a380ce.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-COaR9kIAkXLlOi9LeO4d"
+Date: Tue, 02 Oct 2007 15:36:01 +0200
+Message-Id: <1191332161.13204.70.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Data structures and prototype defitions for TOMOYO Linux.
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+--=-COaR9kIAkXLlOi9LeO4d
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2007-09-28 at 12:16 -0700, Andrew Morton wrote:
+
+> (Searches for the lockstat documentation)
+>=20
+> Did we forget to do that?
+
+yeah,...
+
+/me quickly whips up something
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- security/tomoyo/include/realpath.h |   44 +++
- security/tomoyo/include/tomoyo.h   |  517 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 561 insertions(+)
+ Documentation/lockstat.txt |  119 ++++++++++++++++++++++++++++++++++++++++=
++++++
+ 1 file changed, 119 insertions(+)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/include/realpath.h	2007-10-02 11:26:21.000000000 +0900
-@@ -0,0 +1,44 @@
-+/*
-+ * security/tomoyo/include/realpath.h
-+ *
-+ * Get the canonicalized absolute pathnames.
-+ * The basis for TOMOYO.
-+ */
-+
-+#ifndef _TMY_REALPATH_H
-+#define _TMY_REALPATH_H
-+
-+struct path_info;
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+int tmy_realpath_dentry2(struct dentry *dentry,
-+			 struct vfsmount *mnt,
-+			 char *newname,
-+			 int newname_len);
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+/* These functions use tmy_alloc(), so caller must tmy_free() */
-+/* if these functions didn't return NULL. */
-+char *tmy_realpath(const char *pathname);
-+char *tmy_realpath_nofollow(const char *pathname);
-+char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt);
-+
-+/* Allocate memory for structures. */
-+/* The RAM is chunked, so NEVER try to kfree() the returned pointer. */
-+void *tmy_alloc_element(const unsigned int size);
-+
-+/* Get used RAM size for tmy_alloc_elements(). */
-+unsigned int tmy_get_memory_used_for_elements(void);
-+
-+/* Keep the given name on the RAM. */
-+/* The RAM is shared, so NEVER try to modify or kfree() the returned name. */
-+const struct path_info *tmy_save_name(const char *name);
-+
-+/* Get used RAM size for tmy_save_name(). */
-+unsigned int tmy_get_memory_used_for_save_name(void);
-+
-+unsigned int tmy_get_memory_used_for_dynamic(void);
-+char *sysctlpath_from_table(struct ctl_table *table);
-+extern void tmy_realpath_init(void);
-+
-+#endif
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/include/tomoyo.h	2007-10-02 11:26:21.000000000 +0900
-@@ -0,0 +1,517 @@
-+/*
-+ * security/tomoyo/include/tomoyo.h
-+ *
-+ * Header for TOMOYO Linux.
-+ */
-+
-+#ifndef _TOMOYO_H
-+#define _TOMOYO_H
-+
-+#define TOMOYO_VERSION_CODE "2.1.0-rc4"
-+
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/utime.h>
-+#include <linux/file.h>
-+#include <linux/smp_lock.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/poll.h>
-+#include <linux/uaccess.h>
-+#include <stdarg.h>
-+#include <linux/delay.h>
-+
-+extern struct rw_semaphore namespace_sem;
-+extern struct semaphore domain_acl_lock;
-+extern int sbin_init_started;
-+
-+struct tmy_security {
-+	struct domain_info *domain;
-+	struct domain_info *prev_domain;
-+	u32 flags;
-+};
-+
-+#define TMY_SECURITY ((struct tmy_security *) current->security)
-+
-+struct path_info {
-+	const char *name;
-+	u32 hash;        /* = full_name_hash(name, strlen(name)) */
-+	u16 total_len;   /* = strlen(name)                       */
-+	u16 const_len;   /* = tmy_const_part_length(name)        */
-+	u8 is_dir;       /* = tmy_strendswith(name, "/")         */
-+	u8 is_patterned; /* = PathContainsPattern(name)          */
-+	u16 depth;       /* = tmy_path_depth(name)               */
-+};
-+
-+#define TMY_MAX_PATHNAME_LEN 4000
-+
-+struct group_member {
-+	struct group_member *next;
-+	const struct path_info *member_name;
-+	u8 is_deleted;
-+};
-+
-+struct group_entry {
-+	struct group_entry *next;
-+	const struct path_info *group_name;
-+	struct group_member *first_member;
-+};
-+
-+
-+struct mini_stat {
-+	uid_t uid;
-+	gid_t gid;
-+	ino_t ino;
-+};
-+struct dentry;
-+struct vfsmount;
-+struct obj_info {
-+	u8 validate_done;
-+	u8 path1_valid;
-+	u8 path1_parent_valid;
-+	u8 path2_parent_valid;
-+	struct dentry *path1_dentry;
-+	struct vfsmount *path1_vfsmnt;
-+	struct dentry *path2_dentry;
-+	struct vfsmount *path2_vfsmnt;
-+	struct mini_stat path1_stat;
-+	/* I don't handle path2_stat for rename operation. */
-+	struct mini_stat path1_parent_stat;
-+	struct mini_stat path2_parent_stat;
-+};
-+struct condition_list;
-+
-+struct linux_binprm;
-+struct pt_regs;
-+
-+/*
-+ *  TOMOYO uses the following structures.
-+ *  Memory allocated for these structures are never kfree()ed.
-+ *  Since no locks are used for reading,
-+ *  assignment must be performed atomically.
-+ */
-+
-+/************************  The structure for domains.  ************************/
-+
-+struct acl_info {
-+	struct acl_info *next;
-+	const struct condition_list *cond;
-+	u8 type;
-+	u8 is_deleted;
-+} __attribute__((__packed__));
-+
-+struct domain_info {
-+	struct domain_info *next;           /* NULL if none. */
-+	struct acl_info *first_acl_ptr;     /* NULL if none. */
-+	const struct path_info *domainname; /* Never NULL.   */
-+	u8 profile;
-+	u8 is_deleted;
-+	u8 quota_warned;
-+};
-+
-+#define TMY_MAX_PROFILES 256
-+
-+struct file_acl {
-+	/* type = TMY_TYPE_FILE_ACL */
-+	struct acl_info head;
-+	u8 perm;
-+	u8 u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct group_entry *group;
-+	} u;
-+};
-+
-+struct argv0_acl {
-+	/* type = TMY_TYPE_ARGV0_ACL */
-+	struct acl_info head;
-+	const struct path_info *filename; /* Pointer to single pathname. */
-+	const struct path_info *argv0;    /* strrchr(argv[0], '/') + 1   */
-+};
-+
-+struct single_acl {
-+	/* type = TMY_TYPE_* */
-+	struct acl_info head;
-+	u8 u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct group_entry *group;
-+	} u;
-+};
-+
-+struct double_acl {
-+	/* type = TMY_TYPE_RENAME_ACL or TMY_TYPE_LINK_ACL, */
-+	struct acl_info head;
-+	u8 u1_is_group;
-+	u8 u2_is_group;
-+	union {
-+		const struct path_info *filename1;
-+		const struct group_entry *group1;
-+	} u1;
-+	union {
-+		const struct path_info *filename2;
-+		const struct group_entry *group2;
-+	} u2;
-+};
-+
-+struct addr_group_member {
-+	struct addr_group_member *next;
-+	union {
-+		u32 ipv4;    /* Host byte order    */
-+		u16 ipv6[8]; /* Network byte order */
-+	} min, max;
-+	u8 is_deleted;
-+	u8 is_ipv6;
-+};
-+
-+struct addr_group_entry {
-+	struct addr_group_entry *next;
-+	const struct path_info *group_name;
-+	struct addr_group_member *first_member;
-+};
-+
-+#define TMY_TYPE_ADDRESS_GROUP 0
-+#define TMY_TYPE_IPv4          1
-+#define TMY_TYPE_IPv6          2
-+
-+struct net_acl {
-+	/* type = TYPE_IP_NETWORK_ACL, */
-+	struct acl_info head;
-+	u8 operation_type;
-+	u8 record_type;
-+	union {
-+		struct {
-+			u32 min;
-+			u32 max;
-+		} ipv4;
-+		struct {
-+			u16 min[8];
-+			u16 max[8];
-+		} ipv6;
-+		const struct addr_group_entry *group;
-+	} u;
-+	u16 min_port;           /* Start of port number range. */
-+	u16 max_port;           /* End of port number range.   */
-+};
-+
-+struct signal_acl {
-+	/* type = TYPE_SIGNAL_ACL */
-+	struct acl_info head;
-+	u16 sig;
-+	/* Pointer to destination pattern.            */
-+	const struct path_info *domainname;
-+};
-+
-+/*************************  Keywords for ACLs.  *************************/
-+
-+#define TMY_AGGREGATOR               	"aggregator "
-+#define TMY_AGGREGATOR_LEN           	(sizeof(TMY_AGGREGATOR) - 1)
-+#define TMY_ALIAS                    	"alias "
-+#define TMY_ALIAS_LEN                	(sizeof(TMY_ALIAS) - 1)
-+#define TMY_ALLOW_READ               	"allow_read "
-+#define TMY_ALLOW_READ_LEN           	(sizeof(TMY_ALLOW_READ) - 1)
-+#define TMY_DELETE                   	"delete "
-+#define TMY_DELETE_LEN               	(sizeof(TMY_DELETE) - 1)
-+#define TMY_DENY_REWRITE             	"deny_rewrite "
-+#define TMY_DENY_REWRITE_LEN         	(sizeof(TMY_DENY_REWRITE) - 1)
-+#define TMY_FILE_PATTERN             	"file_pattern "
-+#define TMY_FILE_PATTERN_LEN         	(sizeof(TMY_FILE_PATTERN) - 1)
-+#define TMY_INITIALIZE_DOMAIN        	"initialize_domain "
-+#define TMY_INITIALIZE_DOMAIN_LEN    	(sizeof(TMY_INITIALIZE_DOMAIN) - 1)
-+#define TMY_KEEP_DOMAIN              	"keep_domain "
-+#define TMY_KEEP_DOMAIN_LEN          	(sizeof(TMY_KEEP_DOMAIN) - 1)
-+#define TMY_NO_INITIALIZE_DOMAIN     	"no_initialize_domain "
-+#define TMY_NO_INITIALIZE_DOMAIN_LEN 	(sizeof(TMY_NO_INITIALIZE_DOMAIN) - 1)
-+#define TMY_NO_KEEP_DOMAIN           	"no_keep_domain "
-+#define TMY_NO_KEEP_DOMAIN_LEN       	(sizeof(TMY_NO_KEEP_DOMAIN) - 1)
-+#define TMY_PATH_GROUP               	"path_group "
-+#define TMY_PATH_GROUP_LEN           	(sizeof(TMY_PATH_GROUP) - 1)
-+#define TMY_SELECT                   	"select "
-+#define TMY_SELECT_LEN               	(sizeof(TMY_SELECT) - 1)
-+#define TMY_UNDELETE                 	"undelete "
-+#define TMY_UNDELETE_LEN             	(sizeof(TMY_UNDELETE) - 1)
-+
-+#define TMY_ALLOW_MOUNT                 "allow_mount "
-+#define TMY_ALLOW_MOUNT_LEN             (sizeof(TMY_ALLOW_MOUNT) - 1)
-+#define TMY_DENY_UNMOUNT                "deny_unmount "
-+#define TMY_DENY_UNMOUNT_LEN            (sizeof(TMY_DENY_UNMOUNT) - 1)
-+#define TMY_ALLOW_PIVOT_ROOT            "allow_pivot_root "
-+#define TMY_ALLOW_PIVOT_ROOT_LEN        (sizeof(TMY_ALLOW_PIVOT_ROOT) - 1)
-+
-+#define TMY_USE_PROFILE "use_profile "
-+
-+#define TMY_ROOT_NAME 		"<kernel>"
-+#define TMY_ROOT_NAME_LEN 	(sizeof(TMY_ROOT_NAME) - 1)
-+
-+#define TMY_ALLOW_ARGV0         "allow_argv0 "
-+#define TMY_ALLOW_ARGV0_LEN     (sizeof(TMY_ALLOW_ARGV0) - 1)
-+
-+#define TMY_ADDRESS_GROUP       "address_group "
-+#define TMY_ADDRESS_GROUP_LEN   (sizeof(TMY_ADDRESS_GROUP) - 1)
-+#define TMY_ALLOW_NETWORK       "allow_network "
-+#define TMY_ALLOW_NETWORK_LEN   (sizeof(TMY_ALLOW_NETWORK) - 1)
-+
-+#define TMY_ALLOW_SIGNAL        "allow_signal "
-+#define TMY_ALLOW_SIGNAL_LEN    (sizeof(TMY_ALLOW_SIGNAL) - 1)
-+
-+/********************  Index numbers for Access Controls.  ********************/
-+
-+#define TMY_COMMENT              0
-+#define TMY_MAC_FOR_FILE         1
-+#define TMY_MAC_FOR_ARGV0        2
-+#define TMY_MAC_FOR_NETWORK      3
-+#define TMY_MAC_FOR_SIGNAL       4
-+#define TMY_DENY_CONCEAL_MOUNT   5
-+#define TMY_RESTRICT_MOUNT       6
-+#define TMY_RESTRICT_UMOUNT      7
-+#define TMY_RESTRICT_PIVOT_ROOT  8
-+#define TMY_MAX_ACCEPT_ENTRY     9
-+#define TMY_AUDIT_GRANT         10
-+#define TMY_AUDIT_REJECT        11
-+#define TMY_ALLOW_ENFORCE_GRACE 12
-+#define TMY_MAX_CONTROL_INDEX   13
-+
-+#define TMY_NETWORK_ACL_UDP_BIND    0
-+#define TMY_NETWORK_ACL_UDP_CONNECT 1
-+#define TMY_NETWORK_ACL_TCP_BIND    2
-+#define TMY_NETWORK_ACL_TCP_LISTEN  3
-+#define TMY_NETWORK_ACL_TCP_CONNECT 4
-+#define TMY_NETWORK_ACL_TCP_ACCEPT  5
-+#define TMY_NETWORK_ACL_RAW_BIND    6
-+#define TMY_NETWORK_ACL_RAW_CONNECT 7
-+
-+/********************  Index numbers for updates counter.  ********************/
-+
-+#define TMY_UPDATE_DOMAINPOLICY    0
-+#define TMY_UPDATE_SYSTEMPOLICY    1
-+#define TMY_UPDATE_EXCEPTIONPOLICY 2
-+#define TMY_UPDATE_PROFILE         3
-+#define TMY_UPDATE_QUERY           4
-+#define TMY_UPDATE_MANAGER         5
-+#define TMY_MAX_UPDATES_COUNTER    6
-+
-+/***********************  Indexes for /proc interfaces.  **********************/
-+
-+#define TMY_POLICY_DOMAINPOLICY     0
-+#define TMY_POLICY_SYSTEMPOLICY     1
-+#define TMY_POLICY_EXCEPTIONPOLICY  2
-+#define TMY_POLICY_DOMAIN_STATUS    3
-+#define TMY_INFO_PROCESS_STATUS     4
-+#define TMY_INFO_MEMINFO            5
-+#define TMY_INFO_SELFDOMAIN         6
-+#define TMY_PROFILE                 7
-+#define TMY_POLICY_QUERY            8
-+#define TMY_POLICY_MANAGER          9
-+#define TMY_INFO_UPDATESCOUNTER    10
-+#define TMY_VERSION                11
-+
-+/********************  The structure for /proc interfaces.  *******************/
-+
-+struct io_buffer {
-+	int (*read) (struct io_buffer *);
-+	struct semaphore read_sem;
-+	int (*write) (struct io_buffer *);
-+	struct semaphore write_sem;
-+	int (*poll) (struct file *file, poll_table *wait);
-+	void *read_var1;              /* The position currently reading from. */
-+	void *read_var2;              /* Extra variables for reading.         */
-+	struct domain_info *write_var1;	 /* The position currently writing to.*/
-+	int read_step;                /* The step for reading.                */
-+	char *read_buf;               /* Buffer for reading.                  */
-+	int read_eof;                 /* EOF flag for reading.                */
-+	int read_avail;               /* Bytes available for reading.         */
-+	int readbuf_size;             /* Size of read buffer.                 */
-+	char *write_buf;              /* Buffer for writing.                  */
-+	int write_avail;              /* Bytes available for writing.         */
-+	int writebuf_size;            /* Size of write buffer.                */
-+};
-+
-+/*************************  PROTOTYPES  *************************/
-+
-+char *tmy_find_condition_part(char *data);
-+const struct condition_list *tmy_assign_condition(const char *condition);
-+int tmy_check_condition(const struct condition_list *ptr,
-+	struct obj_info *obj);
-+int tmy_dump_condition(struct io_buffer *head,
-+	const struct condition_list *ptr);
-+const char *tmy_get_exe(void);
-+const char *tmy_acltype2keyword(const unsigned int acl_type);
-+
-+int tmy_mount_perm(char *dev_name,
-+		   char *dir_name,
-+		   char *type,
-+		   unsigned long flags);
-+int tmy_conceal_mount(struct nameidata *nd);
-+int tmy_umount_perm(struct vfsmount *mnt);
-+int tmy_add_mount_policy(char *data, const u8 is_delete);
-+int tmy_read_mount_policy(struct io_buffer *head);
-+int tmy_add_no_umount_policy(char *data, const u8 is_delete);
-+int tmy_read_no_umount_policy(struct io_buffer *head);
-+int tmy_pivot_root_perm(struct nameidata *old_nd,
-+			struct nameidata *new_nd);
-+int tmy_add_pivot_root_policy(char *data, const u8 is_delete);
-+int tmy_read_pivot_root_policy(struct io_buffer *head);
-+
-+int tmy_add_aggregator_policy(char *data, const u8 is_delete);
-+int tmy_add_addr_group_policy(char *data, const u8 is_delete);
-+int tmy_add_alias_policy(char *data, const u8 is_delete);
-+int tmy_add_argv0_policy(char *data,
-+			 struct domain_info *domain,
-+			 const struct condition_list *cond,
-+			 const u8 is_delete);
-+int tmy_add_acl(struct acl_info *ptr,
-+		struct domain_info *domain,
-+		struct acl_info *new_ptr);
-+int tmy_add_domain_initializer_policy(char *data,
-+				      const u8 is_not,
-+				      const u8 is_delete);
-+int tmy_add_domain_keeper_policy(char *data,
-+				 const u8 is_not,
-+				 const u8 is_delete);
-+int tmy_file_perm(const char *filename0, const u8 perm, const char *operation);
-+int tmy_add_file_policy(char *data,
-+			struct domain_info *domain,
-+			const struct condition_list *cond,
-+			const u8 is_delete);
-+int tmy_add_globally_readable_policy(char *data, const u8 is_delete);
-+int tmy_add_group_policy(char *data, const u8 is_delete);
-+int tmy_add_network_policy(char *data,
-+			   struct domain_info *domain,
-+			   const struct condition_list *cond,
-+			   const u8 is_delete);
-+int tmy_add_no_rewrite_policy(char *pattern, const u8 is_delete);
-+int tmy_add_pattern_policy(char *data, const u8 is_delete);
-+int tmy_supervisor(const char *fmt, ...)
-+	__attribute__((format(printf, 1, 2)));
-+
-+int tmy_del_acl(struct acl_info *ptr);
-+int tmy_delete_domain(char *data);
-+int tmy_is_correct_domain(const unsigned char *domainname,
-+			  const char *function);
-+int tmy_correct_path(const char *filename,
-+		     const int start_type,
-+		     const int pattern_type,
-+		     const int end_type,
-+		     const char *function);
-+int tmy_is_domain_def(const unsigned char *buffer);
-+int tmy_path_match(const struct path_info *pathname0,
-+		   const struct path_info *pattern0);
-+int tmy_read_aggregator_policy(struct io_buffer *head);
-+int tmy_read_alias_policy(struct io_buffer *head);
-+int tmy_read_domain_initializer_policy(struct io_buffer *head);
-+int tmy_read_domain_keeper_policy(struct io_buffer *head);
-+int tmy_read_globally_readable_policy(struct io_buffer *head);
-+int tmy_read_group_policy(struct io_buffer *head);
-+int tmy_read_no_rewrite_policy(struct io_buffer *head);
-+int tmy_read_pattern_policy(struct io_buffer *head);
-+int tmy_read_addr_group_policy(struct io_buffer *head);
-+int tmy_argv0_perm(const struct path_info *filename, const char *argv0);
-+int tmy_network_listen_acl(const u8 is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_connect_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_bind_acl(const u8 is_ipv6,
-+			 const int sock_type,
-+			 const u8 *address,
-+			 const u16 port);
-+int tmy_network_sendmsg_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_accept_acl(const u8 is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_recvmsg_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+
-+int tmy_signal_acl(int sig, int pid);
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const u8 is_delete);
-+
-+char *tmy_init_audit_log(int *len);
-+int tmy_write_audit_log(char *log, const u8 is_granted, const u8 is_enforce);
-+int tmy_acltype2paths(const unsigned int acl_type);
-+int tmy_io_printf(struct io_buffer *head, const char *fmt, ...)
-+	__attribute__((format(printf, 2, 3)));
-+struct domain_info *tmy_find_domain(const char *domainname);
-+struct domain_info *tmy_new_domain(const char *domainname, const u8 profile);
-+struct domain_info *tmy_undelete_domain(const char *domainname0);
-+u8 tmy_accept(const unsigned int index,
-+	      struct domain_info * const domain);
-+u8 tmy_enforce(const unsigned int index);
-+unsigned int tmy_flags(const unsigned int index);
-+unsigned int tmy_audit_grant(void);
-+unsigned int tmy_audit_reject(void);
-+void tmy_update_counter(const unsigned char index);
-+void *tmy_alloc(const size_t size);
-+void tmy_free(const void *p);
-+void tmy_fill_path_info(struct path_info *ptr);
-+
-+static inline int tmy_pathcmp(const struct path_info *a,
-+			      const struct path_info *b)
-+{
-+	return a->hash != b->hash || strcmp(a->name, b->name);
-+}
-+
-+extern struct domain_info KERNEL_DOMAIN;
-+void tmy_load_policy(const char *filename);
-+int tmy_find_next_domain(struct linux_binprm *,
-+			 struct domain_info **);
-+/*void tmy_proc_init(void);*/
-+
-+struct path_info;
-+
-+int tmy_exec_perm(const struct path_info *filename, struct file *filp);
-+/* Check whether the given dentry is allowed to read/write/execute. */
-+int tmy_open_perm(struct dentry *dentry, struct vfsmount *mnt, const int flag);
-+/* Check whether the given dentry is allowed to write. */
-+int tmy_single_write_perm(const unsigned int operation,
-+			  struct dentry *dentry,
-+			  struct vfsmount *mnt);
-+int tmy_double_write_perm(const unsigned int operation,
-+			  struct dentry *dentry1,
-+			  struct vfsmount *mnt1,
-+			  struct dentry *dentry2,
-+			  struct vfsmount *mnt2);
-+int tmy_rewrite_perm(struct file *filp);
-+
-+struct inode;
-+
-+/********************  Index numbers for Access Controls.  ********************/
-+
-+#define TMY_TYPE_CREATE_ACL       0
-+#define TMY_TYPE_UNLINK_ACL       1
-+#define TMY_TYPE_MKDIR_ACL        2
-+#define TMY_TYPE_RMDIR_ACL        3
-+#define TMY_TYPE_MKFIFO_ACL       4
-+#define TMY_TYPE_MKSOCK_ACL       5
-+#define TMY_TYPE_MKBLOCK_ACL      6
-+#define TMY_TYPE_MKCHAR_ACL       7
-+#define TMY_TYPE_TRUNCATE_ACL     8
-+#define TMY_TYPE_SYMLINK_ACL      9
-+#define TMY_TYPE_LINK_ACL        10
-+#define TMY_TYPE_RENAME_ACL      11
-+#define TMY_TYPE_REWRITE_ACL     12
-+
-+#define TMY_TYPE_FILE_ACL    	100
-+#define TMY_TYPE_ARGV0_ACL      101
-+#define TMY_TYPE_IP_NETWORK_ACL 103
-+#define TMY_TYPE_SIGNAL_ACL     104
-+
-+#define TMY_CHECK_READ_FOR_OPEN_EXEC 1
-+
-+char *tmy_print_ipv6(char *buffer, const int buffer_len, const u16 *ip);
-+const char *tmy_network2keyword(const unsigned int operation);
-+
-+/* to check "if task.parent.pid" condition. */
-+extern asmlinkage long sys_getppid(void);
-+
-+#endif
+Index: linux-2.6/Documentation/lockstat.txt
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- /dev/null
++++ linux-2.6/Documentation/lockstat.txt
+@@ -0,0 +1,119 @@
++
++LOCK STATISTICS
++
++- WHAT
++
++As the name suggests, it provides statistics on locks.
++
++- WHY
++
++Because things like lock contention can severely impact performance.
++
++- HOW
++
++Lockdep already has hooks in the lock functions and maps lock instances to
++lock classes. We build on that. The graph below shows the relation between
++the lock functions and the various hooks therein.
++
++        __acquire
++            |
++           lock _____
++            |        \
++            |    __contended
++            |         |
++            |       <wait>
++            | _______/
++            |/
++            |
++       __acquired
++            |
++            .
++          <hold>
++            .
++            |
++       __release
++            |
++         unlock
++
++lock, unlock	- the regular lock functions
++__*		- the hooks
++<> 		- states
++
++With these hooks we provide the following statistics:
++
++ con-bounces		- number of lock contention that involved x-cpu data
++ contentions            - number of lock acquisitions that had to wait
++ wait time min          - shortest (non 0) time we ever had to wait for a =
+lock
++           max          - longest time we ever had to wait for a lock
++           total        - total time we spend waiting on this lock
++ acq-bounes             - number of lock acquisitions that involved x-cpu =
+data
++ acquisitions		- number of times we took the lock
++ hold time min		- shortest (non 0) time we ever held the lock
++           max		- longest time we ever held the lock
++           total	- total time this lock was held
++
++From these number various other statistics can be derived, such as:
++
++ hold time average =3D hold time total / acquisitions
++
++These numbers are gathered per lock class, per read/write state (when
++applicable).
++
++It also tracks (4) contention points per class. A contention point is a ca=
+ll
++site that had to wait on lock acquisition.
++
++ - USAGE
++
++Look at the current lock statistics:
++
++(line numbers not part of actual output, done for clarity in the explanati=
+on below)
++
++# less /proc/lock_stat
++
++01 lock_stat version 0.2
++02 -----------------------------------------------------------------------=
+---------------------------------------------------------------------------=
+---------------------------------------------
++03                               class name    con-bounces    contentions =
+  waittime-min   waittime-max waittime-total    acq-bounces   acquisitions =
+  holdtime-min   holdtime-max holdtime-total
++04 -----------------------------------------------------------------------=
+---------------------------------------------------------------------------=
+---------------------------------------------
++05
++06               &inode->i_data.tree_lock-W:            15          21657 =
+          0.18     1093295.30 11547131054.85             58          10415 =
+          0.16          87.51        6387.60
++07               &inode->i_data.tree_lock-R:             0              0 =
+          0.00           0.00           0.00          23302         231198 =
+          0.25           8.45       98023.38
++08               --------------------------
++09                 &inode->i_data.tree_lock              0          [<ffff=
+ffff8027c08f>] add_to_page_cache+0x5f/0x190
++10
++11 .......................................................................=
+...........................................................................=
+.............................................
++12
++13                              dcache_lock:          1037           1161 =
+          0.38          45.32         774.51           6611         243371 =
+          0.15         306.48       77387.24
++14                              -----------
++15                              dcache_lock            180          [<ffff=
+ffff802c0d7e>] sys_getcwd+0x11e/0x230
++16                              dcache_lock            165          [<ffff=
+ffff802c002a>] d_alloc+0x15a/0x210
++17                              dcache_lock             33          [<ffff=
+ffff8035818d>] _atomic_dec_and_lock+0x4d/0x70
++18                              dcache_lock              1          [<ffff=
+ffff802beef8>] shrink_dcache_parent+0x18/0x130
++
++This except shows the first two lock class statistics. Line 01 shows the o=
+utput
++version - each time the format changes this will be updated. Line 02-04 sh=
+ow
++the header with column descriptions. Lines 05-10 and 13-18 show the actual
++statistics. These statistics come in two parts; the actual stats separated=
+ by a
++short separator (line 08, 14) from the contention points.
++
++The first lock (05-10) is a read/write lock, and shows two lines above the
++short separator. The contention points don't match the column descriptors,
++they have two: contentions and [<IP>] symbol.
++
++
++View the top contending locks:
++
++# grep : /proc/lock_stat | head
++              &inode->i_data.tree_lock-W:            15          21657    =
+       0.18     1093295.30 11547131054.85             58          10415    =
+       0.16          87.51        6387.60
++              &inode->i_data.tree_lock-R:             0              0    =
+       0.00           0.00           0.00          23302         231198    =
+       0.25           8.45       98023.38
++                             dcache_lock:          1037           1161    =
+       0.38          45.32         774.51           6611         243371    =
+       0.15         306.48       77387.24
++                         &inode->i_mutex:           161            286 184=
+46744073709       62882.54     1244614.55           3653          20598 184=
+46744073709       62318.60     1693822.74
++                         &zone->lru_lock:            94             94    =
+       0.53           7.33          92.10           4366          32690    =
+       0.29          59.81       16350.06
++              &inode->i_data.i_mmap_lock:            79             79    =
+       0.40           3.77          53.03          11779          87755    =
+       0.28         116.93       29898.44
++                        &q->__queue_lock:            48             50    =
+       0.52          31.62          86.31            774          13131    =
+       0.17         113.08       12277.52
++                        &rq->rq_lock_key:            43             47    =
+       0.74          68.50         170.63           3706          33929    =
+       0.22         107.99       17460.62
++                      &rq->rq_lock_key#2:            39             46    =
+       0.75           6.68          49.03           2979          32292    =
+       0.17         125.17       17137.63
++                         tasklist_lock-W:            15             15    =
+       1.45          10.87          32.70           1201           7390    =
+       0.58          62.55       13648.47
++
++Clear the statistics:
++
++# echo 0 > /proc/lock_stat
 
+
+--=-COaR9kIAkXLlOi9LeO4d
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHAklBXA2jU0ANEf4RAktwAKCSNxkfLpjgg/UNZag+1ReosAWQFwCfVHi8
+dmBGueV5x84EAQQthbe2IAQ=
+=UDjY
+-----END PGP SIGNATURE-----
+
+--=-COaR9kIAkXLlOi9LeO4d--
 
