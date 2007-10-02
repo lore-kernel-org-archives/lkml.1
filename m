@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbXJBT1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbXJBTab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbXJBT1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 15:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbXJBT1H
+	id S1756203AbXJBTab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 15:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXJBTaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 15:27:07 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:59093 "EHLO smtp.gentoo.org"
+	Tue, 2 Oct 2007 15:30:24 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34779 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752519AbXJBT1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 15:27:06 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: linuxsh-dev@lists.sourceforge.net
-Subject: Re: [PATCH] Fix SH DMA API so it works with PVR cascade
-Date: Tue, 2 Oct 2007 15:26:35 -0400
-User-Agent: KMail/1.9.7
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>
-References: <1191348942.12347.7.camel@localhost.localdomain>
-In-Reply-To: <1191348942.12347.7.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart22499953.PIsfBEtFuu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710021526.37029.vapier@gentoo.org>
+	id S1753177AbXJBTaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 15:30:23 -0400
+Date: Tue, 2 Oct 2007 12:30:50 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: -rt scheduling: wakeup bug?
+Message-ID: <20071002193050.GB3162@monkey.ibm.com>
+References: <20071001221519.GA20671@monkey.ibm.com> <20071002050632.GB28345@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071002050632.GB28345@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart22499953.PIsfBEtFuu
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+On Tue, Oct 02, 2007 at 07:06:32AM +0200, Ingo Molnar wrote:
+> * Mike Kravetz <kravetz@us.ibm.com> wrote:
+> > 
+> > My observations/debugging/conclusions are based on an earlier version 
+> > of the code.  It appears the same code/issue still exists in the most 
+> > version.  But, I have not not done any work with the latest version.
+> 
+> I believe you are right - nice catch of this very nontrivial bug! The 
+> patch below is against .23-rc - do you think this fix (of moving the rt 
+> wakeup sequence to after the activate_task()) is adequate?
 
-T24gVHVlc2RheSAwMiBPY3RvYmVyIDIwMDcsIEFkcmlhbiBNY01lbmFtaW4gd3JvdGU6Cj4gK6Cg
-oKCgoKAvKiBIYW5kbGUgRHJlYW1jYXN0IFBWUiBjYXNjYWRlICovCj4gK6CgoKCgoKBpZiAobWFj
-aF9pc19kcmVhbWNhc3QoKSAmJiBjaGFuLT5jaGFuID09IFBWUjJfQ0FTQ0FERV9DSEFOKQo+ICug
-oKCgoKCgewo+ICugoKCgoKCgoKCgoKCgoKBjdHJsX291dGwoY2hhbi0+c2FyLCBTQVJbY2hhbi0+
-Y2hhbl0pOwoKY3VkZGxlIHRoYXQgeyBwbGVhc2UKLW1pa2UK
+Yes, I have been running with a similar patch on a (much) earlier
+version of the code.  It has helped quite a bit.  I would have
+put together a patch for a later version, but my test environment
+is limited to this earlier version.
 
---nextPart22499953.PIsfBEtFuu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iQIVAwUARwKbbEFjO5/oN/WBAQL/Og/8DP0JAa6nWKYQP4sHG2jUOzgj4AOXzrWo
-u548rLaPa/scItXR3F5klyXQBeNKZFg58Pp9H6oo5uvwd0+YeK5iqxqe0jJf04Ok
-7ti67vhmBEqMPs2SG+mpdz3yPbmQriQouVW6ahMf2kJ/BqEyLM+I4ck96merK9LY
-TqY6QE6I4nswxjChuUgEK8r9IiUWVNwHmKXBNUiSNBKOlYi78vFDlYgDsxi4K4gR
-z5aocCWptnVqmEJRrqrV6MQ5Z05Z35pJLtNMI6h0QMvprDIbu7aoI7qPzzdXk5/3
-7oPLuGhbsV9xl27E2Bl51gD+nOQI4qCOvH2pt52lRQI8EV+t4qVjPiiI75aSJpgo
-UujYosQitEkFBdpeMsrerzwPiqEOhXCDYH7MC9cya+0lJRz4Wpi+NVgerqjk4Igb
-LItZgjlNgpuyaCdz9g2IUGWEOy3vjvSZr6i53yU5sZ3PhkaY4RresJD+pclz2LKQ
-3TjDXq6To/EBZ9114aWgVP16RASILc7IuJ0rowD+Gk0eFIfw5QSMxac6VydmVSOi
-IorivfyXh083SroCbqvCIuLohCKRF2YFkBW99CuUVkcKnlfiKXMm7Hj2jl4PnXA2
-ZztYYKt6D2uy1LHb8k4yIReugWl+yG+EQuUUA8Io/jxKBws5n41wnNrlm9ZnLkib
-go4zBkM+3mo=
-=082M
------END PGP SIGNATURE-----
-
---nextPart22499953.PIsfBEtFuu--
+-- 
+Mike
