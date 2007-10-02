@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXJBJVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXJBJVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbXJBJVA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 05:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXJBJUv
+	id S1755234AbXJBJVv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 05:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXJBJVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 05:20:51 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:64613 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbXJBJUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 05:20:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=VULrsdmFuLKsqKvM3a4j/+FZ7y/azV00JdqbKc+YO6GU0zm+Tlgn5YHBf96x1z9OvX9Oj99pcTwxynAd4FGTzA0/kODrSUcoH9SNmrxN2EKPUB0b7Z5BP9cJh4pCo1FoMGQCIpWR7xsXoGDFKYmCvZK2q895rVe0JM5wjGbI2oI=
-Message-ID: <47020D12.5090402@gmail.com>
-Date: Tue, 02 Oct 2007 18:19:14 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 2 Oct 2007 05:21:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33731 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751737AbXJBJVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 05:21:43 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+Date: Tue, 2 Oct 2007 11:21:36 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org > <alpine.LRH.0.999.0710021019310.23586@www.tglx.de>
+In-Reply-To: <alpine.LRH.0.999.0710021019310.23586@www.tglx.de>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Mark Lord <lkml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       Paolo Ornati <ornati@fastwebnet.it>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
-References: <20070930160548.235be972@localhost>	<20070930152908.1f58d39d@the-village.bc.nu> <20070930164610.20818867@localhost> <46FFBB2D.6060004@garzik.org> <46FFDC5A.7070509@rtr.ca> <46FFDCE5.4060900@gmail.com> <46FFE047.7030102@rtr.ca> <46FFE218.5000607@gmail.com> <46FFF0F4.7040809@rtr.ca> <46FFF290.2090005@rtr.ca>
-In-Reply-To: <46FFF290.2090005@rtr.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710021121.36443.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tuesday 02 October 2007 11:17:02 Thomas Gleixner wrote:
+> > This is also a good time to warn about the fact that we're doing the x86 
+> > merge very soon (as in the next day or two) after 2.6.23 is out, so if you 
+> > have pending patches for the next series that touch arch/i386 or x86-64, 
+> > you should get in touch with Thomas Gleixner and Ingo Molnar, who are the 
+> > keepers of the merge scripts, and will help you prepare..
 
-Mark Lord wrote:
-> Mmm.. $66 for "open box".  But the drive itself has been discontinued by
-> Seagate,
 
-Couldn't find any in SUSE and I don't think I can't find any vendor who
-still carries the drive here.
+Yes I have ~100 patches for arch/x86_64, arch/i386
 
-> and once claimed to be "World's first SATA desktop drive with NCQ.".
-> 
-> Probably buggy firmware after all.
+Should I just drop them?
 
-Yeah, "World's first" is a pretty good clue indicating "broken".
-Blacklisting it seems like a good idea after all.
-
-Thanks.
-
--- 
-tejun
+-Andi
