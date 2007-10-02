@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXJBEHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXJBEUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbXJBEHx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 00:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXJBEHp
+	id S1752249AbXJBEUw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 00:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbXJBEUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 00:07:45 -0400
-Received: from mx27.mail.ru ([194.67.23.64]:5407 "EHLO mx27.mail.ru"
+	Tue, 2 Oct 2007 00:20:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:43915 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbXJBEHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 00:07:45 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-api@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ACPICA: hw: Don't carry spinlock over suspend
-Date: Tue, 2 Oct 2007 08:07:36 +0400
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1430908.ZjkePZXmro";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	id S1750799AbXJBEUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 00:20:44 -0400
+Subject: Re: [RFC][PATCH] make module refcounts use percpu_counters
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1191258216.7344.129.camel@localhost>
+References: <20070928230057.2712A579@kernel>
+	 <1191231833.26950.66.camel@localhost.localdomain>
+	 <1191258216.7344.129.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 14:20:13 +1000
+Message-Id: <1191298813.6979.57.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200710020807.41325.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1430908.ZjkePZXmro
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 2007-10-01 at 10:03 -0700, Dave Hansen wrote:
+> On Mon, 2007-10-01 at 19:43 +1000, Rusty Russell wrote:
+> > On Fri, 2007-09-28 at 16:00 -0700, Dave Hansen wrote:
+> > > Module refcounts currently use a percpu counter stored
+> > > in the 'struct module'.  However, we also have a more
+> > > generic implementation that does stuff like handle
+> > > hotplug cpus.
+> > > 
+> > > I'm not actually all that convinced that this refcount
+> > > actually does a lot of good, with cpus racing bumping
+> > > the counters at the same time that they're being
+> > > summed up.  But, it certainly isn't any worse than
+> > > what was there before.
+> > 
+> > That's why we look at the counters inside stop_machine_run().
+> 
+> Ahhh.  That makes sense.  Although it wasn't apparent during my 3-second
+> perusal of the code.
+> 
+> > Note that (1) the module implementation handles hotplug CPUs
+> 
+> 
+> You're saying it handles hotplug because of stop_machine_run()?
 
-> On Sunday, 30 September 2007 20:39, Alexey Starikovskiy wrote:
-> > ACPI uses acpi_get_register() in order to get into suspend.
-> > This function is guarded by acpi_gbl_hardware_lock, which will be carri=
-ed
-> > into resume phase.
-> > At resume interrupts are enabled and first ACPI interrupt deadlocks on
-> > this lock.
->
-> Ouch.  That might have bitten quite some people, I guess.
->
-> > Solution seems to be to not lock register read, as there are no
-> > concurrent activity at this point.
-> >
-> > Reference: http://bugzilla.kernel.org/show_bug.cgi?id=3D7499
-> >
-> > Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
->
-> Do you think it's -stable material?
+No, it handles hotplug because it does every possible CPU, not every
+online CPU.  percpu_counters empties cpu's counter presumably to avoid
+systematic error.
 
-As someone who *has* been bitten by this bug - by all means.
+Renaming percpu_counters to approximate_counters here would be nice.
 
-I'd like to emphasize one more point - we were able to debug it only becaus=
-e=20
-old kernel at least displayed debug messages. Current kernel deadlocks=20
-absolutely dead (pun intended). No output to console, no indication what=20
-happens. I consider this regression. If at all possible, we should make sur=
-e=20
-that console output is available as early as possible.
+> > But it might be a useful cleanup (although a slight de-optimization).
+> > If you want I'll queue for 2.6.24 (there are several other module
+> > patches pending too).
+> 
+> Might as well.  It removed a very small amount of code, and opens the
+> door a bit for future optimizations in a single place.
 
---nextPart1430908.ZjkePZXmro
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+You missed removing struct module_ref, too.  That's a little more code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+> > In an ideal world, (1) we would have percpu pointers using the same
+> > percpu mechanism as percpu variables, (2) we would have a modal variant
+> > of percpu counters which would collapse to a single counter when we
+> > cared about the precise value (probably using stop_machine for the
+> > transition).  This would be useful for many other cases.
+> 
+> Yeah, but before we do that, we need some kind of flag to get the
+> percpu_counter_mod() fast path shoved into the slow path that takes the
+> lock.
 
-iD8DBQBHAcQIR6LMutpd94wRApkLAKCHk2/Wr9BQRbuExiyXNPjSvFrrWACfXUM1
-dhjBrNRh3tnl9D497S+bEFc=
-=2QT6
------END PGP SIGNATURE-----
+Well, there is already a branch in the fast path.  BTW, comparing before
+and after applying your patch for a try_module_get/module_put pair, I
+get 5.9 ns vs 20.6 ns.  We perhaps win something back on NUMA-like
+machines, but it's not clear.
 
---nextPart1430908.ZjkePZXmro--
+My initial implementation of such a counter used atomic ops via a
+pointer.  The pointer was aimed at a shared counter for slow-mode.  The
+problem is that you need to disable preemption around the counter update
+(so you can use rcu to ensure everyone has seen the changeover).
+
+> I'm not sure the stop_machine() mechanism will work very well if we try
+> to expand this much further for other users.  What would the SGI guys
+> think if these happened more than once in a blue moon?
+
+Indeed, that's why I called it "stop_machine".  The real-time coders
+hate it too.
+
+Cheers,
+Rusty.
+
