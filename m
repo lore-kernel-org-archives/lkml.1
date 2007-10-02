@@ -1,107 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXJBSNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXJBSPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbXJBSNQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbXJBSMz
+	id S1755331AbXJBSPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbXJBSO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:12:55 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:62206 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753811AbXJBSMx convert rfc822-to-8bit (ORCPT
+	Tue, 2 Oct 2007 14:14:56 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58732 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752102AbXJBSOz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:12:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=rNAThhy07nMWdBRtXED4as3c2w+PDk6WAKZ2rn22q7vbJ3Xg47AEkWrI8gqcqQjAR9e134httEqyOvF13XI/uSpTYJQlyVRUx395/tvKzCwVytpBIr/1rcriIBJztTSp4RUr6EzbC3SnHFoawp7fEf6i/Gfuq6AEEGPeTj2RpJw=
-Date: Tue, 2 Oct 2007 20:12:44 +0200
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8,
- v2.6.22.8, v2.6.21.7, v2.6.20.20
-Message-ID: <20071002201244.24f2e8bd@gmail.com>
-In-Reply-To: <20070930152621.GB24077@elte.hu>
-References: <20070926111357.GA10655@elte.hu>
-	<20070928222631.25504d68@gmail.com>
-	<20070930152621.GB24077@elte.hu>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Oct 2007 14:14:55 -0400
+Date: Tue, 2 Oct 2007 20:15:18 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Burton Windle <bwindle@fint.org>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Sumant Patro <sumant.patro@lsi.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+Message-ID: <20071002181518.GC10852@stusta.de>
+References: <Pine.LNX.4.64.0710021242510.6275@postal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710021242510.6275@postal>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sun, 30 Sep 2007 17:26:22 +0200
-Ingo Molnar <mingo@elte.hu> escribió:
+Cc's added, the complete bug report is at
+  http://lkml.org/lkml/2007/10/2/243
 
-> 
+On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
+> 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
+>
+> System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
+>...
 
-> 
-> hm. There are no similar reports so far. Could you try to run the wine 
-> program from a VGA text console (first do 'xhost +' in an xterm under X 
-> and then 'export DISPLAY=:0' in the text console) and see whether 
-> anything gets output to that console? Also enable nmi_watchdog=2 - which 
-> could print a backtrace of the point of the hard lockup.
+Thanks for your report.
 
- Ignore the last mail there was no need to use pictures this no an oops on
-boot ;)
+Diff'ing the dmesg's shows:
 
-This is the back trace
-  Oct  2 17:37:13 localhost kernel: [  886.216868] BUG: unable to handle kernel NULL pointer dereference at virtual address 0000012c
-Oct  2 17:37:13 localhost kernel: [  886.216874]  printing eip:
-Oct  2 17:37:13 localhost kernel: [  886.216876] f9374d0c
-Oct  2 17:37:13 localhost kernel: [  886.216877] *pde = 00000000
-Oct  2 17:37:13 localhost kernel: [  886.216880] Oops: 0002 [#1]
-Oct  2 17:37:13 localhost kernel: [  886.216881] PREEMPT SMP 
-Oct  2 17:37:13 localhost kernel: [  886.216884] Modules linked in: nls_cp850 isofs udf nls_utf8 ntfs binfmt_misc rfcomm l2cap bluetooth ipt_ULOG x_tables jfs ipv6 dm_crypt af_packet kvm_amd kvm fuse w83627ehf hwmon_vid i2c_dev lp snd_mpu401 snd_mpu401_uart snd_hda_intel snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_pcm snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer nvidia(P) snd_seq_device usbhid i2c_ali15x3 i2c_ali1535 8250_pnp usblp ff_memless uli526x snd i2c_core 8250 serial_core button ali_agp parport_pc parport k8temp hwmon pcspkr evdev rtc snd_page_alloc rt2500 soundcore sg floppy sr_mod raid10 cdrom sd_mod ehci_hcd ohci_hcd ata_generic usbcore raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan unix dm_mod
-Oct  2 17:37:13 localhost kernel: [  886.216933] CPU:    0
-Oct  2 17:37:13 localhost kernel: [  886.216934] EIP:    0060:[<f9374d0c>]    Tainted: P        VLI
-Oct  2 17:37:13 localhost kernel: [  886.216935] EFLAGS: 00010246   (2.6.23-rc9-cfs-v22-dirty #82)
-Oct  2 17:37:13 localhost kernel: [  886.217129] EIP is at os_set_mlock_capability+0xc/0x30 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217131] eax: 00000000   ebx: 00000000   ecx: 00000050   edx: 00000202
-Oct  2 17:37:13 localhost kernel: [  886.217134] esi: f74c3000   edi: f749cc00   ebp: df4b3ff0   esp: d319bed4
-Oct  2 17:37:13 localhost kernel: [  886.217136] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Oct  2 17:37:13 localhost kernel: [  886.217139] Process spirographx (pid: 5512, ti=d319b000 task=c45da540 task.ti=d319b000)
-Oct  2 17:37:13 localhost kernel: [  886.217141] Stack: f909cd35 f909ed92 f9655740 e1d42c00 f6ca5bc0 f90a0c26 df4b2000 0000005b 
-Oct  2 17:37:13 localhost kernel: [  886.217146]        0000000c f909da32 f9655740 e1d42c00 0000005b f6ca5bc0 f6ca5bc0 0000005b 
-Oct  2 17:37:13 localhost kernel: [  886.217151]        f9655740 f9370e98 df4b2000 f9655740 e1d42c00 0000005b f6ca5bc0 00000000 
-Oct  2 17:37:13 localhost kernel: [  886.217157] Call Trace:
-Oct  2 17:37:13 localhost kernel: [  886.217164]  [<f909cd35>] _nv002553rm+0x5/0x10 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217259]  [<f909ed92>] rm_write_watch_init+0x3b/0x54 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217365]  [<f90a0c26>] _nv002642rm+0x416/0x5e9 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217469]  [<f909da32>] rm_ioctl+0x3e/0x6d [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217578]  [<f9370e98>] nv_kern_ioctl+0xf8/0x3c0 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217732]  [<f9371198>] nv_kern_unlocked_ioctl+0x18/0x20 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217866]  [<f9371180>] nv_kern_unlocked_ioctl+0x0/0x20 [nvidia]
-Oct  2 17:37:13 localhost kernel: [  886.217989]  [do_ioctl+43/144] do_ioctl+0x2b/0x90
-Oct  2 17:37:13 localhost kernel: [  886.217994]  [remove_vma+57/80] remove_vma+0x39/0x50
-Oct  2 17:37:13 localhost kernel: [  886.218010]  [vfs_ioctl+92/656] vfs_ioctl+0x5c/0x290
-Oct  2 17:37:13 localhost kernel: [  886.218022]  [sys_ioctl+114/144] sys_ioctl+0x72/0x90
-Oct  2 17:37:13 localhost kernel: [  886.218032]  [sysenter_past_esp+95/133] sysenter_past_esp+0x5f/0x85
-Oct  2 17:37:13 localhost kernel: [  886.218060]  =======================
-Oct  2 17:37:13 localhost kernel: [  886.218061] Code: bb 86 da c6 31 c0 c3 90 8d b4 26 00 00 00 00 64 a1 00 f0 3e c0 8b 80 dc 00 00 00 c3 8d 76 00 64 a1 00 f0 3e c0 8b 80 8c 04 00 00 <c7> 80 2c 01 00 00 ff ff ff ff 64 a1 00 f0 3e c0 81 88 ac 01 00 
-Oct  2 17:37:13 localhost kernel: [  886.218083] EIP: [<f9374d0c>]
-os_set_mlock_capability+0xc/0x30 [nvidia] SS:ESP 0068:d319bed4
+<--  snip  -->
+
+ scsi0: scanning scsi channel 4 [P0] for physical devices.
+ scsi0: scanning scsi channel 5 [P1] for physical devices.
+ st: Version 20070203, fixed bufsize 32768, s/g segs 256
+-sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
++sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
++sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+ sd 0:0:0:0: [sda] Write Protect is off
+ sd 0:0:0:0: [sda] Asking for cache data failed
+ sd 0:0:0:0: [sda] Assuming drive cache: write through
+-sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
++sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
++sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+ sd 0:0:0:0: [sda] Write Protect is off
+ sd 0:0:0:0: [sda] Asking for cache data failed
+ sd 0:0:0:0: [sda] Assuming drive cache: write through
+  sda: sda1
++ sda: p1 exceeds device capacity
+
+<--  snip  -->
+
+Does reverting the commit below fix the problem?
+
+cu
+Adrian
 
 
-> 
-> but in general there's nothing scheduler-specific about screensavers or 
-> wine - but it could be related to 3D mode of the chip (hence related to 
-> the nvidia module) - do you get a similar lockup if you try to run 
-> 'glxgears'?
+commit 3f6270ef76f2ce5c134615a470685d6c2a66c07e
+Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date:   Mon May 14 20:17:27 2007 +0900
 
- In fact the backtrace was obtained trying to run glxgears
+    [SCSI] megaraid_old: convert to use the data buffer accessors
+    
+    - remove the unnecessary map_single path.
+    
+    - convert to use the new accessors for the sg lists and the
+    parameters.
+    
+    Jens Axboe <jens.axboe@oracle.com> did the for_each_sg cleanup.
+    
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Acked-by: Sumant Patro <sumant.patro@lsi.com>
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-
-> 
-> 	Ingo
-
- Alejandro
-
-
--- 
-Nunca discutas con un idiota. Al final te hacen rebajarte a su nivel y entonces
-te acaban ganando debido a su mayor experiencia.
-
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 40ee07d..3907f67 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -523,10 +523,8 @@ mega_build_cmd(adapter_t *adapter, Scsi_Cmnd *cmd, int *busy)
+ 	/*
+ 	 * filter the internal and ioctl commands
+ 	 */
+-	if((cmd->cmnd[0] == MEGA_INTERNAL_CMD)) {
+-		return cmd->request_buffer;
+-	}
+-
++	if((cmd->cmnd[0] == MEGA_INTERNAL_CMD))
++		return (scb_t *)cmd->host_scribble;
+ 
+ 	/*
+ 	 * We know what channels our logical drives are on - mega_find_card()
+@@ -657,22 +655,14 @@ mega_build_cmd(adapter_t *adapter, Scsi_Cmnd *cmd, int *busy)
+ 
+ 		case MODE_SENSE: {
+ 			char *buf;
++			struct scatterlist *sg;
+ 
+-			if (cmd->use_sg) {
+-				struct scatterlist *sg;
++			sg = scsi_sglist(cmd);
++			buf = kmap_atomic(sg->page, KM_IRQ0) + sg->offset;
+ 
+-				sg = (struct scatterlist *)cmd->request_buffer;
+-				buf = kmap_atomic(sg->page, KM_IRQ0) +
+-					sg->offset;
+-			} else
+-				buf = cmd->request_buffer;
+ 			memset(buf, 0, cmd->cmnd[4]);
+-			if (cmd->use_sg) {
+-				struct scatterlist *sg;
++			kunmap_atomic(buf - sg->offset, KM_IRQ0);
+ 
+-				sg = (struct scatterlist *)cmd->request_buffer;
+-				kunmap_atomic(buf - sg->offset, KM_IRQ0);
+-			}
+ 			cmd->result = (DID_OK << 16);
+ 			cmd->scsi_done(cmd);
+ 			return NULL;
+@@ -1551,23 +1541,15 @@ mega_cmd_done(adapter_t *adapter, u8 completed[], int nstatus, int status)
+ 		islogical = adapter->logdrv_chan[cmd->device->channel];
+ 		if( cmd->cmnd[0] == INQUIRY && !islogical ) {
+ 
+-			if( cmd->use_sg ) {
+-				sgl = (struct scatterlist *)
+-					cmd->request_buffer;
+-
+-				if( sgl->page ) {
+-					c = *(unsigned char *)
++			sgl = scsi_sglist(cmd);
++			if( sgl->page ) {
++				c = *(unsigned char *)
+ 					page_address((&sgl[0])->page) +
+ 					(&sgl[0])->offset; 
+-				}
+-				else {
+-					printk(KERN_WARNING
+-						"megaraid: invalid sg.\n");
+-					c = 0;
+-				}
+-			}
+-			else {
+-				c = *(u8 *)cmd->request_buffer;
++			} else {
++				printk(KERN_WARNING
++				       "megaraid: invalid sg.\n");
++				c = 0;
+ 			}
+ 
+ 			if(IS_RAID_CH(adapter, cmd->device->channel) &&
+@@ -1704,30 +1686,14 @@ mega_rundoneq (adapter_t *adapter)
+ static void
+ mega_free_scb(adapter_t *adapter, scb_t *scb)
+ {
+-	unsigned long length;
+-
+ 	switch( scb->dma_type ) {
+ 
+ 	case MEGA_DMA_TYPE_NONE:
+ 		break;
+ 
+-	case MEGA_BULK_DATA:
+-		if (scb->cmd->use_sg == 0)
+-			length = scb->cmd->request_bufflen;
+-		else {
+-			struct scatterlist *sgl =
+-				(struct scatterlist *)scb->cmd->request_buffer;
+-			length = sgl->length;
+-		}
+-		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
+-			       length, scb->dma_direction);
+-		break;
+-
+ 	case MEGA_SGLIST:
+-		pci_unmap_sg(adapter->dev, scb->cmd->request_buffer,
+-			scb->cmd->use_sg, scb->dma_direction);
++		scsi_dma_unmap(scb->cmd);
+ 		break;
+-
+ 	default:
+ 		break;
+ 	}
+@@ -1767,80 +1733,33 @@ __mega_busywait_mbox (adapter_t *adapter)
+ static int
+ mega_build_sglist(adapter_t *adapter, scb_t *scb, u32 *buf, u32 *len)
+ {
+-	struct scatterlist	*sgl;
+-	struct page	*page;
+-	unsigned long	offset;
+-	unsigned int	length;
++	struct scatterlist *sg;
+ 	Scsi_Cmnd	*cmd;
+ 	int	sgcnt;
+ 	int	idx;
+ 
+ 	cmd = scb->cmd;
+ 
+-	/* Scatter-gather not used */
+-	if( cmd->use_sg == 0 || (cmd->use_sg == 1 && 
+-				 !adapter->has_64bit_addr)) {
+-
+-		if (cmd->use_sg == 0) {
+-			page = virt_to_page(cmd->request_buffer);
+-			offset = offset_in_page(cmd->request_buffer);
+-			length = cmd->request_bufflen;
+-		} else {
+-			sgl = (struct scatterlist *)cmd->request_buffer;
+-			page = sgl->page;
+-			offset = sgl->offset;
+-			length = sgl->length;
+-		}
+-
+-		scb->dma_h_bulkdata = pci_map_page(adapter->dev,
+-						  page, offset,
+-						  length,
+-						  scb->dma_direction);
+-		scb->dma_type = MEGA_BULK_DATA;
+-
+-		/*
+-		 * We need to handle special 64-bit commands that need a
+-		 * minimum of 1 SG
+-		 */
+-		if( adapter->has_64bit_addr ) {
+-			scb->sgl64[0].address = scb->dma_h_bulkdata;
+-			scb->sgl64[0].length = length;
+-			*buf = (u32)scb->sgl_dma_addr;
+-			*len = (u32)length;
+-			return 1;
+-		}
+-		else {
+-			*buf = (u32)scb->dma_h_bulkdata;
+-			*len = (u32)length;
+-		}
+-		return 0;
+-	}
+-
+-	sgl = (struct scatterlist *)cmd->request_buffer;
+-
+ 	/*
+ 	 * Copy Scatter-Gather list info into controller structure.
+ 	 *
+ 	 * The number of sg elements returned must not exceed our limit
+ 	 */
+-	sgcnt = pci_map_sg(adapter->dev, sgl, cmd->use_sg,
+-			scb->dma_direction);
++	sgcnt = scsi_dma_map(cmd);
+ 
+ 	scb->dma_type = MEGA_SGLIST;
+ 
+-	BUG_ON(sgcnt > adapter->sglen);
++	BUG_ON(sgcnt > adapter->sglen || sgcnt < 0);
+ 
+ 	*len = 0;
+ 
+-	for( idx = 0; idx < sgcnt; idx++, sgl++ ) {
+-
+-		if( adapter->has_64bit_addr ) {
+-			scb->sgl64[idx].address = sg_dma_address(sgl);
+-			*len += scb->sgl64[idx].length = sg_dma_len(sgl);
+-		}
+-		else {
+-			scb->sgl[idx].address = sg_dma_address(sgl);
+-			*len += scb->sgl[idx].length = sg_dma_len(sgl);
++	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
++		if (adapter->has_64bit_addr) {
++			scb->sgl64[idx].address = sg_dma_address(sg);
++			*len += scb->sgl64[idx].length = sg_dma_len(sg);
++		} else {
++			scb->sgl[idx].address = sg_dma_address(sg);
++			*len += scb->sgl[idx].length = sg_dma_len(sg);
+ 		}
+ 	}
+ 
+@@ -4494,7 +4413,7 @@ mega_internal_command(adapter_t *adapter, megacmd_t *mc, mega_passthru *pthru)
+ 	scmd->device = sdev;
+ 
+ 	scmd->device->host = adapter->host;
+-	scmd->request_buffer = (void *)scb;
++	scmd->host_scribble = (void *)scb;
+ 	scmd->cmnd[0] = MEGA_INTERNAL_CMD;
+ 
+ 	scb->state |= SCB_ACTIVE;
