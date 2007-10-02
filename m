@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbXJCFCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbXJCFIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbXJCFCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 01:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbXJCFCF
+	id S1756572AbXJCFIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 01:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXJCFIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 01:02:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56760 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751512AbXJCFCE (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 01:02:04 -0400
-Date: Tue, 2 Oct 2007 21:59:14 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: pomac@vapor.com
-Cc: Jeff Garzik <jgarzik@pobox.com>, Linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] sky2: jumbo frame regression fix
-Message-ID: <20071002215914.13d1e8cf@freepuppy.rosehill>
-In-Reply-To: <1191375274.26233.17.camel@localhost>
-References: <1191372129.26233.12.camel@localhost>
-	<20071002180209.47c350a3@freepuppy.rosehill>
-	<1191375274.26233.17.camel@localhost>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Oct 2007 01:08:32 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:33437 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751016AbXJCFIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 01:08:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NzAtT9lO9QtVTn7c19mp2ioAGynzazQ0IxUay1IHZkLp4jbqyC1ghhpCIEMWZwSaHL4g52WuWY0LOabeNoiiIUmS8/hMtKZ1AH7Bu2TqUHW+a6bVd+o49fbxq9zgMX5Cw+B1t/ugyAXYJ/jYD/aatZCCw7IokaAmbgJG8WPZu/c=  ;
+X-YMail-OSG: T2LqggAVM1mt7DAMFrfchahp3ANdySW1Rfv5C3OsO4sVP62aZnZa_.lhrV68RBWIbYBHlpj_QyDb9_gMcwpTSSurqWAKezn7maVzD42frVWuhCtWO8A-
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: wibbling over the cpuset shed domain connnection
+Date: Tue, 2 Oct 2007 22:36:59 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <20071001143443.b873f70d.pj@sgi.com>
+In-Reply-To: <20071001143443.b873f70d.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710022236.59583.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Oct 2007 03:34:34 +0200
-Ian Kumlien <pomac@vapor.com> wrote:
+On Tuesday 02 October 2007 07:34, Paul Jackson wrote:
+> In -mm merge plans for 2.6.24, Andrew wrote:
+> > cpuset-remove-sched-domain-hooks-from-cpusets.patch
+> >
+> >   Paul continues to wibble over this.  Hold, I guess.
+>
+> Oh dear ... after looking at the following to figure out what
+> a wibble is, I wonder which one Andrew had in mind:
+>
+>   http://www.urbandictionary.com/define.php?term=wibble
+>
+> The insanity, the rubbish, being overwhelmed, ... ?
+>
+> <grin>
+>
+> If one of Nick or I can knock some sense into the others head,
+> then this saga should come to a close soon.
 
-> On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
-> > Remove unneeded check that caused problems with jumbo frame sizes.
-> > The check was recently added and is wrong.
-> > When using jumbo frames the sky2 driver does fragmentation, so
-> > rx_data_size is less than mtu.
-> 
-> Confirmed working.
-> 
-> Now running with 9k mtu with no errors, =)
-> 
-> It also seems that the FIFO bug was the one that affected me before,
-> damn odd race that one.
-
-Does the workaround (forced reset work). Ian, you are the first person to
-report triggering it.  I haven't found a way to make it happen.
-What combination of flow control and speeds are you using?
-
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+In the meantime, that patch should be merged though, shouldn't it?
+cpusets is currently telling the scheduler to do the wrong thing WRT
+the user interface definition of cpusets, right?
