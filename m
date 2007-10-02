@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbXJBStf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXJBSvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbXJBStf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbXJBSt2
+	id S1756551AbXJBSvJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbXJBSu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:49:28 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:34388 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbXJBSt1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:49:27 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Tue, 2 Oct 2007 14:47:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Extend "memparse" to allow a NULL return pointer
- value.
-In-Reply-To: <E1IZYQy-0007zL-Us@flower>
-Message-ID: <Pine.LNX.4.64.0710021443520.1874@localhost.localdomain>
-References: <Pine.LNX.4.64.0709151217530.16440@localhost.localdomain>
- <E1IZYQy-0007zL-Us@flower>
+	Tue, 2 Oct 2007 14:50:56 -0400
+Received: from mga03.intel.com ([143.182.124.21]:56317 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753811AbXJBSuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 14:50:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,221,1188802800"; 
+   d="scan'208";a="291298251"
+From: "Sean Hefty" <sean.hefty@intel.com>
+To: "'Roland Dreier'" <rdreier@cisco.com>
+Cc: <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+References: <adahclymos8.fsf@cisco.com><000401c7f632$c993e8e0$65cc180a@amr.corp.intel.com><adatzpyl1mm.fsf@cisco.com><000001c7f6f7$074584e0$9c98070a@amr.corp.intel.com> <adaprzxgyoi.fsf@cisco.com>
+Subject: RE: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+Date: Tue, 2 Oct 2007 11:50:04 -0700
+Message-ID: <000601c80525$0b661f30$ff0da8c0@amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <adaprzxgyoi.fsf@cisco.com>
+thread-index: AcgFIdWJnWlJwPuMQgex3a3JHwVGxQAAFORQ
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-OriginalArrivalTime: 02 Oct 2007 18:50:04.0586 (UTC) FILETIME=[0B8E40A0:01C80525]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Sep 2007, Oleg Verych wrote:
+>Umm... this is a difficult situation for me to merge the changes then.
+>We're changing the CM retry behavior blind here.  How do we know that
+>the MRA changes don't make the scalability issue worse?
 
-> * Sat, 15 Sep 2007 12:27:07 -0400 (EDT)
->
-> > Extend the memparse() routine to allow a caller to use NULL as the
-> > second parameter value if he has no interest in that returned value.
->
-> (not `he', but `it', even if `he', then better `callers' + `they')
->
-> > ---
-> >
-> >   there appear to be quite a number of calls to "memparse" which
-> > have no use for the value returned in the second parameter (the
-> > current pointer after the successful parse), but which are still
-> > forced to supply a valid char** address since they have no choice
-> > but to accept that value coming back.  in many cases, that value
-> > is accepted just before the end of the calling function, making it
-> > clear that the value is ignored entirely, anyway.
->
-> A posteriori value, stored in this pointer serves very important
-> role: it validates returned result. Caller must do this. But if
-> programmer doesn't know problems (see below), `must' melts down to
-> `may'.
->
-> If you take a look at simple_strtoull(), it already doesn't care if
-> this pointer is NULL or not. (So patch is NULL :)
->
-> But take closer look. If it returns `0' (zero), it is not clear if
-> this zero was parsed or not, unless you can compare `ptr' and
-> `retptr'. Another case if entire string have no valid number to
-> parse (see strtol(3)).
->
-> This is problem of this particular function, that is copied form
-> ordinary C. For instance see <http://bugs.debian.org/431320>.
+What's currently upstream doesn't work for Intel MPI on our larger clusters.
+The connection requests time out on the active side before the passive side can
+respond.
 
-i'm sorry, i'm not sure what you're getting at here.  all this patch
-does is allow memparse to accept a NULL second argument if the caller
-has no interest in what is normally passed back in that argument.
-and there are certainly *numerous* places in the source where callers
-are passing a bogus second argument just because they have to pass
-*something*.
+The OFED release works because it provides a kernel patch to make the timeout a
+module parameter.  I'm trying to avoid adding a module parameter, and the MRA is
+designed for this situation.
 
-allowing NULL as a second arg just makes it more visually obvious that
-the caller isn't interested in that return value.  or is there
-something more subtle going on here that i'm not understanding?
+I tested this by simulating a slow passive side responder, and it worked as
+expected for those tests.  Using an MRA does add another MAD to the CM exchange,
+which is why it is sent only after seeing a duplicate request.  Alternatively,
+we can take the OFED module parameter patch.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+- Sean
