@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbXJBS15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbXJBS2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbXJBS15 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXJBS1u
+	id S1756177AbXJBS2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXJBS20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:27:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43750 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbXJBS1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:27:49 -0400
-Message-ID: <47028D99.8020100@redhat.com>
-Date: Tue, 02 Oct 2007 14:27:37 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 2 Oct 2007 14:28:26 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49063 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753331AbXJBS2Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 14:28:25 -0400
+Date: Tue, 2 Oct 2007 11:28:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kswapd min order, slub max order [was Re: -mm merge plans for
+ 2.6.24]
+In-Reply-To: <1191350333.2708.6.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0710021120220.30615@schroedinger.engr.sgi.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
+ <1191350333.2708.6.camel@localhost>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Kirill Korotaev <dev@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] mark read_crX() asm code as volatile
-References: <470250E0.5090706@openvz.org> <20071002082856.3c478e66@laptopd505.fenrus.org>
-In-Reply-To: <20071002082856.3c478e66@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/02/2007 11:28 AM, Arjan van de Ven wrote:
-> On Tue, 02 Oct 2007 18:08:32 +0400
-> Kirill Korotaev <dev@openvz.org> wrote:
+On Tue, 2 Oct 2007, Mel Gorman wrote:
+
+> > I agree.  I spent a while last week bisecting down to see why my heavily
+> > swapping loads take 30%-60% longer with -mm than mainline, and it was
+> > here that they went bad.  Trying to keep higher orders free is costly.
+
+The larger order allocations may cause excessive reclaim under certain 
+circumstances. Reclaim will continue to evict pages until a larger order 
+page can be coalesced. And it seems that this eviction is not that well 
+targeted at this point. So lots of pages may be needlessly evicted.
+
+> > On the other hand, hasn't SLUB efficiency been built on the expectation
+> > that higher orders can be used?  And it would be a twisted shame for
+> > high performance to be held back by some idiot's swapping load.
+> > 
 > 
->> Some gcc versions (I checked at least 4.1.1 from RHEL5 & 4.1.2 from
->> gentoo) can generate incorrect code with read_crX()/write_crX()
->> functions mix up, due to cached results of read_crX().
->>
-> 
-> I'm not so sure volatile is the right answer, as compared to giving the
-> asm more strict contraints....
-> 
-> asm volatile tends to mean something else than "the result has
-> changed"....
+> My belief is that SLUB can still use the higher orders if configured to
+> do so at boot-time. The loss of these patches means it won't try and do
+> it automatically. Christoph will chime in I'm sure.
 
-It means "don't eliminate this code if it's reachable" which should be
-just enough for this case. But it could still be reordered in some cases
-that could break, I think.
+You can still manually configure those at boot time via slub_max_order 
+etc.
 
-This should work because the result gets used before reading again:
+I think Mel and I have to rethink how to do these efficiently. Mel has 
+some ideas and there is some talk about using the vmalloc fallback to 
+insure that things always work. Probably we may have to tune things so 
+that fallback is chosen if reclaim cannot get us the larger order page 
+with reasonable effort.
 
-read_cr3(a);
-write_cr3(a | 1);
-read_cr3(a);
+The maximum order of allocation used by SLUB may have to depend on the 
+number of page structs in the system since small systems (128M was the 
+case that Peter found) can easier get into trouble. SLAB has similar 
+measures to avoid order 1 allocations for small systems below 32M.
 
-But this might be reordered so that b gets read before the write:
-
-read_cr3(a);
-write_cr3(a | 1);
-read_cr3(b);
-
-?
