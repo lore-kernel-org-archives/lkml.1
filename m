@@ -1,101 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbXJBHiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbXJBHib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbXJBHiO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 03:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXJBHhu
+	id S1756055AbXJBHib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 03:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbXJBHh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 03:37:50 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1200 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755709AbXJBHht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 03:37:49 -0400
-Date: Tue, 2 Oct 2007 09:39:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: abhishekrai@google.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] Fix blktrace setup 32-bit ioctl on 64-bit kernels
-Message-ID: <20071002073943.GC5236@kernel.dk>
+	Tue, 2 Oct 2007 03:37:58 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:54707 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755397AbXJBHh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 03:37:57 -0400
+Message-ID: <4701F549.6060602@nttdata.co.jp>
+Date: Tue, 02 Oct 2007 16:37:45 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+CC: chrisw@sous-sol.org
+Subject: [TOMOYO 11/15](repost) Signal transmission control functions.
+References: <4701F285.5000206@nttdata.co.jp>
+In-Reply-To: <4701F285.5000206@nttdata.co.jp>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Oct 2007 07:37:46.0159 (UTC) FILETIME=[1FFAC3F0:01C804C7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Signal control functions for TOMOYO Linux.
+TOMOYO Linux checks sending signal by signal number and
+the domain of target process. In order to check signal
+permission, LSM expansion patch [TOMOYO 14/15] is needed.
 
-The layout of struct blk_user_trace_setup is a bit unfortunate, it gets
-padded differently on 32-bit and 64-bit archs. So right now it's not
-possible to trace 64-bit kernels with a 32-bit app. This patch fixes
-that up by adding a compat ioctl handler for BLKTRACESETUP.
+Each permission can be automatically accumulated into
+the policy of each domain using 'learning mode'.
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/signal.c |  229 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 229 insertions(+)
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 5a5b711..b18b9cc 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -2052,6 +2052,51 @@ static int raw_ioctl(unsigned fd, unsigned cmd, unsigned long arg)
-         }
-         return ret;
- }
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/security/tomoyo/signal.c	2007-10-02 11:26:22.000000000 +0900
+@@ -0,0 +1,229 @@
++/*
++ * security/tomoyo/signal.c
++ *
++ * Signal access contol functions for TOMOYO Linux.
++ */
 +
-+struct blk_user_trace_setup32 {
-+	char name[32];
-+	u16 act_mask;
-+	u16 pad;
-+	u32 buf_size;
-+	u32 buf_nr;
-+	u64 start_lba;
-+	u64 end_lba;
-+	u32 pid;
-+} __attribute__((packed));
++#include "tomoyo.h"
++#include "realpath.h"
 +
-+#define BLKTRACESETUP32 _IOWR(0x12,115,struct blk_user_trace_setup32)
++/*************************  AUDIT FUNCTIONS  *************************/
 +
-+static int blktrace32_setup(int fd, unsigned cmd, unsigned long arg)
++static int tmy_audit_signal_log(const int signal,
++				const struct path_info *dest_domain,
++				const u8 is_granted,
++				const u8 is_enforce)
 +{
-+	struct blk_user_trace_setup __user *buts = compat_alloc_user_space(sizeof(*buts));
-+	struct blk_user_trace_setup32 __user *buts32 = compat_ptr(arg);
-+	int err;
++	char *buf;
++	int len;
 +
-+	if (copy_in_user(&buts->name, &buts32->name, BDEVNAME_SIZE) ||
-+	    get_user(buts->act_mask, &buts32->act_mask) ||
-+	    get_user(buts->buf_size, &buts32->buf_size) ||
-+	    get_user(buts->buf_nr, &buts32->buf_nr) ||
-+	    get_user(buts->start_lba, &buts32->start_lba) ||
-+	    get_user(buts->end_lba, &buts32->end_lba) ||
-+	    get_user(buts->pid, &buts32->pid))
-+		return -EFAULT;
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
++	} else {
++		if (!tmy_audit_reject())
++			return 0;
++	}
 +
-+	err = sys_ioctl(fd, BLKTRACESETUP, (unsigned long) buts);
-+	if (err)
-+		return err;
++	len = dest_domain->total_len;
++	buf = tmy_init_audit_log(&len);
 +
-+	if (copy_to_user(&buts32->name, &buts->name, BDEVNAME_SIZE) ||
-+	    put_user(buts32->act_mask, &buts->act_mask) ||
-+	    put_user(buts32->buf_size, &buts->buf_size) ||
-+	    put_user(buts32->buf_nr, &buts->buf_nr) ||
-+	    put_user(buts32->start_lba, &buts->start_lba) ||
-+	    put_user(buts32->end_lba, &buts->end_lba) ||
-+	    put_user(buts32->pid, &buts->pid))
-+		return -EFAULT;
++	if (!buf)
++		return -ENOMEM;
 +
-+	return err;
++	snprintf(buf + strlen(buf),
++		 len - strlen(buf) - 1,
++		 "%s%d %s",
++		 TMY_ALLOW_SIGNAL, signal, dest_domain->name);
++
++	return tmy_write_audit_log(buf, is_granted, is_enforce);
 +}
 +
- #endif /* CONFIG_BLOCK */
- 
- struct serial_struct32 {
-@@ -2555,7 +2600,7 @@ COMPATIBLE_IOCTL(BLKSECTSET)
- COMPATIBLE_IOCTL(BLKSSZGET)
- COMPATIBLE_IOCTL(BLKTRACESTART)
- COMPATIBLE_IOCTL(BLKTRACESTOP)
--COMPATIBLE_IOCTL(BLKTRACESETUP)
-+HANDLE_IOCTL(BLKTRACESETUP32, blktrace32_setup)
- COMPATIBLE_IOCTL(BLKTRACETEARDOWN)
- ULONG_IOCTL(BLKRASET)
- ULONG_IOCTL(BLKFRASET)
++/*************************  SIGNAL ACL HANDLER  *************************/
++
++static int tmy_add_signal_entry(const u16 sig, const char *dest_pattern,
++				struct domain_info *domain,
++				const struct condition_list *cond,
++				const u8 is_delete)
++{
++	struct acl_info *ptr;
++	const struct path_info *saved_dest_pattern;
++	int error = -ENOMEM;
++
++	if (!domain)
++		return -EINVAL;
++	if (!dest_pattern ||
++	    !tmy_is_correct_domain(dest_pattern, __FUNCTION__))
++		return -EINVAL;
++
++	saved_dest_pattern = tmy_save_name(dest_pattern);
++	if (!saved_dest_pattern)
++		return -ENOMEM;
++
++	down(&domain_acl_lock);
++
++	if (is_delete)
++		goto remove;
++
++	ptr = domain->first_acl_ptr;
++	if (!ptr)
++		goto first_entry;
++
++	while (1) {
++		struct signal_acl *acl = (struct signal_acl *) ptr;
++
++		if (ptr->type == TMY_TYPE_SIGNAL_ACL && acl->sig == sig
++		    && ptr->cond == cond
++		    && !tmy_pathcmp(acl->domainname, saved_dest_pattern)) {
++			ptr->is_deleted = 0;
++			/* Found. Nothing to do. */
++			error = 0;
++			break;
++		}
++
++		if (ptr->next) {
++			ptr = ptr->next;
++			continue;
++		}
++
++first_entry: ;
++		/* Not found. Append it to the tail. */
++		acl = tmy_alloc_element(sizeof(*acl));
++		if (!acl)
++			break;
++
++		acl->head.type = TMY_TYPE_SIGNAL_ACL;
++		acl->head.cond = cond;
++		acl->sig = sig;
++		acl->domainname = saved_dest_pattern;
++		error = tmy_add_acl(ptr, domain, (struct acl_info *) acl);
++		break;
++	}
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	for (ptr = domain->first_acl_ptr; ptr; ptr = ptr->next) {
++		struct signal_acl *acl = (struct signal_acl *) ptr;
++		if (ptr->type != TMY_TYPE_SIGNAL_ACL || ptr->cond != cond ||
++		    ptr->is_deleted || acl->sig != sig ||
++		    tmy_pathcmp(acl->domainname, saved_dest_pattern))
++			continue;
++		error = tmy_del_acl(ptr);
++		break;
++	}
++
++ok: ;
++	up(&domain_acl_lock);
++
++	return error;
++}
++
++/**
++ * tmy_signal_acl - check permission for kill(2)/tkill(2)/tgkill(2).
++ * @sig:  signal number.
++ * @pid:  pid of destination process.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_signal_acl(const int sig, const int pid)
++{
++	struct domain_info *domain = TMY_SECURITY->domain;
++	struct domain_info *dest = NULL;
++	const char *dest_pattern;
++	struct acl_info *ptr;
++	const u16 hash = sig;
++	const u8 is_enforce = tmy_enforce(TMY_MAC_FOR_SIGNAL);
++
++	if (!tmy_flags(TMY_MAC_FOR_SIGNAL))
++		return 0;
++	if (!sig)
++		return 0; /* No check for NULL signal. */
++	if (current->pid == pid) {
++		tmy_audit_signal_log(sig, domain->domainname, 1, is_enforce);
++		return 0; /* No check for self. */
++	}
++
++	{ /* Simplified checking. */
++		struct task_struct *p = NULL;
++		read_lock(&tasklist_lock);
++		if (pid > 0)
++			p = find_task_by_pid((pid_t) pid);
++		else if (pid == 0)
++			p = current;
++		else if (pid == -1)
++			dest = &KERNEL_DOMAIN;
++		else
++			p = find_task_by_pid((pid_t) -pid);
++		if (p)
++			/* "struct task_struct"->security is not NULL. */
++			dest = ((struct tmy_security *) p->security)->domain;
++		read_unlock(&tasklist_lock);
++		if (!dest)
++			return 0; /* I can't find destinatioin. */
++	}
++
++	if (domain == dest) {
++		tmy_audit_signal_log(sig, dest->domainname, 1, is_enforce);
++		return 0;
++	}
++
++	dest_pattern = dest->domainname->name;
++	for (ptr = domain->first_acl_ptr; ptr; ptr = ptr->next) {
++		struct signal_acl *acl = (struct signal_acl *) ptr;
++
++		if (ptr->type == TMY_TYPE_SIGNAL_ACL && ptr->is_deleted == 0
++		    && acl->sig == hash &&
++		    tmy_check_condition(ptr->cond, NULL) == 0) {
++			const int len = acl->domainname->total_len;
++
++			if (strncmp(acl->domainname->name,
++				    dest_pattern, len) == 0
++			    && (dest_pattern[len] == ' ' ||
++				dest_pattern[len] == '\0'))
++				break;
++
++		}
++	}
++
++	if (ptr) {
++		tmy_audit_signal_log(sig, dest->domainname, 1, is_enforce);
++		return 0;
++	}
++
++	tmy_audit_signal_log(sig, dest->domainname, 0, is_enforce);
++	if (is_enforce)
++		return tmy_supervisor("%s\n" TMY_ALLOW_SIGNAL "%d %s\n",
++				      domain->domainname->name,
++				      sig, dest_pattern);
++	if (tmy_accept(TMY_MAC_FOR_SIGNAL, domain))
++		tmy_add_signal_entry(sig, dest_pattern, domain, NULL, 0);
++
++	return 0;
++}
++
++/**
++ * tmy_add_signal_policy - add or delete signal policy.
++ * @data:      a line to parse.
++ * @domain:    pointer to "struct domain_info".
++ * @cond:      pointer to "struct condition_list". May be NULL.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_signal_policy(char *data,
++			  struct domain_info *domain,
++			  const struct condition_list *cond,
++			  const u8 is_delete)
++{
++	int sig;
++	char *domainname = strchr(data, ' ');
++
++	if (sscanf(data, "%d", &sig) == 1 && domainname &&
++	    tmy_is_domain_def(domainname + 1))
++		return tmy_add_signal_entry(sig, domainname + 1, domain,
++					    cond, is_delete);
++
++	return -EINVAL;
++}
 
--- 
-Jens Axboe
 
