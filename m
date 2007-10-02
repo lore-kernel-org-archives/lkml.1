@@ -1,105 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbXJCBlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbXJCBmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbXJCBlb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 21:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXJCBlX
+	id S1756959AbXJCBmt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbXJCBmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 21:41:23 -0400
-Received: from lixom.net ([66.141.50.11]:49636 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbXJCBlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 21:41:22 -0400
-Date: Tue, 2 Oct 2007 20:45:27 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] libata: fix for sata_mv >64KB DMA segments
-Message-ID: <20071003014527.GA6316@lixom.net>
-References: <20071001220439.GA15332@lixom.net> <470176B8.1000109@pobox.com> <20071002023000.GA19286@lixom.net> <4702D2DE.1050504@pobox.com>
+	Tue, 2 Oct 2007 21:42:43 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:33144 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753130AbXJCBmm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 21:42:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=OGWCZfXKuA30BA6jZip7IIG3WyaR/4w3BhVywMD+8+c2w9I1uR+Sm+sAx/w/+nwj90ZRSUD2GJHVEhnQEUtSvDEsPY3yLnEuqAE2I7Ywxc/pCM18ex8OTDqOnCVKAIlcAle7GWx7XJf4ezSbONlc85KdekL6xaPxdOCpbUtP/5c=  ;
+X-YMail-OSG: mInxwREVM1nClYIFzyjeICY7dFLYt8sFiwg1maOtRLRhRbB1dH9HqJxrC3hMNGuwoqQARFDwIw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: kswapd min order, slub max order [was Re: -mm merge plans for 2.6.24]
+Date: Tue, 2 Oct 2007 19:10:58 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chritoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4702D2DE.1050504@pobox.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710021910.58983.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix bug in sata_mv for cases where the IOMMU layer has merged SG entries
-to larger than 64KB. They need to be split up before being sent to
-the driver.
-
-Just for simplicity's sake, split up at 64K boundary instead of 64K size,
-since that's what the common code does anyway.
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
----
-
-On Tue, Oct 02, 2007 at 07:23:10PM -0400, Jeff Garzik wrote:
-> Olof Johansson wrote:
->> On Mon, Oct 01, 2007 at 06:37:44PM -0400, Jeff Garzik wrote:
->> Looks like it's caused by enabling vmerge (which tends to be on for the
->> common PPC defconfigs). If I disable it, things look OK.
->> Perhaps the Marvell controller doesn't like requests larger than 64K,
->> or wrapping some boundary. Do you have access to erratas/docs?
->> I have verified it on a powermac now as well (had a quick scare that it
->> might have been some problem with the PA Semi IOMMU, but no).
+On Wednesday 03 October 2007 02:06, Hugh Dickins wrote:
+> On Mon, 1 Oct 2007, Andrew Morton wrote:
+> > #
+> > # slub && antifrag
+> > #
+> > have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
+> > only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocation
+> >s.patch slub-exploit-page-mobility-to-increase-allocation-order.patch
+> > slub-reduce-antifrag-max-order.patch
+> >
+> >   I think this stuff is in the "mm stuff we don't want to merge"
+> > category. If so, I really should have dropped it ages ago.
 >
-> FWIW:  I just tried the 6042 on my AMD64 platform with iommu=force, and was 
-> unable to reproduce any trouble.
->
-> You could try changing MV_DMA_BOUNDARY to 0xffffU and see what happens.
+> I agree.  I spent a while last week bisecting down to see why my heavily
+> swapping loads take 30%-60% longer with -mm than mainline, and it was
+> here that they went bad.  Trying to keep higher orders free is costly.
 
-As per discussion on IRC, it was really caused by mv_fill_sg() not
-handing SG entries larger than 64K properly. Below patch fixes it to
-behave like ata_fill_sg() instead.
-
-Works OK here after some light testing (restoring my corrupted root
-filesystem and running a few fscks on it, among other things).
+Yeah, no there's no way we'd merge that.
 
 
-Thanks,
+> On the other hand, hasn't SLUB efficiency been built on the expectation
+> that higher orders can be used?  And it would be a twisted shame for
+> high performance to be held back by some idiot's swapping load.
 
-Olof
+IMO it's a bad idea to create all these dependencies like this.
 
+If SLUB can get _more_ performance out of using higher order allocations,
+then fine. If it is starting off at a disadvantage at the same order, then it
+that should be fixed first, right?
 
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 11bf6c7..1a82e22 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -1139,15 +1139,27 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
- 		dma_addr_t addr = sg_dma_address(sg);
- 		u32 sg_len = sg_dma_len(sg);
- 
--		mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
--		mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
--		mv_sg->flags_size = cpu_to_le32(sg_len & 0xffff);
-+		while (sg_len) {
-+			u32 offset = addr & 0xffff;
-+			u32 len = sg_len;
- 
--		if (ata_sg_is_last(sg, qc))
--			mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
-+			if ((offset + sg_len > 0x10000))
-+				len = 0x10000 - offset;
-+
-+			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
-+			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
-+			mv_sg->flags_size = cpu_to_le32(len);
-+
-+			sg_len -= len;
-+			addr += len;
-+
-+			if (!sg_len && ata_sg_is_last(sg, qc))
-+				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
-+
-+			mv_sg++;
-+			n_sg++;
-+		}
- 
--		mv_sg++;
--		n_sg++;
- 	}
- 
- 	return n_sg;
