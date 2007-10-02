@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbXJBEtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXJBE5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbXJBEtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 00:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXJBEt0
+	id S1752801AbXJBE5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 00:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbXJBE4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 00:49:26 -0400
-Received: from 1wt.eu ([62.212.114.60]:2765 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbXJBEtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 00:49:25 -0400
-Date: Tue, 2 Oct 2007 06:48:20 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel   2.6.22.7
-Message-ID: <20071002044820.GN10199@1wt.eu>
-References: <46F77A85.6020202@nerdgrounds.com> <20070924104940.50a52cf3.randy.dunlap@oracle.com> <46FD7104.9070609@tmr.com> <20071001134405.GA16330@csclub.uwaterloo.ca> <4701040E.1050604@tmr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4701040E.1050604@tmr.com>
-User-Agent: Mutt/1.5.11
+	Tue, 2 Oct 2007 00:56:51 -0400
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:51752 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750798AbXJBE4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 00:56:50 -0400
+Message-ID: <4701CF78.5020802@kolumbus.fi>
+Date: Tue, 02 Oct 2007 07:56:24 +0300
+From: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       David Bahi <dbahi@novell.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <GHaskins@novell.com>
+Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
+References: <46FA4A800200006C000192FE@sinclair.provo.novell.com> <200710012341.53169.ak@suse.de> <alpine.LFD.0.9999.0710012349160.20478@localhost.localdomain> <200710020007.09864.ak@suse.de> <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 10:28:30AM -0400, Bill Davidsen wrote:
-> Lennart Sorensen wrote:
-> >On Fri, Sep 28, 2007 at 05:24:20PM -0400, Bill Davidsen wrote:
-> >  
-> >>I'll offer this suggestion, knowing it may piss you off, given the 
-> >>difficulty of preserving whitespace on *many* mailers without using 
-> >>attachments, and given that attachments can be saved easily without 
-> >>prying them out of the message, why don't you (one person) switch to a 
-> >>capable mail agent, if only for patches, instead of trying to teach many 
-> >>people to jump through hoops to avoid whitespace issues?
-> >>
-> >>Not criticizing, just seems easier for everybody for you to avoid 
-> >>teaching people things they don't find useful elsewhere, or getting 
-> >>discouraged and not bothering.
-> >>    
-> >
-> >Ehm, so you want people to save the patch, then when replying they
-> >should load the patch into their (much better) mail client where they
-> >can comment on the patch?  That is the reason the patch should be
-> >inline.  People need to comment on it just as they would comment on any
-> >other plain text email.
-> >  
-> 
-> And in a perfect world everyone would have a mail client which made that 
-> easy, no one would be force by company policy or other circumstances to 
-> use a client which didn't work the way you think it should, no company 
-> or ISP would filter and mangle outgoing mail, and all vendors would 
-> understand that pristine patches are more important that all that stuff 
-> they do to make business communications look reasonable.
-> 
-> In my world people send me attachments so they don't get mangled, and if 
-> I need to quote them I know how to do so.
-> >Well that and some people use git to import patches from the email in a
-> >mostly automated way which also expects them to have the info at top
-> >with signed-off and then the patch, which attachments also screw up.
-> >
-> >So yes there are good reasons for getting a non broken mail client when
-> >sending patches to lkml.
-> >  
-> 
-> And reading them, many show attached text at the end of the message and 
-> make turning it into inline text simple.
+Thomas Gleixner wrote:
+> On Tue, 2 Oct 2007, Andi Kleen wrote:
+>   
+>>> OTOH, the accounting hook would allow us to remove the IRQ#0 -> CPU#0
+>>> restriction. Not sure whether it's worth the trouble.
+>>>       
+>> Some SIS chipsets hang the machine when you migrate irq 0 to another
+>> CPU. It's better to keep that Also I wouldn't be surprised if there are some
+>> other assumptions about this elsewhere.
+>>
+>> Ok in theory it could be done only on SIS, but that probably would really
+>> not be worth the trouble
+>>     
+>
+> Agreed.
+>
+> I just got a x8664-hrt report, where I found the following oddity:
+>
+>  0:       1197     172881   IO-APIC-edge      timer
+>
+> That's one of those infamous AMD C1E boxen. Strange, all my systems have 
+> IRQ#0 on CPU#0 and nowhere else. Any idea ?
+>
+> 	tglx
+>
+>   
+Here I have with stock FC7 (2.6.22.9-91) kernel :
+ 0:     107835  133459760   IO-APIC-edge      timer
 
-Hey, if the poster knows his mail client is broken, nothing prevents him
-from attaching the patches (so that they don't get mangled) and at the
-same time inline them for an easy review. People who review patches won't
-bother about spaces or tabs when you indicate to them from the beginning
-that the patch may have been mangled.
+Processor:
+vendor_id    : AuthenticAMD
+cpu family    : 15
+model        : 107
+model name    : AMD Athlon(tm) 64 X2 Dual Core Processor 4000+
+stepping    : 1
+cpu MHz        : 2109.721
+cache size    : 512 KB
 
-Willy
+MB:
+Asus M2N-E (NF570)
+
+--Mika
+
 
