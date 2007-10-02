@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbXJBQHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbXJBQMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbXJBQHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 12:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXJBQHJ
+	id S1754922AbXJBQMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 12:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbXJBQME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 12:07:09 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:19569 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbXJBQHH (ORCPT
+	Tue, 2 Oct 2007 12:12:04 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:43934 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbXJBQMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 12:07:07 -0400
-Date: Tue, 2 Oct 2007 17:06:07 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Chritoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: kswapd min order, slub max order [was Re: -mm merge plans for 2.6.24]
-In-Reply-To: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Oct 2007 12:12:03 -0400
+Subject: 2.6.23-rc9-rt1
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Daniel Walker <dwalker@mvista.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 12:11:13 -0400
+Message-Id: <1191341473.5642.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007, Andrew Morton wrote:
-> #
-> # slub && antifrag
-> #
-> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
-> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
-> slub-exploit-page-mobility-to-increase-allocation-order.patch
-> slub-reduce-antifrag-max-order.patch
-> 
->   I think this stuff is in the "mm stuff we don't want to merge" category. 
->   If so, I really should have dropped it ages ago.
+We are pleased to announce the 2.6.23-rc9-rt1 tree, which can be
+downloaded from the new location:
 
-I agree.  I spent a while last week bisecting down to see why my heavily
-swapping loads take 30%-60% longer with -mm than mainline, and it was
-here that they went bad.  Trying to keep higher orders free is costly.
+ http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-On the other hand, hasn't SLUB efficiency been built on the expectation
-that higher orders can be used?  And it would be a twisted shame for
-high performance to be held back by some idiot's swapping load.
+Changes since 2.6.23-rc9-rt1
 
-Hugh
+  - update to 2.6.23-rc9
+
+  - Various cleanups (Daniel Walker)
+     - convert PICK_OP to PICK_FUNCTION
+     - use now() in latency_tracer
+     - have preempt_max_latency in all modes
+     - latency_hist resetting
+     - Stop critical timing in idle.
+
+  - Deadlock fix in locked list primitives (Peter Zijlstrta)
+
+  - RT task wakeup fix (Ingo Molnar)
+
+  - New Preempt RCU implementation (Paul E. McKenney and Steven Rostedt)
+
+  That last change (new Preempt RCU) is highly experimental!!!
+  We are currently testing it now, although it has been through some
+  minor tests already, we haven't declared it stable yet.
+
+  This new implementation might shave your cat, eat your dog and
+  make your children miss the bus and be late for school.
+  You have been warned! As is said many times on this list
+  "If it breaks, you get to keep the pieces". So don't come crying
+  to us if something terrible happens, but please let us know
+  so that we can try to fix what broke.
+
+  That said, please test it as much as possible. We are happy with
+  the new implementation, but it's still young, and we want to
+  shake out the problems so it can be pushed up into mainline.
+
+
+to build a 2.6.23-rc9-rt1 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.tar.bz2
+  http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.23-rc9.bz2
+  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23-rc9-rt1.bz2
+
+The broken out patches are also available.
+
+-- Steve
+
+
+
+
+
