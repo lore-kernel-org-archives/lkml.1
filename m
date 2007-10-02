@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbXJBGYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbXJBG0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbXJBGYd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 02:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXJBGY0
+	id S1754209AbXJBG0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 02:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbXJBG0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 02:24:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:37855 "EHLO mail.goop.org"
+	Tue, 2 Oct 2007 02:26:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54733 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669AbXJBGYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 02:24:25 -0400
-Message-ID: <4701E418.7010603@goop.org>
-Date: Mon, 01 Oct 2007 23:24:24 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1750923AbXJBG0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 02:26:33 -0400
+Date: Tue, 2 Oct 2007 08:26:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Schwartz <davids@webmaster.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Network slowdown due to CFS
+Message-ID: <20071002062626.GC18588@elte.hu>
+References: <20071001173159.GB2492@elte.hu> <MDEHLPKNGKAHNMBLJOLKOEOBHCAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>
-Subject: Re: [PATCH RFC] paravirt: cleanup lazy mode handling
-References: <470186C4.5080208@goop.org> <4701DBB9.9020202@qumranet.com>
-In-Reply-To: <4701DBB9.9020202@qumranet.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEOBHCAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.1.7-deb
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1717]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> The code doesn't support having both lazy modes active at once.  Maybe
-> that's not an issue, but aren't the two modes orthogonal?
 
-Hm, well, that's a good question.  The initial semantics of the lazy
-mode calls were "what VMI wants", and they're still not really nailed
-down.  VMI doesn't support having both active at once, and its a little
-unclear what it would mean anyway.  For now, we don't support multiple
-lazy modes active at once, and the kernel never tries to do it (in fact,
-it would be a bug, since lazy mmu must be preempt disabled, and lazy cpu
-is only used for context switches).
+* David Schwartz <davids@webmaster.com> wrote:
 
->
->> --- a/arch/i386/xen/multicalls.h
->> +++ b/arch/i386/xen/multicalls.h
->> @@ -35,7 +35,7 @@ void xen_mc_flush(void);
->>  /* Issue a multicall if we're not in a lazy mode */
->>  static inline void xen_mc_issue(unsigned mode)
->>  {
->> -    if ((xen_get_lazy_mode() & mode) == 0)
->> +    if ((paravirt_get_lazy_mode() & mode) == 0)
->>          xen_mc_flush();
->
-> This snippet looks like it wants to support concurrently active lazy
-> modes.
+> > at a quick glance this seems broken too - but if you show the 
+> > specific code i might be able to point out the breakage in detail. 
+> > (One underlying problem here appears to be fairness: a quick 
+> > unlock/lock sequence may starve out other threads. yield wont solve 
+> > that fundamental problem either, and it will introduce random 
+> > latencies into apps using this memory allocator.)
+> 
+> You are assuming that random latencies are necessarily bad. Random 
+> latencies may be significantly better than predictable high latency.
 
-Yeah, its a little more general than it needs to be.
+i'm not really assuming anything, i gave a vague first impression of the 
+vague example you gave (assuming that the yield was done to combat 
+fairness problems). This is a case where the human language shows its 
+boundaries: statements that are hard to refute with certainty because 
+they are too vague. So i'd really suggest you show me some sample/real 
+code - that would move this discussion to a much more productive level.
 
-    J
+but i'll attempt to weave the chain of argument one step forward (in the 
+hope of not distorting your point in any way): _if_ the sched_yield() 
+call in that memory allocator is done because it uses a locking 
+primitive that is unfair (hence the memory pool lock can be starved), 
+then the "guaranteed large latency" is caused by "guaranteed 
+unfairness". The solution is not to insert a random latency (via a 
+sched_yield() call) that also has a side-effect of fairness to other 
+tasks, because this random latency introduces guaranteed unfairness for 
+this particular task. The correct solution IMO is to make the locking 
+primitive more fair _without_ random delays, and there are a number of 
+good techniques for that. (they mostly center around the use of futexes)
 
+one thing that is often missed is that most of the cost of a yield() is 
+in the system call and the context-switch - quite similar to the futex 
+slowpath. So there's _no_ reason to not use a futexes on Linux. (yes, 
+there might be historic/compatibility or ease-of-porting arguments but 
+those do not really impact the fundamental argument of whether something 
+is technically right or not.)
+
+	Ingo
