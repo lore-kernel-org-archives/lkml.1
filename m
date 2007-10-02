@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbXJCIaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXJCIiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbXJCIaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXJCIaV
+	id S1756544AbXJCIiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXJCIiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:30:21 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:39795 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529AbXJCIaU (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:30:20 -0400
-Date: Wed, 3 Oct 2007 10:29:32 +0200
-From: iank@bredband.net
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: pomac@vapor.com, Jeff Garzik <jgarzik@pobox.com>,
-       Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] sky2: jumbo frame regression fix
-Message-ID: <20071003082932.GD32073@pomac.netswarm.net>
-References: <1191372129.26233.12.camel@localhost> <20071002180209.47c350a3@freepuppy.rosehill> <1191375274.26233.17.camel@localhost> <20071002215914.13d1e8cf@freepuppy.rosehill>
+	Wed, 3 Oct 2007 04:38:17 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:43472 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751301AbXJCIiQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 04:38:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rfzT+TA60g9WPTLeNKeVapycfFVeDmVLnp5yh312jlKPigQLazbnPNhMJ1h+R+qjv/WUX2pMOWbEbvC0obZIqETPJHtAbzs+JMkjZ4reaQOMn5XM/3aUUQJnw7Uk2NGp4ahr/3NwIznCslGqWz8+PI3hAgV0o4kMG3XslVgVrVg=  ;
+X-YMail-OSG: cBwb.uQVM1knIpCJWgBzMeCxdEw160HibIvQeaLc5apZF82C
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [patch] sched: fix sched-domains partitioning by cpusets
+Date: Wed, 3 Oct 2007 01:46:29 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, menage@google.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <20071003062240.GA19027@elte.hu> <20071002235615.6e8cd007.pj@sgi.com>
+In-Reply-To: <20071002235615.6e8cd007.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071002215914.13d1e8cf@freepuppy.rosehill>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200710030146.30162.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 09:59:14PM -0700, Stephen Hemminger wrote:
-> On Wed, 03 Oct 2007 03:34:34 +0200
-> Ian Kumlien <pomac@vapor.com> wrote:
-> 
-> > On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
-> > > Remove unneeded check that caused problems with jumbo frame sizes.
-> > > The check was recently added and is wrong.
-> > > When using jumbo frames the sky2 driver does fragmentation, so
-> > > rx_data_size is less than mtu.
-> > 
-> > Confirmed working.
-> > 
-> > Now running with 9k mtu with no errors, =)
-> > 
-> > It also seems that the FIFO bug was the one that affected me before,
-> > damn odd race that one.
-> 
-> Does the workaround (forced reset work). Ian, you are the first person to
-> report triggering it.  I haven't found a way to make it happen.
-> What combination of flow control and speeds are you using?
+On Wednesday 03 October 2007 16:56, Paul Jackson wrote:
 
-I forgot to add, last time was -rc8-git2 or 3 and using Westwood flow
-control.
+> I must NAQ this patch, and I'm surprised to see Nick propose it
+> again, as I thought he had already agreed that it didn't suffice.
 
-> -- 
-> Stephen Hemminger <shemminger@linux-foundation.org>
+Sorry for the confusion: I only meant the sched.c part of that
+patch, not the full thing.
