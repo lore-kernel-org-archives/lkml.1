@@ -1,37 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbXJBXeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbXJBXgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbXJBXeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 19:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXJBXeg
+	id S1756549AbXJBXgC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 19:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXJBXfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 19:34:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:50970 "EHLO ozlabs.org"
+	Tue, 2 Oct 2007 19:35:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:51067 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbXJBXeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 19:34:36 -0400
-Subject: [PATCH 0/5] Boot protocol changes
+	id S1752755AbXJBXfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 19:35:53 -0400
+Subject: [PATCH 1/5] update boot spec to 2.07
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@in.ibm.com>,
-       lguest <lguest@ozlabs.org>, "Eric W. Biederman" <ebiederm@xmission.com>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, lguest <lguest@ozlabs.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <1191368052.17826.40.camel@localhost.localdomain>
+References: <1191368052.17826.40.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 03 Oct 2007 09:34:12 +1000
-Message-Id: <1191368052.17826.40.camel@localhost.localdomain>
+Date: Wed, 03 Oct 2007 09:35:06 +1000
+Message-Id: <1191368106.17826.43.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Proposed updates for version 2.07 of the boot protocol.  This includes:
 
-	Jeremy had some boot changes for bzImages, but buried in there was an
-update to the boot protocol to support Xen and lguest (and kvm-lite).
-I've copied those fairly simple patches, and if HPA is happy I'd like to
-push them for 2.6.24 (after correcting for the Great Arch Merge of
-course).
+load_flags.KEEP_SEGMENTS- flag to request/inhibit segment reloads
+hardware_subarch	- what subarchitecture we're booting under
+hardware_subarch_data	- per-architecture data
 
-Thanks,
-Rusty.
+The intention of these changes is to make booting a paravirtualized
+kernel work via the normal Linux boot protocol.  The intention is that
+the bzImage payload can be a properly formed ELF file, so that the
+bootloader can use its ELF notes and Phdrs to get more metadata about
+the kernel and its requirements.
+
+The ELF file could be the uncompressed kernel vmlinux itself; it would
+only take small buildsystem changes to implement this.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>
+
+---
+ Documentation/i386/boot.txt    |   34 +++++++++++++++++++++++++++++++++-
+ arch/i386/kernel/asm-offsets.c |    7 +++++++
+ include/asm-i386/bootparam.h   |    9 +++++++--
+ 3 files changed, 47 insertions(+), 3 deletions(-)
+
+diff -r cff7afab3bac Documentation/i386/boot.txt
+--- a/Documentation/i386/boot.txt	Tue Oct 02 22:05:10 2007 +1000
++++ b/Documentation/i386/boot.txt	Tue Oct 02 22:05:10 2007 +1000
+@@ -168,6 +168,8 @@ 0234/1	2.05+	relocatable_kernel Whether 
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
+ 0235/3	N/A	pad2		Unused
+ 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
++023C/4	2.07+	hardware_subarch Hardware subarchitecture
++0240/8	2.07+	hardware_subarch_data Subarchitecture-specific data
+ 
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -204,7 +206,7 @@ boot loaders can ignore those fields.
+ 
+ The byte order of all fields is littleendian (this is x86, after all.)
+ 
+-Field name:	setup_secs
++Field name:	setup_sects
+ Type:		read
+ Offset/size:	0x1f1/1
+ Protocol:	ALL
+@@ -356,6 +358,13 @@ Protocol:	2.00+
+ 	- If 0, the protected-mode code is loaded at 0x10000.
+ 	- If 1, the protected-mode code is loaded at 0x100000.
+ 
++  Bit 6 (write): KEEP_SEGMENTS
++	Protocol: 2.07+
++	- if 0, reload the segment registers in the 32bit entry point.
++	- if 1, do not reload the segment registers in the 32bit entry point.
++		Assume that %cs %ds %ss %es are all set to flat segments with
++		a base of 0 (or the equivalent for their environment).
++
+   Bit 7 (write): CAN_USE_HEAP
+ 	Set this bit to 1 to indicate that the value entered in the
+ 	heap_end_ptr is valid.  If this field is clear, some setup code
+@@ -479,6 +488,29 @@ Protocol:	2.06+
+   zero. This means that the command line can contain at most
+   cmdline_size characters. With protocol version 2.05 and earlier, the
+   maximum size was 255.
++
++Field name:	hardware_subarch
++Type:		write
++Offset/size:	0x23c/4
++Protocol:	2.07+
++
++  In a paravirtualized environment the hardware low level architectural
++  pieces such as interrupt handling, page table handling, and
++  accessing process control registers needs to be done differently.
++
++  This field allows the bootloader to inform the kernel we are in one
++  one of those environments.
++
++  0x00000000	The default x86/PC environment
++  0x00000001	lguest
++  0x00000002	Xen
++
++Field name:	hardware_subarch_data
++Type:		write
++Offset/size:	0x240/8
++Protocol:	2.07+
++
++  A pointer to data that is specific to hardware subarch
+ 
+ 
+ **** THE KERNEL COMMAND LINE
+diff -r cff7afab3bac arch/i386/kernel/asm-offsets.c
+--- a/arch/i386/kernel/asm-offsets.c	Tue Oct 02 22:05:10 2007 +1000
++++ b/arch/i386/kernel/asm-offsets.c	Tue Oct 02 22:05:10 2007 +1000
+@@ -15,6 +15,7 @@
+ #include <asm/fixmap.h>
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
++#include <asm/bootparam.h>
+ #include <asm/elf.h>
+ 
+ #include <xen/interface/xen.h>
+@@ -145,4 +146,10 @@ void foo(void)
+ 	OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
+ 	OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
+ #endif
++
++	BLANK();
++	OFFSET(BP_scratch, boot_params, scratch);
++	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
++	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
++	OFFSET(BP_version, boot_params, hdr.version);
+ }
+diff -r cff7afab3bac include/asm-i386/bootparam.h
+--- a/include/asm-i386/bootparam.h	Tue Oct 02 22:05:10 2007 +1000
++++ b/include/asm-i386/bootparam.h	Tue Oct 02 22:05:10 2007 +1000
+@@ -25,8 +25,9 @@ struct setup_header {
+ 	u16	kernel_version;
+ 	u8	type_of_loader;
+ 	u8	loadflags;
+-#define LOADED_HIGH	0x01
+-#define CAN_USE_HEAP	0x80
++#define LOADED_HIGH	(1<<0)
++#define KEEP_SEGMENTS	(1<<6)
++#define CAN_USE_HEAP	(1<<7)
+ 	u16	setup_move_size;
+ 	u32	code32_start;
+ 	u32	ramdisk_image;
+@@ -38,6 +39,10 @@ struct setup_header {
+ 	u32	initrd_addr_max;
+ 	u32	kernel_alignment;
+ 	u8	relocatable_kernel;
++	u8	_pad2[3];
++	u32	cmdline_size;
++	u32	hardware_subarch;
++	u64	hardware_subarch_data;
+ } __attribute__((packed));
+ 
+ struct sys_desc_table {
+
 
