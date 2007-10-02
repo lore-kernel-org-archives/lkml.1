@@ -1,173 +1,740 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXJBNrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbXJBNrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbXJBNrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXJBNrG
+	id S1758072AbXJBNrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbXJBNrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:47:06 -0400
+	Tue, 2 Oct 2007 09:47:09 -0400
 Received: from ms0.nttdata.co.jp ([163.135.193.231]:62191 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbXJBNrE (ORCPT
+	with ESMTP id S1751448AbXJBNrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:47:04 -0400
-Message-ID: <4701F285.5000206@nttdata.co.jp>
-Date: Tue, 02 Oct 2007 16:25:57 +0900
+	Tue, 2 Oct 2007 09:47:06 -0400
+Message-ID: <4701F3AB.5000807@nttdata.co.jp>
+Date: Tue, 02 Oct 2007 16:30:51 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
 CC: chrisw@sous-sol.org
-Subject: [TOMOYO 00/15](repost) TOMOYO Linux - MAC based on process invocation
- history.
+Subject: [TOMOYO 03/15](repost) Memory and pathname management functions.
+References: <4701F285.5000206@nttdata.co.jp>
+In-Reply-To: <4701F285.5000206@nttdata.co.jp>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2007 07:25:58.0402 (UTC) FILETIME=[7A1F9E20:01C804C5]
+X-OriginalArrivalTime: 02 Oct 2007 07:30:52.0758 (UTC) FILETIME=[2992C760:01C804C6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"TOMOYO Linux" is our work in the field of security enhanced Linux.
-This is the repeated post of second submission of TOMOYO Linux
-( http://lkml.org/lkml/2007/8/24/116 ).
+Basic functions to get canonicalized absolute pathnames
+for TOMOYO Linux. Even the requested pathname is symlink()ed
+or chroot()ed, TOMOYO Linux uses the original pathname.
 
-Unfortunately it was just before the Kernel Summit.
-We could not receive any suggestions about our codes.
-Before this posting, we changed the program to use
-securityfs (Kyle's comment) and re-generated patches
-with the current git tree.
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/realpath.c |  697 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 697 insertions(+)
 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/security/tomoyo/realpath.c	2007-10-02 11:26:21.000000000 +0900
+@@ -0,0 +1,697 @@
++/*
++ * security/tomoyo/realpath.c
++ *
++ * Get the canonicalized absolute pathnames.
++ * The basis for TOMOYO Linux.
++ */
++
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/utime.h>
++#include <linux/file.h>
++#include <linux/smp_lock.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/uaccess.h>
++#include <asm/atomic.h>
++#include <linux/namei.h>
++#include <linux/mount.h>
++#include <linux/proc_fs.h>
++#include <linux/sysctl.h>
++#include "realpath.h"
++#include "tomoyo.h"
++
++/***** realpath handler *****/
++
++static int tmy_print_ascii(const char *sp, const char *cp,
++			   int *buflen0, char **end0)
++{
++	int buflen = *buflen0;
++	char *end = *end0;
++
++	while (sp <= cp) {
++		unsigned char c;
++
++		c = *(unsigned char *) cp;
++		if (c == '\\') {
++			buflen -= 2;
++			if (buflen < 0)
++				goto out;
++			*--end = '\\';
++			*--end = '\\';
++		} else if (c > ' ' && c < 127) {
++			if (--buflen < 0)
++				goto out;
++			*--end = (char) c;
++		} else {
++			buflen -= 4;
++			if (buflen < 0)
++				goto out;
++			*--end = (c & 7) + '0';
++			*--end = ((c >> 3) & 7) + '0';
++			*--end = (c >> 6) + '0';
++			*--end = '\\';
++		}
++		cp--;
++	}
++
++	*buflen0 = buflen;
++	*end0 = end;
++
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * tmy_get_absolute_path - return the realpath of a dentry.
++ * @dentry: pointer to "struct dentry".
++ * @vfsmnt: pointer to "struct vfsmount" to which the @dentry belongs.
++ * @buffer: size of buffer to save the result.
++ * @buflen: size of @buffer .
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * Caller holds the dcache_lock.
++ * Based on __d_path() in fs/dcache.c
++ *
++ * Unlike d_path(), this function traverses upto the root directory of
++ * process's namespace.
++ *
++ * If @dentry is a directory, trailing '/' is appended.
++ * Characters other than ' ' < c < 127 are converted to \ooo style octal string.
++ * Character \ is converted to \\ string.
++ */
++static int tmy_get_absolute_path(struct dentry *dentry,
++				 struct vfsmount *vfsmnt,
++				 char *buffer,
++				 int buflen)
++{
++	char *start = buffer;
++	char *end = buffer + buflen;
++	u8 is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
++	const char *sp;
++	const char *cp;
++
++	if (buflen < 256)
++		goto out;
++
++	*--end = '\0';
++	buflen--;
++
++	while (1) {
++		struct dentry *parent;
++
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			/* Global root? */
++			spin_lock(&vfsmount_lock);
++			if (vfsmnt->mnt_parent == vfsmnt) {
++				spin_unlock(&vfsmount_lock);
++				break;
++			}
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			spin_unlock(&vfsmount_lock);
++			continue;
++		}
++
++		if (is_dir) {
++			is_dir = 0;
++			*--end = '/';
++			buflen--;
++		}
++
++		parent = dentry->d_parent;
++		sp = dentry->d_name.name;
++		cp = sp + dentry->d_name.len - 1;
++
++		/* Exception: Use /proc/self/ rather than */
++		/* /proc/\$/ for current process. */
++		if (IS_ROOT(parent) &&
++		    *sp > '0' && *sp <= '9' && parent->d_sb &&
++		    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
++
++			char *ep;
++			const pid_t pid = (pid_t) simple_strtoul(sp, &ep, 10);
++
++			if (!*ep && pid == current->tgid) {
++				sp = "self";
++				cp = sp + 3;
++			}
++
++		}
++
++		if (tmy_print_ascii(sp, cp, &buflen, &end))
++			goto out;
++
++		if (--buflen < 0)
++			goto out;
++		*--end = '/';
++
++		dentry = parent;
++	}
++	if (*end == '/') {
++		buflen++;
++		end++;
++	}
++
++	sp = dentry->d_name.name;
++	cp = sp + dentry->d_name.len - 1;
++
++	if (tmy_print_ascii(sp, cp, &buflen, &end))
++		goto out;
++
++	/* Move the pathname to the top of the buffer. */
++	memmove(start, end, strlen(end) + 1);
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * tmy_realpath_dentry2 - return the realpath of a dentry.
++ * @dentry:      pointer to "struct dentry".
++ * @mnt:         pointer to "struct vfsmount" to which the @dentry belongs.
++ * @newname:     buffer to save the result.
++ * @newname_len: size of @newname .
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_realpath_dentry2(struct dentry *dentry,
++			 struct vfsmount *mnt,
++			 char *newname,
++			 int newname_len)
++{
++	int error;
++	struct dentry *d_dentry;
++	struct vfsmount *d_mnt;
++
++	if (!dentry || !mnt || !newname || newname_len <= 0)
++		return -EINVAL;
++
++	d_dentry = dget(dentry);
++	d_mnt = mntget(mnt);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&dcache_lock);
++	error = tmy_get_absolute_path(d_dentry, d_mnt, newname, newname_len);
++	spin_unlock(&dcache_lock);
++	/***** CRITICAL SECTION END *****/
++
++	dput(d_dentry);
++	mntput(d_mnt);
++	return error;
++}
++
++/**
++ * tmy_realpath_dentry - return the realpath of a dentry.
++ * @dentry: pointer to "struct dentry".
++ * @mnt:    pointer to "struct vfsmount" to which the @dentry belongs.
++ *
++ * Returns realpath(3) of the @dentry on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt)
++{
++	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++
++	if (buf &&
++	    tmy_realpath_dentry2(dentry, mnt, buf,
++				 TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++
++	tmy_free(buf);
++	return NULL;
++}
++
++/**
++ * tmy_realpath - return the realpath of a pathname.
++ * @pathname: pathname to report.
++ *
++ * Returns realpath(3) of the @pathname on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *tmy_realpath(const char *pathname)
++{
++	struct nameidata nd;
++
++	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
++		char *buf = tmy_realpath_dentry(nd.dentry, nd.mnt);
++
++		path_release(&nd);
++		return buf;
++	}
++
++	return NULL;
++}
++
++/**
++ * tmy_realpath_nofollow - return the realpath of a pathname.
++ * @pathname: pathname to report.
++ *
++ * Returns realpath(3) of the @pathname on success.
++ * Returns NULL on failure.
++ *
++ * Unlike tmy_realpath(), this function doesn't follow if @pathname is
++ * a symbolic link.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *tmy_realpath_nofollow(const char *pathname)
++{
++	struct nameidata nd;
++
++	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
++		char *buf = tmy_realpath_dentry(nd.dentry, nd.mnt);
++
++		path_release(&nd);
++		return buf;
++	}
++
++	return NULL;
++}
++
++/* tmy_get_absolute_path() for "struct ctl_table". */
++static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
++{
++	char *end = buffer + buflen;
++
++	if (buflen < 256)
++		goto out;
++
++	*--end = '\0';
++	buflen--;
++
++	buflen -= 9; /* for "/proc/sys" prefix */
++
++	while (table) {
++		char buf[32];
++		const char *sp = table->procname;
++		const char *cp;
++
++		if (!sp) {
++			memset(buf, 0, sizeof(buf));
++			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
++			sp = buf;
++		}
++		cp = strchr(sp, '\0') - 1;
++
++		if (tmy_print_ascii(sp, cp, &buflen, &end))
++			goto out;
++
++		if (--buflen < 0)
++			goto out;
++
++		*--end = '/';
++		table = table->parent;
++	}
++
++	/* Move the pathname to the top of the buffer. */
++	memmove(buffer, "/proc/sys", 9);
++	memmove(buffer + 9, end, strlen(end) + 1);
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * sysctlpath_from_table - return the realpath of a ctl_table.
++ * @table: pointer to "struct ctl_table".
++ *
++ * Returns realpath(3) of the @table on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *sysctlpath_from_table(struct ctl_table *table)
++{
++	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++
++	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++
++	tmy_free(buf);
++	return NULL;
++}
++
++/***** Private memory allocator. *****/
++
++/*
++ * Round up an integer so that the returned pointers are appropriately aligned.
++ * FIXME: Are there more requirements that is needed for assigning value
++ * atomically?
++ */
++static inline unsigned int tmy_roundup(const unsigned int size)
++{
++	if (sizeof(void *) >= sizeof(long))
++		return ((size + sizeof(void *) - 1) / sizeof(void *))
++			* sizeof(void *);
++
++	return ((size + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
++}
++
++static unsigned int allocated_memory_for_elements;
++
++/**
++ * tmy_get_memory_used_for_elements - get memory usage for private data.
++ *
++ * Returns size of memory allocated for keeping individual ACL elements.
++ */
++unsigned int tmy_get_memory_used_for_elements(void)
++{
++	return allocated_memory_for_elements;
++}
++
++/**
++ * tmy_alloc_element - allocate memory for structures.
++ * @size: requested size in bytes.
++ *
++ * Returns '\0'-initialized memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping ACL entries.
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tmy_alloc_element(const unsigned int size)
++{
++	static DECLARE_MUTEX(lock);
++	static char *buf;
++	static unsigned int buf_used_len = PAGE_SIZE;
++	char *ptr = NULL;
++	const unsigned int word_aligned_size = tmy_roundup(size);
++
++	if (word_aligned_size > PAGE_SIZE)
++		return NULL;
++
++	down(&lock);
++
++	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
++		ptr = kmalloc(PAGE_SIZE, GFP_KERNEL);
++
++		if (!ptr) {
++			printk(KERN_INFO "ERROR: "
++			       "Out of memory for tmy_alloc_element().\n");
++			if (!sbin_init_started)
++				panic("MAC Initialization failed.\n");
++		} else {
++			memset(ptr, 0, PAGE_SIZE);
++			buf = ptr;
++			allocated_memory_for_elements += PAGE_SIZE;
++			buf_used_len = word_aligned_size;
++			ptr = buf;
++		}
++
++	} else if (word_aligned_size) {
++		unsigned int i;
++
++		ptr = buf + buf_used_len;
++		buf_used_len += word_aligned_size;
++
++		for (i = 0; i < word_aligned_size; i++) {
++			if (ptr[i]) { /* This must not happen! */
++				printk(KERN_ERR
++				       "WARNING: Reserved memory was tainted! "
++				       "The system might go wrong.\n");
++				ptr[i] = '\0';
++			}
++		}
++
++	}
++
++	up(&lock);
++	return ptr;
++}
++
++/***** Shared memory allocator. *****/
++
++static unsigned int allocated_memory_for_savename;
++
++/**
++ * tmy_get_memory_used_for_save_name - get memory usage for shared data.
++ *
++ * Returns size of memory allocated for keeping string tokens.
++ */
++unsigned int tmy_get_memory_used_for_save_name(void)
++{
++	return allocated_memory_for_savename;
++}
++
++#define MAX_HASH 256
++
++/* List of tokens. */
++struct name_entry {
++	struct name_entry *next; /* NULL if none. */
++	struct path_info entry;
++};
++
++/* List of free memory. */
++struct free_memory_block_list {
++	struct free_memory_block_list *next; /* NULL if none. */
++	char *ptr; /* Pointer to a free area. */
++	int len;   /* Length of the area.     */
++};
++
++/**
++ * tmy_save_name - keep the given token on the RAM.
++ * @name: the string token to remember.
++ *
++ * Returns pointer to memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping any string data.
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct path_info *tmy_save_name(const char *name)
++{
++	static struct free_memory_block_list fmb_list = { NULL, NULL, 0 };
++	static struct name_entry name_list[MAX_HASH]; /* The list of names. */
++	static DECLARE_MUTEX(lock);
++	struct name_entry *ptr;
++	struct name_entry *prev = NULL;
++	unsigned int hash;
++	struct free_memory_block_list *fmb = &fmb_list;
++	int len;
++	static int first_call = 1;
++
++	if (!name)
++		return NULL;
++
++	len = strlen(name) + 1;
++	if (len > TMY_MAX_PATHNAME_LEN) {
++		printk(KERN_INFO "ERROR: Name too long for tmy_save_name().\n");
++		return NULL;
++	}
++
++	hash = full_name_hash((const unsigned char *) name, len - 1);
++
++	down(&lock);
++
++	if (first_call) {
++		int i;
++
++		first_call = 0;
++		memset(&name_list, 0, sizeof(name_list));
++
++		for (i = 0; i < MAX_HASH; i++) {
++			name_list[i].entry.name = "/";
++			tmy_fill_path_info(&name_list[i].entry);
++		}
++
++		if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
++			panic("Bad size.");
++	}
++
++	ptr = &name_list[hash % MAX_HASH];
++	while (ptr) {
++		if (hash == ptr->entry.hash &&
++		    strcmp(name, ptr->entry.name) == 0)
++			goto out;
++		prev = ptr;
++		ptr = ptr->next;
++	}
++
++	while (len > fmb->len) {
++		char *cp;
++
++		if (fmb->next) {
++			fmb = fmb->next;
++			continue;
++		}
++
++		cp = kmalloc(PAGE_SIZE, GFP_KERNEL);
++		if (!cp)
++			goto out2;
++
++		fmb->next = tmy_alloc_element(sizeof(*fmb));
++		if (!fmb->next) {
++			kfree(cp);
++out2: ;
++			printk(KERN_INFO
++			       "ERROR: Out of memory for tmy_save_name().\n");
++			if (!sbin_init_started)
++				panic("MAC Initialization failed.\n");
++			goto out; /* ptr == NULL */
++		}
++
++		memset(cp, 0, PAGE_SIZE);
++		allocated_memory_for_savename += PAGE_SIZE;
++		fmb = fmb->next;
++		fmb->ptr = cp;
++		fmb->len = PAGE_SIZE;
++
++	}
++
++	ptr = tmy_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto out;
++
++	ptr->entry.name = fmb->ptr;
++	memmove(fmb->ptr, name, len);
++	tmy_fill_path_info(&ptr->entry);
++	fmb->ptr += len;
++	fmb->len -= len;
++
++	prev->next = ptr; /* prev != NULL because name_list is not empty. */
++	if (fmb->len == 0) {
++		struct free_memory_block_list *ptr = &fmb_list;
++		while (ptr->next != fmb)
++			ptr = ptr->next;
++		ptr->next = fmb->next;
++	}
++out: ;
++
++	up(&lock);
++
++	return ptr ? &ptr->entry : NULL;
++}
++
++/***** Dynamic memory allocator. *****/
++
++/* List of temporary memory blocks. */
++struct cache_entry {
++	struct list_head list;
++	void *ptr;
++	int size;
++};
++
++static struct kmem_cache *tmy_cachep;
++
++/**
++ * tmy_realpath_init - initialize memory allocator.
++ */
++void tmy_realpath_init(void)
++{
++	tmy_cachep = kmem_cache_create("tomoyo_cache",
++				       sizeof(struct cache_entry),
++				       0, SLAB_PANIC, NULL);
++}
++
++static LIST_HEAD(cache_list);
++static DEFINE_SPINLOCK(cache_list_lock);
++static unsigned int dynamic_memory_size;
++
++/**
++ * tmy_get_memory_used_for_dynamic - get memory usage for temporary purpose.
++ *
++ * Returns size of memory allocated for keeping temporary purpose.
++ */
++unsigned int tmy_get_memory_used_for_dynamic(void)
++{
++	return dynamic_memory_size;
++}
++
++/**
++ * tmy_alloc - allocate memory for temporary purpose.
++ * @size: requested size in bytes.
++ *
++ * Returns '\0'-initialized memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping ACL entries.
++ * The caller has to call tmy_free() the returned pointer
++ * when memory is no longer needed.
++ */
++void *tmy_alloc(const size_t size)
++{
++	void *ret = kmalloc(size, GFP_KERNEL);
++	struct cache_entry *new_entry;
++
++	if (!ret) {
++		printk(KERN_INFO "ERROR: "
++		       "kmalloc(): Out of memory for tmy_alloc().\n");
++		return ret;
++	}
++
++	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++
++	if (!new_entry) {
++		printk(KERN_INFO "ERROR: "
++		       "kmem_cache_alloc(): Out of memory for tmy_alloc().\n");
++		kfree(ret);
++		ret = NULL;
++	} else {
++		INIT_LIST_HEAD(&new_entry->list);
++		new_entry->ptr = ret;
++		new_entry->size = size;
++
++		/***** CRITICAL SECTION START *****/
++		spin_lock(&cache_list_lock);
++		list_add_tail(&new_entry->list, &cache_list);
++		dynamic_memory_size += size;
++		spin_unlock(&cache_list_lock);
++		/***** CRITICAL SECTION END *****/
++
++		memset(ret, 0, size);
++	}
++
++	return ret;
++}
++
++/**
++ * tmy_free - free memory allocated by tmy_alloc().
++ * @p: pointer to memory block allocated by tmy_alloc().
++ *
++ * If caller calls this function for multiple times (i.e. double-free() bug) or
++ * calls this function with invalid pointer, warning message will appear.
++ * If caller forgets to call this function,
++ * tmy_get_memory_used_for_dynamic() will indicate memory leaks.
++ */
++void tmy_free(const void *p)
++{
++	struct list_head *v;
++	struct cache_entry *entry = NULL;
++	if (!p)
++		return;
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&cache_list_lock);
++	list_for_each_prev(v, &cache_list) {
++		entry = list_entry(v, struct cache_entry, list);
++		if (entry->ptr != p) {
++			entry = NULL;
++			continue;
++		}
++		list_del(&entry->list);
++		dynamic_memory_size -= entry->size;
++		break;
++	}
++	spin_unlock(&cache_list_lock);
++	/***** CRITICAL SECTION END *****/
++
++	if (entry) {
++		kfree(p);
++		kmem_cache_free(tmy_cachep, entry);
++	} else
++		printk(KERN_INFO "BUG: tmy_free() with invalid pointer.\n");
++
++}
 
-When we posted our first proposal to LKML, TOMOYO Linux's MAC was
-limited to file access control. Now TOMOYO Linux has access control
-functionality not only for files but also for networking, signal
-transmission and namespace manipulation and we got the source code
-cleaned-up.
-
-Patches consist of four types.
-    * [TOMOYO 01/15]:    Mandatory modifications against standard kernel.
-    * [TOMOYO 02-13/15]: LSM implementation of TOMOYO Linux.
-    * [TOMOYO 14/15]:    Optional modifications against standard kernel.
-    * [TOMOYO 15/15]:    Makefile and Kconfig .
-
-
-<<What you can do with TOMOYO Linux.>>
-
-The fundamental concept of TOMOYO Linux is "tracking process
-invocation history".
-
-The "struct task_struct"->security member holds a pointer to the
-"process invocation history". Thus, every process (the kernel,
-/sbin/init process and any children/descendant of /sbin/init) knows
-its "process invocation history" (or ancestors). Since every process
-knows its ancestors, TOMOYO Linux can enforce access control over all
-processes.
-
-TOMOYO Linux splits domains using "process invocation history" and the
-process transits to a different domain whenever execution of a program
-(i.e. do_execve()) is requested. By transiting to a different domain
-whenever execution of a program is requested, each domain will have
-the minimal permissions that are essential for processes in that
-domain to do their roles.
-
-You don't need to define domains beforehand. TOMOYO Linux kernel will
-automatically define new domains whenever execution of a program is
-requested, and the process will automatically transit to the new
-domain. (If the process's domain is in enforcing mode, TOMOYO Linux
-kernel will not define new domains to avoid memory consumption attack.)
-
-TOMOYO Linux can restrict the following requests on a per-a-domain basis:
-
-    * opening files
-    * communicating via PF_INET sockets
-    * sending signals
-
-TOMOYO Linux can also restrict the following namespace manipulation requests.
-
-    * mounting filesystems
-    * unmounting filesystems
-    * using pivot_root
-
-
-<<Example>>
-
-The tree below shows a part of domain transitions generated using
-Debian Etch. The domain a process is in is determined based on the
-process's "process invocation history". Each domain has permissions
-(or ACL), and the behavior (or requests shown above) of a process is
-restricted by the ACL of the domain that the process is in.
-
-    <kernel>
-      + /sbin/init
-          + /etc/init.d/rc
-              + /etc/init.d/apache2
-                  + /usr/bin/env
-                      + /usr/sbin/apache2ctl
-                          + /usr/sbin/apache2
-
-You can assign different access control modes (or profiles) on a
-per-a-domain basis. Thus, you can enforce access control partially or
-entirely. Also, by assigning "learning mode" to a domain, ACL that are
-requested by processes in that domain are automatically (i.e. in
-real-time) accumulated. The following ACL are an excerpt from
-/usr/sbin/apache2 domain generated using "learning mode".
-
-    4 /etc/apache2/apache2.conf
-    4 /var/www/apache2-default/index.html
-    allow_create /var/run/apache2.pid
-    allow_unlink /var/run/apache2.pid
-    allow_network TCP bind 192.168.1.135 80
-    allow_network TCP listen 192.168.1.135 80
-    allow_network TCP accept 192.168.1.1 2389
-
-The above ACL allows Apache to do the following behavior.
-
-    * Opening /etc/apache2/apache2.conf and
-      /var/www/apache2-default/index.html for reading.
-    * Creating and deleting /var/run/apache2.pid .
-    * Binding to local address (IP = 192.168.1.135, port = 80).
-    * Listening at local address (IP = 192.168.1.135, port = 80).
-    * Accepting from remote address (IP = 192.168.1.1, port = 2389).
-
-You may use wildcards for pathnames, ranges for IP addresses and port
-numbers, groups of pathnames and IP addresses for flexible definition.
-
-
-<<Features of TOMOYO Linux.>>
-
-TOMOYO Linux is an implementation of MAC, but you can use TOMOYO Linux
-not only for MAC, but also to analyze a system's behavior, since
-TOMOYO Linux can accumulate access requests raised by applications
-sorted by each "process invocation history".
-
-TOMOYO Linux and AppArmor are alike from the point of view of pathname
-based access control, but TOMOYO Linux has differences in the
-following points:
-
-    * TOMOYO Linux can apply access control over the whole process
-      (from the execution of /sbin/init at the startup procedure,
-      till the power failure at the shutdown procedure).
-    * TOMOYO Linux can apply access control not only over files but
-      also over networking, signals, namespace manipulations.
-    * TOMOYO Linux can accumulate ACL in real-time using
-      "learning mode".
-
-    * TOMOYO Linux allows the administrator to switch the access
-      control mode on a per-domain and per-functionality basis.
-    * TOMOYO Linux allows the administrator to judge (grant/reject)
-      requests which that violated ACL manually while operating in
-      "enforcing mode" without once rejecting these requests.
-    * TOMOYO Linux supports conditional ACL (e.g. owner of
-      process/files etc.).
-
-Documents about installing and experiencing TOMOYO Linux are available
-at http://tomoyo.sourceforge.jp/en/2.1.x/ . Please try TOMOYO Linux.
-Feedbacks are most welcome.
-
-
-<<Related links>>
-
-OLS BoF material: http://sourceforge.jp/projects/tomoyo/document/ols2007-tomoyo-20070629.pdf
-Previous submissions: http://lkml.org/lkml/2007/6/13/58 , http://lkml.org/lkml/2007/6/14/55, http://lkml.org/lkml/2007/8/24/116
-
-Kentaro Takeda
-NTT DATA CORPORATION
 
