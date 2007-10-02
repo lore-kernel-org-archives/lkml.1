@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXJBN1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbXJBN1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbXJBN1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXJBN1K
+	id S1756459AbXJBN1u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXJBN1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:27:10 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:37180 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752958AbXJBN1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:27:09 -0400
-Message-ID: <391331626.16970@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 2 Oct 2007 21:27:02 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Greg KH <gregkh@suse.de>,
-       Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Krzysztof Oledzki <olel@ans.pl>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       richard kennedy <richard@rsk.demon.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] writeback: avoid possible balance_dirty_pages() lockup
-	on a light-load bdi
-Message-ID: <20071002132702.GA10967@mail.ustc.edu.cn>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com> <391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com> <391290444.23950@ustc.edu.cn> <20071001191457.2f7c7538.akpm@linux-foundation.org> <20071002121327.GA5718@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071002121327.GA5718@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 2 Oct 2007 09:27:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53174 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751213AbXJBN1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 09:27:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1191330132.11136.2.camel@norville.austin.ibm.com>
+References: <1191330132.11136.2.camel@norville.austin.ibm.com> <963DCFBD-9E68-488E-BD2C-D8B751E65BDF@zabbo.net> <20071001130921.29339.72876.stgit@warthog.procyon.org.uk> <20071001130958.29339.31669.stgit@warthog.procyon.org.uk> <20071001173930.GA7718@mami.zabbo.net> <alpine.LFD.0.999.0710011043250.3579@woody.linux-foundation.org> <20071001180601.GA9417@infradead.org> <11826.1191328350@redhat.com> 
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: dhowells@redhat.com, Zach Brown <zab@zabbo.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, viro@ftp.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 07/30] IGET: Stop BEFS from using iget() and read_inode()
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Tue, 02 Oct 2007 14:24:17 +0100
+Message-ID: <25570.1191331457@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 08:13:27PM +0800, Fengguang Wu wrote:
-[...]
-> One more serious problem is, a busy writer could also drain all the
-> dirty pages and make (nr_writeback == dirty_limit+1MB). In that case,
-> I suspect the light-load sdb writer still have good chance to
-> make progress(need confirmation).
+Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
 
-Well it seems to be a really tricky issue without knowing the per-bdi
-numbers. Maybe we could just encourage users to upgrade to 2.6.24...
+> Of course, the cast is unnecessary,
 
+The cast is necessary as the argument is a const pointer and the return type
+is not.
+
+> and I'm sure you meant to return error:
+
+Oops.  Yes, I changed my mind and renamed the argument to be 'error', but
+forgot to change the reference to it.
+
+David
