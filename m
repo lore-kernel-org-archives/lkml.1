@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbXJBVTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXJBVUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbXJBVTz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 17:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbXJBVTm
+	id S1756689AbXJBVUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 17:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbXJBVU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 17:19:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:30390 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbXJBVTl (ORCPT
+	Tue, 2 Oct 2007 17:20:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43894 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754672AbXJBVUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 17:19:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=NehSenHOfuisCM++jSi+aONrrRZz5GW4GDNAf5C0FSxP72Ggv3IKk2aN6D8KG1AyV9YTv8Yh7ympbqxWbv0H6EnH94xyUCcR7wh8dXRRDtaFqo+yRJmV1p+5K06V7Q4pDrNNcnX4ByriC1fN37/zWctgufGNfY7A4RPuZfwJ/2g=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 4/4] hpt366: MWDMA filter for SATA cards (take 2)
-Date: Tue, 2 Oct 2007 22:26:10 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200709300004.43335.sshtylyov@ru.mvista.com> <200710012312.45552.bzolnier@gmail.com> <470237E3.2020108@ru.mvista.com>
-In-Reply-To: <470237E3.2020108@ru.mvista.com>
+	Tue, 2 Oct 2007 17:20:24 -0400
+Date: Tue, 2 Oct 2007 14:20:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
+   Control Kernel
+In-Reply-To: <4702B1D5.5050502@tmr.com>
+Message-ID: <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org>
+References: <46FEEBD4.5050401@schaufler-ca.com>  <20070930011618.ccb8351b.akpm@linux-foundation.org>
+  <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> 
+ <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org>
+ <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil>
+ <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
+ <4702B1D5.5050502@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710022226.10687.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 October 2007, Sergei Shtylyov wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> >>The Marvell bridge chips used on HighPoint SATA cards do not seem to support
-> >>the MWDMA modes (at least that caould be seen in their so-called drivers :-),
-> >>so the driver needs to account for this -- to achieve this:
-> 
-> >>- add mdma_filter() method from the original patch by Bartlomiej Zolnierkewicz
-> >> with his consent,
-> 
-> >> also adding the method callout to ide_rate_filter();
-> 
->     Ugh, forgot to remove this part -- it's no longer true.
 
-Thanks for the hint, I fixed it locally.
 
-Bart
+On Tue, 2 Oct 2007, Bill Davidsen wrote:
+>
+> And yet you can make the exact same case for schedulers as security, you can
+> quantify the behavior, but if your only choice is A it doesn't help to know
+> that B is better.
+
+You snipped a key part of the argument. Namely:
+
+  Another difference is that when it comes to schedulers, I feel like I
+  actually can make an informed decision. Which means that I'm perfectly
+  happy to just make that decision, and take the flak that I get for it. And
+  I do (both decide, and get flak). That's my job.
+
+which you seem to not have read or understood (neither did apparently 
+anybody on slashdot).
+
+> You say "performance" as if it had universal meaning.
+
+Blah. Bogus and pointless argument removed.
+
+When it comes to schedulers, "performance" *is* pretty damn well-defined, 
+and has effectively universal meaning.
+
+The arguments that "servers" have a different profile than "desktop" is 
+pure and utter garbage, and is perpetuated by people who don't know what 
+they are talking about. The whole notion of "server" and "desktop" 
+scheduling being different is nothing but crap. 
+
+I don't know who came up with it, or why people continue to feed the 
+insane ideas. Why do people think that servers don't care about latency? 
+Why do people believe that desktop doesn't have multiple processors or 
+through-put intensive loads? Why are people continuing this *idiotic* 
+scheduler discussion?
+
+Really - not only is the whole "desktop scheduler" argument totally bogus 
+to begin with (and only brought up by people who either don't know 
+anything about it, or who just want to argue, regardless of whether the 
+argumen is valid or not), quite frankly, when you say that it's the "same 
+issue" as with security models, you're simply FULL OF SH*T.
+
+The issue with LSM is that security people simply cannot even agree on the 
+model. It has nothing to do with performance. It's about management, and 
+it's about totally different models. Have you even *looked* at the 
+differences between AppArmor and SELinux? Did you look at SMACK? They are 
+all done by people who are interested in security, but have totally 
+different notions of what "security" even *IS*ALL*ABOUT.
+
+In contrast, anybody who claims that the CPU scheduler doesn't know what 
+it's all about is just tripping. And anybody who claims that desktop 
+workloads are so radically different from server workloads (or that the 
+hardware is so different) is just totally out to lunch.
+
+So next time, think five minutes before you start your argument.
+
+			Linus
