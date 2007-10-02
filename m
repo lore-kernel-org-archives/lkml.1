@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXJBSxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbXJBSyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbXJBSxz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXJBSxp
+	id S1756709AbXJBSyW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbXJBSyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:53:45 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44833 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbXJBSxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:53:45 -0400
-Date: Tue, 2 Oct 2007 20:53:43 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: James.Bottomley@steeleye.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Disk spindown on rmmod sd_mod
-Message-ID: <Pine.LNX.4.64.0710022050200.28124@fbirervta.pbzchgretzou.qr>
+	Tue, 2 Oct 2007 14:54:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53655 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbXJBSyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 14:54:01 -0400
+Message-ID: <470293C7.6080906@garzik.org>
+Date: Tue, 02 Oct 2007 14:53:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patch] SCSI aic94xx fix
+References: <20071002172151.GA28579@havoc.gtf.org> <1191350862.3530.114.camel@localhost.localdomain>
+In-Reply-To: <1191350862.3530.114.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+James Bottomley wrote:
+> Sure, I'll state my case:  This is a bug, but it has no affected users,
+> nor will it because the aic94xx doesn't work on non-x86 architectures by
+> reason of other longstanding bugs (and TODEVICE/FROMDEVICE only matters
+
+False.  It fails to work on _some_ non-x86 platforms.
+
+	Jeff
 
 
-
-I am using 2.6.23-rc9 with pata_sis. `modprobe -r sd_mod`, which I ran 
-from initramfs, caused all my disks to spindown - sd even told me so.
-
-I recall there has been talk a while back about whether to spin down 
-disks on shutdown or not, but I do not think it touched the removal of 
-sd_mod, did it? So either way, can someone fill me in why the spindown 
-is done?
