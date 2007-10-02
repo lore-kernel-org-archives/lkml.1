@@ -1,740 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbXJBNrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbXJBNwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbXJBNrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 09:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbXJBNrJ
+	id S1753121AbXJBNwJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 09:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXJBNv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 09:47:09 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:62191 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbXJBNrG (ORCPT
+	Tue, 2 Oct 2007 09:51:57 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52574 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbXJBNv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 09:47:06 -0400
-Message-ID: <4701F3AB.5000807@nttdata.co.jp>
-Date: Tue, 02 Oct 2007 16:30:51 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.6) Gecko/20070728 Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
+	Tue, 2 Oct 2007 09:51:56 -0400
+Date: Tue, 2 Oct 2007 15:51:55 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [patch] menuconfig - lift the fs menu
+Message-ID: <Pine.LNX.4.64.0710021549421.7130@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-CC: chrisw@sous-sol.org
-Subject: [TOMOYO 03/15](repost) Memory and pathname management functions.
-References: <4701F285.5000206@nttdata.co.jp>
-In-Reply-To: <4701F285.5000206@nttdata.co.jp>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2007 07:30:52.0758 (UTC) FILETIME=[2992C760:01C804C6]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic functions to get canonicalized absolute pathnames
-for TOMOYO Linux. Even the requested pathname is symlink()ed
-or chroot()ed, TOMOYO Linux uses the original pathname.
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Lift the FS menu a bit by moving filesystem-specific
+parts into their own menu.
+
+This also moves minix and romfs into the "misc fs" menu,
+as per Randy Dunlap's suggestion [http://lkml.org/lkml/2007/9/25/344]
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
 ---
- security/tomoyo/realpath.c |  697 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 697 insertions(+)
+ fs/Kconfig      |   81 +++++++++++++++++++++++++++++++-------------------------
+ fs/gfs2/Kconfig |    9 ++++--
+ fs/xfs/Kconfig  |   10 +++---
+ 3 files changed, 56 insertions(+), 44 deletions(-)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/realpath.c	2007-10-02 11:26:21.000000000 +0900
-@@ -0,0 +1,697 @@
-+/*
-+ * security/tomoyo/realpath.c
-+ *
-+ * Get the canonicalized absolute pathnames.
-+ * The basis for TOMOYO Linux.
-+ */
-+
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/utime.h>
-+#include <linux/file.h>
-+#include <linux/smp_lock.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+#include <asm/atomic.h>
-+#include <linux/namei.h>
-+#include <linux/mount.h>
-+#include <linux/proc_fs.h>
-+#include <linux/sysctl.h>
-+#include "realpath.h"
-+#include "tomoyo.h"
-+
-+/***** realpath handler *****/
-+
-+static int tmy_print_ascii(const char *sp, const char *cp,
-+			   int *buflen0, char **end0)
-+{
-+	int buflen = *buflen0;
-+	char *end = *end0;
-+
-+	while (sp <= cp) {
-+		unsigned char c;
-+
-+		c = *(unsigned char *) cp;
-+		if (c == '\\') {
-+			buflen -= 2;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = '\\';
-+			*--end = '\\';
-+		} else if (c > ' ' && c < 127) {
-+			if (--buflen < 0)
-+				goto out;
-+			*--end = (char) c;
-+		} else {
-+			buflen -= 4;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = (c & 7) + '0';
-+			*--end = ((c >> 3) & 7) + '0';
-+			*--end = (c >> 6) + '0';
-+			*--end = '\\';
-+		}
-+		cp--;
-+	}
-+
-+	*buflen0 = buflen;
-+	*end0 = end;
-+
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * tmy_get_absolute_path - return the realpath of a dentry.
-+ * @dentry: pointer to "struct dentry".
-+ * @vfsmnt: pointer to "struct vfsmount" to which the @dentry belongs.
-+ * @buffer: size of buffer to save the result.
-+ * @buflen: size of @buffer .
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * Caller holds the dcache_lock.
-+ * Based on __d_path() in fs/dcache.c
-+ *
-+ * Unlike d_path(), this function traverses upto the root directory of
-+ * process's namespace.
-+ *
-+ * If @dentry is a directory, trailing '/' is appended.
-+ * Characters other than ' ' < c < 127 are converted to \ooo style octal string.
-+ * Character \ is converted to \\ string.
-+ */
-+static int tmy_get_absolute_path(struct dentry *dentry,
-+				 struct vfsmount *vfsmnt,
-+				 char *buffer,
-+				 int buflen)
-+{
-+	char *start = buffer;
-+	char *end = buffer + buflen;
-+	u8 is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
-+	const char *sp;
-+	const char *cp;
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	while (1) {
-+		struct dentry *parent;
-+
-+		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+			/* Global root? */
-+			spin_lock(&vfsmount_lock);
-+			if (vfsmnt->mnt_parent == vfsmnt) {
-+				spin_unlock(&vfsmount_lock);
-+				break;
-+			}
-+			dentry = vfsmnt->mnt_mountpoint;
-+			vfsmnt = vfsmnt->mnt_parent;
-+			spin_unlock(&vfsmount_lock);
-+			continue;
-+		}
-+
-+		if (is_dir) {
-+			is_dir = 0;
-+			*--end = '/';
-+			buflen--;
-+		}
-+
-+		parent = dentry->d_parent;
-+		sp = dentry->d_name.name;
-+		cp = sp + dentry->d_name.len - 1;
-+
-+		/* Exception: Use /proc/self/ rather than */
-+		/* /proc/\$/ for current process. */
-+		if (IS_ROOT(parent) &&
-+		    *sp > '0' && *sp <= '9' && parent->d_sb &&
-+		    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
-+
-+			char *ep;
-+			const pid_t pid = (pid_t) simple_strtoul(sp, &ep, 10);
-+
-+			if (!*ep && pid == current->tgid) {
-+				sp = "self";
-+				cp = sp + 3;
-+			}
-+
-+		}
-+
-+		if (tmy_print_ascii(sp, cp, &buflen, &end))
-+			goto out;
-+
-+		if (--buflen < 0)
-+			goto out;
-+		*--end = '/';
-+
-+		dentry = parent;
-+	}
-+	if (*end == '/') {
-+		buflen++;
-+		end++;
-+	}
-+
-+	sp = dentry->d_name.name;
-+	cp = sp + dentry->d_name.len - 1;
-+
-+	if (tmy_print_ascii(sp, cp, &buflen, &end))
-+		goto out;
-+
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(start, end, strlen(end) + 1);
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * tmy_realpath_dentry2 - return the realpath of a dentry.
-+ * @dentry:      pointer to "struct dentry".
-+ * @mnt:         pointer to "struct vfsmount" to which the @dentry belongs.
-+ * @newname:     buffer to save the result.
-+ * @newname_len: size of @newname .
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_realpath_dentry2(struct dentry *dentry,
-+			 struct vfsmount *mnt,
-+			 char *newname,
-+			 int newname_len)
-+{
-+	int error;
-+	struct dentry *d_dentry;
-+	struct vfsmount *d_mnt;
-+
-+	if (!dentry || !mnt || !newname || newname_len <= 0)
-+		return -EINVAL;
-+
-+	d_dentry = dget(dentry);
-+	d_mnt = mntget(mnt);
-+
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&dcache_lock);
-+	error = tmy_get_absolute_path(d_dentry, d_mnt, newname, newname_len);
-+	spin_unlock(&dcache_lock);
-+	/***** CRITICAL SECTION END *****/
-+
-+	dput(d_dentry);
-+	mntput(d_mnt);
-+	return error;
-+}
-+
-+/**
-+ * tmy_realpath_dentry - return the realpath of a dentry.
-+ * @dentry: pointer to "struct dentry".
-+ * @mnt:    pointer to "struct vfsmount" to which the @dentry belongs.
-+ *
-+ * Returns realpath(3) of the @dentry on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
-+
-+	if (buf &&
-+	    tmy_realpath_dentry2(dentry, mnt, buf,
-+				 TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath - return the realpath of a pathname.
-+ * @pathname: pathname to report.
-+ *
-+ * Returns realpath(3) of the @pathname on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath(const char *pathname)
-+{
-+	struct nameidata nd;
-+
-+	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-+		char *buf = tmy_realpath_dentry(nd.dentry, nd.mnt);
-+
-+		path_release(&nd);
-+		return buf;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath_nofollow - return the realpath of a pathname.
-+ * @pathname: pathname to report.
-+ *
-+ * Returns realpath(3) of the @pathname on success.
-+ * Returns NULL on failure.
-+ *
-+ * Unlike tmy_realpath(), this function doesn't follow if @pathname is
-+ * a symbolic link.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath_nofollow(const char *pathname)
-+{
-+	struct nameidata nd;
-+
-+	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-+		char *buf = tmy_realpath_dentry(nd.dentry, nd.mnt);
-+
-+		path_release(&nd);
-+		return buf;
-+	}
-+
-+	return NULL;
-+}
-+
-+/* tmy_get_absolute_path() for "struct ctl_table". */
-+static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
-+{
-+	char *end = buffer + buflen;
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	buflen -= 9; /* for "/proc/sys" prefix */
-+
-+	while (table) {
-+		char buf[32];
-+		const char *sp = table->procname;
-+		const char *cp;
-+
-+		if (!sp) {
-+			memset(buf, 0, sizeof(buf));
-+			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-+			sp = buf;
-+		}
-+		cp = strchr(sp, '\0') - 1;
-+
-+		if (tmy_print_ascii(sp, cp, &buflen, &end))
-+			goto out;
-+
-+		if (--buflen < 0)
-+			goto out;
-+
-+		*--end = '/';
-+		table = table->parent;
-+	}
-+
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(buffer, "/proc/sys", 9);
-+	memmove(buffer + 9, end, strlen(end) + 1);
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * sysctlpath_from_table - return the realpath of a ctl_table.
-+ * @table: pointer to "struct ctl_table".
-+ *
-+ * Returns realpath(3) of the @table on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *sysctlpath_from_table(struct ctl_table *table)
-+{
-+	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
-+
-+	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/***** Private memory allocator. *****/
-+
-+/*
-+ * Round up an integer so that the returned pointers are appropriately aligned.
-+ * FIXME: Are there more requirements that is needed for assigning value
-+ * atomically?
-+ */
-+static inline unsigned int tmy_roundup(const unsigned int size)
-+{
-+	if (sizeof(void *) >= sizeof(long))
-+		return ((size + sizeof(void *) - 1) / sizeof(void *))
-+			* sizeof(void *);
-+
-+	return ((size + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
-+}
-+
-+static unsigned int allocated_memory_for_elements;
-+
-+/**
-+ * tmy_get_memory_used_for_elements - get memory usage for private data.
-+ *
-+ * Returns size of memory allocated for keeping individual ACL elements.
-+ */
-+unsigned int tmy_get_memory_used_for_elements(void)
-+{
-+	return allocated_memory_for_elements;
-+}
-+
-+/**
-+ * tmy_alloc_element - allocate memory for structures.
-+ * @size: requested size in bytes.
-+ *
-+ * Returns '\0'-initialized memory region on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function allocates memory for keeping ACL entries.
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tmy_alloc_element(const unsigned int size)
-+{
-+	static DECLARE_MUTEX(lock);
-+	static char *buf;
-+	static unsigned int buf_used_len = PAGE_SIZE;
-+	char *ptr = NULL;
-+	const unsigned int word_aligned_size = tmy_roundup(size);
-+
-+	if (word_aligned_size > PAGE_SIZE)
-+		return NULL;
-+
-+	down(&lock);
-+
-+	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
-+		ptr = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+
-+		if (!ptr) {
-+			printk(KERN_INFO "ERROR: "
-+			       "Out of memory for tmy_alloc_element().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+		} else {
-+			memset(ptr, 0, PAGE_SIZE);
-+			buf = ptr;
-+			allocated_memory_for_elements += PAGE_SIZE;
-+			buf_used_len = word_aligned_size;
-+			ptr = buf;
-+		}
-+
-+	} else if (word_aligned_size) {
-+		unsigned int i;
-+
-+		ptr = buf + buf_used_len;
-+		buf_used_len += word_aligned_size;
-+
-+		for (i = 0; i < word_aligned_size; i++) {
-+			if (ptr[i]) { /* This must not happen! */
-+				printk(KERN_ERR
-+				       "WARNING: Reserved memory was tainted! "
-+				       "The system might go wrong.\n");
-+				ptr[i] = '\0';
-+			}
-+		}
-+
-+	}
-+
-+	up(&lock);
-+	return ptr;
-+}
-+
-+/***** Shared memory allocator. *****/
-+
-+static unsigned int allocated_memory_for_savename;
-+
-+/**
-+ * tmy_get_memory_used_for_save_name - get memory usage for shared data.
-+ *
-+ * Returns size of memory allocated for keeping string tokens.
-+ */
-+unsigned int tmy_get_memory_used_for_save_name(void)
-+{
-+	return allocated_memory_for_savename;
-+}
-+
-+#define MAX_HASH 256
-+
-+/* List of tokens. */
-+struct name_entry {
-+	struct name_entry *next; /* NULL if none. */
-+	struct path_info entry;
-+};
-+
-+/* List of free memory. */
-+struct free_memory_block_list {
-+	struct free_memory_block_list *next; /* NULL if none. */
-+	char *ptr; /* Pointer to a free area. */
-+	int len;   /* Length of the area.     */
-+};
-+
-+/**
-+ * tmy_save_name - keep the given token on the RAM.
-+ * @name: the string token to remember.
-+ *
-+ * Returns pointer to memory region on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function allocates memory for keeping any string data.
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct path_info *tmy_save_name(const char *name)
-+{
-+	static struct free_memory_block_list fmb_list = { NULL, NULL, 0 };
-+	static struct name_entry name_list[MAX_HASH]; /* The list of names. */
-+	static DECLARE_MUTEX(lock);
-+	struct name_entry *ptr;
-+	struct name_entry *prev = NULL;
-+	unsigned int hash;
-+	struct free_memory_block_list *fmb = &fmb_list;
-+	int len;
-+	static int first_call = 1;
-+
-+	if (!name)
-+		return NULL;
-+
-+	len = strlen(name) + 1;
-+	if (len > TMY_MAX_PATHNAME_LEN) {
-+		printk(KERN_INFO "ERROR: Name too long for tmy_save_name().\n");
-+		return NULL;
-+	}
-+
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+
-+	down(&lock);
-+
-+	if (first_call) {
-+		int i;
-+
-+		first_call = 0;
-+		memset(&name_list, 0, sizeof(name_list));
-+
-+		for (i = 0; i < MAX_HASH; i++) {
-+			name_list[i].entry.name = "/";
-+			tmy_fill_path_info(&name_list[i].entry);
-+		}
-+
-+		if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
-+			panic("Bad size.");
-+	}
-+
-+	ptr = &name_list[hash % MAX_HASH];
-+	while (ptr) {
-+		if (hash == ptr->entry.hash &&
-+		    strcmp(name, ptr->entry.name) == 0)
-+			goto out;
-+		prev = ptr;
-+		ptr = ptr->next;
-+	}
-+
-+	while (len > fmb->len) {
-+		char *cp;
-+
-+		if (fmb->next) {
-+			fmb = fmb->next;
-+			continue;
-+		}
-+
-+		cp = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+		if (!cp)
-+			goto out2;
-+
-+		fmb->next = tmy_alloc_element(sizeof(*fmb));
-+		if (!fmb->next) {
-+			kfree(cp);
-+out2: ;
-+			printk(KERN_INFO
-+			       "ERROR: Out of memory for tmy_save_name().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+			goto out; /* ptr == NULL */
-+		}
-+
-+		memset(cp, 0, PAGE_SIZE);
-+		allocated_memory_for_savename += PAGE_SIZE;
-+		fmb = fmb->next;
-+		fmb->ptr = cp;
-+		fmb->len = PAGE_SIZE;
-+
-+	}
-+
-+	ptr = tmy_alloc_element(sizeof(*ptr));
-+	if (!ptr)
-+		goto out;
-+
-+	ptr->entry.name = fmb->ptr;
-+	memmove(fmb->ptr, name, len);
-+	tmy_fill_path_info(&ptr->entry);
-+	fmb->ptr += len;
-+	fmb->len -= len;
-+
-+	prev->next = ptr; /* prev != NULL because name_list is not empty. */
-+	if (fmb->len == 0) {
-+		struct free_memory_block_list *ptr = &fmb_list;
-+		while (ptr->next != fmb)
-+			ptr = ptr->next;
-+		ptr->next = fmb->next;
-+	}
-+out: ;
-+
-+	up(&lock);
-+
-+	return ptr ? &ptr->entry : NULL;
-+}
-+
-+/***** Dynamic memory allocator. *****/
-+
-+/* List of temporary memory blocks. */
-+struct cache_entry {
-+	struct list_head list;
-+	void *ptr;
-+	int size;
-+};
-+
-+static struct kmem_cache *tmy_cachep;
-+
-+/**
-+ * tmy_realpath_init - initialize memory allocator.
-+ */
-+void tmy_realpath_init(void)
-+{
-+	tmy_cachep = kmem_cache_create("tomoyo_cache",
-+				       sizeof(struct cache_entry),
-+				       0, SLAB_PANIC, NULL);
-+}
-+
-+static LIST_HEAD(cache_list);
-+static DEFINE_SPINLOCK(cache_list_lock);
-+static unsigned int dynamic_memory_size;
-+
-+/**
-+ * tmy_get_memory_used_for_dynamic - get memory usage for temporary purpose.
-+ *
-+ * Returns size of memory allocated for keeping temporary purpose.
-+ */
-+unsigned int tmy_get_memory_used_for_dynamic(void)
-+{
-+	return dynamic_memory_size;
-+}
-+
-+/**
-+ * tmy_alloc - allocate memory for temporary purpose.
-+ * @size: requested size in bytes.
-+ *
-+ * Returns '\0'-initialized memory region on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function allocates memory for keeping ACL entries.
-+ * The caller has to call tmy_free() the returned pointer
-+ * when memory is no longer needed.
-+ */
-+void *tmy_alloc(const size_t size)
-+{
-+	void *ret = kmalloc(size, GFP_KERNEL);
-+	struct cache_entry *new_entry;
-+
-+	if (!ret) {
-+		printk(KERN_INFO "ERROR: "
-+		       "kmalloc(): Out of memory for tmy_alloc().\n");
-+		return ret;
-+	}
-+
-+	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+
-+	if (!new_entry) {
-+		printk(KERN_INFO "ERROR: "
-+		       "kmem_cache_alloc(): Out of memory for tmy_alloc().\n");
-+		kfree(ret);
-+		ret = NULL;
-+	} else {
-+		INIT_LIST_HEAD(&new_entry->list);
-+		new_entry->ptr = ret;
-+		new_entry->size = size;
-+
-+		/***** CRITICAL SECTION START *****/
-+		spin_lock(&cache_list_lock);
-+		list_add_tail(&new_entry->list, &cache_list);
-+		dynamic_memory_size += size;
-+		spin_unlock(&cache_list_lock);
-+		/***** CRITICAL SECTION END *****/
-+
-+		memset(ret, 0, size);
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * tmy_free - free memory allocated by tmy_alloc().
-+ * @p: pointer to memory block allocated by tmy_alloc().
-+ *
-+ * If caller calls this function for multiple times (i.e. double-free() bug) or
-+ * calls this function with invalid pointer, warning message will appear.
-+ * If caller forgets to call this function,
-+ * tmy_get_memory_used_for_dynamic() will indicate memory leaks.
-+ */
-+void tmy_free(const void *p)
-+{
-+	struct list_head *v;
-+	struct cache_entry *entry = NULL;
-+	if (!p)
-+		return;
-+
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_for_each_prev(v, &cache_list) {
-+		entry = list_entry(v, struct cache_entry, list);
-+		if (entry->ptr != p) {
-+			entry = NULL;
-+			continue;
-+		}
-+		list_del(&entry->list);
-+		dynamic_memory_size -= entry->size;
-+		break;
-+	}
-+	spin_unlock(&cache_list_lock);
-+	/***** CRITICAL SECTION END *****/
-+
-+	if (entry) {
-+		kfree(p);
-+		kmem_cache_free(tmy_cachep, entry);
-+	} else
-+		printk(KERN_INFO "BUG: tmy_free() with invalid pointer.\n");
-+
-+}
-
+Index: linux-2.6.23/fs/Kconfig
+===================================================================
+--- linux-2.6.23.orig/fs/Kconfig
++++ linux-2.6.23/fs/Kconfig
+@@ -6,6 +6,17 @@ menu "File systems"
+ 
+ if BLOCK
+ 
++menuconfig EXT_FS
++	bool "Extended filesystem family"
++	default y
++	---help---
++	  Say Y here to get to see options for the 'ext' filesystems.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++if EXT_FS
++
+ config EXT2_FS
+ 	tristate "Second extended fs support"
+ 	help
+@@ -272,7 +283,9 @@ config FS_MBCACHE
+ 	default y if EXT2_FS=y || EXT3_FS=y || EXT4DEV_FS=y
+ 	default m if EXT2_FS=m || EXT3_FS=m || EXT4DEV_FS=m
+ 
+-config REISERFS_FS
++endif # EXT_FS
++
++menuconfig REISERFS_FS
+ 	tristate "Reiserfs support"
+ 	help
+ 	  Stores not just filenames but the files themselves in a balanced
+@@ -358,7 +371,7 @@ config REISERFS_FS_SECURITY
+ 	  If you are not using a security module that requires using
+ 	  extended attributes for file security labels, say N.
+ 
+-config JFS_FS
++menuconfig JFS_FS
+ 	tristate "JFS filesystem support"
+ 	select NLS
+ 	help
+@@ -420,7 +433,7 @@ config FS_POSIX_ACL
+ source "fs/xfs/Kconfig"
+ source "fs/gfs2/Kconfig"
+ 
+-config OCFS2_FS
++menuconfig OCFS2_FS
+ 	tristate "OCFS2 file system support"
+ 	depends on NET && SYSFS
+ 	select CONFIGFS_FS
+@@ -458,39 +471,6 @@ config OCFS2_DEBUG_MASKLOG
+ 	  This option will enlarge your kernel, but it allows debugging of
+ 	  ocfs2 filesystem issues.
+ 
+-config MINIX_FS
+-	tristate "Minix fs support"
+-	help
+-	  Minix is a simple operating system used in many classes about OS's.
+-	  The minix file system (method to organize files on a hard disk
+-	  partition or a floppy disk) was the original file system for Linux,
+-	  but has been superseded by the second extended file system ext2fs.
+-	  You don't want to use the minix file system on your hard disk
+-	  because of certain built-in restrictions, but it is sometimes found
+-	  on older Linux floppy disks.  This option will enlarge your kernel
+-	  by about 28 KB. If unsure, say N.
+-
+-	  To compile this file system support as a module, choose M here: the
+-	  module will be called minix.  Note that the file system of your root
+-	  partition (the one containing the directory /) cannot be compiled as
+-	  a module.
+-
+-config ROMFS_FS
+-	tristate "ROM file system support"
+-	---help---
+-	  This is a very small read-only file system mainly intended for
+-	  initial ram disks of installation disks, but it could be used for
+-	  other read-only media as well.  Read
+-	  <file:Documentation/filesystems/romfs.txt> for details.
+-
+-	  To compile this file system support as a module, choose M here: the
+-	  module will be called romfs.  Note that the file system of your
+-	  root partition (the one containing the directory /) cannot be a
+-	  module.
+-
+-	  If you don't know whether you need it, then you don't need it:
+-	  answer N.
+-
+ endif
+ 
+ config INOTIFY
+@@ -1397,7 +1377,22 @@ config HPFS_FS
+ 	  To compile this file system support as a module, choose M here: the
+ 	  module will be called hpfs.  If unsure, say N.
+ 
++config MINIX_FS
++	tristate "Minix fs support"
++	---help---
++	  Minix is a simple operating system used in many classes about OSs.
++	  The minix file system (method to organize files on a hard disk
++	  partition or a floppy disk) was the original file system for Linux,
++	  but has been superseded by the second extended file system ext2fs.
++	  You don't want to use the minix file system on your hard disk
++	  because of certain built-in restrictions, but it is sometimes found
++	  on older Linux floppy disks. This option will enlarge your kernel
++	  by about 28 KB. If unsure, say N.
+ 
++	  To compile this file system support as a module, choose M here: the
++	  module will be called minix. Note that the file system of your root
++	  partition (the one containing the directory /) cannot be compiled as
++	  a module.
+ 
+ config QNX4FS_FS
+ 	tristate "QNX4 file system support (read only)"
+@@ -1425,7 +1420,21 @@ config QNX4FS_RW
+ 	  It's currently broken, so for now:
+ 	  answer N.
+ 
++config ROMFS_FS
++	tristate "ROM file system support"
++	---help---
++	  This is a very small read-only file system mainly intended for
++	  initial ram disks of installation disks, but it could be used for
++	  other read-only media as well. Read
++	  <file:Documentation/filesystems/romfs.txt> for details.
++
++	  To compile this file system support as a module, choose M here: the
++	  module will be called romfs. Note that the file system of your
++	  root partition (the one containing the directory /) cannot be a
++	  module.
+ 
++	  If you don't know whether you need it, then you don't need it:
++	  answer N.
+ 
+ config SYSV_FS
+ 	tristate "System V/Xenix/V7/Coherent file system support"
+Index: linux-2.6.23/fs/gfs2/Kconfig
+===================================================================
+--- linux-2.6.23.orig/fs/gfs2/Kconfig
++++ linux-2.6.23/fs/gfs2/Kconfig
+@@ -1,4 +1,4 @@
+-config GFS2_FS
++menuconfig GFS2_FS
+ 	tristate "GFS2 file system support"
+ 	depends on EXPERIMENTAL
+ 	select FS_POSIX_ACL
+@@ -18,9 +18,10 @@ config GFS2_FS
+ 	  the below locking modules. Documentation and utilities for GFS2 can
+ 	  be found here: http://sources.redhat.com/cluster
+ 
++if GFS2_FS
++
+ config GFS2_FS_LOCKING_NOLOCK
+ 	tristate "GFS2 \"nolock\" locking module"
+-	depends on GFS2_FS
+ 	help
+ 	  Single node locking module for GFS2.
+ 
+@@ -34,7 +35,7 @@ config GFS2_FS_LOCKING_NOLOCK
+ 
+ config GFS2_FS_LOCKING_DLM
+ 	tristate "GFS2 DLM locking module"
+-	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
++	depends on SYSFS && NET && INET && (IPV6 || IPV6=n)
+ 	select IP_SCTP if DLM_SCTP
+ 	select CONFIGFS_FS
+ 	select DLM
+@@ -44,3 +45,5 @@ config GFS2_FS_LOCKING_DLM
+ 	  Most users of GFS2 will require this module. It provides the locking
+ 	  interface between GFS2 and the DLM, which is required to use GFS2
+ 	  in a cluster environment.
++
++endif # GFS2_FS
+Index: linux-2.6.23/fs/xfs/Kconfig
+===================================================================
+--- linux-2.6.23.orig/fs/xfs/Kconfig
++++ linux-2.6.23/fs/xfs/Kconfig
+@@ -1,4 +1,4 @@
+-config XFS_FS
++menuconfig XFS_FS
+ 	tristate "XFS filesystem support"
+ 	depends on BLOCK
+ 	help
+@@ -18,9 +18,10 @@ config XFS_FS
+ 	  system of your root partition is compiled as a module, you'll need
+ 	  to use an initial ramdisk (initrd) to boot.
+ 
++if XFS_FS
++
+ config XFS_QUOTA
+ 	bool "XFS Quota support"
+-	depends on XFS_FS
+ 	help
+ 	  If you say Y here, you will be able to set limits for disk usage on
+ 	  a per user and/or a per group basis under XFS.  XFS considers quota
+@@ -37,7 +38,6 @@ config XFS_QUOTA
+ 
+ config XFS_SECURITY
+ 	bool "XFS Security Label support"
+-	depends on XFS_FS
+ 	help
+ 	  Security labels support alternative access control models
+ 	  implemented by security modules like SELinux.  This option
+@@ -49,7 +49,6 @@ config XFS_SECURITY
+ 
+ config XFS_POSIX_ACL
+ 	bool "XFS POSIX ACL support"
+-	depends on XFS_FS
+ 	help
+ 	  POSIX Access Control Lists (ACLs) support permissions for users and
+ 	  groups beyond the owner/group/world scheme.
+@@ -61,7 +60,6 @@ config XFS_POSIX_ACL
+ 
+ config XFS_RT
+ 	bool "XFS Realtime subvolume support"
+-	depends on XFS_FS
+ 	help
+ 	  If you say Y here you will be able to mount and use XFS filesystems
+ 	  which contain a realtime subvolume.  The realtime subvolume is a
+@@ -76,3 +74,5 @@ config XFS_RT
+ 	  See the xfs man page in section 5 for additional information.
+ 
+ 	  If unsure, say N.
++
++endif # XFS_FS
 
