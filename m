@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbXJBSh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbXJBSnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbXJBSh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 14:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXJBShU
+	id S1755262AbXJBSnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 14:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbXJBSnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 14:37:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45556 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752962AbXJBShU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 14:37:20 -0400
-Message-ID: <47028F85.4030708@redhat.com>
-Date: Tue, 02 Oct 2007 14:35:49 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Krzysztof Oledzki <olel@ans.pl>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       richard kennedy <richard@rsk.demon.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] writeback: avoid possible balance_dirty_pages() lockup
- on a light-load bdi
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com> <391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com> <391290444.23950@ustc.edu.cn> <20071001191457.2f7c7538.akpm@linux-foundation.org> <20071002121327.GA5718@mail.ustc.edu.cn> <391331626.16970@ustc.edu.cn>
-In-Reply-To: <391331626.16970@ustc.edu.cn>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Oct 2007 14:43:18 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:37311 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752129AbXJBSnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 14:43:17 -0400
+X-Trace: 612600199-mk-filter-4.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.76.66
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAIQsAkdRAUxC/2dsb2JhbACBWQ
+Subject: [PATCH] Fix SH DMA API so it works with PVR cascade
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>,
+       linux-sh <linuxsh-dev@lists.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 19:15:42 +0100
+Message-Id: <1191348942.12347.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/02/2007 09:27 AM, Fengguang Wu wrote:
-> On Tue, Oct 02, 2007 at 08:13:27PM +0800, Fengguang Wu wrote:
-> [...]
->> One more serious problem is, a busy writer could also drain all the
->> dirty pages and make (nr_writeback == dirty_limit+1MB). In that case,
->> I suspect the light-load sdb writer still have good chance to
->> make progress(need confirmation).
-> 
-> Well it seems to be a really tricky issue without knowing the per-bdi
-> numbers. Maybe we could just encourage users to upgrade to 2.6.24...
-> 
+This patch - hope it is not too late for 2.6.24 queue - gets the SH DMA
+API to work properly for the PVR2 DMA cascade.
 
-Yeah, and if that doesn't work there's always 2.6.25... :/
+Currently the comment suggests that dar should not be set for the write
+DMA but the API forces a set. This code fixes that. Furthermore there is
+no read on the PVR2 CASCADE DMA (at least for the PVR) so that code is
+removed.
 
+Submitted-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+
+--- arch/sh/drivers/dma/dma-sh.c	2007/09/22 18:34:42	1.1
++++ arch/sh/drivers/dma/dma-sh.c	2007/09/22 18:37:28	1.2
+@@ -150,6 +150,13 @@ static void sh_dmac_disable_dma(struct d
+ 
+ static int sh_dmac_xfer_dma(struct dma_channel *chan)
+ {
++	/* Handle Dreamcast PVR cascade */
++	if (mach_is_dreamcast() && chan->chan == PVR2_CASCADE_CHAN)
++	{
++		ctrl_outl(chan->sar, SAR[chan->chan]);
++		ctrl_outl(chan->count, DMATCR[chan->chan]);
++		return 0;
++	}
+ 	/*
+ 	 * If we haven't pre-configured the channel with special flags, use
+ 	 * the defaults.
+@@ -159,26 +166,9 @@ static int sh_dmac_xfer_dma(struct dma_c
+ 
+ 	sh_dmac_disable_dma(chan);
+ 
+-	/*
+-	 * Single-address mode usage note!
+-	 *
+-	 * It's important that we don't accidentally write any value to SAR/DAR
+-	 * (this includes 0) that hasn't been directly specified by the user if
+-	 * we're in single-address mode.
+-	 *
+-	 * In this case, only one address can be defined, anything else will
+-	 * result in a DMA address error interrupt (at least on the SH-4),
+-	 * which will subsequently halt the transfer.
+-	 *
+-	 * Channel 2 on the Dreamcast is a special case, as this is used for
+-	 * cascading to the PVR2 DMAC. In this case, we still need to write
+-	 * SAR and DAR, regardless of value, in order for cascading to work.
+-	 */
+-	if (chan->sar || (mach_is_dreamcast() &&
+-			  chan->chan == PVR2_CASCADE_CHAN))
++	if (chan->sar)
+ 		ctrl_outl(chan->sar, SAR[chan->chan]);
+-	if (chan->dar || (mach_is_dreamcast() &&
+-			  chan->chan == PVR2_CASCADE_CHAN))
++	if (chan->dar)
+ 		ctrl_outl(chan->dar, DAR[chan->chan]);
+ 
+ 	ctrl_outl(chan->count >> calc_xmit_shift(chan), DMATCR[chan->chan]);
