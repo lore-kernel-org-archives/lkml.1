@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbXJCPsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbXJCPsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbXJCPsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXJCPsJ
+	id S1755100AbXJCPsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbXJCPsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:48:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48209 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752727AbXJCPsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:48:07 -0400
-Date: Wed, 3 Oct 2007 08:47:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9
- and a heads-up for the 2.6.24 series..)
-In-Reply-To: <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0710030835070.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
- <20071003084607.GC32218@elte.hu>
- <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 3 Oct 2007 11:48:17 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55501 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756135AbXJCPsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 11:48:16 -0400
+From: Adam Litke <agl@us.ibm.com>
+Subject: [PATCH] hugetlb: Fix pool resizing corner case
+Date: Wed, 03 Oct 2007 08:47:48 -0700
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Adam Litke <agl@us.ibm.com>
+Message-Id: <20071003154748.19516.90317.stgit@kernel>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+When shrinking the size of the hugetlb pool via the nr_hugepages sysctl, we
+are careful to keep enough pages around to satisfy reservations.  But the
+calculation is flawed for the following scenario:
 
-On Wed, 3 Oct 2007, Linus Torvalds wrote:
-> 
->  - the bug happens on this:
-> 
-> 	char c = *p++;
-> 
->  - which has been compiled into
-> 
-> 	8b 3a		mov    (%edx),%edi
+Action                          Pool Counters (Total, Free, Resv)
+======                          =============
+Set pool to 1 page              1 1 0
+Map 1 page MAP_PRIVATE          1 1 0
+Touch the page to fault it in   1 0 0
+Set pool to 3 pages             3 2 0
+Map 2 pages MAP_SHARED          3 2 2
+Set pool to 2 pages             2 1 2 <-- Mistake, should be 3 2 2
+Touch the 2 shared pages        2 0 1 <-- Program crashes here
 
-Btw, this definitely doesn't happen for me, either on x86-64 or plain x86. 
-The x86 thing I tested was Fedora 8 testing (ie not even some stable 
-setup), so I wonder what experimental compiler you have.
+The last touch above will terminate the process due to lack of huge pages.
 
-Your compiler generates
+This patch corrects the calculation so that it factors in pages being used
+for private mappings.  Andrew, this is a standalone fix suitable for
+mainline.  It is also now corrected in my latest dynamic pool resizing
+patchset which I will send out soon.
 
-	movl    -16(%ebp),%edx
-	movl    (%edx),%edi		/* this is _totally_ bogus! */
-	incl    %edx
-	movl    %edx,-16(%ebp)
-	movl    %edi,%ecx
-	testb   %cl,%cl
-	je      ...
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+---
 
-while I get (gcc version 4.1.2 20070925 (Red Hat 4.1.2-28)):
+ mm/hugetlb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-        movl    -16(%ebp), %eax # p,
-        movzbl  (%eax), %edi    #, c	/* not bogus! */
-        movl    %edi, %edx      # c,
-        testb   %dl, %dl        #
-        je      .L64    #,
-        incl    %eax    #
-        movsbl  %dl,%ebx        #, D.12414
-        movl    %eax, -16(%ebp) #, p
-
-where the difference (apart from doing the increment differently and 
-different register allocation) is that I have a "movzbl" (correct), while 
-you have a "movl" (pure and utter crap).
-
-I *suspect* that the compiler bug is along the lines of:
- (a) start off with movzbl
- (b) notice that the higher bits don't matter, because nobody subsequently 
-     uses them
- (c) turn the thing into just a byte move. 
- (d) make the totally incorrect optimization of using a full 32-bit move 
-     in order to avoid a partial register access stall
-
-and the thing is, that final optimization can actually speed things up 
-(although it can also slow things down for any access that crosses a cache 
-sector boundary - 8/16 bytes), but it's seriously bogus, exactly because 
-it can cause an invalid access to the three next bytes that may not even 
-exist.
-
-			Linus
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 84c795e..7af3908 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -224,14 +224,14 @@ static void try_to_free_low(unsigned long count)
+ 	for (i = 0; i < MAX_NUMNODES; ++i) {
+ 		struct page *page, *next;
+ 		list_for_each_entry_safe(page, next, &hugepage_freelists[i], lru) {
++			if (count >= nr_huge_pages)
++				return;
+ 			if (PageHighMem(page))
+ 				continue;
+ 			list_del(&page->lru);
+ 			update_and_free_page(page);
+ 			free_huge_pages--;
+ 			free_huge_pages_node[page_to_nid(page)]--;
+-			if (count >= nr_huge_pages)
+-				return;
+ 		}
+ 	}
+ }
+@@ -251,7 +251,7 @@ static unsigned long set_max_huge_pages(unsigned long count)
+ 		return nr_huge_pages;
+ 
+ 	spin_lock(&hugetlb_lock);
+-	count = max(count, resv_huge_pages);
++	count = max(count, resv_huge_pages + nr_huge_pages - free_huge_pages);
+ 	try_to_free_low(count);
+ 	while (count < nr_huge_pages) {
+ 		struct page *page = dequeue_huge_page(NULL, 0);
