@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbXJCBfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbXJCBlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbXJCBfR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 21:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbXJCBeu
+	id S1756502AbXJCBlb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXJCBlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 21:34:50 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:50156 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbXJCBes (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 21:34:48 -0400
-Subject: Re: [PATCH] sky2: jumbo frame regression fix
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20071002180209.47c350a3@freepuppy.rosehill>
-References: <1191372129.26233.12.camel@localhost>
-	 <20071002180209.47c350a3@freepuppy.rosehill>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nM+280Pv6eZit1SAcsnS"
-Date: Wed, 03 Oct 2007 03:34:34 +0200
-Message-Id: <1191375274.26233.17.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Tue, 2 Oct 2007 21:41:23 -0400
+Received: from lixom.net ([66.141.50.11]:49636 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbXJCBlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 21:41:22 -0400
+Date: Tue, 2 Oct 2007 20:45:27 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] libata: fix for sata_mv >64KB DMA segments
+Message-ID: <20071003014527.GA6316@lixom.net>
+References: <20071001220439.GA15332@lixom.net> <470176B8.1000109@pobox.com> <20071002023000.GA19286@lixom.net> <4702D2DE.1050504@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4702D2DE.1050504@pobox.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix bug in sata_mv for cases where the IOMMU layer has merged SG entries
+to larger than 64KB. They need to be split up before being sent to
+the driver.
 
---=-nM+280Pv6eZit1SAcsnS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Just for simplicity's sake, split up at 64K boundary instead of 64K size,
+since that's what the common code does anyway.
 
-On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
-> Remove unneeded check that caused problems with jumbo frame sizes.
-> The check was recently added and is wrong.
-> When using jumbo frames the sky2 driver does fragmentation, so
-> rx_data_size is less than mtu.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Confirmed working.
 
-Now running with 9k mtu with no errors, =3D)
+---
 
-It also seems that the FIFO bug was the one that affected me before,
-damn odd race that one.
+On Tue, Oct 02, 2007 at 07:23:10PM -0400, Jeff Garzik wrote:
+> Olof Johansson wrote:
+>> On Mon, Oct 01, 2007 at 06:37:44PM -0400, Jeff Garzik wrote:
+>> Looks like it's caused by enabling vmerge (which tends to be on for the
+>> common PPC defconfigs). If I disable it, things look OK.
+>> Perhaps the Marvell controller doesn't like requests larger than 64K,
+>> or wrapping some boundary. Do you have access to erratas/docs?
+>> I have verified it on a powermac now as well (had a quick scare that it
+>> might have been some problem with the PA Semi IOMMU, but no).
+>
+> FWIW:  I just tried the 6042 on my AMD64 platform with iommu=force, and was 
+> unable to reproduce any trouble.
+>
+> You could try changing MV_DMA_BOUNDARY to 0xffffU and see what happens.
 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-Tested-by: Ian Kumlien <pomac@vapor.com>
+As per discussion on IRC, it was really caused by mv_fill_sg() not
+handing SG entries larger than 64K properly. Below patch fixes it to
+behave like ata_fill_sg() instead.
 
-(if that tag exists now)
+Works OK here after some light testing (restoring my corrupted root
+filesystem and running a few fscks on it, among other things).
 
-Btw, Sorry but all mail directly to you will be blocked. I have yet to
-fix the relaying properly with isp:s blocking port 25 etc so for some of
-you this mail will only show up on the ML.
 
-> --- a/drivers/net/sky2.c	2007-10-02 17:56:31.000000000 -0700
-> +++ b/drivers/net/sky2.c	2007-10-02 17:58:56.000000000 -0700
-> @@ -2163,9 +2163,6 @@ static struct sk_buff *sky2_receive(stru
->  	sky2->rx_next =3D (sky2->rx_next + 1) % sky2->rx_pending;
->  	prefetch(sky2->rx_ring + sky2->rx_next);
-> =20
-> -	if (length < ETH_ZLEN || length > sky2->rx_data_size)
-> -		goto len_error;
-> -
->  	/* This chip has hardware problems that generates bogus status.
->  	 * So do only marginal checking and expect higher level protocols
->  	 * to handle crap frames.
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
+Thanks,
 
---=-nM+280Pv6eZit1SAcsnS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Olof
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
 
-iD8DBQBHAvGq7F3Euyc51N8RAlTkAJ9c3Ed1FAB1zSNH+e3YzO4gfWul5wCePAU/
-GqxZqXFL0c3bCZZKHM7FCXo=
-=YnCL
------END PGP SIGNATURE-----
-
---=-nM+280Pv6eZit1SAcsnS--
-
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index 11bf6c7..1a82e22 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -1139,15 +1139,27 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
+ 		dma_addr_t addr = sg_dma_address(sg);
+ 		u32 sg_len = sg_dma_len(sg);
+ 
+-		mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
+-		mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
+-		mv_sg->flags_size = cpu_to_le32(sg_len & 0xffff);
++		while (sg_len) {
++			u32 offset = addr & 0xffff;
++			u32 len = sg_len;
+ 
+-		if (ata_sg_is_last(sg, qc))
+-			mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
++			if ((offset + sg_len > 0x10000))
++				len = 0x10000 - offset;
++
++			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
++			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
++			mv_sg->flags_size = cpu_to_le32(len);
++
++			sg_len -= len;
++			addr += len;
++
++			if (!sg_len && ata_sg_is_last(sg, qc))
++				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
++
++			mv_sg++;
++			n_sg++;
++		}
+ 
+-		mv_sg++;
+-		n_sg++;
+ 	}
+ 
+ 	return n_sg;
