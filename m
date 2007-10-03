@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbXJCOb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbXJCOcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbXJCOb6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 10:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXJCObu
+	id S1758590AbXJCOcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 10:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXJCOcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 10:31:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38740 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753937AbXJCObt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 10:31:49 -0400
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: kaigai@kaigai.gr.jp, jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-In-Reply-To: <200710032326.FJF32915.OQOOHLMtFSFJFV@I-love.SAKURA.ne.jp>
-References: <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
-	 <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
-	 <470395B3.2020904@kaigai.gr.jp>
-	 <200710032259.HJF90663.OFMLOJtQHOFVSF@I-love.SAKURA.ne.jp>
-	 <1191420442.5599.12.camel@lappy>
-	 <200710032326.FJF32915.OQOOHLMtFSFJFV@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Wed, 03 Oct 2007 16:26:04 +0200
-Message-Id: <1191421564.5599.14.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 3 Oct 2007 10:32:09 -0400
+Received: from sacred.ru ([62.205.161.221]:38791 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754777AbXJCOcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 10:32:08 -0400
+Message-ID: <4703A44F.9020402@openvz.org>
+Date: Wed, 03 Oct 2007 18:16:47 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Matt Mackall <mpm@selenic.com>
+Subject: [PATCH 0/3] Make tasks always have non-zero pids
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 03 Oct 2007 18:19:12 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some time ago Sukadev noticed that the vmlinux size has
+grown 5Kb due to merged pid namespaces. One of the big
+problems with it was fat inline functions. The other thing
+was noticed by Matt - the checks for task's pid to be not
+NULL take place and make the kernel grow due to inlining,
+but these checks are not always needed.
 
-On Wed, 2007-10-03 at 23:26 +0900, Tetsuo Handa wrote:
-> Peter Zijlstra wrote:
-> > Also, how do you avoid referencing dead data with your sll? I haven't
-> > actually looked at your patches, but the simple scheme you outlined
-> > didn't handle the iteration + concurrent removal scenario:
+In this series I introduce a static pid (dummy), according
+to Matt's proposal, which is assigned to tasks during the 
+detach_pid and transfer_pid instead of NULL. This pid lives 
+in the init pid namespace and has the id = 0, so all the 
+task_xid_xnr() calls will still return 0 on a dead task.
 
-> Regarding my singly-linked list, no entries are removed from the list. It's append only (like CD-R media).
-> I set is_deleted flag of a entry instead of removing the entry from the list.
+Places that get the struct pid from task either get it from
+the current (in this case they will never get this dummy),
+or use it to compare with some other value (so they will 
+work the same for both NULL and dummy pids).
 
-sounds like a might fine memory leak / dos attack.
+This saves up to 340 bytes for i386 kernel with minimal 
+config  and probably more with more users of pids.
 
+Tested on i386 and x86_64 boxes. Tasks still live and die,
+namespaces and proc still work.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
