@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXJCTIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXJCTJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbXJCTIB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 15:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbXJCTHy
+	id S1757669AbXJCTJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 15:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXJCTJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 15:07:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40803 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbXJCTHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 15:07:54 -0400
-Message-ID: <4703E888.9010803@garzik.org>
-Date: Wed, 03 Oct 2007 15:07:52 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 3 Oct 2007 15:09:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:1242 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbXJCTJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 15:09:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=G3Fd6KIsRxQF2D/4ItOOEW6nSCDAalyUDMI/mqbFiR8ofBTh140uFq3XhJ3sb3z5r
+	+MHwKzaWwqZh8afMAz77g==
+Message-ID: <b040c32a0710031208s5323d16ao47becace88c2bc79@mail.gmail.com>
+Date: Wed, 3 Oct 2007 12:08:52 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Dave Hansen" <haveblue@us.ibm.com>
+Subject: Re: [PATCH] hugetlb: Fix pool resizing corner case
+Cc: "Adam Litke" <agl@us.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1191437948.4939.105.camel@localhost>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <20071003154748.19516.90317.stgit@kernel>
+	 <1191433248.4939.79.camel@localhost>
+	 <1191436392.19775.43.camel@localhost.localdomain>
+	 <1191437948.4939.105.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Doing it as early as possible in the 2.6.24-rc4 series (basically I'll do 
-> it first thing) will mean that we'll have the maximum amount of time to 
-> sort out any issues, and the thing is, Thomas and Ingo already have a tree 
-> ready to go, so people can check their work against that, and don't need 
-> to think that they have to do any fixups after it his *my* tree. It would 
-> be much better if everybody was just ready for it, and not taken by 
-> surprise.
+On 10/3/07, Dave Hansen <haveblue@us.ibm.com> wrote:
+> > Not quite.  Count can never go below the number of reserved pages plus
+> > pages allocated to MAP_PRIVATE mappings.  That number is computed by:
+> > (resv + (total - free)).
+>
+> So, (total - free) equals the number of MAP_PRIVATE pages?  Does that
+> imply that all reserved pages are shared and that all shared pages are
+> reserved?
 
-I'm a bit confused...  you typed 2.6.24-rc4; I'm guessing you meant 
-2.6.24-rc1, but did you mean
+no, not quite.  In-use huge page (total - free) can be both private or
+shared.  resv_huge_pages counts number of pages that is committed for
+shared mapping, but not yet faulted in.
 
-	"x86 merge as soon as 2.6.23 is released" (merge window opens)
+What the equation does essentially is: resv_huge_pages + nr-huge-pages-in-use.
 
-or
-
-	"x86 merge as soon as 2.6.24-rc1 is released"
-
-?
-
-Thanks,
-
-	Jeff
-
-
+- Ken
