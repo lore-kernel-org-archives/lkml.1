@@ -1,139 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbXJDIHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbXJDIKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbXJDIHy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 04:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXJDIHj
+	id S1758640AbXJDIKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 04:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbXJDIKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 04:07:39 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:40907 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753336AbXJDIHh (ORCPT
+	Thu, 4 Oct 2007 04:10:41 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:39467 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752252AbXJDIKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 04:07:37 -0400
-Date: Thu, 4 Oct 2007 10:07:31 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       riku.voipio@iki.fi, buytenh@wantstofly.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] unbreak generic futex_atomic_cmpxchg_inatomic() on
- UP
-In-Reply-To: <200710040741.l947fcVQ012708@harpo.it.uu.se>
-Message-ID: <Pine.LNX.4.64.0710041006000.32179@anakin>
-References: <200710040741.l947fcVQ012708@harpo.it.uu.se>
+	Thu, 4 Oct 2007 04:10:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yD1vlO1f8vMsnon490SD65cE6FrHa56RHTm1bghHFztTcbRN0yFCJsD7aVl9ZpIuhiCsiCX7NN7UonVIqFV+Y/UN3GoQzGvZGN+fR0TJMHXIe/ix+z+Eywby42P4o7gLR/LoKrOyQhWbH0mde+5mTPolD+q3Ll+GZFysyVpBptk=  ;
+X-YMail-OSG: 0ZH4qLAVM1kpL.LwyO1po3h_bskf72lO8P8R9VYpmItUYqYCGHlmGvpAHYgn..cgoBpSmcvAgw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: gurudas pai <gurudas.pai@oracle.com>
+Subject: Re: [BUG] kernel BUG at arch/i386/mm/highmem.c:15!  on 2.6.23-rc8/rc9
+Date: Thu, 4 Oct 2007 01:39:04 +1000
+User-Agent: KMail/1.9.5
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <47048A0C.4020608@oracle.com> <200710040053.19570.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710040053.19570.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710040139.04201.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Oct 2007, Mikael Pettersson wrote:
-> On Wed, 3 Oct 2007 22:33:46 +0300, Riku Voipio wrote:
-> > What's the state of this patch? I can confirm tst-robust1
-> > from glibc testsuite locks a armv5 machine hard. With this patch
-> > applied, the test succeeds.
-> 
-> There were no comments from any Linux arch or futex maintainer.
+On Thursday 04 October 2007 00:53, Nick Piggin wrote:
+> On Thursday 04 October 2007 16:37, gurudas pai wrote:
+> > Hi,
+> >
+> > While running Oracle database test on x86/6GB RAM machine panics with
+> > following messages.
+>
+> Hi,
+>
+> Hmm, seems like something in sys_remap_file_pages might have broken.
+> It's a bit hard to work out from the backtrace, though.
+>
+> Is it possible you can strace to find the arguments for the
+> remap_file_pages that goes wrong?
 
-Probably because it wasn't posted to linux-arch?
+Ahh, I think it's just underflowing the preempt count somewhere, which
+is leading highmem.c:15 to just *think* it is in an interrupt.
 
-> Because of that I intend to submit an ARM-only patch when 2.6.23
-> has been released.
-> 
-> /Mikael
-> 
-> > > The higher-end archs (x86, sparc64, ppc64, etc) provide fully-functional
-> > > asm/futex.h implementations, but a number of archs (alpha, arm, arm26,
-> > > avr32, blackfin, cris, h8300, m32r, m68k, mk68knommu, sh64, sparc, um,
-> > > v850, and xtensa) use asm-generic/futex.h, which makes robust futexes
-> > > horribly broken on them. There have also been reports recently that PI
-> > > futexes are broken due to the generic futex_atomic_cmpxchg_inatomic()
-> > > just being an -ENOSYS stub.
-> > 
-> > This an effective local DOS bug on the affected architectures, too.. 
-> > 
-> > > The patch below implements the generic futex_atomic_cmpxchg_inatomic() in
-> > > terms of __copy_{from,to}_user_inatomic() and preempt_{disable,enable}().
-> > > It obviously doesn't support SMP, but UP-only support should go a long
-> > > way for users of the affected archs.
-> > > 
-> > > I'm using this patch now and it has allowed me to build and use glibc-2.4
-> > > with NPTL on ARM (glibc-2.4-11.src.rpm from FC5 + ARM fixes).
-> > > (Finally I can ditch LinuxThreads :->)
-> > > 
-> > > Comments?
-> > > 
-> > > /Mikael
-> > > 
-> > > --- linux-2.6.22/include/asm-generic/futex.h.~1~	2007-02-04 19:44:54.000000000 +0100
-> > > +++ linux-2.6.22/include/asm-generic/futex.h	2007-08-01 19:03:43.000000000 +0200
-> > > @@ -4,6 +4,7 @@
-> > >  #ifdef __KERNEL__
-> > >  
-> > >  #include <linux/futex.h>
-> > > +#include <linux/preempt.h>
-> > >  #include <asm/errno.h>
-> > >  #include <asm/uaccess.h>
-> > >  
-> > > @@ -52,7 +53,34 @@ futex_atomic_op_inuser (int encoded_op, 
-> > >  static inline int
-> > >  futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
-> > > {
-> > > +#ifdef CONFIG_SMP
-> > >  	return -ENOSYS;
-> > > +#else
-> > > +	int curval, ret;
-> > > +
-> > > +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-> > > +		return -EFAULT;
-> > > +
-> > > +	preempt_disable();
-> > > +
-> > > +	ret = -EFAULT;
-> > > +	if (__copy_from_user_inatomic(&curval, uaddr, sizeof(int)))
-> > > +		goto out;
-> > > +
-> > > +	ret = curval;
-> > > +	if (curval != oldval)
-> > > +		goto out;
-> > > +
-> > > +	ret = -EFAULT;
-> > > +	if (__copy_to_user_inatomic(uaddr, &newval, sizeof(int)))
-> > > +		goto out;
-> > > +
-> > > +	ret = newval;
-> > > +
-> > > + out:
-> > > +	preempt_enable();
-> > > +	return ret;
-> > > +#endif
-> > >  }
-> > >  
-> > >  #endif
-> > > -
-> > 
-> > - -- 
-> > "rm -rf" only sounds scary if you don't have backups
-> > -----BEGIN PGP SIGNATURE-----
-> > Version: GnuPG v1.4.6 (GNU/Linux)
-> > 
-> > iD8DBQFHA+6aibPvMsrqrwMRAlMuAKCBf7qpD2dETgU+RgnDG4ArVvFp3gCgrewq
-> > 4KvOt40U1MAPM7g4F/Ps5jk=
-> > =68gr
-> > -----END PGP SIGNATURE-----
-> > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+But you aren't running a preemptible kernel, which makes it unusual...
+it would have to be coming from interrupt code (or just random corruption).
+Still, preempt debugging should catch those cases as well.
 
-Gr{oetje,eeting}s,
+So, can you disregard my last message, and instead compile a kernel
+with CONFIG_PREEMPT and CONFIG_DEBUG_PREEMPT, and see what
+messages come up?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Nick
