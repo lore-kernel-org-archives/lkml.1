@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbXJCLSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbXJCLWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbXJCLSB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 07:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbXJCLRx
+	id S1757986AbXJCLWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 07:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXJCLWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 07:17:53 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:59472 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754272AbXJCLRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 07:17:52 -0400
-Date: Wed, 3 Oct 2007 13:20:25 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
+	Wed, 3 Oct 2007 07:22:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50368 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754862AbXJCLWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 07:22:05 -0400
+Date: Wed, 3 Oct 2007 13:22:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Schwartz <davids@webmaster.com>,
+Cc: Jarek Poplawski <jarkao2@o2.pl>, David Schwartz <davids@webmaster.com>,
        linux-kernel@vger.kernel.org
 Subject: Re: Network slowdown due to CFS
-Message-ID: <20071003112025.GA3495@ff.dom.local>
-References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu> <20071003095057.GD1726@ff.dom.local> <b647ffbd0710030355p116f9b36vae3f24e652921de6@mail.gmail.com> <b647ffbd0710030358m3b107176n5f52e7b7846ef1d8@mail.gmail.com>
-Mime-Version: 1.0
+Message-ID: <20071003112200.GA17562@elte.hu>
+References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu> <20071003095057.GD1726@ff.dom.local> <b647ffbd0710030355p116f9b36vae3f24e652921de6@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b647ffbd0710030358m3b107176n5f52e7b7846ef1d8@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <b647ffbd0710030355p116f9b36vae3f24e652921de6@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 12:58:26PM +0200, Dmitry Adamushko wrote:
-> On 03/10/2007, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> > On 03/10/2007, Jarek Poplawski <jarkao2@o2.pl> wrote:
-> > > I can't see anything about clearing. I think, this was about charging,
-> > > which should change the key enough, to move a task to, maybe, a better
-> > > place in a que (tree) than with current ways.
-> >
-> > just a quick patch, not tested and I've not evaluated all possible
-> > implications yet.
-> > But someone might give it a try with his/(her -- are even more
-> > welcomed :-) favourite sched_yield() load.
-> >
-> > (and white space damaged)
-> >
-> > --- sched_fair-old.c    2007-10-03 12:45:17.010306000 +0200
-> > +++ sched_fair.c        2007-10-03 12:44:46.899851000 +0200
-...
-> s/curr/se
 
-Thanks very much!
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 
-Alas, I'll be able to look at this and try only in the evening.
+> +                       se->vruntime += delta_exec_weighted;
 
-Best regards,
-Jarek P.
+thanks Dmitry.
+
+Btw., this is quite similar to the yield_granularity patch i did 
+originally, just less flexible. It turned out that apps want either zero 
+granularity or "infinite" granularity, they dont actually want something 
+inbetween. That's the two extremes that the current sysctl expresses in 
+essence.
+
+	Ingo
