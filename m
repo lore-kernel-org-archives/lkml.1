@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbXJCPLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbXJCPL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbXJCPLD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXJCPKy
+	id S1757368AbXJCPL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXJCPLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:10:54 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:52034 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbXJCPKx (ORCPT
+	Wed, 3 Oct 2007 11:11:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39966 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753784AbXJCPLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:10:53 -0400
-Date: Wed, 3 Oct 2007 17:10:42 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20071003151042.GG26147@gundam.enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: USB host controller OXU210HP
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Wed, 3 Oct 2007 11:11:47 -0400
+Date: Wed, 3 Oct 2007 08:11:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9
+ and a heads-up for the 2.6.24 series..)
+In-Reply-To: <20071003084607.GC32218@elte.hu>
+Message-ID: <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+ <20071003084607.GC32218@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-someone is working on this device?
 
-   http://www.oxsemi.com/products/usb/OXU210HP.html
+On Wed, 3 Oct 2007, Ingo Molnar wrote:
+> 
+> hm, i just triggered the procfs crash below with -rc9 on a testbox. 
 
-Thanks in advance,
+You have a terminally buggy piece of shit compiler.
 
-Rodolfo
+Lookie here:
 
--- 
+ - the bug happens on this:
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+	char c = *p++;
+
+ - which has been compiled into
+
+	8b 3a		mov    (%edx),%edi
+
+   which is a *word* access.
+
+ - the pointer is at the end of a page (very much on purpose):
+
+	edx: f2a3fffe	
+
+ - and as a result you get an exception on the *next* page:
+
+	BUG: unable to handle kernel paging request at virtual address f2a40000
+
+and btw, there is no question what-so-ever about whether your compiler 
+might be doing a legal optimization - the compiler really is wrong, and is 
+total shit. You need to make a gcc bug-report. Because this is not a 
+question of "the standard is ambiguous", this is a question of "the 
+compiler turned good code into code that could SIGSEGV in user space too, 
+if 'malloc()' happened to return a pointer at the end of an allocation".
+
+			Linus
