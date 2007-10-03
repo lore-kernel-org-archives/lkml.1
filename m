@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXJCVdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbXJCVqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbXJCVdB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 17:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXJCVcw
+	id S1757708AbXJCVqv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 17:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbXJCVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 17:32:52 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50673 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753077AbXJCVcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 17:32:52 -0400
-From: Adam Litke <agl@us.ibm.com>
-Subject: [PATCH] hugetlb: Fix pool resizing corner case V2
-Date: Wed, 03 Oct 2007 14:32:27 -0700
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Adam Litke <agl@us.ibm.com>, Ken Chen <kenchen@google.com>,
-       Dave Hansen <haveblue@us.ibm.com>
-Message-Id: <20071003213227.28925.49934.stgit@kernel>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	Wed, 3 Oct 2007 17:46:43 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16343 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbXJCVqm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 17:46:42 -0400
+Date: Wed, 3 Oct 2007 14:00:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bo yang <bo.yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Bo.yang@lsi.com, Sumant.patro@lsi.com
+Subject: Re: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
+ cmd_per_lun
+Message-Id: <20071003140038.7e9a3a1b.randy.dunlap@oracle.com>
+In-Reply-To: <1191253908.5850.12.camel@dhcp-75-534.se.lsil.com>
+References: <1191253908.5850.12.camel@dhcp-75-534.se.lsil.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 01 Oct 2007 11:51:48 -0400 bo yang wrote:
 
-Changes in V2:
- - Removed now unnecessary check as suggested by Ken Chen
+> Adding module parameters to configure max sectors per request & # of cmds per lun.
+> 
+> Signed-off-by: Bo Yang <bo.yang@lsi.com>
+> 
+> ---
+>  drivers/scsi/megaraid/megaraid_sas.c |   68 ++++++++++++++++++++++++-
+>  drivers/scsi/megaraid/megaraid_sas.h |    2
+>  2 files changed, 68 insertions(+), 2 deletions(-)
+> 
+> diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:14:29.000000000 -0700
+> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 02:15:16.000000000 -0700
+> @@ -62,6 +62,23 @@ MODULE_PARM_DESC(fast_load,
+>  	"megasas: Faster loading of the driver, skips physical devices! "\
+>  	"(default = 0)");
+>  
+> +/*
+> + * Number of sectors per IO command will be set in megasas_init_mfi
+> + * if user does not provide
+> + */
+> +static unsigned int max_sectors;
+> +module_param_named(max_sectors, max_sectors, int, 0);
+> +MODULE_PARM_DESC(max_sectors,
+> +	"Maximum number of sectors per IO command");
 
-When shrinking the size of the hugetlb pool via the nr_hugepages sysctl, we
-are careful to keep enough pages around to satisfy reservations.  But the
-calculation is flawed for the following scenario:
+Are you sure that you want these parameters hidden (permission = 0)
+instead of readable via sysfs?
 
-Action                          Pool Counters (Total, Free, Resv)
-======                          =============
-Set pool to 1 page              1 1 0
-Map 1 page MAP_PRIVATE          1 1 0
-Touch the page to fault it in   1 0 0
-Set pool to 3 pages             3 2 0
-Map 2 pages MAP_SHARED          3 2 2
-Set pool to 2 pages             2 1 2 <-- Mistake, should be 3 2 2
-Touch the 2 shared pages        2 0 1 <-- Program crashes here
+(same applies to the fast_load parameter patch also)
 
-The last touch above will terminate the process due to lack of huge pages.
 
-This patch corrects the calculation so that it factors in pages being used
-for private mappings.  Andrew, this is a standalone fix suitable for
-mainline.  It is also now corrected in my latest dynamic pool resizing
-patchset which I will send out soon.
+> +/*
+> + * Number of cmds per logical unit
+> + */
+> +static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
+> +module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
+> +MODULE_PARM_DESC(cmd_per_lun,
+> +	"Maximum number of commands per logical unit (default=128)");
+> +
+>  MODULE_LICENSE("GPL");
+>  MODULE_VERSION(MEGASAS_VERSION);
+>  MODULE_AUTHOR("megaraidlinux@lsi.com");
 
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-Acked-by: Ken Chen <kenchen@google.com>
+
 ---
-
- mm/hugetlb.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 84c795e..b6b3b64 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -224,14 +224,14 @@ static void try_to_free_low(unsigned long count)
- 	for (i = 0; i < MAX_NUMNODES; ++i) {
- 		struct page *page, *next;
- 		list_for_each_entry_safe(page, next, &hugepage_freelists[i], lru) {
-+			if (count >= nr_huge_pages)
-+				return;
- 			if (PageHighMem(page))
- 				continue;
- 			list_del(&page->lru);
- 			update_and_free_page(page);
- 			free_huge_pages--;
- 			free_huge_pages_node[page_to_nid(page)]--;
--			if (count >= nr_huge_pages)
--				return;
- 		}
- 	}
- }
-@@ -247,11 +247,9 @@ static unsigned long set_max_huge_pages(unsigned long count)
- 		if (!alloc_fresh_huge_page())
- 			return nr_huge_pages;
- 	}
--	if (count >= nr_huge_pages)
--		return nr_huge_pages;
- 
- 	spin_lock(&hugetlb_lock);
--	count = max(count, resv_huge_pages);
-+	count = max(count, resv_huge_pages + nr_huge_pages - free_huge_pages);
- 	try_to_free_low(count);
- 	while (count < nr_huge_pages) {
- 		struct page *page = dequeue_huge_page(NULL, 0);
+~Randy
