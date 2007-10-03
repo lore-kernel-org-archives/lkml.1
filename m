@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbXJCD6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752200AbXJCEDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbXJCD6q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 23:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbXJCD6j
+	id S1752200AbXJCEDO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 00:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXJCEDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 23:58:39 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58681 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbXJCD6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 23:58:38 -0400
-Date: Wed, 3 Oct 2007 09:39:39 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Eric St-Laurent <ericstl34@sympatico.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] Add sysfs control to modify a user's cpu share
-Message-ID: <20071003040939.GI5724@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu> <1191363159.29539.15.camel@perkele>
+	Wed, 3 Oct 2007 00:03:00 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:55555 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbXJCEC7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 00:02:59 -0400
+Date: Tue, 2 Oct 2007 21:01:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: ak@suse.de, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Document x86-64 iommu kernel parameters
+Message-Id: <20071002210125.85b84add.randy.dunlap@oracle.com>
+In-Reply-To: <4702FEC7.3000000@garzik.org>
+References: <20071003013413.GA17717@havoc.gtf.org>
+	<20071002192209.09b2fbda.randy.dunlap@oracle.com>
+	<4702FEC7.3000000@garzik.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191363159.29539.15.camel@perkele>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 06:12:39PM -0400, Eric St-Laurent wrote:
-> While a sysfs interface is OK and somewhat orthogonal to the interface
-> proposed the containers patches, I think maybe a new syscall should be
-> considered.
+On Tue, 02 Oct 2007 22:30:31 -0400 Jeff Garzik wrote:
 
-We had discussed syscall vs filesystem based interface for resource
-management [1] and there was a heavy bias favoring filesystem based interface,
-based on which the container (now "cgroup") filesystem evolved.
+> Randy Dunlap wrote:
+> > On Tue, 2 Oct 2007 21:34:13 -0400 Jeff Garzik wrote:
+> > 
+> >> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> >> ---
+> >> After having to go figure out what some of these means, I figured I
+> >> would save others the trouble.
+> >>
+> >> Some of these are "best guess" based on a quick scan of the code, so it
+> >> certainly needs a sanity review before going upstream.
+> > 
+> > "iommu" is listed in Documentation/x86_64/boot-options.txt
+> > along with more x86_64-specific boot options.
+> > A few other arches do something similar...
+> 
+> Ah!  Well, seeing as how we already have a provision for arch-specific 
+> options in kernel-parameters.txt, and some less-obscure arch-specific 
+> options can be found there, I think an argument can be made for my patch :)
+> 
+> Nonethless, if the maintainer disagrees, they can drop this patch I suppose.
 
-Where we already have one interface defined, I would be against adding 
-an equivalent syscall interface.
+[sorry if there be duplicates; I thought I sent this but can't find it
+anywhere]
 
-Note that this "fair-user" scheduling can in theory be accomplished
-using the same cgroup based interface, but requires some extra setup in
-userspace (either to run a daemon which moves tasks to appropriate
-control groups/containers upon their uid change OR to modify initrd to mount 
-cgroup filesystem at early bootup time). I expect most distros to enable
-CONFIG_FAIR_CGROUP_SCHED (control group based fair group scheduler) and not 
-CONFIG_FAIR_USER_SHCED (user id based fair group scheduler). The only
-reason why we are providing CONFIG_FAIR_USER_SCHED and the associated
-sysfs interface is to help test group scheduler w/o requiring knowledge
-of cgroup filesystem.
 
-Reference:
+Maybe we can/should merge the doc files along with the x86 arch merge.
 
-1. http://marc.info/?l=linux-kernel&m=116231242201300&w=2
-
--- 
-Regards,
-vatsa
+---
+~Randy
