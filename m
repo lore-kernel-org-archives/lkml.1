@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXJCSTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbXJCSTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbXJCSTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXJCSTE
+	id S1759200AbXJCSTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXJCSTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:19:04 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52887 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbXJCSTC (ORCPT
+	Wed, 3 Oct 2007 14:19:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49918 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757195AbXJCSTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:19:02 -0400
-Date: Wed, 3 Oct 2007 19:18:23 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Nick Piggin <npiggin@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pgd_none_or_clear_bad strangeness?
-In-Reply-To: <20071003112527.GA10437@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0710031910080.9414@blonde.wat.veritas.com>
-References: <20071002222003.GL19691@waste.org> <20071003112527.GA10437@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Oct 2007 14:19:45 -0400
+Date: Wed, 3 Oct 2007 19:24:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Mike Robak" <mrobak@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: libATA error message doc
+Message-ID: <20071003192453.0ed967f1@the-village.bc.nu>
+In-Reply-To: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
+References: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Oct 2007, Nick Piggin wrote:
-> On Tue, Oct 02, 2007 at 05:20:03PM -0500, Matt Mackall wrote:
-> > In lib/pagewalk.c, I've been using the various forms of
-> > {pgd,pud,pmd}_none_or_clear_bad while walking page tables as that
-> > seemed the canonical way to do things. Lately (eg with -rc7-mm1),
-> > these have been triggering messages like "bad pgd 0x01e3" and causing
-> > nasty double faults. It appears this is actually triggered at the pmd
-> > level (mm/memory.c:116), though it appears to produce the wrong
-> > message.
+> (irq_stat 0x40000001)	
 
-I guess the "wrong message" is an artifact of pud/pmd folding;
-but I get too confused by the different levels myself to want to
-think more about it - I'll just assume it's "right" somehow ;)
+	IRQ status of the chip
+> tag 0
+	Tag (or zero for non NCQ commands)
+> cmd 0xb0
+	The ATA command number issued
+> emask 0x1
+	Internal libata error category (used to decide what to do to
+recover)
+> stat 0x51
+	Status register of drive
+> err 0x4
+	Error register of drive
 
-> > 
-> > Has something changed here? I'm pretty sure this used to work! Is this
 
-I don't know of anything changing here, sorry.
+You want the ATA specification document from T13 (www.t13.org)
 
-> > not a kosher thing to do? Does it make any sense I'd repeatedly run
-> > into a bad pmd in the middle of bash's page table right after boot?
-> > The simple _none variant seems to work, but I worry that it's papering
-> > over a real problem.
-> 
-> No, I think that should be the right thing to do for userspace pages.
-> You're not walking into a hugetlb area or a kernel mapping are you?
-> (the bad pgd: line could be important... 0x01e3 would be a linear kernel
-> mapping I think?).
-
-I should have spent more time reading Nick's reply and less time trying
-to work it out for myself!  Yes, that's the conclusion I came to, for
-some reason you're now going beyond the user vmas and walking into the
-linear kernel mapping, which has _PAGE_GLOBAL and _PAGE_PSE bits set.
-
-Hugh
+Alan
