@@ -1,103 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbXJCBTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbXJCB3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323AbXJCBTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 21:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXJCBTM
+	id S1755089AbXJCB3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXJCB3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 21:19:12 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:41003 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbXJCBTL (ORCPT
+	Tue, 2 Oct 2007 21:29:38 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56343 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbXJCB3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 21:19:11 -0400
-Date: Wed, 3 Oct 2007 11:19:09 +1000
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Linas Vepstas <linas@austin.ibm.com>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Message-ID: <20071003011909.GG9814@bakeyournoodle.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <20070924123531.GC30855@shadowen.org> <20071002232819.GN4338@austin.ibm.com> <20071003002646.GD9814@bakeyournoodle.com> <1191371416.8073.1.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1191371416.8073.1.camel@concordia>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+	Tue, 2 Oct 2007 21:29:36 -0400
+Date: Wed, 3 Oct 2007 10:31:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: andi@firstfloor.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: [Question] How to represent SYSTEM_RAM in kerenel/resouce.c
+Message-Id: <20071003103136.addbe839.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
- 
-> I realise it'll make the patch bigger, but this doesn't seem like a
-> particularly good name for the variable anymore.
+Hi,
 
-Sure, what about?
+Now, SYSTEM_RAM is registerd to resouce list and a user can see memory map
+from /proc/iomem, like following.
+==
+[kamezawa@drpq linux-2.6.23-rc8-mm2]$ grep RAM /proc/iomem
+00000000-0009ffff : System RAM
+00100000-03ffffff : System RAM
+04000000-04f1bfff : System RAM
+04f1c000-6b4b9fff : System RAM
+6b4ba000-6b797fff : System RAM
+6b798000-6b799fff : System RAM
+6b79a000-6b79dfff : System RAM
+6b79e000-6b79efff : System RAM
+6b79f000-6b7fbfff : System RAM
+6b7fc000-6c629fff : System RAM
+6c62a000-6c800fff : System RAM
+6c801000-6c843fff : System RAM
+6c844000-6c847fff : System RAM
+6c848000-6c849fff : System RAM
+6c84a000-6c85dfff : System RAM
+6c85e000-6c85efff : System RAM
+6c85f000-6cbfbfff : System RAM
+6cbfc000-6d349fff : System RAM
+6d34a000-6d3fbfff : System RAM
+6d3fc000-6d455fff : System RAM
+6d4fc000-6d773fff : System RAM
+100000000-7ffffffff : System RAM
+4080000000-40ffffffff : System RAM
+14004000000-147ffffffff : System RAM
+==
 
-Clarify when RTAS logging is enabled.
+But there is a confusion.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+i386 and x86_64 registers System RAM as IORESOUCE_MEM | IORESOUCE_BUSY.
+ia64 registers System RAM as IORESOURCE_MEM.
 
----
- arch/powerpc/platforms/pseries/rtasd.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+Which is better ?
 
-diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platforms/pseries/rtasd.c
-index 30925d2..73401c8 100644
---- a/arch/powerpc/platforms/pseries/rtasd.c
-+++ b/arch/powerpc/platforms/pseries/rtasd.c
-@@ -54,8 +54,9 @@ static unsigned int rtas_event_scan_rate;
- static int full_rtas_msgs = 0;
- 
- /* Stop logging to nvram after first fatal error */
--static int no_more_logging;
--
-+static int logging_enabled; /* Until we initialize everything,
-+                             * make sure we don't try logging
-+                             * anything */
- static int error_log_cnt;
- 
- /*
-@@ -217,7 +218,7 @@ void pSeries_log_error(char *buf, unsigned int err_type, int fatal)
- 	}
- 
- 	/* Write error to NVRAM */
--	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
-+	if (logging_enabled && !(err_type & ERR_FLAG_BOOT))
- 		nvram_write_error_log(buf, len, err_type, error_log_cnt);
- 
- 	/*
-@@ -229,8 +230,8 @@ void pSeries_log_error(char *buf, unsigned int err_type, int fatal)
- 		printk_log_rtas(buf, len);
- 
- 	/* Check to see if we need to or have stopped logging */
--	if (fatal || no_more_logging) {
--		no_more_logging = 1;
-+	if (fatal || !logging_enabled) {
-+		logging_enabled = 0;
- 		spin_unlock_irqrestore(&rtasd_log_lock, s);
- 		return;
- 	}
-@@ -302,7 +303,7 @@ static ssize_t rtas_log_read(struct file * file, char __user * buf,
- 
- 	spin_lock_irqsave(&rtasd_log_lock, s);
- 	/* if it's 0, then we know we got the last one (the one in NVRAM) */
--	if (rtas_log_size == 0 && !no_more_logging)
-+	if (rtas_log_size == 0 && logging_enabled)
- 		nvram_clear_error_log();
- 	spin_unlock_irqrestore(&rtasd_log_lock, s);
- 
-@@ -414,6 +415,8 @@ static int rtasd(void *unused)
- 	memset(logdata, 0, rtas_error_log_max);
- 	rc = nvram_read_error_log(logdata, rtas_error_log_max,
- 	                          &err_type, &error_log_cnt);
-+	/* We can use rtas_log_buf now */
-+	logging_enabled = 1;
- 
- 	if (!rc) {
- 		if (err_type != ERR_FLAG_ALREADY_LOGGED) {
+I ask this because current memory hotplug treat memory as IORESOUCE_MEM.
+When memory hot-add occurs on x86_64, new memory is added as IORESOUCE_MEM.
+memory hot-remove (now) can remove only IORESOUCE_MEM.
 
-Yours Tony
+If ia64 should treat System RAM as IORESOUCE_MEM | IORESOUCE_BUSY, I'll write
+a fix.
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
 
