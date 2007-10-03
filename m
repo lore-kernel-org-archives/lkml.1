@@ -1,124 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbXJCIXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbXJCIaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbXJCIXR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXJCIXG
+	id S1756637AbXJCIaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXJCIaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:23:06 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:12558 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbXJCIXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:23:03 -0400
-Message-ID: <47035212.4000402@openvz.org>
-Date: Wed, 03 Oct 2007 12:25:54 +0400
-From: Kirill Korotaev <dev@openvz.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Wed, 3 Oct 2007 04:30:21 -0400
+Received: from proxy3.bredband.net ([195.54.101.73]:39795 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbXJCIaU (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 04:30:20 -0400
+Date: Wed, 3 Oct 2007 10:29:32 +0200
+From: iank@bredband.net
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: pomac@vapor.com, Jeff Garzik <jgarzik@pobox.com>,
+       Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: jumbo frame regression fix
+Message-ID: <20071003082932.GD32073@pomac.netswarm.net>
+References: <1191372129.26233.12.camel@localhost> <20071002180209.47c350a3@freepuppy.rosehill> <1191375274.26233.17.camel@localhost> <20071002215914.13d1e8cf@freepuppy.rosehill>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Kirill Korotaev <dev@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, cebbert@redhat.com, hpa@zytor.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] mark read_crX() asm code as volatile
-References: <470250E0.5090706@openvz.org> <20071002082856.3c478e66@laptopd505.fenrus.org>
-In-Reply-To: <20071002082856.3c478e66@laptopd505.fenrus.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071002215914.13d1e8cf@freepuppy.rosehill>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan,
-
-I can experiment with any constraints if you suggest which one.
-
->From our experiments with gcc, it compares asm strings (sic!!!) to find matches
-to be merged! Sigh...
-Below are 2 programs which differ in one space in read_cr3_b() asm statement.
-The first one compiles incorrectly, while 2nd one - correctly.
-
-My personal feeling is that comparing asm strings is simply a "misfeature".
-
--------------------------- cut ----------------------------
-static inline unsigned long read_cr3_a(void)
-{
-        unsigned long cr3;
-        asm("movq %%cr3,%0" : "=r" (cr3));
-        return cr3;
-}
-
-static inline unsigned long read_cr3_b(void)
-{
-        unsigned long cr3;
-        asm("movq %%cr3,%0" : "=r" (cr3));
-        return cr3;
-}
-
-static inline void write_cr3(unsigned long val)
-{
-        asm volatile("movq %0,%%cr3" :: "r" (val) : "memory");
-}
-
-void main()
-{
-        unsigned long c;
-        c = read_cr3_a();
-        write_cr3(c | 0x80);
-        c = read_cr3_b();
-        write_cr3(c | 0x100);
-}
--------------------------- cut ----------------------------
-
-
--------------------------- cut ----------------------------
-static inline unsigned long read_cr3_a(void)
-{
-        unsigned long cr3;
-        asm("movq %%cr3,%0" : "=r" (cr3));
-        return cr3;
-}
-
-static inline unsigned long read_cr3_b(void)
-{
-        unsigned long cr3;
-        asm("movq  %%cr3,%0" : "=r" (cr3));
-        return cr3;
-}
-
-static inline void write_cr3(unsigned long val)
-{
-        asm volatile("movq %0,%%cr3" :: "r" (val) : "memory");
-}
-
-void main()
-{
-        unsigned long c;
-        c = read_cr3_a();
-        write_cr3(c | 0x80);
-        c = read_cr3_b();
-        write_cr3(c | 0x100);
-}
--------------------------- cut ----------------------------
-
-Kirill
-
-Arjan van de Ven wrote:
-> On Tue, 02 Oct 2007 18:08:32 +0400
-> Kirill Korotaev <dev@openvz.org> wrote:
+On Tue, Oct 02, 2007 at 09:59:14PM -0700, Stephen Hemminger wrote:
+> On Wed, 03 Oct 2007 03:34:34 +0200
+> Ian Kumlien <pomac@vapor.com> wrote:
 > 
+> > On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
+> > > Remove unneeded check that caused problems with jumbo frame sizes.
+> > > The check was recently added and is wrong.
+> > > When using jumbo frames the sky2 driver does fragmentation, so
+> > > rx_data_size is less than mtu.
+> > 
+> > Confirmed working.
+> > 
+> > Now running with 9k mtu with no errors, =)
+> > 
+> > It also seems that the FIFO bug was the one that affected me before,
+> > damn odd race that one.
 > 
->>Some gcc versions (I checked at least 4.1.1 from RHEL5 & 4.1.2 from
->>gentoo) can generate incorrect code with read_crX()/write_crX()
->>functions mix up, due to cached results of read_crX().
->>
-> 
-> 
-> I'm not so sure volatile is the right answer, as compared to giving the
-> asm more strict contraints....
-> 
-> asm volatile tends to mean something else than "the result has
-> changed"....
-> 
-> 
+> Does the workaround (forced reset work). Ian, you are the first person to
+> report triggering it.  I haven't found a way to make it happen.
+> What combination of flow control and speeds are you using?
 
+I forgot to add, last time was -rc8-git2 or 3 and using Westwood flow
+control.
+
+> -- 
+> Stephen Hemminger <shemminger@linux-foundation.org>
