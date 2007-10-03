@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXJCOJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbXJCONT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbXJCOJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 10:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXJCOJE
+	id S1756490AbXJCONT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 10:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbXJCONK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 10:09:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38622 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753784AbXJCOJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 10:09:03 -0400
-Date: Wed, 3 Oct 2007 16:08:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
-	2.6.23-rc9 and a heads-up for the 2.6.24 series..)
-Message-ID: <20071003140842.GA8837@elte.hu>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu> <20071003133422.GI8181@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003133422.GI8181@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 3 Oct 2007 10:13:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58000 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275AbXJCONI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 10:13:08 -0400
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: kaigai@kaigai.gr.jp, jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
+In-Reply-To: <200710032259.HJF90663.OFMLOJtQHOFVSF@I-love.SAKURA.ne.jp>
+References: <200710032024.DJF78662.FHOLtMSFOOFJVQ@I-love.SAKURA.ne.jp>
+	 <20071003.204356.05853536.yoshfuji@linux-ipv6.org>
+	 <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
+	 <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
+	 <470395B3.2020904@kaigai.gr.jp>
+	 <200710032259.HJF90663.OFMLOJtQHOFVSF@I-love.SAKURA.ne.jp>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 16:07:22 +0200
+Message-Id: <1191420442.5599.12.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Al Viro <viro@ftp.linux.org.uk> wrote:
 
-> On Wed, Oct 03, 2007 at 10:46:07AM +0200, Ingo Molnar wrote:
-> > 
-> > hm, i just triggered the procfs crash below with -rc9 on a testbox. 
-> > Config attached. It's easy to reproduce it via 'service sshd restart'. 
-> > The crash site is:
-> > 
-> >  (gdb) list *0xc017599d
-> >  0xc017599d is in seq_path (fs/seq_file.c:354).
-> >  349             if (m->count < m->size) {
-> >  350                     char *s = m->buf + m->count;
-> >  351                     char *p = d_path(dentry, mnt, s, m->size - m->count);
-> >  352                     if (!IS_ERR(p)) {
-> >  353                             while (s <= p) {
-> >  354                                     char c = *p++;
-> >  355                                     if (!c) {
-> >  356                                             p = m->buf + m->count;
-> >  357                                             m->count = s - m->buf;
-> >  358                                             return s - p;
-> >  (gdb)
-> > 
-> > any ideas? Fortunately i was able to do an strace of the incident:
+On Wed, 2007-10-03 at 22:59 +0900, Tetsuo Handa wrote:
+> Hello.
 > 
-> Charming...  So we get d_path() either returning junk or we get 
-> something that isn't NUL-terminated.  Which one it is?  I.e. what does 
-> p look like and what's in s?
+> KaiGai Kohei wrote:
+> > If so, you can apply RCU instead to avoid read lock
+> > when scanning the list, like:
+> > 
+> > rcu_read_lock();
+> > list_for_each_entry(...) {
+> >      ....
+> > }
+> > rcu_read_unlock();
+> 
+> Can I sleep between rcu_read_lock() and rcu_read_unlock() ?
+> As far as I saw, rcu_read_lock() makes in_atomic() true, so I think I can't sleep.
+> 
+> If I use RCU, I have to give up " [TOMOYO 13/15] Conditional permission support"
+> because tmy_check_condition() can sleep.
 
-could be use-after-free as well, as CONFIG_PAGEALLOC was enabled.
+You can indeed not sleep in an rcu_read_lock() section. However, you
+could grab a reference on an item, stop the iteration, drop
+rcu_read_lock. Do you thing, re-acquire rcu_read_lock(), drop the ref,
+and continue the iteration.
 
-	Ingo
+Also, how do you avoid referencing dead data with your sll? I haven't
+actually looked at your patches, but the simple scheme you outlined
+didn't handle the iteration + concurrent removal scenario:
+
+thread 1             thread 2
+
+ foo = ptr->next
+
+ < schedule >
+
+                     killme = ptr->next (same item)
+                     ptr->next = ptr->next->next;
+                     kfree(killme)
+
+                     < schedule >
+
+ foo->bar <-- *BANG*
+
