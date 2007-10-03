@@ -1,48 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXJCSoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXJCSsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbXJCSoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXJCSoL
+	id S1758012AbXJCSsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXJCSsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:44:11 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:52480 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbXJCSoJ (ORCPT
+	Wed, 3 Oct 2007 14:48:32 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41151 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754151AbXJCSsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:44:09 -0400
-In-Reply-To: <ada1wcxnev5.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
+	Wed, 3 Oct 2007 14:48:31 -0400
+Date: Wed, 3 Oct 2007 19:47:26 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
+In-Reply-To: <47034F12.8020505@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0710031918470.9414@blonde.wat.veritas.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+ <4701C737.8070906@linux.vnet.ibm.com> <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
+ <47034F12.8020505@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Subject: Re: InfiniBand/RDMA merge plans for 2.6.24
-X-Mailer: Lotus Notes Release 7.0 HF144 February 01, 2006
-Message-ID: <OF9591AF85.09F0D1BF-ON87257369.006651BA-88257369.0066A0BD@us.ibm.com>
-From: Shirley Ma <xma@us.ibm.com>
-Date: Wed, 3 Oct 2007 11:43:40 -0700
-X-MIMETrack: Serialize by Router on D03MC012/03/M/IBM(Release 7.0.2FP2HF51 | June 19, 2007) at
- 10/03/2007 12:44:01,
-	Serialize complete at 10/03/2007 12:44:01
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 09/17/2007 02:47:42 PM:
-
->  > > IPoIB CM handles this properly by gathering together single pages 
-in
->  > > skbs' fragment lists.
+On Wed, 3 Oct 2007, Balbir Singh wrote:
+> Hugh Dickins wrote:
+> > 
+> > Sorry, Balbir, I've failed to get back to you, still attending to
+> > priorities.  Let me briefly summarize my issue with the mem controller:
+> > you've not yet given enough attention to swap.
 > 
->  > Then can we reuse IPoIB CM code here?
+> I am open to suggestions and ways and means of making swap control
+> complete and more usable.
+
+Well, swap control is another subject.  I guess for that you'll need
+to track which cgroup each swap page belongs to (rather more expensive
+than the current swap_map of unsigned shorts).  And I doubt it'll be
+swap control as such that's required, but control of rss+swap.
+
+But here I'm just worrying about how the existence of swap makes
+something of a nonsense of your rss control.
+
+> > I accept that full swap control is something you're intending to add
+> > incrementally later; but the current state doesn't make sense to me.
+> > 
+> > The problems are swapoff and swapin readahead.  These pull pages into
+> > the swap cache, which are assigned to the cgroup (or the whatever-we-
+> > call-the-remainder-outside-all-the-cgroups) which is running swapoff
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+I'd appreciate it if you'd teach me the right name for that!
+
+> > or faulting in its own page; yet they very clearly don't (in general)
+> > belong to that cgroup, but to other cgroups which will be discovered
+> > later.
 > 
-> Yes, if possible, refactoring things so that the rx skb allocation
-> code becomes common between CM and non-CM would definitely make sense.
+> I understand what your trying to say, but with several approaches that
+> we tried in the past, we found caches the hardest to most accurately
+> account. IIRC, with readahead, we don't even know if all the pages
+> readahead will be used, that's why we charge everything to the cgroup
+> that added the page to the cache.
 
-IPoIB-CM rx skb allocation is not generic to be used by UD, it allocates 
-more buffers than needed if mtu is not 64K, and doesn't query the real 
-max_num_sg from the device. I am thinking to have a generic skb allocation 
-in IPoIB based on matrix of (ipoib-mtu-size, page-size, max_num_sg, 
-head-size).
+Yes, readahead is anyway problematic.  My guess is that in the file
+cache case, you'll tend not to go too far wrong by charging to the
+one that added - though we're all aware that's fairly unsatisfactory.
 
-Thanks
-Shirley 
+My point is that in the swap cache case, it's badly wrong: there's
+no page more obviously owned by a cgroup than its anonymous pages
+(forgetting for a moment that minority shared between cgroups
+until copy-on-write), so it's very wrong for swapin readahead
+or swapoff to go charging those to another or to no cgroup.
+
+Imagine a cgroup at its rss limit, with more out on swap.  Then
+another cgroup does some swap readahead, bringing pages private
+to the first into cache.  Or runs swapoff which actually plugs
+them into the rss of the first cgroup, so it goes over limit.
+
+Those are pages we'd want to swap out when the first cgroup
+faults to go further over its limit; but they're now not even
+identified as belonging to the right cgroup, so won't be found.
+
+> > I did try removing the cgroup mods to mm/swap_state.c, so swap pages
+> > get assigned to a cgroup only once it's really known; but that's not
+> > enough by itself, because cgroup RSS reclaim doesn't touch those
+> > pages, so the cgroup can easily OOM much too soon.  I was thinking
+> > that you need a "limbo" cgroup for these pages, which can be attacked
+> > for reclaim along with any cgroup being reclaimed, but from which
+> > pages are readily migrated to their real cgroup once that's known.
+> > 
+> 
+> Is migrating the charge to the real cgroup really required?
+
+My answer is definitely yes.  I'm not suggesting that you need
+general migration between cgroups at this stage (something for
+later quite likely); but I am suggesting you need one pseudo-cgroup
+to hold these cases temporarily, and that you cannot properly track
+rss without it (if there is any swap).
+
+> > But I had to switch over to other work before trying that out:
+> > perhaps the idea doesn't really fly at all.  And it might well
+> > be no longer needed once full mem+swap control is there.
+> > 
+> > So in the current memory controller, that unuse_pte mem charge I was
+> > originally worried about failing (I hadn't at that point delved in
+> > to see how it tries to reclaim) actually never fails (and never
+> > does anything): the page is already assigned to some cgroup-or-
+> > whatever and is never charged to vma->vm_mm at that point.
+> > 
+> 
+> Excellent!
+
+Umm, please explain what's excellent about that.
+
+Hugh
