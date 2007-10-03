@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbXJCSRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXJCSTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759088AbXJCSRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbXJCSRb
+	id S1758907AbXJCSTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXJCSTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:17:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47956 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757341AbXJCSRa (ORCPT
+	Wed, 3 Oct 2007 14:19:04 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52887 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbXJCSTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:17:30 -0400
-Date: Wed, 3 Oct 2007 19:17:22 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, paul.moore@hp.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071003181722.GL8181@ftp.linux.org.uk>
-References: <20071003051254.GH8181@ftp.linux.org.uk> <287091.73995.qm@web36604.mail.mud.yahoo.com> <20071003175237.GK8181@ftp.linux.org.uk> <20071003191735.4d92c593@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003191735.4d92c593@the-village.bc.nu>
-User-Agent: Mutt/1.4.1i
+	Wed, 3 Oct 2007 14:19:02 -0400
+Date: Wed, 3 Oct 2007 19:18:23 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Nick Piggin <npiggin@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pgd_none_or_clear_bad strangeness?
+In-Reply-To: <20071003112527.GA10437@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0710031910080.9414@blonde.wat.veritas.com>
+References: <20071002222003.GL19691@waste.org> <20071003112527.GA10437@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 07:17:35PM +0100, Alan Cox wrote:
-> > Absolute paths in that kind of thing are _wrong_.  You know where the things
-> > are on your fs.  You don't know if anything else will be visible, let alone
-> > whether it will be at the same place in all chroots or namespaces.  And no,
-> > you _can't_ make sure that fs is visible only in one place.  No fs can or
-> > has any business even trying.
-> 
-> What I don't understand here is why we need the hacks when we already
-> support sufficient mount magic to give each login session its own
-> private /tmp ?
+On Wed, 3 Oct 2007, Nick Piggin wrote:
+> On Tue, Oct 02, 2007 at 05:20:03PM -0500, Matt Mackall wrote:
+> > In lib/pagewalk.c, I've been using the various forms of
+> > {pgd,pud,pmd}_none_or_clear_bad while walking page tables as that
+> > seemed the canonical way to do things. Lately (eg with -rc7-mm1),
+> > these have been triggering messages like "bad pgd 0x01e3" and causing
+> > nasty double faults. It appears this is actually triggered at the pmd
+> > level (mm/memory.c:116), though it appears to produce the wrong
+> > message.
 
-Presumably his context can change within a login session?  If not, it's
-indeed simply worthless, absolute paths or not.
+I guess the "wrong message" is an artifact of pud/pmd folding;
+but I get too confused by the different levels myself to want to
+think more about it - I'll just assume it's "right" somehow ;)
+
+> > 
+> > Has something changed here? I'm pretty sure this used to work! Is this
+
+I don't know of anything changing here, sorry.
+
+> > not a kosher thing to do? Does it make any sense I'd repeatedly run
+> > into a bad pmd in the middle of bash's page table right after boot?
+> > The simple _none variant seems to work, but I worry that it's papering
+> > over a real problem.
+> 
+> No, I think that should be the right thing to do for userspace pages.
+> You're not walking into a hugetlb area or a kernel mapping are you?
+> (the bad pgd: line could be important... 0x01e3 would be a linear kernel
+> mapping I think?).
+
+I should have spent more time reading Nick's reply and less time trying
+to work it out for myself!  Yes, that's the conclusion I came to, for
+some reason you're now going beyond the user vmas and walking into the
+linear kernel mapping, which has _PAGE_GLOBAL and _PAGE_PSE bits set.
+
+Hugh
