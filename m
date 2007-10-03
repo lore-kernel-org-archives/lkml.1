@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXJCSZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbXJCS0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758761AbXJCSZh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbXJCSZa
+	id S1759276AbXJCS0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbXJCS0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:25:30 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:27089 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757284AbXJCSZ3 (ORCPT
+	Wed, 3 Oct 2007 14:26:07 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43827 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758072AbXJCS0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:25:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YSUcZdfZ9ytsNV3oUehQxyLCdYyohWSAv5eoqMkXFxmYfmsrD7s0wuq40o9jlJ73y
-	BUGjgUdbi/BM6rxVtAbAQ==
-Message-ID: <6599ad830710031125v68aac64aic4ad7e5114fa8ac@mail.gmail.com>
-Date: Wed, 3 Oct 2007 11:25:21 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
-Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
-       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
-In-Reply-To: <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	Wed, 3 Oct 2007 14:26:06 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Roland Dreier <roland@digitalvampire.org>
+Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: MSI: Use correct data offset for 32-bit MSI in read_msi_msg()
+References: <87abr0oyj4.fsf@shaolin.home.digitalvampire.org>
+Date: Wed, 03 Oct 2007 12:25:36 -0600
+In-Reply-To: <87abr0oyj4.fsf@shaolin.home.digitalvampire.org> (Roland Dreier's
+	message of "Wed, 03 Oct 2007 11:15:11 -0700")
+Message-ID: <m1ir5ocaxr.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	 <20071003105817.7adf6516.pj@sgi.com>
-	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Paul Menage <menage@google.com> wrote:
+Roland Dreier <roland@digitalvampire.org> writes:
+
+> While reading the MSI code trying to find a reason why MSI wouldn't
+> work for devices that have a 32-bit MSI address capability, I noticed
+> that read_msi_msg() seems to read the message data from the wrong
+> offset in this case.
+
+Doh!  Sorry about that.
+
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
+> ---
+> Unfortunately MSI still doesn't seem to work with Intel 945GM
+> integrated graphics on my laptop, even with this fix....
 >
-> What's wrong with, in update_cpumask(), doing a loop across all
-> members of the cgroup and updating their cpus_allowed fields?
-
-i.e. something like:
-
-struct cgroup_iter it;
-struct task_struct *p;
-while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
-	set_cpus_allowed(p, cs->cpus_allowed);
-}
-cgroup_iter_end(cs->css.cgroup, &it);
-
-Paul
+>  drivers/pci/msi.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index be1df85..87e0161 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -132,7 +132,7 @@ void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+>  			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
+>  		} else {
+>  			msg->address_hi = 0;
+> -			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
+> +			pci_read_config_word(dev, msi_data_reg(pos, 0), &data);
+>  		}
+>  		msg->data = data;
+>  		break;
