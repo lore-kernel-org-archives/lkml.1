@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbXJCHOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbXJCHVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbXJCHOs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 03:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXJCHOl
+	id S1754573AbXJCHVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 03:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXJCHVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 03:14:41 -0400
-Received: from ernst.netinsight.se ([212.247.11.2]:61403 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752007AbXJCHOk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 03:14:40 -0400
-Date: Wed, 03 Oct 2007 09:04:23 +0200 (CEST)
-Message-Id: <20071003.090423.-2529196.anders@netinsight.se>
-To: arjan@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
-Subject: Re: PROBLEM: high load average when idle
-From: Anders =?iso-8859-1?Q?Bostr=F6m?= <anders@bostrom.dyndns.org>
-In-Reply-To: <4702D086.3000005@linux.intel.com>
-References: <20071002.233731.119908363.anders@bostrom.dyndns.org>
-	<4702D086.3000005@linux.intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 3 Oct 2007 03:21:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44940 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752065AbXJCHVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 03:21:03 -0400
+Date: Wed, 3 Oct 2007 09:20:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Jackson <pj@sgi.com>
+Cc: nickpiggin@yahoo.com.au, akpm@linux-foundation.org, menage@google.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
+Subject: Re: [patch] sched: fix sched-domains partitioning by cpusets
+Message-ID: <20071003072051.GD2619@elte.hu>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200709301335.00441.nickpiggin@yahoo.com.au> <20071001111528.5487b4f4.pj@sgi.com> <200710022335.05357.nickpiggin@yahoo.com.au> <20071003062240.GA19027@elte.hu> <20071002235615.6e8cd007.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071002235615.6e8cd007.pj@sgi.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "AvdV" == Arjan van de Ven <arjan@linux.intel.com> writes:
 
- AvdV> Anders Boström wrote:
- >> Hi!
- >> 
- >> My computer suffers from high load average when the system is idle,
- >> introduced by commit 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 .
- >> 
- >> Long story:
- >> 
- >> 2.6.20 and all later versions I've tested, including 2.6.21 and
- >> 2.6.22, make the load average high. Even when the computer is totally
- >> idle (I've tested in single user mode), the load average end up
- >> at ~0.30. The computer is still responsive, and the only fault seems
- >> to be the too high load average. All versions up to and including
- >> 2.6.19.7 is fine, and don't suffer from the problem.
+* Paul Jackson <pj@sgi.com> wrote:
 
- AvdV> can you tell me if you're tuning ext3 in any way to have a much 
- AvdV> shorter timeout than the standard 5 seconds?
+> Batch schedulers need to be able to specify where they need load 
+> balancing and where they don't, and they can't use the 'cpu_exclusive' 
+> flag.  The defining characteristic of 'cpu_exclusive' is no overlap of 
+> CPUs with sibling cpusets.  That is incompatible with their needs.
+> 
+> Therefore, they need a different flag.
+> 
+> I must NAQ this patch, and I'm surprised to see Nick propose it again, 
+> as I thought he had already agreed that it didn't suffice.
 
-No, I'm using the standard 5 seconds timeout.
+ok. Then lets go back to the original plan: your two patches and the new 
+flag. Nick?
 
-/ Anders
+	Ingo
