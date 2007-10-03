@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXJCPOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbXJCPRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbXJCPOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXJCPOL
+	id S1754617AbXJCPRR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXJCPRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:14:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44298 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbXJCPOK (ORCPT
+	Wed, 3 Oct 2007 11:17:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2853 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbXJCPRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:14:10 -0400
-Date: Wed, 3 Oct 2007 08:12:13 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
- 2.6.23-rc9 and a heads-up for the 2.6.24 series..)
-Message-ID: <20071003081213.4676ae60@laptopd505.fenrus.org>
-In-Reply-To: <20071003142600.GJ8181@ftp.linux.org.uk>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
-	<20071003084607.GC32218@elte.hu>
-	<20071003133422.GI8181@ftp.linux.org.uk>
-	<20071003140842.GA8837@elte.hu>
-	<20071003142600.GJ8181@ftp.linux.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Oct 2007 11:17:04 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Y6ST7eYHlnA/IlLZh396TCMR1lgIXJoDT4Q5ejWf+QdQaAOR5m2k9QtZVzShWU34F
+	UJIz5bmj781a/arOYnwGA==
+Message-ID: <6599ad830710030816m32321b54gbc79c24d0a39941b@mail.gmail.com>
+Date: Wed, 3 Oct 2007 08:16:53 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH 03/33] task containersv11 add tasks file interface
+Cc: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, serue@us.ibm.com,
+       clg@fr.ibm.com, ebiederm@xmission.com, xemul@openvz.org,
+       rientjes@google.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071003010923.c606c176.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20070917210307.116234000@menage.corp.google.com>
+	 <20070917210426.579524000@menage.corp.google.com>
+	 <20071003010923.c606c176.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Oct 2007 15:26:01 +0100
-Al Viro <viro@ftp.linux.org.uk> wrote:
+On 10/3/07, Paul Jackson <pj@sgi.com> wrote:
+>
+>  - What are these apparent 'exec notifications' that are provided to
+>    user space that the following mentions - I cannot find any other
+>    mention of them:
+>
+>         With the ability to classify tasks differently for different
+>         resources (by putting those resource subsystems in different
+>         hierarchies) then the admin can easily set up a script which
+>         receives exec notifications and depending on who is launching
+>         the browser he can
 
-> On Wed, Oct 03, 2007 at 04:08:42PM +0200, Ingo Molnar wrote:
-> > > Charming...  So we get d_path() either returning junk or we get 
-> > > something that isn't NUL-terminated.  Which one it is?  I.e. what
-> > > does p look like and what's in s?
-> > 
-> > could be use-after-free as well, as CONFIG_PAGEALLOC was enabled.
-> 
-> Umm...  d_path() had just written there, so use-after-free is not too
-> likely to trigger page fault on read immediately afterwards - you'd
-> need a pretty tight race to hit it.
+It's the process connector netlink notifier. It can report
+fork/exit/exec/setuid events to userspace. See
+drivers/connector/cn_proc.c
 
-I suspect we want the following patch out of general principles; Ingo,
-can you see if this one helps?
-(if not, it's still worth considering; it looks like we're first
-destroying the device object (which holds the name of the directory)
-before we unregister the directory... if that fails then we have a mess.
+>
+>
+>  -  It states in cgroups.txt:
+>
+>     *** notify_on_release is disabled in the current patch set. It will be
+>     *** reactivated in a future patch in a less-intrusive manner
+>
+>     This doesn't seem to be true, and had better not be true.
+>     From what I can tell, notify_on_release still works for cpusets,
+>     and it is important that it continue to work when cgroups are
+>     folded into the main line kernel.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Correct, it's reactivated in a later patch in the series, but this
+intermediate comment snuck through.
 
+>
+>         Each cgroup object created by the system has an array of pointers,
+>         indexed by subsystem id; this pointer is entirely managed by the
+>         subsystem; the generic cgroup code will never touch this pointer.
+>
+>   Is plural "pointers", or singular "pointer", the correct wording?
 
---- linux-2.6.23-rc2/net/wireless/core.c~	2007-10-03 08:04:45.000000000 -0700
-+++ linux-2.6.23-rc2/net/wireless/core.c	2007-10-03 08:04:45.000000000 -0700
-@@ -133,8 +133,8 @@ void wiphy_unregister(struct wiphy *wiph
- 	mutex_unlock(&drv->mtx);
- 
- 	list_del(&drv->list);
--	device_del(&drv->wiphy.dev);
- 	debugfs_remove(drv->wiphy.debugfsdir);
-+	device_del(&drv->wiphy.dev);
- 
- 	mutex_unlock(&cfg80211_drv_mutex);
- }
+Probably plural.
+
+>
+>  - Several lines near the end of cgroups.txt start with "LL".
+>    I guess they list what locks are held while taking the call,
+>    but the notation seems cryptic and unfamiliar to me, and its
+>    meaning here undocumented.
+
+"Locking Level", describing which locks *are* held, and which are
+*not* held during a call. I thought it was a more generally
+widely-used commenting convention, but I don't see any other uses of
+it in the kernel. I can replace them with "holds cgroup_mutex" or
+"doesn't hold cgroup_mutex" for clarity.
+
+>
+>  - There are many instances of the local variable 'cont', referring
+>    to a struct cgroup pointer.  I presume the spelling 'cont' is a
+>    holdover from the time when we called these containers.
+
+Yes, and since cgroup is short for "control group", "cont" still
+seemed like a reasonable abbreviation. (And made the automatic
+renaming much simpler).
+>
+>  - The code in attach_task which skips the attachment of a task to
+>    the group it is already in has to be removed.  Cpusets depends
+>    on reattaching a task to its current cpuset, in order to trigger
+>    updating the cpus_allowed mask in the task struct.  This is a
+>    hack, granted, but an important one.  It avoids checking for a
+>    changed cpuset 'cpus' setting in critical scheduler code paths.
+
+I don't quite understand how this is meant to work - under what
+circumstances would it occur? Are there cases when userspace is
+required to try to reattach a task to its current cpuset in order to
+get a cpu mask change to stick?
+
+Other comments noted, thanks.
+
+Paul
