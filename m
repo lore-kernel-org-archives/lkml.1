@@ -1,55 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXJCSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbXJCSdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbXJCSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbXJCSaP
+	id S1755319AbXJCSdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbXJCSdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:30:15 -0400
-Received: from mga06.intel.com ([134.134.136.21]:37888 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751593AbXJCSaN (ORCPT
+	Wed, 3 Oct 2007 14:33:35 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58235 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbXJCSde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:30:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,226,1188802800"; 
-   d="scan'208";a="238778007"
-Message-ID: <4703DF80.5010405@linux.intel.com>
-Date: Wed, 03 Oct 2007 11:29:20 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anders Bostr?m <anders@bostrom.dyndns.org>,
+	Wed, 3 Oct 2007 14:33:34 -0400
+Subject: Re: [PATCH] hugetlb: Fix pool resizing corner case
+From: Adam Litke <agl@us.ibm.com>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: high load average when idle
-References: <20071002.233731.119908363.anders@bostrom.dyndns.org> <20071002150748.906970bc.akpm@linux-foundation.org> <4702C756.8090108@redhat.com> <20071002162613.54c3ef43@laptopd505.fenrus.org> <4703D212.6040304@redhat.com> <alpine.LFD.0.999.0710031058320.3579@woody.linux-foundation.org> <4703DD8A.80602@linux.intel.com> <alpine.LFD.0.999.0710031125100.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710031125100.3579@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <1191433248.4939.79.camel@localhost>
+References: <20071003154748.19516.90317.stgit@kernel>
+	 <1191433248.4939.79.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 13:33:12 -0500
+Message-Id: <1191436392.19775.43.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Wed, 2007-10-03 at 10:40 -0700, Dave Hansen wrote:
+> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > index 84c795e..7af3908 100644
+> > --- a/mm/hugetlb.c
+> > +++ b/mm/hugetlb.c
+> > @@ -224,14 +224,14 @@ static void try_to_free_low(unsigned long count)
+> >  	for (i = 0; i < MAX_NUMNODES; ++i) {
+> >  		struct page *page, *next;
+> >  		list_for_each_entry_safe(page, next, &hugepage_freelists[i], lru) {
+> > +			if (count >= nr_huge_pages)
+> > +				return;
+> >  			if (PageHighMem(page))
+> >  				continue;
+> >  			list_del(&page->lru);
+> >  			update_and_free_page(page);
+> >  			free_huge_pages--;
+> >  			free_huge_pages_node[page_to_nid(page)]--;
+> > -			if (count >= nr_huge_pages)
+> > -				return;
+> >  		}
+> >  	}
+> >  }
 > 
-> On Wed, 3 Oct 2007, Arjan van de Ven wrote:
->> not sure this is going to help; I mean, the load gets only updated in actual
->> timer interrupts... and on a tickless system there's very few of those
->> around..... and usually at places round_jiffies() already put a timer on.
+> That's an excellent problem description.  I'm just a bit hazy on how the
+> patch fixes it. :)
 > 
-> Yeah, you're right. Although in practice, at least on a system running 
-> X, I'd expect that there still is lots of other timers going on, hiding 
-> the issue.
+> What is the actual error in this loop?  The fact that we can go trying
+> to free pages when the count is actually OK?
 
-eh not really; on a normal distro desktop you maybe have 10 
-wakeups/sec or so; on a tuned one you have 2 or less.
+The above hunk serves only to change the behavior of try_to_free_low()
+so that rather than always freeing _at_least_ one huge page, it can
+return without having freed any pages. 
 
+> BTW, try_to_free_low(count) kinda sucks for a function name.  Is that
+> count the number of pages we're trying to end up with, or the total
+> number of low pages that we're trying to free?
+
+I agree the name sucks, but this is a bugfix patch.
+
+> Also, as I look at try_to_free_low(), why do we need to #ifdef it out in
+> the case of !HIGHMEM?  If we have CONFIG_HIGHMEM=yes, we still might not
+> have any _actual_ high memory.  So, they loop obviously doesn't *hurt*
+> when there is no high memory.
+
+Maybe, but not really in-scope of what this patch is trying to
+accomplish.
+
+> > @@ -251,7 +251,7 @@ static unsigned long set_max_huge_pages(unsigned long count)
+> >  		return nr_huge_pages;
+> > 
+> >  	spin_lock(&hugetlb_lock);
+> > -	count = max(count, resv_huge_pages);
+> > +	count = max(count, resv_huge_pages + nr_huge_pages - free_huge_pages);
+> >  	try_to_free_low(count);
+> >  	while (count < nr_huge_pages) {
+> >  		struct page *page = dequeue_huge_page(NULL, 0);
 > 
-> Hmm. Maybe Anders' problem stems partly from the fact that he really is 
-> using the tweaks to make that tickless theory more true than it tends to 
-> be on most systems?
+> The real problem with this line is that "count" is too ambiguous. :)
 
-we fixed a TON of stuff over the last months.. standard desktops (F8 / 
-next Ubuntu) will be around 10 wakeups/sec, in a lab environment you 
-can get below 2 ;)
+I agree, count is almost always a bad variable name :)
+
+> We could rewrite the original max() line this way:
+> 
+> 	if (resv_huge_pages > nr_of_pages_to_end_up_with)
+> 		nr_of_pages_to_end_up_with = resv_huge_pages;
+> 	try_to_make_the_total_nr_of_hpages(nr_of_pages_to_end_up_with);
+> 
+> Which makes it more clear that you're setting the number of total pages
+> to the number of reserved pages, which is obviously screwy.
+> 
+> OK, so this is actually saying: "count can never go below
+> resv_huge_pages+nr_huge_pages"?
+
+Not quite.  Count can never go below the number of reserved pages plus
+pages allocated to MAP_PRIVATE mappings.  That number is computed by:
+(resv + (total - free)).
+
+> Could we change try_to_free_low() to free a distinct number of pages?
+> 
+> 	if (count > free_huge_pages)
+> 		count = free_huge_pages;
+> 	try_to_free_nr_huge_pages(count);
+> 
+> I feel a bit sketchy about the "resv_huge_pages + nr_huge_pages -
+> free_huge_pages" logic.  Could you elaborate a bit there on what the
+> rules are?
+
+The key is that we don't want to shrink the pool below the number of
+pages we are committed to keeping around.  Before this patch, we only
+accounted for the pages we plan to hand out (reserved huge pages) but
+not the ones we've already handed out (total - free).  Does that make
+sense?
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
