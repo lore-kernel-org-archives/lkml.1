@@ -1,73 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbXJCAJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbXJCAJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbXJCAJZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 20:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXJCAJQ
+	id S1756424AbXJCAJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 20:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXJCAJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 20:09:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45990 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752783AbXJCAJP (ORCPT
+	Tue, 2 Oct 2007 20:09:39 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:54123 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbXJCAJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 20:09:15 -0400
-Date: Wed, 3 Oct 2007 01:10:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory
- Access   Control Kernel
-Message-ID: <20071003011033.5bfc9165@the-village.bc.nu>
-In-Reply-To: <4702B1D5.5050502@tmr.com>
-References: <46FEEBD4.5050401@schaufler-ca.com>
-	<20070930011618.ccb8351b.akpm@linux-foundation.org>
-	<Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au>
-	<alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org>
-	<1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil>
-	<alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
-	<4702B1D5.5050502@tmr.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 2 Oct 2007 20:09:38 -0400
+To: James.Bottomley@SteelEye.com
+Cc: bunk@kernel.org, bwindle@fint.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
+       sumant.patro@lsi.com, megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1191357493.3530.129.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0710021242510.6275@postal>
+	<20071002181518.GC10852@stusta.de>
+	<1191357493.3530.129.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071003090933E.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 03 Oct 2007 09:09:33 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Oct 2007 17:02:13 -0400
-Bill Davidsen <davidsen@tmr.com> wrote:
+On Tue, 02 Oct 2007 15:38:13 -0500
+James Bottomley <James.Bottomley@SteelEye.com> wrote:
 
-> Linus Torvalds wrote:
+> On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
+> > Cc's added, the complete bug report is at
+> >   http://lkml.org/lkml/2007/10/2/243
 > > 
-> > On Mon, 1 Oct 2007, Stephen Smalley wrote:
-> >> You argued against pluggable schedulers, right?  Why is security
-> >> different?
+> > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
+> > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
+> > >
+> > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
+> > >...
 > > 
-> > Schedulers can be objectively tested. There's this thing called 
-> > "performance", that can generally be quantified on a load basis.
+> > Thanks for your report.
 > > 
-> > Yes, you can have crazy ideas in both schedulers and security. Yes, you 
-> > can simplify both for a particular load. Yes, you can make mistakes in 
-> > both. But the *discussion* on security seems to never get down to real 
-> > numbers. 
+> > Diff'ing the dmesg's shows:
 > > 
-> And yet you can make the exact same case for schedulers as security, you 
-> can quantify the behavior, but if your only choice is A it doesn't help 
-> to know that B is better.
+> > <--  snip  -->
+> > 
+> >  scsi0: scanning scsi channel 4 [P0] for physical devices.
+> >  scsi0: scanning scsi channel 5 [P1] for physical devices.
+> >  st: Version 20070203, fixed bufsize 32768, s/g segs 256
+> > -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> >  sd 0:0:0:0: [sda] Write Protect is off
+> >  sd 0:0:0:0: [sda] Asking for cache data failed
+> >  sd 0:0:0:0: [sda] Assuming drive cache: write through
+> > -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> >  sd 0:0:0:0: [sda] Write Protect is off
+> >  sd 0:0:0:0: [sda] Asking for cache data failed
+> >  sd 0:0:0:0: [sda] Assuming drive cache: write through
+> >   sda: sda1
+> > + sda: p1 exceeds device capacity
+> > 
+> > <--  snip  -->
+> > 
+> > -	case MEGA_BULK_DATA:
+> > -		if (scb->cmd->use_sg == 0)
+> > -			length = scb->cmd->request_bufflen;
+> > -		else {
+> > -			struct scatterlist *sgl =
+> > -				(struct scatterlist *)scb->cmd->request_buffer;
+> > -			length = sgl->length;
+> > -		}
+> > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
+> > -			       length, scb->dma_direction);
+> > -		break;
+> > -
+> 
+> This is the problem piece I think.  We've reintroduced a very old bug:
+> 
+> commit 51c928c34fa7cff38df584ad01de988805877dba
+> Author: James Bottomley <James.Bottomley@SteelEye.com>
+> Date:   Sat Oct 1 09:38:05 2005 -0500
+> 
+>     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
+>     
+>     Some Legacy megaraid cards can't actually cope with the scatter/gather
+>     version of the READ CAPACITY command (which is what we now send them
+>     since altering all SCSI internal I/O to go via the block layer).  Fix
+>     this (and a few other broken megaraid driver assumptions) by sending
+>     the non-sg version of the command if the sg list only has a single
+>     element.
+>     
+>     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> 
+> So what we have to do is put back the check for use_sg == 1 and send
+> that as a bulk transfer command.
 
-To be fair the discussion on security does get down to real set theory
-but at that point most people's eyes (mine included) glaze over somewhat.
+Sorry again. Needs to check sg count before dma mapping.
 
-You can reasonably quantify the behaviour and correctness of a security
-model based upon mathematical principles - if anything its *easier* that
-schedulers which are so much based on "feeling right".
 
-Smack seems a perfectly good simple LSM module, its clean, its based upon
-credible security models and sound theory (unlike AppArmor). I don't see
-why it shouldn't go in.
-
-Alan
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 3907f67..ae0b220 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -1737,9 +1737,12 @@ mega_build_sglist(adapter_t *adapter, scb_t *scb, u32 *buf, u32 *len)
+ 	Scsi_Cmnd	*cmd;
+ 	int	sgcnt;
+ 	int	idx;
++	int bulkdata;
+ 
+ 	cmd = scb->cmd;
+ 
++	bulkdata = (scsi_sg_count(cmd) == 1) ? 1 : 0;
++
+ 	/*
+ 	 * Copy Scatter-Gather list info into controller structure.
+ 	 *
+@@ -1753,6 +1756,14 @@ mega_build_sglist(adapter_t *adapter, scb_t *scb, u32 *buf, u32 *len)
+ 
+ 	*len = 0;
+ 
++	if (bulkdata && !adapter->has_64bit_addr) {
++		sg = scsi_sglist(cmd);
++		scb->dma_h_bulkdata = sg_dma_address(sg);
++		*buf = (u32)scb->dma_h_bulkdata;
++		*len = sg_dma_len(sg);
++		return 0;
++	}
++
+ 	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
+ 		if (adapter->has_64bit_addr) {
+ 			scb->sgl64[idx].address = sg_dma_address(sg);
