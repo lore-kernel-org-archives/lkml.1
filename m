@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbXJCMTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXJCMUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbXJCMTa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbXJCMTW
+	id S1758548AbXJCMUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbXJCMUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:19:22 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:52790 "EHLO atlrel8.hp.com"
+	Wed, 3 Oct 2007 08:20:25 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:58767 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755253AbXJCMTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:19:21 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-Date: Wed, 3 Oct 2007 08:19:14 -0400
-User-Agent: KMail/1.9.7
-Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-References: <47031E76.6020801@schaufler-ca.com>
-In-Reply-To: <47031E76.6020801@schaufler-ca.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710030819.14934.paul.moore@hp.com>
+	id S1756232AbXJCMUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:20:24 -0400
+Date: Wed, 3 Oct 2007 14:20:07 +0200 (MEST)
+Message-Id: <200710031220.l93CK75T028343@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org, shiwh@cn.fujitsu.com
+Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound occurs
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 October 2007 12:45:42 am Casey Schaufler wrote:
-> From: Casey Schaufler <casey@schaufler-ca.com>
->
-> Smack is the Simplified Mandatory Access Control Kernel.
->
-> Smack implements mandatory access control (MAC) using labels
-> attached to tasks and data containers, including files, SVIPC,
-> and other tasks. Smack is a kernel based scheme that requires
-> an absolute minimum of application support and a very small
-> amount of configuration data.
->
-> {snip}
->
-> This patch includes changes made by Paul Moore <paul.moore@hp.com>
-> in support of a more comfortable interface to initialize the
-> CIPSO code from within the kernel. The changes in the net directory
-> are Pauls, as is the update to netlabel.h
+On Wed, 03 Oct 2007 17:06:24 +0900, Shi Weihua wrote:
+> Fixing alternative signal stack wraparound.
+> 
+> If a process uses alternative signal stack by using sigaltstack()
+> and that stack overflow, stack wraparound occurs.
+> This patch checks whether the signal frame is on the alternative
+> stack. If the frame is not on there, kill a signal SIGSEGV to the process forcedly
+> then the process will be terminated.
+> 
+> This patch is for i386,version is 2.6.23-rc8.
+> 
+> Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com>
+> 
+> diff -pur linux-2.6.23-rc8.orig/arch/i386/kernel/signal.c linux-2.6.23-rc8/arch/i386/kernel/signal.c
+> --- linux-2.6.23-rc8.orig/arch/i386/kernel/signal.c	2007-09-26 09:44:08.000000000 +0900
+> +++ linux-2.6.23-rc8/arch/i386/kernel/signal.c	2007-09-26 13:14:25.000000000 +0900
+> @@ -332,6 +332,10 @@ static int setup_frame(int sig, struct k
+> 
+>   	frame = get_sigframe(ka, regs, sizeof(*frame));
+> 
+> +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
+> +		!sas_ss_flags((unsigned long)frame))
+> +		goto give_sigsegv;
+> +
+>   	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+>   		goto give_sigsegv;
+> 
+> @@ -425,6 +429,10 @@ static int setup_rt_frame(int sig, struc
+> 
+>   	frame = get_sigframe(ka, regs, sizeof(*frame));
+> 
+> +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
+> +		!sas_ss_flags((unsigned long)frame))
+> +		goto give_sigsegv;
+> +
+>   	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+>   		goto give_sigsegv;
 
-My sign-off got lost when Casey smooshed the patch I sent him into the SMACK 
-mega-patch so I'll throw it back in the thread for accounting purposes.
+Your patch description is a little terse. What you do is that
+after the kernel has decided where to put the signal frame,
+you add a check that the base of the frame still lies in the
+altstack range if altstack delivery is requested for the signal,
+and if it doesn't a hard error is forced.
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
+The coding of that logic is fine.
 
-As for SMACK's use of NetLabel - it looks fine to me, especially now that 
-there is better preservation of the NetLabel/LSM boundary.  As has been 
-discussed on the various lists during earlier revisions of the patch I 
-believe there are still some optimizations that can be made regarding how 
-SMACK uses NetLabel but that is something we can always work on at a later 
-date.
+What I don't agree with is the logic itself:
+- You only catch altstack overflow caused by the kernel pushing
+  a sigframe. You don't catch overflow caused by the user-space
+  signal handler pushing its own stack frame after the sigframe.
+- SUSv3 specifies the effect of altstack overflow as "undefined".
+- The overflow problem can be solved in user-space: allocate the
+  altstack with mmap(), then mprotect() the lowest page to prevent
+  accesses to it. Any overflow into it, by the kernel's signal
+  delivery code or by the user-space signal handler, will be caught.
 
-Acked-by: Paul Moore <paul.moore@hp.com>
+So this patch gets a NAK from me.
 
--- 
-paul moore
-linux security @ hp
+/Mikael
