@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbXJCMOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbXJCMOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758191AbXJCMOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbXJCMOO
+	id S1758404AbXJCMOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbXJCMOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:14:14 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:47786 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755788AbXJCMOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:14:14 -0400
-Date: Wed, 3 Oct 2007 14:16:46 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
-Subject: Re: yield
-Message-ID: <20071003121646.GB3828@ff.dom.local>
-References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu> <20071003095057.GD1726@ff.dom.local> <b647ffbd0710030355p116f9b36vae3f24e652921de6@mail.gmail.com> <20071003114027.GA3828@ff.dom.local> <20071003115646.GA25576@elte.hu>
+	Wed, 3 Oct 2007 08:14:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50936 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755820AbXJCMOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:14:43 -0400
+Date: Wed, 3 Oct 2007 05:14:38 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
+Message-Id: <20071003051438.e1371e99.pj@sgi.com>
+In-Reply-To: <200710030525.29735.nickpiggin@yahoo.com.au>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
+	<200710030356.18090.nickpiggin@yahoo.com.au>
+	<20071003043818.baa0e1ce.pj@sgi.com>
+	<200710030525.29735.nickpiggin@yahoo.com.au>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003115646.GA25576@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 01:56:46PM +0200, Ingo Molnar wrote:
+> These are what I'm worried about, and things like kswapd, pdflush,
+> could definitely use a huge amount of CPU.
 > 
-> * Jarek Poplawski <jarkao2@o2.pl> wrote:
-> 
-> > On Wed, Oct 03, 2007 at 12:55:34PM +0200, Dmitry Adamushko wrote:
-> > ...
-> > > just a quick patch, not tested and I've not evaluated all possible
-> > > implications yet.
-> > > But someone might give it a try with his/(her -- are even more
-> > > welcomed :-) favourite sched_yield() load.
-> > 
-> > Of course, after some evaluation by yourself and Ingo the most 
-> > interesting should be Martin's Michlmayr testing, so I hope you'll Cc 
-> > him too?!
-> 
-> My current take on this: queue the current task right to the next 
-> position in the tree (this is what this patch achieves in essence) was 
-> one of the yield implementations we already tried in CFS but it didnt 
-> meet the expectations of some apps. So i can only repeat my argument: 
-> this is not something that can be "solved" in the way you imagine and 
-> your arguments just reiterate the path that CFS has already taken in the 
-> past. So please do not expect _us_ to go out and pester people. If 
-> people feel so inclined, they are of course welcome to test out various 
-> approaches. (they might as well try the original yield-granularity patch 
-> which also makes the amount of "delay" tunable, so the ideal amount of 
-> delay can be figured out. And of course they should also try the 
-> existing yield flag.)
+> If you are interested in hard partitioning the system, you most
+> definitely want these things to be balanced across the non-isolated
+> CPUs.
 
-I'm terribly sorry! Of course, the last thing I would like is to
-pester anybody. I simply wasn't sure you've told about the same
-idea. And of course, there is no reason to go back to something
-checked before.
+But these guys are pinned anyway (or else they would already be moved
+into a smaller load balanced cpuset), so why waste time load balancing
+what can't move?
 
-Thanks,
-Jarek P.
+And on some of the systems I care about, we don't want to load balance
+these guys; rather we go to great lengths to see that they don't run at
+all when we don't want them to.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
