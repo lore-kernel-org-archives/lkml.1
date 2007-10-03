@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXJCLAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbXJCLEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXJCLAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 07:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbXJCLAm
+	id S1758195AbXJCLEX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 07:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbXJCLEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 07:00:42 -0400
-Received: from web32612.mail.mud.yahoo.com ([68.142.207.239]:41755 "HELO
-	web32612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755362AbXJCLAl (ORCPT
+	Wed, 3 Oct 2007 07:04:16 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:36033 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754267AbXJCLEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 07:00:41 -0400
-X-YMail-OSG: XJY.GTsVM1ll5CQmMGoL64nAf6.0u56Fmf4B8LV3EH5gHoHMHRC_lxQ.MWUSTjVBtwRPIWNcOymqeHaJDISCy7DFTg--
+	Wed, 3 Oct 2007 07:04:15 -0400
 X-RocketYMMF: knobi.rm
-Date: Wed, 3 Oct 2007 04:00:40 -0700 (PDT)
+Date: Wed, 3 Oct 2007 04:04:14 -0700 (PDT)
 From: Martin Knoblauch <knobi@knobisoft.de>
 Reply-To: knobi@knobisoft.de
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-To: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>
-In-Reply-To: <1191313025.13204.30.camel@twins>
+Subject: Re: [PATCH 0/5] sluggish writeback fixes
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>
+In-Reply-To: <391315777.14430@ustc.edu.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <336165.86658.qm@web32612.mail.mud.yahoo.com>
+Message-ID: <7370.7646.qm@web32603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Peter Zijlstra <peterz@infradead.org> wrote:
+--- Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-> On Mon, 2007-10-01 at 14:22 -0700, Andrew Morton wrote:
+> Andrew,
 > 
-> > nfs-remove-congestion_end.patch
-> > lib-percpu_counter_add.patch
-> > lib-percpu_counter_sub.patch
-> > lib-percpu_counter-variable-batch.patch
-> > lib-make-percpu_counter_add-take-s64.patch
-> > lib-percpu_counter_set.patch
-> > lib-percpu_counter_sum_positive.patch
-> > lib-percpu_count_sum.patch
-> > lib-percpu_counter_init-error-handling.patch
-> > lib-percpu_counter_init_irq.patch
-> > mm-bdi-init-hooks.patch
-> > mm-scalable-bdi-statistics-counters.patch
-> > mm-count-reclaimable-pages-per-bdi.patch
-> > mm-count-writeback-pages-per-bdi.patch
+> The following patches fix the sluggish writeback behavior.
+> They are well understood and well tested - but not yet widely tested.
 > 
-> This one:
-> > mm-expose-bdi-statistics-in-sysfs.patch
+> The first patch reverts the debugging -mm only
+> check_dirty_inode_list.patch -
+> which is no longer necessary.
 > 
-> > lib-floating-proportions.patch
-> > mm-per-device-dirty-threshold.patch
-> > mm-per-device-dirty-threshold-warning-fix.patch
-> > mm-per-device-dirty-threshold-fix.patch
-> > mm-dirty-balancing-for-tasks.patch
-> > mm-dirty-balancing-for-tasks-warning-fix.patch
+> The following 4 patches do the real jobs:
 > 
-> And, this one:
-> > debug-sysfs-files-for-the-current-ratio-size-total.patch
+> [PATCH 2/5] writeback: fix time ordering of the per superblock inode
+> lists 8
+> [PATCH 3/5] writeback: fix ntfs with sb_has_dirty_inodes()
+> [PATCH 4/5] writeback: remove pages_skipped accounting in
+> __block_write_full_page()
+> [PATCH 5/5] writeback: introduce writeback_control.more_io to
+> indicate more io
 > 
+> They share the same goal as the following patches in -mm. Therefore
+> I'd
+> recommend to put the last 4 new ones after them:
 > 
-> I'm not sure polluting /sys/block/<foo>/queue/ like that is The Right
-> Thing. These patches sure were handy when debugging this, but not
-> sure
-> they want to move to maineline.
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-2.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-3.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-4.patch
+> writeback-fix-comment-use-helper-function.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-5.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-6.patch
+>
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-7.patch
+> writeback-fix-periodic-superblock-dirty-inode-flushing.patch
 > 
-> Maybe we want /sys/bdi/<foo>/ or maybe /debug/bdi/<foo>/
-> 
-> Opinions?
-> 
-Hi Peter,
+> Regards,
+> Fengguang
+Hi Fenguang,
 
- my only opinion is that it is great to see that stuff moving into
-mainline. If it really goes in, there will be one more very interested
-rc-tester :-)
+ now that Peters stuff seems to make it into mainline, do you think
+your fixes should go in as well? Would definitely help to broaden the
+tester base. Definitely by one very interested tester :-)
 
-Cheers
+Keep on the good work
 Martin
 
 ------------------------------------------------------
