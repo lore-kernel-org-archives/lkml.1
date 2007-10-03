@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbXJCSTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbXJCSUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200AbXJCSTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXJCSTq
+	id S1759161AbXJCSUr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757874AbXJCSUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:19:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49918 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757195AbXJCSTp (ORCPT
+	Wed, 3 Oct 2007 14:20:40 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25542 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbXJCSUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:19:45 -0400
-Date: Wed, 3 Oct 2007 19:24:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Mike Robak" <mrobak@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: libATA error message doc
-Message-ID: <20071003192453.0ed967f1@the-village.bc.nu>
-In-Reply-To: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
-References: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Oct 2007 14:20:39 -0400
+Date: Wed, 3 Oct 2007 11:20:28 -0700
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: [git patch] small ocfs2 fix
+Message-ID: <20071003182028.GA30360@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (irq_stat 0x40000001)	
+One more well tested Ocfs2 fix to get in before 2.6.24.
 
-	IRQ status of the chip
-> tag 0
-	Tag (or zero for non NCQ commands)
-> cmd 0xb0
-	The ATA command number issued
-> emask 0x1
-	Internal libata error category (used to decide what to do to
-recover)
-> stat 0x51
-	Status register of drive
-> err 0x4
-	Error register of drive
+Thanks,
+	--Mark
 
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-You want the ATA specification document from T13 (www.t13.org)
+to receive the following updates:
 
-Alan
+ fs/ocfs2/localalloc.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletion(-)
+
+Sunil Mushran (1):
+      ocfs2: Unlock mutex in local alloc failure case
+
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index de984d2..d272847 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -514,8 +514,10 @@ int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
+ 	ac->ac_bh = osb->local_alloc_bh;
+ 	status = 0;
+ bail:
+-	if (status < 0 && local_alloc_inode)
++	if (status < 0 && local_alloc_inode) {
++		mutex_unlock(&local_alloc_inode->i_mutex);
+ 		iput(local_alloc_inode);
++	}
+ 
+ 	mlog_exit(status);
+ 	return status;
