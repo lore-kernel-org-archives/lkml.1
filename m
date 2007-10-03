@@ -1,90 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbXJCILq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbXJCIOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757744AbXJCILq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbXJCILc
+	id S1757356AbXJCIOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXJCINs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:11:32 -0400
-Received: from n2.bullet.mail.mud.yahoo.com ([209.191.127.222]:44609 "HELO
-	n2.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752625AbXJCILb (ORCPT
+	Wed, 3 Oct 2007 04:13:48 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:45623 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbXJCINq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:11:31 -0400
-X-Greylist: delayed 409 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 04:11:29 EDT
-X-Yahoo-Newman-Property: ymail-5
-X-Yahoo-Newman-Id: 831721.29682.bm@omp105.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=yH0p7Xa53FkejCSpJUeKL3g42t+2nG6tFElL5c8IsJMCXKsUovDpNTAKrCBNXC0yQJcFnShPZtB54q0NbKDYVn9UETirap+cTUSZ5peNoLjY0VR2jBPS0OzvA/N6g/32sOgKmlZLWFqzSRznRagVWnKBkMozHAeKJAPzYOg1Rd8=;
-X-YMail-OSG: .bDNJ.cVM1nCsqTQWPXUQNTfz8Q0objiHDXBlBFh1kqOdT6YeEiXu6JJIK0gLRMBwg--
-Date: Mon, 1 Oct 2007 11:51:21 +0100 (BST)
-From: veerasena reddy <veerasena_b@yahoo.co.in>
-Subject: Re: linux cache routines for Write-back cache policy on  MIPS24KE
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0710011121300.20679@anakin>
+	Wed, 3 Oct 2007 04:13:46 -0400
+Message-ID: <47034F12.8020505@linux.vnet.ibm.com>
+Date: Wed, 03 Oct 2007 13:43:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <4701C737.8070906@linux.vnet.ibm.com> <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <302271.86305.qm@web8404.mail.in.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+Hugh Dickins wrote:
+> On Tue, 2 Oct 2007, Balbir Singh wrote:
+>> Andrew Morton wrote:
+>>> memory-controller-add-documentation.patch
+>>> ...
+>>> kswapd-should-only-wait-on-io-if-there-is-io.patch
+>>>
+>>>   Hold.  This needs a serious going-over by page reclaim people.
+>> I mostly agree with your decision. I am a little concerned however
+>> that as we develop and add more features (a.k.a better statistics/
+>> forced reclaim), which are very important; the code base gets larger,
+>> the review takes longer :)
+> 
+> I agree with putting the memory controller stuff on hold from 2.6.24.
+> 
+> Sorry, Balbir, I've failed to get back to you, still attending to
+> priorities.  Let me briefly summarize my issue with the mem controller:
+> you've not yet given enough attention to swap.
+>
 
-Thanks for your repsonse.
+I am open to suggestions and ways and means of making swap control
+complete and more usable.
 
-In linux-2.6.18 (for MIPS24KE processor):
-suppose if i want to do flush only then which API i
-should use?
-Similarly, if i want to do invalidation only which API
-i should use?
-
-Thanks again.
-
-Regards,
-Veerasena.
---- Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> On Mon, 1 Oct 2007, veerasena reddy wrote:
-> > I have ported Linux-2.6.18 kernel on MIPS24KE
-> > processor. I am using write back cache policy.
-> > 
-> > Could you please guide me under what cases the
-> below
-> > cache API's are being used:
-> > - dma_cache_wback_inv() : Could you explain  what
-> > exactly this function does
+> I accept that full swap control is something you're intending to add
+> incrementally later; but the current state doesn't make sense to me.
 > 
-> It does both write back and invalidate.
-> 
-> > - dma_cache_wback() : This function write back the
-> > cache data to memory
-> > - dma_cache_inv  : This function invalidate the
-> cache
-> > tags. so subsequent access will fetch from memory.
-> 
-> Note that 2.6.18 is old. The above functions are
-> intended to be removed.
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond
-> ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I
-> call myself a hacker. But
-> when I'm talking to journalists I just say
-> "programmer" or something like that.
-> 							    -- Linus Torvalds
+> The problems are swapoff and swapin readahead.  These pull pages into
+> the swap cache, which are assigned to the cgroup (or the whatever-we-
+> call-the-remainder-outside-all-the-cgroups) which is running swapoff
+> or faulting in its own page; yet they very clearly don't (in general)
+> belong to that cgroup, but to other cgroups which will be discovered
+> later.
 > 
 
+I understand what your trying to say, but with several approaches that
+we tried in the past, we found caches the hardest to most accurately
+account. IIRC, with readahead, we don't even know if all the pages
+readahead will be used, that's why we charge everything to the cgroup
+that added the page to the cache.
+
+> I did try removing the cgroup mods to mm/swap_state.c, so swap pages
+> get assigned to a cgroup only once it's really known; but that's not
+> enough by itself, because cgroup RSS reclaim doesn't touch those
+> pages, so the cgroup can easily OOM much too soon.  I was thinking
+> that you need a "limbo" cgroup for these pages, which can be attacked
+> for reclaim along with any cgroup being reclaimed, but from which
+> pages are readily migrated to their real cgroup once that's known.
+> 
+
+Is migrating the charge to the real cgroup really required?
+
+> But I had to switch over to other work before trying that out:
+> perhaps the idea doesn't really fly at all.  And it might well
+> be no longer needed once full mem+swap control is there.
+> 
+> So in the current memory controller, that unuse_pte mem charge I was
+> originally worried about failing (I hadn't at that point delved in
+> to see how it tries to reclaim) actually never fails (and never
+> does anything): the page is already assigned to some cgroup-or-
+> whatever and is never charged to vma->vm_mm at that point.
+> 
+
+Excellent!
+
+> And small point: once that is sorted out and the page is properly
+> assigned in unuse_pte, you'll be needing to pte_unmap_unlock and
+> pte_offset_map_lock around the mem_cgroup_charge call there -
+> you're right to call it with GFP_KERNEL, but cannot do so while
+> holding the page table locked and mapped.  (But because the page
+> lock is held, there shouldn't be any raciness to dropping and
+> retaking the ptl.)
+> 
+
+Good catch! I'll fix that.
 
 
-      Get the freedom to save as many mails as you wish. To know how, go to http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html
+> Hugh
 
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
