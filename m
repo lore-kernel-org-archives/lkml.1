@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbXJCRHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbXJCRNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbXJCRHu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXJCRHn
+	id S1755598AbXJCRNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXJCRNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:07:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49078 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752387AbXJCRHn (ORCPT
+	Wed, 3 Oct 2007 13:13:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35353 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXJCRNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:07:43 -0400
-Date: Wed, 3 Oct 2007 10:07:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9
- and a heads-up for the 2.6.24 series..)
-In-Reply-To: <Pine.LNX.4.64.0710031825250.22106@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0710031006250.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
- <20071003084607.GC32218@elte.hu> <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
- <20071003165128.46e232ab@the-village.bc.nu>
- <alpine.LFD.0.999.0710030908310.3579@woody.linux-foundation.org>
- <Pine.LNX.4.64.0710031825250.22106@fbirervta.pbzchgretzou.qr>
+	Wed, 3 Oct 2007 13:13:10 -0400
+Message-ID: <4703CD7E.30206@zytor.com>
+Date: Wed, 03 Oct 2007 10:12:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Chris Malley <mail@chrismalley.co.uk>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, lguest <lguest@ozlabs.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 5/5] lguest: loading bzImage directly
+References: <1191368052.17826.40.camel@localhost.localdomain>	 <1191368106.17826.43.camel@localhost.localdomain>	 <1191368154.17826.44.camel@localhost.localdomain>	 <1191368217.17826.47.camel@localhost.localdomain>	 <1191368399.17826.51.camel@localhost.localdomain>	 <1191368457.17826.53.camel@localhost.localdomain> <1191404221.17247.15.camel@feisty>
+In-Reply-To: <1191404221.17247.15.camel@feisty>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 3 Oct 2007, Jan Engelhardt wrote:
->
-> >When I'm ruler of the universe, it *will* be illegal. I'm just getting a 
-> >bit ahead of myself.
+Chris Malley wrote:
+> Hi guys
 > 
-> Any time frame when that will happen?
+> Would it not be clearer to #include <asm/bootparam.h> and use 
+> the relevant named members of struct setup_header / struct boot_params
+> rather than the hard-coded values 0x202, 0x1F1, 0x214 ?
+> 
 
-I'm working on it, I'm working on it. I'm just as frustrated as you are. 
-It turns out to be a non-trivial problem. 
+Yes, please.  I have a patch in -mm which already does that across the 
+kernel.
 
-			Linus
+	-hpa
