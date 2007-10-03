@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXJCMxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbXJCMxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbXJCMxA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXJCMwx
+	id S1756800AbXJCMxV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXJCMw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:52:53 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49402 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXJCMww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:52:52 -0400
-Date: Wed, 3 Oct 2007 14:52:51 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: top displaying 9999% CPU usage
-In-Reply-To: <200710031433.34504.elendil@planet.nl>
-Message-ID: <Pine.LNX.4.64.0710031451240.22106@fbirervta.pbzchgretzou.qr>
-References: <200710031433.34504.elendil@planet.nl>
+	Wed, 3 Oct 2007 08:52:59 -0400
+Received: from rosi.naasa.net ([212.8.0.13]:38852 "EHLO rosi.naasa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755506AbXJCMw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:52:58 -0400
+From: Joerg Platte <lists@naasa.net>
+Reply-To: jplatte@naasa.net
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rcX SG_GET_SCSI_ID regression?
+Date: Wed, 3 Oct 2007 14:52:54 +0200
+User-Agent: KMail/1.9.7
+References: <200710031258.46266.lists@naasa.net>
+In-Reply-To: <200710031258.46266.lists@naasa.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200710031452.55506.lists@naasa.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Mittwoch, 3. Oktober 2007 schrieb Joerg Platte:
+Hi,
 
-On Oct 3 2007 14:33, Frans Pop wrote:
+> 2.6.22.8:
+> open("/dev/scanner", O_RDWR|O_NONBLOCK|O_EXCL) = 3
+> ioctl(3, SG_SET_TIMEOUT, 0xbfe40624)    = 0
+> ioctl(3, SG_GET_VERSION_NUM, 0x8063fa4) = 0
+> ioctl(3, SG_GET_SCSI_ID, 0xbfe405e0)    = 0
 >
->I saw top occasionally displaying 9999% CPU usage for a process. The
->first few times it was amarokapp, this last time it was kontact.
->Both applications were basically idle.
+> 2.6.23-rc9:
+> open("/dev/scanner", O_RDWR|O_NONBLOCK|O_EXCL) = 3
+> ioctl(3, SG_SET_TIMEOUT, 0xbf84a834)    = 0
+> ioctl(3, SG_GET_VERSION_NUM, 0x8062524) = 0
+> ioctl(3, SG_GET_SCSI_ID, 0xbf84a7f0)    = -1 ENOTTY (Inappropriate ioctl
+> for device)
 
-Yes this certainly sounds like KDE. Did you try with Gnome,
-or perhaps a simple `perl -e '1 while 1'`?
+After some reboots and tests I discovered, that this error occurs only when 
+the scanner was turned off during system boot and was discovered later by 
+invoking the following script:
+for device in /sys/class/scsi_host/host*/scan ; do
+        echo "0 - -" > $device
+done
+With 2.6.22 and before the scanner was fully functional when discovered by a 
+bus rescan.
 
->The "cc1" is a kernel compile (rc9 + CFS :-).
->
->I cannot remember seeing this before, but as I also don't run top that
->frequently I cannot be sure its a recent regression.
+regards,
+Jörg
 
-Test various things, like another top utility (htop perhaps),
-compare. Narrowing down where the bug is.
+-- 
+PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
+PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
 
->top - 14:28:27 up 38 min,  1 user,  load average: 1.12, 0.67, 0.32
->Tasks: 128 total,   2 running, 126 sleeping,   0 stopped,   0 zombie
->Cpu(s): 32.0%us, 15.7%sy,  0.0%ni, 43.8%id,  8.5%wa,  0.0%hi,  0.0%si,  0.0%st
->Mem:   2054476k total,   998460k used,  1056016k free,    95284k buffers
->Swap:   979924k total,        0k used,   979924k free,   485804k cached
->
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 5269 fjp       20   0  441m  58m  32m S 9999  2.9   0:16.34 kontact
->                                         ^^^^
-> 8272 fjp       20   0  5952  468  208 S    3  0.0   0:04.62 faked-sysv
-> 3666 fjp       20   0 25268 2036  884 S    2  0.1   0:03.30 famd
->26530 fjp       20   0 20932 6292 1568 R    2  0.3   0:00.06 cc1
-> 5124 fjp       20   0  210m  26m  19m S    1  1.3   0:09.18 kicker
->17012 fjp       20   0 19016 1252  916 R    1  0.1   0:00.34 top
-> 5159 fjp       20   0  508m  54m  30m S    0  2.7   0:12.67 amarokapp
