@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbXJCPWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbXJCPbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbXJCPWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXJCPWE
+	id S1756140AbXJCPbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbXJCPbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:22:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37019 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754391AbXJCPWC (ORCPT
+	Wed, 3 Oct 2007 11:31:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:1304 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbXJCPbf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:22:02 -0400
-Date: Wed, 3 Oct 2007 08:21:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
-In-Reply-To: <200710030345.10026.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0710030813090.3579@woody.linux-foundation.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <200710030345.10026.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 3 Oct 2007 11:31:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=h97eJ2vO6pEMdjJ5yb3MJoZa+oQkDa6IUdSlawXvTRwg0P/HByBhFS/rhY5mASIfk5aoKBI/Wq+q6JA68jgGEMuqsnD8gkyOjQfA0MVIkZPvkNQrUww4K0XFkarDbzEjoMwNPsyQiXKqdtSmWkhsz6pRnnCZE6/Hon3e+EfLBZY=
+Date: Wed, 3 Oct 2007 17:28:07 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+Message-Id: <20071003172807.6996fa3e.diegocg@gmail.com>
+In-Reply-To: <alpine.LFD.0.999.0710021630560.3579@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+	<20071003010730.2fb7ec5c.diegocg@gmail.com>
+	<alpine.LFD.0.999.0710021630560.3579@woody.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+El Tue, 2 Oct 2007 16:32:00 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> escribió:
 
+> Heh. The "remove sk98lin driver" bullet is sadly wrong. We had to 
+> reinstate it because it supported some cards that the skge driver doesn't 
+> handle.
 
-On Wed, 3 Oct 2007, Nick Piggin wrote:
-> 
-> I don't know if Linus actually disliked the patch itself, or disliked
-> my (maybe confusingly worded) rationale?
-
-Yes. I'd happily accept the patch, but I'd want it clarified and made 
-obvious what the problem was - and it wasn't the zero page itself, it was 
-a regression in the VM that made it less palatable.
-
-I also thought that there were potentially better solutions, namely to 
-simply avoid the VM regression, but I also acknowledge that they may not 
-be worth it - I just want them to be on the table.
-
-In short: the real cost of the zero page was the reference counting on the 
-page that we do these days. For example, I really do believe that the 
-problem could fairly easily be fixed by simply not considering zero_page
-to be a "vm_normal_page()". We already *do* have support for pages not 
-getting ref-counted (since we need it for other things), and I think that 
-zero_page very naturally falls into exactly that situation.
-
-So in many ways, I would think that turning zero-page into a nonrefcounted 
-page (the same way we really do have to do for other things anyway) would 
-be the much more *direct* solution, and in many ways the obvious one.
-
-HOWEVER - if people think that it's easier to remove zero_page, and want 
-to do it for other reasons, *AND* can hopefully even back up the claim 
-that it never matters with numbers (ie that the extra pagefaults just make 
-the whole zero-page thing pointless), then I'd certainly accept the patch. 
-
-I'd just want the patch *description* to then also be correct, and blame 
-the right situation, instead of blaming zero-page itself.
-
-		Linus
+Thanks, fixed
