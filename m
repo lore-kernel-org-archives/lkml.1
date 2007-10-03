@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752200AbXJCEDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXJCEEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752200AbXJCEDO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 00:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXJCEDA
+	id S1752808AbXJCEEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 00:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbXJCEEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 00:03:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:55555 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbXJCEC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 00:02:59 -0400
-Date: Tue, 2 Oct 2007 21:01:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: ak@suse.de, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Document x86-64 iommu kernel parameters
-Message-Id: <20071002210125.85b84add.randy.dunlap@oracle.com>
-In-Reply-To: <4702FEC7.3000000@garzik.org>
-References: <20071003013413.GA17717@havoc.gtf.org>
-	<20071002192209.09b2fbda.randy.dunlap@oracle.com>
-	<4702FEC7.3000000@garzik.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 3 Oct 2007 00:04:33 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56985 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbXJCEEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 00:04:32 -0400
+Date: Wed, 3 Oct 2007 09:45:10 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20071003041510.GJ5724@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <1191354556.5664.7.camel@earth> <1191355144.5664.16.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191355144.5664.16.camel@earth>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Oct 2007 22:30:31 -0400 Jeff Garzik wrote:
+On Tue, Oct 02, 2007 at 09:59:04PM +0200, Dmitry Adamushko wrote:
+> The following patch (sched: disable sleeper_fairness on SCHED_BATCH)
+> seems to break GROUP_SCHED. Although, it may be
+> 'oops'-less due to the possibility of 'p' being always a valid
+> address.
 
-> Randy Dunlap wrote:
-> > On Tue, 2 Oct 2007 21:34:13 -0400 Jeff Garzik wrote:
-> > 
-> >> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> >> ---
-> >> After having to go figure out what some of these means, I figured I
-> >> would save others the trouble.
-> >>
-> >> Some of these are "best guess" based on a quick scan of the code, so it
-> >> certainly needs a sanity review before going upstream.
-> > 
-> > "iommu" is listed in Documentation/x86_64/boot-options.txt
-> > along with more x86_64-specific boot options.
-> > A few other arches do something similar...
+Thanks for catching it!  Patch below looks good to me. 
+
+Acked-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+
+> Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 > 
-> Ah!  Well, seeing as how we already have a provision for arch-specific 
-> options in kernel-parameters.txt, and some less-obscure arch-specific 
-> options can be found there, I think an argument can be made for my patch :)
+> ---
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 8727d17..a379456 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -473,9 +473,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+>  		vruntime += sched_vslice_add(cfs_rq, se);
 > 
-> Nonethless, if the maintainer disagrees, they can drop this patch I suppose.
+>  	if (!initial) {
+> -		struct task_struct *p = container_of(se, struct task_struct, se);
+> -
+> -		if (sched_feat(NEW_FAIR_SLEEPERS) && p->policy != SCHED_BATCH)
+> +		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se) &&
+> +				task_of(se)->policy != SCHED_BATCH)
+>  			vruntime -= sysctl_sched_latency;
+> 
+>  		vruntime = max_t(s64, vruntime, se->vruntime);
+> 
+> ---
+> 
 
-[sorry if there be duplicates; I thought I sent this but can't find it
-anywhere]
-
-
-Maybe we can/should merge the doc files along with the x86 arch merge.
-
----
-~Randy
+-- 
+Regards,
+vatsa
