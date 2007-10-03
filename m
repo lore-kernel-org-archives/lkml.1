@@ -1,90 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXJCJsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXJCJzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbXJCJsc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 05:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXJCJsZ
+	id S1756093AbXJCJzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 05:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXJCJzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 05:48:25 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:36196 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752026AbXJCJsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 05:48:24 -0400
-Date: Wed, 3 Oct 2007 11:50:57 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20071003095057.GD1726@ff.dom.local>
-References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu>
+	Wed, 3 Oct 2007 05:55:23 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42220 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752136AbXJCJzW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 05:55:22 -0400
+Date: Wed, 3 Oct 2007 02:55:18 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
+Message-Id: <20071003025518.7c184905.pj@sgi.com>
+In-Reply-To: <200710030209.56879.nickpiggin@yahoo.com.au>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
+	<200710022305.23713.nickpiggin@yahoo.com.au>
+	<20071002235849.56dbe9fb.pj@sgi.com>
+	<200710030209.56879.nickpiggin@yahoo.com.au>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003091058.GB7802@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 11:10:58AM +0200, Ingo Molnar wrote:
+> > Yeah -- cpusets are hierarchical.  And some of the use cases for
+> > which cpusets are designed are hierarchical.
 > 
-> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> But partitioning isn't.
+
+Yup.  We've got a square peg and a round hole.  An impedance mismatch.
+That's the root cause of this entire wibbling session, in my view.
+
+The essential role of cpusets, cgroups and much other such work of
+recent, in my view, is pounding this square peg into that round hole.
+In essence, it is fitting the hierarchical structure of the
+organizations (corporations, universities and governments) who own big
+systems to the flat, system-wide mandates needed to manage a given
+computer system.
+
+> > Changing cpusets from single root to multiple roots would be
+> > bastardizing it.
 > 
-> > On Wed, Oct 03, 2007 at 10:16:13AM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Jarek Poplawski <jarkao2@o2.pl> wrote:
-> > > 
-> > > > > firstly, there's no notion of "timeslices" in CFS. (in CFS tasks 
-> > > > > "earn" a right to the CPU, and that "right" is not sliced in the 
-> > > > > traditional sense) But we tried a conceptually similar thing [...]
-> > > > 
-> > > > >From kernel/sched_fair.c:
-> > > > 
-> > > > "/*
-> > > >  * Targeted preemption latency for CPU-bound tasks:
-> > > >  * (default: 20ms, units: nanoseconds)
-> > > >  *
-> > > >  * NOTE: this latency value is not the same as the concept of
-> > > >  * 'timeslice length' - timeslices in CFS are of variable length.
-> > > >  * (to see the precise effective timeslice length of your workload,
-> > > >  *  run vmstat and monitor the context-switches field)
-> > > > ..."
-> > > > 
-> > > > So, no notion of something, which are(!) of variable length, and which 
-> > > > precise effective timeslice lenght can be seen in nanoseconds? (But 
-> > > > not timeslice!)
-> > > 
-> > > You should really read and understand the code you are arguing about :-/
-> > 
-> > Maybe you could help me with better comments? IMHO, it would be enough 
-> > to warn new timeslices have different meaning, or stop to use this 
-> > term at all. [...]
+> Well OK, if that's your definition. Not very helpful though.
+
+Well, such a change would be rather substantial and undesired,
+if those terms help you more.
+
+> > To repeat myself, in some cases, such as batch schedulers running in a
+> > subset of the CPUs on a large system, the code that knows some of the
+> > needs for load balancing does not have system wide control to mandate
+> > hard partitioning.  The batch scheduler can state where it is depending
+> > on load balancing being present, and the system administrator can choose
+> > or not to turn off load balancing in the top cpuset, thereby granting or
+> > not control over load balancing on the CPUs controlled by the batch
+> > scheduler to the batch scheduler.
 > 
-> i'm curious, what better do you need than the very detailed comment 
-> quoted above? Which bit of "this latency value is not the same as the 
-> concept of timeslice length" is difficult to understand? The timeslices 
-> of tasks (i.e. the time they spend on a CPU without scheduling away) is 
-> _not_ maintained directly in CFS as a per-task variable that can be 
-> "cleared", it's not the metric that drives scheduling. Yes, of course 
-> CFS too "slices up CPU time", but those slices are not the per-task 
-> variables of traditional schedulers and cannot be 'cleared'.
+> Why isn't that possible with my approach?
 
-It's not about this comment alone, but this comment plus "no notion"
-comment, which appears in sched-design-CFS.txt too.
+If I understand your approach to the kernel-to-user interface correctly
+(sometimes I doubt I do) then your approach expected some user space code
+or person or semi-intelligent equivalent to define a flat partition,
+which will then be used to determine the sched domains.
 
-> 
-> > [...] (Btw, in -rc8-mm2 I see new sched_slice() function which seems 
-> > to return... time.)
-> 
-> wrong again. That is a function, not a variable to be cleared. (Anyway, 
-> the noise/signal ratio is getting increasingly high in this thread with 
-> no progress in sight, so i cannot guarantee any further replies - 
-> possibly others will pick up the tab and explain/discuss any other 
-> questions that might come up. Patches are welcome of course.)
+In the batch scheduler case, running on a large shared system used
+perhaps by several departments, no one entity can do that.  One person,
+perhaps the system admin, knows if they want to give complete control
+of some big chunk of CPUs to a batch scheduler.  The batch scheduler,
+written by someone else far away and long ago, knows which jobs are
+actively running on which subsets of the CPUs the batch scheduler is
+using.
 
-I can't see anything about clearing. I think, this was about charging,
-which should change the key enough, to move a task to, maybe, a better
-place in a que (tree) than with current ways.
+There is no single monolithic entity on such systems who knows all and
+can dictate all details of a single, flat, system-wide partitioning.
 
-Jarek P.
+The partitioning has to be sythesized from the combined requests of
+several user space entities.  That's ok -- this is bread and butter
+work for cpusets.
 
-PS: Don't you think that a nice argue with some celebrity, like Ingo
-Molnar himself, is by far more interesting than those dull patches?
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
