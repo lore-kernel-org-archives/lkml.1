@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbXJCSQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbXJCSQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbXJCSQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbXJCSQE
+	id S1758952AbXJCSQr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXJCSQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:16:04 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:22742 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755353AbXJCSQB (ORCPT
+	Wed, 3 Oct 2007 14:16:39 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49911 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757231AbXJCSQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:16:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YfjS+oyP6aDOv+8lZInZtu0jayWsujjwpILywB1o8wOTllcx/YFxVGxoQn4EQLsXC
-	MdN/EeB79WXgi2WlPcyRA==
-Message-ID: <6599ad830710031115g3a45e996j30bd7b5e8d77a035@mail.gmail.com>
-Date: Wed, 3 Oct 2007 11:15:57 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH 03/33] task containersv11 add tasks file interface
-Cc: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, serue@us.ibm.com,
-       clg@fr.ibm.com, ebiederm@xmission.com, xemul@openvz.org,
-       rientjes@google.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       a.p.zijlstra@chello.nl, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071003105157.254c51a4.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Oct 2007 14:16:38 -0400
+Date: Wed, 3 Oct 2007 19:17:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, paul.moore@hp.com
+Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory
+ Access Control Kernel
+Message-ID: <20071003191735.4d92c593@the-village.bc.nu>
+In-Reply-To: <20071003175237.GK8181@ftp.linux.org.uk>
+References: <20071003051254.GH8181@ftp.linux.org.uk>
+	<287091.73995.qm@web36604.mail.mud.yahoo.com>
+	<20071003175237.GK8181@ftp.linux.org.uk>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070917210307.116234000@menage.corp.google.com>
-	 <20070917210426.579524000@menage.corp.google.com>
-	 <20071003010923.c606c176.pj@sgi.com>
-	 <6599ad830710030816m32321b54gbc79c24d0a39941b@mail.gmail.com>
-	 <20071003105157.254c51a4.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Paul Jackson <pj@sgi.com> wrote:
->
-> So after changing the 'cpus' of a cpuset, you (something in
-> user space) then has to rewrite every pid in that cpusets
-> tasks file back to that same tasks file, in order to get the
-> change to be applied to each of those tasks, and get them to
-> start running on their new CPUs.
+> Absolute paths in that kind of thing are _wrong_.  You know where the things
+> are on your fs.  You don't know if anything else will be visible, let alone
+> whether it will be at the same place in all chroots or namespaces.  And no,
+> you _can't_ make sure that fs is visible only in one place.  No fs can or
+> has any business even trying.
 
-What happens to the new child that got forked right between userspace
-reading the 'tasks' file and writing back the pids?
-
-Paul
+What I don't understand here is why we need the hacks when we already
+support sufficient mount magic to give each login session its own
+private /tmp ?
