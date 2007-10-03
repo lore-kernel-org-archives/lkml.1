@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbXJCU42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXJCU5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbXJCU42 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbXJCU4U
+	id S1757999AbXJCU5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbXJCU5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:56:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50744 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752290AbXJCU4U (ORCPT
+	Wed, 3 Oct 2007 16:57:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49459 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbXJCU5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:56:20 -0400
-Date: Wed, 3 Oct 2007 13:56:15 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       serue@us.ibm.com, clg@fr.ibm.com, menage@google.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       rientjes@google.com, svaidy@linux.vnet.ibm.com, xemul@openvz.org,
-       containers@lists.osdl.org, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-Message-Id: <20071003135615.f2e42b8b.pj@sgi.com>
-In-Reply-To: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Wed, 3 Oct 2007 16:57:08 -0400
+Date: Wed, 3 Oct 2007 21:57:03 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, paul.moore@hp.com
+Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20071003205703.GM8181@ftp.linux.org.uk>
+References: <20071003175237.GK8181@ftp.linux.org.uk> <975177.66265.qm@web36601.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <975177.66265.qm@web36601.mail.mud.yahoo.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew - please kill this patch.
+On Wed, Oct 03, 2007 at 12:51:08PM -0700, Casey Schaufler wrote:
+> > > Because you throw "simple" out the window when you require userland
+> > > assistance to perform this function.
+> > 
+> > Any more than having /tmp replaced with a symlink?
+> 
+> Yes. By the way, there's nothing that really requires that you
+> use a /smack symlink if you don't want to. /tmp can still be a
+> real directory, a mount point, a symlink to /var/tmp, or whatever
+> else you want it to be if that suits your needs better. For the
+> simplest scenarios /tmp -> /smack/tmp -> /moldy/<label> has every
+> other scheme I've seen throughly beaten.
 
-Looks like Paul Menage has a better solution
-that I will be trying out.
+And your point is?  If you don't use it, you get exact same complexity
+in both setups.
+ 
+> > _What_ userland intervention?  Mounting stuff under /smack/tmp and not under
+> > your /moldy?
+> 
+> Who said anything about mounting under /moldy? I never did.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Sigh...  So put the binding into fstab and be done with that.
+ 
+> > Having /tmp replaced with symlink to /smack/tmp.link instead
+> > of replacing it with a symlink to /smack/tmp?
+> > 
+> > Absolute paths in that kind of thing are _wrong_.  You know where the things
+> > are on your fs.  You don't know if anything else will be visible, let alone
+> > whether it will be at the same place in all chroots or namespaces.  And no,
+> > you _can't_ make sure that fs is visible only in one place.  No fs can or
+> > has any business even trying.
+> 
+> Is the objection that there is a default value coded in?
+
+Right now the main objection is about your lack of ability to read.  Which
+part of "it can be mounted in different chroots/namespaces, therefore
+having absolute paths doesn't work" is too hard to understand?
+
+No, it's not about having a default.  It's about keeping an absolute pathname
+in virtual fs, having all instances autosoddingmatically sharing it _and_
+having change attempt in any instance automatically affect all of them.
+If you have that kind of sharing, don't pretend that your mechanism really
+allows absolute pathnames.
