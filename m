@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbXJCKnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbXJCKtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbXJCKnn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 06:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXJCKnf
+	id S1756959AbXJCKtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 06:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbXJCKsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 06:43:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43370 "EHLO
+	Wed, 3 Oct 2007 06:48:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56935 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753198AbXJCKne (ORCPT
+	with ESMTP id S1753210AbXJCKsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 06:43:34 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
-In-Reply-To: <1191406506.4093.35.camel@lov.localdomain>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
-	 <1191325226.13204.63.camel@twins>
-	 <200710022205.05295.nickpiggin@yahoo.com.au>
-	 <1191406506.4093.35.camel@lov.localdomain>
+	Wed, 3 Oct 2007 06:48:51 -0400
+Subject: [PATCH] lockdep: annotate kprobes irq fiddling
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>
 Content-Type: text/plain
-Date: Wed, 03 Oct 2007 12:37:52 +0200
-Message-Id: <1191407872.5572.7.camel@lappy>
+Date: Wed, 03 Oct 2007 12:42:52 +0200
+Message-Id: <1191408172.5572.11.camel@lappy>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wed, 2007-10-03 at 12:15 +0200, Kay Sievers wrote:
-> On Tue, 2007-10-02 at 22:05 +1000, Nick Piggin wrote:
-> > On Tuesday 02 October 2007 21:40, Peter Zijlstra wrote:
-> > > On Tue, 2007-10-02 at 13:21 +0200, Kay Sievers wrote:
-> > 
-> > > > How about adding this information to the tree then, instead of
-> > > > creating a new top-level hack, just because something that you think
-> > > > you need doesn't exist.
-> > >
-> > > So you suggest adding all the various network filesystems in there
-> > > (where?), and adding the concept of a BDI, and ensuring all are properly
-> > > linked together - somehow. Feel free to do so.
-> > 
-> > Would something fit better under /sys/fs/? At least filesystems are
-> > already an existing concept to userspace.
-> 
-> Sounds at least less messy than an new top-level directory.
-> 
-> But again, if it's "device" releated, like the name suggests, it should
-> be reachable from the device tree.
-> Which userspace tool is supposed to set these values, and at what time?
-> An init-script, something at device discovery/setup? If that is is ever
-> going to be used in a hotplug setup, you really don't want to go look
-> for directories with magic device names in another disconnected tree.
+The below patch fixes a lockdep error in 2.6.23-rc9 when using tcp_probe.
 
-Filesystems don't really map to BDIs either. One can have multiple FSs
-per BDI.
+---
 
-'Normally' a BDI relates to a block device, but networked (and other
-non-block device) filesystems have to create a BDI too. So these need to
-be represented some place as well.
+Subject: lockdep: annotate kprobes irq fiddling
 
-The typical usage would indeed be init scripts. The typical example
-would be setting the read-ahead window. Currently that cannot be done
-for NFS mounts.
+kprobes disables irqs for jprobes, but does not tell lockdep about it.
 
+CC: Prasanna S Panchamukhi <prasanna@in.ibm.com>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+CC: David S. Miller <davem@davemloft.net>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/i386/kernel/kprobes.c   |    8 ++++++++
+ arch/x86_64/kernel/kprobes.c |    8 ++++++++
+ 2 files changed, 16 insertions(+)
+
+Index: linux-2.6-2/arch/i386/kernel/kprobes.c
+===================================================================
+--- linux-2.6-2.orig/arch/i386/kernel/kprobes.c
++++ linux-2.6-2/arch/i386/kernel/kprobes.c
+@@ -558,6 +558,13 @@ static int __kprobes post_kprobe_handler
+ 
+ 	resume_execution(cur, regs, kcb);
+ 	regs->eflags |= kcb->kprobe_saved_eflags;
++#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
++	if (raw_irqs_disabled_flags(regs->eflags)) {
++		trace_hardirqs_off();
++	} else {
++		trace_hardirqs_on();
++	}
++#endif
+ 
+ 	/*Restore back the original saved kprobes variables and continue. */
+ 	if (kcb->kprobe_status == KPROBE_REENTER) {
+@@ -695,6 +702,7 @@ int __kprobes setjmp_pre_handler(struct 
+ 	memcpy(kcb->jprobes_stack, (kprobe_opcode_t *)addr,
+ 			MIN_STACK_SIZE(addr));
+ 	regs->eflags &= ~IF_MASK;
++	trace_hardirqs_off();
+ 	regs->eip = (unsigned long)(jp->entry);
+ 	return 1;
+ }
+Index: linux-2.6-2/arch/x86_64/kernel/kprobes.c
+===================================================================
+--- linux-2.6-2.orig/arch/x86_64/kernel/kprobes.c
++++ linux-2.6-2/arch/x86_64/kernel/kprobes.c
+@@ -545,6 +545,13 @@ int __kprobes post_kprobe_handler(struct
+ 
+ 	resume_execution(cur, regs, kcb);
+ 	regs->eflags |= kcb->kprobe_saved_rflags;
++#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
++	if (raw_irqs_disabled_flags(regs->eflags)) {
++		trace_hardirqs_off();
++	} else {
++		trace_hardirqs_on();
++	}
++#endif
+ 
+ 	/* Restore the original saved kprobes variables and continue. */
+ 	if (kcb->kprobe_status == KPROBE_REENTER) {
+@@ -685,6 +692,7 @@ int __kprobes setjmp_pre_handler(struct 
+ 	memcpy(kcb->jprobes_stack, (kprobe_opcode_t *)addr,
+ 			MIN_STACK_SIZE(addr));
+ 	regs->eflags &= ~IF_MASK;
++	trace_hardirqs_off();
+ 	regs->rip = (unsigned long)(jp->entry);
+ 	return 1;
+ }
 
 
