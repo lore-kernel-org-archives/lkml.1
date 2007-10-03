@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXJCImz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbXJCIpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbXJCImz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbXJCIms
+	id S1757840AbXJCIpW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXJCIpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:42:48 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57202 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753936AbXJCImr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:42:47 -0400
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Rientjes <rientjes@google.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, containers@lists.osdl.org,
-       Paul Jackson <pj@sgi.com>, balbir@linux.vnet.ibm.com
-Date: Wed, 03 Oct 2007 01:42:41 -0700
-Message-Id: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH] task containersv11 add tasks file interface fix for cpusets
+	Wed, 3 Oct 2007 04:45:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50801 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbXJCIpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 04:45:09 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] mark read_crX() asm code as volatile
+Date: Wed, 3 Oct 2007 10:45:05 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kirill Korotaev <dev@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+References: <470250E0.5090706@openvz.org> <4703342E.3020101@zytor.com> <200710030149.24914.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710030149.24914.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710031045.05234.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
 
-The code in kernel/cgroup.c attach_task() which skips the
-attachment of a task to the group it is already in has to be
-removed.  Cpusets depends on reattaching a task to its current
-cpuset, in order to trigger updating the cpus_allowed mask in the
-task struct.
+> 
+> How does the compiler know it doesn't depend on memory?
 
-The dependency of cpusets on this is a hack, granted, but an
-important one.  It lets us avoid checking for a changed cpuset
-'cpus' setting in critical scheduler code paths.
-
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Cc: Paul Menage <menage@google.com>
-
----
-
-Andrew - this patch applies directly following the patch:
-    task-containersv11-add-tasks-file-interface.patch
-
- kernel/cgroup.c |    3 ---
- 1 file changed, 3 deletions(-)
-
---- 2.6.23-rc8-mm1.orig/kernel/cgroup.c	2007-10-02 20:24:11.078925442 -0700
-+++ 2.6.23-rc8-mm1/kernel/cgroup.c	2007-10-02 20:25:41.352279374 -0700
-@@ -739,10 +739,7 @@ static int attach_task(struct cgroup *co
+When it has no m (or equivalent like g) constrained argument 
+and no memory clobber.
  
- 	get_first_subsys(cont, NULL, &subsys_id);
- 
--	/* Nothing to do if the task is already in that cgroup */
- 	oldcont = task_cgroup(tsk, subsys_id);
--	if (cont == oldcont)
--		return 0;
- 
- 	for_each_subsys(root, ss) {
- 		if (ss->can_attach) {
+> How do you say it depends on memory?
 
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+You add any of the above.
+
+> You really need something as heavy as volatile?
+
+You could do a memory clobber, but it would be heavier than the volatile
+because the memory clobber clobbers all cached variables. volatile essentially 
+just says "don't remove; has side effects". Normally gcc does that automatically
+for something without outputs, but this one has.
+
+Besides a CRx access does not actually clobber memory.
+
+-Andi
