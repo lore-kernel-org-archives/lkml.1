@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbXJCIwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbXJCIyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757974AbXJCIwz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXJCIws
+	id S1758066AbXJCIyS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXJCIyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:52:48 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:36848 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751777AbXJCIwr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:52:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uqbiRrso3SrtSmHlUFTjmVEPaHNRSlQIEytdOLdCKBq4mn5Z7VV9sUyXjYRfoNT4rAjdipJzcaZOfXK63y51nwMawRwm05ITsBzjMa0ol8nRQ7op//eDSfDwxcnpcIwTQ8mKBqg834rgBx1onayMhmgNc0bnBv5IQX2mNtmHRMo=  ;
-X-YMail-OSG: k2aMnHMVM1nnj.qjUGX9CAT9AukJ.Abe1..OfKC_suPM3_aPoA220Tkha8gnQ9ISkwkyC0zpMxrYJPDhSevgpuRSgw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
-Date: Wed, 3 Oct 2007 02:14:48 +1000
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200710022335.05357.nickpiggin@yahoo.com.au> <20071003002555.045bea2a.pj@sgi.com>
-In-Reply-To: <20071003002555.045bea2a.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Oct 2007 04:54:06 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:37972 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753039AbXJCIyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 04:54:05 -0400
+Date: Wed, 3 Oct 2007 10:56:36 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
+Subject: Re: Network slowdown due to CFS
+Message-ID: <20071003085636.GC1726@ff.dom.local>
+References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710030214.49026.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071003081613.GA29904@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 October 2007 17:25, Paul Jackson wrote:
-> Nick wrote:
-> > BTW. as far as the sched.c changes in your patch go, I much prefer
-> > the partition_sched_domains API: http://lkml.org/lkml/2006/10/19/85
-> >
-> > The caller should manage everything itself, rather than
-> > partition_sched_domains doing half of the memory allocation.
->
-> Please take a closer look at my partition_sched_domains() and its
-> interface to the scheduler.
->
-> You should recognize this API, once you look at it.  It simply passes
-> the full flat, hard partition, in its entirety.  This is the
-> partitioning that you speak of, I believe.  It's here; just not where
-> you expected it.
->
-> The portion of the code that is in kernel/sched.c is just a little bit
-> of optimization.  It avoids rebuilding all the sched domains and
-> reattaching every task to its sched domain; rather it determines which
-> sched domains were added or removed and just rebuilds them.
->
-> Once you take a closer look, I hope you will agree that this new
-> interface between the cpuset and sched code provides a cleaner
-> separation.
+On Wed, Oct 03, 2007 at 10:16:13AM +0200, Ingo Molnar wrote:
+> 
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > > firstly, there's no notion of "timeslices" in CFS. (in CFS tasks 
+> > > "earn" a right to the CPU, and that "right" is not sliced in the 
+> > > traditional sense) But we tried a conceptually similar thing [...]
+> > 
+> > >From kernel/sched_fair.c:
+> > 
+> > "/*
+> >  * Targeted preemption latency for CPU-bound tasks:
+> >  * (default: 20ms, units: nanoseconds)
+> >  *
+> >  * NOTE: this latency value is not the same as the concept of
+> >  * 'timeslice length' - timeslices in CFS are of variable length.
+> >  * (to see the precise effective timeslice length of your workload,
+> >  *  run vmstat and monitor the context-switches field)
+> > ..."
+> > 
+> > So, no notion of something, which are(!) of variable length, and which 
+> > precise effective timeslice lenght can be seen in nanoseconds? (But 
+> > not timeslice!)
+> 
+> You should really read and understand the code you are arguing about :-/
 
-I don't know what you think I said that is incorrect and requires me to
-look at again. I don't like your partition_sched_domains API because
-of the allocation thing. So I prefer the existing (or better, the simplified
-version in my patch referenced).
+Maybe you could help me with better comments? IMHO, it would be enough
+to warn new timeslices have different meaning, or stop to use this
+term at all. (Btw, in -rc8-mm2 I see new sched_slice() function which
+seems to return... time.)
 
-The caller should determine which domain to rebuild and reattach.
-Simple.
+> 
+> In the 2.6.22 scheduler, there was a p->time_slice per task variable 
+> that could be manipulated. (Note, in 2.6.22's sched_yield() did not 
+> manipulate p->time_slice.)
+> 
+> sysctl_sched_latency on the other hand is not something that is per task 
+> (it is global) so there is no pending timeslice to be "cleared" as it 
+> has been suggested naively.
+
+But, there is this "something", very similar and very misleading, you
+count eg. in check_preempt_curr_fair to find if time is over, and I
+think this could be similar enough to what David Schwartz wanted to
+use in his idea, and you didn't care to explain why it's so different?
+
+Jarek P.
