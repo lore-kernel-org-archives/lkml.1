@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbXJCTEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXJCTIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbXJCTEH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 15:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXJCTDp
+	id S1757277AbXJCTIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 15:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbXJCTHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 15:03:45 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61260 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376AbXJCTDn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 15:03:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=pRUwxYhw8wvCr7H0Bzh43sTIqTJVVdp00xPMWMxiEf4IW6aMQILtrWKGzvh/6VIO2
-	77dtzV5oX7FbzEc8wXdXA==
-Message-ID: <b040c32a0710031203s7cc7b84fyab907046d2d3c773@mail.gmail.com>
-Date: Wed, 3 Oct 2007 12:03:36 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Adam Litke" <agl@us.ibm.com>
-Subject: Re: [PATCH] hugetlb: Fix pool resizing corner case
-Cc: "Dave Hansen" <haveblue@us.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1191436392.19775.43.camel@localhost.localdomain>
+	Wed, 3 Oct 2007 15:07:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40803 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751593AbXJCTHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 15:07:54 -0400
+Message-ID: <4703E888.9010803@garzik.org>
+Date: Wed, 03 Oct 2007 15:07:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071003154748.19516.90317.stgit@kernel>
-	 <1191433248.4939.79.camel@localhost>
-	 <1191436392.19775.43.camel@localhost.localdomain>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Adam Litke <agl@us.ibm.com> wrote:
-> The key is that we don't want to shrink the pool below the number of
-> pages we are committed to keeping around.  Before this patch, we only
-> accounted for the pages we plan to hand out (reserved huge pages) but
-> not the ones we've already handed out (total - free).  Does that make
-> sense?
+Linus Torvalds wrote:
+> Doing it as early as possible in the 2.6.24-rc4 series (basically I'll do 
+> it first thing) will mean that we'll have the maximum amount of time to 
+> sort out any issues, and the thing is, Thomas and Ingo already have a tree 
+> ready to go, so people can check their work against that, and don't need 
+> to think that they have to do any fixups after it his *my* tree. It would 
+> be much better if everybody was just ready for it, and not taken by 
+> surprise.
 
-Good catch, adam.
+I'm a bit confused...  you typed 2.6.24-rc4; I'm guessing you meant 
+2.6.24-rc1, but did you mean
 
->From what I can see, the statement
-        if (count >= nr_huge_pages)
-                return nr_huge_pages;
+	"x86 merge as soon as 2.6.23 is released" (merge window opens)
 
-in set_max_huge_pages() is useless because (1) we recalculate "count"
-variable below it; and (2) both try_to_free_low() and the while loop
-below the call to try_to_free_low() will terminate correctly.  If you
-feel like it, please clean it up as well.
+or
 
-If not, I'm fine with that.
+	"x86 merge as soon as 2.6.24-rc1 is released"
 
-Acked-by: Ken Chen <kenchen@google.com>
+?
+
+Thanks,
+
+	Jeff
+
+
