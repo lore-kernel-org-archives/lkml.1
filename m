@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXJCMvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXJCMxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbXJCMvt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXJCMvm
+	id S1755993AbXJCMxA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXJCMwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:51:42 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44175 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbXJCMvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:51:41 -0400
-Date: Wed, 3 Oct 2007 13:51:39 +0100
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Bill Davidsen <davidsen@tmr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <20071003125138.GA8636@skynet.ie>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <1191326858.28962.8.camel@localhost> <20071002121556.GA22864@elte.hu> <20071002172135.GA12182@skynet.ie> <4702C1AD.3090701@tmr.com> <1191371855.2708.26.camel@localhost> <20071003082157.GB32218@elte.hu>
+	Wed, 3 Oct 2007 08:52:53 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49402 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbXJCMww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:52:52 -0400
+Date: Wed, 3 Oct 2007 14:52:51 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Frans Pop <elendil@planet.nl>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: top displaying 9999% CPU usage
+In-Reply-To: <200710031433.34504.elendil@planet.nl>
+Message-ID: <Pine.LNX.4.64.0710031451240.22106@fbirervta.pbzchgretzou.qr>
+References: <200710031433.34504.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20071003082157.GB32218@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (03/10/07 10:21), Ingo Molnar didst pronounce:
-> 
-> * Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > > > Nice one Ingo - got it first try. The problem commit was 
-> > > > dd41f596cda0d7d6e4a8b139ffdfabcefdd46528 and it's clear that the 
-> > > > code removed in this commit is put back by this latest patch.  
-> > > > When applied, profile=sleep works as long as CONFIG_SCHEDSTAT is 
-> > > > set.
-> > > > 
-> > > And if it isn't set? I can easily see building a new kernel with 
-> > > stats off and forgetting to change the boot options.
-> > 
-> > If CONFIG_SCHEDSTAT is off and profile=sleep is set, you see with 
-> > Ingo's patch and readprofile;
-> > 
-> >      0 *unknown*
-> >      0 total                                      0.0000
-> > 
-> > That is a tad confusing hence my follow-up patch which would say 
-> > "/proc/profile" doesn't exist when readprofile is used and the warning 
-> > in dmesg.
-> 
-> yep - that's the best we can do for the stable release.
-> 
 
-Agreed. The less change the better this late in the game.
+On Oct 3 2007 14:33, Frans Pop wrote:
+>
+>I saw top occasionally displaying 9999% CPU usage for a process. The
+>first few times it was amarokapp, this last time it was kontact.
+>Both applications were basically idle.
 
-> We could improve quality of behavior here by not offering /proc/profile 
-> in that case and by printk-ing something if profile=sleep is specified 
-> on a !CONFIG_SCHEDSTATS kernel. I'm willing to apply patches that do 
-> that :)
-> 
+Yes this certainly sounds like KDE. Did you try with Gnome,
+or perhaps a simple `perl -e '1 while 1'`?
 
-I included a candidate patch in the last mail but it was shoved down at
-the bottom so it could easily have been missed.
+>The "cc1" is a kernel compile (rc9 + CFS :-).
+>
+>I cannot remember seeing this before, but as I also don't run top that
+>frequently I cannot be sure its a recent regression.
 
-==============
-Subject: Document profile=sleep requiring CONFIG_SCHEDSTATS
+Test various things, like another top utility (htop perhaps),
+compare. Narrowing down where the bug is.
 
-profile=sleep only works if CONFIG_SCHEDSTATS is set. This patch notes the
-limitation in Documentation/kernel-parameters.txt and prints a warning at
-boot-time if profile=sleep is used without CONFIG_SCHEDSTAT.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- Documentation/kernel-parameters.txt |    3 ++-
- kernel/profile.c                    |    5 +++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc9-005_ingo_profile_fix/Documentation/kernel-parameters.txt linux-2.6.23-rc9-010_document_profilesleep/Documentation/kernel-parameters.txt
---- linux-2.6.23-rc9-005_ingo_profile_fix/Documentation/kernel-parameters.txt	2007-10-02 04:24:52.000000000 +0100
-+++ linux-2.6.23-rc9-010_document_profilesleep/Documentation/kernel-parameters.txt	2007-10-02 16:43:41.000000000 +0100
-@@ -1395,7 +1395,8 @@ and is between 256 and 4096 characters. 
- 			Param: "schedule" - profile schedule points.
- 			Param: <number> - step/bucket size as a power of 2 for
- 				statistical time based profiling.
--			Param: "sleep" - profile D-state sleeping (millisecs)
-+			Param: "sleep" - profile D-state sleeping (millisecs).
-+				Requires CONFIG_SCHEDSTATS
- 
- 	processor.max_cstate=	[HW,ACPI]
- 			Limit processor to maximum C-state
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc9-005_ingo_profile_fix/kernel/profile.c linux-2.6.23-rc9-010_document_profilesleep/kernel/profile.c
---- linux-2.6.23-rc9-005_ingo_profile_fix/kernel/profile.c	2007-10-02 04:24:52.000000000 +0100
-+++ linux-2.6.23-rc9-010_document_profilesleep/kernel/profile.c	2007-10-02 16:44:50.000000000 +0100
-@@ -60,6 +60,7 @@ static int __init profile_setup(char * s
- 	int par;
- 
- 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
-+#ifdef CONFIG_SCHEDSTATS
- 		prof_on = SLEEP_PROFILING;
- 		if (str[strlen(sleepstr)] == ',')
- 			str += strlen(sleepstr) + 1;
-@@ -68,6 +69,10 @@ static int __init profile_setup(char * s
- 		printk(KERN_INFO
- 			"kernel sleep profiling enabled (shift: %ld)\n",
- 			prof_shift);
-+#else
-+		printk(KERN_WARNING
-+			"kernel sleep profiling requires CONFIG_SCHEDSTATS\n");
-+#endif /* CONFIG_SCHEDSTATS */
- 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
- 		prof_on = SCHED_PROFILING;
- 		if (str[strlen(schedstr)] == ',')
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+>top - 14:28:27 up 38 min,  1 user,  load average: 1.12, 0.67, 0.32
+>Tasks: 128 total,   2 running, 126 sleeping,   0 stopped,   0 zombie
+>Cpu(s): 32.0%us, 15.7%sy,  0.0%ni, 43.8%id,  8.5%wa,  0.0%hi,  0.0%si,  0.0%st
+>Mem:   2054476k total,   998460k used,  1056016k free,    95284k buffers
+>Swap:   979924k total,        0k used,   979924k free,   485804k cached
+>
+>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 5269 fjp       20   0  441m  58m  32m S 9999  2.9   0:16.34 kontact
+>                                         ^^^^
+> 8272 fjp       20   0  5952  468  208 S    3  0.0   0:04.62 faked-sysv
+> 3666 fjp       20   0 25268 2036  884 S    2  0.1   0:03.30 famd
+>26530 fjp       20   0 20932 6292 1568 R    2  0.3   0:00.06 cc1
+> 5124 fjp       20   0  210m  26m  19m S    1  1.3   0:09.18 kicker
+>17012 fjp       20   0 19016 1252  916 R    1  0.1   0:00.34 top
+> 5159 fjp       20   0  508m  54m  30m S    0  2.7   0:12.67 amarokapp
