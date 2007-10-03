@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbXJCCls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbXJCCne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbXJCCls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 22:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXJCClk
+	id S1756812AbXJCCne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 22:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbXJCCn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 22:41:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50083 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753003AbXJCClk (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 22:41:40 -0400
-Date: Wed, 3 Oct 2007 12:41:19 +1000
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>
-Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to indicate more io
-Message-ID: <20071003024119.GL23367404@sgi.com>
-References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Oct 2007 22:43:27 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:3400 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753003AbXJCCn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 22:43:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=IoS/h/ojBn9/ACQA+SCzyAoz+6ccm6MVCbJMYYmygtP0qNGdgcJ3MoyzpY6piRqHSe7GjVIWXdlhZ9VSRwKZxSrX8Si0fXXtxA/RqBPy99f6KjDK9UTC5FulUAsf3X6TsvyelwqA5GK+nCe9JSUPRvzc8Z4D+qfcC19kHfWcKpo=
+Message-ID: <9dbec86d0710021943n5028e6c1v56b22ade907b8098@mail.gmail.com>
+Date: Wed, 3 Oct 2007 10:43:24 +0800
+From: Sonny <smaniaol@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Traffic Controller Performance in Kernel 2.4 vs 2.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071003013439.GA6501@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 09:34:39AM +0800, Fengguang Wu wrote:
-> On Wed, Oct 03, 2007 at 07:47:45AM +1000, David Chinner wrote:
-> > On Tue, Oct 02, 2007 at 04:41:48PM +0800, Fengguang Wu wrote:
-> > >  		wbc.pages_skipped = 0;
-> > > @@ -560,8 +561,9 @@ static void background_writeout(unsigned
-> > >  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> > >  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
-> > >  			/* Wrote less than expected */
-> > > -			congestion_wait(WRITE, HZ/10);
-> > > -			if (!wbc.encountered_congestion)
-> > > +			if (wbc.encountered_congestion || wbc.more_io)
-> > > +				congestion_wait(WRITE, HZ/10);
-> > > +			else
-> > >  				break;
-> > >  		}
-> > 
-> > Why do you call congestion_wait() if there is more I/O to issue?  If
-> > we have a fast filesystem, this might cause the device queues to
-> > fill, then drain on congestion_wait(), then fill again, etc. i.e. we
-> > will have trouble keeping the queues full, right?
-> 
-> You mean slow writers and fast RAID? That would be exactly the case
-> these patches try to improve.
+Hello
+This is a repost, there seems to have a misunderstanding before.
 
-I mean any writers and a fast block device (raid or otherwise).
+I hope this is the right place to ask this. Does any know if there is a
+substantial difference in the performance of the traffic controller
+between kernel 2.4 and 2.6. We tested it using 1 iperf server and use
+250 and 500 clients, altering the burst.
 
-> This patchset makes kupdate/background writeback more responsible,
-> so that if (avg-write-speed < device-capabilities), the dirty data are
-> synced timely, and we don't have to go for balance_dirty_pages().
+This is the set-up:
+iperf client -  router (w/ traffic controller) - iperf server
 
-Sure, but I'm asking about the effect of the patches on the
-(avg-write-speed == device-capabilities) case. I agree that
-they are necessary for timely syncing of data but I'm trying
-to understand what effect they have on the normal write case
-(i.e. keeping the disk at full write throughput).
-
-> So for your question of queue depth, the answer is: the queue length
-> will not build up in the first place. 
-
-Which queue are you talking about here? The block deivce queue?
-
-> Also the name of congestion_wait() could be misleading:
-> - when not congested, congestion_wait() will wakeup on write
->   completions;
-> - when congested, congestion_wait() could also wakeup on write
->   completions on other non-congested devices.
-> So congestion_wait(100ms) normally only takes 0.1-10ms.
-
-True, but if we know we are not congested and have more work
-to do, why sleep at all?
-
-> For the more_io case, congestion_wait() serves more like 'to take a
-> breath'. Tests show that the system could go mad without it.
-
-I'm interested to know what tests show that pushing more I/O when
-you don't have block device congestion make the system go mad (and
-what mad means).  It sounds to me like it's hiding (yet another)
-bug in the writeback code......
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+We use the top command inside the router to check the idle time of our
+router to see this. The results we got from the 2.4 kernel shows
+around 65-70% idle time while the 2.6 shows
+60-65% idle time. We tried to use MRTG and we're not getting any
+results either. We want to know if we could improve the bandwidth by
+upgrading the kernel, else we would have to get a new bandwidth
+manager.  Have anyone performed a similar test or can suggest a better
+way to do this. Thanks in advance.
