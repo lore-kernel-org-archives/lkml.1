@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbXJCNrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbXJCNv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbXJCNrB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXJCNqx
+	id S1756673AbXJCNv7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXJCNvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:46:53 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:59839 "EHLO aun.it.uu.se"
+	Wed, 3 Oct 2007 09:51:52 -0400
+Received: from main.gmane.org ([80.91.229.2]:36895 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbXJCNqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:46:52 -0400
-Date: Wed, 3 Oct 2007 15:46:32 +0200 (MEST)
-Message-Id: <200710031346.l93DkWbE028800@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound occurs
-Cc: linux-kernel@vger.kernel.org, mikpe@it.uu.se, shiwh@cn.fujitsu.com
+	id S1754520AbXJCNvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 09:51:51 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] Fallback to ipv4 if we try to add join IPv4 multicast
+ group via   ipv4-mapped address.
+Date: Wed, 03 Oct 2007 17:26:35 +0400
+Message-ID: <4703988B.3010904@gmail.com>
+References: <1191319182.28331.6.camel@doriath.ww600.siemens.net> <OFDC1D2E6E.2DCF75EA-ON88257368.0053513A-88257368.005586DC@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: netdev@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: iap-pxy-mow1.siemens.ru
+User-Agent: IceDove 1.5.0.12 (X11/20070730)
+In-Reply-To: <OFDC1D2E6E.2DCF75EA-ON88257368.0053513A-88257368.005586DC@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Oct 2007 22:20:46 +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 3 Oct 2007 21:40:29 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hello,
+
+David Stevens wrote:
+> Dmitry,
+>         Good catch; a couple comments:
+
+Thank you for the response.
+
 > 
-> > On Wed, 3 Oct 2007 14:20:07 +0200 (MEST)
-> > Mikael Pettersson <mikpe@it.uu.se> wrote:
-> > 
-> > > What I don't agree with is the logic itself:
-> > > - You only catch altstack overflow caused by the kernel pushing
-> > >   a sigframe. You don't catch overflow caused by the user-space
-> > >   signal handler pushing its own stack frame after the sigframe.
-> > > - SUSv3 specifies the effect of altstack overflow as "undefined".
-> > > - The overflow problem can be solved in user-space: allocate the
-> > >   altstack with mmap(), then mprotect() the lowest page to prevent
-> > >   accesses to it. Any overflow into it, by the kernel's signal
-> > >   delivery code or by the user-space signal handler, will be caught.
-> > > 
-> > > So this patch gets a NAK from me.
-> > > 
-> > 
-> > I can understand what you say, but a program which meets this problem
-> > cannot be debugged ;(
-> > 
-> > gdb just shows infinit loop of function frames and origignal signal frame
-> > which includes the most important information is overwritten.
-> > 
-> there is a difference among user's stack overflow and kernel's.
->  - user's stack overflow just breaks memory next to stack frame.
->  - kernel's altstack overflow, which this patch tries to fix, breaks
->    the bottom of altstack  bacause %esp goes back to the bottom
->    of ths altstack when it exceeds altstack range.
->    This behavior overwrite orignail stack frame and shows  infinit loop
->    of function call to gdb and never stop with 100% cpu usage.
+>>     struct ipv6_pinfo *np = inet6_sk(sk);
+>>     int err;
+>> +   int addr_type = ipv6_addr_type(addr);
+>> +
+>> +   if (addr_type == IPV6_ADDR_MAPPED) {
+>> +      __be32 v4addr = addr->s6_addr32[3];
+>> +      struct ip_mreqn mreq;
+>> +      mreq.imr_multiaddr.s_addr = v4addr;
+>> +      mreq.imr_address.s_addr = INADDR_ANY;
+>> +      mreq.imr_ifindex = ifindex;
+>> +
+>> +      return ip_mc_join_group(sk, &mreq);
+>> +   }
+> 
+>         ipv6_addr_type() returns a bitmask, so you should use:
+> 
+>         if (addr_type & IPV6_ADDR_MAPPED) {
 
-The proposed kernel signal delivery patch only handles the case
-where the /sigframe/ ends up overlapping the end of the altstack.
-If the sigframe remains within the altstack boundaries but the
-user-space signal handler adds an /ordinary stack frame/ that
-moves SP beyond the altstack limit, then the kernel patch solves
-nothing and recursive signals will cause altstack wraparound.
+I just c'n'pasted the code that checks for mapped addresses. In most 
+cases it's just ==, not bitmask operation.
 
-On the other hand, the user-space technique of making the lowest
-page(s) in the altstack inaccessible handles both cases of overflow.
+> 
+> Also, you should have a blank line after the "mreq" declaration.
 
-/Mikael
+ok.
+
+> 
+> Ditto for both in ipv6_mc_sock_drop().
+
+
+> I don't expect the multicast source filtering interface will
+> behave well for mapped addresses, either. The mapped multicast
+> address won't appear to be a multicast address (and return
+> error there), and all the source filters would have to be
+> v4mapped addresses and modify the v4 source filters for this
+> to do as you expect. So, there's more to it (and it may be a
+> bit messy) to support mapped multicast addresses fully. I'll
+> think about that part some more.
+
+
+Didn't have time to test it throughly. I've only checked that call 
+succeeds and that all necessary igmp are sent. I hope, this weekend I'll 
+have more time to check.
+
+--
+With best wishes
+Dmitry Baryshkov
+
