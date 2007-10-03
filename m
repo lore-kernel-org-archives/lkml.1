@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbXJCPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbXJCPVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbXJCPRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXJCPRG
+	id S1756490AbXJCPVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXJCPVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:17:06 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:2853 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754305AbXJCPRE (ORCPT
+	Wed, 3 Oct 2007 11:21:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:22064 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXJCPVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:17:04 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Y6ST7eYHlnA/IlLZh396TCMR1lgIXJoDT4Q5ejWf+QdQaAOR5m2k9QtZVzShWU34F
-	UJIz5bmj781a/arOYnwGA==
-Message-ID: <6599ad830710030816m32321b54gbc79c24d0a39941b@mail.gmail.com>
-Date: Wed, 3 Oct 2007 08:16:53 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH 03/33] task containersv11 add tasks file interface
-Cc: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, serue@us.ibm.com,
-       clg@fr.ibm.com, ebiederm@xmission.com, xemul@openvz.org,
-       rientjes@google.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       a.p.zijlstra@chello.nl, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071003010923.c606c176.pj@sgi.com>
+	Wed, 3 Oct 2007 11:21:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IXx2YwLEryfm6KQAllJ5+ZBvDPrAU7STlkgiId2dZfCbu7kFSFu9k46EoDlDSIqssvPwRBxdNhnKXPXr5ce1c2PlrHfAOSMCkxrMfiyPJwngsjgwO0grQKV493jcQuIeRVFJEU38vlnpZR14DLRzzni3PbpF99SqWY5+Nv0tdFQ=
+Message-ID: <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>
+Date: Wed, 3 Oct 2007 17:21:13 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070917210307.116234000@menage.corp.google.com>
-	 <20070917210426.579524000@menage.corp.google.com>
-	 <20071003010923.c606c176.pj@sgi.com>
+References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>
+	 <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
+	 <46FC1104.8080105@gmail.com>
+	 <64bb37e0709272236g7da8f370lc7f737e908725e88@mail.gmail.com>
+	 <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
+	 <46FFB412.20202@gmail.com>
+	 <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com>
+	 <46FFDF64.1080005@gmail.com>
+	 <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
+	 <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Paul Jackson <pj@sgi.com> wrote:
+On 10/1/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> On 9/30/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> > On 9/30/07, Tejun Heo <htejun@gmail.com> wrote:
+> > > Torsten Kaiser wrote:
+> To make that comment "cmd part of the output was always the same" more
+> clear: I did not only mean that the first (cmd-)byte was the same, but
+> the whole line:
+> cmd 61/08:00:09:d6:42/00:00:25:00:00/40 tag 0 cdb 0x0 data 4096 out
 >
->  - What are these apparent 'exec notifications' that are provided to
->    user space that the following mentions - I cannot find any other
->    mention of them:
->
->         With the ability to classify tasks differently for different
->         resources (by putting those resource subsystems in different
->         hierarchies) then the admin can easily set up a script which
->         receives exec notifications and depending on who is launching
->         the browser he can
+> I did find ATA_CMD_FPDMA_WRITE = 0x61in ata.h, but I don't find a good
+> hint for the 08 that follows. The interpretation XFER_PIO_0 = 0x08
+> seems wrong...
 
-It's the process connector netlink notifier. It can report
-fork/exit/exec/setuid events to userspace. See
-drivers/connector/cn_proc.c
+Even all of the last bisect steps still showed the same line...
 
->
->
->  -  It states in cgroups.txt:
->
->     *** notify_on_release is disabled in the current patch set. It will be
->     *** reactivated in a future patch in a less-intrusive manner
->
->     This doesn't seem to be true, and had better not be true.
->     From what I can tell, notify_on_release still works for cpusets,
->     and it is important that it continue to work when cgroups are
->     folded into the main line kernel.
+> If I look at what patches remain, it seems that some other (earlier)
+> patch that is new in 2.6.23-rc4-mm1 is the trigger, but it will only
+> fail together with a second patch.
 
-Correct, it's reactivated in a later patch in the series, but this
-intermediate comment snuck through.
+I'm now finished with bisecting, still 2 patches, but I don't want to
+spend another two hours waiting...
 
->
->         Each cgroup object created by the system has an array of pointers,
->         indexed by subsystem id; this pointer is entirely managed by the
->         subsystem; the generic cgroup code will never touch this pointer.
->
->   Is plural "pointers", or singular "pointer", the correct wording?
+And the winners are: (from broken-out patchset of 2.6.23-rc4-mm1)
+maps2-simplify-interdependence-of-proc-pid-maps-and-smaps.patch
+maps2-move-clear_refs-code-to-task_mmuc.patch
 
-Probably plural.
+Before these patches I have never seen the bug, with these I only got
+two good boots when trying to recreate the problem. But even the
+kernels that did one good boot failed on the second try.
 
->
->  - Several lines near the end of cgroups.txt start with "LL".
->    I guess they list what locks are held while taking the call,
->    but the notation seems cryptic and unfamiliar to me, and its
->    meaning here undocumented.
+> > As for you printk:
+>From the last testkernel (up to incl.
+maps2-move-clear_refs-code-to-task_mmuc.patch)
 
-"Locking Level", describing which locks *are* held, and which are
-*not* held during a call. I thought it was a more generally
-widely-used commenting convention, but I don't see any other uses of
-it in the kernel. I can replace them with "holds cgroup_mutex" or
-"doesn't hold cgroup_mutex" for clarity.
+Good:
+Oct  3 15:50:39 treogen [    3.780000] XXX sil24 cb=ffff810005dd0000
+cb_dma=5dd0000
+Oct  3 15:50:39 treogen [    3.790000] XXX sil24 cb=ffff810005de0000
+cb_dma=5de0000
 
->
->  - There are many instances of the local variable 'cont', referring
->    to a struct cgroup pointer.  I presume the spelling 'cont' is a
->    holdover from the time when we called these containers.
+Bad:
+Oct  3 16:56:46 treogen [    3.750000] XXX sil24 cb=ffff810005de0000
+cb_dma=5de0000
+Oct  3 16:56:46 treogen [    3.760000] XXX sil24 cb=ffff810005df0000
+cb_dma=5df0000
 
-Yes, and since cgroup is short for "control group", "cont" still
-seemed like a reasonable abbreviation. (And made the automatic
-renaming much simpler).
->
->  - The code in attach_task which skips the attachment of a task to
->    the group it is already in has to be removed.  Cpusets depends
->    on reattaching a task to its current cpuset, in order to trigger
->    updating the cpus_allowed mask in the task struct.  This is a
->    hack, granted, but an important one.  It avoids checking for a
->    changed cpuset 'cpus' setting in critical scheduler code paths.
+I have *NO* clue how these procfs changes can kill the sata_sil24
+driver, but all bisect steps point to these two patches as cause or
+trigger of the bug.
 
-I don't quite understand how this is meant to work - under what
-circumstances would it occur? Are there cases when userspace is
-required to try to reattach a task to its current cpuset in order to
-get a cpu mask change to stick?
-
-Other comments noted, thanks.
-
-Paul
+Torsten
