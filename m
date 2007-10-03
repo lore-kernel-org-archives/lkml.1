@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbXJCA6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbXJCBCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755089AbXJCA6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 20:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXJCA6O
+	id S1755837AbXJCBCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXJCBCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 20:58:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:42886 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121AbXJCA6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 20:58:13 -0400
-Message-ID: <4702E925.70200@goop.org>
-Date: Tue, 02 Oct 2007 17:58:13 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Goyal <vgoyal@in.ibm.com>, lguest <lguest@ozlabs.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/5] Boot protocol changes
-References: <1191368052.17826.40.camel@localhost.localdomain> <4702D867.2060100@goop.org> <4702D9E2.6020407@zytor.com> <4702DAB5.6090003@goop.org> <4702E5C0.5040606@zytor.com>
-In-Reply-To: <4702E5C0.5040606@zytor.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 2 Oct 2007 21:02:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46129 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753121AbXJCBCd (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 21:02:33 -0400
+Date: Tue, 2 Oct 2007 18:02:09 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: pomac@vapor.com, Jeff Garzik <jgarzik@pobox.com>
+Cc: Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] sky2: jumbo frame regression fix
+Message-ID: <20071002180209.47c350a3@freepuppy.rosehill>
+In-Reply-To: <1191372129.26233.12.camel@localhost>
+References: <1191372129.26233.12.camel@localhost>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> I'm proposing that the existing bzImage format be retained, but that
-> the payload of the decompressor (already a gzip file) simply be
-> vmlinux.gz -- i.e. a gzip compressed ELF file, notes and all.  A
-> pointer in the header will point to the offset of the payload (this is
-> new, obviously.)
->
-> The decompression stub is adjusted to expect an ELF image, instead of
-> a raw binary.
+Remove unneeded check that caused problems with jumbo frame sizes.
+The check was recently added and is wrong.
+When using jumbo frames the sky2 driver does fragmentation, so
+rx_data_size is less than mtu.
 
-It could, or just treat it as a raw binary at 1M+offset to skip the headers.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-> Existing bootloaders (16- or 32-bit) simply load the bzImage the way
-> they do now; new bootloaders have the option of accessing the
-> vmlinux.gz directly if they either want to load it themselves or want
-> to examine the notes. 
-
-OK, but that has the same problem as making the payload an ELF file:
-32-bit bootloaders which simply jump to 1M will be jumping into data
-rather than code - and I got the impression from taking to Eric at KS
-that there are such bootloaders.  
-
-If that's not an issue, then I still think the payload should be a plain
-ELF file (possibly self-decompressing, or just a plain uncompressed
-vmlinux, if that's what's desired).  Still think making a protected-mode
-bootloader do the decompression is the wrong way to go about this; ELF
-is enough.
-
-    J
+--- a/drivers/net/sky2.c	2007-10-02 17:56:31.000000000 -0700
++++ b/drivers/net/sky2.c	2007-10-02 17:58:56.000000000 -0700
+@@ -2163,9 +2163,6 @@ static struct sk_buff *sky2_receive(stru
+ 	sky2->rx_next = (sky2->rx_next + 1) % sky2->rx_pending;
+ 	prefetch(sky2->rx_ring + sky2->rx_next);
+ 
+-	if (length < ETH_ZLEN || length > sky2->rx_data_size)
+-		goto len_error;
+-
+ 	/* This chip has hardware problems that generates bogus status.
+ 	 * So do only marginal checking and expect higher level protocols
+ 	 * to handle crap frames.
