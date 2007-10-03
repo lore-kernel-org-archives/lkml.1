@@ -1,54 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXJCSur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbXJCSwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbXJCSur (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbXJCSuk
+	id S1755236AbXJCSwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXJCSwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:50:40 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43528 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbXJCSuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:50:39 -0400
-Date: Wed, 3 Oct 2007 13:50:35 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Tony Breeds <tony@bakeyournoodle.com>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Message-ID: <20071003185035.GS4338@austin.ibm.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <20070924123531.GC30855@shadowen.org> <20071002232819.GN4338@austin.ibm.com> <20071003002646.GD9814@bakeyournoodle.com> <1191371416.8073.1.camel@concordia> <20071003011909.GG9814@bakeyournoodle.com> <1191384586.8073.6.camel@concordia>
+	Wed, 3 Oct 2007 14:52:01 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:56477 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751593AbXJCSwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 14:52:00 -0400
+Date: Wed, 3 Oct 2007 14:51:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20071003185158.GA28932@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1191384586.8073.6.camel@concordia>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 02:09:46PM +1000, Michael Ellerman wrote:
-> 
-> Until we initialise what exactly?
 
-Until we allocate the error log buffer. The original crash was 
-for a null-pointer deref of the unallocated buffer. I just sent 
-out a patch to fix this; its a bit simpler than the below.
+Fix ugly sata_mv bug, that exists due to lack of IOMMU knowledge about
+device constraints (FUJITA Tomonori's current work should fix this issue
+long term, hopefully).
 
-In that email, I remarked:
 
-Andy Whitcroft's crash was appearently due to firmware complaining
-about lost power, (actually, lost power supply redundancy!), which
-occurred very early during boot.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-    Type                00000040 (EPOW)
-    Status:             bypassed new
-    Residual error from previous boot.
-    EPOW Sensor Value:  00000002
-    EPOW warning due to loss of redundancy.
-    EPOW general power fault.
+to receive the following updates:
 
-I've no clue why firmware thought it was OK to report this
-during one of the earliest calls to RTAS; I'm still investiigating
-that.
+ drivers/ata/pata_ixp4xx_cf.c |    3 +++
+ drivers/ata/pata_marvell.c   |    4 ++--
+ drivers/ata/sata_mv.c        |   26 +++++++++++++++++++-------
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
---linas
+Jiri Slaby (1):
+      Ata: pata_marvell, use ioread* for iomap-ped memory
+
+Olof Johansson (1):
+      libata: fix for sata_mv >64KB DMA segments
+
+Scott Thompson (1):
+      drivers/ata/pata_ixp4xx_cf.c: ioremap return code check
+
+diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
+index 4ca7fd6..5dea358 100644
+--- a/drivers/ata/pata_ixp4xx_cf.c
++++ b/drivers/ata/pata_ixp4xx_cf.c
+@@ -189,6 +189,9 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
+ 	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
+ 	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
+ 
++	if (!data->cs0 || !data->cs1)
++		return -ENOMEM;
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq)
+ 		set_irq_type(irq, IRQT_RISING);
+diff --git a/drivers/ata/pata_marvell.c b/drivers/ata/pata_marvell.c
+index ae206f3..b45506f 100644
+--- a/drivers/ata/pata_marvell.c
++++ b/drivers/ata/pata_marvell.c
+@@ -44,10 +44,10 @@ static int marvell_pre_reset(struct ata_port *ap, unsigned long deadline)
+ 		return -ENOMEM;
+ 	printk("BAR5:");
+ 	for(i = 0; i <= 0x0F; i++)
+-		printk("%02X:%02X ", i, readb(barp + i));
++		printk("%02X:%02X ", i, ioread8(barp + i));
+ 	printk("\n");
+ 
+-	devices = readl(barp + 0x0C);
++	devices = ioread32(barp + 0x0C);
+ 	pci_iounmap(pdev, barp);
+ 
+ 	if ((pdev->device == 0x6145) && (ap->port_no == 0) &&
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index 11bf6c7..1a82e22 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -1139,15 +1139,27 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
+ 		dma_addr_t addr = sg_dma_address(sg);
+ 		u32 sg_len = sg_dma_len(sg);
+ 
+-		mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
+-		mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
+-		mv_sg->flags_size = cpu_to_le32(sg_len & 0xffff);
++		while (sg_len) {
++			u32 offset = addr & 0xffff;
++			u32 len = sg_len;
+ 
+-		if (ata_sg_is_last(sg, qc))
+-			mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
++			if ((offset + sg_len > 0x10000))
++				len = 0x10000 - offset;
++
++			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
++			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
++			mv_sg->flags_size = cpu_to_le32(len);
++
++			sg_len -= len;
++			addr += len;
++
++			if (!sg_len && ata_sg_is_last(sg, qc))
++				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
++
++			mv_sg++;
++			n_sg++;
++		}
+ 
+-		mv_sg++;
+-		n_sg++;
+ 	}
+ 
+ 	return n_sg;
