@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXJCOEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXJCOJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbXJCOEh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 10:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbXJCOE2
+	id S1757205AbXJCOJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 10:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXJCOJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 10:04:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41388 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754879AbXJCOE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 10:04:27 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
-In-Reply-To: <1191418525.4093.87.camel@lov.localdomain>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
-	 <1191325226.13204.63.camel@twins>
-	 <200710022205.05295.nickpiggin@yahoo.com.au>
-	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
-	 <1191418525.4093.87.camel@lov.localdomain>
-Content-Type: text/plain
-Date: Wed, 03 Oct 2007 15:58:43 +0200
-Message-Id: <1191419923.5599.5.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Oct 2007 10:09:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38622 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753784AbXJCOJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 10:09:03 -0400
+Date: Wed, 3 Oct 2007 16:08:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
+	2.6.23-rc9 and a heads-up for the 2.6.24 series..)
+Message-ID: <20071003140842.GA8837@elte.hu>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu> <20071003133422.GI8181@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071003133422.GI8181@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Al Viro <viro@ftp.linux.org.uk> wrote:
 
-On Wed, 2007-10-03 at 15:35 +0200, Kay Sievers wrote:
-> On Wed, 2007-10-03 at 12:37 +0200, Peter Zijlstra wrote:
-> > On Wed, 2007-10-03 at 12:15 +0200, Kay Sievers wrote:
-> > > On Tue, 2007-10-02 at 22:05 +1000, Nick Piggin wrote:
-> > > > On Tuesday 02 October 2007 21:40, Peter Zijlstra wrote:
-> > > > > On Tue, 2007-10-02 at 13:21 +0200, Kay Sievers wrote:
-> > > > 
-> > > > > > How about adding this information to the tree then, instead of
-> > > > > > creating a new top-level hack, just because something that you think
-> > > > > > you need doesn't exist.
-> > > > >
-> > > > > So you suggest adding all the various network filesystems in there
-> > > > > (where?), and adding the concept of a BDI, and ensuring all are properly
-> > > > > linked together - somehow. Feel free to do so.
-> > > > 
-> > > > Would something fit better under /sys/fs/? At least filesystems are
-> > > > already an existing concept to userspace.
-> > > 
-> > > Sounds at least less messy than an new top-level directory.
-> > > 
-> > > But again, if it's "device" releated, like the name suggests, it should
-> > > be reachable from the device tree.
-> > > Which userspace tool is supposed to set these values, and at what time?
-> > > An init-script, something at device discovery/setup? If that is is ever
-> > > going to be used in a hotplug setup, you really don't want to go look
-> > > for directories with magic device names in another disconnected tree.
+> On Wed, Oct 03, 2007 at 10:46:07AM +0200, Ingo Molnar wrote:
 > > 
-> > Filesystems don't really map to BDIs either. One can have multiple FSs
-> > per BDI.
+> > hm, i just triggered the procfs crash below with -rc9 on a testbox. 
+> > Config attached. It's easy to reproduce it via 'service sshd restart'. 
+> > The crash site is:
 > > 
-> > 'Normally' a BDI relates to a block device, but networked (and other
-> > non-block device) filesystems have to create a BDI too. So these need to
-> > be represented some place as well.
+> >  (gdb) list *0xc017599d
+> >  0xc017599d is in seq_path (fs/seq_file.c:354).
+> >  349             if (m->count < m->size) {
+> >  350                     char *s = m->buf + m->count;
+> >  351                     char *p = d_path(dentry, mnt, s, m->size - m->count);
+> >  352                     if (!IS_ERR(p)) {
+> >  353                             while (s <= p) {
+> >  354                                     char c = *p++;
+> >  355                                     if (!c) {
+> >  356                                             p = m->buf + m->count;
+> >  357                                             m->count = s - m->buf;
+> >  358                                             return s - p;
+> >  (gdb)
 > > 
-> > The typical usage would indeed be init scripts. The typical example
-> > would be setting the read-ahead window. Currently that cannot be done
-> > for NFS mounts.
+> > any ideas? Fortunately i was able to do an strace of the incident:
 > 
-> What kind of context for a non-block based fs will get the bdi controls
-> added? Is there a generic place, or does every non-block based
-> filesystem needs to be adapted individually to use it?
+> Charming...  So we get d_path() either returning junk or we get 
+> something that isn't NUL-terminated.  Which one it is?  I.e. what does 
+> p look like and what's in s?
 
-Not sure what the other non-block FSs do, but NFS puts it in its
-superblock. So that would roughly be per mount.
+could be use-after-free as well, as CONFIG_PAGEALLOC was enabled.
 
-
+	Ingo
