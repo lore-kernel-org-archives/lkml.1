@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXJCMUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbXJCMVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbXJCMUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbXJCMUZ
+	id S1758599AbXJCMVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXJCMVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:20:25 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:58767 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756232AbXJCMUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:20:24 -0400
-Date: Wed, 3 Oct 2007 14:20:07 +0200 (MEST)
-Message-Id: <200710031220.l93CK75T028343@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org, shiwh@cn.fujitsu.com
-Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound occurs
+	Wed, 3 Oct 2007 08:21:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59263 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755275AbXJCMVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:21:08 -0400
+Date: Wed, 3 Oct 2007 13:25:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Attila Kinali <attila@kinali.ch>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] Add manufacturer and card id of teltonica pcmcia modems
+Message-ID: <20071003132542.149c5f23@the-village.bc.nu>
+In-Reply-To: <20071003095844.b12a44f4.attila@kinali.ch>
+References: <20071003095844.b12a44f4.attila@kinali.ch>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Oct 2007 17:06:24 +0900, Shi Weihua wrote:
-> Fixing alternative signal stack wraparound.
-> 
-> If a process uses alternative signal stack by using sigaltstack()
-> and that stack overflow, stack wraparound occurs.
-> This patch checks whether the signal frame is on the alternative
-> stack. If the frame is not on there, kill a signal SIGSEGV to the process forcedly
-> then the process will be terminated.
-> 
-> This patch is for i386,version is 2.6.23-rc8.
-> 
-> Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com>
-> 
-> diff -pur linux-2.6.23-rc8.orig/arch/i386/kernel/signal.c linux-2.6.23-rc8/arch/i386/kernel/signal.c
-> --- linux-2.6.23-rc8.orig/arch/i386/kernel/signal.c	2007-09-26 09:44:08.000000000 +0900
-> +++ linux-2.6.23-rc8/arch/i386/kernel/signal.c	2007-09-26 13:14:25.000000000 +0900
-> @@ -332,6 +332,10 @@ static int setup_frame(int sig, struct k
-> 
->   	frame = get_sigframe(ka, regs, sizeof(*frame));
-> 
-> +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
-> +		!sas_ss_flags((unsigned long)frame))
-> +		goto give_sigsegv;
-> +
->   	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
->   		goto give_sigsegv;
-> 
-> @@ -425,6 +429,10 @@ static int setup_rt_frame(int sig, struc
-> 
->   	frame = get_sigframe(ka, regs, sizeof(*frame));
-> 
-> +	if ((ka->sa.sa_flags & SA_ONSTACK) &&
-> +		!sas_ss_flags((unsigned long)frame))
-> +		goto give_sigsegv;
-> +
->   	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
->   		goto give_sigsegv;
+On Wed, 3 Oct 2007 09:58:44 +0200
+Attila Kinali <attila@kinali.ch> wrote:
 
-Your patch description is a little terse. What you do is that
-after the kernel has decided where to put the signal frame,
-you add a check that the base of the frame still lies in the
-altstack range if altstack delivery is requested for the signal,
-and if it doesn't a hard error is forced.
+> Hi,
+> 
+> This patch adds the manufacturer and card id of teltonica
+> pcmcia modems to serial_cs.c
+> 
+> Signed-off-by: Attila Kinali <attila@kinali.ch>
 
-The coding of that logic is fine.
+Acked-by: Alan Cox <alan@redhat.com>
 
-What I don't agree with is the logic itself:
-- You only catch altstack overflow caused by the kernel pushing
-  a sigframe. You don't catch overflow caused by the user-space
-  signal handler pushing its own stack frame after the sigframe.
-- SUSv3 specifies the effect of altstack overflow as "undefined".
-- The overflow problem can be solved in user-space: allocate the
-  altstack with mmap(), then mprotect() the lowest page to prevent
-  accesses to it. Any overflow into it, by the kernel's signal
-  delivery code or by the user-space signal handler, will be caught.
-
-So this patch gets a NAK from me.
-
-/Mikael
