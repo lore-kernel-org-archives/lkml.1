@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXJCEzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXJCE7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXJCEzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 00:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXJCEzj
+	id S1754123AbXJCE7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 00:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXJCE7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 00:55:39 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39133 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbXJCEzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 00:55:38 -0400
-Date: Wed, 3 Oct 2007 13:57:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Subject: Re: [Question] How to represent SYSTEM_RAM in kerenel/resouce.c
-Message-Id: <20071003135702.bdcf3f1b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071003015242.GC12049@parisc-linux.org>
-References: <20071003103136.addbe839.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071003015242.GC12049@parisc-linux.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Oct 2007 00:59:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60246 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751150AbXJCE67 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 00:58:59 -0400
+Message-ID: <47032186.40304@pobox.com>
+Date: Wed, 03 Oct 2007 00:58:46 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: pomac@vapor.com, Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: jumbo frame regression fix
+References: <1191372129.26233.12.camel@localhost>	<20071002180209.47c350a3@freepuppy.rosehill>	<4702EB4A.4000208@pobox.com> <20071002215316.0faa7676@freepuppy.rosehill>
+In-Reply-To: <20071002215316.0faa7676@freepuppy.rosehill>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007 19:52:42 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Wed, Oct 03, 2007 at 10:31:36AM +0900, KAMEZAWA Hiroyuki wrote:
-> > i386 and x86_64 registers System RAM as IORESOUCE_MEM | IORESOUCE_BUSY.
-> > ia64 registers System RAM as IORESOURCE_MEM.
-> > 
-> > Which is better ?
+Stephen Hemminger wrote:
+> On Tue, 02 Oct 2007 21:07:22 -0400
+> Jeff Garzik <jgarzik@pobox.com> wrote:
 > 
-> Should probably be BUSY.  Non-BUSY regions can have io resources
-> requested underneath them, but you wouldn't want a PCI device to be
-> assigned an address which overlaps with physical memory.
+>> Stephen Hemminger wrote:
+>>> Remove unneeded check that caused problems with jumbo frame sizes.
+>>> The check was recently added and is wrong.
+>>> When using jumbo frames the sky2 driver does fragmentation, so
+>>> rx_data_size is less than mtu.
+>>>
+>>> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+>>>
+>>> --- a/drivers/net/sky2.c	2007-10-02 17:56:31.000000000 -0700
+>>> +++ b/drivers/net/sky2.c	2007-10-02 17:58:56.000000000 -0700
+>>> @@ -2163,9 +2163,6 @@ static struct sk_buff *sky2_receive(stru
+>>>  	sky2->rx_next = (sky2->rx_next + 1) % sky2->rx_pending;
+>>>  	prefetch(sky2->rx_ring + sky2->rx_next);
+>>>  
+>>> -	if (length < ETH_ZLEN || length > sky2->rx_data_size)
+>>> -		goto len_error;
+>>> -
+>> 2.6.23?  2.6.24?  enquiring minds want to know...
+> 
+> 2.6.23, since it is a regression
 
-Thank you.
-It seems that I'll have to try modifing ia64 and memory hotplug in
-the next -mm. 
+You can have regressions in behavior in net-2.6.24.git, too.  _Please_ 
+be specific about where you want your patches to go.  Thanks.
 
-Regards,
--Kame
+	Jeff
+
+
 
