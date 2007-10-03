@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXJCJos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXJCJsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbXJCJos (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 05:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXJCJok
+	id S1756818AbXJCJsc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 05:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXJCJsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 05:44:40 -0400
-Received: from gw-lon-cluster.cmcnet.net ([195.20.122.6]:25433 "EHLO
-	emearelay1.cmcmarkets.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751301AbXJCJok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 05:44:40 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 05:44:39 EDT
-Subject: Re: [PATCH 5/5] lguest: loading bzImage directly
-From: Chris Malley <mail@chrismalley.co.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, lguest <lguest@ozlabs.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1191368457.17826.53.camel@localhost.localdomain>
-References: <1191368052.17826.40.camel@localhost.localdomain>
-	 <1191368106.17826.43.camel@localhost.localdomain>
-	 <1191368154.17826.44.camel@localhost.localdomain>
-	 <1191368217.17826.47.camel@localhost.localdomain>
-	 <1191368399.17826.51.camel@localhost.localdomain>
-	 <1191368457.17826.53.camel@localhost.localdomain>
-Date: Wed, 03 Oct 2007 10:37:01 +0100
-Message-Id: <1191404221.17247.15.camel@feisty>
+	Wed, 3 Oct 2007 05:48:25 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:36196 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752026AbXJCJsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 05:48:24 -0400
+Date: Wed, 3 Oct 2007 11:50:57 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
+Subject: Re: Network slowdown due to CFS
+Message-ID: <20071003095057.GD1726@ff.dom.local>
+References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-MIMETrack: Itemize by SMTP Server on smtp3/CMC(Release 7.0.2FP1|January 10, 2007) at
- 10/03/2007 10:39:30 AM,
-	Serialize by Router on emearelay1/UK/CMC(Release 7.0.2FP1|January 10, 2007) at
- 03/10/2007 10:44:40 AM,
-	Serialize complete at 03/10/2007 10:44:40 AM
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071003091058.GB7802@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys
-
-Would it not be clearer to #include <asm/bootparam.h> and use 
-the relevant named members of struct setup_header / struct boot_params
-rather than the hard-coded values 0x202, 0x1F1, 0x214 ?
-
---
-Chris
-
-
-On Wed, 2007-10-03 at 09:40 +1000, Rusty Russell wrote:
-[snip]
-> +	u8 hdr[1024];
-> +	int r;
-> +	/* Modern bzImages get loaded at 1M. */
-> +	void *p = from_guest_phys(0x100000);
-> +
-> +	/* Go back to the start of the file and read the header.  It should be
-> +	 * a Linux boot header (see Documentation/i386/boot.txt) */
-> +	lseek(fd, 0, SEEK_SET);
-> +	read(fd, hdr, sizeof(hdr));
-> +
-> +	/* At offset 0x202, we expect the magic "HdrS" */
-> +	if (memcmp(hdr + 0x202, "HdrS", 4) != 0)
-> +		errx(1, "This doesn't look like a bzImage to me");
-> +
-> +	/* The byte at 0x1F1 tells us how many extra sectors of
-> +	 * header: skip over them all. */
-> +	lseek(fd, (unsigned long)(hdr[0x1F1]+1) * 512, SEEK_SET);
-> +
-> +	/* Now read everything into memory. in nice big chunks. */
-> +	while ((r = read(fd, p, 65536)) > 0)
-> +		p += r;
-> +
-> +	/* Finally, 0x214 tells us where to start the kernel. */
-> +	return *(unsigned long *)&hdr[0x214];
->  }
->  
->  /*L:140 Loading the kernel is easy when it's a "vmlinux", but most kernels
+On Wed, Oct 03, 2007 at 11:10:58AM +0200, Ingo Molnar wrote:
 > 
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > On Wed, Oct 03, 2007 at 10:16:13AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> > > 
+> > > > > firstly, there's no notion of "timeslices" in CFS. (in CFS tasks 
+> > > > > "earn" a right to the CPU, and that "right" is not sliced in the 
+> > > > > traditional sense) But we tried a conceptually similar thing [...]
+> > > > 
+> > > > >From kernel/sched_fair.c:
+> > > > 
+> > > > "/*
+> > > >  * Targeted preemption latency for CPU-bound tasks:
+> > > >  * (default: 20ms, units: nanoseconds)
+> > > >  *
+> > > >  * NOTE: this latency value is not the same as the concept of
+> > > >  * 'timeslice length' - timeslices in CFS are of variable length.
+> > > >  * (to see the precise effective timeslice length of your workload,
+> > > >  *  run vmstat and monitor the context-switches field)
+> > > > ..."
+> > > > 
+> > > > So, no notion of something, which are(!) of variable length, and which 
+> > > > precise effective timeslice lenght can be seen in nanoseconds? (But 
+> > > > not timeslice!)
+> > > 
+> > > You should really read and understand the code you are arguing about :-/
+> > 
+> > Maybe you could help me with better comments? IMHO, it would be enough 
+> > to warn new timeslices have different meaning, or stop to use this 
+> > term at all. [...]
+> 
+> i'm curious, what better do you need than the very detailed comment 
+> quoted above? Which bit of "this latency value is not the same as the 
+> concept of timeslice length" is difficult to understand? The timeslices 
+> of tasks (i.e. the time they spend on a CPU without scheduling away) is 
+> _not_ maintained directly in CFS as a per-task variable that can be 
+> "cleared", it's not the metric that drives scheduling. Yes, of course 
+> CFS too "slices up CPU time", but those slices are not the per-task 
+> variables of traditional schedulers and cannot be 'cleared'.
 
+It's not about this comment alone, but this comment plus "no notion"
+comment, which appears in sched-design-CFS.txt too.
 
+> 
+> > [...] (Btw, in -rc8-mm2 I see new sched_slice() function which seems 
+> > to return... time.)
+> 
+> wrong again. That is a function, not a variable to be cleared. (Anyway, 
+> the noise/signal ratio is getting increasingly high in this thread with 
+> no progress in sight, so i cannot guarantee any further replies - 
+> possibly others will pick up the tab and explain/discuss any other 
+> questions that might come up. Patches are welcome of course.)
+
+I can't see anything about clearing. I think, this was about charging,
+which should change the key enough, to move a task to, maybe, a better
+place in a que (tree) than with current ways.
+
+Jarek P.
+
+PS: Don't you think that a nice argue with some celebrity, like Ingo
+Molnar himself, is by far more interesting than those dull patches?
