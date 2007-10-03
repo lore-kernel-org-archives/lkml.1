@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXJCMMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbXJCMOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbXJCMMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 08:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJCMMP
+	id S1758191AbXJCMOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbXJCMOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 08:12:15 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:38176 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253AbXJCMMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 08:12:14 -0400
-Date: Wed, 3 Oct 2007 13:12:11 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [COMPAT] Add compat_merge64 helper
-Message-ID: <20071003121211.GA14628@linux-mips.org>
-References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca> <20070929094852.GA7715@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
+	Wed, 3 Oct 2007 08:14:14 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:47786 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755788AbXJCMOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 08:14:14 -0400
+Date: Wed, 3 Oct 2007 14:16:46 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
+Subject: Re: yield
+Message-ID: <20071003121646.GB3828@ff.dom.local>
+References: <20071002060607.GA18588@elte.hu> <20071003080224.GB1726@ff.dom.local> <20071003081613.GA29904@elte.hu> <20071003085636.GC1726@ff.dom.local> <20071003091058.GB7802@elte.hu> <20071003095057.GD1726@ff.dom.local> <b647ffbd0710030355p116f9b36vae3f24e652921de6@mail.gmail.com> <20071003114027.GA3828@ff.dom.local> <20071003115646.GA25576@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070929094852.GA7715@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071003115646.GA25576@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 11:48:52AM +0200, Heiko Carstens wrote:
-
-> > +static inline u64 compat_merge64(u32 left, u32 right)
-> > +{
-> > +#if defined(__BIG_ENDIAN)
-> > +	return ((u64)left << 32) | right;
-> > +#else /* defined (__LITTLE_ENDIAN) */
+On Wed, Oct 03, 2007 at 01:56:46PM +0200, Ingo Molnar wrote:
 > 
-> Could you change that to an #elif please and #error out if none is defined?
-> Should safe us from subtle bugs caused by missing includes.
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > On Wed, Oct 03, 2007 at 12:55:34PM +0200, Dmitry Adamushko wrote:
+> > ...
+> > > just a quick patch, not tested and I've not evaluated all possible
+> > > implications yet.
+> > > But someone might give it a try with his/(her -- are even more
+> > > welcomed :-) favourite sched_yield() load.
+> > 
+> > Of course, after some evaluation by yourself and Ingo the most 
+> > interesting should be Martin's Michlmayr testing, so I hope you'll Cc 
+> > him too?!
+> 
+> My current take on this: queue the current task right to the next 
+> position in the tree (this is what this patch achieves in essence) was 
+> one of the yield implementations we already tried in CFS but it didnt 
+> meet the expectations of some apps. So i can only repeat my argument: 
+> this is not something that can be "solved" in the way you imagine and 
+> your arguments just reiterate the path that CFS has already taken in the 
+> past. So please do not expect _us_ to go out and pester people. If 
+> people feel so inclined, they are of course welcome to test out various 
+> approaches. (they might as well try the original yield-granularity patch 
+> which also makes the amount of "delay" tunable, so the ideal amount of 
+> delay can be figured out. And of course they should also try the 
+> existing yield flag.)
 
-This funny macro gets away without any extra headers or #ifdef messiness:
+I'm terribly sorry! Of course, the last thing I would like is to
+pester anybody. I simply wasn't sure you've told about the same
+idea. And of course, there is no reason to go back to something
+checked before.
 
-#define merge_64(r1,r2)							\
-({									\
-	union {								\
-		int __words[2];						\
-		long long	__dword;				\
-	} __u = {							\
-		.__words = { (r1), (r2) }				\
-	};								\
-									\
-	__u.__dword;							\
-})
-
-Thanks to gcc doing bogus sign and zero extensions it compiles into
-slightly larger code for MIPS but that may not be an issue on other
-architectures.
-
-   Ralf
+Thanks,
+Jarek P.
