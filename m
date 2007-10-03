@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbXJCFNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbXJCFTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbXJCFNP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 01:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXJCFNA
+	id S1755486AbXJCFTM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 01:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXJCFS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 01:13:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34753 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbXJCFM7 (ORCPT
+	Wed, 3 Oct 2007 01:18:58 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:20303 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbXJCFS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 01:12:59 -0400
-Date: Wed, 3 Oct 2007 06:12:54 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, paul.moore@hp.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071003051254.GH8181@ftp.linux.org.uk>
-References: <47031E76.6020801@schaufler-ca.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 3 Oct 2007 01:18:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=O4YSLGKOhss61vr9WQ91atydVJHe/M1ERoKZIibt6qaUYajXXcwRHU0v6ss3Ub37KD4qD0bjKE18g4eNIRwj4I1BfFsmKuSzKBIAE+tHAdEzrPsqYzPiJO0+WOrTInx9s2hY2BDODsTytoJbB4kIW81gOffmo1NAeRGjGjGki/M=
+Message-ID: <84144f020710022218x147ffc74y477c0a1be3e60d66@mail.gmail.com>
+Date: Wed, 3 Oct 2007 08:18:55 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Neil Romig" <neil@romig.demon.co.uk>
+Subject: Re: File corruption when using kernels 2.6.18+
+Cc: linux-kernel@vger.kernel.org, hyoshiok@miraclelinux.com
+In-Reply-To: <4702B28F.5050404@romig.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47031E76.6020801@schaufler-ca.com>
-User-Agent: Mutt/1.4.1i
+References: <46FFC371.9040805@romig.demon.co.uk>
+	 <84144f020709300929t6aafd98at23d810d4460e898a@mail.gmail.com>
+	 <4702B28F.5050404@romig.demon.co.uk>
+X-Google-Sender-Auth: aa26aeb1dc731981
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 09:45:42PM -0700, Casey Schaufler wrote:
-> 
-> From: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> Smack is the Simplified Mandatory Access Control Kernel.
-> 
-> Smack implements mandatory access control (MAC) using labels
-> attached to tasks and data containers, including files, SVIPC,
-> and other tasks. Smack is a kernel based scheme that requires
-> an absolute minimum of application support and a very small
-> amount of configuration data.
+Hi Neil,
 
-I _really_ don't like what you are doing with these symlinks.
-For one thing, you have no exclusion between reading the list
-entries and modifying them.  For another...  WTF is filesystem
-making assumptions about the locations where the things are
-mounted?  Hell, even if you override your tmp symlink, what
-happens if we want it in two chroot jails with different layouts?
+On 10/3/07, Neil Romig <neil@romig.demon.co.uk> wrote:
+> Thanks for your help on this. I have narrowed it down to commit
+> "c22ce143d15eb288543fe9873e1c5ac1c01b69a1 x86: cache pollution aware
+> __copy_from_user_ll()". This fits with the errors I'm getting, so now I need
+> to find out if I can safely ignore this patch, or does it have to be modified?
+> This is my first Linux bug in many years of simply using it, so I'm a little
+> nervous!
 
-I really don't get it; why not simply have something like
-/smack/tmp.link resolve to tmp/<label> and have userland bind or mount
-whatever you bloody like on /smack/tmp?  No problems with absolute
-paths, can be used in chroot jails with whatever layouts, ditto for
-namespaces, etc. and both symlink and directory get created at
-the same time (by one name).  Hell, if you keep a reference
-to dentry of directory in the data associated with symlink,
-you can simply switch nd->dentry to that, drop the old one
-and grab the reference to page containing label and return
-it via nd_set_link().  No need to play with allocations, strcat,
-yadda, yadda.  readlink() can stuff the ->d_name of the same
-dentry plus / plus label directly into user buffer; again, no
-allocations needed and works fine anywhere.
+Just to make sure, if you disable CONFIG_X86_INTEL_USERCOPY, the
+corruption goes away?
