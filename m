@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXJCR6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXJCR7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbXJCR6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXJCR6X
+	id S1758703AbXJCR7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757169AbXJCR7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:58:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52377 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755947AbXJCR6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:58:23 -0400
-Date: Wed, 3 Oct 2007 10:58:17 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
-       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-Message-Id: <20071003105817.7adf6516.pj@sgi.com>
-In-Reply-To: <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Oct 2007 13:59:00 -0400
+Received: from mail.tmr.com ([64.65.253.246]:38382 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757098AbXJCR67 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:58:59 -0400
+Message-ID: <4703D9B6.109@tmr.com>
+Date: Wed, 03 Oct 2007 14:04:38 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+Newsgroups: gmane.linux.network,gmane.linux.kernel
+To: pomac@vapor.com
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: jumbo frame regression fix
+References: <1191372129.26233.12.camel@localhost>	 <20071002180209.47c350a3@freepuppy.rosehill> <1191375274.26233.17.camel@localhost>
+In-Reply-To: <1191375274.26233.17.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> > The code in kernel/cgroup.c attach_task() which skips the
-> > attachment of a task to the group it is already in has to be
-> > removed.  Cpusets depends on reattaching a task to its current
-> > cpuset, in order to trigger updating the cpus_allowed mask in the
-> > task struct.
+Ian Kumlien wrote:
+> On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
+>> Remove unneeded check that caused problems with jumbo frame sizes.
+>> The check was recently added and is wrong.
+>> When using jumbo frames the sky2 driver does fragmentation, so
+>> rx_data_size is less than mtu.
 > 
-> Can you explain a bit more about why this is needed? (i.e. specific
-> scenarios where cpusets will break without this change).
+> Confirmed working.
 > 
-> What triggers the reattach in normal use? Something from userspace?
+> Now running with 9k mtu with no errors, =)
 
-Yes, something in user space has to do it.  It's part of the
-kernel-user cpuset API.  If you change a cpuset's 'cpus', then
-you have to rewrite each pid in its 'tasks' file back to that
-'tasks' file in order to get that 'cpus' change to be applied
-to the task struct cpus_allowed of each task, and thereby visible
-to the scheduler.
+Have you verified that you are actually getting jumbo packets out of the 
+NIC? I had one machine which did standard packets silently using sky2 
+and jumbo using sk98lin. I was looking for something else with tcpdump 
+and got one of those WTF moments when I saw all the tiny packets.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
