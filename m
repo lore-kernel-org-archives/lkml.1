@@ -1,136 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbXJCU35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXJCUb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758302AbXJCU35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXJCU3s
+	id S1758544AbXJCUb7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXJCUbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:29:48 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:59913 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbXJCU3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:29:47 -0400
-Subject: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
+	Wed, 3 Oct 2007 16:31:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:35477 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755565AbXJCUbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 16:31:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=kFiiUg7FJtwTg9jJdNCKm3vXKy5epeGWE4Bmy+ATqvlcCKn+tFflgZg5kBRlgUIeG
+	qZD83gfYubBI4pJsmv2uQ==
+Message-ID: <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+Date: Wed, 3 Oct 2007 13:31:17 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+In-Reply-To: <20071003131632.fed4b848.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Oct 2007 11:46:51 -0400
-Message-Id: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 03 Oct 2007 20:29:23.0516 (UTC) FILETIME=[15C48FC0:01C805FC]
+Content-Disposition: inline
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	 <20071003105817.7adf6516.pj@sgi.com>
+	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	 <20071003131632.fed4b848.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver will skip physical devices scan for the first time if the fast_load is set. This is to reduce time for loading driver.
+On 10/3/07, Paul Jackson <pj@sgi.com> wrote:
+>
+> So far as I can tell, this patch just removes a minor optimization,
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+It's not minor for any subsystem that has a non-trivial attach() operation.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
- 1 files changed, 55 insertions(+), 14 deletions(-)
+>
+> Any further suggestions, or embarrassing (;) questions?
+>
 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:03:59.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 00:12:54.000000000 -0700
-@@ -46,6 +46,22 @@
- #include <scsi/scsi_host.h>
- #include "megaraid_sas.h"
- 
-+/*
-+ * Module parameters
-+ */
-+
-+/*
-+ * Fast driver load option, skip scanning for physical devices during
-+ * load.  This would result in physical devices being skipped during
-+ * driver load time. These can be later added though,
-+ * using /proc/scsi/scsi
-+ */
-+static unsigned int fast_load;
-+module_param_named(fast_load, fast_load, int, 0);
-+MODULE_PARM_DESC(fast_load,
-+	"megasas: Faster loading of the driver, skips physical devices! "\
-+	"(default = 0)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -1094,6 +1110,44 @@ megasas_service_aen(struct megasas_insta
- 	megasas_return_cmd(instance, cmd);
- }
- 
-+static struct megasas_instance *megasas_lookup_instance(u16 host_no)
-+{
-+	int i;
-+
-+	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-+		if ((megasas_mgmt_info.instance[i]) &&
-+			(megasas_mgmt_info.instance[i]->host->host_no
-+			== host_no))
-+			return megasas_mgmt_info.instance[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+static int megasas_slave_alloc(struct scsi_device *sdev)
-+{
-+	struct megasas_instance *instance;
-+	int tmp_fastload = fast_load;
-+
-+	instance = megasas_lookup_instance(sdev->host->host_no);
-+
-+	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
-+		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
-+			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
-+
-+		/*
-+		 * If fast load option was set and scan for last device is
-+		 * over, reset the fast_load flag so that during a possible
-+		 * next scan, devices can be made available
-+		 */
-+			fast_load = 0;
-+		}
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Scsi host template for megaraid_sas driver
-  */
-@@ -1103,6 +1157,7 @@ static struct scsi_host_template megasas
- 	.name = "LSI Logic SAS based MegaRAID driver",
- 	.proc_name = "megaraid_sas",
- 	.slave_configure = megasas_slave_configure,
-+	.slave_alloc = megasas_slave_alloc,
- 	.queuecommand = megasas_queue_command,
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
-@@ -2961,20 +3016,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 	return error;
- }
- 
--static struct megasas_instance *megasas_lookup_instance(u16 host_no)
--{
--	int i;
--
--	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
--
--		if ((megasas_mgmt_info.instance[i]) &&
--		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
--			return megasas_mgmt_info.instance[i];
--	}
--
--	return NULL;
--}
--
- static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
- {
- 	struct megasas_iocpacket __user *user_ioc =
+What was wrong with my suggestion from a couple of emails back? Adding
+the following in cpuset_attach():
 
+struct cgroup_iter it;
+struct task_struct *p;
+while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+       set_cpus_allowed(p, cs->cpus_allowed);
+}
+cgroup_iter_end(cs->css.cgroup, &it);
 
+Paul
