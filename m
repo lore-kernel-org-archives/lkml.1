@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbXJCTvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbXJCTy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbXJCTvb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 15:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbXJCTvL
+	id S1756769AbXJCTy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 15:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXJCTyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 15:51:11 -0400
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:45614 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753559AbXJCTvK (ORCPT
+	Wed, 3 Oct 2007 15:54:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58168 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751593AbXJCTyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 15:51:10 -0400
-X-YMail-OSG: 7zbMo5QVM1kRBrsHgUsdYt79rMXZgZ0d6uenNYz8gRYPMAeNK4OKcojwnoL4MbtjM3bebS1_YA--
-X-RocketYMMF: rancidfat
-Date: Wed, 3 Oct 2007 12:51:08 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-To: Al Viro <viro@ftp.linux.org.uk>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, paul.moore@hp.com
-In-Reply-To: <20071003175237.GK8181@ftp.linux.org.uk>
+	Wed, 3 Oct 2007 15:54:18 -0400
+Date: Wed, 3 Oct 2007 12:54:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Neil Romig <neil@romig.demon.co.uk>, linux-kernel@vger.kernel.org,
+       hyoshiok@miraclelinux.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: File corruption when using kernels 2.6.18+
+In-Reply-To: <84144f020710031235r29986ceaj3260e8271eee6ddb@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0710031247030.3579@woody.linux-foundation.org>
+References: <46FFC371.9040805@romig.demon.co.uk> 
+ <84144f020709300929t6aafd98at23d810d4460e898a@mail.gmail.com> 
+ <4702B28F.5050404@romig.demon.co.uk>  <84144f020710022218x147ffc74y477c0a1be3e60d66@mail.gmail.com>
+  <4703E287.3070705@romig.demon.co.uk>  <84144f020710031148i346b393bm528fc150fedff00f@mail.gmail.com>
+  <alpine.LFD.0.999.0710031209450.3579@woody.linux-foundation.org>
+ <84144f020710031235r29986ceaj3260e8271eee6ddb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <975177.66265.qm@web36601.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Al Viro <viro@ftp.linux.org.uk> wrote:
 
-> On Wed, Oct 03, 2007 at 10:21:08AM -0700, Casey Schaufler wrote:
-> > > what
-> > > happens if we want it in two chroot jails with different layouts?
-> > 
-> > As you can only have /smack mounted once, this isn't an issue,
-> > but it does present an interesting use case that brings the one
-> > mount limitation into question. I'll add addressing this to the
-> > short term todo list.
+On Wed, 3 Oct 2007, Pekka Enberg wrote:
 > 
-> Of course you can mount it more than once.  Just bind the sucker and you
-> are done.
->  
-> > > I really don't get it; why not simply have something like
-> > > /smack/tmp.link resolve to tmp/<label> and have userland bind or mount
-> > > whatever you bloody like on /smack/tmp?
-> > 
-> > Because you throw "simple" out the window when you require userland
-> > assistance to perform this function.
+> On 10/3/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > I would bet that the reason the intel-optimized memcpy triggers this is
+> > that the non-temporal stores just means that you go out directly on the
+> > bus, and it probably just shows a weakness in the chipset or bus that
+> > doesn't show with the normal cacheline accesses.
 > 
-> Any more than having /tmp replaced with a symlink?
+> But that should show up with memtest too, no?
 
-Yes. By the way, there's nothing that really requires that you
-use a /smack symlink if you don't want to. /tmp can still be a
-real directory, a mount point, a symlink to /var/tmp, or whatever
-else you want it to be if that suits your needs better. For the
-simplest scenarios /tmp -> /smack/tmp -> /moldy/<label> has every
-other scheme I've seen throughly beaten.
+Not unless memtest uses non-temporal stores with the same (or similar) 
+access patterns.
 
-> > I'm having some trouble seeing how the 60 lines of code in
-> > smackfs dealing with symlinks would be improved by your suggestions.
-> > I certainly don't see how requiring userland intervention would
-> > do anything but make it bigger and less reliable.
-> 
-> _What_ userland intervention?  Mounting stuff under /smack/tmp and not under
-> your /moldy?
+The thing is, the CPU cache hides a *lot* of activity from the chipset, 
+and changes the access patterns radically. 
 
-Who said anything about mounting under /moldy? I never did.
+With normal cached accesses, you'd normally see just the "fill cacheline" 
+and "write out cacheline" pattern. With movnt, you'd see non-cacheline 
+accesses to memory. If the chipset was tested under mostly normal loads, 
+the movnt cases have been getting a lot less coverage.
 
-> Having /tmp replaced with symlink to /smack/tmp.link instead
-> of replacing it with a symlink to /smack/tmp?
-> 
-> Absolute paths in that kind of thing are _wrong_.  You know where the things
-> are on your fs.  You don't know if anything else will be visible, let alone
-> whether it will be at the same place in all chroots or namespaces.  And no,
-> you _can't_ make sure that fs is visible only in one place.  No fs can or
-> has any business even trying.
+Now, I do agree that it certainly *can* be a CPU bug too.  I doubt it, 
+though. 
 
-Is the objection that there is a default value coded in?
+I'd check the power supply (brownouts cause random corruption, and it 
+might have a "peak power pattern" thing to it), and it's worth re-seating 
+any DIMM's etc. And it's definitely worth going into the BIOS setup screen 
+and making sure that nothing is even close to debatable (ie take RAM 
+timings down to non-aggressive levels, make sure bus frequencies and 
+multipliers are not even close to borderline, etc etc).
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+			Linus
