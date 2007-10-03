@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbXJCRjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXJCRkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757819AbXJCRjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXJCRjj
+	id S1758219AbXJCRkQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbXJCRkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:39:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:8165 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754093AbXJCRjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:39:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=BAyQ5RbBhAhGslM2nTtOVz1BX7w1uuF4LA0M7FjtqLs1gJLjfZKs+oMoxKhigluyQsK2DXJIURhZTv7F9VWrSA/efo8ZQJyXcKiat4aXWDkO8ySIxy88vyhNF4tNd+QjUvWQIK1i+snPgslyRV9wrwht5PBIHAu6IQfXtXtD4D0=
-Message-ID: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
-Date: Wed, 3 Oct 2007 10:39:34 -0700
-From: "Mike Robak" <mrobak@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: libATA error message doc
+	Wed, 3 Oct 2007 13:40:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55089 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753395AbXJCRj7 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:39:59 -0400
+Message-ID: <4703D3E6.4080003@pobox.com>
+Date: Wed, 03 Oct 2007 13:39:50 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: pomac@vapor.com, Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: jumbo frame regression fix
+References: <1191372129.26233.12.camel@localhost> <20071002180209.47c350a3@freepuppy.rosehill>
+In-Reply-To: <20071002180209.47c350a3@freepuppy.rosehill>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does a doc exist that provides a detailed description of the different
-errors that could be produced by libata and its associated drivers?
-The libATA developer's guide provides a very good general description
-of the types of messages, but I'm looking for more detail.
+Stephen Hemminger wrote:
+> Remove unneeded check that caused problems with jumbo frame sizes.
+> The check was recently added and is wrong.
+> When using jumbo frames the sky2 driver does fragmentation, so
+> rx_data_size is less than mtu.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-For example I got this error message last week:
-
-Sep 27 17:29:26 server kernel: ata2.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x1
-Sep 27 17:29:26 server kernel: ata2.00: (irq_stat 0x40000001)
-Sep 27 17:29:26 server kernel: ata2.00: tag 0 cmd 0xb0 Emask 0x1 stat
-0x51 err 0x4 (device error)
-
-I'd like to know what the following items means?
-
-(irq_stat 0x40000001)
-tag 0
-cmd 0xb0
-emask 0x1
-stat 0x51
-err 0x4
+applied
 
 
-Can anybody help?
-
-Thanks,
--Mike
