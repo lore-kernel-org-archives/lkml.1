@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbXJCL5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbXJCMCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbXJCL5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 07:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbXJCL5G
+	id S1757962AbXJCMCx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 08:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXJCMCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 07:57:06 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:46955 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755713AbXJCL5D (ORCPT
+	Wed, 3 Oct 2007 08:02:46 -0400
+Received: from relay1.mail.vrmd.de ([81.28.232.18]:48756 "EHLO
+	relay1.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755166AbXJCMCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 07:57:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=04YPpZpBwDZKi2CT6/tj5fs4+/UpFRipBmifWN7aFj3KMS2E0Wb8VfqycnmsqaGlNxskscIukWTvUXtuH6eyjUiIuIekxEELdYSokTYJkOV3xxd1eVTBhjMGP+tiBwhqBfHHg9g+yuOpCxDHjfUiIXLAfigrvK6AxAaYbni4Sq4=  ;
-X-YMail-OSG: AZ1vVdgVM1n8u0fu9SIZZo5Zk109nduiOGc6Dq0kQTWc0BIFEyONmxabfromSQUaym2tDHZNCA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
-Date: Wed, 3 Oct 2007 05:25:29 +1000
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200710030356.18090.nickpiggin@yahoo.com.au> <20071003043818.baa0e1ce.pj@sgi.com>
-In-Reply-To: <20071003043818.baa0e1ce.pj@sgi.com>
-MIME-Version: 1.0
+	Wed, 3 Oct 2007 08:02:45 -0400
+X-Greylist: delayed 8487 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 08:02:45 EDT
+Date: Wed, 3 Oct 2007 09:40:10 +0000
+From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
+To: Anders Bostr?m <anders@bostrom.dyndns.org>
+Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com, akpm@osdl.org,
+       torvalds@osdl.org
+Subject: Re: PROBLEM: high load average when idle
+Message-ID: <20071003094010.GA635@ds20.borg.net>
+Reply-To: dl8bcu@dl8bcu.de
+Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
+	Anders Bostr?m <anders@bostrom.dyndns.org>,
+	linux-kernel@vger.kernel.org, arjan@linux.intel.com, akpm@osdl.org,
+	torvalds@osdl.org
+References: <20071002.233731.119908363.anders@bostrom.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710030525.29735.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071002.233731.119908363.anders@bostrom.dyndns.org>
+User-Agent: Mutt/1.4.2.3i
+X-Relay-User: dl8bcu@dl8bcu.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 October 2007 21:38, Paul Jackson wrote:
-> > OK, so to really do anything different (from a non-partitioned setup),
-> > you would need to set sched_load_balance=0 for the root cpuset?
+On Tue, Oct 02, 2007 at 11:37:31PM +0200, Anders Bostr?m wrote:
+> Hi!
+> 
+> My computer suffers from high load average when the system is idle,
+> introduced by commit 44d306e1508fef6fa7a6eb15a1aba86ef68389a6 .
 
-> > Suppose you do that to hard partition the machine, what happens to
-> > newly created tasks like kernel threads or things that aren't in a
-> > cpuset?
->
-> Well ... --every-- task is in a cpuset, always.  Newly created tasks
-> start in the cpuset of their parent.  Grep for 'the_top_cpuset_hack'
-> in kernel/cpuset.c to see the lengths to which we go to ensure that
-> current->cpuset always resolves somewhere.
+Another datapoint: I observe a similar effect on both of my alphas:
 
-OK, then non-balancing cpuset.
+top - 09:30:43 up 13 min, 18 users,  load average: 0.65, 0.64, 0.44
+Tasks:  76 total,   1 running,  75 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.1% us,  0.5% sy,  0.0% ni, 99.1% id,  0.2% wa,  0.1% hi,  0.0% si
+Mem:   2067792k total,    55792k used,  2012000k free,     4160k buffers
+Swap:  1048560k total,        0k used,  1048560k free,    18752k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+  637 root      15   0  2904 1552 1192 R    1  0.1   0:01.35 top
+  556 root      15   0  2008  528  432 S    0  0.0   0:00.01 gpm
+    1 root      15   0  1960  800  680 S    0  0.0   0:01.43 init
+    2 root      10  -5     0    0    0 S    0  0.0   0:00.00 kthreadd
+    3 root      RT  -5     0    0    0 S    0  0.0   0:00.00 migration/0
+    4 root      34  19     0    0    0 S    0  0.0   0:00.00 ksoftirqd/0
+    5 root      RT  -5     0    0    0 S    0  0.0   0:00.00 watchdog/0
+    6 root      RT  -5     0    0    0 S    0  0.0   0:00.00 migration/1
+    7 root      34  19     0    0    0 S    0  0.0   0:00.00 ksoftirqd/1
+
+This is the dual-ev6 one, currently 2.6.22-rc5. 
+
+I didn't bother to do any investigation, yet ;-)
 
 
-> The usual case on the big systems that I care about the most is
-> that we move (almost) every task out of the top cpuset, into smaller
-> cpusets, because we don't want some random thread intruding on the
-> CPUs dedicated to a particular job.  The only threads left in the root
-> cpuset are pinned kernel threads, such as for thread migration, per-cpu
-> irq handlers and various per-cpu and per-node disk and file flushers
-> and such.  These threads aren't going anywhere, regardless.  But no
-> thread that is willing to run anywhere is left free to run anywhere.
+> This fixes the problem:
 
-These are what I'm worried about, and things like kswapd, pdflush,
-could definitely use a huge amount of CPU.
+I'll check this evening.
 
-If you are interested in hard partitioning the system, you most
-definitely want these things to be balanced across the non-isolated
-CPUs.
+Bye,
+Thorsten
 
+
+-- 
+| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
+| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
+| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
