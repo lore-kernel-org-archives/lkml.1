@@ -1,66 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbXJCBmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbXJCBno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756959AbXJCBmt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 21:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbXJCBmn
+	id S1755144AbXJCBno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 21:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXJCBnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 21:42:43 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:33144 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753130AbXJCBmm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 21:42:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OGWCZfXKuA30BA6jZip7IIG3WyaR/4w3BhVywMD+8+c2w9I1uR+Sm+sAx/w/+nwj90ZRSUD2GJHVEhnQEUtSvDEsPY3yLnEuqAE2I7Ywxc/pCM18ex8OTDqOnCVKAIlcAle7GWx7XJf4ezSbONlc85KdekL6xaPxdOCpbUtP/5c=  ;
-X-YMail-OSG: mInxwREVM1nClYIFzyjeICY7dFLYt8sFiwg1maOtRLRhRbB1dH9HqJxrC3hMNGuwoqQARFDwIw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: kswapd min order, slub max order [was Re: -mm merge plans for 2.6.24]
-Date: Tue, 2 Oct 2007 19:10:58 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chritoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
+	Tue, 2 Oct 2007 21:43:37 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:46007 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753269AbXJCBng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 21:43:36 -0400
+Message-ID: <391375817.00959@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Wed, 3 Oct 2007 09:43:33 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: David Chinner <dgc@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 4/5] writeback: remove pages_skipped accounting in
+	__block_write_full_page()
+Message-ID: <20071003014333.GB6501@mail.ustc.edu.cn>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.873023041@mail.ustc.edu.cn> <20071002215518.GK995458@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710021910.58983.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071002215518.GK995458@sgi.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 October 2007 02:06, Hugh Dickins wrote:
-> On Mon, 1 Oct 2007, Andrew Morton wrote:
-> > #
-> > # slub && antifrag
-> > #
-> > have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
-> > only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocation
-> >s.patch slub-exploit-page-mobility-to-increase-allocation-order.patch
-> > slub-reduce-antifrag-max-order.patch
-> >
-> >   I think this stuff is in the "mm stuff we don't want to merge"
-> > category. If so, I really should have dropped it ages ago.
+On Wed, Oct 03, 2007 at 07:55:18AM +1000, David Chinner wrote:
+> > 
+> > do not quite agree with each other. The page writeback should be skipped for
+> > 'locked buffer', but here it is 'clean buffer'!
+> 
+> Ok, so that means we need an equivalent fix in xfs_start_page_writeback()
+> as it will skip pages with clean buffers just like this. Something like
+> this (untested)?
+
+Sure OK - as long as it is 'no write because of clean buffer'.
+The only user of pages_skipped is obviously using that semantics.
+
+Andrew, here is the expanded patch:
+---
+writeback: remove pages_skipped accounting in __block_write_full_page()
+
+Miklos Szeredi <miklos@szeredi.hu> and me identified a writeback bug:
+
+> The following strange behavior can be observed:
 >
-> I agree.  I spent a while last week bisecting down to see why my heavily
-> swapping loads take 30%-60% longer with -mm than mainline, and it was
-> here that they went bad.  Trying to keep higher orders free is costly.
+> 1. large file is written
+> 2. after 30 seconds, nr_dirty goes down by 1024
+> 3. then for some time (< 30 sec) nothing happens (disk idle)
+> 4. then nr_dirty again goes down by 1024
+> 5. repeat from 3. until whole file is written
+>
+> So basically a 4Mbyte chunk of the file is written every 30 seconds.
+> I'm quite sure this is not the intended behavior.
 
-Yeah, no there's no way we'd merge that.
+It can be produced by the following test scheme:
+
+# cat bin/test-writeback.sh 
+grep nr_dirty /proc/vmstat
+echo 1 > /proc/sys/fs/inode_debug
+dd if=/dev/zero of=/var/x bs=1K count=204800&
+while true; do grep nr_dirty /proc/vmstat; sleep 1; done
+
+# bin/test-writeback.sh
+nr_dirty 19207
+nr_dirty 19207
+nr_dirty 30924
+204800+0 records in
+204800+0 records out
+209715200 bytes (210 MB) copied, 1.58363 seconds, 132 MB/s
+nr_dirty 47150
+nr_dirty 47141
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47205
+nr_dirty 47214
+nr_dirty 47214
+nr_dirty 47214
+nr_dirty 47214
+nr_dirty 47214
+nr_dirty 47215
+nr_dirty 47216
+nr_dirty 47216
+nr_dirty 47216
+nr_dirty 47154
+nr_dirty 47143
+nr_dirty 47143
+nr_dirty 47143
+nr_dirty 47143
+nr_dirty 47143
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47142
+nr_dirty 47134
+nr_dirty 47134
+nr_dirty 47135
+nr_dirty 47135
+nr_dirty 47135
+nr_dirty 46097 <== -1038
+nr_dirty 46098
+nr_dirty 46098
+nr_dirty 46098
+[...]
+nr_dirty 46091
+nr_dirty 46092
+nr_dirty 46092
+nr_dirty 45069 <== -1023
+nr_dirty 45056
+nr_dirty 45056
+nr_dirty 45056
+[...]
+nr_dirty 37822
+nr_dirty 36799 <== -1023
+[...]
+nr_dirty 36781
+nr_dirty 35758 <== -1023
+[...]
+nr_dirty 34708
+nr_dirty 33672 <== -1024
+[...]
+nr_dirty 33692
+nr_dirty 32669 <== -1023
 
 
-> On the other hand, hasn't SLUB efficiency been built on the expectation
-> that higher orders can be used?  And it would be a twisted shame for
-> high performance to be held back by some idiot's swapping load.
+% ls -li /var/x
+847824 -rw-r--r-- 1 root root 200M 2007-08-12 04:12 /var/x
 
-IMO it's a bad idea to create all these dependencies like this.
+% dmesg|grep 847824  # generated by a debug printk
+[  529.263184] redirtied inode 847824 line 548
+[  564.250872] redirtied inode 847824 line 548
+[  594.272797] redirtied inode 847824 line 548
+[  629.231330] redirtied inode 847824 line 548
+[  659.224674] redirtied inode 847824 line 548
+[  689.219890] redirtied inode 847824 line 548
+[  724.226655] redirtied inode 847824 line 548
+[  759.198568] redirtied inode 847824 line 548
 
-If SLUB can get _more_ performance out of using higher order allocations,
-then fine. If it is starting off at a disadvantage at the same order, then it
-that should be fixed first, right?
+# line 548 in fs/fs-writeback.c:
+543                 if (wbc->pages_skipped != pages_skipped) {
+544                         /*
+545                          * writeback is not making progress due to locked
+546                          * buffers.  Skip this inode for now.
+547                          */
+548                         redirty_tail(inode);
+549                 }
+
+More debug efforts show that __block_write_full_page()
+never has the chance to call submit_bh() for that big dirty file:
+the buffer head is *clean*. So basicly no page io is issued by
+__block_write_full_page(), hence pages_skipped goes up.
+
+Also the comment in generic_sync_sb_inodes():
+
+544                         /*
+545                          * writeback is not making progress due to locked
+546                          * buffers.  Skip this inode for now.
+547                          */
+
+and the comment in __block_write_full_page():
+
+1713                 /*
+1714                  * The page was marked dirty, but the buffers were
+1715                  * clean.  Someone wrote them back by hand with
+1716                  * ll_rw_block/submit_bh.  A rare case.
+1717                  */
+
+do not quite agree with each other. The page writeback should be skipped for
+'locked buffer', but here it is 'clean buffer'!
+
+This patch fixes this bug. Though I'm not sure why __block_write_full_page()
+is called only to do nothing and who actually issued the writeback for us.
+
+This is the two possible new behaviors after the patch:
+
+1) pretty nice: wait 30s and write ALL:)
+2) not so good:
+	- during the dd: ~16M 
+	- after 30s:      ~4M
+	- after 5s:       ~4M
+	- after 5s:     ~176M
+
+The next patch will fix case (2).
+
+Cc: Ken Chen <kenchen@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Signed-off-by: David Chinner <dgc@sgi.com>
+---
+ fs/buffer.c                 |    1 -
+ fs/xfs/linux-2.6/xfs_aops.c |    5 ++---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+--- linux-2.6.23-rc8-mm2.orig/fs/buffer.c
++++ linux-2.6.23-rc8-mm2/fs/buffer.c
+@@ -1737,7 +1737,6 @@ done:
+ 		 * The page and buffer_heads can be released at any time from
+ 		 * here on.
+ 		 */
+-		wbc->pages_skipped++;	/* We didn't write this page */
+ 	}
+ 	return err;
+ 
+--- linux-2.6.23-rc8-mm2.orig/fs/xfs/linux-2.6/xfs_aops.c
++++ linux-2.6.23-rc8-mm2/fs/xfs/linux-2.6/xfs_aops.c
+@@ -420,10 +420,9 @@ xfs_start_page_writeback(
+ 		clear_page_dirty_for_io(page);
+ 	set_page_writeback(page);
+ 	unlock_page(page);
+-	if (!buffers) {
++	/* If no buffers on the page are to be written, finish it here */
++	if (!buffers)
+ 		end_page_writeback(page);
+-		wbc->pages_skipped++;	/* We didn't write this page */
+-	}
+ }
+ 
+ static inline int bio_add_buffer(struct bio *bio, struct buffer_head *bh)
 
