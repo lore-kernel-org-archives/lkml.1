@@ -1,85 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbXJCJVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXJCJYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbXJCJVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 05:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXJCJVN
+	id S1755492AbXJCJYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 05:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXJCJYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 05:21:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60639 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751777AbXJCJVM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 05:21:12 -0400
-Date: Wed, 3 Oct 2007 02:21:08 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, menage@google.com,
-       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
-Subject: Re: [patch] sched: fix sched-domains partitioning by cpusets
-Message-Id: <20071003022108.5a8e310e.pj@sgi.com>
-In-Reply-To: <200710030146.30162.nickpiggin@yahoo.com.au>
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
-	<20071003062240.GA19027@elte.hu>
-	<20071002235615.6e8cd007.pj@sgi.com>
-	<200710030146.30162.nickpiggin@yahoo.com.au>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Oct 2007 05:24:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36585 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbXJCJYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 05:24:45 -0400
+Date: Wed, 3 Oct 2007 11:23:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Benc <jbenc@suse.cz>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
+	2.6.23-rc9 and a heads-up for the 2.6.24 series..)
+Message-ID: <20071003092357.GA17841@elte.hu>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu> <20071003085022.GA6672@elte.hu> <20071003091257.GA15815@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071003091257.GA15815@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick wrote:
-> Sorry for the confusion: I only meant the sched.c part of that
-> patch, not the full thing.
 
-Ah - ok.  We're getting closer then.  Good.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Let me be sure I've got this right then.
+> -CONFIG_MAC80211_DEBUGFS=y
 
-You prefer the interface from your proposed patch, by which the
-cpuset code passes sched domain requests to the scheduler code a single
-cpumask that will define a sched domain:
+it's CONFIG_MAC80211_DEBUGFS=y causing the crash.
 
-    int partition_sched_domains(cpumask_t *partition)
-
-and I am suggesting instead a new and different interface:
-
-    void partition_sched_domains(int ndoms_new, cpumask_t *doms_new)
-
-In the first API, one cpumask is passed in, and a single sched
-domain is formed, taking those CPUs from any sched domain they
-might have already been a member of, into this new sched domain.
-
-In the second API, the entire flat partitioning is passed in,
-giving an array of masks, one mask for each desired sched domain.
-The passed in masks do not overlap, but might not cover all CPUs.
-
-Question -- how does one turn off load balancing on some CPUs
-using the first API?
-
-    Does one do this by forming singleton sched domains of one
-    CPU each?  Is there any downside to doing this?
-
-    The simplest cpuset code to work with this would end up exposing
-    this method of disabling load balancing to user space, forcing
-    users to create cpusets with one CPU each to be able do disable
-    load balancing.
-
-    However a little bit of additional kernel cpuset code could hide
-    this detail from user space, by recognizing when the user had
-    asked to turn off load balancing on some larger cpuset, and by
-    then calling partition_sched_domains() multiple times, once for
-    each CPU in that cpuset.
-
-There might be an even simpler way.  If the kernel/sched.c routines
-detach_destroy_domains() and build_sched_domains() were exposed as
-external routines, then the cpuset code could call them directly,
-removing the partition_sched_domains() routine from sched.c entirely.
-Would this be worth persuing?
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+	Ingo
