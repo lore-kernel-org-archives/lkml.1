@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbXJCRvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXJCRwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbXJCRvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbXJCRvc
+	id S1758529AbXJCRwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXJCRwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:51:32 -0400
-Received: from waste.org ([66.93.16.53]:45918 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755917AbXJCRvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:51:31 -0400
-Date: Wed, 3 Oct 2007 12:51:05 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-Message-ID: <20071003175105.GT19691@waste.org>
-References: <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com> <46FFB412.20202@gmail.com> <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com> <46FFDF64.1080005@gmail.com> <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com> <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com> <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com> <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com> <20071003163804.GR19691@waste.org> <64bb37e0710031036q228b63a8nf03d030b7d97b27f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0710031036q228b63a8nf03d030b7d97b27f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 3 Oct 2007 13:52:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51864 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753603AbXJCRwD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:52:03 -0400
+Date: Wed, 3 Oct 2007 10:51:57 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, serue@us.ibm.com,
+       clg@fr.ibm.com, ebiederm@xmission.com, xemul@openvz.org,
+       rientjes@google.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/33] task containersv11 add tasks file interface
+Message-Id: <20071003105157.254c51a4.pj@sgi.com>
+In-Reply-To: <6599ad830710030816m32321b54gbc79c24d0a39941b@mail.gmail.com>
+References: <20070917210307.116234000@menage.corp.google.com>
+	<20070917210426.579524000@menage.corp.google.com>
+	<20071003010923.c606c176.pj@sgi.com>
+	<6599ad830710030816m32321b54gbc79c24d0a39941b@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 07:36:55PM +0200, Torsten Kaiser wrote:
-> On 10/3/07, Matt Mackall <mpm@selenic.com> wrote:
-> > On Wed, Oct 03, 2007 at 05:55:10PM +0200, Torsten Kaiser wrote:
-> > > This patch removes clear_refs_smap() from fs/proc/task_mmu.c by moving
-> > > its code to a new function. But during the move the main for-loop from
-> > > clear_refs_smap was changed:
-> > >
-> > > old:
-> > >       for (vma = mm->mmap; vma; vma = vma->vm_next)
-> > >               if (vma->vm_mm && !is_vm_hugetlb_page(vma))
-> > >                       walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
-> > >                                       &clear_refs_walk, vma);
-> > >
-> > > new:
-> > >       for (vma = mm->mmap; vma; vma = vma->vm_next)
-> > >               if (!is_vm_hugetlb_page(vma))
-> > >                       walk_page_range(mm, vma->vm_start, vma->vm_end,
-> > >                                       &clear_refs_walk, vma);
-> > >
-> > > The walk_page_range() is no longer called on vma->vm_mm, but on mm directly.
-> > > I don't know how this can kill the sata_sil24-driver, but at least it
-> > > looks suspicious.
-> >
-> > That code should be fine. Further, it's pretty unlikely that this code
-> > ever gets invoked. This whole interface was only recently added by
-> > Google folks and its usage is pretty obscure.
-> >
-> > Oh wait - you're _at_ Google, aren't you? Perhaps you're actually
-> > using clear_refs.
-> 
-> No. I'm just using Google Mail.
+Paul M wrote:
+> Are there cases when userspace is
+> required to try to reattach a task to its current cpuset in order to
+> get a cpu mask change to stick?
 
-Ahh, I see. Wasn't aware of the trademark dispute..
+Yes, there are such cases.
 
-> Of note might be, that at the time of this error init has not been
-> started. I'm using a program from initramfs to start the RAID.
-> The initramfs was primarily build using the genkernel package from
-> gentoo, but I have removed some parts of it (kernel modules and some
-> other part I no longer remember)
+If tasks are running in a cpuset, and someone changes the
+'cpus' of that cpuset, the tasks already in that cpuset don't
+move.  They stay with their task structs cpus_allowed pointing
+to the old value.  The only code path that user space can trigger
+that leads to changing an existing tasks cpus_allowed mask is to
+write that tasks pid to a cpuset 'tasks' file.
 
-Then I really don't see how these patches can have anything to do with
-your problem. They only affect some currently obscure files in /proc
-and it's unlikely to have any impact at init time. It's more likely
-that there's some code alignment Heisenbug or you got a false negative
-somewhere in your bisection.
+So after changing the 'cpus' of a cpuset, you (something in
+user space) then has to rewrite every pid in that cpusets
+tasks file back to that same tasks file, in order to get the
+change to be applied to each of those tasks, and get them to
+start running on their new CPUs.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
