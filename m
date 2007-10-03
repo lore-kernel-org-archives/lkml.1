@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbXJCCPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbXJCCWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbXJCCPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 22:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXJCCPf
+	id S1756909AbXJCCWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 22:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXJCCWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 22:15:35 -0400
-Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:37946 "HELO
-	smtp105.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754820AbXJCCPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 22:15:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=MkoWKBR4nAVT7auXATO5YdTji4CspC8L8aoC4uFgbG3R0F1AsJ1It1VbG+0Al4fAddIXPOAqGm5wvSLujnKCXXv5/ye2J6l3B5QlPWK7MkHf7av5KXh/pZUGdjPtJE5pIq9AM1LZmk5w/jM5IpvN0nD0PwMgWT97bfb4z/jX5os=  ;
-X-YMail-OSG: iydYxmMVM1ns6Phj7b93sMGO_Wx5zCN3GkUudBpBTMaT_osajYFBitoYhH3NiLMC8J_Nqky6AQ--
-Date: Tue, 02 Oct 2007 19:15:36 -0700
-From: David Brownell <david-b@pacbell.net>
-To: pavel@ucw.cz
-Subject: Re: RTC wakealarm write-only, still has 644 permissions
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       alessandro.zummo@towertech.it
-References: <20070920103225.GA4410@elf.ucw.cz>
- <20070920105002.GA4611@elf.ucw.cz>
- <200709212238.05130.david-b@pacbell.net>
- <20071002093641.GA11039@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071002093641.GA11039@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
+	Tue, 2 Oct 2007 22:22:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49478 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753003AbXJCCW3 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 22:22:29 -0400
+Date: Wed, 3 Oct 2007 12:22:05 +1000
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 4/5] writeback: remove pages_skipped accounting in __block_write_full_page()
+Message-ID: <20071003022205.GK23367404@sgi.com>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.873023041@mail.ustc.edu.cn> <20071002215518.GK995458@sgi.com> <20071003014333.GB6501@mail.ustc.edu.cn>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071003021537.208621F9CA8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <20071003014333.GB6501@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > root@amd:/sys/class/rtc/rtc0# cat wakealarm 
-> > > > root@amd:/sys/class/rtc/rtc0# echo 132719 > wakealarm 
+On Wed, Oct 03, 2007 at 09:43:33AM +0800, Fengguang Wu wrote:
+> On Wed, Oct 03, 2007 at 07:55:18AM +1000, David Chinner wrote:
+> > > 
+> > > do not quite agree with each other. The page writeback should be skipped for
+> > > 'locked buffer', but here it is 'clean buffer'!
 > > 
-> > At which point I'd expect
-> > 
-> > # echo $?
-> > 
-> > would indicate the write failed.  That's a LONG time in the
-> > past (January 2, 1970), so that setting would be rejected.
->
-> echo $? says 0 here :-(.
+> > Ok, so that means we need an equivalent fix in xfs_start_page_writeback()
+> > as it will skip pages with clean buffers just like this. Something like
+> > this (untested)?
+> 
+> Sure OK - as long as it is 'no write because of clean buffer'.
 
-I stand corrected.  What it should do -- and does -- in that case
-involves disabling the alarm, then succeeding.
+Yes, that's the case here.
 
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
