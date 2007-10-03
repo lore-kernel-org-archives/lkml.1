@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbXJCSHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXJCSLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbXJCSHE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXJCSGz
+	id S1758894AbXJCSLa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbXJCSLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:06:55 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:24570 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbXJCSGy (ORCPT
+	Wed, 3 Oct 2007 14:11:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:39829 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757277AbXJCSLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:06:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=A0Pps7lg6UoMAJgPQNM/+O0/WHS9vf2xrEX5uy4XxQTJt+FiCUGyrEtin+d8Qi6+/sTFGxGObp3J2XSFIlWtNa/cfHHlY/sP13ZG4XnJk7uEgAQOzLmzDJJqVKptr3NKegDjC6lWQsBnXjKWXekp/iygCm6kJrrkphTQz8XuYB8=
-Message-ID: <64bb37e0710031106n2aa93d08j85c6729df2f2cac8@mail.gmail.com>
-Date: Wed, 3 Oct 2007 20:06:48 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-Cc: "Tejun Heo" <htejun@gmail.com>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20071003175105.GT19691@waste.org>
+	Wed, 3 Oct 2007 14:11:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=BRTjSAlX50eaNVtWv27uKY3HUG/8lrSMx8yLnevOO7KauIJTW9PA4jWb713KNfYSM
+	vThtl0YjFnU/ELLmjioOA==
+Message-ID: <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+Date: Wed, 3 Oct 2007 11:10:58 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+In-Reply-To: <20071003105817.7adf6516.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
-	 <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com>
-	 <46FFDF64.1080005@gmail.com>
-	 <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
-	 <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
-	 <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>
-	 <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com>
-	 <20071003163804.GR19691@waste.org>
-	 <64bb37e0710031036q228b63a8nf03d030b7d97b27f@mail.gmail.com>
-	 <20071003175105.GT19691@waste.org>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	 <20071003105817.7adf6516.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Matt Mackall <mpm@selenic.com> wrote:
-> On Wed, Oct 03, 2007 at 07:36:55PM +0200, Torsten Kaiser wrote:
-> > Of note might be, that at the time of this error init has not been
-> > started. I'm using a program from initramfs to start the RAID.
-> > The initramfs was primarily build using the genkernel package from
-> > gentoo, but I have removed some parts of it (kernel modules and some
-> > other part I no longer remember)
+On 10/3/07, Paul Jackson <pj@sgi.com> wrote:
 >
-> Then I really don't see how these patches can have anything to do with
-> your problem. They only affect some currently obscure files in /proc
-> and it's unlikely to have any impact at init time. It's more likely
-> that there's some code alignment Heisenbug or you got a false negative
-> somewhere in your bisection.
+> Yes, something in user space has to do it.  It's part of the
+> kernel-user cpuset API.  If you change a cpuset's 'cpus', then
+> you have to rewrite each pid in its 'tasks' file back to that
+> 'tasks' file in order to get that 'cpus' change to be applied
+> to the task struct cpus_allowed of each task, and thereby visible
+> to the scheduler.
 
-Heisenbug via code alignment might be, but the bisection result seemed
-rather reliable.
-I have 4 good boots with all mm-patches before the maps2-* ones and 2
-out of 3 boots failed with part or all maps2-* patches applied. (Any
-many more failed boots with more mm-patches applied.)
+What's the rationale for this?
 
-But I do think it might be very possible that some (maybe even
-correct) change in the behavior of this code triggers the error. So
-I'm very interested in what you additional printk outputs to track
-down what changed and why this breaks.
+Given that later in cpusets.txt you say:
 
-I looked at the scripts from the initramfs, but sadly I don't see
-anything that crawls throug /proc and might hit your files. Other than
-that there is nearly only busybox in there. cryptsetup should run
-later and modprobe does not have any modules it could try to load...
+>If hotplug functionality is used
+>to remove all the CPUs that are currently assigned to a cpuset,
+>then the kernel will automatically update the cpus_allowed of all
+>tasks attached to CPUs in that cpuset to allow all CPUs
 
-Torsten
+why can't the same thing be done when changing the 'cpus' file manually.
+
+What's wrong with, in update_cpumask(), doing a loop across all
+members of the cgroup and updating their cpus_allowed fields?
+
+The existing cpusets API is broken, since a new child can always be
+forked between reading the tasks file and doing the writes.
+
+Paul
