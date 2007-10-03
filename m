@@ -1,127 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbXJCCrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXJCCru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbXJCCrS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 22:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXJCCrG
+	id S1757478AbXJCCru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 22:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXJCCrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 22:47:06 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:56705 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbXJCCrE (ORCPT
+	Tue, 2 Oct 2007 22:47:42 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38375 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753713AbXJCCrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 22:47:04 -0400
-To: James.Bottomley@SteelEye.com
-Cc: bunk@kernel.org, bwindle@fint.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       sumant.patro@lsi.com, megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1191357493.3530.129.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0710021242510.6275@postal>
-	<20071002181518.GC10852@stusta.de>
-	<1191357493.3530.129.camel@localhost.localdomain>
+	Tue, 2 Oct 2007 22:47:42 -0400
+From: akepner@sgi.com
+Date: Tue, 2 Oct 2007 19:46:41 -0700
+To: Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       RolandDreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/5] dma: redefine dma_flags_set_attr() for sn-ia64
+Message-ID: <20071003024641.GG26752@sgi.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071003090058R.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 03 Oct 2007 09:00:58 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Oct 2007 15:38:13 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
 
-> On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
-> > Cc's added, the complete bug report is at
-> >   http://lkml.org/lkml/2007/10/2/243
-> > 
-> > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
-> > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
-> > >
-> > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
-> > >...
-> > 
-> > Thanks for your report.
-> > 
-> > Diff'ing the dmesg's shows:
-> > 
-> > <--  snip  -->
-> > 
-> >  scsi0: scanning scsi channel 4 [P0] for physical devices.
-> >  scsi0: scanning scsi channel 5 [P1] for physical devices.
-> >  st: Version 20070203, fixed bufsize 32768, s/g segs 256
-> > -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
-> > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> >  sd 0:0:0:0: [sda] Write Protect is off
-> >  sd 0:0:0:0: [sda] Asking for cache data failed
-> >  sd 0:0:0:0: [sda] Assuming drive cache: write through
-> > -sd 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
-> > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> >  sd 0:0:0:0: [sda] Write Protect is off
-> >  sd 0:0:0:0: [sda] Asking for cache data failed
-> >  sd 0:0:0:0: [sda] Assuming drive cache: write through
-> >   sda: sda1
-> > + sda: p1 exceeds device capacity
-> > 
-> > <--  snip  -->
-> > 
-> > -	case MEGA_BULK_DATA:
-> > -		if (scb->cmd->use_sg == 0)
-> > -			length = scb->cmd->request_bufflen;
-> > -		else {
-> > -			struct scatterlist *sgl =
-> > -				(struct scatterlist *)scb->cmd->request_buffer;
-> > -			length = sgl->length;
-> > -		}
-> > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
-> > -			       length, scb->dma_direction);
-> > -		break;
-> > -
-> 
-> This is the problem piece I think.  We've reintroduced a very old bug:
-> 
-> commit 51c928c34fa7cff38df584ad01de988805877dba
-> Author: James Bottomley <James.Bottomley@SteelEye.com>
-> Date:   Sat Oct 1 09:38:05 2005 -0500
-> 
->     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
->     
->     Some Legacy megaraid cards can't actually cope with the scatter/gather
->     version of the READ CAPACITY command (which is what we now send them
->     since altering all SCSI internal I/O to go via the block layer).  Fix
->     this (and a few other broken megaraid driver assumptions) by sending
->     the non-sg version of the command if the sg list only has a single
->     element.
->     
->     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-> 
-> So what we have to do is put back the check for use_sg == 1 and send
-> that as a bulk transfer command.
+define dma_flags_set_attr() for sn-ia64 - it "borrows" bits from 
+the direction argument (renamed "flags") to the dma_map_* routines 
+to pass an additional attributes.  Also define routines to retrieve 
+the original direction and attribute from "flags".
 
-Sorry about this. Can this fix the problem?
+Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
-Thanks,
+---
 
+ arch/ia64/sn/pci/pci_dma.c |   37 +++++++++++++++++++++++++++----------
+ include/asm-ia64/sn/io.h   |   23 +++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 3907f67..da56163 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -1753,6 +1753,14 @@ mega_build_sglist(adapter_t *adapter, scb_t *scb, u32 *buf, u32 *len)
+diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
+index d79ddac..84b6227 100644
+--- a/arch/ia64/sn/pci/pci_dma.c
++++ b/arch/ia64/sn/pci/pci_dma.c
+@@ -153,7 +153,7 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
+  * @dev: device to map for
+  * @cpu_addr: kernel virtual address of the region to map
+  * @size: size of the region
+- * @direction: DMA direction
++ * @flags: DMA direction, and arch-specific attributes
+  *
+  * Map the region pointed to by @cpu_addr for DMA and return the
+  * DMA address.
+@@ -167,17 +167,23 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
+  *       figure out how to save dmamap handle so can use two step.
+  */
+ dma_addr_t sn_dma_map_single(struct device *dev, void *cpu_addr, size_t size,
+-			     int direction)
++			     int flags)
+ {
+ 	dma_addr_t dma_addr;
+ 	unsigned long phys_addr;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
++	int dmabarrier = dma_flags_get_attr(flags) & DMA_BARRIER_ATTR;
  
- 	*len = 0;
+ 	BUG_ON(dev->bus != &pci_bus_type);
  
-+	if (scsi_sg_count(cmd) == 1 && !adapter->has_64bit_addr) {
-+		sg = scsi_sglist(cmd);
-+		scb->dma_h_bulkdata = sg_dma_address(sg);
-+		*buf = (u32)scb->dma_h_bulkdata;
-+		*len = sg_dma_len(sg);
-+		return 0;
-+	}
+ 	phys_addr = __pa(cpu_addr);
+-	dma_addr = provider->dma_map(pdev, phys_addr, size, SN_DMA_ADDR_PHYS);
++	if (dmabarrier)
++		dma_addr = provider->dma_map_consistent(pdev, phys_addr, size, 
++							SN_DMA_ADDR_PHYS);
++	else
++		dma_addr = provider->dma_map(pdev, phys_addr, size, 
++					     SN_DMA_ADDR_PHYS);
+ 	if (!dma_addr) {
+ 		printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
+ 		return 0;
+@@ -240,18 +246,20 @@ EXPORT_SYMBOL(sn_dma_unmap_sg);
+  * @dev: device to map for
+  * @sg: scatterlist to map
+  * @nhwentries: number of entries
+- * @direction: direction of the DMA transaction
++ * @flags: direction of the DMA transaction, and arch-specific attributes
+  *
+  * Maps each entry of @sg for DMA.
+  */
+ int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+-		  int direction)
++		  int flags)
+ {
+ 	unsigned long phys_addr;
+ 	struct scatterlist *saved_sg = sg;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
+ 	int i;
++	int dmabarrier = dma_flags_get_attr(flags) & DMA_BARRIER_ATTR;
++	int dir = dma_flags_get_dir(flags);
+ 
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ 
+@@ -259,19 +267,28 @@ int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+ 	 * Setup a DMA address for each entry in the scatterlist.
+ 	 */
+ 	for (i = 0; i < nhwentries; i++, sg++) {
++		dma_addr_t dma_addr;
+ 		phys_addr = SG_ENT_PHYS_ADDRESS(sg);
+-		sg->dma_address = provider->dma_map(pdev,
+-						    phys_addr, sg->length,
+-						    SN_DMA_ADDR_PHYS);
+ 
+-		if (!sg->dma_address) {
++		if (dmabarrier) {
++			dma_addr = provider->dma_map_consistent(pdev,
++								phys_addr,
++								sg->length,
++								SN_DMA_ADDR_PHYS);
++		} else {
++			dma_addr = provider->dma_map(pdev,
++						     phys_addr, sg->length,
++						     SN_DMA_ADDR_PHYS);
++		}
 +
- 	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
- 		if (adapter->has_64bit_addr) {
- 			scb->sgl64[idx].address = sg_dma_address(sg);
++		if (!(sg->dma_address = dma_addr)) {
+ 			printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
+ 
+ 			/*
+ 			 * Free any successfully allocated entries.
+ 			 */
+ 			if (i > 0)
+-				sn_dma_unmap_sg(dev, saved_sg, i, direction);
++				sn_dma_unmap_sg(dev, saved_sg, i, dir);
+ 			return 0;
+ 		}
+ 
+diff --git a/include/asm-ia64/sn/io.h b/include/asm-ia64/sn/io.h
+index 41c73a7..d2b94ce 100644
+--- a/include/asm-ia64/sn/io.h
++++ b/include/asm-ia64/sn/io.h
+@@ -271,4 +271,27 @@ sn_pci_set_vchan(struct pci_dev *pci_dev, unsigned long *addr, int vchan)
+ 	return 0;
+ }
+ 
++#define ARCH_USES_DMA_ATTRS
++/* we pass additional dma attributes in the direction argument to the 
++ * dma_map_* routines */
++#define SN_DMA_ATTR_SHIFT	8
++/* bottom 8 bits for direction, remaining bits for dma attributes */
++#define SN_DMA_DIR_MASK   ((1 << SN_DMA_ATTR_SHIFT) - 1)
++#define SN_DMA_ATTR_MASK  ~SN_DMA_DIR_MASK
++
++static inline int dma_flags_set_attr(int attr, int dir)
++{
++	return (dir | (attr << SN_DMA_ATTR_SHIFT));
++}
++
++static inline int dma_flags_get_dir(int flags) 
++{
++	return (flags & SN_DMA_DIR_MASK);
++}
++
++static inline int dma_flags_get_attr(int flags) 
++{
++	return ((flags & SN_DMA_ATTR_MASK) >> SN_DMA_ATTR_SHIFT);
++}
++
+ #endif	/* _ASM_SN_IO_H */
