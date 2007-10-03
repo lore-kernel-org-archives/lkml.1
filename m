@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXJCSn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXJCSoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbXJCSn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbXJCSnU
+	id S1758544AbXJCSoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXJCSoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:43:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36676 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbXJCSnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:43:19 -0400
-Message-ID: <4703E2C5.40502@pobox.com>
-Date: Wed, 03 Oct 2007 14:43:17 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 3 Oct 2007 14:44:11 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:52480 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbXJCSoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 14:44:09 -0400
+In-Reply-To: <ada1wcxnev5.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata: fix for sata_mv >64KB DMA segments
-References: <20071001220439.GA15332@lixom.net> <470176B8.1000109@pobox.com> <20071002023000.GA19286@lixom.net> <4702D2DE.1050504@pobox.com> <20071003014527.GA6316@lixom.net>
-In-Reply-To: <20071003014527.GA6316@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Subject: Re: InfiniBand/RDMA merge plans for 2.6.24
+X-Mailer: Lotus Notes Release 7.0 HF144 February 01, 2006
+Message-ID: <OF9591AF85.09F0D1BF-ON87257369.006651BA-88257369.0066A0BD@us.ibm.com>
+From: Shirley Ma <xma@us.ibm.com>
+Date: Wed, 3 Oct 2007 11:43:40 -0700
+X-MIMETrack: Serialize by Router on D03MC012/03/M/IBM(Release 7.0.2FP2HF51 | June 19, 2007) at
+ 10/03/2007 12:44:01,
+	Serialize complete at 10/03/2007 12:44:01
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson wrote:
-> Fix bug in sata_mv for cases where the IOMMU layer has merged SG entries
-> to larger than 64KB. They need to be split up before being sent to
-> the driver.
+Roland Dreier <rdreier@cisco.com> wrote on 09/17/2007 02:47:42 PM:
+
+>  > > IPoIB CM handles this properly by gathering together single pages 
+in
+>  > > skbs' fragment lists.
 > 
-> Just for simplicity's sake, split up at 64K boundary instead of 64K size,
-> since that's what the common code does anyway.
+>  > Then can we reuse IPoIB CM code here?
 > 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+> Yes, if possible, refactoring things so that the rx skb allocation
+> code becomes common between CM and non-CM would definitely make sense.
 
-applied, good catch, thanks!
+IPoIB-CM rx skb allocation is not generic to be used by UD, it allocates 
+more buffers than needed if mtu is not 64K, and doesn't query the real 
+max_num_sg from the device. I am thinking to have a generic skb allocation 
+in IPoIB based on matrix of (ipoib-mtu-size, page-size, max_num_sg, 
+head-size).
 
-
+Thanks
+Shirley 
