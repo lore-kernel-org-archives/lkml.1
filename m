@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXJCJjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXJCJos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbXJCJjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 05:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbXJCJj2
+	id S1756376AbXJCJos (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 05:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXJCJok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 05:39:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41740 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752869AbXJCJj2 (ORCPT
+	Wed, 3 Oct 2007 05:44:40 -0400
+Received: from gw-lon-cluster.cmcnet.net ([195.20.122.6]:25433 "EHLO
+	emearelay1.cmcmarkets.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751301AbXJCJok (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 05:39:28 -0400
-Date: Wed, 3 Oct 2007 02:39:24 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: nickpiggin@yahoo.com.au, akpm@linux-foundation.org, menage@google.com,
-       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
-Subject: Re: [patch] sched: fix sched-domains partitioning by cpusets
-Message-Id: <20071003023924.c4c5b2ef.pj@sgi.com>
-In-Reply-To: <20071003093517.GA22558@elte.hu>
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
-	<20071003062240.GA19027@elte.hu>
-	<20071002235615.6e8cd007.pj@sgi.com>
-	<200710030146.30162.nickpiggin@yahoo.com.au>
-	<20071003022108.5a8e310e.pj@sgi.com>
-	<20071003093517.GA22558@elte.hu>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Wed, 3 Oct 2007 05:44:40 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 05:44:39 EDT
+Subject: Re: [PATCH 5/5] lguest: loading bzImage directly
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, lguest <lguest@ozlabs.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1191368457.17826.53.camel@localhost.localdomain>
+References: <1191368052.17826.40.camel@localhost.localdomain>
+	 <1191368106.17826.43.camel@localhost.localdomain>
+	 <1191368154.17826.44.camel@localhost.localdomain>
+	 <1191368217.17826.47.camel@localhost.localdomain>
+	 <1191368399.17826.51.camel@localhost.localdomain>
+	 <1191368457.17826.53.camel@localhost.localdomain>
+Date: Wed, 03 Oct 2007 10:37:01 +0100
+Message-Id: <1191404221.17247.15.camel@feisty>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
+X-MIMETrack: Itemize by SMTP Server on smtp3/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 10/03/2007 10:39:30 AM,
+	Serialize by Router on emearelay1/UK/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 03/10/2007 10:44:40 AM,
+	Serialize complete at 03/10/2007 10:44:40 AM
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> in any case i'd like to see the externally visible API get in foremost - 
-> and there now seems to be agreement about that. (yay!) Any internal 
-> shaping of APIs can be done flexibly between cpusets and the scheduler.
+Hi guys
 
-Yup - though Nick and I will have to agree to -some- internal interface
-between the cpuset and sched code, at least for the moment.
+Would it not be clearer to #include <asm/bootparam.h> and use 
+the relevant named members of struct setup_header / struct boot_params
+rather than the hard-coded values 0x202, 0x1F1, 0x214 ?
 
-At least, if we thrash about on this, we won't be changing the externally
-visible API around.  We'll just continue driving Andrew nuts, not our
-users - that's an improvement.
+--
+Chris
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+
+On Wed, 2007-10-03 at 09:40 +1000, Rusty Russell wrote:
+[snip]
+> +	u8 hdr[1024];
+> +	int r;
+> +	/* Modern bzImages get loaded at 1M. */
+> +	void *p = from_guest_phys(0x100000);
+> +
+> +	/* Go back to the start of the file and read the header.  It should be
+> +	 * a Linux boot header (see Documentation/i386/boot.txt) */
+> +	lseek(fd, 0, SEEK_SET);
+> +	read(fd, hdr, sizeof(hdr));
+> +
+> +	/* At offset 0x202, we expect the magic "HdrS" */
+> +	if (memcmp(hdr + 0x202, "HdrS", 4) != 0)
+> +		errx(1, "This doesn't look like a bzImage to me");
+> +
+> +	/* The byte at 0x1F1 tells us how many extra sectors of
+> +	 * header: skip over them all. */
+> +	lseek(fd, (unsigned long)(hdr[0x1F1]+1) * 512, SEEK_SET);
+> +
+> +	/* Now read everything into memory. in nice big chunks. */
+> +	while ((r = read(fd, p, 65536)) > 0)
+> +		p += r;
+> +
+> +	/* Finally, 0x214 tells us where to start the kernel. */
+> +	return *(unsigned long *)&hdr[0x214];
+>  }
+>  
+>  /*L:140 Loading the kernel is easy when it's a "vmlinux", but most kernels
+> 
+
+
