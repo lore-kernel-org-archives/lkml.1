@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXJCAFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbXJCAJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbXJCAFk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 20:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXJCAFd
+	id S1755268AbXJCAJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 20:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXJCAJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 20:05:33 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:48286 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbXJCAFc (ORCPT
+	Tue, 2 Oct 2007 20:09:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45990 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752783AbXJCAJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 20:05:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ikRxDAS+iV1+Xb2FuMlvwxM6HQec16Ucl+dFs5gYQM0MPbLSRmIxExbeX/JSQEL1i7eE9voVTMIdDlVTDQ1/Hr+FOm+7rbTtlBZBFOP1LV47QoPq64Knr7HlwuN26mXmWbySadtQmjj+4nFhRYJPbtJqMcEtnb8DzTR1aELRZik=
-Message-ID: <9dbec86d0710021705j3a20e411hb3e9b34e622f9a85@mail.gmail.com>
-Date: Wed, 3 Oct 2007 08:05:30 +0800
-From: Sonny <smaniaol@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.4 vs 2.6 Traffic Controller performance
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Oct 2007 20:09:15 -0400
+Date: Wed, 3 Oct 2007 01:10:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory
+ Access   Control Kernel
+Message-ID: <20071003011033.5bfc9165@the-village.bc.nu>
+In-Reply-To: <4702B1D5.5050502@tmr.com>
+References: <46FEEBD4.5050401@schaufler-ca.com>
+	<20070930011618.ccb8351b.akpm@linux-foundation.org>
+	<Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au>
+	<alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org>
+	<1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil>
+	<alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
+	<4702B1D5.5050502@tmr.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-I hope this is the right place to ask this.Does any know if there is a
-substantial difference in the performance of the traffic controller
-between kernel 2.4 and 2.6. We tested it using 1 iperf server and use
-250 and 500 clients, altering the burst. We use the top command to
-check the idle time of our router to see this. The results we got from
-the 2.4 kernel shows around 65-70% idle time while the 2.6 shows
-60-65% idle time. We tried to use MRTG and we're not getting any
-results either. We want to know if we could improve the bandwidth by
-upgrading the kernel, else we would have to get a new bandwidth
-manager.  Could anyone have the similar test regarding this. Thanks in
-advance.
+On Tue, 02 Oct 2007 17:02:13 -0400
+Bill Davidsen <davidsen@tmr.com> wrote:
+
+> Linus Torvalds wrote:
+> > 
+> > On Mon, 1 Oct 2007, Stephen Smalley wrote:
+> >> You argued against pluggable schedulers, right?  Why is security
+> >> different?
+> > 
+> > Schedulers can be objectively tested. There's this thing called 
+> > "performance", that can generally be quantified on a load basis.
+> > 
+> > Yes, you can have crazy ideas in both schedulers and security. Yes, you 
+> > can simplify both for a particular load. Yes, you can make mistakes in 
+> > both. But the *discussion* on security seems to never get down to real 
+> > numbers. 
+> > 
+> And yet you can make the exact same case for schedulers as security, you 
+> can quantify the behavior, but if your only choice is A it doesn't help 
+> to know that B is better.
+
+To be fair the discussion on security does get down to real set theory
+but at that point most people's eyes (mine included) glaze over somewhat.
+
+You can reasonably quantify the behaviour and correctness of a security
+model based upon mathematical principles - if anything its *easier* that
+schedulers which are so much based on "feeling right".
+
+Smack seems a perfectly good simple LSM module, its clean, its based upon
+credible security models and sound theory (unlike AppArmor). I don't see
+why it shouldn't go in.
+
+Alan
