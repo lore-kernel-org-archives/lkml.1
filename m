@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbXJCNaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbXJCNei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbXJCNaZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXJCNaM
+	id S1755570AbXJCNei (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXJCNeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:30:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41916 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbXJCNaK (ORCPT
+	Wed, 3 Oct 2007 09:34:31 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55586 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbXJCNeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:30:10 -0400
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-In-Reply-To: <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
-References: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
-	 <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
-	 <200710032024.DJF78662.FHOLtMSFOOFJVQ@I-love.SAKURA.ne.jp>
-	 <20071003.204356.05853536.yoshfuji@linux-ipv6.org>
-	 <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
-	 <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Wed, 03 Oct 2007 15:24:24 +0200
-Message-Id: <1191417864.5599.2.camel@lappy>
+	Wed, 3 Oct 2007 09:34:31 -0400
+Date: Wed, 3 Oct 2007 14:34:22 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..)
+Message-ID: <20071003133422.GI8181@ftp.linux.org.uk>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071003084607.GC32218@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-10-03 at 22:04 +0900, Tetsuo Handa wrote:
-> James Morris wrote:
-> > I'm pretty sure that the singly linked list idea has been rejected a few 
-> > times.  Just use the existing API.
-> Too bad...
+On Wed, Oct 03, 2007 at 10:46:07AM +0200, Ingo Molnar wrote:
 > 
-> Well, is there a way to avoid read_lock when reading list?
+> hm, i just triggered the procfs crash below with -rc9 on a testbox. 
+> Config attached. It's easy to reproduce it via 'service sshd restart'. 
+> The crash site is:
 > 
-> Currently, TOMOYO Linux avoids read_lock, on the assumption that
-> (1) First, ptr->next is initialized with NULL.
-> (2) Later, ptr->next is assigned non-NULL address.
-> (3) Assigning to ptr->next is done atomically.
+>  (gdb) list *0xc017599d
+>  0xc017599d is in seq_path (fs/seq_file.c:354).
+>  349             if (m->count < m->size) {
+>  350                     char *s = m->buf + m->count;
+>  351                     char *p = d_path(dentry, mnt, s, m->size - m->count);
+>  352                     if (!IS_ERR(p)) {
+>  353                             while (s <= p) {
+>  354                                     char c = *p++;
+>  355                                     if (!c) {
+>  356                                             p = m->buf + m->count;
+>  357                                             m->count = s - m->buf;
+>  358                                             return s - p;
+>  (gdb)
+> 
+> any ideas? Fortunately i was able to do an strace of the incident:
 
- (4) wmb after asigning ptr->next
- (5) rmb before reading ptr->next
-
-But please do look at the various rcu list primitives. RCU allows one to
-avoid non-exclusive locks in many cases.
-
-non-exclusive locks are evil, they must all die...
-
+Charming...  So we get d_path() either returning junk or we get something
+that isn't NUL-terminated.  Which one it is?  I.e. what does p look like
+and what's in s?
