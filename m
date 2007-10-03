@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbXJCAMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbXJCAPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbXJCAMp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 20:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXJCAMg
+	id S1755586AbXJCAPX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 20:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXJCAPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 20:12:36 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46572 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752755AbXJCAMf (ORCPT
+	Tue, 2 Oct 2007 20:15:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:13279 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbXJCAPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 20:12:35 -0400
-Date: Wed, 3 Oct 2007 01:12:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory
- Access   Control Kernel
-Message-ID: <20071003011246.7313facb@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org>
-References: <46FEEBD4.5050401@schaufler-ca.com>
-	<20070930011618.ccb8351b.akpm@linux-foundation.org>
-	<Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au>
-	<alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org>
-	<1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil>
-	<alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>
-	<4702B1D5.5050502@tmr.com>
-	<alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 2 Oct 2007 20:15:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eBmuUgb5QzDBAmLlRJYumAgbMYCtYL3hrQ7LzkDrxVhjxPSRd/mJQrdslhGWZUoZPv1O5V25wBqOvXbm7a6n2r4Y2nb3kqxoFLa8QBYnLsiOstBseJEDbhdsUMSjKOpkniSXpXKXpzODx4d82YCiriXvRzErsObi5AmtpBYSVag=
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add
+	of_platform binding to xilinxfb
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akonovalov@ru.mvista.com,
+       linuxppc <linuxppc@ozlabs.org>,
+       Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
+References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 08:15:02 +0800
+Message-Id: <1191370502.5238.1.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> situations. For example, I find SELinux to be so irrelevant to my usage 
-> that I don't use it at all. I just don't have any other users on my 
-> machine
+On Mon, 2007-10-01 at 09:57 -0600, Grant Likely wrote:
+> (resend due to mailer issues.  Apologies to anyone receiving this twice)
+> 
+> This patch series reworks the Xilinx framebuffer driver and then adds
+> an of_platform bus binding.  The of_platform bus binding is needed to use
+> the driver in arch/powerpc platforms.
+> 
+> Antonino,
+> 
+> Assuming there are no major issues, I'd like to get this patch series
+> queued up for inclusion in 2.6.24.
 
-That you know about...
+Okay.
 
-The value of SELinux (or indeed any system compartmentalising access and
-limiting damage) comes into play when you get breakage - eg via a web
-browser exploit.
+Tony
 
-Yes SELinux is much more relevant to servers, and really comes into its
-own when its used to write custom rulesets and enforce corporate policy
-("No you can't run that screensaver that arrived by email").
 
-Alan
