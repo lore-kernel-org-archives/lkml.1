@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbXJCHiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbXJCHkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbXJCHiF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 03:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXJCHhy
+	id S1756086AbXJCHkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 03:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbXJCHj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 03:37:54 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:35042 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbXJCHhx (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 03:37:53 -0400
-Subject: Re: [PATCH] sky2: jumbo frame regression fix
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20071002215914.13d1e8cf@freepuppy.rosehill>
-References: <1191372129.26233.12.camel@localhost>
-	 <20071002180209.47c350a3@freepuppy.rosehill>
-	 <1191375274.26233.17.camel@localhost>
-	 <20071002215914.13d1e8cf@freepuppy.rosehill>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7XHyictprzcCrlQ7zpwQ"
-Date: Wed, 03 Oct 2007 09:37:36 +0200
-Message-Id: <1191397056.26233.24.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Wed, 3 Oct 2007 03:39:59 -0400
+Received: from namei.org ([69.55.235.186]:35444 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752686AbXJCHj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 03:39:58 -0400
+Date: Wed, 3 Oct 2007 00:39:34 -0700 (PDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 03/15](repost) Memory and pathname management functions.
+In-Reply-To: <4701F3AB.5000807@nttdata.co.jp>
+Message-ID: <Xine.LNX.4.64.0710030033350.1422@us.intercode.com.au>
+References: <4701F285.5000206@nttdata.co.jp> <4701F3AB.5000807@nttdata.co.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2 Oct 2007, Kentaro Takeda wrote:
 
---=-7XHyictprzcCrlQ7zpwQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> +/**
+> + * tmy_alloc - allocate memory for temporary purpose.
+> + * @size: requested size in bytes.
+> + *
+> + * Returns '\0'-initialized memory region on success.
+> + * Returns NULL on failure.
+> + *
+> + * This function allocates memory for keeping ACL entries.
+> + * The caller has to call tmy_free() the returned pointer
+> + * when memory is no longer needed.
+> + */
 
-On tis, 2007-10-02 at 21:59 -0700, Stephen Hemminger wrote:
-> On Wed, 03 Oct 2007 03:34:34 +0200
-> Ian Kumlien <pomac@vapor.com> wrote:
->=20
-> > On tis, 2007-10-02 at 18:02 -0700, Stephen Hemminger wrote:
-> > > Remove unneeded check that caused problems with jumbo frame sizes.
-> > > The check was recently added and is wrong.
-> > > When using jumbo frames the sky2 driver does fragmentation, so
-> > > rx_data_size is less than mtu.
-> >=20
-> > Confirmed working.
-> >=20
-> > Now running with 9k mtu with no errors, =3D)
-> >=20
-> > It also seems that the FIFO bug was the one that affected me before,
-> > damn odd race that one.
->=20
-> Does the workaround (forced reset work). Ian, you are the first person to
-> report triggering it.  I haven't found a way to make it happen.
-> What combination of flow control and speeds are you using?
+Would you please explain why you need another level of memory allocation?
 
-Yes it works, it's the problem i had all along =3D)
+What does it do apart from let you check for memory leaks?
 
-As to how to make it happen thats a bit harder...
-To me it seems like it's a combination of several connections and
-somewhat high bandwidth but you have to send data for it to happen...
-
-To me it usually happens when seeding files via Bittorrent, but it seems
-like it has to be somewhat special circumstances to actually trigger it.
-
-I use jumbo frames, my lan is gigabit, to my firewall. From the firewall
-it's common 1500 mtu 100mbit and i doubt that this has anything to do
-with it (if it's not a 'number of frames that can be stored' problem and
-thus the mtu limits it to a really small value making it easier to
-trigger)
-
-Well, thats my thoughts atleast but then i just got up after having
-slept 5 hours, so =3D)
-
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
-
---=-7XHyictprzcCrlQ7zpwQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
-
-iD8DBQBHA0bA7F3Euyc51N8RAgUpAJ9/LCBVM9t7NUEAtIkf9HbgWYEB1ACgk0UZ
-nxa6rdbbv3wAsEjtB8ShMkU=
-=wSYY
------END PGP SIGNATURE-----
-
---=-7XHyictprzcCrlQ7zpwQ--
-
+- James
+-- 
+James Morris
+<jmorris@namei.org>
