@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXJCVU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbXJCVX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXJCVU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 17:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbXJCVUo
+	id S1758935AbXJCVX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 17:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270AbXJCVXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 17:20:44 -0400
-Received: from mga11.intel.com ([192.55.52.93]:8052 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758347AbXJCVUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 17:20:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,226,1188802800"; 
-   d="scan'208";a="161969545"
-Date: Wed, 3 Oct 2007 14:14:53 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>, tomof@acm.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm] intel-iommu sg chaining support
-Message-ID: <20071003211452.GA14189@askeshav-devel.jf.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070929125638W.tomof@acm.org> <20071001161256.GA28998@askeshav-devel.jf.intel.com> <20071003141203.fae1edf5.akpm@linux-foundation.org>
+	Wed, 3 Oct 2007 17:23:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41352 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754904AbXJCVXt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 17:23:49 -0400
+Date: Wed, 3 Oct 2007 14:23:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Samuel Ortiz <samuel@sortiz.org>
+Cc: linux-kernel@vger.kernel.org, ryanr23@gmail.com
+Subject: Re: [PATCH -mm] IrCOMM discovery indication simplification
+Message-Id: <20071003142343.ecbb19a3.akpm@linux-foundation.org>
+In-Reply-To: <20070930232951.GA18702@sortiz.org>
+References: <20070930232951.GA18702@sortiz.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003141203.fae1edf5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 02:12:03PM -0700, Andrew Morton wrote:
-> On Mon, 1 Oct 2007 09:12:56 -0700
-> "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
-> 
-> > On Sat, Sep 29, 2007 at 05:16:38AM -0700, FUJITA Tomonori wrote:
-> > > 
-> > >    x86_64 defines ARCH_HAS_SG_CHAIN. So if IOMMU implementations don't
-> > >    support sg chaining, we will get data corruption.
-> > >    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > 
-> > Acked-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-> > 
-> 
-> Am I correct in believing that this patch is needed only when the
-> chaining patches which are presently in git-block are combined with the
-> intel-iommu work which is presently in -mm?
-Yes, that is correct. 
+On Mon, 1 Oct 2007 02:29:51 +0300
+Samuel Ortiz <samuel@sortiz.org> wrote:
 
--Anil
+> Hi Andrew,
+> 
+> Every IrCOMM socket is registered with the discovery subsystem, so we don't
+> need to loop over all of them for every discovery event. We just need to
+> do it for the registered IrCOMM socket.
+> 
+> Would you please consider this patch for -mm inclusion ?
+
+Sure.  I don't merge ircomm patches directly so I added this to my
+to-send-to-davem queue.
+
+> From: Ryan Reading <ryanr23@gmail.com>
+> Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
+
+Please put the From: right at the start of the changelog, not at the end
+like this, thanks.
+
+
