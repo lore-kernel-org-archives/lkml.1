@@ -1,119 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXJCSsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbXJCSsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbXJCSsk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXJCSsc
+	id S1758793AbXJCSsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXJCSsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:48:32 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41151 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbXJCSsb (ORCPT
+	Wed, 3 Oct 2007 14:48:37 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:32865 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756573AbXJCSsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:48:31 -0400
-Date: Wed, 3 Oct 2007 19:47:26 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
-In-Reply-To: <47034F12.8020505@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0710031918470.9414@blonde.wat.veritas.com>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <4701C737.8070906@linux.vnet.ibm.com> <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
- <47034F12.8020505@linux.vnet.ibm.com>
+	Wed, 3 Oct 2007 14:48:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=X5QOuLVWbWQRncb7QM56ihUruKQzcnKwlAxhm4cbHBKJrnl82mOPS67jY59hgZ/A+5icxnvKTbMA4J5SSE3VvQfJHf0gsfFOdiywNaiCMTxDQtj/0RzOUr/p+JEL/58bj0ZR7A2XjbedIi+L75gaIMewQEhUzUN/6E8LiXm7Jcs=
+Message-ID: <84144f020710031148i346b393bm528fc150fedff00f@mail.gmail.com>
+Date: Wed, 3 Oct 2007 21:48:34 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Neil Romig" <neil@romig.demon.co.uk>
+Subject: Re: File corruption when using kernels 2.6.18+
+Cc: linux-kernel@vger.kernel.org, hyoshiok@miraclelinux.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <4703E287.3070705@romig.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46FFC371.9040805@romig.demon.co.uk>
+	 <84144f020709300929t6aafd98at23d810d4460e898a@mail.gmail.com>
+	 <4702B28F.5050404@romig.demon.co.uk>
+	 <84144f020710022218x147ffc74y477c0a1be3e60d66@mail.gmail.com>
+	 <4703E287.3070705@romig.demon.co.uk>
+X-Google-Sender-Auth: 4ec77f102e98d0cd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Oct 2007, Balbir Singh wrote:
-> Hugh Dickins wrote:
-> > 
-> > Sorry, Balbir, I've failed to get back to you, still attending to
-> > priorities.  Let me briefly summarize my issue with the mem controller:
-> > you've not yet given enough attention to swap.
-> 
-> I am open to suggestions and ways and means of making swap control
-> complete and more usable.
+Hi Neil,
 
-Well, swap control is another subject.  I guess for that you'll need
-to track which cgroup each swap page belongs to (rather more expensive
-than the current swap_map of unsigned shorts).  And I doubt it'll be
-swap control as such that's required, but control of rss+swap.
+On 10/3/07, Neil Romig <neil@romig.demon.co.uk> wrote:
+> > > Thanks for your help on this. I have narrowed it down to commit
+> > > "c22ce143d15eb288543fe9873e1c5ac1c01b69a1 x86: cache pollution aware
+> > > __copy_from_user_ll()". This fits with the errors I'm getting, so now I need
+> > > to find out if I can safely ignore this patch, or does it have to be modified?
+> > > This is my first Linux bug in many years of simply using it, so I'm a little
+> > > nervous!
 
-But here I'm just worrying about how the existence of swap makes
-something of a nonsense of your rss control.
+A some point in time, I wrote:
+> > Just to make sure, if you disable CONFIG_X86_INTEL_USERCOPY, the
+> > corruption goes away?
 
-> > I accept that full swap control is something you're intending to add
-> > incrementally later; but the current state doesn't make sense to me.
-> > 
-> > The problems are swapoff and swapin readahead.  These pull pages into
-> > the swap cache, which are assigned to the cgroup (or the whatever-we-
-> > call-the-remainder-outside-all-the-cgroups) which is running swapoff
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-I'd appreciate it if you'd teach me the right name for that!
+On 10/3/07, Neil Romig <neil@romig.demon.co.uk> wrote:
+> It took some fiddling to disable (edit arch/i386/Kconfig.cpu) but that has fixed it.
+> Many thanks!
+>
+> Does this need to be reported as a bug? Or should the kernel config scripts be
+> changed to enable this option to be easily turned off?
 
-> > or faulting in its own page; yet they very clearly don't (in general)
-> > belong to that cgroup, but to other cgroups which will be discovered
-> > later.
-> 
-> I understand what your trying to say, but with several approaches that
-> we tried in the past, we found caches the hardest to most accurately
-> account. IIRC, with readahead, we don't even know if all the pages
-> readahead will be used, that's why we charge everything to the cgroup
-> that added the page to the cache.
+Looks like a bug to me. Can we have your /proc/cpuinfo too?
 
-Yes, readahead is anyway problematic.  My guess is that in the file
-cache case, you'll tend not to go too far wrong by charging to the
-one that added - though we're all aware that's fairly unsatisfactory.
-
-My point is that in the swap cache case, it's badly wrong: there's
-no page more obviously owned by a cgroup than its anonymous pages
-(forgetting for a moment that minority shared between cgroups
-until copy-on-write), so it's very wrong for swapin readahead
-or swapoff to go charging those to another or to no cgroup.
-
-Imagine a cgroup at its rss limit, with more out on swap.  Then
-another cgroup does some swap readahead, bringing pages private
-to the first into cache.  Or runs swapoff which actually plugs
-them into the rss of the first cgroup, so it goes over limit.
-
-Those are pages we'd want to swap out when the first cgroup
-faults to go further over its limit; but they're now not even
-identified as belonging to the right cgroup, so won't be found.
-
-> > I did try removing the cgroup mods to mm/swap_state.c, so swap pages
-> > get assigned to a cgroup only once it's really known; but that's not
-> > enough by itself, because cgroup RSS reclaim doesn't touch those
-> > pages, so the cgroup can easily OOM much too soon.  I was thinking
-> > that you need a "limbo" cgroup for these pages, which can be attacked
-> > for reclaim along with any cgroup being reclaimed, but from which
-> > pages are readily migrated to their real cgroup once that's known.
-> > 
-> 
-> Is migrating the charge to the real cgroup really required?
-
-My answer is definitely yes.  I'm not suggesting that you need
-general migration between cgroups at this stage (something for
-later quite likely); but I am suggesting you need one pseudo-cgroup
-to hold these cases temporarily, and that you cannot properly track
-rss without it (if there is any swap).
-
-> > But I had to switch over to other work before trying that out:
-> > perhaps the idea doesn't really fly at all.  And it might well
-> > be no longer needed once full mem+swap control is there.
-> > 
-> > So in the current memory controller, that unuse_pte mem charge I was
-> > originally worried about failing (I hadn't at that point delved in
-> > to see how it tries to reclaim) actually never fails (and never
-> > does anything): the page is already assigned to some cgroup-or-
-> > whatever and is never charged to vma->vm_mm at that point.
-> > 
-> 
-> Excellent!
-
-Umm, please explain what's excellent about that.
-
-Hugh
+                              Pekka
