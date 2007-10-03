@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbXJCSsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXJCSur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbXJCSsz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXJCSsh
+	id S1758656AbXJCSur (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbXJCSuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:48:37 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:32865 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756573AbXJCSsg (ORCPT
+	Wed, 3 Oct 2007 14:50:40 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43528 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbXJCSuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=X5QOuLVWbWQRncb7QM56ihUruKQzcnKwlAxhm4cbHBKJrnl82mOPS67jY59hgZ/A+5icxnvKTbMA4J5SSE3VvQfJHf0gsfFOdiywNaiCMTxDQtj/0RzOUr/p+JEL/58bj0ZR7A2XjbedIi+L75gaIMewQEhUzUN/6E8LiXm7Jcs=
-Message-ID: <84144f020710031148i346b393bm528fc150fedff00f@mail.gmail.com>
-Date: Wed, 3 Oct 2007 21:48:34 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Neil Romig" <neil@romig.demon.co.uk>
-Subject: Re: File corruption when using kernels 2.6.18+
-Cc: linux-kernel@vger.kernel.org, hyoshiok@miraclelinux.com,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <4703E287.3070705@romig.demon.co.uk>
+	Wed, 3 Oct 2007 14:50:39 -0400
+Date: Wed, 3 Oct 2007 13:50:35 -0500
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Tony Breeds <tony@bakeyournoodle.com>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+Message-ID: <20071003185035.GS4338@austin.ibm.com>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <20070924123531.GC30855@shadowen.org> <20071002232819.GN4338@austin.ibm.com> <20071003002646.GD9814@bakeyournoodle.com> <1191371416.8073.1.camel@concordia> <20071003011909.GG9814@bakeyournoodle.com> <1191384586.8073.6.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46FFC371.9040805@romig.demon.co.uk>
-	 <84144f020709300929t6aafd98at23d810d4460e898a@mail.gmail.com>
-	 <4702B28F.5050404@romig.demon.co.uk>
-	 <84144f020710022218x147ffc74y477c0a1be3e60d66@mail.gmail.com>
-	 <4703E287.3070705@romig.demon.co.uk>
-X-Google-Sender-Auth: 4ec77f102e98d0cd
+In-Reply-To: <1191384586.8073.6.camel@concordia>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Neil,
+On Wed, Oct 03, 2007 at 02:09:46PM +1000, Michael Ellerman wrote:
+> 
+> Until we initialise what exactly?
 
-On 10/3/07, Neil Romig <neil@romig.demon.co.uk> wrote:
-> > > Thanks for your help on this. I have narrowed it down to commit
-> > > "c22ce143d15eb288543fe9873e1c5ac1c01b69a1 x86: cache pollution aware
-> > > __copy_from_user_ll()". This fits with the errors I'm getting, so now I need
-> > > to find out if I can safely ignore this patch, or does it have to be modified?
-> > > This is my first Linux bug in many years of simply using it, so I'm a little
-> > > nervous!
+Until we allocate the error log buffer. The original crash was 
+for a null-pointer deref of the unallocated buffer. I just sent 
+out a patch to fix this; its a bit simpler than the below.
 
-A some point in time, I wrote:
-> > Just to make sure, if you disable CONFIG_X86_INTEL_USERCOPY, the
-> > corruption goes away?
+In that email, I remarked:
 
-On 10/3/07, Neil Romig <neil@romig.demon.co.uk> wrote:
-> It took some fiddling to disable (edit arch/i386/Kconfig.cpu) but that has fixed it.
-> Many thanks!
->
-> Does this need to be reported as a bug? Or should the kernel config scripts be
-> changed to enable this option to be easily turned off?
+Andy Whitcroft's crash was appearently due to firmware complaining
+about lost power, (actually, lost power supply redundancy!), which
+occurred very early during boot.
 
-Looks like a bug to me. Can we have your /proc/cpuinfo too?
+    Type                00000040 (EPOW)
+    Status:             bypassed new
+    Residual error from previous boot.
+    EPOW Sensor Value:  00000002
+    EPOW warning due to loss of redundancy.
+    EPOW general power fault.
 
-                              Pekka
+I've no clue why firmware thought it was OK to report this
+during one of the earliest calls to RTAS; I'm still investiigating
+that.
+
+--linas
