@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXJCPti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbXJCPuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbXJCPti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXJCPtb
+	id S1758373AbXJCPuu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbXJCPul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:49:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57609 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895AbXJCPta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:49:30 -0400
-Date: Wed, 3 Oct 2007 17:49:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
-	2.6.23-rc9 and a heads-up for the 2.6.24 series..)
-Message-ID: <20071003154914.GA21690@elte.hu>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu> <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org> <alpine.LFD.0.999.0710030835070.3579@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710030835070.3579@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 3 Oct 2007 11:50:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47433 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755100AbXJCPuk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 11:50:40 -0400
+Subject: [PATCH] net: fix race in process_backlog
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jeff Dike <jdike@addtoit.com>, David Miller <davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 17:44:53 +0200
+Message-Id: <1191426293.5599.27.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Subject: net: fix race in process_backlog
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+The recent NAPI rework (4fa57c9ea9f36f9ca852f3a88ca5d2f1aebbc960)
+introduced a race between netif_rx() and process_backlog() which
+resulted in softirq processing to drop dead.
 
-> Your compiler generates
-> 
-> 	movl    -16(%ebp),%edx
-> 	movl    (%edx),%edi		/* this is _totally_ bogus! */
-> 	incl    %edx
-> 	movl    %edx,-16(%ebp)
-> 	movl    %edi,%ecx
-> 	testb   %cl,%cl
-> 	je      ...
+netif_rx()		process_backlog()
 
-ah, ok.
+			irq_disable();
+			skb = __skb_dequeue();
+			irq_enable();
 
-> while I get (gcc version 4.1.2 20070925 (Red Hat 4.1.2-28)):
-> 
->         movl    -16(%ebp), %eax # p,
->         movzbl  (%eax), %edi    #, c	/* not bogus! */
->         movl    %edi, %edx      # c,
->         testb   %dl, %dl        #
->         je      .L64    #,
->         incl    %eax    #
->         movsbl  %dl,%ebx        #, D.12414
->         movl    %eax, -16(%ebp) #, p
-> 
-> where the difference (apart from doing the increment differently and 
-> different register allocation) is that I have a "movzbl" (correct), 
-> while you have a "movl" (pure and utter crap).
+irq_disable();
+__skb_queue_tail();
+napi_schedule();
+irq_enable();
 
-i'll try with another compiler in a minute.
+			if (!skb)
+			  napi_complete();  <-- oops!
 
-	Ingo
+we cleared the napi bit, even though there is data to process.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ net/core/dev.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/net/core/dev.c
+===================================================================
+--- linux-2.6.orig/net/core/dev.c
++++ linux-2.6/net/core/dev.c
+@@ -2095,11 +2095,11 @@ static int process_backlog(struct napi_s
+ 
+ 		local_irq_disable();
+ 		skb = __skb_dequeue(&queue->input_pkt_queue);
+-		local_irq_enable();
+ 		if (!skb) {
+-			napi_complete(napi);
++			__napi_complete(napi);
+ 			break;
+ 		}
++		local_irq_enable();
+ 
+ 		dev = skb->dev;
+ 
+
+
