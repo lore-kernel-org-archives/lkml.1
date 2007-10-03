@@ -1,292 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbXJCPzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXJCQH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbXJCPzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXJCPzk
+	id S1756159AbXJCQH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 12:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXJCQHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:55:40 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63639 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593AbXJCPzi (ORCPT
+	Wed, 3 Oct 2007 12:07:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51283 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752565AbXJCQHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:55:38 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Fix blktrace setup 32-bit ioctl on 64-bit kernels
-Date: Wed, 3 Oct 2007 17:55:20 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, abhishekrai@google.com,
-       Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net
-References: <20071002073943.GC5236@kernel.dk> <20071002083758.GD5236@kernel.dk> <20071002092856.GG5236@kernel.dk>
-In-Reply-To: <20071002092856.GG5236@kernel.dk>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 3 Oct 2007 12:07:17 -0400
+Date: Wed, 3 Oct 2007 09:07:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9
+ and a heads-up for the 2.6.24 series..)
+In-Reply-To: <20071003154046.GA17256@elte.hu>
+Message-ID: <alpine.LFD.0.999.0710030848150.3579@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+ <20071003084607.GC32218@elte.hu> <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
+ <20071003154046.GA17256@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710031755.21068.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+EdDvlX+iT/Al2bqEIVqIImEUJBE9orvetXZe
- ZOxr7PgeJnh8cmknNHffjf0kr1hPFNik0COue3jtzX2MjoIV5/
- B+d0KrScCvBJ38+LSLJxQ==
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's my counterproposal for the blktrace compat code. It doesn't have
-any of the problems I found in your patch obviously, but I haven't tested
-it either, so I'm sure you can spot a bug or two in here. Comments?
 
-Jens, I think the best overall solution would be to have a
-block/compat_ioctl.c file with all the compat handling for block
-devices moved over from fs/compat_ioctl.c, and done in a nicer way.
-If you agree, with this approach, I'd volunteer to come up with a
-patch.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Wed, 3 Oct 2007, Ingo Molnar wrote:
+> 
+> >  - and as a result you get an exception on the *next* page:
+> > 
+> > 	BUG: unable to handle kernel paging request at virtual address f2a40000
+> 
+> Hm, are you sure? This is a CONFIG_DEBUG_PAGEALLOC=y kernel, so even a 
+> slight overrun of a non-NIL terminated string (as suspected by Al) could 
+> run into a non-mapped kernel page. (which would indicate not a compiler 
+> bug but use-after free)
 
-Index: linux-2.6/block/blktrace.c
-===================================================================
---- linux-2.6.orig/block/blktrace.c
-+++ linux-2.6/block/blktrace.c
-@@ -312,33 +312,26 @@ static struct rchan_callbacks blk_relay_
- /*
-  * Setup everything required to start tracing
-  */
--static int blk_trace_setup(struct request_queue *q, struct block_device *bdev,
--			   char __user *arg)
-+static int do_blk_trace_setup(struct request_queue *q, struct block_device *bdev,
-+			struct blk_user_trace_setup *buts)
- {
--	struct blk_user_trace_setup buts;
- 	struct blk_trace *old_bt, *bt = NULL;
- 	struct dentry *dir = NULL;
- 	char b[BDEVNAME_SIZE];
- 	int ret, i;
- 
--	if (copy_from_user(&buts, arg, sizeof(buts)))
--		return -EFAULT;
--
--	if (!buts.buf_size || !buts.buf_nr)
-+	if (!buts->buf_size || !buts->buf_nr)
- 		return -EINVAL;
- 
--	strcpy(buts.name, bdevname(bdev, b));
-+	strcpy(buts->name, bdevname(bdev, b));
- 
- 	/*
- 	 * some device names have larger paths - convert the slashes
- 	 * to underscores for this to work as expected
- 	 */
--	for (i = 0; i < strlen(buts.name); i++)
--		if (buts.name[i] == '/')
--			buts.name[i] = '_';
--
--	if (copy_to_user(arg, &buts, sizeof(buts)))
--		return -EFAULT;
-+	for (i = 0; i < strlen(buts->name); i++)
-+		if (buts->name[i] == '/')
-+			buts->name[i] = '_';
- 
- 	ret = -ENOMEM;
- 	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
-@@ -350,7 +343,7 @@ static int blk_trace_setup(struct reques
- 		goto err;
- 
- 	ret = -ENOENT;
--	dir = blk_create_tree(buts.name);
-+	dir = blk_create_tree(buts->name);
- 	if (!dir)
- 		goto err;
- 
-@@ -363,20 +356,21 @@ static int blk_trace_setup(struct reques
- 	if (!bt->dropped_file)
- 		goto err;
- 
--	bt->rchan = relay_open("trace", dir, buts.buf_size, buts.buf_nr, &blk_relay_callbacks, bt);
-+	bt->rchan = relay_open("trace", dir, buts->buf_size,
-+				buts->buf_nr, &blk_relay_callbacks, bt);
- 	if (!bt->rchan)
- 		goto err;
- 
--	bt->act_mask = buts.act_mask;
-+	bt->act_mask = buts->act_mask;
- 	if (!bt->act_mask)
- 		bt->act_mask = (u16) -1;
- 
--	bt->start_lba = buts.start_lba;
--	bt->end_lba = buts.end_lba;
-+	bt->start_lba = buts->start_lba;
-+	bt->end_lba = buts->end_lba;
- 	if (!bt->end_lba)
- 		bt->end_lba = -1ULL;
- 
--	bt->pid = buts.pid;
-+	bt->pid = buts->pid;
- 	bt->trace_state = Blktrace_setup;
- 
- 	ret = -EBUSY;
-@@ -401,6 +395,26 @@ err:
- 	return ret;
- }
- 
-+static int blk_trace_setup(struct request_queue *q, struct block_device *bdev,
-+			   char __user *arg)
-+{
-+	struct blk_user_trace_setup buts;
-+	int ret;
-+
-+	ret = copy_from_user(&buts, arg, sizeof(buts));
-+	if (ret)
-+		return -EFAULT;
-+
-+	ret = do_blk_trace_setup(q, bdev, &buts);
-+	if (ret)
-+		return ret;
-+
-+	if (copy_to_user(arg, &buts, sizeof(buts)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- static int blk_trace_startstop(struct request_queue *q, int start)
- {
- 	struct blk_trace *bt;
-@@ -474,6 +488,53 @@ int blk_trace_ioctl(struct block_device 
- 	return ret;
- }
- 
-+#if defined(CONFIG_COMPAT)
-+static inline int compat_blk_trace_setup(struct request_queue *q,
-+			struct block_device *bdev, char __user *arg)
-+{
-+	struct blk_user_trace_setup buts;
-+	struct compat_blk_user_trace_setup cbuts;
-+	int ret;
-+
-+	if (copy_from_user(&cbuts, arg, sizeof(cbuts)))
-+		return -EFAULT;
-+
-+	buts = (struct blk_user_trace_setup) {
-+		.act_mask = cbuts.act_mask,
-+		.buf_size = cbuts.buf_size,
-+		.buf_nr = cbuts.buf_nr,
-+		.start_lba = cbuts.start_lba,
-+		.end_lba = cbuts.end_lba,
-+		.pid = cbuts.pid,
-+	};
-+	memcpy(&buts.name, &cbuts.name, 32);
-+
-+	mutex_lock(&bdev->bd_mutex);
-+	ret = do_blk_trace_setup(q, bdev, &buts);
-+	mutex_unlock(&bdev->bd_mutex);
-+	if (ret)
-+		return ret;
-+
-+	if (copy_to_user(arg, &buts.name, 32))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+int compat_blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
-+{
-+
-+	if (cmd == BLKTRACESETUP32) {
-+		struct request_queue *q = bdev_get_queue(bdev);
-+		if (!q)
-+			return -ENXIO;
-+		return compat_blk_trace_setup(q, bdev, arg);
-+	}
-+
-+	return blk_trace_ioctl(bdev, cmd, arg);
-+}
-+#endif
-+
- /**
-  * blk_trace_shutdown: - stop and cleanup trace structures
-  * @q:    the request queue associated with the device
-Index: linux-2.6/block/ioctl.c
-===================================================================
---- linux-2.6.orig/block/ioctl.c
-+++ linux-2.6/block/ioctl.c
-@@ -290,14 +290,25 @@ int blkdev_ioctl(struct inode *inode, st
-    ENOIOCTLCMD for unknown ioctls. */
- long compat_blkdev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
- {
-+	int ret = -ENOIOCTLCMD;
-+#ifdef CONFIG_COMPAT
- 	struct block_device *bdev = file->f_path.dentry->d_inode->i_bdev;
- 	struct gendisk *disk = bdev->bd_disk;
--	int ret = -ENOIOCTLCMD;
-+
-+	switch (cmd) {
-+	case BLKTRACESTART:
-+	case BLKTRACESTOP:
-+	case BLKTRACESETUP32:
-+	case BLKTRACETEARDOWN:
-+		return blk_trace_ioctl(bdev, cmd, (char __user *) arg);
-+	}
-+
- 	if (disk->fops->compat_ioctl) {
- 		lock_kernel();
- 		ret = disk->fops->compat_ioctl(file, cmd, arg);
- 		unlock_kernel();
- 	}
-+#endif
- 	return ret;
- }
- 
-Index: linux-2.6/include/linux/blktrace_api.h
-===================================================================
---- linux-2.6.orig/include/linux/blktrace_api.h
-+++ linux-2.6/include/linux/blktrace_api.h
-@@ -142,6 +142,23 @@ struct blk_user_trace_setup {
- 	u32 pid;
- };
- 
-+#ifdef __KERNEL__
-+#include <linux/compat.h>
-+
-+#ifdef CONFIG_COMPAT
-+struct compat_blk_user_trace_setup {
-+	char name[32];
-+	u16 act_mask;
-+	u32 buf_size;
-+	u32 buf_nr;
-+	compat_u64 start_lba;
-+	compat_u64 end_lba;
-+	u32 pid;
-+};
-+#define BLKTRACESETUP32 _IOWR(0x12,115,struct compat_blk_user_trace_setup)
-+
-+#endif /* CONFIG_COMPAT */
-+
- #if defined(CONFIG_BLK_DEV_IO_TRACE)
- extern int blk_trace_ioctl(struct block_device *, unsigned, char __user *);
- extern void blk_trace_shutdown(struct request_queue *);
-@@ -287,5 +304,6 @@ static inline void blk_add_trace_remap(s
- #define blk_add_trace_pdu_int(q, what, bio, pdu)	do { } while (0)
- #define blk_add_trace_remap(q, bio, dev, f, t)	do {} while (0)
- #endif /* CONFIG_BLK_DEV_IO_TRACE */
-+#endif /* __KERNEL__ */
- 
- #endif
-Index: linux-2.6/fs/compat_ioctl.c
-===================================================================
---- linux-2.6.orig/fs/compat_ioctl.c
-+++ linux-2.6/fs/compat_ioctl.c
-@@ -2553,10 +2553,6 @@ COMPATIBLE_IOCTL(BLKRRPART)
- COMPATIBLE_IOCTL(BLKFLSBUF)
- COMPATIBLE_IOCTL(BLKSECTSET)
- COMPATIBLE_IOCTL(BLKSSZGET)
--COMPATIBLE_IOCTL(BLKTRACESTART)
--COMPATIBLE_IOCTL(BLKTRACESTOP)
--COMPATIBLE_IOCTL(BLKTRACESETUP)
--COMPATIBLE_IOCTL(BLKTRACETEARDOWN)
- ULONG_IOCTL(BLKRASET)
- ULONG_IOCTL(BLKFRASET)
- #endif
+I am 100% sure. I can look at the disassembly, and point to the fact that 
+your Oops happens on code that is simply totally bogus.
+
+That string is NUL-terminated, which is why the access is to f2a3fffe in 
+the first place: we explicitly asked d_path() to create us a string at the 
+end of the page (it creates them backwards), so the path string has a NUL 
+a the end at address f2a3ffff, which is exactly what we'd expect.
+
+Your compiler really does seem to be total crap.
+
+Do a "make fs/seq_file.s" (and make sure you *disable* CONFIG_DEBUG_INFO 
+first, otherwise the result will be unreadable crud), and look at 
+seq_path(). It's going to be more readable than the disassembly that I got 
+through gdb, but I bet it's going to show it even more clearly.
+
+> i just found another config under which i get similar crashes, config 
+> attached. One common theme is CONFIG_DEBUG_FS and DEBUG_PAGEALLOC - and 
+> CONFIG_MAC80211_DEBUGFS is not enabled in this one so it's off the hook 
+> i think. (the crashes are attached below)
+
+.. of *course* DEBUG_PAGEALLOC is going to be implied in the problem. If 
+you don't have DEBUG_PAGEALLOC, you'll never see this, because you'll have 
+all pages mapped, and the only page that it could happen to is the very 
+last page in memory, and you'll never hit that one in practice.
+
+> (my serial log on this box goes back about 6 months, and that alone 
+> shows more than 3500 successful kernel bootups on that particular 
+> testsystem, each kernel built by this compiler - and there's another 
+> testsystem that i use even more frequently. Despite that, a compiler bug 
+> is still possible of course.)
+
+It's not about "possible". It's a fact. Send me your "seq_file.s" output 
+for that function to be sure - it *could* be memory corruption that 
+changes a "movb" into a "movl", and maybe the compiler did a byte move to 
+start with, but quite frankly, that is such a remote possibility that I 
+don't consider it realistic.
+
+> BUG: unable to handle kernel paging request at virtual address f6207000
+>  printing eip:
+> c016ecf1
+> *pdpt = 0000000000003001
+> *pde = 0000000000ac1067
+> *pte = 0000000036207000
+> Oops: 0000 [#1]
+> SMP DEBUG_PAGEALLOC
+> Modules linked in:
+> CPU:    1
+> EIP:    0060:[<c016ecf1>]    Not tainted VLI
+> EFLAGS: 00010297   (2.6.23-rc9 #20)
+> EIP is at seq_path+0x60/0xca
+> eax: f6206ffe   ebx: c2de0f50   ecx: 0000002b   edx: f6206ffe
+> esi: f6206007   edi: c2dddfb0   ebp: f6503f18   esp: f6503f00
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process awk (pid: 1160, ti=f6503000 task=f73a8390 task.ti=f6503000)
+> Stack: 00000ff9 f6e5cf70 f6206ffe c2dddf80 f6e5cf70 c2dddfb0 f6503f30 c016ce40 
+>        c05d71b5 f6730f38 f6e5cf70 c2dddfb0 f6503f70 c016f05d 00000400 08098f18 
+>        f6730f38 f6e5cf90 00000000 0806bc2e 00000003 08094320 f6503fb0 00000000 
+> Call Trace:
+>  [<c0103c8d>] show_trace_log_lvl+0x19/0x2e
+>  [<c0103d3f>] show_stack_log_lvl+0x9d/0xa5
+>  [<c0104083>] show_registers+0x1af/0x281
+>  [<c0104338>] die+0x11a/0x1e8
+>  [<c01138d1>] do_page_fault+0x632/0x715
+>  [<c04e7372>] error_code+0x72/0x80
+>  [<c016ce40>] show_vfsmnt+0x43/0x120
+>  [<c016f05d>] seq_read+0xf1/0x269
+>  [<c0159783>] vfs_read+0x90/0x10e
+>  [<c0159f9e>] sys_read+0x3f/0x63
+>  [<c0102876>] sysenter_past_esp+0x5f/0x89
+>  =======================
+> Code: f0 ff ff 76 77 eb 7a 8b 55 ec 8b 02 89 c2 8b 4d ec 03 51 0c 89 f7 29 c7 89 79 0c 89 f0 29 d0 eb 6c 89 f8 88 06 46 eb 54 8b 55 f0 <8b> 3a 42 89 55 f0 89 f9 84 c9 74 d0 0f be d9 89 da 8b 45 08 e8 
+
+This looks like *exactly* the same thing, except you're in 
+"show_vfsmnt()" this time.
+
+Again: the oopsing instruction (8b 3a) is "movl". And again, the address 
+is f6206ffe, and it oopses because the (incorrect) 32-bit access will 
+touch the next page, so you get a paging request fault on f6207000 - which 
+is some *totally* different allocation, and one that isn't mapped because 
+it doesn't exist, so DEBUG_PAGE_ALLOC has removed it.
+
+.. and again: exact same thing.
+
+> EIP: [<c016ecf1>] seq_path+0x60/0xca SS:ESP 0068:f6503f00
+> BUG: unable to handle kernel paging request at virtual address f63d1000
+> eax: f63d0ffe   ebx: c2de0f50   ecx: 0000002c   edx: f63d0ffe
+> Code: .. <8b> 3a ..
+
+.. and again:
+
+> EIP: [<c016ecf1>] seq_path+0x60/0xca SS:ESP 0068:f6367f00
+> BUG: unable to handle kernel paging request at virtual address f63d1000
+> eax: f63d0ffe   ebx: c2de0f50   ecx: 0000002c   edx: f63d0ffe
+> Code: ..  <8b> 3a ..
+
+And I can even tell you exactly what path it is:
+
+ - it's going to be the first path that shows up in the path list, since 
+   the seq_file interface will re-use that page, so if you hit it, you'll 
+   hit it on the first entry (unless seq_file has *lots* of data and needs 
+   more than a single-page allocation)
+
+ - it must be a single-byte path, because otheriwse you'd have oopsed one 
+   byte earlier (you'd have oopsed already on access .....ffd, which would 
+   *also* overflow to the next page
+
+ - ergo, it's "/".
+
+but that doesn't really even matter. Disassembling the code stream from 
+your oops shows clearly that it's a 32-bit access. No ifs, buts or maybes 
+about it. If you don't trust the gdb disassembly (I didn't, entirely, so I 
+looked it up) byte 0x8b is "mov Gv,Ev" in the Intel opcode map.
+
+A 8-bit move would have been 0x8a.
+
+			Linus
