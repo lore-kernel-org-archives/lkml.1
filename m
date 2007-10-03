@@ -1,110 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXJCFhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbXJCFjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXJCFhK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 01:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXJCFg6
+	id S1757485AbXJCFjL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 01:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbXJCFi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 01:36:58 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:46624 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751259AbXJCFg5 (ORCPT
+	Wed, 3 Oct 2007 01:38:58 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:45033 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751851AbXJCFi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 01:36:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LzZwyYWgedqRkLW+tTOYvT2spYN0dozUAqPAEPT5Nnv/qo6ibPnHJV3jcpEDxsdR3M4MIoUNTM6hIdEXLb4DKQ1eOF7wWARFMyiEOqZAfqd3KF0cYN6Mi6DTFUd09jjg7SojLrgZQujNPjEZclMR71ZDqtZ0/Md0ptt6SuCf0Eg=  ;
-X-YMail-OSG: EUsZrJ4VM1nAX.lAFoF3KYBW.4Mew0oulLRHMtqfypqBzahFfbzKAczQuxJFlK90f2esVhhncg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag
-Date: Tue, 2 Oct 2007 23:05:23 +1000
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, cpw@sgi.com, mingo@elte.hu
-References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com> <200709301335.00441.nickpiggin@yahoo.com.au> <20070930204252.45e20bb4.pj@sgi.com>
-In-Reply-To: <20070930204252.45e20bb4.pj@sgi.com>
+	Wed, 3 Oct 2007 01:38:57 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 01:38:56 EDT
+Message-ID: <4703295E.8010608@crispincowan.com>
+Date: Tue, 02 Oct 2007 22:32:14 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
+   Control Kernel
+References: <46FEEBD4.5050401@schaufler-ca.com>  <20070930011618.ccb8351b.akpm@linux-foundation.org>  <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au>  <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710022305.23713.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 October 2007 13:42, Paul Jackson wrote:
-> Nick wrote:
-> > Moreover, sched_load_balance doesn't really sound like a good name
-> > for asking for a partition.
->
-> Yup - it's not a good name for asking for a partition.
->
-> That's because it isn't asking for a partition.
->
-> It's asking for load balancing over the CPUs in the cpuset so marked.
+Linus Torvalds wrote:
+> Security, on the other hand, very much does depend on the circumstances 
+> and the wishes of the users (or policy-makers). And if we had one module 
+> that everybody would be happy with, I'd not make it pluggable either. But 
+> as it is, we _know_ that's not the case. 
+>   
+And you claim you are not a security expert :-)
 
-Yeah yeah OK, you turn it off in the parent cpuset of the child cpusets
-which you want the partitioning to occur in, and ensure there are no
-other overlapping cpusets with that flag turned on in order to create a
-hard partition. I don't think this makes the API anynicer.
+Crispin
 
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+	       Itanium. Vista. GPLv3. Complexity at work
 
-> > It's more like you're just asking to have better
-> > load balancing over that set,
->
-> Yup - it's asking for load balancing over that set.  That is why it is
-> called that.  There's no idea here of better or worse load balancing,
-> that's an internal kernel scheduler subtlety -- it's just a request that
-> load balancing be done.
-
-OK, if it prohibits balancing when sched_load_balance is 0, then it is
-slightly more useful.
-
-
-> That is what is visible to user space: whether or not tasks get moved
-> from overloaded CPUs to underloaded, though still allowed, CPUs.
->
-> This is visible to user space in two ways:
->   1) as task movemement, which may or may not be what is desired, and
->   2) as kernel CPU cycles spent, because load balancing costs CPU cycles
->      that increase more than linearly with the number of CPUs being
->      balanced.
->
-> The user doesn't give a hoot what a 'sched domain' is.  They care to
-> manage (1) whether their tasks might move under a load imbalance, and
-> (2) how many CPU cycles the kernel spends providing this service.
-
-Yeah, but the interface is not very nice. As an interface for hard
-partitioning, it doesn't work nicely because it is hierarchical.
-
-
-> > You would do this by creating partitioning cpusets which carve up the
-> > root cpuset (basically -- have multiple roots).
->
-> You would do this with the current, single rooted cpuset (and now
-> cgroup) mechanism by having multiple immediate child cpusets of the
-> root cpuset, which partition the system CPUs.  There is no need to
-> invent some bastardized multiple root structure.
-
-What do you mean by bastardized? What's wrong with having a real
-(and sane) representation of the requested hard-partitions in the system?
-
-
-> > You can't (easily) do this now because you have so many tasks in the
-> > root cpuset that it is impossible to know whether or not you
-> > actually want to load balance them.
->
-> I don't know what proposal you are reacting to here.  Clearly not this
-> patch that I have proposed, as it is trivially easy to indicate whether
-> you want to load balance the root cpuset - by setting or clearing the
-> 'sched_load_balance' flag in the root cpuset.
-
-Not your proposal, just the idea to have enough information to be able
-to work out a more optimal set of sched-domains automatically. Actually
-we can do most of it already automatically, but not hard partitioning.
-
-[snip]
-
-As I said, neither is really semantically more powerful than the other. So
-yeah those things are possible to do with your API, but I don't like the API.
