@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbXJCUjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbXJCUm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758084AbXJCUjn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbXJCUje
+	id S1758130AbXJCUm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXJCUmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:39:34 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:60736 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753447AbXJCUjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:39:33 -0400
-Subject: [PATCH 4/8] scsi: megaraid_sas - check max_sgl reported by FW for
-	setting max_sectors_per_req
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Oct 2007 11:56:48 -0400
-Message-Id: <1191254208.5850.17.camel@dhcp-75-534.se.lsil.com>
+	Wed, 3 Oct 2007 16:42:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33176 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755344AbXJCUmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 16:42:51 -0400
+Date: Wed, 3 Oct 2007 21:40:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: casey@schaufler-ca.com
+Cc: Al Viro <viro@ftp.linux.org.uk>, torvalds@osdl.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, paul.moore@hp.com
+Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory
+ Access Control Kernel
+Message-ID: <20071003214045.72b6b9e0@the-village.bc.nu>
+In-Reply-To: <342112.80881.qm@web36601.mail.mud.yahoo.com>
+References: <20071003191735.4d92c593@the-village.bc.nu>
+	<342112.80881.qm@web36601.mail.mud.yahoo.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 03 Oct 2007 20:39:20.0145 (UTC) FILETIME=[7962EC10:01C805FD]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. Setting the max_sectors_per_req based on max SGL supported by the FW. Prior versions calculated  
-        this value from controller info's max_sectors_1, max_sectors_2. For certain controllers/FW, 
-        this was resulting in a value greater than max SGL supported by the FW. Now we take the min  
-        of max sgl from FW and max_sectors calculation.
+> An embedded system that does not have user logins but that does
+> have applications that require separation, perhaps a moble communication
+> device with application download capability, is just one example
+> where the smack symlink implementation provides the required
+> function without requiring application support.
 
-2. Increased MFI_POLL_TIMEOUT_SECS to 60 seconds from 10. FW may take a max of 60 seconds to  
-        respond to the INIT cmd.
+I don't see what is such a problem here. For your mobile example you'd
+give the application download side its own /tmp via mount.
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+Its actually better this is done in user space as its more flexible that
+way and can be tuned arbitarily to meet interesting or bizarre real world
+cases.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |   14 +++++++++-----
- drivers/scsi/megaraid/megaraid_sas.h |    2 +-
- 2 files changed, 10 insertions(+), 6 deletions(-)
-
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 02:42:25.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-01 05:19:06.000000000 -0700
-@@ -1979,6 +1979,7 @@ static int megasas_init_mfi(struct megas
- 	u32 reply_q_sz;
- 	u32 max_sectors_1;
- 	u32 max_sectors_2;
-+	u32 tmp_sectors;
- 	struct megasas_register_set __iomem *reg_set;
- 	struct megasas_ctrl_info *ctrl_info;
- 	/*
-@@ -2071,17 +2072,20 @@ static int megasas_init_mfi(struct megas
- 	 * Note that older firmwares ( < FW ver 30) didn't report information
- 	 * to calculate max_sectors_1. So the number ended up as zero always.
- 	 */
-+	tmp_sectors = 0;
- 	if (ctrl_info && !megasas_get_ctrl_info(instance, ctrl_info)) {
- 
- 		max_sectors_1 = (1 << ctrl_info->stripe_sz_ops.min) *
- 		    ctrl_info->max_strips_per_io;
- 		max_sectors_2 = ctrl_info->max_request_size;
- 
--		instance->max_sectors_per_req = (max_sectors_1 < max_sectors_2)
--		    ? max_sectors_1 : max_sectors_2;
--	} else
--		instance->max_sectors_per_req = instance->max_num_sge *
--		    PAGE_SIZE / 512;
-+		tmp_sectors = min_t(u32, max_sectors_1 , max_sectors_2);
-+	}
-+
-+	instance->max_sectors_per_req = instance->max_num_sge *
-+						PAGE_SIZE / 512;
-+	if (tmp_sectors && (instance->max_sectors_per_req > tmp_sectors))
-+		instance->max_sectors_per_req = tmp_sectors;
- 
- 	kfree(ctrl_info);
- 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
-@@ -572,7 +572,7 @@ struct megasas_ctrl_info {
- #define IS_DMA64				(sizeof(dma_addr_t) == 8)
- 
- #define MFI_OB_INTR_STATUS_MASK			0x00000002
--#define MFI_POLL_TIMEOUT_SECS			10
-+#define MFI_POLL_TIMEOUT_SECS			60
- 
- #define MFI_REPLY_1078_MESSAGE_INTERRUPT	0x80000000
- 
-
-
-
+Alan
