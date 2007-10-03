@@ -1,44 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXJCVNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbXJCVRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbXJCVNu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 17:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXJCVNn
+	id S1757284AbXJCVRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 17:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXJCVRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 17:13:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52872 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752747AbXJCVNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 17:13:42 -0400
-Date: Wed, 3 Oct 2007 14:12:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: tomof@acm.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm] intel-iommu sg chaining support
-Message-Id: <20071003141203.fae1edf5.akpm@linux-foundation.org>
-In-Reply-To: <20071001161256.GA28998@askeshav-devel.jf.intel.com>
-References: <20070929125638W.tomof@acm.org>
-	<20071001161256.GA28998@askeshav-devel.jf.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Oct 2007 17:17:34 -0400
+Received: from rune.pobox.com ([208.210.124.79]:54338 "EHLO rune.pobox.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752927AbXJCVRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 17:17:32 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.3.4
+References: <7vir66pjhs.fsf@gitster.siamese.dyndns.org>
+	<7vve9thrhx.fsf@gitster.siamese.dyndns.org>
+Date: Wed, 03 Oct 2007 14:17:22 -0700
+In-Reply-To: <7vve9thrhx.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+	message of "Sat, 29 Sep 2007 18:27:38 -0700")
+Message-ID: <7v1wcbew4d.fsf_-_@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Oct 2007 09:12:56 -0700
-"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+The latest maintenance release GIT 1.5.3.4 is available at the
+usual places:
 
-> On Sat, Sep 29, 2007 at 05:16:38AM -0700, FUJITA Tomonori wrote:
-> > 
-> >    x86_64 defines ARCH_HAS_SG_CHAIN. So if IOMMU implementations don't
-> >    support sg chaining, we will get data corruption.
-> >    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> 
-> Acked-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-> 
+  http://www.kernel.org/pub/software/scm/git/
 
-Am I correct in believing that this patch is needed only when the
-chaining patches which are presently in git-block are combined with the
-intel-iommu work which is presently in -mm?
+  git-1.5.3.4.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.3.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.3.4.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.3.4-1.$arch.rpm	(RPM)
+
+GIT v1.5.3.4 Release Notes
+==========================
+
+Fixes since v1.5.3.3
+--------------------
+
+ * Change to "git-ls-files" in v1.5.3.3 that was introduced to support
+   partial commit of removal better had a segfaulting bug, which was
+   diagnosed and fixed by Keith and Carl.
+
+ * Performance improvements for rename detection has been backported
+   from the 'master' branch.
+
+ * "git-for-each-ref --format='%(numparent)'" was not working
+   correctly at all, and --format='%(parent)' was not working for
+   merge commits.
+
+ * Sample "post-receive-hook" incorrectly sent out push
+   notification e-mails marked as "From: " the committer of the
+   commit that happened to be at the tip of the branch that was
+   pushed, not from the person who pushed.
+
+ * "git-remote" did not exit non-zero status upon error.
+
+ * "git-add -i" did not respond very well to EOF from tty nor
+   bogus input.
+
+ * "git-rebase -i" squash subcommand incorrectly made the
+   author of later commit the author of resulting commit,
+   instead of taking from the first one in the squashed series.
+
+ * "git-stash apply --index" was not documented.
+
+ * autoconfiguration learned that "ar" command is found as "gas" on
+   some systems.
+
+----------------------------------------------------------------
+
+Changes since v1.5.3.3 are as follows:
+
+Andy Parkins (1):
+      post-receive-hook: Remove the From field from the generated email header so that the pusher's name is used
+
+Carl Worth (1):
+      Add test case for ls-files --with-tree
+
+Federico Mena Quintero (4):
+      Say when --track is useful in the git-checkout docs.
+      Add documentation for --track and --no-track to the git-branch docs.
+      Note that git-branch will not automatically checkout the new branch
+      Make git-pull complain and give advice when there is nothing to merge with
+
+Jari Aalto (1):
+      git-remote: exit with non-zero status after detecting errors.
+
+Jean-Luc Herren (2):
+      git-add--interactive: Allow Ctrl-D to exit
+      git-add--interactive: Improve behavior on bogus input
+
+Jeff King (1):
+      diffcore-rename: cache file deltas
+
+Johan Herland (1):
+      Mention 'cpio' dependency in INSTALL
+
+Johannes Schindelin (2):
+      rebase -i: squash should retain the authorship of the _first_ commit
+      Fix typo in config.txt
+
+Junio C Hamano (5):
+      Whip post 1.5.3.3 maintenance series into shape.
+      git-commit: initialize TMP_INDEX just to be sure.
+      for-each-ref: fix %(numparent) and %(parent)
+      rename diff_free_filespec_data_large() to diff_free_filespec_blob()
+      GIT 1.5.3.4
+
+Keith Packard (1):
+      Must not modify the_index.cache as it may be passed to realloc at some point.
+
+Miklos Vajna (1):
+      git stash: document apply's --index switch
+
+Robert Schiele (1):
+      the ar tool is called gar on some systems
+
+Steffen Prohaska (1):
+      fixed link in documentation of diff-options
+
