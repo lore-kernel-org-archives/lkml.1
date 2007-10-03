@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbXJCNWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbXJCNaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbXJCNWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXJCNWb
+	id S1755353AbXJCNaZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXJCNaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:22:31 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55772 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754229AbXJCNWa (ORCPT
+	Wed, 3 Oct 2007 09:30:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41916 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbXJCNaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:22:30 -0400
-X-Originating-Ip: 99.236.101.138
-Date: Wed, 3 Oct 2007 09:18:39 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org
-Subject: [PATCH] DOC:  Correct explanations of "find_next" bit routines.
-Message-ID: <Pine.LNX.4.64.0710030916410.27061@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 3 Oct 2007 09:30:10 -0400
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
+In-Reply-To: <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
+References: <200710022144.BFF09817.VFFOOJLSFHtQMO@I-love.SAKURA.ne.jp>
+	 <Xine.LNX.4.64.0710020557170.21841@us.intercode.com.au>
+	 <200710032024.DJF78662.FHOLtMSFOOFJVQ@I-love.SAKURA.ne.jp>
+	 <20071003.204356.05853536.yoshfuji@linux-ipv6.org>
+	 <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
+	 <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 15:24:24 +0200
+Message-Id: <1191417864.5599.2.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Correct the obvious "copy and paste" errors explaining some of the
-"find_next" routines.
+On Wed, 2007-10-03 at 22:04 +0900, Tetsuo Handa wrote:
+> James Morris wrote:
+> > I'm pretty sure that the singly linked list idea has been rejected a few 
+> > times.  Just use the existing API.
+> Too bad...
+> 
+> Well, is there a way to avoid read_lock when reading list?
+> 
+> Currently, TOMOYO Linux avoids read_lock, on the assumption that
+> (1) First, ptr->next is initialized with NULL.
+> (2) Later, ptr->next is assigned non-NULL address.
+> (3) Assigning to ptr->next is done atomically.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+ (4) wmb after asigning ptr->next
+ (5) rmb before reading ptr->next
 
----
+But please do look at the various rcu list primitives. RCU allows one to
+avoid non-exclusive locks in many cases.
 
- arch/i386/lib/bitops.c    |    2 +-
- arch/x86_64/lib/bitops.c  |    2 +-
- include/asm-i386/bitops.h |    5 ++---
- 3 files changed, 4 insertions(+), 5 deletions(-)
+non-exclusive locks are evil, they must all die...
 
-diff --git a/arch/i386/lib/bitops.c b/arch/i386/lib/bitops.c
-index afd0045..b654404 100644
---- a/arch/i386/lib/bitops.c
-+++ b/arch/i386/lib/bitops.c
-@@ -2,7 +2,7 @@
- #include <linux/module.h>
-
- /**
-- * find_next_bit - find the first set bit in a memory region
-+ * find_next_bit - find the next set bit in a memory region
-  * @addr: The address to base the search on
-  * @offset: The bitnumber to start searching at
-  * @size: The maximum size to search
-diff --git a/arch/x86_64/lib/bitops.c b/arch/x86_64/lib/bitops.c
-index 95b6d96..0e8f491 100644
---- a/arch/x86_64/lib/bitops.c
-+++ b/arch/x86_64/lib/bitops.c
-@@ -58,7 +58,7 @@ long find_first_zero_bit(const unsigned long * addr, unsigned long size)
- }
-
- /**
-- * find_next_zero_bit - find the first zero bit in a memory region
-+ * find_next_zero_bit - find the next zero bit in a memory region
-  * @addr: The address to base the search on
-  * @offset: The bitnumber to start searching at
-  * @size: The maximum size to search
-diff --git a/include/asm-i386/bitops.h b/include/asm-i386/bitops.h
-index a20fe98..700b1a2 100644
---- a/include/asm-i386/bitops.h
-+++ b/include/asm-i386/bitops.h
-@@ -1,4 +1,3 @@
--#ifndef _I386_BITOPS_H
- #define _I386_BITOPS_H
-
- /*
-@@ -297,7 +296,7 @@ static inline int find_first_zero_bit(const unsigned long *addr, unsigned size)
- }
-
- /**
-- * find_next_zero_bit - find the first zero bit in a memory region
-+ * find_next_zero_bit - find the next zero bit in a memory region
-  * @addr: The address to base the search on
-  * @offset: The bitnumber to start searching at
-  * @size: The maximum size to search
-@@ -340,7 +339,7 @@ static inline unsigned find_first_bit(const unsigned long *addr, unsigned size)
- }
-
- /**
-- * find_next_bit - find the first set bit in a memory region
-+ * find_next_bit - find the next set bit in a memory region
-  * @addr: The address to base the search on
-  * @offset: The bitnumber to start searching at
-  * @size: The maximum size to search
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
