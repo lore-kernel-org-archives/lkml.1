@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbXJCRag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXJCRcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbXJCRag (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbXJCRa3
+	id S1756856AbXJCRcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXJCRcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:30:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49888 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752411AbXJCRa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:30:28 -0400
-From: akepner@sgi.com
-Date: Wed, 3 Oct 2007 10:29:27 -0700
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       RolandDreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] mthca: allow setting "dmabarrier" on user-allocated memory
-Message-ID: <20071003172927.GO26752@sgi.com>
-References: <20071003025007.GJ26752@sgi.com> <20071003025645.GM3400@zakalwe.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003025645.GM3400@zakalwe.fi>
-User-Agent: Mutt/1.4.1i
+	Wed, 3 Oct 2007 13:32:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35303 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbXJCRcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:32:11 -0400
+Message-ID: <4703D212.6040304@redhat.com>
+Date: Wed, 03 Oct 2007 13:32:02 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?Anders_Bo?= =?ISO-8859-1?Q?str=F6m?= 
+	<anders@bostrom.dyndns.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: PROBLEM: high load average when idle
+References: <20071002.233731.119908363.anders@bostrom.dyndns.org>	<20071002150748.906970bc.akpm@linux-foundation.org>	<4702C756.8090108@redhat.com> <20071002162613.54c3ef43@laptopd505.fenrus.org>
+In-Reply-To: <20071002162613.54c3ef43@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 05:56:45AM +0300, Heikki Orsila wrote:
-> On Tue, Oct 02, 2007 at 07:50:07PM -0700, akepner@sgi.com wrote:
-> > +struct mthca_reg_mr {
-> > +	__u32 mr_attrs;
-> > +#define MTHCA_MR_DMAFLUSH 0x1	/* flush in-flight DMA on a write to 
-> > +				 * memory region */
-> > +	__u32 reserved;
-> > +};
+On 10/02/2007 07:26 PM, Arjan van de Ven wrote:
+> On Tue, 02 Oct 2007 18:33:58 -0400
+>> Or, everybody wakes up at once right when we are taking a sample.  :)
 > 
-> Seems like a very odd place to #define something new..
+> nice try but we sample every timer tick; this code being timer driven
+> makes it what you say it is regardless of *which* timer tick it
+> happens at ;)
 > 
 
-Lots of drivers do that - #define flags or whatever near the 
-variable to which they apply. Didn't see any examples in the 
-mthca driver though, so maybe it's setting a precedent there. 
-If the maintainer objects, I'll move it.
+But we reduce the number of samples because some ticks just never
+happen when the timers get rounded:
 
---  
-Arthur
+No rounding:
+
+      tick ............... tick
+     1 running            1 running
+
+Rounded:
+
+      tick
+     2 running
+
+In the first case the average is 1, but it's 2 in the second.
 
