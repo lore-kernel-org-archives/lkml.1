@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbXJCIHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXJCIIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbXJCIHu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbXJCIGh
+	id S1757593AbXJCIIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXJCIIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:06:37 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35417 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754565AbXJCIGe (ORCPT
+	Wed, 3 Oct 2007 04:08:16 -0400
+Received: from mail.blastwave.org ([147.87.98.10]:51157 "EHLO
+	mail.blastwave.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbXJCIIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:06:34 -0400
-Message-ID: <47034D84.8050505@cn.fujitsu.com>
-Date: Wed, 03 Oct 2007 17:06:28 +0900
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
+	Wed, 3 Oct 2007 04:08:14 -0400
+X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 04:08:14 EDT
+Date: Wed, 3 Oct 2007 09:58:44 +0200
+From: Attila Kinali <attila@kinali.ch>
 To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, discuss@x86-64.org
-Subject: [PATCH 3/3] signal(x86-64): alternative signal stack wraparound occurs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH] Add manufacturer and card id of teltonica pcmcia modems
+Message-Id: <20071003095844.b12a44f4.attila@kinali.ch>
+Organization: SEELE
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixing alternative signal stack wraparound.
+Hi,
 
-If a process uses alternative signal stack by using sigaltstack()
-and that stack overflow, stack wraparound occurs.
-This patch checks whether the signal frame is on the alternative
-stack. If the frame is not on there, kill a signal SIGSEGV to the process forcedly
-then the process will be terminated.
+This patch adds the manufacturer and card id of teltonica
+pcmcia modems to serial_cs.c
 
-This patch is for x86-64,version is 2.6.23-rc8.
+Signed-off-by: Attila Kinali <attila@kinali.ch>
 
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com>
-
-diff -pur linux-2.6.23-rc8.orig/arch/x86_64/ia32/ia32_signal.c 
-linux-2.6.23-rc8/arch/x86_64/ia32/ia32_signal.c
---- linux-2.6.23-rc8.orig/arch/x86_64/ia32/ia32_signal.c	2007-07-09 08:32:17.000000000 +0900
-+++ linux-2.6.23-rc8/arch/x86_64/ia32/ia32_signal.c	2007-09-26 12:09:07.000000000 +0900
-@@ -428,6 +428,10 @@ int ia32_setup_frame(int sig, struct k_s
-
-  	frame = get_sigframe(ka, regs, sizeof(*frame));
-
-+	if ((ka->sa.sa_flags & SA_ONSTACK)
-+		&& (sas_ss_flags((unsigned long) frame) == 0))
-+		goto give_sigsegv;
-+
-  	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-  		goto give_sigsegv;
-
-@@ -518,6 +522,10 @@ int ia32_setup_rt_frame(int sig, struct
-
-  	frame = get_sigframe(ka, regs, sizeof(*frame));
-
-+	if ((ka->sa.sa_flags & SA_ONSTACK)
-+		&& (sas_ss_flags((unsigned long) frame) == 0))
-+		goto give_sigsegv;
-+
-  	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-  		goto give_sigsegv;
-
-diff -pur linux-2.6.23-rc8.orig/arch/x86_64/kernel/signal.c linux-2.6.23-rc8/arch/x86_64/kernel/signal.c
---- linux-2.6.23-rc8.orig/arch/x86_64/kernel/signal.c	2007-09-26 09:44:09.000000000 +0900
-+++ linux-2.6.23-rc8/arch/x86_64/kernel/signal.c	2007-09-26 12:09:31.000000000 +0900
-@@ -235,6 +235,10 @@ static int setup_rt_frame(int sig, struc
-  	} else
-  		frame = get_stack(ka, regs, sizeof(struct rt_sigframe)) - 8;
-
-+	if ((ka->sa.sa_flags & SA_ONSTACK)
-+		&& (sas_ss_flags((unsigned long) frame) == 0))
-+		goto give_sigsegv;
-+
-  	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-  		goto give_sigsegv;
+--- linux-2.6.22.7/drivers/serial/serial_cs.c.orig	2007-10-03 09:38:53.000000000 +0200
++++ linux-2.6.22.7/drivers/serial/serial_cs.c	2007-10-03 09:39:22.000000000 +0200
+@@ -939,6 +939,7 @@
+ 	PCMCIA_MFC_DEVICE_PROD_ID12(1,"Elan","Serial Port: SL432",0x3beb8cf2,0x1cce7ac4),
+ 	PCMCIA_MFC_DEVICE_PROD_ID12(2,"Elan","Serial Port: SL432",0x3beb8cf2,0x1cce7ac4),
+ 	PCMCIA_MFC_DEVICE_PROD_ID12(3,"Elan","Serial Port: SL432",0x3beb8cf2,0x1cce7ac4),
++	PCMCIA_DEVICE_MANF_CARD(0x0279, 0x950b),
+ 	/* too generic */
+ 	/* PCMCIA_MFC_DEVICE_MANF_CARD(0, 0x0160, 0x0002), */
+ 	/* PCMCIA_MFC_DEVICE_MANF_CARD(1, 0x0160, 0x0002), */
 
 
+		Attila Kinali
+
+-- 
+Praised are the Fountains of Shelieth, the silver harp of the waters,
+But blest in my name forever this stream that stanched my thirst!
+                         -- Deed of Morred
