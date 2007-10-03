@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXJCTJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbXJCTNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbXJCTJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 15:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXJCTJN
+	id S1756781AbXJCTNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 15:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbXJCTNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 15:09:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1242 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbXJCTJL (ORCPT
+	Wed, 3 Oct 2007 15:13:08 -0400
+Received: from rwcrmhc12.comcast.net ([204.127.192.82]:34978 "EHLO
+	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbXJCTNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 15:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=G3Fd6KIsRxQF2D/4ItOOEW6nSCDAalyUDMI/mqbFiR8ofBTh140uFq3XhJ3sb3z5r
-	+MHwKzaWwqZh8afMAz77g==
-Message-ID: <b040c32a0710031208s5323d16ao47becace88c2bc79@mail.gmail.com>
-Date: Wed, 3 Oct 2007 12:08:52 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Dave Hansen" <haveblue@us.ibm.com>
-Subject: Re: [PATCH] hugetlb: Fix pool resizing corner case
-Cc: "Adam Litke" <agl@us.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1191437948.4939.105.camel@localhost>
+	Wed, 3 Oct 2007 15:13:07 -0400
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: MSI: Use correct data offset for 32-bit MSI in read_msi_msg()
+X-Message-Flag: Warning: May contain useful information
+X-Priority: 1
+X-MSMail-Priority: High
+References: <87abr0oyj4.fsf@shaolin.home.digitalvampire.org>
+	<m1ir5ocaxr.fsf@ebiederm.dsl.xmission.com>
+From: Roland Dreier <roland@digitalvampire.org>
+Date: Wed, 03 Oct 2007 12:13:41 -0700
+In-Reply-To: <m1ir5ocaxr.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's message of "Wed, 03 Oct 2007 12:25:36 -0600")
+Message-ID: <874ph8ovtm.fsf@shaolin.home.digitalvampire.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071003154748.19516.90317.stgit@kernel>
-	 <1191433248.4939.79.camel@localhost>
-	 <1191436392.19775.43.camel@localhost.localdomain>
-	 <1191437948.4939.105.camel@localhost>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Dave Hansen <haveblue@us.ibm.com> wrote:
-> > Not quite.  Count can never go below the number of reserved pages plus
-> > pages allocated to MAP_PRIVATE mappings.  That number is computed by:
-> > (resv + (total - free)).
->
-> So, (total - free) equals the number of MAP_PRIVATE pages?  Does that
-> imply that all reserved pages are shared and that all shared pages are
-> reserved?
+ > > While reading the MSI code trying to find a reason why MSI wouldn't
+ > > work for devices that have a 32-bit MSI address capability, I noticed
+ > > that read_msi_msg() seems to read the message data from the wrong
+ > > offset in this case.
+ > 
+ > Doh!  Sorry about that.
 
-no, not quite.  In-use huge page (total - free) can be both private or
-shared.  resv_huge_pages counts number of pages that is committed for
-shared mapping, but not yet faulted in.
+Doesn't matter, it wasn't the bug hitting me anyway :) the IRQ never
+got affinity changed so read_msi_msg() never even got called.
 
-What the equation does essentially is: resv_huge_pages + nr-huge-pages-in-use.
+I'm starting to think that Intel 945GM graphics just has a busted MSI
+implementation, although there may be a bug hiding in the Linux code
+that I'm not seeing.
 
-- Ken
+ - R.
