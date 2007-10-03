@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXJCNG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbXJCNJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbXJCNG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbXJCNGW
+	id S1755368AbXJCNJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXJCNJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:06:22 -0400
-Received: from main.gmane.org ([80.91.229.2]:35057 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbXJCNGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:06:21 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-Subject: Re: top displaying 9999% CPU usage
-Date: Wed, 03 Oct 2007 19:03:40 +0600
-Message-ID: <4703932C.6060900@ums.usu.ru>
-References: <200710031433.34504.elendil@planet.nl>
+	Wed, 3 Oct 2007 09:09:31 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:51822 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbXJCNJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 09:09:30 -0400
+Date: Wed, 03 Oct 2007 22:11:16 +0900 (JST)
+Message-Id: <20071003.221116.83306587.yoshfuji@linux-ipv6.org>
+To: penguin-kernel@I-love.SAKURA.ne.jp
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, chrisw@sous-sol.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
+References: <20071003.204356.05853536.yoshfuji@linux-ipv6.org>
+	<Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
+	<200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: elendil@planet.nl
-X-Gmane-NNTP-Posting-Host: 90.150.136.121
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
-In-Reply-To: <200710031433.34504.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> I saw top occasionally displaying 9999% CPU usage for a process. The
-> first few times it was amarokapp, this last time it was kontact.
-> Both applications were basically idle.
-> The "cc1" is a kernel compile (rc9 + CFS :-).
+In article <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp> (at Wed, 3 Oct 2007 22:04:11 +0900), Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> says:
+
+> Well, is there a way to avoid read_lock when reading list?
 > 
-> I cannot remember seeing this before, but as I also don't run top that
-> frequently I cannot be sure its a recent regression.
+> Currently, TOMOYO Linux avoids read_lock, on the assumption that
+> (1) First, ptr->next is initialized with NULL.
+> (2) Later, ptr->next is assigned non-NULL address.
+> (3) Assigning to ptr->next is done atomically.
 
-Try to capture the i/o log with the following command:
+RCU?
 
-strace -o top.log top
-
-This will show for sure whether the kernel gives out incorrect data or 
-top misinterprets them.
-
-
--- 
-Alexander E. Patrakov
-
+--yoshfuji
