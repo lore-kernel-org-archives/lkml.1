@@ -1,96 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbXJCUPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbXJCUQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbXJCUPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXJCUPp
+	id S1757466AbXJCUQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbXJCUQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:15:45 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:33107 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753700AbXJCUPo (ORCPT
+	Wed, 3 Oct 2007 16:16:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46853 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754072AbXJCUQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:15:44 -0400
-Date: Wed, 03 Oct 2007 22:15:16 +0200 (CEST)
-Message-Id: <20071003.221516.55722278.anders@bostrom.dyndns.org>
-To: torvalds@linux-foundation.org
-Cc: cebbert@redhat.com, arjan@linux.intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: high load average when idle
-From: Anders =?iso-8859-1?Q?Bostr=F6m?= <anders@bostrom.dyndns.org>
-In-Reply-To: <alpine.LFD.0.999.0710031058320.3579@woody.linux-foundation.org>
-References: <20071002162613.54c3ef43@laptopd505.fenrus.org>
-	<4703D212.6040304@redhat.com>
-	<alpine.LFD.0.999.0710031058320.3579@woody.linux-foundation.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 3 Oct 2007 16:16:40 -0400
+Date: Wed, 3 Oct 2007 13:16:32 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071003131632.fed4b848.pj@sgi.com>
+In-Reply-To: <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	<20071003105817.7adf6516.pj@sgi.com>
+	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.250.207.59
-X-Scan-Result: No virus found in message 1IdAd8-00048O-3E.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1IdAd8-00048O-3E 40aabea05d7cf89c65b0cedc7cf9856d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "LT" == Linus Torvalds <torvalds@linux-foundation.org> writes:
+Paul M wrote:
+> Given that later in cpusets.txt you say:
+> 
+> >If hotplug functionality is used
+> >to remove all the CPUs that are currently assigned to a cpuset,
+> >then the kernel will automatically update the cpus_allowed of all
+> >tasks attached to CPUs in that cpuset to allow all CPUs
+> 
+> why can't the same thing be done when changing the 'cpus' file manually.
+> 
+> What's wrong with, in update_cpumask(), doing a loop across all
+> members of the cgroup and updating their cpus_allowed fields?
+> 
+> The existing cpusets API is broken, since a new child can always be
+> forked between reading the tasks file and doing the writes.
 
- LT> On Wed, 3 Oct 2007, Chuck Ebbert wrote:
- >> 
- >> But we reduce the number of samples because some ticks just never
- >> happen when the timers get rounded:
- >> 
- >> No rounding:
- >> 
- >> tick ............... tick
- >> 1 running            1 running
- >> 
- >> Rounded:
- >> 
- >> tick
- >> 2 running
- >> 
- >> In the first case the average is 1, but it's 2 in the second.
+Hmmm ... interesting.  Yes - that race, between fork and rewriting
+the tasks file is there, by design, and has been there for years.
 
- LT> In fact, I think this is it!
+So far as I know, it is a benign race.  In practice, no one that I know
+has tripped over it.  This doesn't imply that we should not look for
+opportunities to fix it, but it does mean it is not an urgent fix, in
+my experience.
 
- LT> The load average is not calculated every tick, because that's not just 
- LT> expensive, but we also want to have some time-based decay. So it's 
- LT> calculated every LOAD_FREQ ticks.
+But there may be more issues here than that:
+ 1) The above cpusets.txt text might be both incorrect (at first
+    glance now, I suspect that it is the cpuset cpus_allowed that
+    is updated on hotplug events, not the tasks cpus_allowed) and
+    perhaps stale as well (given some recent cpuset hotplug patches
+    being worked by Cliff Wickman.)
+ 2) It is not immediately clear to me how the hotplug can work at
+    present - if it updates just the cpusets cpus_allowed but doesn't
+    get to the tasks cpus_allowed.
+ 3) So far as I can recall, the only kernel code path to update a
+    tasks cpus_allowed goes via the "set_cpus_allowed()" routine,
+    which the kernel/cpuset.c code only calls from one place, that
+    being the code that handles writing a pid to a cpuset tasks file.
+    This provides more evidence that (2) above is a problem -- no
+    hotplug code paths in the cpuset code seem to invoke this key
+    "set_cpus_allowed()" routine.
 
- LT> And guess what: LOAD_FREQ is defined to be exactly five seconds.
+Vedy vedy interesting.  Like lifting up a rock and seeing a bunch
+of weird creepy crawlies under it.
 
- LT> So imagine if the timer gets to be in sync with another event that happens 
- LT> every five seconds - let's pick at random a 5-second JBD transaction 
- LT> thing?
+I'm wondering how to proceed from here, in two regards:
 
- LT> Anders - does this idiotic patch make a difference for you?
+ 1) The cc list on this thread is long and not well focused for the
+    detailed discussion that it may take to unravel this.
+ 2) I am not optimistic that we can unravel this in time for the
+    rapidly approaching start of 2.6.24.
 
-Yes, it does, it fixes the load average!!! I guess we have something
-here!
+At present, the only one of the bugs or potential bugs noted here
+that are actually biting me is the bug this patch addressed; the
+current (yes, knowingly broken) cpuset code requires the attach
+code to be run even when reattaching to the same cgroup/cpuset to
+which the task is already attached.
 
-Why does this problem only show up on my computer? Any idea?
+If the 2.6.24 kernel releases with this bug, such that reattaching
+tasks to their current cpuset becomes a no-op, that will hurt.
 
-/ Anders
+Does my patch (the one opening this thread) cause any problems
+that you know of, Paul M?
 
- LT> Without this, I can easily imagine that the rounding code tends to try to 
- LT> round to an even second, and the load-average code generally also runs at 
- LT> even seconds!
+So far as I can tell, this patch just removes a minor optimization, and
+other than its allowing a hack in the cpuset code to persist (a side
+affect of what logically should be a no-op), this patch should be
+unnoticeable to user land.
 
- LT> 		Linus
+If that's so, can we allow this patch to proceed, likely for the
+2.6.24 kernel series, while we work on killing off all the creepy
+crawlies that your good questions have exposed?
 
- LT> ---
- LT>  include/linux/sched.h |    2 +-
- LT>  1 files changed, 1 insertions(+), 1 deletions(-)
+And I'm tempted to continue this discussion on a new thread, as it seems
+that it could be an involved discussion not well focused on the
+interests of many on the current cc list of this message.  There may be
+more hotplug interest, and less container interest, than currently seen
+on this threads cc list.
 
- LT> diff --git a/include/linux/sched.h b/include/linux/sched.h
- LT> index a01ac6d..643de0f 100644
- LT> --- a/include/linux/sched.h
- LT> +++ b/include/linux/sched.h
- LT> @@ -113,7 +113,7 @@ extern unsigned long avenrun[];		/* Load averages */
- 
- LT>  #define FSHIFT		11		/* nr of bits of precision */
- LT>  #define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
- LT> -#define LOAD_FREQ	(5*HZ)		/* 5 sec intervals */
- LT> +#define LOAD_FREQ	(5*HZ+1)	/* ~5 sec intervals */
- LT>  #define EXP_1		1884		/* 1/exp(5sec/1min) as fixed-point */
- LT>  #define EXP_5		2014		/* 1/exp(5sec/5min) */
- LT>  #define EXP_15		2037		/* 1/exp(5sec/15min) */
+Any further suggestions, or embarrassing (;) questions?
+
+Thanks!
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
