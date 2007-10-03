@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbXJCEPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbXJCEY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbXJCEPe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 00:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbXJCEPZ
+	id S1754118AbXJCEY1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 00:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbXJCEYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 00:15:25 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59406 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbXJCEPZ (ORCPT
+	Wed, 3 Oct 2007 00:24:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:37254 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbXJCEYS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 00:15:25 -0400
-Date: Wed, 3 Oct 2007 09:45:45 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: "Mukker, Atul" <Atul.Mukker@lsi.com>, "Moore, Eric" <Eric.Moore@lsi.com>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       balbir@in.ibm.com, Pavel Machek <pavel@ucw.cz>
-Subject: Re: kdump info request
-Message-ID: <20071003041545.GA5343@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <9738BCBE884FDB42801FAD8A7769C2657E2A01@NAMAIL1.ad.lsil.com> <20070919042840.GB7068@in.ibm.com> <9738BCBE884FDB42801FAD8A7769C26501B2C4DA@NAMAIL1.ad.lsil.com> <20070921041506.GB6156@in.ibm.com> <9738BCBE884FDB42801FAD8A7769C26501B2C8D3@NAMAIL1.ad.lsil.com> <20070922113553.6898978d.rdunlap@xenotime.net> <9738BCBE884FDB42801FAD8A7769C26501B7F450@NAMAIL1.ad.lsil.com> <20071001081327.d325959d.rdunlap@xenotime.net> <9738BCBE884FDB42801FAD8A7769C26501B7F4A7@NAMAIL1.ad.lsil.com> <20071001093145.7205773d.rdunlap@xenotime.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 3 Oct 2007 00:24:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pB9jSkpP6TUqN0MTtCKzJ//Cty2okmEVvYCdQflvI/mShiOw3HreWXUWJGAy3zCITvakfT8uSaSoY00qJdT6BRl3S/JMqHddTzbF3CIvOt434nuDKpjEM0iBw+ZcM2r0+718srOx99S8zuDbzrVqpUdjhVbUJPLFKC0iYKz8/ls=
+Message-ID: <fdaac4d50710022124n73a025aay4a4ea6a569a8c691@mail.gmail.com>
+Date: Wed, 3 Oct 2007 13:24:17 +0900
+From: "Jun Koi" <junkoi2004@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: My kernel fails with kexec
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071001093145.7205773d.rdunlap@xenotime.net>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 09:31:45AM -0700, Randy Dunlap wrote:
-> On Mon, 1 Oct 2007 09:35:04 -0600 Mukker, Atul wrote:
-> 
-> > Thanks for the information and the effort.
-> > 
-> > We need to support all currently shipping products with kdump support
-> > available (read Red Hat and SuSE) so sooner it makes into to the
-> > upstream kernel the better it is.
-> > 
-> > So, today there is no alternative way to find out if the driver is being
-> > loaded under kdump restrictive environment?
-> > 
-> > Thanks
-> > -Atul
-> 
-> I'm not the right person to answer that, but going forward, it would
-> be nice to have that information and it would be good to do correctly.
-> 
-> I think that scanning <saved_command_line> is not actually the good/right
-> way to do this.  It should just be a flag somewhere, and the flag should
-> be available in all (future) kernels (and likely easily backportable
-> as well, if that matters), meaning those built without kdump support.
-> 
-> But it's still up to the kexec developers...
-> 
-> 
+Greetings,
 
-Hi Atul/Randy,
+I have a kernel (which is not Linux kernel), and want to have it
+worked with kexec. That means I want to get kexec boot my kernel.
+Fortunately, kexec crashes when booting it. (with kexec -e command)
 
-[CCing to LKML]
+My suspect is that my kernel is not written to "support" kexec. So
+could anybody tell me what is the requirement of a kernel, so it works
+with kexec?
 
-Thinking more about it, looks like scanning command line is not a very good
-idea.
+"kexec -e" spits out the below message in QEMU when booting my kernel. Any
+hint where the problem lies, and on how to debug the problem?
 
-I think we should instead look for if total available RAM in the system and
-then let driver make a decision about how much memory to allocate. Pavel
-already suggested it on LKML and I like the idea.
+Thanks,
+Jun
 
-This is more generic and can be applied to kdump, kexec based hibernation and
-all the future users of kexec on panic infrstrcuture which will boot a 
-second kernel in restricted amount of RAM.
 
-I am not sure what's the best way to determine the total RAM in the system
-in arch independent manner. Some VM guys can tell it better. One of the ways
-could be to parse /proc/iomem, the way kexec-tools does. Balbir mentioned
-that traverse through the nodes and sum up present_pages. 
-
-Any suggestions, what's the best way to determine total amount of RAM
-in the system in kernel?
-
-Right now this seems to be one odd case so this code can be inside module.
-If there are more users of it then we can probably create a flag inside
-kernel and export it.
-
-Thanks
-Vivek
+(qemu) qemu: fatal: triple fault
+EAX=00001500 EBX=001001f1 ECX=00000000 EDX=00004081
+ESI=002ae8c0 EDI=002ac8c0 EBP=0000e098 ESP=00008ffe
+EIP=00000d05 EFL=00000002 [-------] CPL=0 II=0 A20=1 SMM=0 HLT=0
+ES =0018 00000000 ffffffff 00cf9300
+CS =4020 00040200 ffffffff 008f9f00
+SS =4000 00040000 0000ffff 00009300
+DS =0018 00000000 ffffffff 00cf9300
+FS =0018 00000000 ffffffff 00cf9300
+GS =0018 00000000 ffffffff 00cf9300
+LDT=0000 00000000 00000000 00008000
+TR =0080 c1fd7000 00002073 c10089fd
+GDT=     0040a938 00000017
+IDT=     c0000000 00000000
+CR0=00000010 CR2=b7ed6200 CR3=00000000 CR4=00000000
+CCS=00008000 CCD=00004000 CCO=SARL
+FCW=037f FSW=0000 [ST=0] FTW=00 MXCSR=00001f80
+FPR0=0000000000000000 0000 FPR1=0000000000000000 0000
+FPR2=0000000000000000 0000 FPR3=0000000000000000 0000
+FPR4=0000000000000000 0000 FPR5=0000000000000000 0000
+FPR6=f424000000000000 4012 FPR7=0000000000000000 0000
+XMM00=00000000000000000000000000000000 XMM01=00000000000000000000000000000000
+XMM02=00000000000000000000000000000000 XMM03=00000000000000000000000000000000
+XMM04=00000000000000000000000000000000 XMM05=00000000000000000000000000000000
+XMM06=00000000000000000000000000000000 XMM07=00000000000000000000000000000000
