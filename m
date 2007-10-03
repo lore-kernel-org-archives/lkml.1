@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbXJCT0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbXJCT1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbXJCT0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 15:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbXJCT0A
+	id S1757422AbXJCT1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 15:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbXJCT1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 15:26:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38273 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751879AbXJCTZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 15:25:59 -0400
-Date: Wed, 3 Oct 2007 12:25:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-In-Reply-To: <4703E888.9010803@garzik.org>
-Message-ID: <alpine.LFD.0.999.0710031223200.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
- <4703E888.9010803@garzik.org>
+	Wed, 3 Oct 2007 15:27:45 -0400
+Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:17260 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753603AbXJCT1o convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 15:27:44 -0400
+From: Frans Pop <elendil@planet.nl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Decreasing stime running confuses top (was: top displaying 9999% CPU usage)
+Date: Wed, 3 Oct 2007 21:27:41 +0200
+User-Agent: KMail/1.9.7
+References: <200710031433.34504.elendil@planet.nl> <Pine.LNX.4.64.0710031731030.27745@kivilampi-30.cs.helsinki.fi> <Pine.LNX.4.64.0710031746260.27745@kivilampi-30.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0710031746260.27745@kivilampi-30.cs.helsinki.fi>
+Cc: "Ilpo =?utf-8?q?J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>,
+       "Alexander E. Patrakov" <patrakov@ums.usu.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710032127.42147.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Oct 2007 19:27:42.0547 (UTC) FILETIME=[77D18230:01C805F3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 03 October 2007, you wrote:
+> On Wed, 3 Oct 2007, Ilpo Järvinen wrote:
+> > On Wed, 3 Oct 2007, Frans Pop wrote:
+> > > The only change is in 2 consecutive columns: "2911 502" -> "2912
+> > > 500". Is processor usage calculated from those? Can someone explain
+> > > how?
+> >
+> > The latter seems to be utime ...decreasing. No wonder if arithmetics
+> > will give strange results (probably top is using unsigned delta?)...
+>
+> Hmm, minor miscounting from my side, stime seems more appropriate...
 
+Here is a series showing utime and stime for kontact over 2 minutes.
 
-On Wed, 3 Oct 2007, Jeff Garzik wrote:
-> 
-> I'm a bit confused...  you typed 2.6.24-rc4; I'm guessing you meant
-> 2.6.24-rc1, but did you mean
+Values were obtained using (identical values removed):
+$ while true; do awk '{print $14" "$15}' /proc/5269/stat; sleep 1; done | ts
 
-No, I just meant "2.6.24 merge window", so:
+Oct 03 21:17:12 12220 1593
+Oct 03 21:17:18 12221 1594
+Oct 03 21:17:26 12222 1593  <--
+Oct 03 21:17:34 12223 1594
+Oct 03 21:17:43 12224 1594
+Oct 03 21:17:51 12224 1595
+Oct 03 21:17:59 12225 1596
+Oct 03 21:18:07 12226 1595  <--
+Oct 03 21:18:15 12227 1596
+Oct 03 21:18:18 12228 1596
+Oct 03 21:18:22 12229 1595  <--
+Oct 03 21:18:31 12230 1596
+Oct 03 21:18:39 12230 1597
+Oct 03 21:18:44 12231 1597
+Oct 03 21:18:48 12232 1596  <--
+Oct 03 21:18:56 12233 1597
+Oct 03 21:19:04 12234 1596  <--
+Oct 03 21:19:11 12235 1597
 
-> 	"x86 merge as soon as 2.6.23 is released" (merge window opens)
-
-is the correct interpretation.
-
-It will probably be a day or two after the 2.6.23 release, just because I 
-like evertybody to look at the release tree after a release, but it would 
-be the first set of changes that get merged (assuming there are no stupid 
-brown-paper-bag issues that would get priority).
-
-		Linus
+So, is it normal that stime decreases sometimes or a kernel bug?
+/me expects the last...
