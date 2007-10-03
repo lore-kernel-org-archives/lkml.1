@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbXJCIUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbXJCIWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbXJCIUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 04:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXJCIT4
+	id S1757590AbXJCIWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 04:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXJCIWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 04:19:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40416 "EHLO mx2.mail.elte.hu"
+	Wed, 3 Oct 2007 04:22:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48265 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbXJCITz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 04:19:55 -0400
-Date: Wed, 3 Oct 2007 10:19:38 +0200
+	id S1752372AbXJCIWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 04:22:09 -0400
+Date: Wed, 3 Oct 2007 10:21:57 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Bill Davidsen <davidsen@tmr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        akpm@linux-foundation.org
 Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <20071003081938.GA32218@elte.hu>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <1191326858.28962.8.camel@localhost> <20071002121556.GA22864@elte.hu> <20071002172135.GA12182@skynet.ie>
+Message-ID: <20071003082157.GB32218@elte.hu>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <1191326858.28962.8.camel@localhost> <20071002121556.GA22864@elte.hu> <20071002172135.GA12182@skynet.ie> <4702C1AD.3090701@tmr.com> <1191371855.2708.26.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071002172135.GA12182@skynet.ie>
+In-Reply-To: <1191371855.2708.26.camel@localhost>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,29 +36,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mel Gorman <mel@skynet.ie> wrote:
+* Mel Gorman <mel@csn.ul.ie> wrote:
 
-> On (02/10/07 14:15), Ingo Molnar didst pronounce:
-> > 
-> > * Mel Gorman <mel@csn.ul.ie> wrote:
-> > 
-> > > Dirt. Booting with "profile=sleep,2" is broken in 2.6.23-rc9 and 
-> > > 2.6.23-rc8 but working in 2.6.22. I was checking it out as part of a 
-> > > discussion in another thread and noticed it broken in -mm as well 
-> > > (2.6.23-rc8-mm2). Bisect is in progress but suggestions as to the 
-> > > prime candidates are welcome or preferably, pointing out that I'm an 
-> > > idiot because I missed twiddling some config change.
-> > 
-> > Mel, does the patch below fix this bug for you? (Note: you will need to 
-> > enable CONFIG_SCHEDSTATS=y too.)
+> > > Nice one Ingo - got it first try. The problem commit was 
+> > > dd41f596cda0d7d6e4a8b139ffdfabcefdd46528 and it's clear that the 
+> > > code removed in this commit is put back by this latest patch.  
+> > > When applied, profile=sleep works as long as CONFIG_SCHEDSTAT is 
+> > > set.
+> > > 
+> > And if it isn't set? I can easily see building a new kernel with 
+> > stats off and forgetting to change the boot options.
 > 
-> Nice one Ingo - got it first try. The problem commit was 
-> dd41f596cda0d7d6e4a8b139ffdfabcefdd46528 and it's clear that the code 
-> removed in this commit is put back by this latest patch.  When 
-> applied, profile=sleep works as long as CONFIG_SCHEDSTAT is set.
+> If CONFIG_SCHEDSTAT is off and profile=sleep is set, you see with 
+> Ingo's patch and readprofile;
+> 
+>      0 *unknown*
+>      0 total                                      0.0000
+> 
+> That is a tad confusing hence my follow-up patch which would say 
+> "/proc/profile" doesn't exist when readprofile is used and the warning 
+> in dmesg.
 
-great - thanks for testing it. I'm glad you caught it as sleep=profile 
-is pretty useful in "why is my system so slow" tests. (which problems 
-are usually reported _after_ a stable kernel is released ...)
+yep - that's the best we can do for the stable release.
+
+We could improve quality of behavior here by not offering /proc/profile 
+in that case and by printk-ing something if profile=sleep is specified 
+on a !CONFIG_SCHEDSTATS kernel. I'm willing to apply patches that do 
+that :)
 
 	Ingo
