@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbXJCRyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXJCR6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbXJCRyp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXJCRyi
+	id S1758529AbXJCR6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXJCR6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:54:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37674 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbXJCRyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:54:37 -0400
-Message-ID: <4703D75B.6070608@garzik.org>
-Date: Wed, 03 Oct 2007 13:54:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Mike Robak <mrobak@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: libATA error message doc
-References: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
-In-Reply-To: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 3 Oct 2007 13:58:23 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52377 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755947AbXJCR6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:58:23 -0400
+Date: Wed, 3 Oct 2007 10:58:17 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071003105817.7adf6516.pj@sgi.com>
+In-Reply-To: <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Robak wrote:
-> Does a doc exist that provides a detailed description of the different
-> errors that could be produced by libata and its associated drivers?
-> The libATA developer's guide provides a very good general description
-> of the types of messages, but I'm looking for more detail.
+Paul M wrote:
+> > The code in kernel/cgroup.c attach_task() which skips the
+> > attachment of a task to the group it is already in has to be
+> > removed.  Cpusets depends on reattaching a task to its current
+> > cpuset, in order to trigger updating the cpus_allowed mask in the
+> > task struct.
 > 
-> For example I got this error message last week:
+> Can you explain a bit more about why this is needed? (i.e. specific
+> scenarios where cpusets will break without this change).
 > 
-> Sep 27 17:29:26 server kernel: ata2.00: exception Emask 0x0 SAct 0x0
-> SErr 0x0 action 0x1
-> Sep 27 17:29:26 server kernel: ata2.00: (irq_stat 0x40000001)
-> Sep 27 17:29:26 server kernel: ata2.00: tag 0 cmd 0xb0 Emask 0x1 stat
-> 0x51 err 0x4 (device error)
-> 
-> I'd like to know what the following items means?
-> 
-> (irq_stat 0x40000001)
-> tag 0
-> cmd 0xb0
-> emask 0x1
-> stat 0x51
-> err 0x4
+> What triggers the reattach in normal use? Something from userspace?
 
-It's pretty much all defined in the ATA or controller specifications...
+Yes, something in user space has to do it.  It's part of the
+kernel-user cpuset API.  If you change a cpuset's 'cpus', then
+you have to rewrite each pid in its 'tasks' file back to that
+'tasks' file in order to get that 'cpus' change to be applied
+to the task struct cpus_allowed of each task, and thereby visible
+to the scheduler.
 
-Well, except for emask, which is a libata-only invention.
-
-	Jeff
-
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
