@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbXJCEyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXJCEzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbXJCEyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 00:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXJCExz
+	id S1755963AbXJCEzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 00:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXJCEzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 00:53:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35033 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751150AbXJCExx (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 00:53:53 -0400
-Date: Tue, 2 Oct 2007 21:53:16 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: pomac@vapor.com, Linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] sky2: jumbo frame regression fix
-Message-ID: <20071002215316.0faa7676@freepuppy.rosehill>
-In-Reply-To: <4702EB4A.4000208@pobox.com>
-References: <1191372129.26233.12.camel@localhost>
-	<20071002180209.47c350a3@freepuppy.rosehill>
-	<4702EB4A.4000208@pobox.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+	Wed, 3 Oct 2007 00:55:39 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39133 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbXJCEzi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 00:55:38 -0400
+Date: Wed, 3 Oct 2007 13:57:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: [Question] How to represent SYSTEM_RAM in kerenel/resouce.c
+Message-Id: <20071003135702.bdcf3f1b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071003015242.GC12049@parisc-linux.org>
+References: <20071003103136.addbe839.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071003015242.GC12049@parisc-linux.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Oct 2007 21:07:22 -0400
-Jeff Garzik <jgarzik@pobox.com> wrote:
+On Tue, 2 Oct 2007 19:52:42 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-> Stephen Hemminger wrote:
-> > Remove unneeded check that caused problems with jumbo frame sizes.
-> > The check was recently added and is wrong.
-> > When using jumbo frames the sky2 driver does fragmentation, so
-> > rx_data_size is less than mtu.
+> On Wed, Oct 03, 2007 at 10:31:36AM +0900, KAMEZAWA Hiroyuki wrote:
+> > i386 and x86_64 registers System RAM as IORESOUCE_MEM | IORESOUCE_BUSY.
+> > ia64 registers System RAM as IORESOURCE_MEM.
 > > 
-> > Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> > 
-> > --- a/drivers/net/sky2.c	2007-10-02 17:56:31.000000000 -0700
-> > +++ b/drivers/net/sky2.c	2007-10-02 17:58:56.000000000 -0700
-> > @@ -2163,9 +2163,6 @@ static struct sk_buff *sky2_receive(stru
-> >  	sky2->rx_next = (sky2->rx_next + 1) % sky2->rx_pending;
-> >  	prefetch(sky2->rx_ring + sky2->rx_next);
-> >  
-> > -	if (length < ETH_ZLEN || length > sky2->rx_data_size)
-> > -		goto len_error;
-> > -
+> > Which is better ?
 > 
-> 2.6.23?  2.6.24?  enquiring minds want to know...
+> Should probably be BUSY.  Non-BUSY regions can have io resources
+> requested underneath them, but you wouldn't want a PCI device to be
+> assigned an address which overlaps with physical memory.
 
-2.6.23, since it is a regression
+Thank you.
+It seems that I'll have to try modifing ia64 and memory hotplug in
+the next -mm. 
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Regards,
+-Kame
+
