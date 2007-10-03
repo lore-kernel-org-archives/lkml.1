@@ -1,92 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbXJCPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbXJCPWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbXJCPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 11:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXJCPVR
+	id S1758081AbXJCPWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 11:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXJCPWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 11:21:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:22064 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbXJCPVQ (ORCPT
+	Wed, 3 Oct 2007 11:22:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37019 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754391AbXJCPWC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 11:21:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IXx2YwLEryfm6KQAllJ5+ZBvDPrAU7STlkgiId2dZfCbu7kFSFu9k46EoDlDSIqssvPwRBxdNhnKXPXr5ce1c2PlrHfAOSMCkxrMfiyPJwngsjgwO0grQKV493jcQuIeRVFJEU38vlnpZR14DLRzzni3PbpF99SqWY5+Nv0tdFQ=
-Message-ID: <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>
-Date: Wed, 3 Oct 2007 17:21:13 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
+	Wed, 3 Oct 2007 11:22:02 -0400
+Date: Wed, 3 Oct 2007 08:21:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
+In-Reply-To: <200710030345.10026.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.0.999.0710030813090.3579@woody.linux-foundation.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+ <200710030345.10026.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>
-	 <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
-	 <46FC1104.8080105@gmail.com>
-	 <64bb37e0709272236g7da8f370lc7f737e908725e88@mail.gmail.com>
-	 <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
-	 <46FFB412.20202@gmail.com>
-	 <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com>
-	 <46FFDF64.1080005@gmail.com>
-	 <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
-	 <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/1/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> On 9/30/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> > On 9/30/07, Tejun Heo <htejun@gmail.com> wrote:
-> > > Torsten Kaiser wrote:
-> To make that comment "cmd part of the output was always the same" more
-> clear: I did not only mean that the first (cmd-)byte was the same, but
-> the whole line:
-> cmd 61/08:00:09:d6:42/00:00:25:00:00/40 tag 0 cdb 0x0 data 4096 out
->
-> I did find ATA_CMD_FPDMA_WRITE = 0x61in ata.h, but I don't find a good
-> hint for the 08 that follows. The interpretation XFER_PIO_0 = 0x08
-> seems wrong...
 
-Even all of the last bisect steps still showed the same line...
 
-> If I look at what patches remain, it seems that some other (earlier)
-> patch that is new in 2.6.23-rc4-mm1 is the trigger, but it will only
-> fail together with a second patch.
+On Wed, 3 Oct 2007, Nick Piggin wrote:
+> 
+> I don't know if Linus actually disliked the patch itself, or disliked
+> my (maybe confusingly worded) rationale?
 
-I'm now finished with bisecting, still 2 patches, but I don't want to
-spend another two hours waiting...
+Yes. I'd happily accept the patch, but I'd want it clarified and made 
+obvious what the problem was - and it wasn't the zero page itself, it was 
+a regression in the VM that made it less palatable.
 
-And the winners are: (from broken-out patchset of 2.6.23-rc4-mm1)
-maps2-simplify-interdependence-of-proc-pid-maps-and-smaps.patch
-maps2-move-clear_refs-code-to-task_mmuc.patch
+I also thought that there were potentially better solutions, namely to 
+simply avoid the VM regression, but I also acknowledge that they may not 
+be worth it - I just want them to be on the table.
 
-Before these patches I have never seen the bug, with these I only got
-two good boots when trying to recreate the problem. But even the
-kernels that did one good boot failed on the second try.
+In short: the real cost of the zero page was the reference counting on the 
+page that we do these days. For example, I really do believe that the 
+problem could fairly easily be fixed by simply not considering zero_page
+to be a "vm_normal_page()". We already *do* have support for pages not 
+getting ref-counted (since we need it for other things), and I think that 
+zero_page very naturally falls into exactly that situation.
 
-> > As for you printk:
->From the last testkernel (up to incl.
-maps2-move-clear_refs-code-to-task_mmuc.patch)
+So in many ways, I would think that turning zero-page into a nonrefcounted 
+page (the same way we really do have to do for other things anyway) would 
+be the much more *direct* solution, and in many ways the obvious one.
 
-Good:
-Oct  3 15:50:39 treogen [    3.780000] XXX sil24 cb=ffff810005dd0000
-cb_dma=5dd0000
-Oct  3 15:50:39 treogen [    3.790000] XXX sil24 cb=ffff810005de0000
-cb_dma=5de0000
+HOWEVER - if people think that it's easier to remove zero_page, and want 
+to do it for other reasons, *AND* can hopefully even back up the claim 
+that it never matters with numbers (ie that the extra pagefaults just make 
+the whole zero-page thing pointless), then I'd certainly accept the patch. 
 
-Bad:
-Oct  3 16:56:46 treogen [    3.750000] XXX sil24 cb=ffff810005de0000
-cb_dma=5de0000
-Oct  3 16:56:46 treogen [    3.760000] XXX sil24 cb=ffff810005df0000
-cb_dma=5df0000
+I'd just want the patch *description* to then also be correct, and blame 
+the right situation, instead of blaming zero-page itself.
 
-I have *NO* clue how these procfs changes can kill the sata_sil24
-driver, but all bisect steps point to these two patches as cause or
-trigger of the bug.
-
-Torsten
+		Linus
