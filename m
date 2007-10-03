@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbXJCSWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXJCSZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759224AbXJCSWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 14:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXJCSVw
+	id S1758761AbXJCSZh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 14:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbXJCSZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 14:21:52 -0400
-Received: from mga05.intel.com ([192.55.52.89]:57340 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757477AbXJCSVv (ORCPT
+	Wed, 3 Oct 2007 14:25:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:27089 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757284AbXJCSZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 14:21:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,226,1188802800"; 
-   d="scan'208";a="334049094"
-Message-ID: <4703DD8A.80602@linux.intel.com>
-Date: Wed, 03 Oct 2007 11:20:58 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Wed, 3 Oct 2007 14:25:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YSUcZdfZ9ytsNV3oUehQxyLCdYyohWSAv5eoqMkXFxmYfmsrD7s0wuq40o9jlJ73y
+	BUGjgUdbi/BM6rxVtAbAQ==
+Message-ID: <6599ad830710031125v68aac64aic4ad7e5114fa8ac@mail.gmail.com>
+Date: Wed, 3 Oct 2007 11:25:21 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+In-Reply-To: <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anders Bostr?m <anders@bostrom.dyndns.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: high load average when idle
-References: <20071002.233731.119908363.anders@bostrom.dyndns.org> <20071002150748.906970bc.akpm@linux-foundation.org> <4702C756.8090108@redhat.com> <20071002162613.54c3ef43@laptopd505.fenrus.org> <4703D212.6040304@redhat.com> <alpine.LFD.0.999.0710031058320.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710031058320.3579@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	 <20071003105817.7adf6516.pj@sgi.com>
+	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Without this, I can easily imagine that the rounding code tends to try to 
-> round to an even second, and the load-average code generally also runs at 
-> even seconds!
-> 
-> 		Linus
-> 
-> ---
->  include/linux/sched.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index a01ac6d..643de0f 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -113,7 +113,7 @@ extern unsigned long avenrun[];		/* Load averages */
->  
->  #define FSHIFT		11		/* nr of bits of precision */
->  #define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
-> -#define LOAD_FREQ	(5*HZ)		/* 5 sec intervals */
-> +#define LOAD_FREQ	(5*HZ+1)	/* ~5 sec intervals */
+On 10/3/07, Paul Menage <menage@google.com> wrote:
+>
+> What's wrong with, in update_cpumask(), doing a loop across all
+> members of the cgroup and updating their cpus_allowed fields?
 
-not sure this is going to help; I mean, the load gets only updated in 
-actual timer interrupts... and on a tickless system there's very few 
-of those around..... and usually at places round_jiffies() already put 
-a timer on.
+i.e. something like:
 
-(also.. one thing that might make Chuck's theory wrong is that the 
-sampling code doesn't sample timer activity since that's run just 
-after the sampler in the same irq)
+struct cgroup_iter it;
+struct task_struct *p;
+while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+	set_cpus_allowed(p, cs->cpus_allowed);
+}
+cgroup_iter_end(cs->css.cgroup, &it);
+
+Paul
