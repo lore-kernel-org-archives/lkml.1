@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbXJCNei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXJCNfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbXJCNei (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXJCNeb
+	id S1756557AbXJCNfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXJCNfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:34:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55586 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbXJCNeb (ORCPT
+	Wed, 3 Oct 2007 09:35:02 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:40339 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754150AbXJCNfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:34:31 -0400
-Date: Wed, 3 Oct 2007 14:34:22 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..)
-Message-ID: <20071003133422.GI8181@ftp.linux.org.uk>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu>
+	Wed, 3 Oct 2007 09:35:01 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com
+In-Reply-To: <1191407872.5572.7.camel@lappy>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+	 <1191325226.13204.63.camel@twins>
+	 <200710022205.05295.nickpiggin@yahoo.com.au>
+	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 15:35:25 +0200
+Message-Id: <1191418525.4093.87.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071003084607.GC32218@elte.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 10:46:07AM +0200, Ingo Molnar wrote:
+On Wed, 2007-10-03 at 12:37 +0200, Peter Zijlstra wrote:
+> On Wed, 2007-10-03 at 12:15 +0200, Kay Sievers wrote:
+> > On Tue, 2007-10-02 at 22:05 +1000, Nick Piggin wrote:
+> > > On Tuesday 02 October 2007 21:40, Peter Zijlstra wrote:
+> > > > On Tue, 2007-10-02 at 13:21 +0200, Kay Sievers wrote:
+> > > 
+> > > > > How about adding this information to the tree then, instead of
+> > > > > creating a new top-level hack, just because something that you think
+> > > > > you need doesn't exist.
+> > > >
+> > > > So you suggest adding all the various network filesystems in there
+> > > > (where?), and adding the concept of a BDI, and ensuring all are properly
+> > > > linked together - somehow. Feel free to do so.
+> > > 
+> > > Would something fit better under /sys/fs/? At least filesystems are
+> > > already an existing concept to userspace.
+> > 
+> > Sounds at least less messy than an new top-level directory.
+> > 
+> > But again, if it's "device" releated, like the name suggests, it should
+> > be reachable from the device tree.
+> > Which userspace tool is supposed to set these values, and at what time?
+> > An init-script, something at device discovery/setup? If that is is ever
+> > going to be used in a hotplug setup, you really don't want to go look
+> > for directories with magic device names in another disconnected tree.
 > 
-> hm, i just triggered the procfs crash below with -rc9 on a testbox. 
-> Config attached. It's easy to reproduce it via 'service sshd restart'. 
-> The crash site is:
+> Filesystems don't really map to BDIs either. One can have multiple FSs
+> per BDI.
 > 
->  (gdb) list *0xc017599d
->  0xc017599d is in seq_path (fs/seq_file.c:354).
->  349             if (m->count < m->size) {
->  350                     char *s = m->buf + m->count;
->  351                     char *p = d_path(dentry, mnt, s, m->size - m->count);
->  352                     if (!IS_ERR(p)) {
->  353                             while (s <= p) {
->  354                                     char c = *p++;
->  355                                     if (!c) {
->  356                                             p = m->buf + m->count;
->  357                                             m->count = s - m->buf;
->  358                                             return s - p;
->  (gdb)
+> 'Normally' a BDI relates to a block device, but networked (and other
+> non-block device) filesystems have to create a BDI too. So these need to
+> be represented some place as well.
 > 
-> any ideas? Fortunately i was able to do an strace of the incident:
+> The typical usage would indeed be init scripts. The typical example
+> would be setting the read-ahead window. Currently that cannot be done
+> for NFS mounts.
 
-Charming...  So we get d_path() either returning junk or we get something
-that isn't NUL-terminated.  Which one it is?  I.e. what does p look like
-and what's in s?
+What kind of context for a non-block based fs will get the bdi controls
+added? Is there a generic place, or does every non-block based
+filesystem needs to be adapted individually to use it?
+
+Kay
+
