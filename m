@@ -1,209 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXJCUt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbXJCUwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXJCUt6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 16:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbXJCUtq
+	id S1758795AbXJCUwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 16:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbXJCUwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 16:49:46 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:61625 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753268AbXJCUtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 16:49:45 -0400
-Subject: [PATCH 6/8] scsi: megaraid_sas - call cmd completion from reset
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Oct 2007 12:07:03 -0400
-Message-Id: <1191254823.5850.27.camel@dhcp-75-534.se.lsil.com>
+	Wed, 3 Oct 2007 16:52:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50315 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756228AbXJCUwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 16:52:38 -0400
+Date: Wed, 3 Oct 2007 13:52:32 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071003135232.af01a624.pj@sgi.com>
+In-Reply-To: <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	<20071003105817.7adf6516.pj@sgi.com>
+	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	<20071003131632.fed4b848.pj@sgi.com>
+	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 03 Oct 2007 20:49:35.0367 (UTC) FILETIME=[E8165970:01C805FE]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver will call cmd completion routine from Reset path without waiting for cmd completion from isr context.
+> What was wrong with my suggestion from a couple of emails back? Adding
+> the following in cpuset_attach():
+> 
+> struct cgroup_iter it;
+> struct task_struct *p;
+> while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+>        set_cpus_allowed(p, cs->cpus_allowed);
+> }
+> cgroup_iter_end(cs->css.cgroup, &it);
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+Hmmm ... that just might work.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |  122 +++++++++++++------------
- drivers/scsi/megaraid/megaraid_sas.h |    2
- 2 files changed, 70 insertions(+), 54 deletions(-)
+And this brings to light the reason (justification, excuse, whatever
+you call it) that I probably didn't do this earlier.
 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-10-02 22:41:39.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-10-02 23:32:05.000000000 -0700
-@@ -109,6 +109,10 @@ static DEFINE_MUTEX(megasas_async_queue_
- 
- static u32 megasas_dbg_lvl;
- 
-+static void
-+megasas_complete_cmd(struct megasas_instance *instance, struct megasas_cmd *cmd,
-+		     u8 alt_status);
-+
- /**
-  * megasas_get_cmd -	Get a command from the free pool
-  * @instance:		Adapter soft state
-@@ -919,6 +923,64 @@ static int megasas_slave_configure(struc
- }
- 
- /**
-+ * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
-+ * @instance_addr:			Address of adapter soft state
-+ *
-+ * Tasklet to complete cmds
-+ */
-+static void megasas_complete_cmd_dpc(unsigned long instance_addr)
-+{
-+	u32 producer;
-+	u32 consumer;
-+	u32 context;
-+	struct megasas_cmd *cmd;
-+	struct megasas_instance *instance =
-+				(struct megasas_instance *)instance_addr;
-+	unsigned long flags;
-+
-+	/* If we have already declared adapter dead, donot complete cmds */
-+	if (instance->hw_crit_error)
-+		return;
-+
-+	spin_lock_irqsave(&instance->completion_lock, flags);
-+
-+	producer = *instance->producer;
-+	consumer = *instance->consumer;
-+
-+	while (consumer != producer) {
-+		context = instance->reply_queue[consumer];
-+
-+		cmd = instance->cmd_list[context];
-+
-+		megasas_complete_cmd(instance, cmd, DID_OK);
-+
-+		consumer++;
-+		if (consumer == (instance->max_fw_cmds + 1)) {
-+			consumer = 0;
-+		}
-+	}
-+
-+	*instance->consumer = producer;
-+
-+	spin_unlock_irqrestore(&instance->completion_lock, flags);
-+
-+	/*
-+	 * Check if we can restore can_queue
-+	 */
-+	if (instance->flag & MEGASAS_FW_BUSY
-+		&& time_after(jiffies, instance->last_time + 5 * HZ)
-+		&& atomic_read(&instance->fw_outstanding) < 17) {
-+
-+		spin_lock_irqsave(instance->host->host_lock, flags);
-+		instance->flag &= ~MEGASAS_FW_BUSY;
-+		instance->host->can_queue =
-+				instance->max_fw_cmds - MEGASAS_INT_CMDS;
-+
-+		spin_unlock_irqrestore(instance->host->host_lock, flags);
-+	}
-+}
-+
-+/**
-  * megasas_wait_for_outstanding -	Wait for all outstanding cmds
-  * @instance:				Adapter soft state
-  *
-@@ -941,6 +1003,11 @@ static int megasas_wait_for_outstanding(
- 		if (!(i % MEGASAS_RESET_NOTICE_INTERVAL)) {
- 			printk(KERN_NOTICE "megasas: [%2d]waiting for %d "
- 			       "commands to complete\n",i,outstanding);
-+			/*
-+			 * Call cmd completion routine. Cmd to be
-+			 * be completed directly without depending on isr.
-+			 */
-+			megasas_complete_cmd_dpc((unsigned long)instance);
- 		}
- 
- 		msleep(1000);
-@@ -1839,60 +1906,6 @@ megasas_get_ctrl_info(struct megasas_ins
- }
- 
- /**
-- * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
-- * @instance_addr:			Address of adapter soft state
-- *
-- * Tasklet to complete cmds
-- */
--static void megasas_complete_cmd_dpc(unsigned long instance_addr)
--{
--	u32 producer;
--	u32 consumer;
--	u32 context;
--	struct megasas_cmd *cmd;
--	struct megasas_instance *instance = (struct megasas_instance *)instance_addr;
--	unsigned long flags;
--
--	/* If we have already declared adapter dead, donot complete cmds */
--	if (instance->hw_crit_error)
--		return;
--
--	producer = *instance->producer;
--	consumer = *instance->consumer;
--
--	while (consumer != producer) {
--		context = instance->reply_queue[consumer];
--
--		cmd = instance->cmd_list[context];
--
--		megasas_complete_cmd(instance, cmd, DID_OK);
--
--		consumer++;
--		if (consumer == (instance->max_fw_cmds + 1)) {
--			consumer = 0;
--		}
--	}
--
--	*instance->consumer = producer;
--
--	/*
--	 * Check if we can restore can_queue
--	 */
--	if (instance->flag & MEGASAS_FW_BUSY
--		&& time_after(jiffies, instance->last_time + 5 * HZ)
--		&& atomic_read(&instance->fw_outstanding) < 17) {
--
--		spin_lock_irqsave(instance->host->host_lock, flags);
--		instance->flag &= ~MEGASAS_FW_BUSY;
--		instance->host->can_queue =
--				instance->max_fw_cmds - MEGASAS_INT_CMDS;
--
--		spin_unlock_irqrestore(instance->host->host_lock, flags);
--	}
--
--}
--
--/**
-  * megasas_issue_init_mfi -	Initializes the FW
-  * @instance:		Adapter soft state
-  *
-@@ -2512,6 +2525,7 @@ megasas_probe_one(struct pci_dev *pdev, 
- 	init_waitqueue_head(&instance->abort_cmd_wait_q);
- 
- 	spin_lock_init(&instance->cmd_pool_lock);
-+	spin_lock_init(&instance->completion_lock);
- 
- 	sema_init(&instance->aen_mutex, 1);
- 	sema_init(&instance->ioctl_sem, MEGASAS_INT_CMDS);
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-10-01 00:03:59.000000000 -0700
-@@ -1086,6 +1086,8 @@ struct megasas_instance {
- 	struct megasas_cmd **cmd_list;
- 	struct list_head cmd_pool;
- 	spinlock_t cmd_pool_lock;
-+	/* used to synch producer, consumer ptrs in dpc */
-+	spinlock_t completion_lock;
- 	struct dma_pool *frame_dma_pool;
- 	struct dma_pool *sense_dma_pool;
- 
+In the dark ages before cgroups (aka containers) we did not have an
+efficient way to walk the tasks in a cpuset. One had to walk the entire
+task list, comparing task struct cpuset pointers.  On big honking NUMA
+iron, one should avoid task list walks as much as one can get away
+with, even if it meant sneaking in a little bit racey API.  Since some
+updates of a cpusets 'cpus' mask don't need it (you happen to know that
+all tasks in that cpuset are pause'd anyway) I might have made the
+tradeoff to make this task list walk an explicitly invoked user action,
+to be done only when needed.
 
+But now (correct me if I'm wrong here) cgroups has a per-cgroup task
+list, and the above loop has cost linear in the number of tasks
+actually in the cgroup, plus (unfortunate but necessary and tolerable)
+the cost of taking a global css_set_lock, right?
 
+And I take it the above code snipped is missing the cgroup_iter_start,
+correct?
+
+I'll ask Andrew to kill this patch of mine, and I will test out your
+suggestion this evening.
+
+This still leaves the other creepy crawlies involving cpusets and hot
+plug that I glimpsed slithering by in my last message.  I guess I'll
+start a separate discussion with Cliff Wickman and whomever else I think
+might want to be involved on those issues.
+
+Nice work - thanks.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
