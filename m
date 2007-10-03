@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbXJCOz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbXJCO4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbXJCOz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 10:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXJCOzv
+	id S1757687AbXJCO4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 10:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXJCO4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 10:55:51 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:46820 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750818AbXJCOzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 10:55:50 -0400
-X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 10:55:49 EDT
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: a.p.zijlstra@chello.nl, jmorris@namei.org, linux-kernel@vger.kernel.org,
+	Wed, 3 Oct 2007 10:56:33 -0400
+Received: from [122.1.235.145] ([122.1.235.145]:55978 "EHLO
+	smtp.wine.ocn.ne.jp" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXJCO4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 10:56:32 -0400
+To: yoshfuji@linux-ipv6.org, a.p.zijlstra@chello.nl
+Cc: kaigai@kaigai.gr.jp, jmorris@namei.org, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-In-Reply-To: <200710032319.ABF69743.VJQMLHFOFOtFOS@I-love.SAKURA.ne.jp>
-References: <200710032024.DJF78662.FHOLtMSFOOFJVQ@I-love.SAKURA.ne.jp>
-	 <20071003.204356.05853536.yoshfuji@linux-ipv6.org>
-	 <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
-	 <200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
-	 <1191417864.5599.2.camel@lappy>
-	 <200710032319.ABF69743.VJQMLHFOFOtFOS@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Wed, 03 Oct 2007 10:35:17 -0400
-Message-Id: <1191422117.1553.8.camel@moss-terrapins.epoch.ncsc.mil>
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200710032259.HJF90663.OFMLOJtQHOFVSF@I-love.SAKURA.ne.jp>
+	<1191420442.5599.12.camel@lappy>
+	<200710032326.FJF32915.OQOOHLMtFSFJFV@I-love.SAKURA.ne.jp>
+	<20071003.233249.126777093.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20071003.233249.126777093.yoshfuji@linux-ipv6.org>
+Message-Id: <200710032356.JIH05236.JQSMOOHFLVFFOt@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Wed, 3 Oct 2007 23:56:28 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-03 at 23:19 +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> Thank you for pointing out.
-> 
-> Peter Zijlstra wrote:
-> > > Currently, TOMOYO Linux avoids read_lock, on the assumption that
-> > > (1) First, ptr->next is initialized with NULL.
-> > > (2) Later, ptr->next is assigned non-NULL address.
-> > > (3) Assigning to ptr->next is done atomically.
-> >  (4) wmb after asigning ptr->next
-> >  (5) rmb before reading ptr->next
-> Excuse me, but I didn't understand why (4) and (5) are needed.
-> 
-> append_function() {
-> 
->   down(semaphore_for_write_protect);
->   ...
->   ptr = head;
->   while (ptr->next) ptr = ptr->next;
->   ptr->next = new_entry;
->   ...
->   up(semaphore_for_write_protect);
-> 
-> }
+Hello.
 
-It seems to me that this function alone is a reason to argue against
-using a singly linked list. I know your patch doesn't actually contain
-this as a function but it does use the same logic to append to your
-lists. Does the overhead of the second pointer that the regular list
-head uses outweigh the O(1) insertion and deletion it provides
-(especially in your case)? I know domain transitions are rare but why
-use something with O(N) insertion? This could be one reason why there
-isn't an slist already in list.h
 
-Dave Quigley
+YOSHIFUJI Hideaki wrote:
+> It is not a good practice.  Please free such objects.
+> BTW, how many objects do you have in the list?
+It varies from 0 to some thousands,
+depending on the policy supplied by the administrator and/or the policy appended by "learning mode".
+
+
+Peter Zijlstra wrote:
+> sounds like a might fine memory leak / dos attack.
+TOMOYO Linux keeps the policy in CD-R's manner.
+Thus, once an entry is written, it's pointer is valid forever.
+TOMOYO Linux's simplicity (singly-linked list with no read_lock) comes from
+this "keep the policy in CD-R's manner".
+Yes, it is a kind of memory leak, but is controllable.
+
+The kernel no longer requires memory after entering into "enforcing mode".
+So, attackers can't do DoS attack after entering into "enforcing mode".
+
+
+Regards.
 
