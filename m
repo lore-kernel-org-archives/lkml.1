@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbXJCRwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbXJCRyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbXJCRwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 13:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbXJCRwo
+	id S1758542AbXJCRyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 13:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXJCRyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 13:52:44 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57346 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755759AbXJCRwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 13:52:43 -0400
-Date: Wed, 3 Oct 2007 18:52:38 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, paul.moore@hp.com
-Subject: Re: [PATCH] Version 4 (2.6.23-rc8-mm2) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071003175237.GK8181@ftp.linux.org.uk>
-References: <20071003051254.GH8181@ftp.linux.org.uk> <287091.73995.qm@web36604.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <287091.73995.qm@web36604.mail.mud.yahoo.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 3 Oct 2007 13:54:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37674 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbXJCRyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 13:54:37 -0400
+Message-ID: <4703D75B.6070608@garzik.org>
+Date: Wed, 03 Oct 2007 13:54:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mike Robak <mrobak@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: libATA error message doc
+References: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
+In-Reply-To: <2b40bfd30710031039y70252a8bk898b102c993a92af@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 10:21:08AM -0700, Casey Schaufler wrote:
-> > what
-> > happens if we want it in two chroot jails with different layouts?
+Mike Robak wrote:
+> Does a doc exist that provides a detailed description of the different
+> errors that could be produced by libata and its associated drivers?
+> The libATA developer's guide provides a very good general description
+> of the types of messages, but I'm looking for more detail.
 > 
-> As you can only have /smack mounted once, this isn't an issue,
-> but it does present an interesting use case that brings the one
-> mount limitation into question. I'll add addressing this to the
-> short term todo list.
-
-Of course you can mount it more than once.  Just bind the sucker and you
-are done.
- 
-> > I really don't get it; why not simply have something like
-> > /smack/tmp.link resolve to tmp/<label> and have userland bind or mount
-> > whatever you bloody like on /smack/tmp?
+> For example I got this error message last week:
 > 
-> Because you throw "simple" out the window when you require userland
-> assistance to perform this function.
+> Sep 27 17:29:26 server kernel: ata2.00: exception Emask 0x0 SAct 0x0
+> SErr 0x0 action 0x1
+> Sep 27 17:29:26 server kernel: ata2.00: (irq_stat 0x40000001)
+> Sep 27 17:29:26 server kernel: ata2.00: tag 0 cmd 0xb0 Emask 0x1 stat
+> 0x51 err 0x4 (device error)
+> 
+> I'd like to know what the following items means?
+> 
+> (irq_stat 0x40000001)
+> tag 0
+> cmd 0xb0
+> emask 0x1
+> stat 0x51
+> err 0x4
 
-Any more than having /tmp replaced with a symlink?
+It's pretty much all defined in the ATA or controller specifications...
 
-> I'm having some trouble seeing how the 60 lines of code in
-> smackfs dealing with symlinks would be improved by your suggestions.
-> I certainly don't see how requiring userland intervention would
-> do anything but make it bigger and less reliable.
+Well, except for emask, which is a libata-only invention.
 
-_What_ userland intervention?  Mounting stuff under /smack/tmp and not under
-your /moldy?  Having /tmp replaced with symlink to /smack/tmp.link instead
-of replacing it with a symlink to /smack/tmp?
+	Jeff
 
-Absolute paths in that kind of thing are _wrong_.  You know where the things
-are on your fs.  You don't know if anything else will be visible, let alone
-whether it will be at the same place in all chroots or namespaces.  And no,
-you _can't_ make sure that fs is visible only in one place.  No fs can or
-has any business even trying.
+
+
