@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXJCNll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbXJCNrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbXJCNll (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 09:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXJCNlb
+	id S1756266AbXJCNrB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 09:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXJCNqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 09:41:31 -0400
-Received: from mail.tmr.com ([64.65.253.246]:38085 "EHLO gaimboi.tmr.com"
+	Wed, 3 Oct 2007 09:46:53 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:59839 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755281AbXJCNla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 09:41:30 -0400
-Message-ID: <47039D80.6060805@tmr.com>
-Date: Wed, 03 Oct 2007 09:47:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>,
-       Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: shutdown -h now, 2.6.23-rc8 & 9
-References: <200710020650.02613.gene.heskett@gmail.com> <4702C401.4050009@tmr.com> <200710022217.53972.gene.heskett@gmail.com>
-In-Reply-To: <200710022217.53972.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753232AbXJCNqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 09:46:52 -0400
+Date: Wed, 3 Oct 2007 15:46:32 +0200 (MEST)
+Message-Id: <200710031346.l93DkWbE028800@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound occurs
+Cc: linux-kernel@vger.kernel.org, mikpe@it.uu.se, shiwh@cn.fujitsu.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Tuesday 02 October 2007, Bill Davidsen wrote:
->   
->> Gene Heskett wrote:
->>     
->>> Indeed it went to the system halted message and just sat there.  I hadn't
->>> yet booted to rc9 as amanda was running, so I did just a few minutes ago.
->>>
->>> After the reboot to rc9, I ran a make xconfig again to check that the
->>> option was enabled, but it seems to have disappeared from the menus in
->>> xconfig.
->>>
->>> Why was this removed?  Or if moved, where to?
->>>       
->> What? Was what removed?
->>     
->
-> This phrase has not existed in any .config newer than 2.6.23-rc1 here:
-> CONFIG_APM_REAL_MODE_POWER_OFF=y
->
->
->   
-Yes, it's still there as of 23-rc8-git5, the latest source I've built on 
-this machine. If you start menuconfig and search for the value, (I used 
-"/APM") you will see that it now depends on various other options. I 
-haven't personally needed it in a long time, but there are ACPI 
-implementations which are seriously broken. And probably some embedded 
-hardware and/or hand-held devices now.
+On Wed, 3 Oct 2007 22:20:46 +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 3 Oct 2007 21:40:29 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Wed, 3 Oct 2007 14:20:07 +0200 (MEST)
+> > Mikael Pettersson <mikpe@it.uu.se> wrote:
+> > 
+> > > What I don't agree with is the logic itself:
+> > > - You only catch altstack overflow caused by the kernel pushing
+> > >   a sigframe. You don't catch overflow caused by the user-space
+> > >   signal handler pushing its own stack frame after the sigframe.
+> > > - SUSv3 specifies the effect of altstack overflow as "undefined".
+> > > - The overflow problem can be solved in user-space: allocate the
+> > >   altstack with mmap(), then mprotect() the lowest page to prevent
+> > >   accesses to it. Any overflow into it, by the kernel's signal
+> > >   delivery code or by the user-space signal handler, will be caught.
+> > > 
+> > > So this patch gets a NAK from me.
+> > > 
+> > 
+> > I can understand what you say, but a program which meets this problem
+> > cannot be debugged ;(
+> > 
+> > gdb just shows infinit loop of function frames and origignal signal frame
+> > which includes the most important information is overwritten.
+> > 
+> there is a difference among user's stack overflow and kernel's.
+>  - user's stack overflow just breaks memory next to stack frame.
+>  - kernel's altstack overflow, which this patch tries to fix, breaks
+>    the bottom of altstack  bacause %esp goes back to the bottom
+>    of ths altstack when it exceeds altstack range.
+>    This behavior overwrite orignail stack frame and shows  infinit loop
+>    of function call to gdb and never stop with 100% cpu usage.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+The proposed kernel signal delivery patch only handles the case
+where the /sigframe/ ends up overlapping the end of the altstack.
+If the sigframe remains within the altstack boundaries but the
+user-space signal handler adds an /ordinary stack frame/ that
+moves SP beyond the altstack limit, then the kernel patch solves
+nothing and recursive signals will cause altstack wraparound.
 
+On the other hand, the user-space technique of making the lowest
+page(s) in the altstack inaccessible handles both cases of overflow.
+
+/Mikael
