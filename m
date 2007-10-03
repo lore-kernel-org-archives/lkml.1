@@ -1,84 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXJCGwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbXJCG42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXJCGwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 02:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXJCGwq
+	id S1757459AbXJCG42 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 02:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXJCG4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 02:52:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56146 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751834AbXJCGwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 02:52:45 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX19YBccVlhFYJdK8nzwm80EuDc036V3i3sC4yR/uWt
-	LYw+OIcD/7bkwD
-Message-ID: <47033BA1.7070901@gmx.net>
-Date: Wed, 03 Oct 2007 08:50:09 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: rdunlap@xenotime.net, Andrew Morton <akpm@linux-foundation.org>,
-       hch@lst.de, geoff@gclare.org.uk, tglx@linutronix.de, david@hardeman.nu,
-       Ulrich Drepper <drepper@redhat.com>, subrata@linux.vnet.ibm.com,
-       corbet@lwn.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Man page for revised timerfd API
-References: <46FA0657.20700@gmx.net> <Pine.LNX.4.64.0709261038550.25778@alien.or.mcafeemobile.com> <20070927103531.184550@gmx.net> <Pine.LNX.4.64.0709270944300.763@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0709270944300.763@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Oct 2007 02:56:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34315 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751761AbXJCG4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 02:56:19 -0400
+Date: Tue, 2 Oct 2007 23:56:15 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: nickpiggin@yahoo.com.au, akpm@linux-foundation.org, menage@google.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
+Subject: Re: [patch] sched: fix sched-domains partitioning by cpusets
+Message-Id: <20071002235615.6e8cd007.pj@sgi.com>
+In-Reply-To: <20071003062240.GA19027@elte.hu>
+References: <20070930104403.24828.48263.sendpatchset@jackhammer.engr.sgi.com>
+	<200709301335.00441.nickpiggin@yahoo.com.au>
+	<20071001111528.5487b4f4.pj@sgi.com>
+	<200710022335.05357.nickpiggin@yahoo.com.au>
+	<20071003062240.GA19027@elte.hu>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo wrote:
+> i've merged your patch to my scheduler queue - see the patch below. (And 
+> could you send me your SoB line too?) Paul, if we went with the patch 
+> below, what else would be needed for your purposes?
 
+Nick and I already resolved that, when he first posted this patch
+in October of 2006.  The cpu_exclusive flag doesn't work for this.
 
-Davide Libenzi wrote:
-> On Thu, 27 Sep 2007, Michael Kerrisk wrote:
-> 
->> Davide,
->>
->> A further question: what is the expected behavior in the
->> following scenario:
->>
->> 1. Create a timerfd and arm it.
->> 2. Wait until M timer expirations have occurred
->> 3. Modify the settings of the timer
->> 4. Wait for N further timer expirations have occurred
->> 5. read() from the timerfd
->>
->> Does the buffer returned by the read() contain the value
->> N or (M+N)?  In other words, should modifying the timer
->> settings reset the expiration count to zero?
-> 
-> Every timerfd_settime() zeroes the tick counter. So in your scenario it'll 
-> return N.
+Here's a copy of the key message, from Nick, near the end of that
+thread in which he earlier proposed this patch, also available at:
+http://lkml.org/lkml/2006/10/21/12
 
-Thanks Davide.
+====================================================
+    Paul Jackson wrote:
+    > Nick wrote:
+    > 
+    >>Or, another question, how does my patch hijack cpus_allowed? In
+    >>what way does it change the semantics of cpus_allowed?
+    > 
+    > 
+    > It limits load balancing for tasks in cpusets containing
+    > a superset of that cpusets cpus.
+    > 
+    > There are always such cpusets - the top cpuset if no other.
 
-I modified the first para of the read description to make this clear:
+    Ah OK, and there is my misunderstanding with cpusets. From the
+    documentation it appears as though cpu_exclusive cpusets are
+    made in order to do the partitioning thing.
 
-       read(2)
-              If the timer has already expired one or more times
-              since   its  settings  were  last  modified  using
-              timerfd_settime(), or since  the  last  successful
-              read(2),  then the buffer given to read(2) returns
-              an unsigned 8-byte integer  (uint64_t)  containing
-              the number of expirations that have occurred.
+    If you always have other domains overlapping them (regardless
+    that it is a parent), then what actual use does cpu_exclusive
+    flag have?
+====================================================
 
-(In the earlier version of the page the text talked about expirations
-"since the timer was created".)
+A couple messages later in that thread, Nick wrote:
+> But even the way cpu_exclusive semantics are defined makes it not
+> quite compatible with partitioning anyway, unfortunately.
 
-Cheers,
+I agree with Nick on this conclusion, and with his other conclusion
+that the 'cpu_exclusive' flag is pretty near useless.
 
-Michael
+Some per-cpuset flag other the 'cpu_exclusive' is required to
+control sched domains from cpusets.
+
+This has specific impact on one of the key users of cpusets, the
+various developers of batch schedulers.  One by one, they have
+determined that the cpu_exclusive flag is incompatible with the
+way they set up cpusets, and have decided they should not enable
+that flag on any cpuset under their control.  It gets in their way,
+and serves no useful purpose for them.  However we need someway
+for them to specify where they need load balancing, so that on
+large systems, they can allow the admin to avoid the cost of load
+balancing over the batch schedulers entire subset of the system at
+once, but rather just load balance over the smaller sets where the
+batch scheduler has active jobs running that might depend on load
+balancing.
+
+Batch schedulers need to be able to specify where they need load
+balancing and where they don't, and they can't use the 'cpu_exclusive'
+flag.  The defining characteristic of 'cpu_exclusive' is no overlap of
+CPUs with sibling cpusets.  That is incompatible with their needs.
+
+Therefore, they need a different flag.
+
+I must NAQ this patch, and I'm surprised to see Nick propose it
+again, as I thought he had already agreed that it didn't suffice.
 
 -- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
