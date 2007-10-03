@@ -1,106 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXJCAab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbXJCAho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbXJCAab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Oct 2007 20:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXJCAaV
+	id S1755362AbXJCAho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Oct 2007 20:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbXJCAhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Oct 2007 20:30:21 -0400
-Received: from ozlabs.org ([203.10.76.45]:44416 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbXJCAaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Oct 2007 20:30:19 -0400
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Linas Vepstas <linas@austin.ibm.com>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071003002646.GD9814@bakeyournoodle.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	 <20070924123531.GC30855@shadowen.org>
-	 <20071002232819.GN4338@austin.ibm.com>
-	 <20071003002646.GD9814@bakeyournoodle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WYSzyGelrcydW7aGMI+8"
-Date: Wed, 03 Oct 2007 10:30:16 +1000
-Message-Id: <1191371416.8073.1.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 2 Oct 2007 20:37:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43105 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752413AbXJCAhg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Oct 2007 20:37:36 -0400
+Date: Tue, 2 Oct 2007 17:37:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kswapd min order, slub max order [was Re: -mm merge plans for
+ 2.6.24]
+In-Reply-To: <Pine.LNX.4.64.0710021120220.30615@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0710021732520.32678@schroedinger.engr.sgi.com>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0710021646420.4916@blonde.wat.veritas.com>
+ <1191350333.2708.6.camel@localhost> <Pine.LNX.4.64.0710021120220.30615@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2 Oct 2007, Christoph Lameter wrote:
 
---=-WYSzyGelrcydW7aGMI+8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> The maximum order of allocation used by SLUB may have to depend on the 
+> number of page structs in the system since small systems (128M was the 
+> case that Peter found) can easier get into trouble. SLAB has similar 
+> measures to avoid order 1 allocations for small systems below 32M.
 
-On Wed, 2007-10-03 at 10:26 +1000, Tony Breeds wrote:
-> On Tue, Oct 02, 2007 at 06:28:19PM -0500, Linas Vepstas wrote:
-> > On Mon, Sep 24, 2007 at 01:35:31PM +0100, Andy Whitcroft wrote:
-> > > Seeing the following from an older power LPAR, pretty sure we had
-> > > this in the previous -mm also:
-> >=20
-> > I haven't forgetten about this ... and am looking at it now.
-> > Seems that whenever I go to reserve the machine pSeries-102,
-> > someone else is using it :-)
->=20
-> This panic is caused by "[POWERPC] pseries: Fix jumbled no_logging flag."
-> (79c0108d1b9db4864ab77b2a95dfa04f2dcf264c), in the powerpc/for-2.6.24
-> branch.  It looks to me that we have logging enabled too early now.
->=20
-> I think the following is a reasonable fix?
->=20
-> ---
-> Explicitly enable RTAS error logging, when it should be ready.
->=20
->=20
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
->=20
-> ---
->=20
->  arch/powerpc/platforms/pseries/rtasd.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platfo=
-rms/pseries/rtasd.c
-> index 30925d2..0df5d0d 100644
-> --- a/arch/powerpc/platforms/pseries/rtasd.c
-> +++ b/arch/powerpc/platforms/pseries/rtasd.c
-> @@ -54,7 +54,10 @@ static unsigned int rtas_event_scan_rate;
->  static int full_rtas_msgs =3D 0;
-> =20
->  /* Stop logging to nvram after first fatal error */
-> -static int no_more_logging;
-> +static int no_more_logging =3D 1; /* Until we initialize everything,
-> +                                 * make sure we don't try logging
-> +                                 * anything */
-> +
+A patch like this? This is based on the number of page structs on the 
+system. Maybe it needs to be based on the number of MAX_ORDER blocks
+for antifrag?
 
-I realise it'll make the patch bigger, but this doesn't seem like a
-particularly good name for the variable anymore.
 
-cheers
+SLUB: Determine slub_max_order depending on the number of pages available
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Determine the maximum order to be used for slabs and the mininum
+desired number of objects in a slab from the amount of pages that
+a system has available (like SLAB does for the order 1/0 distinction).
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+For systems with less than 128M only use order 0 allocations (SLAB does 
+that for <32M only). The order 0 config is useful for small systems to 
+minimize the memory used. Memory easily fragments since we have less than 
+32k pages to play with. Order 0 insures that higher order allocations are 
+minimized (Larger orders must still be used for objects that do not fit 
+into order 0 pages).
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Then step up to order 1 for systems < 256000 pages (1G)
 
---=-WYSzyGelrcydW7aGMI+8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Order 2 limit to systems < 1000000 page structs (4G)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Order 3 for systems larger than that.
 
-iD8DBQBHAuKYdSjSd0sB4dIRAgQaAKChXpo6czn9QHG+RCiFCdSyecGl9ACdEDit
-QUejGm5eJo/TxR+FsRWNoTw=
-=kRrk
------END PGP SIGNATURE-----
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
---=-WYSzyGelrcydW7aGMI+8--
+---
+ mm/slub.c |   49 +++++++++++++++++++++++++------------------------
+ 1 file changed, 25 insertions(+), 24 deletions(-)
 
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-10-02 09:26:16.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-10-02 16:40:22.000000000 -0700
+@@ -153,25 +153,6 @@ static inline void ClearSlabDebug(struct
+ /* Enable to test recovery from slab corruption on boot */
+ #undef SLUB_RESILIENCY_TEST
+ 
+-#if PAGE_SHIFT <= 12
+-
+-/*
+- * Small page size. Make sure that we do not fragment memory
+- */
+-#define DEFAULT_MAX_ORDER 1
+-#define DEFAULT_MIN_OBJECTS 4
+-
+-#else
+-
+-/*
+- * Large page machines are customarily able to handle larger
+- * page orders.
+- */
+-#define DEFAULT_MAX_ORDER 2
+-#define DEFAULT_MIN_OBJECTS 8
+-
+-#endif
+-
+ /*
+  * Mininum number of partial slabs. These will be left on the partial
+  * lists even if they are empty. kmem_cache_shrink may reclaim them.
+@@ -1718,8 +1699,9 @@ static struct page *get_object_page(cons
+  * take the list_lock.
+  */
+ static int slub_min_order;
+-static int slub_max_order = DEFAULT_MAX_ORDER;
+-static int slub_min_objects = DEFAULT_MIN_OBJECTS;
++static int slub_max_order;
++static int slub_min_objects = 4;
++static int manual;
+ 
+ /*
+  * Merge control. If this is set then no merging of slab caches will occur.
+@@ -2237,7 +2219,7 @@ static struct kmem_cache *kmalloc_caches
+ static int __init setup_slub_min_order(char *str)
+ {
+ 	get_option (&str, &slub_min_order);
+-
++	manual = 1;
+ 	return 1;
+ }
+ 
+@@ -2246,7 +2228,7 @@ __setup("slub_min_order=", setup_slub_mi
+ static int __init setup_slub_max_order(char *str)
+ {
+ 	get_option (&str, &slub_max_order);
+-
++	manual = 1;
+ 	return 1;
+ }
+ 
+@@ -2255,7 +2237,7 @@ __setup("slub_max_order=", setup_slub_ma
+ static int __init setup_slub_min_objects(char *str)
+ {
+ 	get_option (&str, &slub_min_objects);
+-
++	manual = 1;
+ 	return 1;
+ }
+ 
+@@ -2566,6 +2548,16 @@ int kmem_cache_shrink(struct kmem_cache 
+ }
+ EXPORT_SYMBOL(kmem_cache_shrink);
+ 
++/*
++ * Table to autotune the maximum slab order based on the number of pages
++ * that the system has available.
++ */
++static unsigned long __initdata phys_pages_for_order[PAGE_ALLOC_COSTLY_ORDER] = {
++	32768,		/* >128M if using 4K pages, >512M (16k), >2G (64k) */
++	256000,		/* >1G if using 4k pages, >4G (16k), >16G (64k) */
++	1000000		/* >4G if using 4k pages, >16G (16k), >64G (64k) */
++};
++
+ /********************************************************************
+  *			Basic setup of slabs
+  *******************************************************************/
+@@ -2575,6 +2567,15 @@ void __init kmem_cache_init(void)
+ 	int i;
+ 	int caches = 0;
+ 
++	if (!manual) {
++		/* No manual parameters. Autotune for system */
++		for (i = 0; i < PAGE_ALLOC_COSTLY_ORDER; i++)
++			if (num_physpages > phys_pages_for_order[i]) {
++				slub_max_order++;
++				slub_min_objects <<= 1;
++			}
++	}
++
+ #ifdef CONFIG_NUMA
+ 	/*
+ 	 * Must first have the slab cache available for the allocations of the
