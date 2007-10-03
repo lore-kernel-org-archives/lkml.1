@@ -1,163 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJCXdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbXJCXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXJCXdr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 19:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXJCXdi
+	id S1754771AbXJCXjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 19:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXJCXjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 19:33:38 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:40987 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbXJCXdg convert rfc822-to-8bit (ORCPT
+	Wed, 3 Oct 2007 19:39:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56714
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751534AbXJCXjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 19:33:36 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.23-rc9 boot failure (megaraid?)
-Date: Wed, 3 Oct 2007 17:32:55 -0600
-Message-ID: <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com>
-In-Reply-To: <20071003090058R.fujita.tomonori@lab.ntt.co.jp>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.23-rc9 boot failure (megaraid?)
-Thread-Index: AcgFZ6bBAsK2X/3TTmm1jFB6+DuwJwAreLMg
-From: "Patro, Sumant" <Sumant.Patro@lsi.com>
-To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       <James.Bottomley@SteelEye.com>
-Cc: <bunk@kernel.org>, <bwindle@fint.org>, <linux-kernel@vger.kernel.org>,
-       <jens.axboe@oracle.com>, "DL-MegaRAID Linux" <megaraidlinux@lsi.com>,
-       <linux-scsi@vger.kernel.org>
-X-OriginalArrivalTime: 03 Oct 2007 23:32:56.0387 (UTC) FILETIME=[B9F35130:01C80615]
+	Wed, 3 Oct 2007 19:39:04 -0400
+Date: Wed, 03 Oct 2007 16:39:02 -0700 (PDT)
+Message-Id: <20071003.163902.51840119.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jdike@addtoit.com
+Subject: Re: [PATCH] net: fix race in process_backlog
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071003150519.1fd206a8@freepuppy.rosehill>
+References: <1191426293.5599.27.camel@lappy>
+	<20071003.145807.111205634.davem@davemloft.net>
+	<20071003150519.1fd206a8@freepuppy.rosehill>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Wed, 3 Oct 2007 15:05:19 -0700
 
-> -----Original Message-----
-> From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp] 
-> Sent: Tuesday, October 02, 2007 5:01 PM
-> To: James.Bottomley@SteelEye.com
-> Cc: bunk@kernel.org; bwindle@fint.org; 
-> linux-kernel@vger.kernel.org; jens.axboe@oracle.com; 
-> fujita.tomonori@lab.ntt.co.jp; Patro, Sumant; DL-MegaRAID 
-> Linux; linux-scsi@vger.kernel.org
-> Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+> On Wed, 03 Oct 2007 14:58:07 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
 > 
-> On Tue, 02 Oct 2007 15:38:13 -0500
-> James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> 
-> > On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
-> > > Cc's added, the complete bug report is at
-> > >   http://lkml.org/lkml/2007/10/2/243
-> > > 
-> > > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
-> > > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
-> > > >
-> > > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
-> > > >...
-> > > 
-> > > Thanks for your report.
-> > > 
-> > > Diff'ing the dmesg's shows:
-> > > 
-> > > <--  snip  -->
-> > > 
-> > >  scsi0: scanning scsi channel 4 [P0] for physical devices.
-> > >  scsi0: scanning scsi channel 5 [P1] for physical devices.
-> > >  st: Version 20070203, fixed bufsize 32768, s/g segs 256 -sd 
-> > > 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
-> > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
-> > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
-> cache: write 
-> > > through -sd 0:0:0:0: [sda] 17547264 512-byte hardware 
-> sectors (8984 
-> > > MB)
-> > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
-> > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
-> cache: write 
-> > > through
-> > >   sda: sda1
-> > > + sda: p1 exceeds device capacity
-> > > 
-> > > <--  snip  -->
-> > > 
-> > > -	case MEGA_BULK_DATA:
-> > > -		if (scb->cmd->use_sg == 0)
-> > > -			length = scb->cmd->request_bufflen;
-> > > -		else {
-> > > -			struct scatterlist *sgl =
-> > > -				(struct scatterlist 
-> *)scb->cmd->request_buffer;
-> > > -			length = sgl->length;
-> > > -		}
-> > > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
-> > > -			       length, scb->dma_direction);
-> > > -		break;
-> > > -
+> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date: Wed, 03 Oct 2007 17:44:53 +0200
 > > 
-> > This is the problem piece I think.  We've reintroduced a 
-> very old bug:
+> > > Index: linux-2.6/net/core/dev.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/net/core/dev.c
+> > > +++ linux-2.6/net/core/dev.c
+> > > @@ -2095,11 +2095,11 @@ static int process_backlog(struct napi_s
+> > >  
+> > >  		local_irq_disable();
+> > >  		skb = __skb_dequeue(&queue->input_pkt_queue);
+> > > -		local_irq_enable();
+> > >  		if (!skb) {
+> > > -			napi_complete(napi);
+> > > +			__napi_complete(napi);
+> > >  			break;
+> > >  		}
+> > > +		local_irq_enable();
 > > 
-> > commit 51c928c34fa7cff38df584ad01de988805877dba
-> > Author: James Bottomley <James.Bottomley@SteelEye.com>
-> > Date:   Sat Oct 1 09:38:05 2005 -0500
-> > 
-> >     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
-> >     
-> >     Some Legacy megaraid cards can't actually cope with the 
-> scatter/gather
-> >     version of the READ CAPACITY command (which is what we 
-> now send them
-> >     since altering all SCSI internal I/O to go via the 
-> block layer).  Fix
-> >     this (and a few other broken megaraid driver 
-> assumptions) by sending
-> >     the non-sg version of the command if the sg list only 
-> has a single
-> >     element.
-> >     
-> >     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-> > 
-> > So what we have to do is put back the check for use_sg == 1 
-> and send 
-> > that as a bulk transfer command.
+> > What re-enables interrupts in the !skb path?
 > 
-> Sorry about this. Can this fix the problem?
-> 
-> Thanks,
-> 
-> 
-> diff --git a/drivers/scsi/megaraid.c 
-> b/drivers/scsi/megaraid.c index 3907f67..da56163 100644
-> --- a/drivers/scsi/megaraid.c
-> +++ b/drivers/scsi/megaraid.c
-> @@ -1753,6 +1753,14 @@ mega_build_sglist(adapter_t *adapter, 
-> scb_t *scb, u32 *buf, u32 *len)
->  
->  	*len = 0;
->  
-> +	if (scsi_sg_count(cmd) == 1 && !adapter->has_64bit_addr) {
-> +		sg = scsi_sglist(cmd);
-> +		scb->dma_h_bulkdata = sg_dma_address(sg);
-> +		*buf = (u32)scb->dma_h_bulkdata;
-> +		*len = sg_dma_len(sg);
-> +		return 0;
-> +	}
-> +
->  	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
->  		if (adapter->has_64bit_addr) {
->  			scb->sgl64[idx].address = sg_dma_address(sg);
-> 
+> This looks like a better fix. the irq_enable is needed in both cases.
 
-
-With this patch I see the correct logical disk size reported.
-Thanks.
-
-Sumant
+Yep, applied, thanks Peter and Stephen.
