@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbXJDSSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbXJDSWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761025AbXJDSSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 14:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbXJDSSG
+	id S1760772AbXJDSWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 14:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbXJDSWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 14:18:06 -0400
-Received: from real.realitydiluted.com ([66.43.201.61]:57487 "EHLO
-	real.realitydiluted.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756839AbXJDSSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 14:18:05 -0400
-X-Greylist: delayed 2478 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 14:18:05 EDT
-Date: Thu, 4 Oct 2007 12:39:28 -0500
-From: "Steven J. Hill" <sjhill@realitydiluted.com>
-To: veerasena reddy <veerasena_b@yahoo.co.in>
-Cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: unresoved symbol _gp_disp
-Message-ID: <20071004173928.GA32033@real.realitydiluted.com>
-References: <230962.51223.qm@web8408.mail.in.yahoo.com>
+	Thu, 4 Oct 2007 14:22:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49491 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755252AbXJDSWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 14:22:04 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
+Date: Thu, 4 Oct 2007 20:21:59 +0200
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20071004052153.GA15131@wotan.suse.de> <200710041953.16656.ak@suse.de> <20071004181044.GA23300@redhat.com>
+In-Reply-To: <20071004181044.GA23300@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <230962.51223.qm@web8408.mail.in.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710042021.59704.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have written a loadble module ( which gets complied
-> along with kernel) which does some floating point
-> operation.
->  
-NO FLOATING POINT in the kernel PERIOD. Either use integer
-operations, or redo your software architecture and do the
-floating point in userspace.
+On Thursday 04 October 2007 20:10:44 Dave Jones wrote:
+> On Thu, Oct 04, 2007 at 07:53:16PM +0200, Andi Kleen wrote:
+>  > 
+>  > > The only vendor that ever implemented OOSTOREs was Centaur, and they
+>  > > only did in the Winchip generation of the CPUs.  When they dropped it
+>  > > from the C3, I asked whether they intended to bring it back, and the
+>  > > answer was "extremely unlikely".
+>  > >
+>  > 
+>  > Do you know if it made a big performance difference?
+> 
+> On the winchip, it was a huge win. I can't remember exact numbers,
+> but pretty much every benchmark I threw at it at the time showed
+> significant improvement.
 
--Steve
+Significant as in >10%?
+
+
+>  > But yes we should probably just remove this special case to make 
+>  > maintenance easier.
+> 
+> It's CONFIG_SMP anyway, which none of the winchips were.
+
+It's not. And we need memory barriers even without SMP 
+when talking to device drivers. Only the smp_*b()s get noped
+on UP.
+
+-Andi
