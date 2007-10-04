@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbXJDOYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbXJDO0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbXJDOYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 10:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbXJDOYj
+	id S1758911AbXJDO0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 10:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXJDO0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 10:24:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58841 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756064AbXJDOYi (ORCPT
+	Thu, 4 Oct 2007 10:26:07 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:5779 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756082AbXJDO0C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 10:24:38 -0400
-Date: Thu, 4 Oct 2007 16:24:37 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, jikos@jikos.cz
-Subject: Re: video resume stuff
-Message-ID: <20071004142437.GA4484@atrey.karlin.mff.cuni.cz>
-References: <20071004130513.GA16076@elf.ucw.cz> <20071004062848.0c55d182@laptopd505.fenrus.org>
+	Thu, 4 Oct 2007 10:26:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ndTF3p4naY174nDMsph9nBZxkoVbBlJ6b7Myaum6WTqrQjfplZbsB8iY4GotxIxXfhOBNQqEP2b/Ec4yL54N/8ivGfimOQol/MLFTK/AtuXzux4Lb5nvvF4UNd4jpkZ3PFPK6oZxCChUFwxjDqHyJ2rdd+N9hx6rtDwQQAvW/+o=
+Message-ID: <a425f86c0710040726q27aeb354vbbcb68bd2fed2b76@mail.gmail.com>
+Date: Thu, 4 Oct 2007 17:26:01 +0300
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+To: bryan.wu@analog.com
+Subject: Re: Blackfin Ethernet MAC driver compile error
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <1191489141.6139.1.camel@roc-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071004062848.0c55d182@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <a425f86c0710020430o3507eeb2veb104dc936f230dd@mail.gmail.com>
+	 <1191489141.6139.1.camel@roc-laptop>
+X-Google-Sender-Auth: 09ceecdc55de8848
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 4 Oct 2007 15:05:13 +0200
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > Hi!
-> > 
-> > I'm thinking about how to clean up video resume/how to get it to work
-> > for non-VESA video modes (jikos' case).
-> 
-> 
-> I suspect in the medium run, the video mode setting stuff that's moving
-> into the kernel is the real answer to this problem... maybe it's more
-> efficient to move that in in a hurry ;)
+On 10/4/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> Sorry for missing the pinmux patches.
+> After Linus's git-pull, it should be fixed in the latest Linus mainline
+> git tree.
 
-Violently agreed... but we still want fallback for vesafb ;-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks, it is working now. I was also glad to see the binfmt_flat
+patch going in.
+
+Do you plan to get the PHY abstraction layer patches for the Blackfin
+EMAC included in the upcoming merge window?
