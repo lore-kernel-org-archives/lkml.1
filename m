@@ -1,193 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXJDWqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbXJDWqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbXJDWqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759553AbXJDWpz
+	id S1762442AbXJDWqu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbXJDWqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:45:55 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38333 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759242AbXJDWpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:45:54 -0400
-Date: Thu, 4 Oct 2007 17:46:05 -0500
-From: "Jose R. Santos" <jrs@us.ibm.com>
-To: Rusev <arusev@dev.rtsoft.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: JBD-DEBUG /proc/sys entry (again)
-Message-ID: <20071004174605.6f30c85f@gara>
-In-Reply-To: <4704DC57.9040001@dev.rtsoft.ru>
-References: <4704DC57.9040001@dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 18:46:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49907 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758980AbXJDWql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 18:46:41 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18x4uUHbzExOmyiYm7saRVytCOTtrAN1xT8QgEeAX
+	7E25DU7kHfMJ/Z
+Date: Fri, 5 Oct 2007 00:46:59 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-kernel@vger.kernel.org
+cc: i2c@lm-sensors.org, khali@linux-fr.org
+Subject: [OOPS] AXIS 700 Lite (VIA C7 CPU) BUG with 2.6.23-rc9-git (i2c)
+Message-ID: <Pine.LNX.4.60.0710042343030.4537@poirot.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Oct 2007 16:28:07 +0400
-Rusev <arusev@dev.rtsoft.ru> wrote:
+Hi
 
-> All that should be moved to DEBUGFS under /sys/kernel/debug  and so on
-> -  that's right, a bit other issue
-> is of interest for me.
-> 
-> My suggestion is that a few other problems with PROCFS exist:
-> 
-> From my observation there are two major issues are involved:
-> 
-> 1.  /proc/sys entry has very specific readdir operation (vs. other
-> entries such as /proc/drivers and others)
->     entries to /proc/sys is likely is to be performed by means of other API.
->     (quick search found thet API explanation for 2.4.xx
-> http://www.opentech.at/papers/embedded_proc/node33.html,
->      yet it looks to be a little change in 2.6)
-> 
-> 2.  function xlate_proc_name behaves not the way it specified in it's
-> header comment:
->       [1]  minor issue is that proc_match wolud likely return "equals"
-> as result of comparison of "sys" and "sysvipc"
->       [2] more significant issue is that it can't properly walk long
-> paths  such as /proc/sys/jbd/jbd-debug,
->            but only paths likes /proc/sys/jbd-debug  (just one step
-> down, path walking is broken).
-> 
-> This way we can't add not only /proc/sys/jbd/jbd-debug but any path
-> likes /proc/aaa/bbb/xxx-debug at one step.
-> The entry /proc/sys is still specific, because even if fixing
-> xlate_proc_name we can't see /proc/sys/jbd/jbd-debug
-> in userspace and successfully see /proc/aaa/bbb/jbd-debug.
+Got an AXIS 700 Lite thin client with a C7 CPU and CN700 chipset in it, 
+compiled today's git snapshot, and it Oopses in i2c_viapro:
 
-This patch is wrong.  xlate_pro_name() is meant to check if a given
-path is valid, creating new directory entries is something that need to
-be handle by the code that's creating the entries.
+BUG: unable to handle kernel paging request at virtual address 016c0555
+ printing eip:
+c01a60ed
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT 
+Modules linked in: i2c_viapro i2c_dev i2c_core loop
+CPU:    0
+EIP:    0060:[<c01a60ed>]    Not tainted VLI
+EFLAGS: 00010282   (2.6.23-rc9-g804b3f9a #5)
+EIP is at sysfs_create_group+0x1d/0xe0
+eax: f889b828   ebx: 00000000   ecx: f7d764b0   edx: 016c0555
+esi: 016c0555   edi: 00000000   ebp: f7d71dc4   esp: f7d71da8
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process modprobe (pid: 1214, ti=f7d70000 task=c18f3560 task.ti=f7d70000)
+Stack: c03ceba0 f7d7647c f7d71dd8 c01a392b f7d764b0 00000000 f889f3a0 f7d71ddc 
+       c0248b38 f889b828 f889b7c0 00000000 00000000 f7d71df4 c0248c0c 00000000 
+       f889b7c0 00000000 f889b864 f7d71e20 c02491ee f889b828 c0367b56 f889b864 
+Call Trace:
+ [<c0104e7c>] show_trace_log_lvl+0x1c/0x40
+ [<c0104f5a>] show_stack_log_lvl+0x9a/0xc0
+ [<c01051bc>] show_registers+0x1dc/0x340
+ [<c01054b2>] die+0x102/0x210
+ [<c01183c6>] do_page_fault+0x266/0x600
+ [<c031102a>] error_code+0x6a/0x70
+ [<c0248b38>] device_add_groups+0x28/0x60
+ [<c0248c0c>] device_add_attrs+0x5c/0xb0
+ [<c02491ee>] device_add+0xfe/0x330
+ [<c0249432>] device_register+0x12/0x20
+ [<f889f53d>] i2c_register_adapter+0xbd/0x170 [i2c_core]
+ [<f889f66a>] i2c_add_adapter+0x7a/0x80 [i2c_core]
+ [<f889a605>] vt596_probe+0x145/0x370 [i2c_viapro]
+ [<c01ef7dd>] pci_call_probe+0xd/0x10
+ [<c01ef82f>] __pci_device_probe+0x4f/0x60
+ [<c01ef869>] pci_device_probe+0x29/0x50
+ [<c024b864>] really_probe+0x94/0x140
+ [<c024b970>] driver_probe_device+0x40/0x60
+ [<c024baaa>] __driver_attach+0x7a/0x80
+ [<c024aa74>] bus_for_each_dev+0x54/0x70
+ [<c024bac9>] driver_attach+0x19/0x20
+ [<c024b177>] bus_add_driver+0x77/0x130
+ [<c024bed5>] driver_register+0x75/0x80
+ [<c01efb7a>] __pci_register_driver+0x4a/0x80
+ [<f8890017>] i2c_vt596_init+0x17/0x19 [i2c_viapro]
+ [<c01420a2>] sys_init_module+0xe2/0x140
+ [<c0104162>] sysenter_past_esp+0x5f/0x85
+ =======================
+Code: e8 8d b6 00 00 00 00 8d bc 27 00 00 00 00 55 89 e5 56 89 d6 53 83 ec 
+14 85 c0 0f 84 b2 00 00 00 8b 48 30 85 c9 0f 84 a7 00 00 00 <8b> 12 85 d2 
+0f 85 89 00 00 00 89 4d f4 8b 5d f4 85 db 74 0b 8b 
+EIP: [<c01a60ed>] sysfs_create_group+0x1d/0xe0 SS:ESP 0068:f7d71da8
 
-Also note that xlate_pro_name() is also called by remove_proc_entry()
-so if I call it with a bogus path, this patch will end up creating new
-directory entries which is not the intended result.
-
-> That's because /proc/sys specific operator readdir blocks such PROCFS
-> entries that they are NOTproperly registersd
->  with CTL_TABLE.
-> 
-> Yet I think that we have a general problem with
-> adding-long-paths-in-one-step, which is addressed by the following patch:
-
-This should not be done is user one step and for good reason.  If you
-blindly create multiple directory entries in /proc, how are you going to
-keep track of all the created entries when its time to remove them
-(module unloading for example)?
-
-If you enter an invalid path the original code is doing the right thing
-by returning -ENOENT.
-
-> 
-> 
-> 
-> diff -uprN linux-2.6.21.orig/fs/proc/generic.c
-> linux-2.6.21/fs/proc/generic.c
-> --- linux-2.6.21.orig/fs/proc/generic.c 2007-09-13 15:36:07.000000000 +0400
-> +++ linux-2.6.21/fs/proc/generic.c      2007-10-03 22:12:57.000000000 +0400
-> @@ -298,6 +298,7 @@ static int xlate_proc_name(const char *n
->         int                     len;
->         int                     rtn = 0;
-> 
-> +
-
-White space damage.
-
->         spin_lock(&proc_subdir_lock);
->         de = &proc_root;
->         while (1) {
-> @@ -305,24 +306,52 @@ static int xlate_proc_name(const char *n
->                 if (!next)
->                         break;
-> 
-> -               len = next - cp;
-> -               for (de = de->subdir; de ; de = de->next) {
-> -                       if (proc_match(len, cp, de))
-> -                               break;
-> -               }
-> -               if (!de) {
-> -                       rtn = -ENOENT;
-> -                       goto out;
-> -               }
-> -               cp += len + 1;
-> -       }
-> +                ++next;
-> +
-> +
-> +                len = next - cp;
-> +
-> +                if(de->subdir == NULL){
-> +                  /* directory "de" is empty, add myself to it now */
-> +                  char* my_name = kzalloc( (len - 1)  + 1, GFP_KERNEL);
-
-You did not check if kzalloc was successfully.  If the allocation
-fails, bad things will happen here.  Need to check the return status of
-my_name and return -ENOMEM if the allocation fails.  This would of
-course mean an API change and you would need make sure that all the
-callers of xlate_proc_name handle the new return code correctly.
-
-> +                  memcpy(my_name, cp, len - 1);
-> +                  proc_mkdir(my_name,de);
-> +                  kfree(my_name);
-> +                }
-> +
-> +
-> +                struct proc_dir_entry   *parent_de = de;
-> +                for (de = parent_de->subdir; de ; de = de->next) {
-> +                  if (proc_match(len - 1, cp, de))
-> +                                break;
-> +
-> +                }
-> +
-> +                if(de == NULL){
-> +                  /* we found no appropriate subdirectory, well create
-> it now */
-
-1. Email client cut the line.  Disable line wrapping.
-2. Line too long - Documentation/CodingStyle
-
-> +                  char* my_name = kzalloc( (len - 1)  + 1, GFP_KERNEL);
-
-Again, check for kzalloc return status.
-
-> +                  memcpy(my_name, cp, len - 1);
-> +                  de = proc_mkdir(my_name,parent_de);
-> +                  kfree(my_name);
-> +                }
-> +
-> +
-> +
-
-White space damage.  To many new lines.  One is enough.
-
-> +                if (!de){
-> +                        rtn = -ENOENT;
-> +                        goto out;
-> +               }
-
-This is basically dead code since you make sure to create a directory
-entry if one does not exist.  The code above makes sure you never hit
-this condition, which is wrong since you should not create directory
-entries blindly.  Returning -ENOENT on a invalid path is the right thing
-to do here.
-
-> +                cp += len;
-> +        }
->         *residual = cp;
->         *ret = de;
->  out:
->         spin_unlock(&proc_subdir_lock);
->         return rtn;
-> +
-White space damage.
->  }
-> 
-> +
-White space damage.
->  static DEFINE_IDR(proc_inum_idr);
->  static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
-> 
-
--JRS
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
