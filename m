@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbXJDJ4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXJDKCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760772AbXJDJ4q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbXJDJ4i
+	id S1759410AbXJDKCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 06:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXJDKCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:56:38 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37050 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754606AbXJDJ4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:56:38 -0400
-Date: Thu, 4 Oct 2007 11:54:54 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
-Subject: lp_console: cleanups
-Message-ID: <20071004095454.GA838@elf.ucw.cz>
+	Thu, 4 Oct 2007 06:02:06 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:59595 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752510AbXJDKCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 06:02:05 -0400
+Date: Thu, 4 Oct 2007 19:01:51 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: linux-sh <linuxsh-dev@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix SH DMAC code to handle PVR2 cascade
+Message-ID: <20071004100151.GA17628@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+	linux-sh <linuxsh-dev@lists.sourceforge.net>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1191359367.17654.24.camel@localhost.localdomain> <20071003061805.GA8851@linux-sh.org> <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove NULL initializers and clean whitespace a bit.
+On Wed, Oct 03, 2007 at 04:41:37PM +0100, Adrian McMenamin wrote:
+> On Wed, October 3, 2007 7:18 am, Paul Mundt wrote:
+> > On Tue, Oct 02, 2007 at 10:09:27PM +0100, Adrian McMenamin wrote:
+> >> Fix SH DMAC code to correctly handle PVR2 cascade DMA.
+> >>
+> >> This updates http://lkml.org/lkml/2007/10/2/276
+> >>
+> >> (I decided it was better to have the true size of the transfer put in
+> >> via the API and refactor this here. And calc_xmit_shift(chan) should
+> >> return 5 but only returns 3 so I've not used it here)
+> >>
+> > It would be helpful to know why calc_xmit_shift() is broken here rather
+> > than just coding around it, as this will have implications for the other
+> > DMA channels on SH7091/SH7750.
+> 
+> 
+> >From include/asm-sh/cpu-sh4/dma.h
+> 
+> 53 /*
+> 54  * The DMA count is defined as the number of bytes to transfer.
+> 55  */
+> 56 static unsigned int ts_shift[] __maybe_unused = {
+> 57         [XMIT_SZ_64BIT]         = 3,
+> 58         [XMIT_SZ_8BIT]          = 0,
+> 59         [XMIT_SZ_16BIT]         = 1,
+> 60         [XMIT_SZ_32BIT]         = 2,
+> 61         [XMIT_SZ_256BIT]        = 5,
+> 62 };
+> 63 #endif
+> 
+> ie ts_shift returns the number of bytes per transfer, but is then used as
+> a bit shift:
+> 
+Er, no it doesn't, try again. ts_shift returns the transfer size _shift_.
+The comment refers to the DMA count, which is a different matter. Your
+32-byte transfer where you want the >> 5 shift == ts_shift[XMIT_SZ_256BIT],
+and there's nothing wrong with that. So the issue becomes why you don't
+get a ts_shift[] offset of XMIT_SZ_256BIT for that channel, and that's
+the bug that has to be fixed.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 45 /*
+> 46  * We determine the correct shift size based off of the CHCR transmit size
+> 47  * for the given channel. Since we know that it will take:
+> 48  *
+> 49  *      info->count >> ts_shift[transmit_size]
+> 50  *
+> 51  * iterations to complete the transfer.
+> 52  */
+> 53 static inline unsigned int calc_xmit_shift(struct dma_channel *chan)
+> 54 {
+> 55         u32 chcr = ctrl_inl(CHCR[chan->chan]);
+> 56
+> 57         return ts_shift[(chcr & CHCR_TS_MASK)>>CHCR_TS_SHIFT];
+> 58 }
+> 
+So for PVR2 cascade, what does the CHCR value work out to? Both
+CHCR_TS_MASK and CHCR_TS_SHIFT haven't changed for SH7750, so this
+suggests that either the CHCR value is just wrong or we've had a
+long-standing bug with the CHCR.TS mask.
 
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index 62051f8..8267ff8 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
- static struct class *lp_class;
- 
- #ifdef CONFIG_LP_CONSOLE
--static struct parport *console_registered; // initially NULL
-+static struct parport *console_registered;
- #endif /* CONFIG_LP_CONSOLE */
- 
- #undef LP_DEBUG
-@@ -749,8 +749,8 @@ #endif /* console on line printer */
- /* --- initialisation code ------------------------------------- */
- 
- static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
--static char *parport[LP_NO] = { NULL,  };
--static int reset = 0;
-+static char *parport[LP_NO];
-+static int reset;
- 
- module_param_array(parport, charp, NULL, 0);
- module_param(reset, bool, 0);
-@@ -758,10 +758,10 @@ module_param(reset, bool, 0);
- #ifndef MODULE
- static int __init lp_setup (char *str)
- {
--	static int parport_ptr; // initially zero
-+	static int parport_ptr;
- 	int x;
- 
--	if (get_option (&str, &x)) {
-+	if (get_option(&str, &x)) {
- 		if (x == 0) {
- 			/* disable driver on "lp=" or "lp=0" */
- 			parport_nr[0] = LP_PARPORT_OFF;
-@@ -808,7 +808,7 @@ static int lp_register(int nr, struct pa
- #ifdef CONFIG_LP_CONSOLE
- 	if (!nr) {
- 		if (port->modes & PARPORT_MODE_SAFEININT) {
--			register_console (&lpcons);
-+			register_console(&lpcons);
- 			console_registered = port;
- 			printk (KERN_INFO "lp%d: console ready\n", CONSOLE_LP);
- 		} else
-@@ -824,8 +824,7 @@ static void lp_attach (struct parport *p
- {
- 	unsigned int i;
- 
--	switch (parport_nr[0])
--	{
-+	switch (parport_nr[0]) {
- 	case LP_PARPORT_UNSPEC:
- 	case LP_PARPORT_AUTO:
- 		if (parport_nr[0] == LP_PARPORT_AUTO &&
-@@ -856,7 +855,7 @@ static void lp_detach (struct parport *p
- 	/* Write this some day. */
- #ifdef CONFIG_LP_CONSOLE
- 	if (console_registered == port) {
--		unregister_console (&lpcons);
-+		unregister_console(&lpcons);
- 		console_registered = NULL;
- 	}
- #endif /* CONFIG_LP_CONSOLE */
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Either way, we are not going to hardcode a ts_shift value when the CHCR
+has all of the information encoded in it!
