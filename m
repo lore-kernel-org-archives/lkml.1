@@ -1,70 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbXJDKYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbXJDKfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbXJDKYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 06:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXJDKYp
+	id S1759389AbXJDKfe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 06:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbXJDKfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 06:24:45 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:50527 "EHLO smtp.drzeus.cx"
+	Thu, 4 Oct 2007 06:35:23 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1904 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755378AbXJDKYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 06:24:45 -0400
-Date: Thu, 4 Oct 2007 12:24:39 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Don Mullis <dwm@meer.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
-Message-ID: <20071004122439.0944f3db@poseidon.drzeus.cx>
-In-Reply-To: <20071004093014.GE23808@kernel.dk>
-References: <1191478262.21598.5.camel@dmullis-laptop>
-	<20071003231659.f41df5ed.akpm@linux-foundation.org>
-	<20071004072515.GC5236@kernel.dk>
-	<20071004100154.6093844d@poseidon.drzeus.cx>
-	<20071004080631.GB23808@kernel.dk>
-	<20071004104626.2a219926@poseidon.drzeus.cx>
-	<20071004093014.GE23808@kernel.dk>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-564-1191493456-0001-2"
+	id S1755917AbXJDKfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 06:35:22 -0400
+Date: Thu, 4 Oct 2007 12:36:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Sumant.Patro@lsi.com, James.Bottomley@SteelEye.com, bunk@kernel.org,
+       bwindle@fint.org, linux-kernel@vger.kernel.org, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+Message-ID: <20071004103655.GA5711@kernel.dk>
+References: <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com> <20071004084651L.fujita.tomonori@lab.ntt.co.jp> <20071004072834.GD5236@kernel.dk> <20071004192047H.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004192047H.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, Oct 04 2007, FUJITA Tomonori wrote:
+> On Thu, 4 Oct 2007 09:28:34 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Thu, Oct 04 2007, FUJITA Tomonori wrote:
+> > > On Wed, 3 Oct 2007 17:32:55 -0600
+> > > "Patro, Sumant" <Sumant.Patro@lsi.com> wrote:
+> > > 
+> > > >  
+> > > > 
+> > > > > -----Original Message-----
+> > > > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp] 
+> > > > > Sent: Tuesday, October 02, 2007 5:01 PM
+> > > > > To: James.Bottomley@SteelEye.com
+> > > > > Cc: bunk@kernel.org; bwindle@fint.org; 
+> > > > > linux-kernel@vger.kernel.org; jens.axboe@oracle.com; 
+> > > > > fujita.tomonori@lab.ntt.co.jp; Patro, Sumant; DL-MegaRAID 
+> > > > > Linux; linux-scsi@vger.kernel.org
+> > > > > Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+> > > > > 
+> > > > > On Tue, 02 Oct 2007 15:38:13 -0500
+> > > > > James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> > > > > 
+> > > > > > On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
+> > > > > > > Cc's added, the complete bug report is at
+> > > > > > >   http://lkml.org/lkml/2007/10/2/243
+> > > > > > > 
+> > > > > > > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
+> > > > > > > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
+> > > > > > > >
+> > > > > > > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
+> > > > > > > >...
+> > > > > > > 
+> > > > > > > Thanks for your report.
+> > > > > > > 
+> > > > > > > Diff'ing the dmesg's shows:
+> > > > > > > 
+> > > > > > > <--  snip  -->
+> > > > > > > 
+> > > > > > >  scsi0: scanning scsi channel 4 [P0] for physical devices.
+> > > > > > >  scsi0: scanning scsi channel 5 [P1] for physical devices.
+> > > > > > >  st: Version 20070203, fixed bufsize 32768, s/g segs 256 -sd 
+> > > > > > > 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
+> > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
+> > > > > cache: write 
+> > > > > > > through -sd 0:0:0:0: [sda] 17547264 512-byte hardware 
+> > > > > sectors (8984 
+> > > > > > > MB)
+> > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
+> > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
+> > > > > cache: write 
+> > > > > > > through
+> > > > > > >   sda: sda1
+> > > > > > > + sda: p1 exceeds device capacity
+> > > > > > > 
+> > > > > > > <--  snip  -->
+> > > > > > > 
+> > > > > > > -	case MEGA_BULK_DATA:
+> > > > > > > -		if (scb->cmd->use_sg == 0)
+> > > > > > > -			length = scb->cmd->request_bufflen;
+> > > > > > > -		else {
+> > > > > > > -			struct scatterlist *sgl =
+> > > > > > > -				(struct scatterlist 
+> > > > > *)scb->cmd->request_buffer;
+> > > > > > > -			length = sgl->length;
+> > > > > > > -		}
+> > > > > > > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
+> > > > > > > -			       length, scb->dma_direction);
+> > > > > > > -		break;
+> > > > > > > -
+> > > > > > 
+> > > > > > This is the problem piece I think.  We've reintroduced a 
+> > > > > very old bug:
+> > > > > > 
+> > > > > > commit 51c928c34fa7cff38df584ad01de988805877dba
+> > > > > > Author: James Bottomley <James.Bottomley@SteelEye.com>
+> > > > > > Date:   Sat Oct 1 09:38:05 2005 -0500
+> > > > > > 
+> > > > > >     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
+> > > > > >     
+> > > > > >     Some Legacy megaraid cards can't actually cope with the 
+> > > > > scatter/gather
+> > > > > >     version of the READ CAPACITY command (which is what we 
+> > > > > now send them
+> > > > > >     since altering all SCSI internal I/O to go via the 
+> > > > > block layer).  Fix
+> > > > > >     this (and a few other broken megaraid driver 
+> > > > > assumptions) by sending
+> > > > > >     the non-sg version of the command if the sg list only 
+> > > > > has a single
+> > > > > >     element.
+> > > > > >     
+> > > > > >     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> > > > > > 
+> > > > > > So what we have to do is put back the check for use_sg == 1 
+> > > > > and send 
+> > > > > > that as a bulk transfer command.
+> > > > > 
+> > > > > Sorry about this. Can this fix the problem?
+> > > > > 
+> > > > > Thanks,
+> > > > > 
+> > > > > 
+> > > > > diff --git a/drivers/scsi/megaraid.c 
+> > > > > b/drivers/scsi/megaraid.c index 3907f67..da56163 100644
+> > > > > --- a/drivers/scsi/megaraid.c
+> > > > > +++ b/drivers/scsi/megaraid.c
+> > > > > @@ -1753,6 +1753,14 @@ mega_build_sglist(adapter_t *adapter, 
+> > > > > scb_t *scb, u32 *buf, u32 *len)
+> > > > >  
+> > > > >  	*len = 0;
+> > > > >  
+> > > > > +	if (scsi_sg_count(cmd) == 1 && !adapter->has_64bit_addr) {
+> > > > > +		sg = scsi_sglist(cmd);
+> > > > > +		scb->dma_h_bulkdata = sg_dma_address(sg);
+> > > > > +		*buf = (u32)scb->dma_h_bulkdata;
+> > > > > +		*len = sg_dma_len(sg);
+> > > > > +		return 0;
+> > > > > +	}
+> > > > > +
+> > > > >  	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
+> > > > >  		if (adapter->has_64bit_addr) {
+> > > > >  			scb->sgl64[idx].address = sg_dma_address(sg);
+> > > > > 
+> > > > 
+> > > > 
+> > > > With this patch I see the correct logical disk size reported.
+> > > > Thanks.
+> > > 
+> > > Great, thanks for testing!
+> > > 
+> > > Can you try the following patch instead of the above patch?
+> > > 
+> > > http://marc.info/?l=linux-scsi&m=119137033016550&w=2
+> > > 
+> > > 
+> > > I know the changes are pretty trivial and it should work...
+> > 
+> > Tomo, this is the patch I added.
+> 
+> Thanks. I thought that it will be sent via scsi-misc because the scsi
+> accessor patch introduced this bug. But either is ok with me.
 
---=_hera.drzeus.cx-564-1191493456-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+If it only affects the driver _after_ the scsi accessor patch and as
+such doesn't screw over git-block, then I'll drop it for sure.
 
-On Thu, 4 Oct 2007 11:30:14 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+-- 
+Jens Axboe
 
-> On Thu, Oct 04 2007, Pierre Ossman wrote:
-> >=20
-> > I assume sg_init_one() still can work on an uninitialized sg entry?
->=20
-> Yes, but only if that sg entry is not part of a chained list.
->=20
-
-Is that a yes or a no? You said that the ->page field was involved in
-list chaining, so does or doesn't it have to be initialized before a
-call to sg_init_one()?
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-564-1191493456-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHBL9n7b8eESbyJLgRAo+YAKCVNRkyW50h1Ik2MJhLZJ6bh2iOdACfS/VF
-AiANeEotG5zXrCBmugd0AiA=
-=F+Bz
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-564-1191493456-0001-2--
