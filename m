@@ -1,134 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbXJDHJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbXJDHK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757679AbXJDHJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 03:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXJDHJA
+	id S1758565AbXJDHK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 03:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXJDHKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 03:09:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34248 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbXJDHI7 (ORCPT
+	Thu, 4 Oct 2007 03:10:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:35328 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbXJDHKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 03:08:59 -0400
-Date: Thu, 4 Oct 2007 08:08:57 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Casey Dahlin <cjdahlin@ncsu.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Code style fix for open_exec
-Message-ID: <20071004070857.GB21481@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Casey Dahlin <cjdahlin@ncsu.edu>, linux-kernel@vger.kernel.org
-References: <47045299.2000601@ncsu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Oct 2007 03:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=odFDC5DV1b/tAbKAQUOBvB6ce66Gqih/lpkWhcJqQJny7t5Yd/J8grCop1fdrAmqLAsGx+e1ePvJbRbuI3ukCxSifBdep3wfXdQMcRJ9PFBMfAu1PfsGNbq3Lv6gjCeP/4HgzYL9T/ArKNrZctTh9m9x34KsPhh9Zbmk+7x4c78=
+Message-ID: <84144f020710040010r4804c69x746bf78db17e9fa1@mail.gmail.com>
+Date: Thu, 4 Oct 2007 10:10:10 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [Bug] 2.6.23-rc9 - kernel BUG at mm/slab.c:592!
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       samba-technical@lists.samba.org,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>
+In-Reply-To: <47048DD8.2090405@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47045299.2000601@ncsu.edu>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <47048DD8.2090405@linux.vnet.ibm.com>
+X-Google-Sender-Auth: 9fcd6b93adda82c1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 10:40:25PM -0400, Casey Dahlin wrote:
-> From d2a6c5d29dc34cfea892124ab72b4eb55d2f8a80 Mon Sep 17 00:00:00 2001
-> From: Casey Dahlin <cjdahlin@ncsu.edu>
-> Date: Wed, 3 Oct 2007 22:01:49 -0400
-> Subject: [PATCH] Code style fix for open_exec
-> 
-> Fix a horribly mangled 5 level indent and severe abuse of goto in the 
-> open_exec
-> function.
+Hi Kamalesh,
 
-While the function is not nice your version makes it even worse.
+On 10/4/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Kernel bug hit, while running fsstress over the CIFS mounted partition on
+> the ppc64 machine
+>
+> cpu 0x0: Vector: 700 (Program Check) at [c000000106ec75f0]
+>
+>     pc: c0000000000d69cc: .kmem_cache_free+0xac/0x154
+>
+>     lr: c0000000000b05f0: .mempool_free_slab+0x1c/0x30
+>
+>     sp: c000000106ec7870
+>
+>    msr: 8000000000029032
+>
+>   current = 0xc000000007cf64c0
+>
+>   paca    = 0xc0000000007ecf00
+>
+>     pid   = 8210, comm = fsstress
+>
+> kernel BUG at mm/slab.c:592!
 
-Try this one instead which has been in my pending testing tree for a while:
+Looks like someone passed a non-slab pointer to
+mempool_free()/kmem_cache_free() so it's likely that the problem is in
+cifs, not mm.
 
-
-
-Index: linux-2.6/fs/exec.c
-===================================================================
---- linux-2.6.orig/fs/exec.c	2007-09-16 20:29:01.000000000 +0200
-+++ linux-2.6/fs/exec.c	2007-09-16 20:29:56.000000000 +0200
-@@ -669,41 +669,55 @@ EXPORT_SYMBOL(setup_arg_pages);
- 
- #endif /* CONFIG_MMU */
- 
-+/**
-+ * open_exec - open file for execution
-+ * @name:	filename to open
-+ *
-+ * Open the file pointed to by @filename in the current namespace
-+ * for execution.  Error out if the file is not a regular file or
-+ * this mount does not allow executing files on it.
-+ */
- struct file *open_exec(const char *name)
- {
- 	struct nameidata nd;
--	int err;
- 	struct file *file;
-+	int err;
- 
--	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd, FMODE_READ|FMODE_EXEC);
--	file = ERR_PTR(err);
-+	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd,
-+				FMODE_READ|FMODE_EXEC);
-+	if (unlikely(err))
-+		goto out;
- 
--	if (!err) {
--		struct inode *inode = nd.dentry->d_inode;
--		file = ERR_PTR(-EACCES);
--		if (!(nd.mnt->mnt_flags & MNT_NOEXEC) &&
--		    S_ISREG(inode->i_mode)) {
--			int err = vfs_permission(&nd, MAY_EXEC);
--			file = ERR_PTR(err);
--			if (!err) {
--				file = nameidata_to_filp(&nd, O_RDONLY);
--				if (!IS_ERR(file)) {
--					err = deny_write_access(file);
--					if (err) {
--						fput(file);
--						file = ERR_PTR(err);
--					}
--				}
--out:
--				return file;
--			}
--		}
--		release_open_intent(&nd);
--		path_release(&nd);
-+	err = -EACCES;
-+	if (unlikely(nd.mnt->mnt_flags & MNT_NOEXEC))
-+		goto out_path_release;
-+	if (unlikely(!S_ISREG(nd.dentry->d_inode->i_mode)))
-+		goto out_path_release;
-+
-+	err = vfs_permission(&nd, MAY_EXEC);
-+	if (unlikely(err))
-+		goto out_path_release;
-+
-+	file = nameidata_to_filp(&nd, O_RDONLY);
-+	if (unlikely(IS_ERR(file))) {
-+		err = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	err = deny_write_access(file);
-+	if (unlikely(err)) {
-+		fput(file);
-+		goto out;
- 	}
--	goto out;
--}
- 
-+	return file;
-+
-+ out_path_release:
-+	release_open_intent(&nd);
-+	path_release(&nd);
-+ out:
-+	return ERR_PTR(err);
-+}
- EXPORT_SYMBOL(open_exec);
- 
- int kernel_read(struct file *file, unsigned long offset,
+                                             Pekka
