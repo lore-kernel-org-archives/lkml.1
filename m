@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759433AbXJDKqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXJDKso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759433AbXJDKqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 06:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXJDKqI
+	id S1759550AbXJDKso (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 06:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbXJDKsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 06:46:08 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:33049 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755766AbXJDKqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 06:46:07 -0400
-Date: Thu, 4 Oct 2007 12:46:02 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
+	Thu, 4 Oct 2007 06:48:35 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33906 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755796AbXJDKsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 06:48:33 -0400
+Date: Thu, 4 Oct 2007 12:48:58 +0200
+From: Adrian Bunk <bunk@kernel.org>
 To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Don Mullis <dwm@meer.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
-Message-ID: <20071004124602.2be94bfe@poseidon.drzeus.cx>
-In-Reply-To: <20071004103805.GB5711@kernel.dk>
-References: <1191478262.21598.5.camel@dmullis-laptop>
-	<20071003231659.f41df5ed.akpm@linux-foundation.org>
-	<20071004072515.GC5236@kernel.dk>
-	<20071004100154.6093844d@poseidon.drzeus.cx>
-	<20071004080631.GB23808@kernel.dk>
-	<20071004104626.2a219926@poseidon.drzeus.cx>
-	<20071004093014.GE23808@kernel.dk>
-	<20071004122439.0944f3db@poseidon.drzeus.cx>
-	<20071004103805.GB5711@kernel.dk>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-1243-1191494737-0001-2"
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Sumant.Patro@lsi.com,
+       James.Bottomley@SteelEye.com, bwindle@fint.org,
+       linux-kernel@vger.kernel.org, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+Message-ID: <20071004104858.GF10852@stusta.de>
+References: <20071003090058R.fujita.tomonori@lab.ntt.co.jp> <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com> <20071004084651L.fujita.tomonori@lab.ntt.co.jp> <20071004072834.GD5236@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071004072834.GD5236@kernel.dk>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, Oct 04, 2007 at 09:28:34AM +0200, Jens Axboe wrote:
+>...
+> Tomo, this is the patch I added.
 
---=_hera.drzeus.cx-1243-1191494737-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Please excuse my comment in case this was already clear:
 
-On Thu, 4 Oct 2007 12:38:05 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+You are aware that this bug is a regression in 2.6.23-rc and the patch 
+should therefore go to Linus ASAP and not after the release of 2.6.23?
 
-> On Thu, Oct 04 2007, Pierre Ossman wrote:
-> >=20
-> > Is that a yes or a no? You said that the ->page field was involved
-> > in
->=20
-> It's a conditional yes, re-read it :-)
->=20
+> Jens Axboe
 
-I didn't get the memo about what chained sg entries entail.
+cu
+Adrian
 
-> > list chaining, so does or doesn't it have to be initialized before a
-> > call to sg_init_one()?
->=20
-> That's not the problem. It has to be initialized before calling
-> blk_rq_map_sg(). sg_init_one() will zero the entire sg entry, and that
-> breaks if that particular sg entry is part of a larger sg table AND
-> that sg entry happens to be the chain element.
->=20
+-- 
 
-Ok, then it shouldn't affect my world at least.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Rgds
-Pierre
-
-PS. Did someone forget to do a review of all blk_rq_map_sg() callers
-before committing the chained list stuff? ;)
-
---=_hera.drzeus.cx-1243-1191494737-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHBMRq7b8eESbyJLgRAjBUAJ9hmtx/FeBCAsPZO+VyvO4DdOXzhwCfdS2A
-A3YtvBeGA4m4tgjLMsfeL70=
-=Re5y
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-1243-1191494737-0001-2--
