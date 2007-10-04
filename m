@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXJDFX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXJDFdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbXJDFX6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbXJDFXu
+	id S1757430AbXJDFdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXJDFcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:23:50 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50377 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbXJDFXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 01:23:49 -0400
-Date: Thu, 4 Oct 2007 07:23:48 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071004052348.GC15131@wotan.suse.de>
-References: <20071004052153.GA15131@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Oct 2007 01:32:55 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:31499 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752335AbXJDFcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 01:32:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kmCMYJgOtz+goZ5Cv9IgMjkfU/ToifR6gph8TV1BngZzPsqNnmmQBErS9JZBHtV2WgZ3rH+pkyfYJmf9rhD0IxACL4Dfv/aq6+MY72SWm1uLbp6oUnkKbQGWnY1+B5oU5lj+i+PSZtZCB01c6IQBB7+zXxJyQ6Qp4MogB5RUNuA=
+Message-ID: <64bb37e0710032232o71225bf6k8a0d493687eb80bd@mail.gmail.com>
+Date: Thu, 4 Oct 2007 07:32:52 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+Cc: "Tejun Heo" <htejun@gmail.com>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20071003163804.GR19691@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071004052153.GA15131@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+References: <46FC1104.8080105@gmail.com>
+	 <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
+	 <46FFB412.20202@gmail.com>
+	 <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com>
+	 <46FFDF64.1080005@gmail.com>
+	 <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
+	 <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
+	 <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>
+	 <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com>
+	 <20071003163804.GR19691@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/3/07, Matt Mackall <mpm@selenic.com> wrote:
+> Well I can see no reason why the vma we just got to by the mm->mmap
+> would have a vm_mm != mm, but I've certainly been wrong before.
+>
+> Try changing it to:
+>
+>         for (vma = mm->mmap; vma; vma = vma->vm_next)
+>                 if (!is_vm_hugetlb_page(vma)) {
+>                         if (vma->vm_mm != mm)
+>                                 printk("WTF: vma->vm_mm %p mm %p\n",
+>                                         vma->vm_mm, mm);
+>                         walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
+>                                         &clear_refs_walk, vma);
+>         }
 
-According to latest memory ordering specification documents from Intel and
-AMD, both manufacturers are committed to in-order loads from cacheable memory
-for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+You were right.
+I was able to trigger the error with above printk added, but nothing
+was written to the syslog.
 
-Also according to those documents, and according to existing practice in Linux
-(eg. spin_unlock doesn't enforce ordering), stores to cacheable memory are
-visible in program order too. Special string stores are safe -- their
-constituent stores may be out of order, but they must complete in order WRT
-surrounding stores. Nontemporal stores to WB memory can go out of order, and so
-they should be fenced explicitly to make them appear in-order WRT other stores.
-Hence, smp_wmb() may be a simple barrier.
+So now I'm rather out of ideas what to test... :(
 
-http://developer.intel.com/products/processor/manuals/318147.pdf
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24593.pdf
-
-In userspace microbenchmarks on a core2 system, fence instructions range
-anywhere from around 15 cycles to 50, which may not be totally insignificant
-in performance critical paths (code size will go down too).
-
-However the primary motivation for this is to have the canonical barrier
-implementation for x86 architecture.
-
-smp_rmb on buggy pentium pros remains a locked op, which is apparently
-required.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
----
-Index: linux-2.6/include/asm-i386/system.h
-===================================================================
---- linux-2.6.orig/include/asm-i386/system.h
-+++ linux-2.6/include/asm-i386/system.h
-@@ -274,7 +274,11 @@ static inline unsigned long get_limit(un
- 
- #ifdef CONFIG_SMP
- #define smp_mb()	mb()
--#define smp_rmb()	rmb()
-+#ifdef CONFIG_X86_PPRO_FENCE
-+# define smp_rmb()	rmb()
-+#else
-+# define smp_rmb()	barrier()
-+#endif
- #ifdef CONFIG_X86_OOSTORE
- # define smp_wmb() 	wmb()
- #else
-Index: linux-2.6/include/asm-x86_64/system.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/system.h
-+++ linux-2.6/include/asm-x86_64/system.h
-@@ -141,8 +141,8 @@ static inline void write_cr8(unsigned lo
- 
- #ifdef CONFIG_SMP
- #define smp_mb()	mb()
--#define smp_rmb()	rmb()
--#define smp_wmb()	wmb()
-+#define smp_rmb()	barrier()
-+#define smp_wmb()	barrier()
- #define smp_read_barrier_depends()	do {} while(0)
- #else
- #define smp_mb()	barrier()
+Torsten
