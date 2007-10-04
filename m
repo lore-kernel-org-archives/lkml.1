@@ -1,299 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbXJDTN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbXJDTQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbXJDTN4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 15:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbXJDTNs
+	id S1760078AbXJDTQj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 15:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbXJDTQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 15:13:48 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:36999 "EHLO pasmtpB.tele.dk"
+	Thu, 4 Oct 2007 15:16:31 -0400
+Received: from pat.uio.no ([129.240.10.15]:43585 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756252AbXJDTNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 15:13:46 -0400
-Date: Thu, 4 Oct 2007 21:15:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [PATCH 1/2] s390: beautify vmlinux.lds
-Message-ID: <20071004191510.GB23211@uranus.ravnborg.org>
-References: <20071004112706.574737175@de.ibm.com>
+	id S1754500AbXJDTQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 15:16:30 -0400
+Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
+	client git tree...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, staubach@redhat.com,
+       nfsv4@linux-nfs.org, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071004114243.3161af16.akpm@linux-foundation.org>
+References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
+	 <20071004085206.0a8e37b5@poseidon.drzeus.cx>
+	 <1191506450.6685.17.camel@heimdal.trondhjem.org>
+	 <20071004184304.6e71ab6d@poseidon.drzeus.cx>
+	 <20071004114243.3161af16.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 15:16:03 -0400
+Message-Id: <1191525363.6739.12.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004112706.574737175@de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.019)
+X-UiO-Scanned: DE7D40BBAE3E92264886266C4E9D733171A8A8A8
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 243 total 4296702 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a consistent style in vmlinux.lds.
-This style is gradually being introduced for all archs.
+On Thu, 2007-10-04 at 11:42 -0700, Andrew Morton wrote:
+> On Thu, 4 Oct 2007 18:43:04 +0200
+> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> 
+> > On Thu, 04 Oct 2007 10:00:50 -0400
+> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > 
+> > > On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
+> > > > On Wed, 03 Oct 2007 19:41:16 -0400
+> > > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > > > 
+> > > > > 
+> > > > > We also have the 64-bit inode support from RedHat/Peter Staubach.
+> > > > > 
+> > > > 
+> > > > As has been pointed[1] out[2], this will cause regressions for
+> > > > non-LFS applications (of which there are still lots and lots). This
+> > > > change should be in feature-removal (the "feature" being removed is
+> > > > legacy support for non-LFS applications using NFS servers that make
+> > > > full use of the protocol) and preferably accompanied with
+> > > > appropriate user space changes (e.g. compatibility option in glibc).
+> > > > 
+> > > > [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
+> > > > [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
+> > > > 
+> > > > Rgds
+> > > 
+> > > How about a boot/module parameter to turn it on or off?
+> > > 
+> > 
+> > That would be perfect. It can even be in non-legacy mode by default,
+> > just as long as you can go back to the old behaviour when/if you run
+> > into a non-LFS application.
+> > 
+> 
+> Wouldn't a mount option be better?
 
-A few lables were moved inside the section definition so
-they are assigned the correct value of gcc decide to align
-the content to another address than the one . has.
-In the past this has fixed several bugs but for s390 it
-will not impact due to all the alignmnet already introduced.
+I suppose that might be OK if you know that the 32-bit legacy
+applications will only touch one or two servers, but that sounds like a
+niche thing.
 
-Stabs definitions are consolidated in asm-generic/vmlinux.lds.h
-This patch also introduce support for DWARF - without knowing
-if this makes sense for s390.
+On the downside, forcing all those people who have portable 64-bit aware
+applications to upgrade their version of mount just in order to have
+stat64() work correctly seems unnecessarily complicated. I'd prefer not
+to have to do that unless someone comes up with a good reason why we
+must.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-build tested only
+Cheers
+  Trond
 
- vmlinux.lds.S |  233 +++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 127 insertions(+), 106 deletions(-)
-
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index b4622a3..3a364d1 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -18,121 +18,142 @@ jiffies = jiffies_64;
- 
- SECTIONS
- {
--  . = 0x00000000;
--  _text = .;			/* Text and read-only data */
--  .text : {
--	*(.text.head)
-+	. = 0x00000000;
-+	.text : {
-+	_text = .;		/* Text and read-only data */
-+		*(.text.head)
- 	TEXT_TEXT
--	SCHED_TEXT
--	LOCK_TEXT
--	KPROBES_TEXT
--	*(.fixup)
--	*(.gnu.warning)
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		KPROBES_TEXT
-+		*(.fixup)
-+		*(.gnu.warning)
- 	} = 0x0700
- 
--  _etext = .;			/* End of text section */
-+	_etext = .;		/* End of text section */
- 
--  RODATA
-+	RODATA
- 
- #ifdef CONFIG_SHARED_KERNEL
--  . = ALIGN(1048576);		/* VM shared segments are 1MB aligned */
-+	. = ALIGN(1048576);	/* VM shared segments are 1MB aligned */
- #endif
- 
--  . = ALIGN(4096);
--  _eshared = .;			/* End of shareable data */
--
--  . = ALIGN(16);		/* Exception table */
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
--
--  NOTES
--
--  BUG_TABLE
--
--  .data : {			/* Data */
--	DATA_DATA
--	CONSTRUCTORS
--	}
--
--  . = ALIGN(4096);
--  __nosave_begin = .;
--  .data_nosave : { *(.data.nosave) }
--  . = ALIGN(4096);
--  __nosave_end = .;
--
--  . = ALIGN(4096);
--  .data.page_aligned : { *(.data.idt) }
--
--  . = ALIGN(256);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
--
--  . = ALIGN(256);
--  .data.read_mostly : { *(.data.read_mostly) }
--  _edata = .;			/* End of data section */
--
--  . = ALIGN(8192);		/* init_task */
--  .data.init_task : { *(.data.init_task) }
--
--  /* will be freed after init */
--  . = ALIGN(4096);		/* Init code and data */
--  __init_begin = .;
--  .init.text : { 
--	_sinittext = .;
--	*(.init.text)
--	_einittext = .;
--  }
--  /*
--   * .exit.text is discarded at runtime, not link time,
--   * to deal with references from __bug_table
--   */
--  .exit.text :	 { *(.exit.text) }
--
--  .init.data : { *(.init.data) }
--  . = ALIGN(256);
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--  SECURITY_INIT
-+	. = ALIGN(4096);
-+	_eshared = .;		/* End of shareable data */
-+
-+	. = ALIGN(16);		/* Exception table */
-+	__ex_table : {
-+		__start___ex_table = .;
-+		*(__ex_table)
-+		__stop___ex_table = .;
-+	}
-+
-+	NOTES
-+	BUG_TABLE
-+
-+	.data : {		/* Data */
-+		DATA_DATA
-+		CONSTRUCTORS
-+	}
-+
-+	. = ALIGN(4096);
-+	.data_nosave : {
-+	__nosave_begin = .;
-+		*(.data.nosave)
-+	}
-+	. = ALIGN(4096);
-+	__nosave_end = .;
-+
-+	. = ALIGN(4096);
-+	.data.page_aligned : {
-+		*(.data.idt)
-+	}
-+
-+	. = ALIGN(256);
-+	.data.cacheline_aligned : {
-+		*(.data.cacheline_aligned)
-+	}
-+
-+	. = ALIGN(256);
-+	.data.read_mostly : {
-+		*(.data.read_mostly)
-+	}
-+	_edata = .;		/* End of data section */
-+
-+	. = ALIGN(8192);	/* init_task */
-+	.data.init_task : {
-+		*(.data.init_task)
-+	}
-+
-+	/* will be freed after init */
-+	. = ALIGN(4096);	/* Init code and data */
-+	__init_begin = .;
-+	.init.text : { 
-+		_sinittext = .;
-+		*(.init.text)
-+		_einittext = .;
-+	}
-+	/*
-+	 * .exit.text is discarded at runtime, not link time,
-+	 * to deal with references from __bug_table
-+	*/
-+	.exit.text : {
-+		*(.exit.text)
-+	}
-+
-+	.init.data : {
-+		*(.init.data)
-+	}
-+	. = ALIGN(256);
-+	.init.setup : {
-+		__setup_start = .;
-+		*(.init.setup)
-+		__setup_end = .;
-+	}
-+	.initcall.init : {
-+		__initcall_start = .;
-+		INITCALLS
-+		__initcall_end = .;
-+	}
-+
-+	.con_initcall.init : {
-+		__con_initcall_start = .;
-+		*(.con_initcall.init)
-+		__con_initcall_end = .;
-+	}
-+	SECURITY_INIT
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(256);
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.initramfs) }
--  . = ALIGN(2);
--  __initramfs_end = .;
-+	. = ALIGN(256);
-+	.init.ramfs : {
-+		__initramfs_start = .;
-+		*(.init.initramfs)
-+		. = ALIGN(2);
-+  		__initramfs_end = .;
-+	}
- #endif
--  PERCPU(4096)
--  . = ALIGN(4096);
--  __init_end = .;
--  /* freed after init ends here */
--
--  __bss_start = .;		/* BSS */
--  .bss : { *(.bss) }
--  . = ALIGN(2);
--  __bss_stop = .;
--
--  _end = . ;
--
--  /* Sections to be discarded */
--  /DISCARD/ : {
--	*(.exit.data) *(.exitcall.exit)
--	}
--
--  /* Stabs debugging sections.  */
--  .stab 0 : { *(.stab) }
--  .stabstr 0 : { *(.stabstr) }
--  .stab.excl 0 : { *(.stab.excl) }
--  .stab.exclstr 0 : { *(.stab.exclstr) }
--  .stab.index 0 : { *(.stab.index) }
--  .stab.indexstr 0 : { *(.stab.indexstr) }
--  .comment 0 : { *(.comment) }
-+
-+	PERCPU(4096)
-+	. = ALIGN(4096);
-+	__init_end = .;		/* freed after init ends here */
-+
-+	/* BSS */
-+	.bss : {
-+		__bss_start = .;
-+		*(.bss)
-+		. = ALIGN(2);
-+		__bss_stop = .;
-+	}
-+
-+	_end = . ;
-+
-+	/* Sections to be discarded */
-+	/DISCARD/ : {
-+		*(.exit.data)
-+		*(.exitcall.exit)
-+	}
-+
-+	/* Debugging sections.  */
-+	STABS_DEBUG
-+	DWARF_DEBUG
- }
