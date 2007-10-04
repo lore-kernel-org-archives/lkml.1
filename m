@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761137AbXJDQBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbXJDQBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761137AbXJDQBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbXJDP5n
+	id S1761272AbXJDQBs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759956AbXJDP5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:57:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45628 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 11:57:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45630 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759859AbXJDP5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:57:34 -0400
+	id S1759861AbXJDP5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 11:57:35 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 10/32] IGET: Stop BFS from using iget() and read_inode() [try
+Subject: [PATCH 07/32] IGET: Stop AFFS from using iget() and read_inode() [try
 	#2]
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 04 Oct 2007 16:56:53 +0100
-Message-ID: <20071004155653.2814.68128.stgit@warthog.procyon.org.uk>
+Date: Thu, 04 Oct 2007 16:56:37 +0100
+Message-ID: <20071004155637.2814.81312.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
 References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,148 +30,182 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the BFS filesystem from using iget() and read_inode().  Replace
-bfs_read_inode() with bfs_iget(), and call that instead of iget().
-bfs_iget() then uses iget_locked() directly and returns a proper error code
+Stop the AFFS filesystem from using iget() and read_inode().  Replace
+affs_read_inode() with affs_iget(), and call that instead of iget().
+affs_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-bfs_fill_super() returns any error incurred when getting the root inode
+affs_fill_super() returns any error incurred when getting the root inode
 instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/bfs/bfs.h   |    2 ++
- fs/bfs/dir.c   |    6 +++---
- fs/bfs/inode.c |   32 ++++++++++++++++++++++----------
- 3 files changed, 27 insertions(+), 13 deletions(-)
+ fs/affs/affs.h     |    2 +-
+ fs/affs/amigaffs.c |    6 ++++--
+ fs/affs/inode.c    |   20 +++++++++++++-------
+ fs/affs/namei.c    |   10 ++++------
+ fs/affs/super.c    |   12 +++++++++---
+ 5 files changed, 31 insertions(+), 19 deletions(-)
 
-diff --git a/fs/bfs/bfs.h b/fs/bfs/bfs.h
-index 130f6c6..5cf50d4 100644
---- a/fs/bfs/bfs.h
-+++ b/fs/bfs/bfs.h
-@@ -46,6 +46,8 @@ static inline struct bfs_inode_info *BFS_I(struct inode *inode)
- #define printf(format, args...) \
- 	printk(KERN_ERR "BFS-fs: %s(): " format, __FUNCTION__, ## args)
+diff --git a/fs/affs/affs.h b/fs/affs/affs.h
+index 232c694..0bce4ff 100644
+--- a/fs/affs/affs.h
++++ b/fs/affs/affs.h
+@@ -174,7 +174,7 @@ extern void			 affs_put_inode(struct inode *inode);
+ extern void			 affs_drop_inode(struct inode *inode);
+ extern void			 affs_delete_inode(struct inode *inode);
+ extern void			 affs_clear_inode(struct inode *inode);
+-extern void			 affs_read_inode(struct inode *inode);
++extern struct inode		*affs_iget(struct super_block *sb, unsigned long ino);
+ extern int			 affs_write_inode(struct inode *inode, int);
+ extern int			 affs_add_entry(struct inode *dir, struct inode *inode, struct dentry *dentry, s32 type);
  
-+/* inode.c */
-+extern struct inode *bfs_iget(struct super_block *sb, unsigned long ino);
+diff --git a/fs/affs/amigaffs.c b/fs/affs/amigaffs.c
+index f4de4b9..8055730 100644
+--- a/fs/affs/amigaffs.c
++++ b/fs/affs/amigaffs.c
+@@ -170,9 +170,11 @@ affs_remove_link(struct dentry *dentry)
+ 		if (!link_bh)
+ 			goto done;
  
- /* file.c */
- extern const struct inode_operations bfs_file_inops;
-diff --git a/fs/bfs/dir.c b/fs/bfs/dir.c
-index 097f149..03c8bdb 100644
---- a/fs/bfs/dir.c
-+++ b/fs/bfs/dir.c
-@@ -141,10 +141,10 @@ static struct dentry * bfs_lookup(struct inode * dir, struct dentry * dentry, st
- 	if (bh) {
- 		unsigned long ino = (unsigned long)le16_to_cpu(de->ino);
- 		brelse(bh);
--		inode = iget(dir->i_sb, ino);
--		if (!inode) {
-+		inode = bfs_iget(dir->i_sb, ino);
-+		if (IS_ERR(inode)) {
- 			unlock_kernel();
--			return ERR_PTR(-EACCES);
-+			return ERR_CAST(inode);
- 		}
- 	}
- 	unlock_kernel();
-diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
-index f346eb1..76798c9 100644
---- a/fs/bfs/inode.c
-+++ b/fs/bfs/inode.c
-@@ -32,25 +32,29 @@ MODULE_LICENSE("GPL");
+-		dir = iget(sb, be32_to_cpu(AFFS_TAIL(sb, link_bh)->parent));
+-		if (!dir)
++		dir = affs_iget(sb, be32_to_cpu(AFFS_TAIL(sb, link_bh)->parent));
++		if (IS_ERR(dir)) {
++			retval = PTR_ERR(dir);
+ 			goto done;
++		}
  
- void dump_imap(const char *prefix, struct super_block * s);
+ 		affs_lock_dir(dir);
+ 		affs_fix_dcache(dentry, link_ino);
+diff --git a/fs/affs/inode.c b/fs/affs/inode.c
+index 4609a6c..edea76c 100644
+--- a/fs/affs/inode.c
++++ b/fs/affs/inode.c
+@@ -15,20 +15,25 @@
+ extern const struct inode_operations affs_symlink_inode_operations;
+ extern struct timezone sys_tz;
  
--static void bfs_read_inode(struct inode * inode)
-+struct inode *bfs_iget(struct super_block *sb, unsigned long ino)
+-void
+-affs_read_inode(struct inode *inode)
++struct inode *affs_iget(struct super_block *sb, unsigned long ino)
  {
--	unsigned long ino = inode->i_ino;
- 	struct bfs_inode * di;
- 	struct buffer_head * bh;
-+	struct inode *inode;
- 	int block, off;
+-	struct super_block	*sb = inode->i_sb;
+ 	struct affs_sb_info	*sbi = AFFS_SB(sb);
+ 	struct buffer_head	*bh;
+ 	struct affs_head	*head;
+ 	struct affs_tail	*tail;
++	struct inode		*inode;
+ 	u32			 block;
+ 	u32			 size;
+ 	u32			 prot;
+ 	u16			 id;
  
+-	pr_debug("AFFS: read_inode(%lu)\n",inode->i_ino);
 +	inode = iget_locked(sb, ino);
-+	if (IS_ERR(inode))
++	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
 +
- 	if (ino < BFS_ROOT_INO || ino > BFS_SB(inode->i_sb)->si_lasti) {
- 		printf("Bad inode number %s:%08lx\n", inode->i_sb->s_id, ino);
--		make_bad_inode(inode);
--		return;
-+		goto error;
- 	}
++	pr_debug("AFFS: affs_iget(%lu)\n",inode->i_ino);
  
- 	block = (ino - BFS_ROOT_INO)/BFS_INODES_PER_BLOCK + 1;
- 	bh = sb_bread(inode->i_sb, block);
- 	if (!bh) {
- 		printf("Unable to read inode %s:%08lx\n", inode->i_sb->s_id, ino);
--		make_bad_inode(inode);
--		return;
-+		goto error;
- 	}
- 
- 	off = (ino - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
-@@ -85,6 +89,12 @@ static void bfs_read_inode(struct inode * inode)
- 	BFS_I(inode)->i_dsk_ino = le16_to_cpu(di->i_ino); /* can be 0 so we store a copy */
- 
- 	brelse(bh);
+ 	block = inode->i_ino;
+ 	bh = affs_bread(sb, block);
+@@ -154,12 +159,13 @@ affs_read_inode(struct inode *inode)
+ 			 sys_tz.tz_minuteswest * 60;
+ 	inode->i_mtime.tv_nsec = inode->i_ctime.tv_nsec = inode->i_atime.tv_nsec = 0;
+ 	affs_brelse(bh);
+-	return;
 +	unlock_new_inode(inode);
 +	return inode;
-+
-+error:
+ 
+ bad_inode:
+-	make_bad_inode(inode);
+ 	affs_brelse(bh);
+-	return;
 +	iget_failed(inode);
 +	return ERR_PTR(-EIO);
  }
  
- static int bfs_write_inode(struct inode * inode, int unused)
-@@ -271,7 +281,6 @@ static void destroy_inodecache(void)
- static const struct super_operations bfs_sops = {
- 	.alloc_inode	= bfs_alloc_inode,
- 	.destroy_inode	= bfs_destroy_inode,
--	.read_inode	= bfs_read_inode,
- 	.write_inode	= bfs_write_inode,
- 	.delete_inode	= bfs_delete_inode,
- 	.put_super	= bfs_put_super,
-@@ -306,6 +315,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 	struct inode * inode;
- 	unsigned i, imap_len;
- 	struct bfs_sb_info * info;
-+	long ret = -EINVAL;
+ int
+diff --git a/fs/affs/namei.c b/fs/affs/namei.c
+index b407e9e..2218f1e 100644
+--- a/fs/affs/namei.c
++++ b/fs/affs/namei.c
+@@ -208,9 +208,8 @@ affs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ 	affs_lock_dir(dir);
+ 	bh = affs_find_entry(dir, dentry);
+ 	affs_unlock_dir(dir);
+-	if (IS_ERR(bh)) {
++	if (IS_ERR(bh))
+ 		return ERR_CAST(bh);
+-	}
+ 	if (bh) {
+ 		u32 ino = bh->b_blocknr;
  
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
- 	if (!info)
-@@ -340,14 +350,16 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 		set_bit(i, info->si_imap);
+@@ -223,10 +222,9 @@ affs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ 			ino = be32_to_cpu(AFFS_TAIL(sb, bh)->original);
+ 		}
+ 		affs_brelse(bh);
+-		inode = iget(sb, ino);
+-		if (!inode) {
+-			return ERR_PTR(-EACCES);
+-		}
++		inode = affs_iget(sb, ino);
++		if (IS_ERR(inode))
++			return ERR_PTR(PTR_ERR(inode));
+ 	}
+ 	dentry->d_op = AFFS_SB(sb)->s_flags & SF_INTL ? &affs_intl_dentry_operations : &affs_dentry_operations;
+ 	d_add(dentry, inode);
+diff --git a/fs/affs/super.c b/fs/affs/super.c
+index c80191a..f005050 100644
+--- a/fs/affs/super.c
++++ b/fs/affs/super.c
+@@ -113,7 +113,6 @@ static void destroy_inodecache(void)
+ static const struct super_operations affs_sops = {
+ 	.alloc_inode	= affs_alloc_inode,
+ 	.destroy_inode	= affs_destroy_inode,
+-	.read_inode	= affs_read_inode,
+ 	.write_inode	= affs_write_inode,
+ 	.put_inode	= affs_put_inode,
+ 	.drop_inode	= affs_drop_inode,
+@@ -271,6 +270,7 @@ static int affs_fill_super(struct super_block *sb, void *data, int silent)
+ 	unsigned long		 mount_flags;
+ 	int			 tmp_flags;	/* fix remount prototype... */
+ 	u8			 sig[4];
++	int			 ret = -EINVAL;
  
- 	s->s_op = &bfs_sops;
--	inode = iget(s, BFS_ROOT_INO);
--	if (!inode) {
-+	inode = bfs_iget(s, BFS_ROOT_INO);
-+	if (IS_ERR(inode)) {
-+		ret = PTR_ERR(inode);
- 		kfree(info->si_imap);
- 		goto out;
- 	}
- 	s->s_root = d_alloc_root(inode);
- 	if (!s->s_root) {
- 		iput(inode);
-+		ret = -ENOMEM;
- 		kfree(info->si_imap);
- 		goto out;
- 	}
-@@ -402,7 +414,7 @@ out:
- 	brelse(bh);
- 	kfree(info);
- 	s->s_fs_info = NULL;
+ 	pr_debug("AFFS: read_super(%s)\n",data ? (const char *)data : "no options");
+ 
+@@ -444,7 +444,12 @@ got_root:
+ 
+ 	/* set up enough so that it can read an inode */
+ 
+-	root_inode = iget(sb, root_block);
++	root_inode = affs_iget(sb, root_block);
++	if (IS_ERR(root_inode)) {
++		ret = PTR_ERR(root_inode);
++		goto out_error_noinode;
++	}
++
+ 	sb->s_root = d_alloc_root(root_inode);
+ 	if (!sb->s_root) {
+ 		printk(KERN_ERR "AFFS: Get root inode failed\n");
+@@ -461,12 +466,13 @@ got_root:
+ out_error:
+ 	if (root_inode)
+ 		iput(root_inode);
++out_error_noinode:
+ 	kfree(sbi->s_bitmap);
+ 	affs_brelse(root_bh);
+ 	kfree(sbi->s_prefix);
+ 	kfree(sbi);
+ 	sb->s_fs_info = NULL;
 -	return -EINVAL;
 +	return ret;
  }
  
- static int bfs_get_sb(struct file_system_type *fs_type,
+ static int
 
