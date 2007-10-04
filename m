@@ -1,38 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbXJDXQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762540AbXJDXTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762337AbXJDXQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbXJDXQb
+	id S1762540AbXJDXTD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 19:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbXJDXSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:16:31 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:45500 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756657AbXJDXQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:16:30 -0400
-To: akpm@linux-foundation.org
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org
-In-reply-to: <20071004155128.62fc1098.akpm@linux-foundation.org> (message from
-	Andrew Morton on Thu, 4 Oct 2007 15:51:28 -0700)
-Subject: Re: [patch 09/12] fuse: add list of writable files to fuse_inode
-References: <20071002155026.650555479@szeredi.hu>
-	<20071002155222.373341208@szeredi.hu> <20071004155128.62fc1098.akpm@linux-foundation.org>
-Message-Id: <E1IdZvZ-0002ZW-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 05 Oct 2007 01:16:21 +0200
+	Thu, 4 Oct 2007 19:18:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34914 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755585AbXJDXSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 19:18:51 -0400
+Message-ID: <470574D7.6070605@redhat.com>
+Date: Thu, 04 Oct 2007 19:18:47 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Derek Fawcus <dfawcus@cisco.com>
+CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
+   Control Kernel
+References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org> <20071003011246.7313facb@the-village.bc.nu> <20071004235600.A4177@mrwint.cisco.com>
+In-Reply-To: <20071004235600.A4177@mrwint.cisco.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> hm.  At no point in this patch series does anything actually get added to
-> these lists, so this patch is presently a no-op.
+On 10/04/2007 06:56 PM, Derek Fawcus wrote:
 > 
-> I'll assume that it will get used later.  But it is a bit odd to add
-> infrastructure in a patch series, then not use it.  Why not hold the patch
-> back and include it in the patch series which actually uses these lists for
-> something?
+> I ran firefox setuid to a different (not my main user),  uid+gid,  gave
+> my main account that gid as a supplemental group,  and gave that uid
+> access to the X magic cookie.
 
-My stupidity.  I somehow thought the patch does actually do something
-interesting when including it in this series, instead of holding it
-back for the writable-mmap series.
-
-Miklos
+You need to use runxas to get any kind of real security.
