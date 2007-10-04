@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXJDKso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbXJDK4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759550AbXJDKso (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 06:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbXJDKsf
+	id S1759264AbXJDK4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 06:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXJDKz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 06:48:35 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33906 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755796AbXJDKsd (ORCPT
+	Thu, 4 Oct 2007 06:55:57 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:36160 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbXJDKz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 06:48:33 -0400
-Date: Thu, 4 Oct 2007 12:48:58 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Sumant.Patro@lsi.com,
+	Thu, 4 Oct 2007 06:55:56 -0400
+To: bunk@kernel.org
+Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp, Sumant.Patro@lsi.com,
        James.Bottomley@SteelEye.com, bwindle@fint.org,
        linux-kernel@vger.kernel.org, megaraidlinux@lsi.com,
        linux-scsi@vger.kernel.org
 Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
-Message-ID: <20071004104858.GF10852@stusta.de>
-References: <20071003090058R.fujita.tomonori@lab.ntt.co.jp> <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com> <20071004084651L.fujita.tomonori@lab.ntt.co.jp> <20071004072834.GD5236@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071004072834.GD5236@kernel.dk>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071004104858.GF10852@stusta.de>
+References: <20071004084651L.fujita.tomonori@lab.ntt.co.jp>
+	<20071004072834.GD5236@kernel.dk>
+	<20071004104858.GF10852@stusta.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071004195552G.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 04 Oct 2007 19:55:52 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 09:28:34AM +0200, Jens Axboe wrote:
->...
-> Tomo, this is the patch I added.
+On Thu, 4 Oct 2007 12:48:58 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Please excuse my comment in case this was already clear:
+> On Thu, Oct 04, 2007 at 09:28:34AM +0200, Jens Axboe wrote:
+> >...
+> > Tomo, this is the patch I added.
+> 
+> Please excuse my comment in case this was already clear:
+> 
+> You are aware that this bug is a regression in 2.6.23-rc and the patch 
+> should therefore go to Linus ASAP and not after the release of 2.6.23?
 
-You are aware that this bug is a regression in 2.6.23-rc and the patch 
-should therefore go to Linus ASAP and not after the release of 2.6.23?
-
-> Jens Axboe
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Oops, you are right. This should go via scsi-rc-fixes tree ASAP.
