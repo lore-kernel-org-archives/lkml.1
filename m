@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbXJDJgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXJDJgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759142AbXJDJgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759751AbXJDJSv
+	id S1762173AbXJDJgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbXJDJSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:18:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58829 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:18:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58830 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759668AbXJDJSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:18:43 -0400
+	id S1759698AbXJDJSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:18:44 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>, Wendy Cheng <wcheng@redhat.com>
-Subject: [PATCH 49/51] [GFS2] Get superblock a different way
-Date: Thu,  4 Oct 2007 09:49:42 +0100
-Message-Id: <11914878792099-git-send-email-swhiteho@redhat.com>
+Cc: Patrick Caulfield <pcaulfie@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 50/51] [DLM] don't overwrite castparam if it's NULL
+Date: Thu,  4 Oct 2007 09:49:43 +0100
+Message-Id: <1191487880270-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1191487877383-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878792099-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -66,32 +67,45 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <119148787317-git-send-email-swhiteho@redhat.com>
  <11914878753861-git-send-email-swhiteho@redhat.com>
  <1191487877383-git-send-email-swhiteho@redhat.com>
+ <11914878792099-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Patrick Caulfield <pcaulfie@redhat.com>
 
-The mapping may be NULL by the time the I/O has completed, so
-we now get the superblock by a different route (via the bd and glock)
-to avoid this problem.
+If the castaddr passed to the userland API is NULL then don't overwrite the
+existing castparam. This allows a different thread to cancel a lock request and
+the CANCEL AST gets delivered to the original thread.
 
+bz#306391 (for RHEL4) refers.
+
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Wendy Cheng <wcheng@redhat.com>
 
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index ee70467..7df7024 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -513,7 +513,8 @@ struct buffer_head *gfs2_log_get_buf(struct gfs2_sbd *sdp)
- static void gfs2_fake_write_endio(struct buffer_head *bh, int uptodate)
- {
- 	struct buffer_head *real_bh = bh->b_private;
--	struct gfs2_sbd *sdp = GFS2_SB(real_bh->b_page->mapping->host);
-+	struct gfs2_bufdata *bd = real_bh->b_private;
-+	struct gfs2_sbd *sdp = bd->bd_gl->gl_sbd;
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index 2082daf..031229f 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -4429,7 +4429,8 @@ int dlm_user_unlock(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
  
- 	end_buffer_write_sync(bh, uptodate);
- 	free_buffer_head(bh);
+ 	if (lvb_in && ua->lksb.sb_lvbptr)
+ 		memcpy(ua->lksb.sb_lvbptr, lvb_in, DLM_USER_LVB_LEN);
+-	ua->castparam = ua_tmp->castparam;
++	if (ua_tmp->castparam)
++		ua->castparam = ua_tmp->castparam;
+ 	ua->user_lksb = ua_tmp->user_lksb;
+ 
+ 	error = set_unlock_args(flags, ua, &args);
+@@ -4474,7 +4475,8 @@ int dlm_user_cancel(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 		goto out;
+ 
+ 	ua = (struct dlm_user_args *)lkb->lkb_astparam;
+-	ua->castparam = ua_tmp->castparam;
++	if (ua_tmp->castparam)
++		ua->castparam = ua_tmp->castparam;
+ 	ua->user_lksb = ua_tmp->user_lksb;
+ 
+ 	error = set_unlock_args(flags, ua, &args);
 -- 
 1.5.1.2
 
