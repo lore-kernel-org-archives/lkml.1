@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbXJDJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbXJDJdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761225AbXJDJcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbXJDJSg
+	id S1761338AbXJDJdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbXJDJSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:18:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58812 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:18:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58814 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759591AbXJDJS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:18:27 -0400
+	id S1759600AbXJDJS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:18:29 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 40/51] [GFS2] Clean up gfs2_trans_add_revoke()
-Date: Thu,  4 Oct 2007 09:49:33 +0100
-Message-Id: <11914878632211-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 41/51] [GFS2] flocks from same process trip kernel BUG at fs/gfs2/glock.c:1118!
+Date: Thu,  4 Oct 2007 09:49:34 +0100
+Message-Id: <1191487864951-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1191487861683-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878632211-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -57,192 +57,132 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914878571888-git-send-email-swhiteho@redhat.com>
  <11914878592314-git-send-email-swhiteho@redhat.com>
  <1191487861683-git-send-email-swhiteho@redhat.com>
+ <11914878632211-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Abhijith Das <adas@redhat.com>
 
-The following alters gfs2_trans_add_revoke() to take a struct
-gfs2_bufdata as an argument. This eliminates the memory allocation which
-was previously required by making use of the already existing struct
-gfs2_bufdata. It makes some sanity checks to ensure that the
-gfs2_bufdata has been removed from all the lists before its recycled as
-a revoke structure. This saves one memory allocation and one free per
-revoke structure.
+This patch adds a new flag to the gfs2_holder structure GL_FLOCK.
+It is set on holders of glocks representing flocks. This flag is
+checked in add_to_queue() and a process is permitted to queue more
+than one holder onto a glock if it is set. This solves the issue
+of a process not being able to do multiple flocks on the same file.
+Through a single descriptor, a process can now promote and demote
+flocks. Through multiple descriptors a process can now queue
+multiple flocks on the same file. There's still the problem of
+a process deadlocking itself (because gfs2 blocking locks are not
+interruptible) by queueing incompatible deadlock.
 
-Also as a result, and to simplify the locking, since there is no longer
-any blocking code in gfs2_trans_add_revoke() we must hold the log lock
-whenever this function is called. This reduces the amount of times we
-take and unlock the log lock.
-
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/glops.c b/fs/gfs2/glops.c
-index b17346a..4670dcb 100644
---- a/fs/gfs2/glops.c
-+++ b/fs/gfs2/glops.c
-@@ -41,7 +41,6 @@ static void gfs2_ail_empty_gl(struct gfs2_glock *gl)
- 	struct list_head *head = &gl->gl_ail_list;
- 	struct gfs2_bufdata *bd;
- 	struct buffer_head *bh;
--	u64 blkno;
- 	int error;
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 931368a..d631cad 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -1106,24 +1106,31 @@ static void add_to_queue(struct gfs2_holder *gh)
+ 	if (test_and_set_bit(HIF_WAIT, &gh->gh_iflags))
+ 		BUG();
  
- 	blocks = atomic_read(&gl->gl_ail_count);
-@@ -57,15 +56,12 @@ static void gfs2_ail_empty_gl(struct gfs2_glock *gl)
- 		bd = list_entry(head->next, struct gfs2_bufdata,
- 				bd_ail_gl_list);
- 		bh = bd->bd_bh;
--		blkno = bh->b_blocknr;
--		gfs2_assert_withdraw(sdp, !buffer_busy(bh));
+-	existing = find_holder_by_owner(&gl->gl_holders, gh->gh_owner_pid);
+-	if (existing) {
+-		print_symbol(KERN_WARNING "original: %s\n", existing->gh_ip);
+-		printk(KERN_INFO "pid : %d\n", existing->gh_owner_pid);
+-		printk(KERN_INFO "lock type : %d lock state : %d\n",
+-				existing->gh_gl->gl_name.ln_type, existing->gh_gl->gl_state);
+-		print_symbol(KERN_WARNING "new: %s\n", gh->gh_ip);
+-		printk(KERN_INFO "pid : %d\n", gh->gh_owner_pid);
+-		printk(KERN_INFO "lock type : %d lock state : %d\n",
+-				gl->gl_name.ln_type, gl->gl_state);
+-		BUG();
+-	}
 -
- 		gfs2_remove_from_ail(NULL, bd);
--		gfs2_log_unlock(sdp);
--
--		gfs2_trans_add_revoke(sdp, blkno);
--
--		gfs2_log_lock(sdp);
-+		bd->bd_bh = NULL;
-+		bh->b_private = NULL;
-+		bd->bd_blkno = bh->b_blocknr;
-+		gfs2_assert_withdraw(sdp, !buffer_busy(bh));
-+		gfs2_trans_add_revoke(sdp, bd);
+-	existing = find_holder_by_owner(&gl->gl_waiters3, gh->gh_owner_pid);
+-	if (existing) {
+-		print_symbol(KERN_WARNING "original: %s\n", existing->gh_ip);
+-		print_symbol(KERN_WARNING "new: %s\n", gh->gh_ip);
+-		BUG();
++	if (!(gh->gh_flags & GL_FLOCK)) {
++		existing = find_holder_by_owner(&gl->gl_holders, 
++						gh->gh_owner_pid);
++		if (existing) {
++			print_symbol(KERN_WARNING "original: %s\n", 
++				     existing->gh_ip);
++			printk(KERN_INFO "pid : %d\n", existing->gh_owner_pid);
++			printk(KERN_INFO "lock type : %d lock state : %d\n",
++			       existing->gh_gl->gl_name.ln_type, 
++			       existing->gh_gl->gl_state);
++			print_symbol(KERN_WARNING "new: %s\n", gh->gh_ip);
++			printk(KERN_INFO "pid : %d\n", gh->gh_owner_pid);
++			printk(KERN_INFO "lock type : %d lock state : %d\n",
++			       gl->gl_name.ln_type, gl->gl_state);
++			BUG();
++		}
++		
++		existing = find_holder_by_owner(&gl->gl_waiters3, 
++						gh->gh_owner_pid);
++		if (existing) {
++			print_symbol(KERN_WARNING "original: %s\n", 
++				     existing->gh_ip);
++			print_symbol(KERN_WARNING "new: %s\n", gh->gh_ip);
++			BUG();
++		}
  	}
- 	gfs2_assert_withdraw(sdp, !atomic_read(&gl->gl_ail_count));
- 	gfs2_log_unlock(sdp);
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index 20fa528..4d04e6f 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -71,8 +71,8 @@ unsigned int gfs2_struct2blk(struct gfs2_sbd *sdp, unsigned int nstruct,
- void gfs2_remove_from_ail(struct address_space *mapping, struct gfs2_bufdata *bd)
- {
- 	bd->bd_ail = NULL;
--	list_del(&bd->bd_ail_st_list);
--	list_del(&bd->bd_ail_gl_list);
-+	list_del_init(&bd->bd_ail_st_list);
-+	list_del_init(&bd->bd_ail_gl_list);
- 	atomic_dec(&bd->bd_gl->gl_ail_count);
- 	if (mapping)
- 		gfs2_meta_cache_flush(GFS2_I(mapping->host));
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index 4cbef4c..342c10e 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -343,11 +343,8 @@ static void revoke_lo_add(struct gfs2_sbd *sdp, struct gfs2_log_element *le)
- 	tr = current->journal_info;
- 	tr->tr_touched = 1;
- 	tr->tr_num_revoke++;
+ 
+ 	if (gh->gh_flags & LM_FLAG_PRIORITY)
+diff --git a/fs/gfs2/glock.h b/fs/gfs2/glock.h
+index f7a8e62..b16f604 100644
+--- a/fs/gfs2/glock.h
++++ b/fs/gfs2/glock.h
+@@ -26,6 +26,7 @@
+ #define GL_SKIP			0x00000100
+ #define GL_ATIME		0x00000200
+ #define GL_NOCACHE		0x00000400
++#define GL_FLOCK		0x00000800
+ #define GL_NOCANCEL		0x00001000
+ 
+ #define GLR_TRYFAILED		13
+diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+index 94d76ac..46a9e10 100644
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -571,7 +571,8 @@ static int do_flock(struct file *file, int cmd, struct file_lock *fl)
+ 	int error = 0;
+ 
+ 	state = (fl->fl_type == F_WRLCK) ? LM_ST_EXCLUSIVE : LM_ST_SHARED;
+-	flags = (IS_SETLKW(cmd) ? 0 : LM_FLAG_TRY) | GL_EXACT | GL_NOCACHE;
++	flags = (IS_SETLKW(cmd) ? 0 : LM_FLAG_TRY) | GL_EXACT | GL_NOCACHE 
++		| GL_FLOCK;
+ 
+ 	mutex_lock(&fp->f_fl_mutex);
+ 
+@@ -579,21 +580,19 @@ static int do_flock(struct file *file, int cmd, struct file_lock *fl)
+ 	if (gl) {
+ 		if (fl_gh->gh_state == state)
+ 			goto out;
+-		gfs2_glock_hold(gl);
+ 		flock_lock_file_wait(file,
+ 				     &(struct file_lock){.fl_type = F_UNLCK});
+-		gfs2_glock_dq_uninit(fl_gh);
++		gfs2_glock_dq_wait(fl_gh);
++		gfs2_holder_reinit(state, flags, fl_gh);
+ 	} else {
+ 		error = gfs2_glock_get(GFS2_SB(&ip->i_inode),
+ 				      ip->i_no_addr, &gfs2_flock_glops,
+ 				      CREATE, &gl);
+ 		if (error)
+ 			goto out;
++		gfs2_holder_init(gl, state, flags, fl_gh);
++		gfs2_glock_put(gl);
+ 	}
 -
--	gfs2_log_lock(sdp);
- 	sdp->sd_log_num_revoke++;
- 	list_add(&le->le_list, &sdp->sd_log_le_revoke);
--	gfs2_log_unlock(sdp);
- }
- 
- static void revoke_lo_before_commit(struct gfs2_sbd *sdp)
-diff --git a/fs/gfs2/meta_io.c b/fs/gfs2/meta_io.c
-index d762e4f..19097bc 100644
---- a/fs/gfs2/meta_io.c
-+++ b/fs/gfs2/meta_io.c
-@@ -313,42 +313,31 @@ void gfs2_meta_wipe(struct gfs2_inode *ip, u64 bstart, u32 blen)
- 	while (blen) {
- 		bh = getbuf(ip->i_gl, bstart, NO_CREATE);
- 		if (bh) {
--			struct gfs2_bufdata *bd = bh->b_private;
-+			struct gfs2_bufdata *bd;
- 
-+			lock_buffer(bh);
-+			gfs2_log_lock(sdp);
-+			bd = bh->b_private;
- 			if (test_clear_buffer_pinned(bh)) {
- 				struct gfs2_trans *tr = current->journal_info;
--				struct gfs2_inode *bh_ip =
--					GFS2_I(bh->b_page->mapping->host);
+-	gfs2_holder_init(gl, state, flags, fl_gh);
+-	gfs2_glock_put(gl);
 -
--				gfs2_log_lock(sdp);
- 				list_del_init(&bd->bd_le.le_list);
- 				gfs2_assert_warn(sdp, sdp->sd_log_num_buf);
- 				sdp->sd_log_num_buf--;
--				gfs2_log_unlock(sdp);
--				if (bh_ip->i_inode.i_private != NULL)
--					tr->tr_num_databuf_rm++;
--				else
--					tr->tr_num_buf_rm++;
-+				tr->tr_num_buf_rm++;
- 				brelse(bh);
- 			}
- 			if (bd) {
--				gfs2_log_lock(sdp);
- 				if (bd->bd_ail) {
--					u64 blkno = bh->b_blocknr;
--					bd->bd_ail = NULL;
--					list_del(&bd->bd_ail_st_list);
--					list_del(&bd->bd_ail_gl_list);
--					atomic_dec(&bd->bd_gl->gl_ail_count);
--					brelse(bh);
--					gfs2_log_unlock(sdp);
--					gfs2_trans_add_revoke(sdp, blkno);
--				} else
--					gfs2_log_unlock(sdp);
-+					gfs2_remove_from_ail(NULL, bd);
-+					bh->b_private = NULL;
-+					bd->bd_bh = NULL;
-+					bd->bd_blkno = bh->b_blocknr;
-+					gfs2_trans_add_revoke(sdp, bd);
-+				}
- 			}
--
--			lock_buffer(bh);
- 			clear_buffer_dirty(bh);
- 			clear_buffer_uptodate(bh);
-+			gfs2_log_unlock(sdp);
- 			unlock_buffer(bh);
- 
- 			brelse(bh);
-diff --git a/fs/gfs2/trans.c b/fs/gfs2/trans.c
-index 01cc27f..717983e 100644
---- a/fs/gfs2/trans.c
-+++ b/fs/gfs2/trans.c
-@@ -142,12 +142,12 @@ void gfs2_trans_add_bh(struct gfs2_glock *gl, struct buffer_head *bh, int meta)
- 	lops_add(sdp, &bd->bd_le);
- }
- 
--void gfs2_trans_add_revoke(struct gfs2_sbd *sdp, u64 blkno)
-+void gfs2_trans_add_revoke(struct gfs2_sbd *sdp, struct gfs2_bufdata *bd)
- {
--	struct gfs2_bufdata *bd = kmem_cache_alloc(gfs2_bufdata_cachep,
--					  GFP_NOFS | __GFP_NOFAIL);
-+	BUG_ON(!list_empty(&bd->bd_le.le_list));
-+	BUG_ON(!list_empty(&bd->bd_ail_st_list));
-+	BUG_ON(!list_empty(&bd->bd_ail_gl_list));
- 	lops_init_le(&bd->bd_le, &gfs2_revoke_lops);
--	bd->bd_blkno = blkno;
- 	lops_add(sdp, &bd->bd_le);
- }
- 
-@@ -160,7 +160,7 @@ void gfs2_trans_add_unrevoke(struct gfs2_sbd *sdp, u64 blkno)
- 
- 	list_for_each_entry(bd, &sdp->sd_log_le_revoke, bd_le.le_list) {
- 		if (bd->bd_blkno == blkno) {
--			list_del(&bd->bd_le.le_list);
-+			list_del_init(&bd->bd_le.le_list);
- 			gfs2_assert_withdraw(sdp, sdp->sd_log_num_revoke);
- 			sdp->sd_log_num_revoke--;
- 			found = 1;
-diff --git a/fs/gfs2/trans.h b/fs/gfs2/trans.h
-index 23d4cbe..043d5f4 100644
---- a/fs/gfs2/trans.h
-+++ b/fs/gfs2/trans.h
-@@ -32,7 +32,7 @@ void gfs2_trans_end(struct gfs2_sbd *sdp);
- 
- void gfs2_trans_add_gl(struct gfs2_glock *gl);
- void gfs2_trans_add_bh(struct gfs2_glock *gl, struct buffer_head *bh, int meta);
--void gfs2_trans_add_revoke(struct gfs2_sbd *sdp, u64 blkno);
-+void gfs2_trans_add_revoke(struct gfs2_sbd *sdp, struct gfs2_bufdata *bd);
- void gfs2_trans_add_unrevoke(struct gfs2_sbd *sdp, u64 blkno);
- void gfs2_trans_add_rg(struct gfs2_rgrpd *rgd);
- 
+ 	error = gfs2_glock_nq(fl_gh);
+ 	if (error) {
+ 		gfs2_holder_uninit(fl_gh);
 -- 
 1.5.1.2
 
