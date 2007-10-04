@@ -1,631 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbXJDFwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbXJDFxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759016AbXJDFwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXJDFvU
+	id S1759203AbXJDFxJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbXJDFvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:20 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44796 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:21 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44803 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbXJDFvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752829AbXJDFvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:09 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH] jbd/jbd2: JBD memory allocation cleanups
-Date: Thu,  4 Oct 2007 01:50:36 -0400
-Message-Id: <1191477059-5357-2-git-send-email-tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] jbd2: fix commit code to properly abort journal
+Date: Thu,  4 Oct 2007 01:50:40 -0400
+Message-Id: <1191477059-5357-6-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-1-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-5-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
+ <1191477059-5357-2-git-send-email-tytso@mit.edu>
+ <1191477059-5357-3-git-send-email-tytso@mit.edu>
+ <1191477059-5357-4-git-send-email-tytso@mit.edu>
+ <1191477059-5357-5-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mingming Cao <cmm@us.ibm.com>
+From: Jan Kara <jack@suse.cz>
 
-JBD: Replace slab allocations with page cache allocations
+We should really call journal_abort() and not __journal_abort_hard() in
+case of errors.  The latter call does not record the error in the journal
+superblock and thus filesystem won't be marked as with errors later (and
+user could happily mount it without any warning).
 
-JBD allocate memory for committed_data and frozen_data from slab. However
-JBD should not pass slab pages down to the block layer. Use page allocator pages instead. This will also prepare JBD for the large blocksize patchset.
-
-
-Also this patch cleans up jbd_kmalloc and replace it with kmalloc directly
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/jbd/commit.c       |    6 +-
- fs/jbd/journal.c      |   99 ++----------------------------------------------
- fs/jbd/transaction.c  |   12 +++---
- fs/jbd2/commit.c      |    6 +-
- fs/jbd2/journal.c     |   99 ++----------------------------------------------
- fs/jbd2/transaction.c |   18 ++++----
- include/linux/jbd.h   |   18 +++++----
- include/linux/jbd2.h  |   19 +++++----
- 8 files changed, 51 insertions(+), 226 deletions(-)
+ fs/jbd2/commit.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index a003d50..a263d82 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -375,7 +375,7 @@ void journal_commit_transaction(journal_t *journal)
- 			struct buffer_head *bh = jh2bh(jh);
- 
- 			jbd_lock_bh_state(bh);
--			jbd_slab_free(jh->b_committed_data, bh->b_size);
-+			jbd_free(jh->b_committed_data, bh->b_size);
- 			jh->b_committed_data = NULL;
- 			jbd_unlock_bh_state(bh);
- 		}
-@@ -792,14 +792,14 @@ restart_loop:
- 		 * Otherwise, we can just throw away the frozen data now.
- 		 */
- 		if (jh->b_committed_data) {
--			jbd_slab_free(jh->b_committed_data, bh->b_size);
-+			jbd_free(jh->b_committed_data, bh->b_size);
- 			jh->b_committed_data = NULL;
- 			if (jh->b_frozen_data) {
- 				jh->b_committed_data = jh->b_frozen_data;
- 				jh->b_frozen_data = NULL;
- 			}
- 		} else if (jh->b_frozen_data) {
--			jbd_slab_free(jh->b_frozen_data, bh->b_size);
-+			jbd_free(jh->b_frozen_data, bh->b_size);
- 			jh->b_frozen_data = NULL;
- 		}
- 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index 06ab3c1..ae2c25d 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -83,7 +83,6 @@ EXPORT_SYMBOL(journal_force_commit);
- 
- static int journal_convert_superblock_v1(journal_t *, journal_superblock_t *);
- static void __journal_abort_soft (journal_t *journal, int errno);
--static int journal_create_jbd_slab(size_t slab_size);
- 
- /*
-  * Helper function used to manage commit timeouts
-@@ -334,10 +333,10 @@ repeat:
- 		char *tmp;
- 
- 		jbd_unlock_bh_state(bh_in);
--		tmp = jbd_slab_alloc(bh_in->b_size, GFP_NOFS);
-+		tmp = jbd_alloc(bh_in->b_size, GFP_NOFS);
- 		jbd_lock_bh_state(bh_in);
- 		if (jh_in->b_frozen_data) {
--			jbd_slab_free(tmp, bh_in->b_size);
-+			jbd_free(tmp, bh_in->b_size);
- 			goto repeat;
- 		}
- 
-@@ -654,7 +653,7 @@ static journal_t * journal_init_common (void)
- 	journal_t *journal;
- 	int err;
- 
--	journal = jbd_kmalloc(sizeof(*journal), GFP_KERNEL);
-+	journal = kmalloc(sizeof(*journal), GFP_KERNEL|__GFP_NOFAIL);
- 	if (!journal)
- 		goto fail;
- 	memset(journal, 0, sizeof(*journal));
-@@ -1095,13 +1094,6 @@ int journal_load(journal_t *journal)
- 		}
- 	}
- 
--	/*
--	 * Create a slab for this blocksize
--	 */
--	err = journal_create_jbd_slab(be32_to_cpu(sb->s_blocksize));
--	if (err)
--		return err;
--
- 	/* Let the recovery code check whether it needs to recover any
- 	 * data from the journal. */
- 	if (journal_recover(journal))
-@@ -1615,86 +1607,6 @@ int journal_blocks_per_page(struct inode *inode)
- }
- 
- /*
-- * Simple support for retrying memory allocations.  Introduced to help to
-- * debug different VM deadlock avoidance strategies.
-- */
--void * __jbd_kmalloc (const char *where, size_t size, gfp_t flags, int retry)
--{
--	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
--}
--
--/*
-- * jbd slab management: create 1k, 2k, 4k, 8k slabs as needed
-- * and allocate frozen and commit buffers from these slabs.
-- *
-- * Reason for doing this is to avoid, SLAB_DEBUG - since it could
-- * cause bh to cross page boundary.
-- */
--
--#define JBD_MAX_SLABS 5
--#define JBD_SLAB_INDEX(size)  (size >> 11)
--
--static struct kmem_cache *jbd_slab[JBD_MAX_SLABS];
--static const char *jbd_slab_names[JBD_MAX_SLABS] = {
--	"jbd_1k", "jbd_2k", "jbd_4k", NULL, "jbd_8k"
--};
--
--static void journal_destroy_jbd_slabs(void)
--{
--	int i;
--
--	for (i = 0; i < JBD_MAX_SLABS; i++) {
--		if (jbd_slab[i])
--			kmem_cache_destroy(jbd_slab[i]);
--		jbd_slab[i] = NULL;
--	}
--}
--
--static int journal_create_jbd_slab(size_t slab_size)
--{
--	int i = JBD_SLAB_INDEX(slab_size);
--
--	BUG_ON(i >= JBD_MAX_SLABS);
--
--	/*
--	 * Check if we already have a slab created for this size
--	 */
--	if (jbd_slab[i])
--		return 0;
--
--	/*
--	 * Create a slab and force alignment to be same as slabsize -
--	 * this will make sure that allocations won't cross the page
--	 * boundary.
--	 */
--	jbd_slab[i] = kmem_cache_create(jbd_slab_names[i],
--				slab_size, slab_size, 0, NULL);
--	if (!jbd_slab[i]) {
--		printk(KERN_EMERG "JBD: no memory for jbd_slab cache\n");
--		return -ENOMEM;
--	}
--	return 0;
--}
--
--void * jbd_slab_alloc(size_t size, gfp_t flags)
--{
--	int idx;
--
--	idx = JBD_SLAB_INDEX(size);
--	BUG_ON(jbd_slab[idx] == NULL);
--	return kmem_cache_alloc(jbd_slab[idx], flags | __GFP_NOFAIL);
--}
--
--void jbd_slab_free(void *ptr,  size_t size)
--{
--	int idx;
--
--	idx = JBD_SLAB_INDEX(size);
--	BUG_ON(jbd_slab[idx] == NULL);
--	kmem_cache_free(jbd_slab[idx], ptr);
--}
--
--/*
-  * Journal_head storage management
-  */
- static struct kmem_cache *journal_head_cache;
-@@ -1881,13 +1793,13 @@ static void __journal_remove_journal_head(struct buffer_head *bh)
- 				printk(KERN_WARNING "%s: freeing "
- 						"b_frozen_data\n",
- 						__FUNCTION__);
--				jbd_slab_free(jh->b_frozen_data, bh->b_size);
-+				jbd_free(jh->b_frozen_data, bh->b_size);
- 			}
- 			if (jh->b_committed_data) {
- 				printk(KERN_WARNING "%s: freeing "
- 						"b_committed_data\n",
- 						__FUNCTION__);
--				jbd_slab_free(jh->b_committed_data, bh->b_size);
-+				jbd_free(jh->b_committed_data, bh->b_size);
- 			}
- 			bh->b_private = NULL;
- 			jh->b_bh = NULL;	/* debug, really */
-@@ -2042,7 +1954,6 @@ static void journal_destroy_caches(void)
- 	journal_destroy_revoke_caches();
- 	journal_destroy_journal_head_cache();
- 	journal_destroy_handle_cache();
--	journal_destroy_jbd_slabs();
- }
- 
- static int __init journal_init(void)
-diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
-index 772b653..11d846c 100644
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -96,8 +96,8 @@ static int start_this_handle(journal_t *journal, handle_t *handle)
- 
- alloc_transaction:
- 	if (!journal->j_running_transaction) {
--		new_transaction = jbd_kmalloc(sizeof(*new_transaction),
--						GFP_NOFS);
-+		new_transaction = kmalloc(sizeof(*new_transaction),
-+						GFP_NOFS|__GFP_NOFAIL);
- 		if (!new_transaction) {
- 			ret = -ENOMEM;
- 			goto out;
-@@ -668,7 +668,7 @@ repeat:
- 				JBUFFER_TRACE(jh, "allocate memory for buffer");
- 				jbd_unlock_bh_state(bh);
- 				frozen_buffer =
--					jbd_slab_alloc(jh2bh(jh)->b_size,
-+					jbd_alloc(jh2bh(jh)->b_size,
- 							 GFP_NOFS);
- 				if (!frozen_buffer) {
- 					printk(KERN_EMERG
-@@ -728,7 +728,7 @@ done:
- 
- out:
- 	if (unlikely(frozen_buffer))	/* It's usually NULL */
--		jbd_slab_free(frozen_buffer, bh->b_size);
-+		jbd_free(frozen_buffer, bh->b_size);
- 
- 	JBUFFER_TRACE(jh, "exit");
- 	return error;
-@@ -881,7 +881,7 @@ int journal_get_undo_access(handle_t *handle, struct buffer_head *bh)
- 
- repeat:
- 	if (!jh->b_committed_data) {
--		committed_data = jbd_slab_alloc(jh2bh(jh)->b_size, GFP_NOFS);
-+		committed_data = jbd_alloc(jh2bh(jh)->b_size, GFP_NOFS);
- 		if (!committed_data) {
- 			printk(KERN_EMERG "%s: No memory for committed data\n",
- 				__FUNCTION__);
-@@ -908,7 +908,7 @@ repeat:
- out:
- 	journal_put_journal_head(jh);
- 	if (unlikely(committed_data))
--		jbd_slab_free(committed_data, bh->b_size);
-+		jbd_free(committed_data, bh->b_size);
- 	return err;
- }
- 
 diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index c0f59d1..2cac34a 100644
+index b898ee4..6986f33 100644
 --- a/fs/jbd2/commit.c
 +++ b/fs/jbd2/commit.c
-@@ -384,7 +384,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
- 			struct buffer_head *bh = jh2bh(jh);
+@@ -475,7 +475,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 	spin_unlock(&journal->j_list_lock);
  
- 			jbd_lock_bh_state(bh);
--			jbd2_slab_free(jh->b_committed_data, bh->b_size);
-+			jbd2_free(jh->b_committed_data, bh->b_size);
- 			jh->b_committed_data = NULL;
- 			jbd_unlock_bh_state(bh);
- 		}
-@@ -801,14 +801,14 @@ restart_loop:
- 		 * Otherwise, we can just throw away the frozen data now.
- 		 */
- 		if (jh->b_committed_data) {
--			jbd2_slab_free(jh->b_committed_data, bh->b_size);
-+			jbd2_free(jh->b_committed_data, bh->b_size);
- 			jh->b_committed_data = NULL;
- 			if (jh->b_frozen_data) {
- 				jh->b_committed_data = jh->b_frozen_data;
- 				jh->b_frozen_data = NULL;
+ 	if (err)
+-		__jbd2_journal_abort_hard(journal);
++		jbd2_journal_abort(journal, err);
+ 
+ 	jbd2_journal_write_revoke_records(journal, commit_transaction);
+ 
+@@ -533,7 +533,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 
+ 			descriptor = jbd2_journal_get_descriptor_buffer(journal);
+ 			if (!descriptor) {
+-				__jbd2_journal_abort_hard(journal);
++				jbd2_journal_abort(journal, -EIO);
+ 				continue;
  			}
- 		} else if (jh->b_frozen_data) {
--			jbd2_slab_free(jh->b_frozen_data, bh->b_size);
-+			jbd2_free(jh->b_frozen_data, bh->b_size);
- 			jh->b_frozen_data = NULL;
+ 
+@@ -566,7 +566,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 		   and repeat this loop: we'll fall into the
+ 		   refile-on-abort condition above. */
+ 		if (err) {
+-			__jbd2_journal_abort_hard(journal);
++			jbd2_journal_abort(journal, err);
+ 			continue;
  		}
  
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index f37324a..4281244 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -84,7 +84,6 @@ EXPORT_SYMBOL(jbd2_journal_force_commit);
+@@ -757,7 +757,7 @@ wait_for_iobuf:
+ 		err = -EIO;
  
- static int journal_convert_superblock_v1(journal_t *, journal_superblock_t *);
- static void __journal_abort_soft (journal_t *journal, int errno);
--static int jbd2_journal_create_jbd_slab(size_t slab_size);
+ 	if (err)
+-		__jbd2_journal_abort_hard(journal);
++		jbd2_journal_abort(journal, err);
  
- /*
-  * Helper function used to manage commit timeouts
-@@ -335,10 +334,10 @@ repeat:
- 		char *tmp;
- 
- 		jbd_unlock_bh_state(bh_in);
--		tmp = jbd2_slab_alloc(bh_in->b_size, GFP_NOFS);
-+		tmp = jbd2_alloc(bh_in->b_size, GFP_NOFS);
- 		jbd_lock_bh_state(bh_in);
- 		if (jh_in->b_frozen_data) {
--			jbd2_slab_free(tmp, bh_in->b_size);
-+			jbd2_free(tmp, bh_in->b_size);
- 			goto repeat;
- 		}
- 
-@@ -655,7 +654,7 @@ static journal_t * journal_init_common (void)
- 	journal_t *journal;
- 	int err;
- 
--	journal = jbd_kmalloc(sizeof(*journal), GFP_KERNEL);
-+	journal = kmalloc(sizeof(*journal), GFP_KERNEL|__GFP_NOFAIL);
- 	if (!journal)
- 		goto fail;
- 	memset(journal, 0, sizeof(*journal));
-@@ -1096,13 +1095,6 @@ int jbd2_journal_load(journal_t *journal)
- 		}
- 	}
- 
--	/*
--	 * Create a slab for this blocksize
--	 */
--	err = jbd2_journal_create_jbd_slab(be32_to_cpu(sb->s_blocksize));
--	if (err)
--		return err;
--
- 	/* Let the recovery code check whether it needs to recover any
- 	 * data from the journal. */
- 	if (jbd2_journal_recover(journal))
-@@ -1627,86 +1619,6 @@ size_t journal_tag_bytes(journal_t *journal)
- }
- 
- /*
-- * Simple support for retrying memory allocations.  Introduced to help to
-- * debug different VM deadlock avoidance strategies.
-- */
--void * __jbd2_kmalloc (const char *where, size_t size, gfp_t flags, int retry)
--{
--	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
--}
--
--/*
-- * jbd slab management: create 1k, 2k, 4k, 8k slabs as needed
-- * and allocate frozen and commit buffers from these slabs.
-- *
-- * Reason for doing this is to avoid, SLAB_DEBUG - since it could
-- * cause bh to cross page boundary.
-- */
--
--#define JBD_MAX_SLABS 5
--#define JBD_SLAB_INDEX(size)  (size >> 11)
--
--static struct kmem_cache *jbd_slab[JBD_MAX_SLABS];
--static const char *jbd_slab_names[JBD_MAX_SLABS] = {
--	"jbd2_1k", "jbd2_2k", "jbd2_4k", NULL, "jbd2_8k"
--};
--
--static void jbd2_journal_destroy_jbd_slabs(void)
--{
--	int i;
--
--	for (i = 0; i < JBD_MAX_SLABS; i++) {
--		if (jbd_slab[i])
--			kmem_cache_destroy(jbd_slab[i]);
--		jbd_slab[i] = NULL;
--	}
--}
--
--static int jbd2_journal_create_jbd_slab(size_t slab_size)
--{
--	int i = JBD_SLAB_INDEX(slab_size);
--
--	BUG_ON(i >= JBD_MAX_SLABS);
--
--	/*
--	 * Check if we already have a slab created for this size
--	 */
--	if (jbd_slab[i])
--		return 0;
--
--	/*
--	 * Create a slab and force alignment to be same as slabsize -
--	 * this will make sure that allocations won't cross the page
--	 * boundary.
--	 */
--	jbd_slab[i] = kmem_cache_create(jbd_slab_names[i],
--				slab_size, slab_size, 0, NULL);
--	if (!jbd_slab[i]) {
--		printk(KERN_EMERG "JBD: no memory for jbd_slab cache\n");
--		return -ENOMEM;
--	}
--	return 0;
--}
--
--void * jbd2_slab_alloc(size_t size, gfp_t flags)
--{
--	int idx;
--
--	idx = JBD_SLAB_INDEX(size);
--	BUG_ON(jbd_slab[idx] == NULL);
--	return kmem_cache_alloc(jbd_slab[idx], flags | __GFP_NOFAIL);
--}
--
--void jbd2_slab_free(void *ptr,  size_t size)
--{
--	int idx;
--
--	idx = JBD_SLAB_INDEX(size);
--	BUG_ON(jbd_slab[idx] == NULL);
--	kmem_cache_free(jbd_slab[idx], ptr);
--}
--
--/*
-  * Journal_head storage management
-  */
- static struct kmem_cache *jbd2_journal_head_cache;
-@@ -1893,13 +1805,13 @@ static void __journal_remove_journal_head(struct buffer_head *bh)
- 				printk(KERN_WARNING "%s: freeing "
- 						"b_frozen_data\n",
- 						__FUNCTION__);
--				jbd2_slab_free(jh->b_frozen_data, bh->b_size);
-+				jbd2_free(jh->b_frozen_data, bh->b_size);
- 			}
- 			if (jh->b_committed_data) {
- 				printk(KERN_WARNING "%s: freeing "
- 						"b_committed_data\n",
- 						__FUNCTION__);
--				jbd2_slab_free(jh->b_committed_data, bh->b_size);
-+				jbd2_free(jh->b_committed_data, bh->b_size);
- 			}
- 			bh->b_private = NULL;
- 			jh->b_bh = NULL;	/* debug, really */
-@@ -2040,7 +1952,6 @@ static void jbd2_journal_destroy_caches(void)
- 	jbd2_journal_destroy_revoke_caches();
- 	jbd2_journal_destroy_jbd2_journal_head_cache();
- 	jbd2_journal_destroy_handle_cache();
--	jbd2_journal_destroy_jbd_slabs();
- }
- 
- static int __init journal_init(void)
-diff --git a/fs/jbd2/transaction.c b/fs/jbd2/transaction.c
-index 7946ff4..a5fb70f 100644
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -96,8 +96,8 @@ static int start_this_handle(journal_t *journal, handle_t *handle)
- 
- alloc_transaction:
- 	if (!journal->j_running_transaction) {
--		new_transaction = jbd_kmalloc(sizeof(*new_transaction),
--						GFP_NOFS);
-+		new_transaction = kmalloc(sizeof(*new_transaction),
-+						GFP_NOFS|__GFP_NOFAIL);
- 		if (!new_transaction) {
- 			ret = -ENOMEM;
- 			goto out;
-@@ -236,7 +236,7 @@ out:
- /* Allocate a new handle.  This should probably be in a slab... */
- static handle_t *new_handle(int nblocks)
- {
--	handle_t *handle = jbd_alloc_handle(GFP_NOFS);
-+	handle_t *handle = jbd2_alloc_handle(GFP_NOFS);
- 	if (!handle)
- 		return NULL;
- 	memset(handle, 0, sizeof(*handle));
-@@ -282,7 +282,7 @@ handle_t *jbd2_journal_start(journal_t *journal, int nblocks)
- 
- 	err = start_this_handle(journal, handle);
- 	if (err < 0) {
--		jbd_free_handle(handle);
-+		jbd2_free_handle(handle);
- 		current->journal_info = NULL;
- 		handle = ERR_PTR(err);
- 	}
-@@ -668,7 +668,7 @@ repeat:
- 				JBUFFER_TRACE(jh, "allocate memory for buffer");
- 				jbd_unlock_bh_state(bh);
- 				frozen_buffer =
--					jbd2_slab_alloc(jh2bh(jh)->b_size,
-+					jbd2_alloc(jh2bh(jh)->b_size,
- 							 GFP_NOFS);
- 				if (!frozen_buffer) {
- 					printk(KERN_EMERG
-@@ -728,7 +728,7 @@ done:
- 
- out:
- 	if (unlikely(frozen_buffer))	/* It's usually NULL */
--		jbd2_slab_free(frozen_buffer, bh->b_size);
-+		jbd2_free(frozen_buffer, bh->b_size);
- 
- 	JBUFFER_TRACE(jh, "exit");
- 	return error;
-@@ -881,7 +881,7 @@ int jbd2_journal_get_undo_access(handle_t *handle, struct buffer_head *bh)
- 
- repeat:
- 	if (!jh->b_committed_data) {
--		committed_data = jbd2_slab_alloc(jh2bh(jh)->b_size, GFP_NOFS);
-+		committed_data = jbd2_alloc(jh2bh(jh)->b_size, GFP_NOFS);
- 		if (!committed_data) {
- 			printk(KERN_EMERG "%s: No memory for committed data\n",
- 				__FUNCTION__);
-@@ -908,7 +908,7 @@ repeat:
- out:
- 	jbd2_journal_put_journal_head(jh);
- 	if (unlikely(committed_data))
--		jbd2_slab_free(committed_data, bh->b_size);
-+		jbd2_free(committed_data, bh->b_size);
- 	return err;
- }
- 
-@@ -1411,7 +1411,7 @@ int jbd2_journal_stop(handle_t *handle)
- 		spin_unlock(&journal->j_state_lock);
- 	}
- 
--	jbd_free_handle(handle);
-+	jbd2_free_handle(handle);
- 	return err;
- }
- 
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 4527375..26216c1 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -71,14 +71,16 @@ extern int journal_enable_debug;
- #define jbd_debug(f, a...)	/**/
- #endif
- 
--extern void * __jbd_kmalloc (const char *where, size_t size, gfp_t flags, int retry);
--extern void * jbd_slab_alloc(size_t size, gfp_t flags);
--extern void jbd_slab_free(void *ptr, size_t size);
--
--#define jbd_kmalloc(size, flags) \
--	__jbd_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
--#define jbd_rep_kmalloc(size, flags) \
--	__jbd_kmalloc(__FUNCTION__, (size), (flags), 1)
-+
-+static inline void *jbd_alloc(size_t size, gfp_t flags)
-+{
-+	return (void *)__get_free_pages(flags, get_order(size));
-+}
-+
-+static inline void jbd_free(void *ptr, size_t size)
-+{
-+	free_pages((unsigned long)ptr, get_order(size));
-+};
- 
- #define JFS_MIN_JOURNAL_BLOCKS 1024
- 
-diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
-index 260d6d7..5f8b876 100644
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -71,14 +71,15 @@ extern u8 jbd2_journal_enable_debug;
- #define jbd_debug(f, a...)	/**/
- #endif
- 
--extern void * __jbd2_kmalloc (const char *where, size_t size, gfp_t flags, int retry);
--extern void * jbd2_slab_alloc(size_t size, gfp_t flags);
--extern void jbd2_slab_free(void *ptr, size_t size);
-+static inline void *jbd2_alloc(size_t size, gfp_t flags)
-+{
-+	return (void *)__get_free_pages(flags, get_order(size));
-+}
- 
--#define jbd_kmalloc(size, flags) \
--	__jbd2_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
--#define jbd_rep_kmalloc(size, flags) \
--	__jbd2_kmalloc(__FUNCTION__, (size), (flags), 1)
-+static inline void jbd2_free(void *ptr, size_t size)
-+{
-+	free_pages((unsigned long)ptr, get_order(size));
-+};
- 
- #define JBD2_MIN_JOURNAL_BLOCKS 1024
- 
-@@ -959,12 +960,12 @@ void jbd2_journal_put_journal_head(struct journal_head *jh);
-  */
- extern struct kmem_cache *jbd2_handle_cache;
- 
--static inline handle_t *jbd_alloc_handle(gfp_t gfp_flags)
-+static inline handle_t *jbd2_alloc_handle(gfp_t gfp_flags)
- {
- 	return kmem_cache_alloc(jbd2_handle_cache, gfp_flags);
- }
- 
--static inline void jbd_free_handle(handle_t *handle)
-+static inline void jbd2_free_handle(handle_t *handle)
- {
- 	kmem_cache_free(jbd2_handle_cache, handle);
- }
+ 	/* End of a transaction!  Finally, we can do checkpoint
+            processing: any buffers committed as a result of this
 -- 
 1.5.3.2.81.g17ed
 
