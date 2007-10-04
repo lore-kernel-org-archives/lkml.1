@@ -1,99 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbXJDLnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761745AbXJDLnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762207AbXJDLnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 07:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761124AbXJDLk5
+	id S1761745AbXJDLnK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 07:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbXJDLkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 07:40:57 -0400
-Received: from adsl45-199.ath.forthnet.gr ([77.49.76.199]:42797 "EHLO
-	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761875AbXJDLk4 (ORCPT
+	Thu, 4 Oct 2007 07:40:32 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34793 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761424AbXJDLka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 07:40:56 -0400
-X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 07:40:55 EDT
-Message-ID: <4704CFEA.6000307@vergina.dyndns.org>
-Date: Thu, 04 Oct 2007 14:35:06 +0300
-From: Aggelos Manousidis <agg@vergina.dyndns.org>
-Reply-To: agg@vergina.dyndns.org
-User-Agent: Thunderbird 2.0.0.6 (X11/20070806)
+	Thu, 4 Oct 2007 07:40:30 -0400
+Message-ID: <4704D09D.6080503@ah.jp.nec.com>
+Date: Thu, 04 Oct 2007 20:38:05 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Subject: How to reset a sata pcmcia controller port to UDMA/100 ?
-Content-Type: text/plain; charset=ISO-8859-7
+CC: vgoyal@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
+       Bernhard Walle <bwalle@suse.de>, Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
+Subject: [PATCH 0/2] add new notifier function
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a esata (external) disk drive, which I keep permanently connected
-to a sata pcmcia port (using a esata-sata cable). The pcmcia
-controller's chipset as reported by lspci is:
+Hi,
 
-02:00.0 Mass storage controller: Silicon Image, Inc. SiI 3112
-[SATALink/SATARaid] Serial ATA Controller (rev 02)
+These patches add new notifier function and implement it to panic_notifier_list.
+We used the hardcoded notifier chain so far, but it was not flexible. New
+notifier is very flexible, because user can change a list of order by debugfs.
 
-and I have built a custom kernel:
+Please review, and give some comments.
 
-laptop ~ # grep -i sil /usr/src/linux/.config
-CONFIG_SATA_SIL=y
-# CONFIG_SATA_SIL24 is not set
-CONFIG_PATA_SIL680=m
-# CONFIG_FB_ASILIANT is not set
-laptop ~ #
+Thanks,
 
-Modules loaded are:
-laptop ~ # lsmod
-Module                  Size  Used by
-af_packet              11272  2
-snd_pcm_oss            33952  0
-snd_mixer_oss          12640  1 snd_pcm_oss
-snd_seq_oss            24768  0
-snd_seq_midi_event      5184  1 snd_seq_oss
-snd_seq                37424  4 snd_seq_oss,snd_seq_midi_event
-snd_seq_device          5804  2 snd_seq_oss,snd_seq
-tun                     7296  0
-backlight               4032  0
-lcd                     3680  0
-nfsd                   75240  13
-exportfs                3840  1 nfsd
-lockd                  52904  2 nfsd
-sunrpc                131100  8 nfsd,lockd
-usbhid                 14196  0
-snd_maestro3           18852  1
-snd_ac97_codec         88420  1 snd_maestro3
-ac97_bus                1792  1 snd_ac97_codec
-snd_pcm                57288  3 snd_pcm_oss,snd_maestro3,snd_ac97_codec
-snd_timer              15332  2 snd_seq,snd_pcm
-snd_page_alloc          7080  1 snd_pcm
-parport_pc             20036  0
-parport                18304  1 parport_pc
-floppy                 46404  0
-i2c_piix4               6860  0
-i2c_core               17808  1 i2c_piix4
-uhci_hcd               18412  0
-usbcore                98872  3 usbhid,uhci_hcd
-rtc                     8504  0
-intel_agp              19764  1
-agpgart                24112  1 intel_agp
-unix                   18416  813
-laptop ~ #
+Example)
 
-The problem:
-The plug on the pcmcia card seems very sensitive, cause if I try to
-touch / slightly move the plug, dmesg gives:
+# cd /sys/kernel/debug/
+# ls
+kprobes  pktcdvd
+# insmod ipmi_msghandler.ko
+# ls
+kprobes  panic_notifier_list  pktcdvd
+# cd panic_notifier_list/
+# ls
+ipmi_msghandler
+# insmod ipmi_watchdog.ko
+# ls
+ipmi_msghandler  ipmi_wdog
+# cat ipmi_msghandler/priority
+200
+# cat ipmi_wdog/priority
+150
+#
+Kernel panic - not syncing: panic
+ipmi_msghandler : notifier calls panic_event().
+ipmi_watchdog : notifier calls wdog_panic_handler().
 
-ata4: exception Emask 0x10 SAct 0x0 SErr 0x90000 action 0x2 frozen
-ata4: hard resetting port
-ata4: port is slow to respond, please be patient (Status 0xff)
-ata4: COMRESET failed (errno=-16)
-ata4: hard resetting port
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata4.00: configured for UDMA/66
-ata4: EH pending after completion, repeating EH (cnt=4)
-ata4: EH complete
-sd 3:0:0:0: [sdb] 586072368 512-byte hardware sectors (300069 MB)
-sd 3:0:0:0: [sdb] Write Protect is off
-sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
+.....(reboot)
 
-Question: Is there a command to reset the port to UDMA/100 ?
+# cat ipmi_msghandler/priority
+200
+# cat ipmi_wdog/priority
+150
+# echo 300 > ipmi_wdog/priority
+#
+Kernel panic - not syncing: panic
+ipmi_watchdog : notifier calls wdog_panic_handler().
+ipmi_msghandler : notifier calls panic_event().
+
+-- 
+Takenori Nagano <t-nagano@ah.jp.nec.com>
+
+
