@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbXJDIDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbXJDIFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbXJDIDZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 04:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXJDIDH
+	id S1758808AbXJDIFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 04:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXJDIE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 04:03:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53303 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Oct 2007 04:04:59 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:18392 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXJDIDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 04:03:06 -0400
-Date: Thu, 4 Oct 2007 10:02:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Kravetz <kravetz@us.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: -rt scheduling: wakeup bug?
-Message-ID: <20071004080217.GE9176@elte.hu>
-References: <20071001221519.GA20671@monkey.ibm.com> <20071002050632.GB28345@elte.hu> <20071003173705.GB4817@monkey.ibm.com>
+	id S1751942AbXJDIE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 04:04:57 -0400
+Date: Thu, 4 Oct 2007 10:06:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Don Mullis <dwm@meer.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
+Message-ID: <20071004080631.GB23808@kernel.dk>
+References: <1191478262.21598.5.camel@dmullis-laptop> <20071003231659.f41df5ed.akpm@linux-foundation.org> <20071004072515.GC5236@kernel.dk> <20071004100154.6093844d@poseidon.drzeus.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071003173705.GB4817@monkey.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071004100154.6093844d@poseidon.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Kravetz <kravetz@us.ibm.com> wrote:
-
-> >  	if (rq->curr && p && rq && _need_resched())
-> >  		trace_special_pid(p->pid, PRIO(p), PRIO(rq->curr));
+On Thu, Oct 04 2007, Pierre Ossman wrote:
+> On Thu, 4 Oct 2007 09:25:15 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> Not an issue with the patch, just that last bit of code pulled in for 
-> context.  I don't think it is a bug, but the checking of 'rq' after 
-> checking 'rq->curr' just doesn't look right (or necessary).  Could it 
-> just be an artifact from earlier versions of the code?
+> > 
+> > It looks like missing init of the sg list in mmc, does this work?
+> > 
+> 
+> Huh? Isn't the block layer supposed to fill in the entire thing? (i.e.
+> current contents shouldn't matter)
 
-yeah, you are right - and rq shouldnt ever be NULL there anyway.
+Yeah, but sg chaining requires that ->page be filled in properly or it
+could confuse it. I think I'll add some debugging to catch that.
 
-	Ingo
+-- 
+Jens Axboe
+
