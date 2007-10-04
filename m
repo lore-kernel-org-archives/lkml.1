@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbXJDIxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbXJDI4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbXJDIxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 04:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbXJDIxG
+	id S1759065AbXJDI4P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 04:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbXJDI4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 04:53:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:50011 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753360AbXJDIxF (ORCPT
+	Thu, 4 Oct 2007 04:56:00 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:28987 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753939AbXJDIz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 04:53:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=qI7g5Ye6cCWiRDf0mVhxuWPIiH4kFL9SS1C693QrTYNAzL+gvuIvyderA8z6REHnHRv4k2reR28TUyHiTtDgNeVAPfvbzm48fKclYl5HLoeY78WyMC0a9XEZ21Ni0/lSEDe9WO2UPTEPbX2ulEu9XiMfmf59UEYira+ymr5a0fM=
-Message-ID: <b681c62b0710040153w5b4779fat1ccc7fa3e5775c2c@mail.gmail.com>
-Date: Thu, 4 Oct 2007 14:23:03 +0530
-From: "yogeshwar sonawane" <yogyas@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Accessing 64-bit BARs
+	Thu, 4 Oct 2007 04:55:59 -0400
+Date: Thu, 4 Oct 2007 10:54:51 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH -v2] Add sysfs control to modify a user's cpu share
+Message-ID: <20071004085451.GA8108@osiris.boeblingen.de.ibm.com>
+References: <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu> <20071003171029.GA5423@linux.vnet.ibm.com> <20071004075750.GD9176@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071004075750.GD9176@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+> > Changelog since v1:
+> > 1. Added a mutex to serialize directory creation/destruction for a user in
+> >    sysfs
+> > 2. Added a spinlock in the task_group structure to serialize writes to
+> >    tg->shares.
+> > 3. Removed /proc/root_user_cpu_shares.
+> > 4. Added Documentation about the group scheduler.
+> 
+> thanks - I have added this to the queue.
+> 
+> i'm wondering about the following: could not (yet) existing UIDs be made 
+> configurable too? I.e. if i do this in a bootup script:
+> 
+>   echo 2048 > /sys/kernel/uids/500/cpu_share
+> 
+> this should just work too, regardless of there not being any UID 500 
+> tasks yet. Likewise, once configured, the /sys/kernel/uids/* directories 
+> (with the settings in them) should probably not go away either.
 
-For accessing memory-mapped 64bit-BAR regions of a PCI card, the
-respective BAR regions has to be made accessible to the kernel using
-ioremap() function. Then readl()/writel() can be used on the address
-returned by ioremap().
-
-I am doing the similar steps to access the BARs of a card.
-I observed some change in the behaviour in two different kernels.
-
-Start physical addr of BAR is allocated by BIOS.
-In linux-2.6.9, whether BAR start phys addr is below OR above 4GB,
-i.e. whether 32-bit BAR phys addr(all higher bits 0) OR 64-bit phys
-addr(some higher bits non-zero), I am able to access the BAR region
-using ioremap() & then readl()/writel().
-
-For linux-2.6.22-8, if BAR start phys addr is below 4GB, things are
-working fine here also.
-
-But, for linux-2.6.22-8, when BAR start phys addr is above 4GB, I am
-not able to read/write on the BAR region. ioremap() is not failing.
-But read data is all 1's instead of actual data.
-
-Any ideas on where to look for?
-Is there any change in the way of accessing 64-bit BAR?
-OR
-i am missing any step ?
-
-For info - I am using 64-bit OS on x86_64 arch.
-
--Yogeshwar
+Shouldn't that be done via uevents? E.g. UID x gets added to the sysfs tree,
+generates a uevent and a script then figures out the cpu_share and sets it.
+That way you also don't need to keep the directories. No?
