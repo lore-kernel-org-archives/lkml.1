@@ -1,98 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbXJDV5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbXJDV7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762184AbXJDV5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 17:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758326AbXJDV5c
+	id S1762085AbXJDV7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 17:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758326AbXJDV7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 17:57:32 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40859 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758199AbXJDV5b (ORCPT
+	Thu, 4 Oct 2007 17:59:03 -0400
+Received: from mx1.lost-oasis.net ([212.85.153.8]:47092 "EHLO
+	mx1.lost-oasis.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756647AbXJDV7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 17:57:31 -0400
-Date: Thu, 4 Oct 2007 14:56:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-Message-Id: <20071004145640.18ced770.akpm@linux-foundation.org>
-In-Reply-To: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 17:59:01 -0400
+Date: Thu, 4 Oct 2007 23:58:57 +0200
+From: Mathieu Chouquet-Stringer <mchouque@free.fr>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ollie Wild <aaw@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [BUG] Linux 2.6.23-rc9 and MAX_ARG_PAGES
+Message-ID: <20071004215857.GA29513@bigip.bigip.mine.nu>
+Mail-Followup-To: Mathieu Chouquet-Stringer <mchouque@free.fr>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Ollie Wild <aaw@google.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Adrian Bunk <bunk@stusta.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <m3wsu2u7y6.fsf@bigip.mine.nu> <1191518270.5574.21.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191518270.5574.21.camel@lappy>
+X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK'.w
+	3:{EoxBR
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Oct 2007 14:25:22 +0200
-Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Thu, Oct 04, 2007 at 07:17:50PM +0200, Peter Zijlstra wrote:
+> what happens if you up the stack limit to say 128M ?
 > 
-> By relying on the global diry limits, this can cause a deadlock when
-> devices are stacked.
-> 
-> If the stacking is done through a fuse filesystem, the __GFP_FS,
-> __GFP_IO tests won't help: the process doing the allocation doesn't
-> have any special flag.
+> Also, do you happen to have execve syscall audit stuff enabled?
 
-This description of the bug-which-is-being-fixed is nowhere near adequate
-enough for a reviewer to understand the problem.  This makes it hard to
-suggest alternative fixes.
+Actually, you were right, not only it's enabled but it's also the
+culprit.  If I stop it, all is well...
 
-> So why exactly does this function exist?
+Sorry for the noise.
 
-That's described in the changelog for the patch which added
-throttle_vm_writeout().  Unsurprisingly ;)
-
-> Direct reclaim does not _increase_ the number of dirty pages in the
-> system, so rate limiting it seems somewhat pointless.
-> 
-> There are two cases:
-> 
-> 1) File backed pages -> file
-> 
->   dirty + writeback count remains constant
-> 
-> 2) Anonymous pages -> swap
-> 
->   writeback count increases, dirty balancing will hold back file
->   writeback in favor of swap
-> 
-> So the real question is: does case 2 need rate limiting, or is it OK
-> to let the device queue fill with swap pages as fast as possible?
-
-None of the above.
-
-    [PATCH] vm: pageout throttling
-    
-    With silly pageout testcases it is possible to place huge amounts of memory
-    under I/O.  With a large request queue (CFQ uses 8192 requests) it is
-    possible to place _all_ memory under I/O at the same time.
-    
-    This means that all memory is pinned and unreclaimable and the VM gets
-    upset and goes oom.
-    
-    The patch limits the amount of memory which is under pageout writeout to be
-    a little more than the amount of memory at which balance_dirty_pages()
-    callers will synchronously throttle.
-    
-    This means that heavy pageout activity can starve heavy writeback activity
-    completely, but heavy writeback activity will not cause starvation of
-    pageout.  Because we don't want a simple `dd' to be causing excessive
-    latencies in page reclaim.
-
-afaict that problem is still there.  It is possible to get all of
-ZONE_NORMAL dirty on a highmem machine.  With a large queue (or lots of
-queues), vmscan can them place all of ZONE_NORMAL under IO.
-
-It could be that we've fixed this problem via other means in the interrim,
-but from a quick peek to seems to me that the scanner will still do a 100%
-CPU burn when all of a zone's pages are under writeback.
-
-throttle_vm_writeout() should be a per-zone thing, I guess.  Perhaps fixing
-that would fix your deadlock.  That's doubtful, but I don't know anything
-about your deadlock so I cannot say.
-
+-- 
+Mathieu Chouquet-Stringer                           mchouque@free.fr
+            The sun itself sees not till heaven clears.
+	             -- William Shakespeare --
