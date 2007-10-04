@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbXJDNul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbXJDOBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbXJDNul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 09:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbXJDNud
+	id S1757579AbXJDOBe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 10:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXJDOB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 09:50:33 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52071 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754500AbXJDNud (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 09:50:33 -0400
-To: a.p.zijlstra@chello.nl
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, wfg@mail.ustc.edu.cn,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-reply-to: <1191504186.22357.20.camel@twins> (message from Peter Zijlstra on
-	Thu, 04 Oct 2007 15:23:06 +0200)
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-	 <1191501626.22357.14.camel@twins>
-	 <E1IdQJn-0002Cv-00@dorka.pomaz.szeredi.hu> <1191504186.22357.20.camel@twins>
-Message-Id: <E1IdR58-0002Fq-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Oct 2007 15:49:38 +0200
+	Thu, 4 Oct 2007 10:01:26 -0400
+Received: from pat.uio.no ([129.240.10.15]:57934 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755499AbXJDOBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 10:01:25 -0400
+Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
+	client git tree...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Pierre Ossman <drzeus-list@drzeus.cx>,
+       Peter Staubach <staubach@redhat.com>
+Cc: nfsv4@linux-nfs.org, Andrew Morton <akpm@linux-foundation.org>,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20071004085206.0a8e37b5@poseidon.drzeus.cx>
+References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
+	 <20071004085206.0a8e37b5@poseidon.drzeus.cx>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 10:00:50 -0400
+Message-Id: <1191506450.6685.17.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.064)
+X-UiO-Scanned: 10F124300EF3587D410B4FE17398176AD06BB5E6
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 22 total 4291636 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Which can only happen when it is larger than 10% of dirty_thresh.
-> > > 
-> > > Which is even more unlikely since it doesn't account nr_dirty (as I
-> > > think it should).
-> > 
-> > I think nr_dirty is totally irrelevant.  Since we don't care about
-> > case 1), and in case 2) nr_dirty doesn't play any role.
+On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
+> On Wed, 03 Oct 2007 19:41:16 -0400
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 > 
-> Ah, but its correct to have since we compare against dirty_thresh, which
-> is defined to be a unit of nr_dirty + nr_unstable + nr_writeback. if we
-> take one of these out, then we get an undefined amount of space extra.
-
-Yeah, I guess the point of the function was to limit nr_write to
-_anything_ smaller than the total memory.
-
-> > > As for 2), yes I think having a limit on the total number of pages in
-> > > flight is a good thing.
 > > 
-> > Why?
-> 
-> for my swapping over network thingies I need to put a bound on the
-> amount of outgoing traffic in flight because that bounds the amount of
-> memory consumed by the sending side.
-
-I guess you will have some request queue with limited length, no?
-
-The main problem seems to be if devices use up all the reserved memory
-for queuing write requests.  Limiting the in-flight pages is a very
-crude way to solve this, the assumptions are:
-
-O: overhead as a fraction of the request size
-T: total memory
-R: reserved memory
-T-R: may be full of anon pages
-
-so if (T-R)*O > R  we are in trouble.
-
-if we limit the writeback memory to L and L*O < R we are OK.  But we
-don't know O (it's device dependent).  We can make an estimate
-calculate L based on that, but that will be a number totally
-independent of the dirty threshold.
-
-> > > But that said, there might be better ways to do that.
+> > We also have the 64-bit inode support from RedHat/Peter Staubach.
 > > 
-> > Sure, if we do need to globally limit the number of under-writeback
-> > pages, then I think we need to do it independently of the dirty
-> > accounting.
 > 
-> It need not be global, it could be per BDI as well, but yes.
+> As has been pointed[1] out[2], this will cause regressions for non-LFS
+> applications (of which there are still lots and lots). This change
+> should be in feature-removal (the "feature" being removed is legacy
+> support for non-LFS applications using NFS servers that make full use
+> of the protocol) and preferably accompanied with appropriate user space
+> changes (e.g. compatibility option in glibc).
+> 
+> [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
+> [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
+> 
+> Rgds
 
-For per-bdi limits we have the queue length.
+How about a boot/module parameter to turn it on or off?
 
-Miklod
+I don't see any point in having a sysctl for something like this: either
+you have legacy applications or you don't. It is not something that you
+switch off as you go off to lunch.
+A compile parameter, OTOH, would be too restrictive since it would force
+distros to choose just one behaviour (which would mean they would have
+to choose the most conservative).
+
+Trond
+
