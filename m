@@ -1,158 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbXJDTSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbXJDTSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbXJDTSM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 15:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbXJDTR5
+	id S1760911AbXJDTSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 15:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbXJDTSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 15:17:57 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60772 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbXJDTR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 15:17:56 -0400
-Date: Thu, 4 Oct 2007 21:18:35 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [PATCH 2/2] s390: use PAGE_SIZE in vmlinux.lds
-Message-ID: <20071004191835.GC23211@uranus.ravnborg.org>
-References: <20071004112706.574737175@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Oct 2007 15:18:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:17612 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755119AbXJDTSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 15:18:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=d7Z6uxMZO856JcEKBzaO5V4FHHa0HhZI1c0sxcJTkaxPoizXNuRropIYqOlmFYCkFTr7PARZ6IR0FQFW4IJMr8bwYe07P5ZJtocbs0BBDLCR8lt7vWtNr9b79dfqgj2H+GanMM+UL47LVk7fY4akaSIjrOCeOnaE/sZjfmwOYJ4=
+Date: Thu, 4 Oct 2007 21:19:21 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Subject: Re: Decreasing stime running confuses top (was: top displaying
+	9999% CPU usage)
+Message-ID: <20071004191921.GA24011@dreamland.darkstar.lan>
+References: <200710031433.34504.elendil@planet.nl> <200710032127.42147.elendil@planet.nl> <20071003202446.GQ10199@1wt.eu> <200710040132.45062.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071004112706.574737175@de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710040132.45062.elendil@planet.nl>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Repalce the hardcoded 4096 value with the PAGE_SIZE macro.
-Converted a few decimal numbers to readable hex numbers.
+Il Thu, Oct 04, 2007 at 01:32:44AM +0200, Frans Pop ha scritto: 
+> On Wednesday 03 October 2007, you wrote:
+> > On Wed, Oct 03, 2007 at 09:27:41PM +0200, Frans Pop wrote:
+> > > On Wednesday 03 October 2007, you wrote:
+> > > > On Wed, 3 Oct 2007, Ilpo Järvinen wrote:
+> > > > > On Wed, 3 Oct 2007, Frans Pop wrote:
+> > > > > > The only change is in 2 consecutive columns: "2911 502" -> "2912
+> > > > > > 500". Is processor usage calculated from those? Can someone
+> > > > > > explain how?
+> > > > >
+> > > > > The latter seems to be utime ...decreasing. No wonder if
+> > > > > arithmetics will give strange results (probably top is using
+> > > > > unsigned delta?)...
+> > > >
+> > > > Hmm, minor miscounting from my side, stime seems more appropriate...
+> > >
+> > > So, is it normal that stime decreases sometimes or a kernel bug?
+> > > /me expects the last...
+> >
+> > Let me guess... Dual core AMD64 ?
+> 
+> Nope: Intel(R) Pentium(R) D CPU 3.20GHz
 
-Use of PAGE_SIZE required a small change to page.h
-to allow PAGE_SIZE to be used from assembler/linker scripts.
+I just notice the same thing here, with a Core2 Duo (which is supposed
+to have synced TSCs) and working HPET.
 
+> The following may well be relevant.
+> With 2.6.22 and early 2.6.23-rc kernels (rc3-rc6) I often had this in my
+> kernel log (see http://lkml.org/lkml/2007/9/16/45):
+>    checking TSC synchronization [CPU#0 -> CPU#1]:
+>    Measured 248 cycles TSC warp between CPUs, turning off TSC clock.
+>    Marking TSC unstable due to check_tsc_sync_source failed
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-build tested only
+I don't see this though, TSCs are always syncronized between the 2
+cores.
 
- arch/s390/kernel/vmlinux.lds.S |   27 ++++++++++++++-------------
- include/asm-s390/page.h        |    3 ++-
- 2 files changed, 16 insertions(+), 14 deletions(-)
-
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 3a364d1..dd3b310 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -2,6 +2,7 @@
-  * Written by Martin Schwidefsky (schwidefsky@de.ibm.com)
-  */
- 
-+#include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
- 
- #ifndef CONFIG_64BIT
-@@ -35,10 +36,10 @@ SECTIONS
- 	RODATA
- 
- #ifdef CONFIG_SHARED_KERNEL
--	. = ALIGN(1048576);	/* VM shared segments are 1MB aligned */
-+	. = ALIGN(0x100000);	/* VM shared segments are 1MB aligned */
- #endif
- 
--	. = ALIGN(4096);
-+	. = ALIGN(PAGE_SIZE);
- 	_eshared = .;		/* End of shareable data */
- 
- 	. = ALIGN(16);		/* Exception table */
-@@ -56,37 +57,37 @@ SECTIONS
- 		CONSTRUCTORS
- 	}
- 
--	. = ALIGN(4096);
-+	. = ALIGN(PAGE_SIZE);
- 	.data_nosave : {
- 	__nosave_begin = .;
- 		*(.data.nosave)
- 	}
--	. = ALIGN(4096);
-+	. = ALIGN(PAGE_SIZE);
- 	__nosave_end = .;
- 
--	. = ALIGN(4096);
-+	. = ALIGN(PAGE_SIZE);
- 	.data.page_aligned : {
- 		*(.data.idt)
- 	}
- 
--	. = ALIGN(256);
-+	. = ALIGN(0x100);
- 	.data.cacheline_aligned : {
- 		*(.data.cacheline_aligned)
- 	}
- 
--	. = ALIGN(256);
-+	. = ALIGN(0x100);
- 	.data.read_mostly : {
- 		*(.data.read_mostly)
- 	}
- 	_edata = .;		/* End of data section */
- 
--	. = ALIGN(8192);	/* init_task */
-+	. = ALIGN(2 * PAGE_SIZE);	/* init_task */
- 	.data.init_task : {
- 		*(.data.init_task)
- 	}
- 
- 	/* will be freed after init */
--	. = ALIGN(4096);	/* Init code and data */
-+	. = ALIGN(PAGE_SIZE);	/* Init code and data */
- 	__init_begin = .;
- 	.init.text : { 
- 		_sinittext = .;
-@@ -104,7 +105,7 @@ SECTIONS
- 	.init.data : {
- 		*(.init.data)
- 	}
--	. = ALIGN(256);
-+	. = ALIGN(0x100);
- 	.init.setup : {
- 		__setup_start = .;
- 		*(.init.setup)
-@@ -124,7 +125,7 @@ SECTIONS
- 	SECURITY_INIT
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--	. = ALIGN(256);
-+	. = ALIGN(0x100);
- 	.init.ramfs : {
- 		__initramfs_start = .;
- 		*(.init.initramfs)
-@@ -133,8 +134,8 @@ SECTIONS
- 	}
- #endif
- 
--	PERCPU(4096)
--	. = ALIGN(4096);
-+	PERCPU(PAGE_SIZE)
-+	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;		/* freed after init ends here */
- 
- 	/* BSS */
-diff --git a/include/asm-s390/page.h b/include/asm-s390/page.h
-index f326451..e3ce489 100644
---- a/include/asm-s390/page.h
-+++ b/include/asm-s390/page.h
-@@ -9,11 +9,12 @@
- #ifndef _S390_PAGE_H
- #define _S390_PAGE_H
- 
-+#include <linux/const.h>
- #include <asm/types.h>
- 
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT      12
--#define PAGE_SIZE       (1UL << PAGE_SHIFT)
-+#define PAGE_SIZE       (_AC(1,UL) << PAGE_SHIFT)
- #define PAGE_MASK       (~(PAGE_SIZE-1))
- #define PAGE_DEFAULT_ACC	0
- #define PAGE_DEFAULT_KEY	(PAGE_DEFAULT_ACC << 4)
+Luca
+-- 
+Ligabue canta: "Tutti vogliono viaggiare in primaaaa..."
+Io ci ho provato e dopo un chilometro ho fuso il motore e bruciato
+la frizione...
