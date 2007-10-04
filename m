@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbXJDVL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762159AbXJDVMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762102AbXJDVL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 17:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbXJDVLR
+	id S1762159AbXJDVMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 17:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761124AbXJDVL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 17:11:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36441
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760479AbXJDVLO (ORCPT
+	Thu, 4 Oct 2007 17:11:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58649 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760849AbXJDVLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 17:11:14 -0400
-Date: Thu, 04 Oct 2007 14:11:13 -0700 (PDT)
-Message-Id: <20071004.141113.08322956.davem@davemloft.net>
-To: cebbert@redhat.com
-Cc: willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
-       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com,
-       suresh.b.siddha@intel.com
+	Thu, 4 Oct 2007 17:11:55 -0400
+Date: Thu, 4 Oct 2007 14:11:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: David Miller <davem@davemloft.net>, arjan@infradead.org,
+       willy@linux.intel.com, nickpiggin@yahoo.com.au, hch@lst.de,
+       mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com
 Subject: Re: SLUB performance regression vs SLAB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <470554D9.2050505@redhat.com>
-References: <20071004192824.GA9852@linux.intel.com>
-	<20071004.135537.39158051.davem@davemloft.net>
-	<470554D9.2050505@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071004205812.GQ12049@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0710041411060.12779@schroedinger.engr.sgi.com>
+References: <20071004161621.GO12049@parisc-linux.org>
+ <Pine.LNX.4.64.0710041034550.10854@schroedinger.engr.sgi.com>
+ <20071004105046.7b019fe8@laptopd505.fenrus.org> <20071004.134834.112622292.davem@davemloft.net>
+ <20071004205812.GQ12049@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <cebbert@redhat.com>
-Date: Thu, 04 Oct 2007 17:02:17 -0400
+On Thu, 4 Oct 2007, Matthew Wilcox wrote:
 
-> How do you simulate reading 100TB of data spread across 3000 disks,
-> selecting 10% of it using some criterion, then sorting and
-> summarizing the result?
+> Yet here we stand.  Christoph is aggressively trying to get slab removed
+> from the tree.  There is a testcase which shows slub performing worse
+> than slab.  It's not my fault I can't publish it.  And just because I
+> can't publish it doesn't mean it doesn't exist.
+> 
+> Slab needs to not get removed until slub is as good a performer on this
+> benchmark.
 
-You repeatedly read zeros from a smaller disk into the same amount of
-memory, and sort that as if it were real data instead.
+I agree with this .... SLAB will stay until we have worked through all the 
+performance issues.
 
-You're not thinking outside of the box, and you need to do that to
-write good test cases and fix kernel bugs effectively.
