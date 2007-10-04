@@ -1,47 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbXJDXGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXJDXKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761237AbXJDXGc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXJDXGX
+	id S1761481AbXJDXKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 19:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbXJDXKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:06:23 -0400
-Received: from ams-iport-1.cisco.com ([144.254.224.140]:53379 "EHLO
-	ams-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755796AbXJDXGV (ORCPT
+	Thu, 4 Oct 2007 19:10:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60099 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752018AbXJDXKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:06:21 -0400
-X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 19:06:21 EDT
-X-IronPort-AV: E=Sophos;i="4.21,232,1188770400"; 
-   d="scan'208";a="154951155"
-Date: Thu, 4 Oct 2007 23:56:00 +0100
-From: Derek Fawcus <dfawcus@cisco.com>
-To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access   Control Kernel
-Message-ID: <20071004235600.A4177@mrwint.cisco.com>
-References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org> <20071003011246.7313facb@the-village.bc.nu>
+	Thu, 4 Oct 2007 19:10:33 -0400
+Date: Thu, 4 Oct 2007 16:09:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: miklos@szeredi.hu, wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-Id: <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+In-Reply-To: <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	<20071004145640.18ced770.akpm@linux-foundation.org>
+	<E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Mailer: Mutt 1.0.1i
-In-Reply-To: <20071003011246.7313facb@the-village.bc.nu>; from alan@lxorguk.ukuu.org.uk on Wed, Oct 03, 2007 at 01:12:46AM +0100
-Authentication-Results: ams-dkim-1; header.From=dfawcus@cisco.com; dkim=pass (
-	sig from cisco.com/amsdkim1002 verified; ); 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 01:12:46AM +0100, Alan Cox wrote:
+On Fri, 05 Oct 2007 00:39:16 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > throttle_vm_writeout() should be a per-zone thing, I guess.  Perhaps fixing
+> > that would fix your deadlock.  That's doubtful, but I don't know anything
+> > about your deadlock so I cannot say.
 > 
-> The value of SELinux (or indeed any system compartmentalising access and
-> limiting damage) comes into play when you get breakage - eg via a web
-> browser exploit.
+> No, doing the throttling per-zone won't in itself fix the deadlock.
+> 
+> Here's a deadlock example:
+> 
+> Total memory = 32M
+> /proc/sys/vm/dirty_ratio = 10
+> dirty_threshold = 3M
+> ratelimit_pages = 1M
+> 
+> Some program dirties 4M (dirty_threshold + ratelimit_pages) of mmap on
+> a fuse fs.  Page balancing is called which turns all these into
+> writeback pages.
+> 
+> Then userspace filesystem gets a write request, and tries to allocate
+> memory needed to complete the writeout.
+> 
+> That will possibly trigger direct reclaim, and throttle_vm_writeout()
+> will be called.  That will block until nr_writeback goes below 3.3M
+> (dirty_threshold + 10%).  But since all 4M of writeback is from the
+> fuse fs, that will never happen.
+> 
+> Does that explain it better?
+> 
 
-well,  being sick of the number of times one has to upgrade the browser
-for exploits,  I addressed it in a different way.
+yup, thanks.
 
-I ran firefox setuid to a different (not my main user),  uid+gid,  gave
-my main account that gid as a supplemental group,  and gave that uid
-access to the X magic cookie.
+This is a somewhat general problem: a userspace process is in the IO path. 
+Userspace block drivers, for example - pretty much anything which involves
+kernel->userspace upcalls for storage applications.
 
-...  which only changes the nature of any exploit that might occur - any
-injected code would have to go via X to attack my main account.
+I solved it once in the past by marking the userspace process as
+PF_MEMALLOC and I beleive that others have implemented the same hack.
 
-DF
+I suspect that what we need is a general solution, and that the solution
+will involve explicitly telling the kernel that this process is one which
+actually cleans memory and needs special treatment.
+
+Because I bet there will be other corner-cases where such a process needs
+kernel help, and there might be optimisation opportunities as well.
+
+Problem is, any such mark-me-as-special syscall would need to be
+privileged, and FUSE servers presently don't require special perms (do
+they?)
+
