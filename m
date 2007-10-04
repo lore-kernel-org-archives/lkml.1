@@ -1,101 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbXJDRET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbXJDRI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbXJDRET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 13:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757734AbXJDREK
+	id S1759863AbXJDRI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 13:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbXJDRIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 13:04:10 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41907 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758266AbXJDREJ (ORCPT
+	Thu, 4 Oct 2007 13:08:21 -0400
+Received: from outbound0.mx.meer.net ([209.157.153.23]:3460 "EHLO
+	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755687AbXJDRIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 13:04:09 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Loic Prylli <loic@myri.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: MSI problem since 2.6.21 for devices not providing a mask in their MSI capability
-References: <470405BB.2000208@myri.com>
-	<m14ph7amxq.fsf@ebiederm.dsl.xmission.com> <47044565.5070606@myri.com>
-	<m1myuzy1i2.fsf@ebiederm.dsl.xmission.com> <4704AEF1.3000206@myri.com>
-Date: Thu, 04 Oct 2007 11:03:38 -0600
-In-Reply-To: <4704AEF1.3000206@myri.com> (Loic Prylli's message of "Thu, 04
-	Oct 2007 05:14:25 -0400")
-Message-ID: <m1zlyyvml1.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Oct 2007 13:08:20 -0400
+Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
+From: Don Mullis <dwm@meer.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071004164225.GF5711@kernel.dk>
+References: <1191478262.21598.5.camel@dmullis-laptop>
+	 <20071003231659.f41df5ed.akpm@linux-foundation.org>
+	 <20071004072515.GC5236@kernel.dk> <1191514780.30871.1.camel@dmullis-laptop>
+	 <20071004183555.3e0ed9eb@poseidon.drzeus.cx>
+	 <20071004164225.GF5711@kernel.dk>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 10:06:29 -0700
+Message-Id: <1191517589.27856.5.camel@dmullis-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Loic Prylli <loic@myri.com> writes:
+That patch boots without complaint as well.
 
-I still looking through my copy of the pci specs and so will reply to
-that part in a bit.
+BTW, the earlier failure messages did not make it
+into /var/log/messages, only the dmesg buffer.
+This is with standard Ubuntu Gutsy logging levels.
 
-> To detect a crazy device generating storms of edge interrupts, I guess
-> note_interrupt() could be called during this "reentrant detection" if
-> masking was made conditional.
+ 
+On Thu, 2007-10-04 at 18:42 +0200, Jens Axboe wrote:
+> On Thu, Oct 04 2007, Pierre Ossman wrote:
+> > On Thu, 04 Oct 2007 09:19:40 -0700
+> > Don Mullis <dwm@meer.net> wrote:
+> > 
+> > > This patch fixes the boot.
+> > > 
+> > 
+> > Fantastic. Then will try to get this upstream then.
+> 
+> I already put it in the sgchain drivers part. If you could please ack
+> it, that would be nice :-). I have a bunch of driver
+> updates/work-arounds there.
+> 
+> > > > It looks like missing init of the sg list in mmc, does this work?
+> > > > 
+> > 
+> > Jens, is this zeroing needed for each invocation, or really just once
+> > to get the list in a known state?
+> 
+> Once should actually be enough, so you could move it to init as well.
+> Don, care to verify with the below patch as well?
+> 
+> > Also, is chaining already upstream so Linus should have this for 2.6.23?
+> 
+> No, it's for 2.6.24.
+> 
+> diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+> index b0abc7d..a5d0354 100644
+> --- a/drivers/mmc/card/queue.c
+> +++ b/drivers/mmc/card/queue.c
+> @@ -153,14 +153,14 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card, spinlock_t *lock
+>  			blk_queue_max_hw_segments(mq->queue, bouncesz / 512);
+>  			blk_queue_max_segment_size(mq->queue, bouncesz);
+>  
+> -			mq->sg = kmalloc(sizeof(struct scatterlist),
+> +			mq->sg = kzalloc(sizeof(struct scatterlist),
+>  				GFP_KERNEL);
+>  			if (!mq->sg) {
+>  				ret = -ENOMEM;
+>  				goto cleanup_queue;
+>  			}
+>  
+> -			mq->bounce_sg = kmalloc(sizeof(struct scatterlist) *
+> +			mq->bounce_sg = kzalloc(sizeof(struct scatterlist) *
+>  				bouncesz / 512, GFP_KERNEL);
+>  			if (!mq->bounce_sg) {
+>  				ret = -ENOMEM;
+> @@ -177,7 +177,7 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card, spinlock_t *lock
+>  		blk_queue_max_hw_segments(mq->queue, host->max_hw_segs);
+>  		blk_queue_max_segment_size(mq->queue, host->max_seg_size);
+>  
+> -		mq->sg = kmalloc(sizeof(struct scatterlist) *
+> +		mq->sg = kzalloc(sizeof(struct scatterlist) *
+>  			host->max_phys_segs, GFP_KERNEL);
+>  		if (!mq->sg) {
+>  			ret = -ENOMEM;
+> 
 
-Hmm. Something like this?
-
-Only mask it if the irq is disabled, and only disable it if
-the user requests it or if note_interrupt decides we are screaming?
-
-void handle_edge_irq(unsigned int irq, struct irq_desc *desc)
-{
-	const unsigned int cpu = smp_processor_id();
-
-	spin_lock(&desc->lock);
-
-	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
-
-	/*
-	 * If we're currently running this IRQ, or its disabled,
-	 * we shouldn't process the IRQ. Mark it pending, handle
-	 * the necessary masking and go out
-	 */
-	if (unlikely((desc->status & IRQ_DISABLED) || !desc->action)){
-        	desc->status |= (IRQ_PENDING | IRQ_MASKED);
-                mask_ack_irq(desc, irq);
-                goto out_unlock;
-	}    
-	if (unlikely(desc->status & IRQ_INPROGRESS)) {
-		desc->status |= IRQ_PENDING;
-		desc->chip->ack(desc, irq);
-                note_interrupt(irq, desc, IRQ_NONE /* IRQ_DUP? */);
-		goto out_unlock;
-	}
-
-	kstat_cpu(cpu).irqs[irq]++;
-
-	/* Start handling the irq */
-	desc->chip->ack(irq);
-
-	/* Mark the IRQ currently in progress.*/
-	desc->status |= IRQ_INPROGRESS;
-
-	do {
-		struct irqaction *action = desc->action;
-		irqreturn_t action_ret;
-
-		if (unlikely(!action)) {
-			desc->chip->mask(irq);
-			goto out_unlock;
-		}
-
-		desc->status &= ~IRQ_PENDING;
-		spin_unlock(&desc->lock);
-		action_ret = handle_IRQ_event(irq, action);
-		if (!noirqdebug)
-			note_interrupt(irq, desc, action_ret);
-		spin_lock(&desc->lock);
-
-	} while ((desc->status & (IRQ_PENDING | IRQ_DISABLED)) == IRQ_PENDING);
-
-	desc->status &= ~IRQ_INPROGRESS;
-out_unlock:
-	spin_unlock(&desc->lock);
-}
-
-Eric
