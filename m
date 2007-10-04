@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbXJDCB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbXJDCJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbXJDCB4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 22:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXJDCBr
+	id S1756129AbXJDCJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 22:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbXJDCJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 22:01:47 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42438 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbXJDCBq (ORCPT
+	Wed, 3 Oct 2007 22:09:31 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64460 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbXJDCJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 22:01:46 -0400
-Date: Thu, 04 Oct 2007 11:00:12 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [Patch / 002](memory hotplug) Callback function to create kmem_cache_node.
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0710031057150.3570@schroedinger.engr.sgi.com>
-References: <20071003234201.B5F9.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710031057150.3570@schroedinger.engr.sgi.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071004103830.6A6A.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+	Wed, 3 Oct 2007 22:09:30 -0400
+Date: Wed, 03 Oct 2007 20:08:17 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Point of gpl-only modules (flame)
+In-reply-to: <fa.uOYpsaQzzWwjjKspWNuGWwuESHM@ifi.uio.no>
+To: Jimmy <lists@dusted.dk>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <47044B11.4070500@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.uOYpsaQzzWwjjKspWNuGWwuESHM@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 3 Oct 2007, Yasunori Goto wrote:
+Jimmy wrote:
+> I know I'll be getting hell for this, I must be a masochist.
 > 
-> > > 
-> > > That would work. But it would be better to shrink the cache first. The 
-> > > first 2 slabs on a node may be empty and the shrinking will remove those. 
-> > > If you do not shrink then the code may falsely assume that there are 
-> > > objects on the node.
-> > 
-> > I'm sorry, but I don't think I understand what you mean... :-(
-> > Could you explain more? 
-> > 
-> > Which slabs should be shrinked? kmem_cache_node and kmem_cache_cpu?
-> 
-> The slab for which you are trying to set the kmem_cache_node pointer to 
-> NULL needs to be shrunk.
->  
-> > I think kmem_cache_cpu should be disabled by cpu hotplug,
-> > not memory/node hotplug. Basically, cpu should be offlined before
-> > memory offline on the node.
-> 
-> Hmmm.. Ok for cpu hotplug you could simply disregard the per cpu 
-> structure if the per cpu slab was flushed first.
-> 
-> However, the per node structure may hold slabs with no objects even after 
-> all objects were removed on a node. These need to be flushed by calling
-> kmem_cache_shrink() on the slab cache.
-> 
-> On the other hand: If you can guarantee that they will not be used and 
-> that no objects are in them and that you can recover the pages used in 
-> different ways then zapping the per node pointer like that is okay.
+> Anyway, I've been trying to figure out what purpose the gpl-only code 
+> serves.
+> What good comes out of disabling people from probing modules that do not 
+> have a gpl-compatible license?
 
-Thanks for your advise. I'll reconsider and fix my patches.
+Who is disabling anything?
 
-Bye.
+> Of cause, I would love to see more hardware manufactures release either 
+> full specs, or GPL'd drivers, and I'm sure it will happen, in time.
+> But until then, why are people wasting time writing code to inhibit 
+> those who do not agree with them on licensing?
+> 
+> It seems pretty childish to try and force some license on people, 
+> imagine trying to install firefox on Windows Vista, an error-dialog box 
+> appears:
+> "This application has been denied access to the Windows API as its 
+> license are compatible with the Microsoft Philosophy" ?
+> 
+> Now, i don't want to waste clock cycles on executing code that serves no 
+> purpose but restraining me from using my $1500 gfx card as intended, so 
+> will me removing that crap from the source result in somebody trying to 
+> obfuscate it to a point where neither of us know what is what?
+> 
+> Also, how about a list of PROS, explain to me whats so cool about it?
+
+The kernel gets marked as tainted when you load proprietary modules 
+because with no source code available there is no way to determine what 
+kind of badness the code may have done to break the kernel. Bug reports 
+from tainted kernels are generally given fairly little weight.
 
 -- 
-Yasunori Goto 
-
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
