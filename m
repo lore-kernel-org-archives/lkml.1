@@ -1,87 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbXJDWqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbXJDWwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762442AbXJDWqu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbXJDWqn
+	id S1761924AbXJDWwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbXJDWwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:46:43 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49907 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758980AbXJDWql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:46:41 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18x4uUHbzExOmyiYm7saRVytCOTtrAN1xT8QgEeAX
-	7E25DU7kHfMJ/Z
-Date: Fri, 5 Oct 2007 00:46:59 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linux-kernel@vger.kernel.org
-cc: i2c@lm-sensors.org, khali@linux-fr.org
-Subject: [OOPS] AXIS 700 Lite (VIA C7 CPU) BUG with 2.6.23-rc9-git (i2c)
-Message-ID: <Pine.LNX.4.60.0710042343030.4537@poirot.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Thu, 4 Oct 2007 18:52:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56613 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758326AbXJDWwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 18:52:04 -0400
+Date: Thu, 4 Oct 2007 15:51:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 09/12] fuse: add list of writable files to fuse_inode
+Message-Id: <20071004155128.62fc1098.akpm@linux-foundation.org>
+In-Reply-To: <20071002155222.373341208@szeredi.hu>
+References: <20071002155026.650555479@szeredi.hu>
+	<20071002155222.373341208@szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue, 02 Oct 2007 17:50:35 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Got an AXIS 700 Lite thin client with a C7 CPU and CN700 chipset in it, 
-compiled today's git snapshot, and it Oopses in i2c_viapro:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> Each WRITE request must carry a valid file descriptor.  When a page is
+> written back from a memory mapping, the file through which the page
+> was dirtied is not available, so a new mechananism is needed to find a
+> suitable file in ->writepage(s).
+> 
+> A list of fuse_files is added to fuse_inode.  The file is removed from
+> the list in fuse_release().
+> 
+> This patch is in preparation for writable mmap support.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+> 
+> Index: linux/fs/fuse/file.c
+> ===================================================================
+> --- linux.orig/fs/fuse/file.c	2007-10-01 22:42:26.000000000 +0200
+> +++ linux/fs/fuse/file.c	2007-10-01 22:42:27.000000000 +0200
+> @@ -56,6 +56,7 @@ struct fuse_file *fuse_file_alloc(void)
+>  			kfree(ff);
+>  			ff = NULL;
+>  		}
+> +		INIT_LIST_HEAD(&ff->write_entry);
+>  		atomic_set(&ff->count, 0);
+>  	}
+>  	return ff;
+> @@ -150,12 +151,18 @@ int fuse_release_common(struct inode *in
+>  {
+>  	struct fuse_file *ff = file->private_data;
+>  	if (ff) {
+> +		struct fuse_conn *fc = get_fuse_conn(inode);
+> +
+>  		fuse_release_fill(ff, get_node_id(inode), file->f_flags,
+>  				  isdir ? FUSE_RELEASEDIR : FUSE_RELEASE);
+>  
+>  		/* Hold vfsmount and dentry until release is finished */
+>  		ff->reserved_req->vfsmount = mntget(file->f_path.mnt);
+>  		ff->reserved_req->dentry = dget(file->f_path.dentry);
+> +
+> +		spin_lock(&fc->lock);
+> +		list_del(&ff->write_entry);
+> +		spin_unlock(&fc->lock);
+>  		/*
+>  		 * Normally this will send the RELEASE request,
+>  		 * however if some asynchronous READ or WRITE requests
+> Index: linux/fs/fuse/fuse_i.h
+> ===================================================================
+> --- linux.orig/fs/fuse/fuse_i.h	2007-10-01 22:42:24.000000000 +0200
+> +++ linux/fs/fuse/fuse_i.h	2007-10-01 22:43:15.000000000 +0200
+> @@ -70,6 +70,9 @@ struct fuse_inode {
+>  
+>  	/** Version of last attribute change */
+>  	u64 attr_version;
+> +
+> +	/** Files usable in writepage.  Protected by fc->lock */
+> +	struct list_head write_files;
+>  };
+>  
+>  /** FUSE specific file data */
+> @@ -82,6 +85,9 @@ struct fuse_file {
+>  
+>  	/** Refcount */
+>  	atomic_t count;
+> +
+> +	/** Entry on inode's write_files list */
+> +	struct list_head write_entry;
+>  };
+>  
+>  /** One input argument of a request */
+> Index: linux/fs/fuse/inode.c
+> ===================================================================
+> --- linux.orig/fs/fuse/inode.c	2007-10-01 22:42:24.000000000 +0200
+> +++ linux/fs/fuse/inode.c	2007-10-01 22:42:27.000000000 +0200
+> @@ -56,6 +56,7 @@ static struct inode *fuse_alloc_inode(st
+>  	fi->i_time = 0;
+>  	fi->nodeid = 0;
+>  	fi->nlookup = 0;
+> +	INIT_LIST_HEAD(&fi->write_files);
+>  	fi->forget_req = fuse_request_alloc();
+>  	if (!fi->forget_req) {
+>  		kmem_cache_free(fuse_inode_cachep, inode);
+> @@ -68,6 +69,7 @@ static struct inode *fuse_alloc_inode(st
+>  static void fuse_destroy_inode(struct inode *inode)
+>  {
+>  	struct fuse_inode *fi = get_fuse_inode(inode);
+> +	BUG_ON(!list_empty(&fi->write_files));
+>  	if (fi->forget_req)
+>  		fuse_request_free(fi->forget_req);
+>  	kmem_cache_free(fuse_inode_cachep, inode);
 
-BUG: unable to handle kernel paging request at virtual address 016c0555
- printing eip:
-c01a60ed
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT 
-Modules linked in: i2c_viapro i2c_dev i2c_core loop
-CPU:    0
-EIP:    0060:[<c01a60ed>]    Not tainted VLI
-EFLAGS: 00010282   (2.6.23-rc9-g804b3f9a #5)
-EIP is at sysfs_create_group+0x1d/0xe0
-eax: f889b828   ebx: 00000000   ecx: f7d764b0   edx: 016c0555
-esi: 016c0555   edi: 00000000   ebp: f7d71dc4   esp: f7d71da8
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process modprobe (pid: 1214, ti=f7d70000 task=c18f3560 task.ti=f7d70000)
-Stack: c03ceba0 f7d7647c f7d71dd8 c01a392b f7d764b0 00000000 f889f3a0 f7d71ddc 
-       c0248b38 f889b828 f889b7c0 00000000 00000000 f7d71df4 c0248c0c 00000000 
-       f889b7c0 00000000 f889b864 f7d71e20 c02491ee f889b828 c0367b56 f889b864 
-Call Trace:
- [<c0104e7c>] show_trace_log_lvl+0x1c/0x40
- [<c0104f5a>] show_stack_log_lvl+0x9a/0xc0
- [<c01051bc>] show_registers+0x1dc/0x340
- [<c01054b2>] die+0x102/0x210
- [<c01183c6>] do_page_fault+0x266/0x600
- [<c031102a>] error_code+0x6a/0x70
- [<c0248b38>] device_add_groups+0x28/0x60
- [<c0248c0c>] device_add_attrs+0x5c/0xb0
- [<c02491ee>] device_add+0xfe/0x330
- [<c0249432>] device_register+0x12/0x20
- [<f889f53d>] i2c_register_adapter+0xbd/0x170 [i2c_core]
- [<f889f66a>] i2c_add_adapter+0x7a/0x80 [i2c_core]
- [<f889a605>] vt596_probe+0x145/0x370 [i2c_viapro]
- [<c01ef7dd>] pci_call_probe+0xd/0x10
- [<c01ef82f>] __pci_device_probe+0x4f/0x60
- [<c01ef869>] pci_device_probe+0x29/0x50
- [<c024b864>] really_probe+0x94/0x140
- [<c024b970>] driver_probe_device+0x40/0x60
- [<c024baaa>] __driver_attach+0x7a/0x80
- [<c024aa74>] bus_for_each_dev+0x54/0x70
- [<c024bac9>] driver_attach+0x19/0x20
- [<c024b177>] bus_add_driver+0x77/0x130
- [<c024bed5>] driver_register+0x75/0x80
- [<c01efb7a>] __pci_register_driver+0x4a/0x80
- [<f8890017>] i2c_vt596_init+0x17/0x19 [i2c_viapro]
- [<c01420a2>] sys_init_module+0xe2/0x140
- [<c0104162>] sysenter_past_esp+0x5f/0x85
- =======================
-Code: e8 8d b6 00 00 00 00 8d bc 27 00 00 00 00 55 89 e5 56 89 d6 53 83 ec 
-14 85 c0 0f 84 b2 00 00 00 8b 48 30 85 c9 0f 84 a7 00 00 00 <8b> 12 85 d2 
-0f 85 89 00 00 00 89 4d f4 8b 5d f4 85 db 74 0b 8b 
-EIP: [<c01a60ed>] sysfs_create_group+0x1d/0xe0 SS:ESP 0068:f7d71da8
+hm.  At no point in this patch series does anything actually get added to
+these lists, so this patch is presently a no-op.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+I'll assume that it will get used later.  But it is a bit odd to add
+infrastructure in a patch series, then not use it.  Why not hold the patch
+back and include it in the patch series which actually uses these lists for
+something?
+
+
