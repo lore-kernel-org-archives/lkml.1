@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXJDWC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXJDWHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762243AbXJDWC0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbXJDWCS
+	id S1761674AbXJDWHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759686AbXJDWHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:02:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45992 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758792AbXJDWCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:02:17 -0400
-Message-ID: <470562B9.6060200@redhat.com>
-Date: Thu, 04 Oct 2007 18:01:29 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: Luca Tettamanti <kronos.it@gmail.com>, Frans Pop <elendil@planet.nl>,
-       Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "Alexander E. Patrakov" <patrakov@ums.usu.ru>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH for testing] Re: Decreasing stime running confuses top
-References: <200710031433.34504.elendil@planet.nl> <200710042200.03489.borntraeger@de.ibm.com> <47054B2E.1050906@redhat.com> <200710042310.25223.borntraeger@de.ibm.com>
-In-Reply-To: <200710042310.25223.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 4 Oct 2007 18:07:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54949
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756974AbXJDWHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 18:07:19 -0400
+Date: Thu, 04 Oct 2007 15:07:18 -0700 (PDT)
+Message-Id: <20071004.150718.95506800.davem@davemloft.net>
+To: cebbert@redhat.com
+Cc: willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
+       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com,
+       suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47055F84.109@redhat.com>
+References: <470554D9.2050505@redhat.com>
+	<20071004.141113.08322956.davem@davemloft.net>
+	<47055F84.109@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/04/2007 05:10 PM, Christian Borntraeger wrote:
+From: Chuck Ebbert <cebbert@redhat.com>
+Date: Thu, 04 Oct 2007 17:47:48 -0400
 
-> <patch reverting to 2.6.22 behavior>
+> On 10/04/2007 05:11 PM, David Miller wrote:
+> > From: Chuck Ebbert <cebbert@redhat.com>
+> > Date: Thu, 04 Oct 2007 17:02:17 -0400
+> > 
+> >> How do you simulate reading 100TB of data spread across 3000 disks,
+> >> selecting 10% of it using some criterion, then sorting and
+> >> summarizing the result?
+> > 
+> > You repeatedly read zeros from a smaller disk into the same amount of
+> > memory, and sort that as if it were real data instead.
+> 
+> You've just replaced 3000 concurrent streams of data with a single
+> stream.  That won't test the memory allocator's ability to allocate
+> memory to many concurrent users very well.
 
-Alternative patch:
+You've kindly removed my "thinking outside of the box" comment.
 
-procfs: Don't read runtime twice when computing task's stime
+The point is was not that my specific suggestion would be
+perfect, but that if you used your creativity and thought
+in similar directions you might find a way to do it.
 
-Current code reads p->se.sum_exec_runtime twice and goes through
-multiple type conversions to calculate stime. Read it once and
-skip some of the conversions.
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
---- linux-2.6.23-rc6-dell.orig/fs/proc/array.c
-+++ linux-2.6.23-rc6-dell/fs/proc/array.c
-@@ -334,39 +334,38 @@ static cputime_t task_stime(struct task_
- 	return p->stime;
- }
- #else
--static cputime_t task_utime(struct task_struct *p)
-+static clock_t __task_utime(struct task_struct *p, u64 runtime)
- {
- 	clock_t utime = cputime_to_clock_t(p->utime),
- 		total = utime + cputime_to_clock_t(p->stime);
--	u64 temp;
- 
- 	/*
- 	 * Use CFS's precise accounting:
- 	 */
--	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
--
- 	if (total) {
--		temp *= utime;
--		do_div(temp, total);
-+		runtime *= utime;
-+		do_div(runtime, total);
- 	}
--	utime = (clock_t)temp;
-+	return (clock_t)runtime;
-+}
- 
--	return clock_t_to_cputime(utime);
-+static cputime_t task_utime(struct task_struct *p)
-+{
-+	u64 runtime = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
-+
-+	return clock_t_to_cputime(__task_utime(p, runtime));
- }
- 
- static cputime_t task_stime(struct task_struct *p)
- {
--	clock_t stime;
-+	u64 runtime = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
- 
- 	/*
- 	 * Use CFS's precise accounting. (we subtract utime from
- 	 * the total, to make sure the total observed by userspace
- 	 * grows monotonically - apps rely on that):
- 	 */
--	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
--			cputime_to_clock_t(task_utime(p));
--
--	return clock_t_to_cputime(stime);
-+	return clock_t_to_cputime(runtime - __task_utime(p, runtime));
- }
- #endif
- 
-
+People are too narrow minded when it comes to these things, and
+that's the problem I want to address.
