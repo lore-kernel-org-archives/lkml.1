@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbXJDFWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbXJDFXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbXJDFWH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXJDFV4
+	id S1757393AbXJDFXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXJDFXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:21:56 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50206 "EHLO mx2.suse.de"
+	Thu, 4 Oct 2007 01:23:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:53411 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751304AbXJDFVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 01:21:55 -0400
-Date: Thu, 4 Oct 2007 07:21:54 +0200
+	id S1752319AbXJDFW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 01:22:59 -0400
+Date: Thu, 4 Oct 2007 07:22:58 +0200
 From: Nick Piggin <npiggin@suse.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: [rfc][patch 1/3] x86_64: fence nontemproal stores
-Message-ID: <20071004052153.GA15131@wotan.suse.de>
+Subject: [rfc][patch 2/3] x86: fix IO write barriers
+Message-ID: <20071004052258.GB15131@wotan.suse.de>
+References: <20071004052153.GA15131@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071004052153.GA15131@wotan.suse.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Here's a couple of patches to improve the memory barrier situation on x86.
-They probably aren't going upstream until after the x86 merge, however I'm
-posting them here for RFC, and in case anybody wants to backport into stable
-trees.
-
----
-movnt* instructions are not strongly ordered with respect to other stores,
-so if we are to assume stores are strongly ordered in the rest of the x86_64
-kernel, we must fence these off (see similar examples in i386 kernel).
-
-[ The AMD memory ordering document seems to say that nontemporal stores can
-  also pass earlier regular stores, so maybe we need sfences _before_ movnt*
-  everywhere too? ]
+wmb() on x86 must always include a barrier, because stores can go out of
+order in many cases when dealing with devices (eg. WC memory).
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-Index: linux-2.6/arch/x86_64/lib/copy_user_nocache.S
+Index: linux-2.6/include/asm-i386/system.h
 ===================================================================
---- linux-2.6.orig/arch/x86_64/lib/copy_user_nocache.S
-+++ linux-2.6/arch/x86_64/lib/copy_user_nocache.S
-@@ -117,6 +117,7 @@ ENTRY(__copy_user_nocache)
- 	popq %rbx
- 	CFI_ADJUST_CFA_OFFSET -8
- 	CFI_RESTORE rbx
-+	sfence
- 	ret
- 	CFI_RESTORE_STATE
+--- linux-2.6.orig/include/asm-i386/system.h
++++ linux-2.6/include/asm-i386/system.h
+@@ -216,6 +216,7 @@ static inline unsigned long get_limit(un
+ 
+ #define mb() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
+ #define rmb() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
++#define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
+ 
+ /**
+  * read_barrier_depends - Flush all pending reads that subsequents reads
+@@ -271,18 +272,14 @@ static inline unsigned long get_limit(un
+ 
+ #define read_barrier_depends()	do { } while(0)
+ 
+-#ifdef CONFIG_X86_OOSTORE
+-/* Actually there are no OOO store capable CPUs for now that do SSE, 
+-   but make it already an possibility. */
+-#define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
+-#else
+-#define wmb()	__asm__ __volatile__ ("": : :"memory")
+-#endif
+-
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
+ #define smp_rmb()	rmb()
+-#define smp_wmb()	wmb()
++#ifdef CONFIG_X86_OOSTORE
++# define smp_wmb() 	wmb()
++#else
++# define smp_wmb()	barrier()
++#endif
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
+ #else
+Index: linux-2.6/include/asm-x86_64/system.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86_64/system.h
++++ linux-2.6/include/asm-x86_64/system.h
+@@ -159,12 +159,8 @@ static inline void write_cr8(unsigned lo
+  */
+ #define mb() 	asm volatile("mfence":::"memory")
+ #define rmb()	asm volatile("lfence":::"memory")
+-
+-#ifdef CONFIG_UNORDERED_IO
+ #define wmb()	asm volatile("sfence" ::: "memory")
+-#else
+-#define wmb()	asm volatile("" ::: "memory")
+-#endif
++
+ #define read_barrier_depends()	do {} while(0)
+ #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
  
