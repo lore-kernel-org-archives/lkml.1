@@ -1,36 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbXJDPYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbXJDP0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758769AbXJDPYa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 11:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXJDPYW
+	id S1759193AbXJDP0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 11:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXJDP0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:24:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44110 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbXJDPYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:24:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pekka Pietikainen <pp@ee.oulu.fi>
-Subject: Re: 2.6.23-rc8-git2 possible recursive locking when running screen
-Date: Thu, 4 Oct 2007 17:39:12 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20071003092408.GA17356@ee.oulu.fi>
-In-Reply-To: <20071003092408.GA17356@ee.oulu.fi>
+	Thu, 4 Oct 2007 11:26:16 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:54309 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbXJDP0P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 11:26:15 -0400
+X-IronPort-AV: E=Sophos;i="4.21,230,1188802800"; 
+   d="scan'208";a="404036992"
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: "yogeshwar sonawane" <yogyas@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Accessing 64-bit BARs
+X-Message-Flag: Warning: May contain useful information
+References: <b681c62b0710040153w5b4779fat1ccc7fa3e5775c2c@mail.gmail.com>
+	<200710041440.15464.eike-kernel@sf-tec.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 04 Oct 2007 08:26:12 -0700
+In-Reply-To: <200710041440.15464.eike-kernel@sf-tec.de> (Rolf Eike Beer's message of "Thu, 4 Oct 2007 14:40:10 +0200")
+Message-ID: <adasl4qdhpn.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710041739.12726.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Oct 2007 15:26:12.0870 (UTC) FILETIME=[E5B60260:01C8069A]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 3 October 2007 11:24, Pekka Pietikainen wrote:
-> Seen this a few times lately on a machine running rawhide when running
-> screen (and doing "something", it's not automatic. And box works just fine).
-> I think I saw this a few weeks back, so it's not a new regression.
+ > You should use pci_iomap() to get an access pointer to the BAR. After this you 
+ > can access the memory with ioread*() and iowrite*(). See "man pci_iomap(9)" 
+ > if you build kernel manpages.
 
-Did it happen with 2.6.22?
+That works fine, but ioremap() and readl()/writel() is also perfectly
+fine for regions that you know are always MMIO.
 
-Rafael
+ - R.
