@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXJDBvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbXJDCB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbXJDBvP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 21:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXJDBvA
+	id S1756024AbXJDCB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 22:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXJDCBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 21:51:00 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45564 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752693AbXJDBu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 21:50:59 -0400
-Message-ID: <391462657.01946@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Thu, 4 Oct 2007 09:50:53 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: richard kennedy <richard@rsk.demon.co.uk>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Greg KH <gregkh@suse.de>,
-       Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Krzysztof Oledzki <olel@ans.pl>, akpm@linux-foundation.org,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] writeback: avoid possible balance_dirty_pages() lockup
-	on a light-load bdi
-Message-ID: <20071004015053.GA5789@mail.ustc.edu.cn>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com> <391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com> <20071002020040.GA5275@mail.ustc.edu.cn> <1191415612.3123.21.camel@castor.rsk.org>
+	Wed, 3 Oct 2007 22:01:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42438 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751858AbXJDCBq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 22:01:46 -0400
+Date: Thu, 04 Oct 2007 11:00:12 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [Patch / 002](memory hotplug) Callback function to create kmem_cache_node.
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0710031057150.3570@schroedinger.engr.sgi.com>
+References: <20071003234201.B5F9.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710031057150.3570@schroedinger.engr.sgi.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071004103830.6A6A.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191415612.3123.21.camel@castor.rsk.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 01:46:52PM +0100, richard kennedy wrote:
-> On Tue, 2007-10-02 at 10:00 +0800, Fengguang Wu wrote:
-> > ---
-> >  mm/page-writeback.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
+> On Wed, 3 Oct 2007, Yasunori Goto wrote:
+> 
+> > > 
+> > > That would work. But it would be better to shrink the cache first. The 
+> > > first 2 slabs on a node may be empty and the shrinking will remove those. 
+> > > If you do not shrink then the code may falsely assume that there are 
+> > > objects on the node.
 > > 
-> > --- linux-2.6.22.orig/mm/page-writeback.c
-> > +++ linux-2.6.22/mm/page-writeback.c
-> > @@ -250,6 +250,11 @@ static void balance_dirty_pages(struct a
-> >  			pages_written += write_chunk - wbc.nr_to_write;
-> >  			if (pages_written >= write_chunk)
-> >  				break;		/* We've done our duty */
-> > +			if (list_empty(&mapping->host->i_sb->s_dirty) &&
-> > +			    list_empty(&mapping->host->i_sb->s_io) &&
-> > +			    nr_reclaimable + global_page_state(NR_WRITEBACK) <=
-> > +				    dirty_thresh + (1 << (20-PAGE_CACHE_SHIFT)))
-> > +				break;
-> >  		}
-> >  		congestion_wait(WRITE, HZ/10);
-> >  	}
+> > I'm sorry, but I don't think I understand what you mean... :-(
+> > Could you explain more? 
+> > 
+> > Which slabs should be shrinked? kmem_cache_node and kmem_cache_cpu?
 > 
-> I've been testing 2.6.23-rc9 + this patch all morning but have just seen
-> a lockup. As usual it happened  just after a large file copy finished
-> and while nr_dirty is still large. I'm sorry to say I didn't have a
-> serial console running so I don't have an other info. I will try again
-> and see if I can capture some more data.
-> 
-> I did notice that at the beginning of my tests the dirty blocks are
-> written back more quickly than usual
-> 
-> nr_dirty count after the copy finished and then 60 seconds later :-
-> after copy	+60 seconds
-> 73520		0
-> 73533		0
-> 68554		1
+> The slab for which you are trying to set the kmem_cache_node pointer to 
+> NULL needs to be shrunk.
 >  
-> but after several iterations of my testcase & just before the lockup
-> 68560		57165
-> 71974		62896
->  
-> which is about the same as a unpatched kernel.
+> > I think kmem_cache_cpu should be disabled by cpu hotplug,
+> > not memory/node hotplug. Basically, cpu should be offlined before
+> > memory offline on the node.
+> 
+> Hmmm.. Ok for cpu hotplug you could simply disregard the per cpu 
+> structure if the per cpu slab was flushed first.
+> 
+> However, the per node structure may hold slabs with no objects even after 
+> all objects were removed on a node. These need to be flushed by calling
+> kmem_cache_shrink() on the slab cache.
+> 
+> On the other hand: If you can guarantee that they will not be used and 
+> that no objects are in them and that you can recover the pages used in 
+> different ways then zapping the per node pointer like that is okay.
 
-Hi Richard,
+Thanks for your advise. I'll reconsider and fix my patches.
 
-Thank you for the testing.
+Bye.
 
-However, my patch is kind of duplicate efforts. I was taking the
-'do it if simple' attitude.  I can continue to improve it if you 
-really want it. Otherwise I'd recommend you to test the coming
-2.6.24-rc1 or backport the -mm writeback patches back to 2.6.23 and
-test it there. Peter has did a good job on it.
+-- 
+Yasunori Goto 
 
-Fengguang
 
