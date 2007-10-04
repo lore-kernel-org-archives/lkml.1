@@ -1,76 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbXJDTSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXJDTT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760911AbXJDTSw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 15:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbXJDTSo
+	id S1760879AbXJDTT6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 15:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbXJDTTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 15:18:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:17612 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755119AbXJDTSn (ORCPT
+	Thu, 4 Oct 2007 15:19:50 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:44973 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755713AbXJDTTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 15:18:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=d7Z6uxMZO856JcEKBzaO5V4FHHa0HhZI1c0sxcJTkaxPoizXNuRropIYqOlmFYCkFTr7PARZ6IR0FQFW4IJMr8bwYe07P5ZJtocbs0BBDLCR8lt7vWtNr9b79dfqgj2H+GanMM+UL47LVk7fY4akaSIjrOCeOnaE/sZjfmwOYJ4=
-Date: Thu, 4 Oct 2007 21:19:21 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-Subject: Re: Decreasing stime running confuses top (was: top displaying
-	9999% CPU usage)
-Message-ID: <20071004191921.GA24011@dreamland.darkstar.lan>
-References: <200710031433.34504.elendil@planet.nl> <200710032127.42147.elendil@planet.nl> <20071003202446.GQ10199@1wt.eu> <200710040132.45062.elendil@planet.nl>
+	Thu, 4 Oct 2007 15:19:49 -0400
+Message-ID: <47053CC7.7090206@us.ibm.com>
+Date: Thu, 04 Oct 2007 12:19:35 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200710040132.45062.elendil@planet.nl>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       randy.dunlap@oracle.com, hch@infradead.org,
+       systemtap@sources.redhat.com
+Subject: Re: [patch 1/3]  Trace code and documentation
+References: <1191342800.31351.9.camel@lc4eb748232119.ibm.com> <p73odff5j1x.fsf@bingen.suse.de>
+In-Reply-To: <p73odff5j1x.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Thu, Oct 04, 2007 at 01:32:44AM +0200, Frans Pop ha scritto: 
-> On Wednesday 03 October 2007, you wrote:
-> > On Wed, Oct 03, 2007 at 09:27:41PM +0200, Frans Pop wrote:
-> > > On Wednesday 03 October 2007, you wrote:
-> > > > On Wed, 3 Oct 2007, Ilpo Järvinen wrote:
-> > > > > On Wed, 3 Oct 2007, Frans Pop wrote:
-> > > > > > The only change is in 2 consecutive columns: "2911 502" -> "2912
-> > > > > > 500". Is processor usage calculated from those? Can someone
-> > > > > > explain how?
-> > > > >
-> > > > > The latter seems to be utime ...decreasing. No wonder if
-> > > > > arithmetics will give strange results (probably top is using
-> > > > > unsigned delta?)...
-> > > >
-> > > > Hmm, minor miscounting from my side, stime seems more appropriate...
-> > >
-> > > So, is it normal that stime decreases sometimes or a kernel bug?
-> > > /me expects the last...
-> >
-> > Let me guess... Dual core AMD64 ?
+Andi Kleen wrote:
+> "David J. Wilder" <dwilder@us.ibm.com> writes:
+>> @@ -0,0 +1,160 @@
+>> +Trace Setup and Control
+>> +=======================
+>> +In the kernel, the trace interface provides a simple mechanism for
+>> +starting and managing data channels (traces) to user space.
 > 
-> Nope: Intel(R) Pentium(R) D CPU 3.20GHz
+> Wasn't relayfs supposed to do that already? Why do you need another
+> wrapper around it? 
 
-I just notice the same thing here, with a Core2 Duo (which is supposed
-to have synced TSCs) and working HPET.
+The code in trace is exactly what all the current users of relay do. 
+Therefor trace reduces the duplication of code.
 
-> The following may well be relevant.
-> With 2.6.22 and early 2.6.23-rc kernels (rc3-rc6) I often had this in my
-> kernel log (see http://lkml.org/lkml/2007/9/16/45):
->    checking TSC synchronization [CPU#0 -> CPU#1]:
->    Measured 248 cycles TSC warp between CPUs, turning off TSC clock.
->    Marking TSC unstable due to check_tsc_sync_source failed
 
-I don't see this though, TSCs are always syncronized between the 2
-cores.
+> 
+> Is this also really still faster than a printk below log level
+> (without console driver overhead). If not then why not just
+> use printk?
 
-Luca
--- 
-Ligabue canta: "Tutti vogliono viaggiare in primaaaa..."
-Io ci ho provato e dopo un chilometro ho fuso il motore e bruciato
-la frizione...
+Are you arguing against relayfs or trace?  Trace just makes relayfs 
+easer to use.  I think relayfs can stand up for it's self.
+
+
+> 
+> Especially your example is worrying. It essentially defines a new
+> printk. I think there is a case for a fast logging subsystem because
+> printk() is admittedly a little slow [somewhat slow below log level
+> and incredible slow above it]
+> 
+> But fast means binary items (not sprintf), no global locks, not
+> multiple layers, per CPU etc.. But your example and this patch has all
+> this and I bet it is not very fast.
+>
+
+Each user of trace has its own requirements for passing data over 
+relayfs channels. This is why the documentation describes separate 
+control and data layers.  The trace API provides a control layer with 
+this flexibility.
+
+The example shows a way to create an ASCII data layer.  The format of 
+the data (binary or ascii) is just a function of how the data layer 
+formats it.
+
+Locking is only required when using global bufferers. The option of 
+selecting per-cpu vs global bufferers is available to the trace user. 
+The example (and the documentation) shows how to use both methods (See: 
+#define USE_GLOBAL_BUFFER in the example).
+
+There is no impact of adding an extra layer. The primitives for trace 
+adds code for trace setup and control, but trace is not doing anything 
+that a relayfs user would not have to do anyway.  We mostly care about 
+the impact of writing data to the trace channels and trace has no impact 
+there.
+
+> Is the result (e.g. the trace example module) still any faster
+> than printk below log level? If not then why bother.
+> 
+> Adding another slow logger would be just a waste of time imho.
+> It just means that everybody who needs a fast logger just need
+> to reimplement their own anyways. And the people who can tolerate
+> slow loggers are probably already adequately served by 
+> printk. Also there is already direct relayfs.
+
+True, to make trace "fast" you need a data layer that can handle the 
+requirements of per-cpu buffers.  However there are still advantages of 
+trace over printk even when using global bufferers: selectable bufferer 
+sizes, separate data channels (not have to share data channels with 
+every other subsystem in the kernel), trace control, non-overwrite mode 
+and buffer management.
+
+The next step is to provide data layer that can fully take advantage of 
+per-cpu bufferers (systemtap shows us one example). Trace give us a 
+place to build it.  As Christoph's said about trace:
+
+    "Long term we probably want more complex tracing based on lttng,
+     but I'm a big fan of starting out simple and doing incremental
+     changes."
+
+One advantage of the trace approach is separating control and data 
+layers, therefor trace can support multiple data layers to fit multiple 
+requirements.
+
+I have my ideas on how to develop data layer, others may have their own 
+ideas and I welcome the input.
+
+-Dave
+
+PS: Systemtap has been criticized for introducing out-of-tree kernel 
+code.  A clear direction from the community is to move re-usable code 
+in-tree where it can be maintained.  Trace is a move in that direction.
+
+Dave
+> 
+> -Andi
+> 
+
