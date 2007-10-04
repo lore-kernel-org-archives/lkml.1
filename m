@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXJDSkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXJDSlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbXJDSkm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 14:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXJDSke
+	id S1761651AbXJDSlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 14:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXJDSlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 14:40:34 -0400
-Received: from mga07.intel.com ([143.182.124.22]:28459 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756530AbXJDSkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 14:40:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,231,1188802800"; 
-   d="scan'208";a="292760828"
-Date: Thu, 4 Oct 2007 12:28:25 -0700
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>, suresh.b.siddha@intel.com
-Subject: Re: SLUB performance regression vs SLAB
-Message-ID: <20071004192824.GA9852@linux.intel.com>
-References: <20070919033605.785839297@sgi.com> <200709280742.38262.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com> <200709281514.48293.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710011343020.19779@schroedinger.engr.sgi.com> <20071004161621.GO12049@parisc-linux.org> <Pine.LNX.4.64.0710041034550.10854@schroedinger.engr.sgi.com> <20071004183224.GA8641@linux.intel.com> <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com>
+	Thu, 4 Oct 2007 14:41:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43698 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756414AbXJDSlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 14:41:14 -0400
+Date: Thu, 4 Oct 2007 14:41:07 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
+Message-ID: <20071004184107.GC23300@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <20071004052153.GA15131@wotan.suse.de> <200710041953.16656.ak@suse.de> <20071004181044.GA23300@redhat.com> <200710042021.59704.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: willy@linux.intel.com (Matthew Wilcox)
+In-Reply-To: <200710042021.59704.ak@suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 10:49:52AM -0700, Christoph Lameter wrote:
-> I was not aware of that. Would it be possible for you to summarize all the 
-> test data that you have right now about SLUB vs. SLAB with the patches 
-> listed?  Exactly what kernel version and what version of the per cpu 
-> patches were tested?
+On Thu, Oct 04, 2007 at 08:21:59PM +0200, Andi Kleen wrote:
+ > On Thursday 04 October 2007 20:10:44 Dave Jones wrote:
+ > > On Thu, Oct 04, 2007 at 07:53:16PM +0200, Andi Kleen wrote:
+ > >  > 
+ > >  > > The only vendor that ever implemented OOSTOREs was Centaur, and they
+ > >  > > only did in the Winchip generation of the CPUs.  When they dropped it
+ > >  > > from the C3, I asked whether they intended to bring it back, and the
+ > >  > > answer was "extremely unlikely".
+ > >  > >
+ > >  > 
+ > >  > Do you know if it made a big performance difference?
+ > > 
+ > > On the winchip, it was a huge win. I can't remember exact numbers,
+ > > but pretty much every benchmark I threw at it at the time showed
+ > > significant improvement.
+ > 
+ > Significant as in >10%?
 
-We have three runs, all with 2.6.23-rc3 plus the patches that Suresh
-applied from 20070922.  The first run is with slab.  The second run is
-with SLUB and the third run is SLUB plus the tuning parameters you
-recommended.
+"Worth about 10-20% performance" according to the 2.4.18pre9-ac4
+release notes: http://www.linuxtoday.com/news_story.php3?ltsn=2002-02-14-015-20-NW-KN
 
-I have a spreadsheet with Vtune data in it that was collected during
-each of these test runs, so we can see which functions are the hottest.
-I can grab that data and send it to you, if that's interesting.
+ > >  > But yes we should probably just remove this special case to make 
+ > >  > maintenance easier.
+ > > It's CONFIG_SMP anyway, which none of the winchips were.
+ > 
+ > It's not.
 
-> Was the page allocator pass through patchset 
-> separately applied as I requested?
+You're right it isn't now, but Nicks patch seems to change it so that it is.
 
-I don't believe so.  Suresh?
+...
 
-I think for future tests, it would be easiest if you send me a git
-reference.  That way we will all know precisely what is being tested.
+ #ifdef CONFIG_SMP
+ #define smp_mb()       mb()
+ #define smp_rmb()      rmb()
+-#define smp_wmb()      wmb()
++#ifdef CONFIG_X86_OOSTORE
++# define smp_wmb()     wmb()
++#else
++# define smp_wmb()     barrier()
++#endif
 
-> Finally: Is there some way that I can reproduce the tests on my machines?
+ > And we need memory barriers even without SMP 
+ > when talking to device drivers. Only the smp_*b()s get noped
+ > on UP.
 
-As usual for these kinds of setups ... take a two-CPU machine, 64GB
-of memory, half a dozen fibre channel adapters, about 3000 discs,
-a commercial database, a team of experts for three months worth of
-tuning ...
+Good point.
 
-I don't know if anyone's tried to replicate a benchmark like this using
-Postgres.  Would be nice if they have ...
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
