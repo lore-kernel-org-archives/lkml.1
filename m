@@ -1,47 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbXJDJRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbXJDJRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbXJDJRY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbXJDJRO
+	id S1759483AbXJDJRo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbXJDJRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:17:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58741 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:17:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58742 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753939AbXJDJRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:17:14 -0400
+	id S1756070AbXJDJRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:17:15 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Subject: [GFS2/DLM] Pre-pull patch posting
-Date: Thu,  4 Oct 2007 09:48:53 +0100
-Message-Id: <11914877842142-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 01/51] [GFS2] Fix two races relating to glock callbacks
+Date: Thu,  4 Oct 2007 09:48:54 +0100
+Message-Id: <11914877912880-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
+In-Reply-To: <11914877842142-git-send-email-swhiteho@redhat.com>
+References: <11914877842142-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-Since it seems that another merge window will probably be opening shortly
-this is a posting of the current content of the GFS2/DLM -nmw git tree.
+One of the races relates to referencing a variable while not holding
+its protecting spinlock. The patch simply moves the test inside the
+spin lock. The other races occurs when a demote to unlocked request
+occurs during the time a demote to shared request is already running.
+This of course only happens in the case that the lock was in the
+exclusive mode to start with. The patch adds a check to see if another
+demote request has occurred in the mean time and if it has, then it
+performs a second demote.
 
-There are no new features this time, its all fixes and cleanups. I have
-a few patches that I'm holding back which I'm intending to start off
-the new -nmw git tree with after this merge, those include:
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
- o Patch to use page_mkwrite() on page faults (and thus allow us to
-   use the filemap_fault() function rather than having a special
-   GFS2 version of this like we do at the moment)
- o Patch to clean up gfs2_internal_read() as requested by Christoph
-   Hellwig
- o Patches to separate the GFS2 aops into three separate operations
-   structures (for writeback, ordered & jdata) as per ext3 which is
-   waiting for the merge of Nick Piggin's AOP changes so that I don't
-   land up creating a merge conflict.
-
-Anyhow, back to what is in this set of patches... the major area of
-change is the journalling code where there has been a lot of clean
-up. Other than that, its mostly fixes for individual bugs and clean
-ups that other people have sent to me,
-
-Steve.
-
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 3f0974e..6a3eeba 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -545,12 +545,14 @@ static int rq_demote(struct gfs2_glock *gl)
+ 		return 0;
+ 	}
+ 	set_bit(GLF_LOCK, &gl->gl_flags);
+-	spin_unlock(&gl->gl_spin);
+ 	if (gl->gl_demote_state == LM_ST_UNLOCKED ||
+-	    gl->gl_state != LM_ST_EXCLUSIVE)
++	    gl->gl_state != LM_ST_EXCLUSIVE) {
++		spin_unlock(&gl->gl_spin);
+ 		gfs2_glock_drop_th(gl);
+-	else
++	} else {
++		spin_unlock(&gl->gl_spin);
+ 		gfs2_glock_xmote_th(gl, NULL);
++	}
+ 	spin_lock(&gl->gl_spin);
+ 
+ 	return 0;
+@@ -760,10 +762,20 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
+ 
+ 	if (!gh) {
+ 		gl->gl_stamp = jiffies;
+-		if (ret & LM_OUT_CANCELED)
++		if (ret & LM_OUT_CANCELED) {
+ 			op_done = 0;
+-		else
++		} else {
++			spin_lock(&gl->gl_spin);
++			if (gl->gl_state != gl->gl_demote_state) {
++				gl->gl_req_bh = NULL;
++				spin_unlock(&gl->gl_spin);
++				gfs2_glock_drop_th(gl);
++				gfs2_glock_put(gl);
++				return;
++			}
+ 			gfs2_demote_wake(gl);
++			spin_unlock(&gl->gl_spin);
++		}
+ 	} else {
+ 		spin_lock(&gl->gl_spin);
+ 		list_del_init(&gh->gh_list);
+@@ -817,7 +829,7 @@ out:
+  *
+  */
+ 
+-void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
++static void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
+ {
+ 	struct gfs2_sbd *sdp = gl->gl_sbd;
+ 	int flags = gh ? gh->gh_flags : 0;
+-- 
+1.5.1.2
 
