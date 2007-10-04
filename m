@@ -1,97 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbXJDNGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbXJDNHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbXJDNGk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 09:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXJDNGc
+	id S1758232AbXJDNHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 09:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbXJDNHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 09:06:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:44452 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbXJDNGb (ORCPT
+	Thu, 4 Oct 2007 09:07:30 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:50074 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1753877AbXJDNH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 09:06:31 -0400
-Date: Thu, 4 Oct 2007 15:05:13 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, jikos@jikos.cz
-Subject: video resume stuff
-Message-ID: <20071004130513.GA16076@elf.ucw.cz>
+	Thu, 4 Oct 2007 09:07:29 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 09:07:28 EDT
+Message-ID: <4704DC57.9040001@dev.rtsoft.ru>
+Date: Thu, 04 Oct 2007 16:28:07 +0400
+From: Rusev <arusev@dev.rtsoft.ru>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: linux-kernel@vger.kernel.org
+Subject: JBD-DEBUG /proc/sys entry (again)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+All that should be moved to DEBUGFS under /sys/kernel/debug  and so on
+-  that's right, a bit other issue
+is of interest for me.
 
-I'm thinking about how to clean up video resume/how to get it to work
-for non-VESA video modes (jikos' case).
+My suggestion is that a few other problems with PROCFS exist:
 
-I guess the cleanest solution would be to just call set_mode from
-wakeup.S.... but that is not as easy as I imagined, because bootup
-code seems to be compiled separately.
+>From my observation there are two major issues are involved:
 
-Is there some easy way to retain bootup code in memory, so that wakeup
-can use it? Or is there some easy solution I'm missing?
+1.  /proc/sys entry has very specific readdir operation (vs. other
+entries such as /proc/drivers and others)
+    entries to /proc/sys is likely is to be performed by means of other API.
+    (quick search found thet API explanation for 2.4.xx
+http://www.opentech.at/papers/embedded_proc/node33.html,
+     yet it looks to be a little change in 2.6)
 
-I came up with this, unfortunately it does not even link :-(.
-									Pavel
-diff --git a/arch/i386/kernel/acpi/Makefile b/arch/i386/kernel/acpi/Makefile
-index 7f7be01..f6a0885 100644
---- a/arch/i386/kernel/acpi/Makefile
-+++ b/arch/i386/kernel/acpi/Makefile
-@@ -2,7 +2,10 @@ obj-$(CONFIG_ACPI)		+= boot.o
- ifneq ($(CONFIG_PCI),)
- obj-$(CONFIG_X86_IO_APIC)	+= earlyquirk.o
- endif
--obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup.o
-+obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup.o ../../boot/a20.o       ../../boot/edd.o     ../../boot/pmjump.o      ../../boot/video-vesa.o ../../boot/apm.o  ../../boot/printf.o      ../../boot/video-vga.o ../../boot/cmdline.o    ../../boot/string.o      ../../boot/video.o ../../boot/copy.o      ../../boot/mca.o     ../../boot/tty.o         ../../boot/voyager.o ../../boot/cpu.o       ../../boot/memory.o  ../../boot/version.o ../../boot/cpucheck.o  ../../boot/pm.o      ../../boot/video-bios.o
+2.  function xlate_proc_name behaves not the way it specified in it's
+header comment:
+      [1]  minor issue is that proc_match wolud likely return "equals"
+as result of comparison of "sys" and "sysvipc"
+      [2] more significant issue is that it can't properly walk long
+paths  such as /proc/sys/jbd/jbd-debug,
+           but only paths likes /proc/sys/jbd-debug  (just one step
+down, path walking is broken).
+
+This way we can't add not only /proc/sys/jbd/jbd-debug but any path
+likes /proc/aaa/bbb/xxx-debug at one step.
+The entry /proc/sys is still specific, because even if fixing
+xlate_proc_name we can't see /proc/sys/jbd/jbd-debug
+in userspace and successfully see /proc/aaa/bbb/jbd-debug.
+
+That's because /proc/sys specific operator readdir blocks such PROCFS
+entries that they are NOTproperly registersd
+ with CTL_TABLE.
+
+Yet I think that we have a general problem with
+adding-long-paths-in-one-step, which is addressed by the following patch:
+
+
+
+diff -uprN linux-2.6.21.orig/fs/proc/generic.c
+linux-2.6.21/fs/proc/generic.c
+--- linux-2.6.21.orig/fs/proc/generic.c 2007-09-13 15:36:07.000000000 +0400
++++ linux-2.6.21/fs/proc/generic.c      2007-10-03 22:12:57.000000000 +0400
+@@ -298,6 +298,7 @@ static int xlate_proc_name(const char *n
+        int                     len;
+        int                     rtn = 0;
+
 +
-+#   ../../boot/main.o
+        spin_lock(&proc_subdir_lock);
+        de = &proc_root;
+        while (1) {
+@@ -305,24 +306,52 @@ static int xlate_proc_name(const char *n
+                if (!next)
+                        break;
+
+-               len = next - cp;
+-               for (de = de->subdir; de ; de = de->next) {
+-                       if (proc_match(len, cp, de))
+-                               break;
+-               }
+-               if (!de) {
+-                       rtn = -ENOENT;
+-                       goto out;
+-               }
+-               cp += len + 1;
+-       }
++                ++next;
 +
- 
- ifneq ($(CONFIG_ACPI_PROCESSOR),)
- obj-y				+= cstate.o processor.o
-diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-index f1c7484..3fd5cf6 100644
---- a/arch/i386/kernel/acpi/wakeup.S
-+++ b/arch/i386/kernel/acpi/wakeup.S
-@@ -2,6 +2,9 @@
- #include <linux/linkage.h>
- #include <asm/segment.h>
- #include <asm/page.h>
-+#include <asm/boot.h>
-+#include "../../boot/boot.h"
 +
- 
- #
- # wakeup_code runs in real mode, and at unknown address (determined at run-time).
-@@ -28,6 +31,9 @@ #define BEEP \
- 	movb	$15, %al; 	\
- 	outb	%al, $66;
- 
-+	.globl	set_video
-+	.type	set_video, @function
-+	
- ALIGN
- 	.align	4096
- ENTRY(wakeup_start)
-@@ -71,7 +77,8 @@ #	BEEP
- 	testl	$2, realmode_flags - wakeup_code
- 	jz	1f
- 	mov	video_mode - wakeup_code, %ax
--	call	mode_set
-+	calll	set_video
-+#	call	mode_set
- 1:
- 
- 	# set up page table
++                len = next - cp;
++
++                if(de->subdir == NULL){
++                  /* directory "de" is empty, add myself to it now */
++                  char* my_name = kzalloc( (len - 1)  + 1, GFP_KERNEL);
++                  memcpy(my_name, cp, len - 1);
++                  proc_mkdir(my_name,de);
++                  kfree(my_name);
++                }
++
++
++                struct proc_dir_entry   *parent_de = de;
++                for (de = parent_de->subdir; de ; de = de->next) {
++                  if (proc_match(len - 1, cp, de))
++                                break;
++
++                }
++
++                if(de == NULL){
++                  /* we found no appropriate subdirectory, well create
+it now */
++                  char* my_name = kzalloc( (len - 1)  + 1, GFP_KERNEL);
++                  memcpy(my_name, cp, len - 1);
++                  de = proc_mkdir(my_name,parent_de);
++                  kfree(my_name);
++                }
++
++
++
++                if (!de){
++                        rtn = -ENOENT;
++                        goto out;
++               }
++                cp += len;
++        }
+        *residual = cp;
+        *ret = de;
+ out:
+        spin_unlock(&proc_subdir_lock);
+        return rtn;
++
+ }
 
++
+ static DEFINE_IDR(proc_inum_idr);
+ static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
 
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
