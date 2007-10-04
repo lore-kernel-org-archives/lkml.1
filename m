@@ -1,191 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbXJDMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXJDM5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbXJDMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 08:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbXJDMuM
+	id S1756694AbXJDM5W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 08:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbXJDM5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 08:50:12 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:56286 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753468AbXJDMuK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 08:50:10 -0400
-Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Sumant.Patro@lsi.com,
-       bunk@kernel.org, bwindle@fint.org, linux-kernel@vger.kernel.org,
-       megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
-In-Reply-To: <20071004103655.GA5711@kernel.dk>
-References: <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com>
-	 <20071004084651L.fujita.tomonori@lab.ntt.co.jp>
-	 <20071004072834.GD5236@kernel.dk>
-	 <20071004192047H.fujita.tomonori@lab.ntt.co.jp>
-	 <20071004103655.GA5711@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 04 Oct 2007 08:50:08 -0400
-Message-Id: <1191502208.9479.30.camel@localhost.localdomain>
+	Thu, 4 Oct 2007 08:57:13 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60440 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753075AbXJDM5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 08:57:11 -0400
+To: yoshfuji@linux-ipv6.org, a.p.zijlstra@chello.nl
+Cc: kaigai@kaigai.gr.jp, jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
+Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200710032259.HJF90663.OFMLOJtQHOFVSF@I-love.SAKURA.ne.jp>
+	<1191420442.5599.12.camel@lappy>
+	<200710032326.FJF32915.OQOOHLMtFSFJFV@I-love.SAKURA.ne.jp>
+	<20071003.233249.126777093.yoshfuji@linux-ipv6.org>
+	<200710032356.JIH05236.JQSMOOHFLVFFOt@I-love.SAKURA.ne.jp>
+In-Reply-To: <200710032356.JIH05236.JQSMOOHFLVFFOt@I-love.SAKURA.ne.jp>
+Message-Id: <200710042157.JJD13084.FJHtFQFOOOMSLV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 4 Oct 2007 21:57:06 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-04 at 12:36 +0200, Jens Axboe wrote:
-> On Thu, Oct 04 2007, FUJITA Tomonori wrote:
-> > On Thu, 4 Oct 2007 09:28:34 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Thu, Oct 04 2007, FUJITA Tomonori wrote:
-> > > > On Wed, 3 Oct 2007 17:32:55 -0600
-> > > > "Patro, Sumant" <Sumant.Patro@lsi.com> wrote:
-> > > > 
-> > > > >  
-> > > > > 
-> > > > > > -----Original Message-----
-> > > > > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp] 
-> > > > > > Sent: Tuesday, October 02, 2007 5:01 PM
-> > > > > > To: James.Bottomley@SteelEye.com
-> > > > > > Cc: bunk@kernel.org; bwindle@fint.org; 
-> > > > > > linux-kernel@vger.kernel.org; jens.axboe@oracle.com; 
-> > > > > > fujita.tomonori@lab.ntt.co.jp; Patro, Sumant; DL-MegaRAID 
-> > > > > > Linux; linux-scsi@vger.kernel.org
-> > > > > > Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
-> > > > > > 
-> > > > > > On Tue, 02 Oct 2007 15:38:13 -0500
-> > > > > > James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> > > > > > 
-> > > > > > > On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
-> > > > > > > > Cc's added, the complete bug report is at
-> > > > > > > >   http://lkml.org/lkml/2007/10/2/243
-> > > > > > > > 
-> > > > > > > > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
-> > > > > > > > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
-> > > > > > > > >
-> > > > > > > > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
-> > > > > > > > >...
-> > > > > > > > 
-> > > > > > > > Thanks for your report.
-> > > > > > > > 
-> > > > > > > > Diff'ing the dmesg's shows:
-> > > > > > > > 
-> > > > > > > > <--  snip  -->
-> > > > > > > > 
-> > > > > > > >  scsi0: scanning scsi channel 4 [P0] for physical devices.
-> > > > > > > >  scsi0: scanning scsi channel 5 [P1] for physical devices.
-> > > > > > > >  st: Version 20070203, fixed bufsize 32768, s/g segs 256 -sd 
-> > > > > > > > 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
-> > > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> > > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
-> > > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
-> > > > > > cache: write 
-> > > > > > > > through -sd 0:0:0:0: [sda] 17547264 512-byte hardware 
-> > > > > > sectors (8984 
-> > > > > > > > MB)
-> > > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
-> > > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
-> > > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
-> > > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
-> > > > > > cache: write 
-> > > > > > > > through
-> > > > > > > >   sda: sda1
-> > > > > > > > + sda: p1 exceeds device capacity
-> > > > > > > > 
-> > > > > > > > <--  snip  -->
-> > > > > > > > 
-> > > > > > > > -	case MEGA_BULK_DATA:
-> > > > > > > > -		if (scb->cmd->use_sg == 0)
-> > > > > > > > -			length = scb->cmd->request_bufflen;
-> > > > > > > > -		else {
-> > > > > > > > -			struct scatterlist *sgl =
-> > > > > > > > -				(struct scatterlist 
-> > > > > > *)scb->cmd->request_buffer;
-> > > > > > > > -			length = sgl->length;
-> > > > > > > > -		}
-> > > > > > > > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
-> > > > > > > > -			       length, scb->dma_direction);
-> > > > > > > > -		break;
-> > > > > > > > -
-> > > > > > > 
-> > > > > > > This is the problem piece I think.  We've reintroduced a 
-> > > > > > very old bug:
-> > > > > > > 
-> > > > > > > commit 51c928c34fa7cff38df584ad01de988805877dba
-> > > > > > > Author: James Bottomley <James.Bottomley@SteelEye.com>
-> > > > > > > Date:   Sat Oct 1 09:38:05 2005 -0500
-> > > > > > > 
-> > > > > > >     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
-> > > > > > >     
-> > > > > > >     Some Legacy megaraid cards can't actually cope with the 
-> > > > > > scatter/gather
-> > > > > > >     version of the READ CAPACITY command (which is what we 
-> > > > > > now send them
-> > > > > > >     since altering all SCSI internal I/O to go via the 
-> > > > > > block layer).  Fix
-> > > > > > >     this (and a few other broken megaraid driver 
-> > > > > > assumptions) by sending
-> > > > > > >     the non-sg version of the command if the sg list only 
-> > > > > > has a single
-> > > > > > >     element.
-> > > > > > >     
-> > > > > > >     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-> > > > > > > 
-> > > > > > > So what we have to do is put back the check for use_sg == 1 
-> > > > > > and send 
-> > > > > > > that as a bulk transfer command.
-> > > > > > 
-> > > > > > Sorry about this. Can this fix the problem?
-> > > > > > 
-> > > > > > Thanks,
-> > > > > > 
-> > > > > > 
-> > > > > > diff --git a/drivers/scsi/megaraid.c 
-> > > > > > b/drivers/scsi/megaraid.c index 3907f67..da56163 100644
-> > > > > > --- a/drivers/scsi/megaraid.c
-> > > > > > +++ b/drivers/scsi/megaraid.c
-> > > > > > @@ -1753,6 +1753,14 @@ mega_build_sglist(adapter_t *adapter, 
-> > > > > > scb_t *scb, u32 *buf, u32 *len)
-> > > > > >  
-> > > > > >  	*len = 0;
-> > > > > >  
-> > > > > > +	if (scsi_sg_count(cmd) == 1 && !adapter->has_64bit_addr) {
-> > > > > > +		sg = scsi_sglist(cmd);
-> > > > > > +		scb->dma_h_bulkdata = sg_dma_address(sg);
-> > > > > > +		*buf = (u32)scb->dma_h_bulkdata;
-> > > > > > +		*len = sg_dma_len(sg);
-> > > > > > +		return 0;
-> > > > > > +	}
-> > > > > > +
-> > > > > >  	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
-> > > > > >  		if (adapter->has_64bit_addr) {
-> > > > > >  			scb->sgl64[idx].address = sg_dma_address(sg);
-> > > > > > 
-> > > > > 
-> > > > > 
-> > > > > With this patch I see the correct logical disk size reported.
-> > > > > Thanks.
-> > > > 
-> > > > Great, thanks for testing!
-> > > > 
-> > > > Can you try the following patch instead of the above patch?
-> > > > 
-> > > > http://marc.info/?l=linux-scsi&m=119137033016550&w=2
-> > > > 
-> > > > 
-> > > > I know the changes are pretty trivial and it should work...
-> > > 
-> > > Tomo, this is the patch I added.
-> > 
-> > Thanks. I thought that it will be sent via scsi-misc because the scsi
-> > accessor patch introduced this bug. But either is ok with me.
-> 
-> If it only affects the driver _after_ the scsi accessor patch and as
-> such doesn't screw over git-block, then I'll drop it for sure.
 
-No, this is a release critical fix ... I'll roll it up and send it in
-for 2.6.23.
+About use of singly-linked list:
 
-James
+What my SLL (singly-linked list) holds is bit different from other lists.
 
+Almost all lists hold list of elements (e.g. buffer) that are used *temporarily*.
+Thus, adding to the list and removing from the list are essential.
+
+My SLL holds ACL (access control list) entries that are used *permanently*
+(i.e. throughout the kernel's lifetime).
+These ACL entries are policy used for MAC (mandatory access control).
+You don't change MAC's policy without clear reason, do you?
+Therefore, ACL entries of MAC's policy seldom need to be removed.
+
+So I wonder
+"Remodeling the mechanism of holding ACL entries to support removal of individual entry
+ worth the cost of reference-counter manipulation and the risk of dead-pointers?"
+
+Your next question would be
+"Why are you using SLL for holding elements that are used *permanently*?"
+"Why not allocate a large memory block and hold all elements in that block?"
+Yes, you are right. But I can't do so.
+The reason is explained in "policy file handling" at http://lkml.org/lkml/2007/10/2/56 .
+
+
+
+About use of list that can't remove elements:
+
+I think that many of you are misunderstanding about
+"When entries are automatically appended to a list".
+
+If you run the system in "learning mode" *forever*,
+it will consume all memory; so DoS attacks are possible.
+
+But please be aware that entries are automatically appended
+only while you are running the system in "learning mode".
+Also, there is a safeguard mechanism that controls upper limit.
+These lists consume less than some hundreds KB
+for embedded systems and/or targeted protection of PC systems,
+less than 1 MB for complete protection of PC systems.
+You can see how much memory is used for holding ACL entries
+via /sys/kernel/security/tomoyo/meminfo interface
+and you will find that these lists won't consume all memory in your system.
+
+When you are running the system in "enforcing mode",
+no entries are appended automatically; so DoS attacks are impossible.
 
