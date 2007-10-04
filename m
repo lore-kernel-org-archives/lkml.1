@@ -1,129 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759765AbXJDJTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbXJDJTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759765AbXJDJTa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbXJDJR0
+	id S1759969AbXJDJTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbXJDJR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:17:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58754 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:17:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58756 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759351AbXJDJRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:17:24 -0400
+	id S1759351AbXJDJR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:17:26 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 06/51] [GFS2] Move some code inside the log lock
-Date: Thu,  4 Oct 2007 09:48:59 +0100
-Message-Id: <11914878002186-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 07/51] [GFS2] Revert part of earlier log.c changes
+Date: Thu,  4 Oct 2007 09:49:00 +0100
+Message-Id: <1191487802255-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11914877993073-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878002186-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
  <11914877952291-git-send-email-swhiteho@redhat.com>
  <11914877971413-git-send-email-swhiteho@redhat.com>
  <11914877993073-git-send-email-swhiteho@redhat.com>
+ <11914878002186-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bob Peterson <rpeterso@redhat.com>
 
-This is the first of five patches for bug #248176:
+This is patch 2 of 5 for bug #248176.
 
-There were still some critical variables being manipulated outside
-the log_lock spinlock.  That usually resulted in a hang.
+The list_move code previously concocted in log.c for bug #238162
+(see https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=238162#c23)
+never runs as bh can now never be NULL at this point.
 
 Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index 3b395c4..a0371f8 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -117,7 +117,7 @@ static void buf_lo_before_commit(struct gfs2_sbd *sdp)
- 	struct buffer_head *bh;
- 	struct gfs2_log_descriptor *ld;
- 	struct gfs2_bufdata *bd1 = NULL, *bd2;
--	unsigned int total = sdp->sd_log_num_buf;
-+	unsigned int total;
- 	unsigned int offset = BUF_OFFSET;
- 	unsigned int limit;
- 	unsigned int num;
-@@ -127,12 +127,16 @@ static void buf_lo_before_commit(struct gfs2_sbd *sdp)
- 	limit = buf_limit(sdp);
- 	/* for 4k blocks, limit = 503 */
+diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+index f49a12e..f7c0608 100644
+--- a/fs/gfs2/log.c
++++ b/fs/gfs2/log.c
+@@ -83,11 +83,6 @@ static void gfs2_ail1_start_one(struct gfs2_sbd *sdp, struct gfs2_ail *ai)
  
-+	gfs2_log_lock(sdp);
-+	total = sdp->sd_log_num_buf;
- 	bd1 = bd2 = list_prepare_entry(bd1, &sdp->sd_log_le_buf, bd_le.le_list);
- 	while(total) {
- 		num = total;
- 		if (total > limit)
- 			num = limit;
-+		gfs2_log_unlock(sdp);
- 		bh = gfs2_log_get_buf(sdp);
-+		gfs2_log_lock(sdp);
- 		ld = (struct gfs2_log_descriptor *)bh->b_data;
- 		ptr = (__be64 *)(bh->b_data + offset);
- 		ld->ld_header.mh_magic = cpu_to_be32(GFS2_MAGIC);
-@@ -152,21 +156,27 @@ static void buf_lo_before_commit(struct gfs2_sbd *sdp)
- 				break;
- 		}
+ 			gfs2_assert(sdp, bd->bd_ail == ai);
  
-+		gfs2_log_unlock(sdp);
- 		set_buffer_dirty(bh);
- 		ll_rw_block(WRITE, 1, &bh);
-+		gfs2_log_lock(sdp);
+-			if (!bh){
+-				list_move(&bd->bd_ail_st_list, &ai->ai_ail2_list);
+-                                continue;
+-                        }
+-
+ 			if (!buffer_busy(bh)) {
+ 				if (!buffer_uptodate(bh)) {
+ 					gfs2_log_unlock(sdp);
+@@ -130,11 +125,6 @@ static int gfs2_ail1_empty_one(struct gfs2_sbd *sdp, struct gfs2_ail *ai, int fl
+ 					 bd_ail_st_list) {
+ 		bh = bd->bd_bh;
  
- 		n = 0;
- 		list_for_each_entry_continue(bd2, &sdp->sd_log_le_buf,
- 					     bd_le.le_list) {
-+			gfs2_log_unlock(sdp);
- 			bh = gfs2_log_fake_buf(sdp, bd2->bd_bh);
- 			set_buffer_dirty(bh);
- 			ll_rw_block(WRITE, 1, &bh);
-+			gfs2_log_lock(sdp);
- 			if (++n >= num)
- 				break;
- 		}
+-		if (!bh){
+-			list_move(&bd->bd_ail_st_list, &ai->ai_ail2_list);
+-			continue;
+-		}
+-
+ 		gfs2_assert(sdp, bd->bd_ail == ai);
  
-+		BUG_ON(total < num);
- 		total -= num;
- 	}
-+	gfs2_log_unlock(sdp);
- }
+ 		if (buffer_busy(bh)) {
+@@ -155,13 +145,14 @@ static int gfs2_ail1_empty_one(struct gfs2_sbd *sdp, struct gfs2_ail *ai, int fl
  
- static void buf_lo_after_commit(struct gfs2_sbd *sdp, struct gfs2_ail *ai)
-@@ -524,7 +534,7 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 	struct gfs2_log_descriptor *ld;
- 	unsigned int limit;
- 	unsigned int total_dbuf;
--	unsigned int total_jdata = sdp->sd_log_num_jdata;
-+	unsigned int total_jdata;
- 	unsigned int num, n;
- 	__be64 *ptr = NULL;
+ static void gfs2_ail1_start(struct gfs2_sbd *sdp, int flags)
+ {
+-	struct list_head *head = &sdp->sd_ail1_list;
++	struct list_head *head;
+ 	u64 sync_gen;
+ 	struct list_head *first;
+ 	struct gfs2_ail *first_ai, *ai, *tmp;
+ 	int done = 0;
  
-@@ -536,6 +546,7 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 	 */
  	gfs2_log_lock(sdp);
- 	total_dbuf = sdp->sd_log_num_databuf;
-+	total_jdata = sdp->sd_log_num_jdata;
- 	bd2 = bd1 = list_prepare_entry(bd1, &sdp->sd_log_le_databuf,
- 				       bd_le.le_list);
- 	while(total_dbuf) {
-@@ -621,10 +632,10 @@ static void databuf_lo_before_commit(struct gfs2_sbd *sdp)
- 		}
++	head = &sdp->sd_ail1_list;
+ 	if (list_empty(head)) {
  		gfs2_log_unlock(sdp);
- 		if (bh) {
--			set_buffer_mapped(bh);
- 			set_buffer_dirty(bh);
- 			ll_rw_block(WRITE, 1, &bh);
- 			bh = NULL;
-+			ptr = NULL;
- 		}
- 		n = 0;
- 		gfs2_log_lock(sdp);
+ 		return;
 -- 
 1.5.1.2
 
