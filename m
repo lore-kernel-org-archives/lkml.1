@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbXJDFyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbXJDFzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbXJDFyu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXJDFvb
+	id S1758709AbXJDFzZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbXJDFvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:31 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44816 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:33 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44814 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753264AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753228AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:10 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ext4: Convert s_r_blocks_count and s_free_blocks_count
-Date: Thu,  4 Oct 2007 01:50:56 -0400
-Message-Id: <1191477059-5357-22-git-send-email-tytso@mit.edu>
+Subject: [PATCH] ext4: Convert bg_block_bitmap to bg_block_bitmap_lo
+Date: Thu,  4 Oct 2007 01:50:53 -0400
+Message-Id: <1191477059-5357-19-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-21-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-18-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-2-git-send-email-tytso@mit.edu>
  <1191477059-5357-3-git-send-email-tytso@mit.edu>
@@ -36,9 +36,6 @@ References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-16-git-send-email-tytso@mit.edu>
  <1191477059-5357-17-git-send-email-tytso@mit.edu>
  <1191477059-5357-18-git-send-email-tytso@mit.edu>
- <1191477059-5357-19-git-send-email-tytso@mit.edu>
- <1191477059-5357-20-git-send-email-tytso@mit.edu>
- <1191477059-5357-21-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -47,81 +44,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Convert s_r_blocks_count and s_free_blocks_count to
-s_r_blocks_count_lo and s_free_blocks_count_lo
-
-This helps in finding BUGs due to direct partial access of
-these split 64 bit values
-
-Also fix direct partial access in ext4 code
+Convert bg_block_bitmap to bg_block_bitmap_lo
+This helps in catching some BUGS due to direct
+partial access of these split fields.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/ext4/super.c         |    2 +-
- include/linux/ext4_fs.h |   12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ fs/ext4/super.c         |    6 +++---
+ include/linux/ext4_fs.h |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index dc7fe4c..dbd114c 100644
+index d8bb279..02a2418 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -2635,7 +2635,7 @@ static int ext4_statfs (struct dentry * dentry, struct kstatfs * buf)
- 	buf->f_bsize = sb->s_blocksize;
- 	buf->f_blocks = ext4_blocks_count(es) - sbi->s_overhead_last;
- 	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
--	es->s_free_blocks_count = cpu_to_le32(buf->f_bfree);
-+	ext4_free_blocks_count_set(es, buf->f_bfree);
- 	buf->f_bavail = buf->f_bfree - ext4_r_blocks_count(es);
- 	if (buf->f_bfree < ext4_r_blocks_count(es))
- 		buf->f_bavail = 0;
+@@ -70,9 +70,9 @@ static void ext4_write_super_lockfs(struct super_block *sb);
+ ext4_fsblk_t ext4_block_bitmap(struct super_block *sb,
+ 			       struct ext4_group_desc *bg)
+ {
+-	return le32_to_cpu(bg->bg_block_bitmap) |
++	return le32_to_cpu(bg->bg_block_bitmap_lo) |
+ 		(EXT4_DESC_SIZE(sb) >= EXT4_MIN_DESC_SIZE_64BIT ?
+-		 (ext4_fsblk_t)le32_to_cpu(bg->bg_block_bitmap_hi) << 32 : 0);
++		(ext4_fsblk_t)le32_to_cpu(bg->bg_block_bitmap_hi) << 32 : 0);
+ }
+ 
+ ext4_fsblk_t ext4_inode_bitmap(struct super_block *sb,
+@@ -94,7 +94,7 @@ ext4_fsblk_t ext4_inode_table(struct super_block *sb,
+ void ext4_block_bitmap_set(struct super_block *sb,
+ 			   struct ext4_group_desc *bg, ext4_fsblk_t blk)
+ {
+-	bg->bg_block_bitmap = cpu_to_le32((u32)blk);
++	bg->bg_block_bitmap_lo = cpu_to_le32((u32)blk);
+ 	if (EXT4_DESC_SIZE(sb) >= EXT4_MIN_DESC_SIZE_64BIT)
+ 		bg->bg_block_bitmap_hi = cpu_to_le32(blk >> 32);
+ }
 diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index 339412d..fb31c1a 100644
+index ab608e8..c26e30e 100644
 --- a/include/linux/ext4_fs.h
 +++ b/include/linux/ext4_fs.h
-@@ -502,8 +502,8 @@ do {									       \
- struct ext4_super_block {
- /*00*/	__le32	s_inodes_count;		/* Inodes count */
- 	__le32	s_blocks_count_lo;	/* Blocks count */
--	__le32	s_r_blocks_count;	/* Reserved blocks count */
--	__le32	s_free_blocks_count;	/* Free blocks count */
-+	__le32	s_r_blocks_count_lo;	/* Reserved blocks count */
-+	__le32	s_free_blocks_count_lo;	/* Free blocks count */
- /*10*/	__le32	s_free_inodes_count;	/* Free inodes count */
- 	__le32	s_first_data_block;	/* First Data Block */
- 	__le32	s_log_block_size;	/* Block size */
-@@ -1007,13 +1007,13 @@ static inline ext4_fsblk_t ext4_blocks_count(struct ext4_super_block *es)
- static inline ext4_fsblk_t ext4_r_blocks_count(struct ext4_super_block *es)
+@@ -105,7 +105,7 @@
+  */
+ struct ext4_group_desc
  {
- 	return ((ext4_fsblk_t)le32_to_cpu(es->s_r_blocks_count_hi) << 32) |
--		le32_to_cpu(es->s_r_blocks_count);
-+		le32_to_cpu(es->s_r_blocks_count_lo);
- }
- 
- static inline ext4_fsblk_t ext4_free_blocks_count(struct ext4_super_block *es)
- {
- 	return ((ext4_fsblk_t)le32_to_cpu(es->s_free_blocks_count_hi) << 32) |
--		le32_to_cpu(es->s_free_blocks_count);
-+		le32_to_cpu(es->s_free_blocks_count_lo);
- }
- 
- static inline void ext4_blocks_count_set(struct ext4_super_block *es,
-@@ -1026,14 +1026,14 @@ static inline void ext4_blocks_count_set(struct ext4_super_block *es,
- static inline void ext4_free_blocks_count_set(struct ext4_super_block *es,
- 					      ext4_fsblk_t blk)
- {
--	es->s_free_blocks_count = cpu_to_le32((u32)blk);
-+	es->s_free_blocks_count_lo = cpu_to_le32((u32)blk);
- 	es->s_free_blocks_count_hi = cpu_to_le32(blk >> 32);
- }
- 
- static inline void ext4_r_blocks_count_set(struct ext4_super_block *es,
- 					   ext4_fsblk_t blk)
- {
--	es->s_r_blocks_count = cpu_to_le32((u32)blk);
-+	es->s_r_blocks_count_lo = cpu_to_le32((u32)blk);
- 	es->s_r_blocks_count_hi = cpu_to_le32(blk >> 32);
- }
- 
+-	__le32	bg_block_bitmap;	/* Blocks bitmap block */
++	__le32	bg_block_bitmap_lo;	/* Blocks bitmap block */
+ 	__le32	bg_inode_bitmap;	/* Inodes bitmap block */
+ 	__le32	bg_inode_table;		/* Inodes table block */
+ 	__le16	bg_free_blocks_count;	/* Free blocks count */
 -- 
 1.5.3.2.81.g17ed
 
