@@ -1,149 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbXJDJhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbXJDJh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761697AbXJDJhl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759767AbXJDJUT
+	id S1762317AbXJDJh7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXJDJYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:20:19 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:3360 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759746AbXJDJUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:20:15 -0400
-X-IronPort-AV: i="4.21,228,1188792000"; 
-   d="scan'208"; a="41086814:sNHT33715570"
-Subject: Re: Blackfin Ethernet MAC driver compile error
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Kalle Pokki <kalle.pokki@iki.fi>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bryan.wu@analog.com
-In-Reply-To: <200710021136.38514.rgetz@blackfin.uclinux.org>
-References: <a425f86c0710020430o3507eeb2veb104dc936f230dd@mail.gmail.com>
-	 <200710021136.38514.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Thu, 04 Oct 2007 17:20:08 +0800
-Message-Id: <1191489608.6139.10.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 04 Oct 2007 09:20:11.0767 (UTC) FILETIME=[C3DFA070:01C80667]
+	Thu, 4 Oct 2007 05:24:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42216 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760612AbXJDJY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:24:29 -0400
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       randy.dunlap@oracle.com, hch@infradead.org,
+       systemtap@sources.redhat.com
+Subject: Re: [patch 1/3]  Trace code and documentation
+References: <1191342800.31351.9.camel@lc4eb748232119.ibm.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 04 Oct 2007 11:24:26 +0200
+In-Reply-To: <1191342800.31351.9.camel@lc4eb748232119.ibm.com>
+Message-ID: <p73odff5j1x.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-02 at 23:36 +0800, Robin Getz wrote:
-> On Tue 2 Oct 2007 07:30, Kalle Pokki pondered: 
-> > The Blackfin Ethernet MAC driver does not compile. It seems the
-> driver is 
-> > missing some pinmux defines. 
-> > 
-> >   CC      drivers/net/bfin_mac.o 
-> > drivers/net/bfin_mac.c: In function 'setup_pin_mux': 
-> > drivers/net/bfin_mac.c:275: error: 'P_MII0' undeclared (first use
-> in 
-> > this function) 
-> > drivers/net/bfin_mac.c:275: error: (Each undeclared identifier is 
-> > reported only once 
-> > drivers/net/bfin_mac.c:275: error: for each function it appears in.)
-> 
-> Unfortunately, Bryan is out for the week, so he can't update things..
+"David J. Wilder" <dwilder@us.ibm.com> writes:
+> @@ -0,0 +1,160 @@
+> +Trace Setup and Control
+> +=======================
+> +In the kernel, the trace interface provides a simple mechanism for
+> +starting and managing data channels (traces) to user space.
 
-I am here, although it is National Day holiday in China and I am not in
-office.
-> 
-> The updates to include/asm-blackfin/mach-bf537/portmux.h seem to have
-> been 
-> missing from Bryan's git tree, and therefore were not pushed to
-> Linus's tree.
-> 
-Yes, it was not merged to Linus's tree almost one month ago.
-But now Linus git-pull it from my git-tree 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=66b1f1a982bf4dbad9fa0de25b8d95c4936f05c4
+Wasn't relayfs supposed to do that already? Why do you need another
+wrapper around it? 
 
-> Sigh. - Sorry about that.
-> 
-> When Bryan gets back, he will update things, but for now, this might
-> work. (I 
-> don't know if there are any other interdependencies).
-> 
-Sorry again, some important core API changes should be merged before
-drivers.
-> 
-> --- portmux.h   2007-10-02 11:18:34.000000000 -0400 
-> +++ ./linux-2.6.x/include/asm-blackfin/mach-bf537/portmux.h
-> 2007-08-18 
-> 19:37:22.000000000 -0400 
-> @@ -99,11 +99,44 @@ 
->  #define P_SPORT0_DRPRI (P_DEFINED | P_IDENT(PORT_PJ8) | P_FUNCT(0)) 
->  #define P_SPORT0_TSCLK (P_DEFINED | P_IDENT(PORT_PJ9) | P_FUNCT(0)) 
->  #define P_SPORT0_TFS   (P_DEFINED | P_IDENT(PORT_PJ10) | P_FUNCT(0)) 
-> -#define P_SPORT0_DTPRI (P_DEFINED | P_IDENT(PORT_PJ11) | P_FUNCT(1)) 
-> +#define P_SPORT0_DTPRI (P_DEFINED | P_IDENT(PORT_PJ11) | P_FUNCT(0)) 
->  #define P_CAN0_RX      (P_DEFINED | P_IDENT(PORT_PJ4) | P_FUNCT(1)) 
->  #define P_CAN0_TX      (P_DEFINED | P_IDENT(PORT_PJ5) | P_FUNCT(1)) 
->  #define P_SPI0_SSEL3   (P_DEFINED | P_IDENT(PORT_PJ10) | P_FUNCT(1)) 
->  #define P_SPI0_SSEL2   (P_DEFINED | P_IDENT(PORT_PJ11) | P_FUNCT(1)) 
->  #define P_SPI0_SSEL7   (P_DEFINED | P_IDENT(PORT_PJ5) | P_FUNCT(2)) 
->   
-> -#endif /* _MACH_PORTMUX_H_ */ 
-> +#define P_MII0 {\ 
-> +       P_MII0_ETxD0, \ 
-> +       P_MII0_ETxD1, \ 
-> +       P_MII0_ETxD2, \ 
-> +       P_MII0_ETxD3, \ 
-> +       P_MII0_ETxEN, \ 
-> +       P_MII0_TxCLK, \ 
-> +       P_MII0_PHYINT, \ 
-> +       P_MII0_COL, \ 
-> +       P_MII0_ERxD0, \ 
-> +       P_MII0_ERxD1, \ 
-> +       P_MII0_ERxD2, \ 
-> +       P_MII0_ERxD3, \ 
-> +       P_MII0_ERxDV, \ 
-> +       P_MII0_ERxCLK, \ 
-> +       P_MII0_ERxER, \ 
-> +       P_MII0_CRS, \ 
-> +       P_MDC, \ 
-> +       P_MDIO, 0} 
-> + 
-> + 
-> +#define P_RMII0 {\ 
-> +       P_MII0_ETxD0, \ 
-> +       P_MII0_ETxD1, \ 
-> +       P_MII0_ETxEN, \ 
-> +       P_MII0_ERxD0, \ 
-> +       P_MII0_ERxD1, \ 
-> +       P_MII0_ERxER, \ 
-> +       P_RMII0_REF_CLK, \ 
-> +       P_RMII0_MDINT, \ 
-> +       P_RMII0_CRS_DV, \ 
-> +       P_MDC, \ 
-> +       P_MDIO, 0} 
-> +#endif                                 /* _MACH_PORTMUX_H_ */
-> 
-> > drivers/net/bfin_mac.c:279: error: implicit declaration of function 
-> > 'peripheral_request_list' 
-> > drivers/net/bfin_mac.c:285: error: implicit declaration of function 
-> > 'peripheral_free_list'
-> 
-> Arg.
-> 
-> This was in an arch/blackfin/kernel/bfin_gpio.c update that hasn't
-> seem to 
-> made it either.
-> 
-> In the future - we will make sure driver submissions are done in the
-> correct 
-> order - so the proper infrastructure is in the tree before the driver
-> is 
-> submitted. - Sorry.
-> 
-I will try my best to keep them in order or fix it as soon as possible,
--:)))
+Is this also really still faster than a printk below log level
+(without console driver overhead). If not then why not just
+use printk? 
 
-[!snip!]
-> 
-Thanks
--Bryan
-> 
+Especially your example is worrying. It essentially defines a new
+printk. I think there is a case for a fast logging subsystem because
+printk() is admittedly a little slow [somewhat slow below log level
+and incredible slow above it]
+
+But fast means binary items (not sprintf), no global locks, not
+multiple layers, per CPU etc.. But your example and this patch has all
+this and I bet it is not very fast.
+
+Is the result (e.g. the trace example module) still any faster
+than printk below log level? If not then why bother.
+
+Adding another slow logger would be just a waste of time imho.
+It just means that everybody who needs a fast logger just need
+to reimplement their own anyways. And the people who can tolerate
+slow loggers are probably already adequately served by 
+printk. Also there is already direct relayfs.
+
+-Andi
