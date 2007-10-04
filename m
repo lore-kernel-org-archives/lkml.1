@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXJDVm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbXJDVsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761642AbXJDVm5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 17:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbXJDVmt
+	id S1761453AbXJDVsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 17:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbXJDVsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 17:42:49 -0400
-Received: from mx1.lost-oasis.net ([212.85.153.8]:55447 "EHLO
-	mx1.lost-oasis.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757723AbXJDVms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 17:42:48 -0400
-Date: Thu, 4 Oct 2007 22:47:15 +0200
-From: Mathieu Chouquet-Stringer <mchouque@free.fr>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ollie Wild <aaw@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] Linux 2.6.23-rc9 and MAX_ARG_PAGES
-Message-ID: <20071004204715.GA28631@bigip.bigip.mine.nu>
-Mail-Followup-To: Mathieu Chouquet-Stringer <mchouque@free.fr>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ollie Wild <aaw@google.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@stusta.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <m3wsu2u7y6.fsf@bigip.mine.nu> <1191518270.5574.21.camel@lappy>
+	Thu, 4 Oct 2007 17:48:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48742 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753345AbXJDVsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 17:48:31 -0400
+Message-ID: <47055F84.109@redhat.com>
+Date: Thu, 04 Oct 2007 17:47:48 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191518270.5574.21.camel@lappy>
-X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK'.w
-	3:{EoxBR
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: David Miller <davem@davemloft.net>
+CC: willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
+       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com,
+       suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+References: <20071004192824.GA9852@linux.intel.com>	<20071004.135537.39158051.davem@davemloft.net>	<470554D9.2050505@redhat.com> <20071004.141113.08322956.davem@davemloft.net>
+In-Reply-To: <20071004.141113.08322956.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 07:17:50PM +0200, Peter Zijlstra wrote:
-> /me tries
+On 10/04/2007 05:11 PM, David Miller wrote:
+> From: Chuck Ebbert <cebbert@redhat.com>
+> Date: Thu, 04 Oct 2007 17:02:17 -0400
 > 
-> yep works like a charm, and that is a tree with a full git repo and
-> several build dirs in it.
+>> How do you simulate reading 100TB of data spread across 3000 disks,
+>> selecting 10% of it using some criterion, then sorting and
+>> summarizing the result?
+> 
+> You repeatedly read zeros from a smaller disk into the same amount of
+> memory, and sort that as if it were real data instead.
 
-Well, what can I say? ;-)
-
-> what happens if you up the stack limit to say 128M ?
-
-It's unlimited.
-
-> Also, do you happen to have execve syscall audit stuff enabled?
-
-Nope.
-
--- 
-Mathieu Chouquet-Stringer                           mchouque@free.fr
-            The sun itself sees not till heaven clears.
-	             -- William Shakespeare --
+You've just replaced 3000 concurrent streams of data with a single
+stream.  That won't test the memory allocator's ability to allocate
+memory to many concurrent users very well.
