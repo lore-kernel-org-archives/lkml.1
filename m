@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXJDJqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbXJDJvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbXJDJqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXJDJqH
+	id S1759699AbXJDJvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbXJDJvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:46:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41329 "EHLO amd.ucw.cz"
+	Thu, 4 Oct 2007 05:51:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52692 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756471AbXJDJqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:46:06 -0400
-Date: Thu, 4 Oct 2007 11:44:22 +0200
+	id S1754500AbXJDJvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:51:02 -0400
+Date: Thu, 4 Oct 2007 11:49:20 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
-Subject: CodingStyle: mention bitfields/whitespace style, prefer (!foo) in
-	examples
-Message-ID: <20071004094422.GA652@elf.ucw.cz>
+Subject: vm.txt: document min_free_pages as critical for correctness
+Message-ID: <20071004094920.GA407@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,40 +23,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Mention whitespace and bitfields style, prefer (!foo) to (foo == NULL)
-in examples.
+min_free_pages is critical for correctness, document it as such.
 
 Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 7f1730f..1595a45 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -71,6 +71,15 @@ used for indentation, and the above exam
+index a0ccc5b..e460c19 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -111,6 +111,12 @@ of kilobytes free.  The VM uses this num
+ value for each lowmem zone in the system.  Each lowmem zone gets 
+ a number of reserved free pages based proportionally on its size.
  
- Get a decent editor and don't leave whitespace at the end of lines.
- 
-+Bitfield variables should be indented like this:
++Some minimal ammount of memory is needed to satisfy PF_MEMALLOC
++allocations; if you set this to lower than 1024KB, your system will
++become subtly broken, and prone to deadlock under high loads.
 +
-+	unsigned int foo :1;
++Setting this too high will OOM your machine instantly.
 +
-+Do not put whitespace between any of the unary operators and their operand.
-+
-+It is usually unnecessary to have whitespace around parentheses as
-+part of expressions, around brackets, or around the operators . and
-+->.
+ ==============================================================
  
- 		Chapter 2: Breaking long lines and strings
- 
-@@ -403,7 +412,7 @@ int fun(int a)
- 	int result = 0;
- 	char *buffer = kmalloc(SIZE);
- 
--	if (buffer == NULL)
-+	if (!buffer)
- 		return -ENOMEM;
- 
- 	if (condition1) {
+ percpu_pagelist_fraction
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
