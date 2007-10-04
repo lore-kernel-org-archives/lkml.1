@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbXJDP7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXJDP7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760567AbXJDP7e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 11:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759605AbXJDP5V
+	id S1759960AbXJDP7u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 11:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759632AbXJDP5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:57:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45605 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 11:57:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45608 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759588AbXJDP5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:57:19 -0400
+	id S1757842AbXJDP5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 11:57:22 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 05/32] IGET: Use iget_failed() in GFS2 [try #2]
+Subject: [PATCH 04/32] IGET: Use iget_failed() in AFS [try #2]
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 04 Oct 2007 16:56:27 +0100
-Message-ID: <20071004155627.2814.41683.stgit@warthog.procyon.org.uk>
+Date: Thu, 04 Oct 2007 16:56:22 +0100
+Message-ID: <20071004155622.2814.64845.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
 References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,25 +29,28 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use iget_failed() in GFS2 to kill a failed inode.
+Use iget_failed() in AFS to kill a failed inode.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/gfs2/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/afs/inode.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 34f7bcd..498844f 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -185,7 +185,7 @@ fail_put:
- 	ip->i_gl->gl_object = NULL;
- 	gfs2_glock_put(ip->i_gl);
- fail:
--	iput(inode);
-+	iget_failed(inode);
- 	return ERR_PTR(error);
- }
+diff --git a/fs/afs/inode.c b/fs/afs/inode.c
+index d196840..ca9b02f 100644
+--- a/fs/afs/inode.c
++++ b/fs/afs/inode.c
+@@ -196,10 +196,7 @@ struct inode *afs_iget(struct super_block *sb, struct key *key,
  
+ 	/* failure */
+ bad_inode:
+-	make_bad_inode(inode);
+-	unlock_new_inode(inode);
+-	iput(inode);
+-
++	iget_failed(inode);
+ 	_leave(" = %d [bad]", ret);
+ 	return ERR_PTR(ret);
+ }
 
