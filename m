@@ -1,61 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXJDMrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbXJDMu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbXJDMrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 08:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbXJDMra
+	id S1759654AbXJDMu1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 08:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbXJDMuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 08:47:30 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34700 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756200AbXJDMr3 (ORCPT
+	Thu, 4 Oct 2007 08:50:12 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:56286 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753468AbXJDMuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 08:47:29 -0400
-Date: Thu, 4 Oct 2007 21:47:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Shi Weihua <shiwh@cn.fujitsu.com>
-Cc: mikpe@it.uu.se, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound
- occurs
-Message-Id: <20071004214730.6f6ff3ef.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4704DD88.8030804@cn.fujitsu.com>
-References: <200710031346.l93DkWbE028800@harpo.it.uu.se>
-	<20071003232509.929160f1.kamezawa.hiroyu@jp.fujitsu.com>
-	<4704D4DE.8010805@cn.fujitsu.com>
-	<20071004211746.3071b717.kamezawa.hiroyu@jp.fujitsu.com>
-	<4704DD88.8030804@cn.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Thu, 4 Oct 2007 08:50:10 -0400
+Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Sumant.Patro@lsi.com,
+       bunk@kernel.org, bwindle@fint.org, linux-kernel@vger.kernel.org,
+       megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
+In-Reply-To: <20071004103655.GA5711@kernel.dk>
+References: <0631C836DBF79F42B5A60C8C8D4E8229CC39C7@NAMAIL2.ad.lsil.com>
+	 <20071004084651L.fujita.tomonori@lab.ntt.co.jp>
+	 <20071004072834.GD5236@kernel.dk>
+	 <20071004192047H.fujita.tomonori@lab.ntt.co.jp>
+	 <20071004103655.GA5711@kernel.dk>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 08:50:08 -0400
+Message-Id: <1191502208.9479.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Oct 2007 21:33:12 +0900
-Shi Weihua <shiwh@cn.fujitsu.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote::
-> > On Thu, 04 Oct 2007 20:56:14 +0900
-> > Shi Weihua <shiwh@cn.fujitsu.com> wrote:
+On Thu, 2007-10-04 at 12:36 +0200, Jens Axboe wrote:
+> On Thu, Oct 04 2007, FUJITA Tomonori wrote:
+> > On Thu, 4 Oct 2007 09:28:34 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
 > > 
-> >> 	stack.ss_sp = addr + pagesize;
-> >> 	stack.ss_flags = 0;
-> >> 	stack.ss_size = pagesize;
-> > Here is bad. 
-> > stack,ss_sp = addr;
-> > stack.ss_flags = 0;
-> > stack.ss_size = pagesize * 2;
-> [What the test code want to do]
-> addr+pagesize*2 - addr+pagesize	 -> sigaltstack
-> addr+pagesize	- addr		 -> protected region
-> The code want to catch overflow when esp enter the protected region.
+> > > On Thu, Oct 04 2007, FUJITA Tomonori wrote:
+> > > > On Wed, 3 Oct 2007 17:32:55 -0600
+> > > > "Patro, Sumant" <Sumant.Patro@lsi.com> wrote:
+> > > > 
+> > > > >  
+> > > > > 
+> > > > > > -----Original Message-----
+> > > > > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp] 
+> > > > > > Sent: Tuesday, October 02, 2007 5:01 PM
+> > > > > > To: James.Bottomley@SteelEye.com
+> > > > > > Cc: bunk@kernel.org; bwindle@fint.org; 
+> > > > > > linux-kernel@vger.kernel.org; jens.axboe@oracle.com; 
+> > > > > > fujita.tomonori@lab.ntt.co.jp; Patro, Sumant; DL-MegaRAID 
+> > > > > > Linux; linux-scsi@vger.kernel.org
+> > > > > > Subject: Re: 2.6.23-rc9 boot failure (megaraid?)
+> > > > > > 
+> > > > > > On Tue, 02 Oct 2007 15:38:13 -0500
+> > > > > > James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> > > > > > 
+> > > > > > > On Tue, 2007-10-02 at 20:15 +0200, Adrian Bunk wrote:
+> > > > > > > > Cc's added, the complete bug report is at
+> > > > > > > >   http://lkml.org/lkml/2007/10/2/243
+> > > > > > > > 
+> > > > > > > > On Tue, Oct 02, 2007 at 12:48:26PM -0400, Burton Windle wrote:
+> > > > > > > > > 2.6.23-rc9 fails to boot for me; 2.6.22.9 works fine.
+> > > > > > > > >
+> > > > > > > > > System is a Dell Poweredge with PERC 2/DC with RAID1 volume.
+> > > > > > > > >...
+> > > > > > > > 
+> > > > > > > > Thanks for your report.
+> > > > > > > > 
+> > > > > > > > Diff'ing the dmesg's shows:
+> > > > > > > > 
+> > > > > > > > <--  snip  -->
+> > > > > > > > 
+> > > > > > > >  scsi0: scanning scsi channel 4 [P0] for physical devices.
+> > > > > > > >  scsi0: scanning scsi channel 5 [P1] for physical devices.
+> > > > > > > >  st: Version 20070203, fixed bufsize 32768, s/g segs 256 -sd 
+> > > > > > > > 0:0:0:0: [sda] 17547264 512-byte hardware sectors (8984 MB)
+> > > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> > > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
+> > > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
+> > > > > > cache: write 
+> > > > > > > > through -sd 0:0:0:0: [sda] 17547264 512-byte hardware 
+> > > > > > sectors (8984 
+> > > > > > > > MB)
+> > > > > > > > +sd 0:0:0:0: [sda] Sector size 0 reported, assuming 512.
+> > > > > > > > +sd 0:0:0:0: [sda] 1 512-byte hardware sectors (0 MB)
+> > > > > > > >  sd 0:0:0:0: [sda] Write Protect is off  sd 0:0:0:0: [sda] Asking 
+> > > > > > > > for cache data failed  sd 0:0:0:0: [sda] Assuming drive 
+> > > > > > cache: write 
+> > > > > > > > through
+> > > > > > > >   sda: sda1
+> > > > > > > > + sda: p1 exceeds device capacity
+> > > > > > > > 
+> > > > > > > > <--  snip  -->
+> > > > > > > > 
+> > > > > > > > -	case MEGA_BULK_DATA:
+> > > > > > > > -		if (scb->cmd->use_sg == 0)
+> > > > > > > > -			length = scb->cmd->request_bufflen;
+> > > > > > > > -		else {
+> > > > > > > > -			struct scatterlist *sgl =
+> > > > > > > > -				(struct scatterlist 
+> > > > > > *)scb->cmd->request_buffer;
+> > > > > > > > -			length = sgl->length;
+> > > > > > > > -		}
+> > > > > > > > -		pci_unmap_page(adapter->dev, scb->dma_h_bulkdata,
+> > > > > > > > -			       length, scb->dma_direction);
+> > > > > > > > -		break;
+> > > > > > > > -
+> > > > > > > 
+> > > > > > > This is the problem piece I think.  We've reintroduced a 
+> > > > > > very old bug:
+> > > > > > > 
+> > > > > > > commit 51c928c34fa7cff38df584ad01de988805877dba
+> > > > > > > Author: James Bottomley <James.Bottomley@SteelEye.com>
+> > > > > > > Date:   Sat Oct 1 09:38:05 2005 -0500
+> > > > > > > 
+> > > > > > >     [SCSI] Legacy MegaRAID: Fix READ CAPACITY
+> > > > > > >     
+> > > > > > >     Some Legacy megaraid cards can't actually cope with the 
+> > > > > > scatter/gather
+> > > > > > >     version of the READ CAPACITY command (which is what we 
+> > > > > > now send them
+> > > > > > >     since altering all SCSI internal I/O to go via the 
+> > > > > > block layer).  Fix
+> > > > > > >     this (and a few other broken megaraid driver 
+> > > > > > assumptions) by sending
+> > > > > > >     the non-sg version of the command if the sg list only 
+> > > > > > has a single
+> > > > > > >     element.
+> > > > > > >     
+> > > > > > >     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> > > > > > > 
+> > > > > > > So what we have to do is put back the check for use_sg == 1 
+> > > > > > and send 
+> > > > > > > that as a bulk transfer command.
+> > > > > > 
+> > > > > > Sorry about this. Can this fix the problem?
+> > > > > > 
+> > > > > > Thanks,
+> > > > > > 
+> > > > > > 
+> > > > > > diff --git a/drivers/scsi/megaraid.c 
+> > > > > > b/drivers/scsi/megaraid.c index 3907f67..da56163 100644
+> > > > > > --- a/drivers/scsi/megaraid.c
+> > > > > > +++ b/drivers/scsi/megaraid.c
+> > > > > > @@ -1753,6 +1753,14 @@ mega_build_sglist(adapter_t *adapter, 
+> > > > > > scb_t *scb, u32 *buf, u32 *len)
+> > > > > >  
+> > > > > >  	*len = 0;
+> > > > > >  
+> > > > > > +	if (scsi_sg_count(cmd) == 1 && !adapter->has_64bit_addr) {
+> > > > > > +		sg = scsi_sglist(cmd);
+> > > > > > +		scb->dma_h_bulkdata = sg_dma_address(sg);
+> > > > > > +		*buf = (u32)scb->dma_h_bulkdata;
+> > > > > > +		*len = sg_dma_len(sg);
+> > > > > > +		return 0;
+> > > > > > +	}
+> > > > > > +
+> > > > > >  	scsi_for_each_sg(cmd, sg, sgcnt, idx) {
+> > > > > >  		if (adapter->has_64bit_addr) {
+> > > > > >  			scb->sgl64[idx].address = sg_dma_address(sg);
+> > > > > > 
+> > > > > 
+> > > > > 
+> > > > > With this patch I see the correct logical disk size reported.
+> > > > > Thanks.
+> > > > 
+> > > > Great, thanks for testing!
+> > > > 
+> > > > Can you try the following patch instead of the above patch?
+> > > > 
+> > > > http://marc.info/?l=linux-scsi&m=119137033016550&w=2
+> > > > 
+> > > > 
+> > > > I know the changes are pretty trivial and it should work...
+> > > 
+> > > Tomo, this is the patch I added.
+> > 
+> > Thanks. I thought that it will be sent via scsi-misc because the scsi
+> > accessor patch introduced this bug. But either is ok with me.
 > 
-You have to protect the top of *registered* sigaltstack.
-The reason of wraparound is %esp will be set to the bottom of sigaltstack
-if it is not on sigaltstack area when signaled.
-What you have to do is protect the top of registerd sigaltstack.
-If %esp is in the range of registerd sigaltstack at SEGV, wraparound
-will stop.
+> If it only affects the driver _after_ the scsi accessor patch and as
+> such doesn't screw over git-block, then I'll drop it for sure.
 
-Thanks,
--Kame
- 
+No, this is a release critical fix ... I'll roll it up and send it in
+for 2.6.23.
+
+James
+
+
