@@ -1,171 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbXJDBqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXJDBvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756339AbXJDBqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 21:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbXJDBqJ
+	id S1756028AbXJDBvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 21:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXJDBvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 21:46:09 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57376
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751968AbXJDBqH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 21:46:07 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: + add-documentation-w1w1-masters-00-index.patch added to -mm tree
-Date: Wed, 3 Oct 2007 20:46:03 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       johnpol@2ka.mipt.ru
-References: <200710032117.l93LHXI0009109@imap1.linux-foundation.org> <20071003143849.46c7f157.randy.dunlap@oracle.com>
-In-Reply-To: <20071003143849.46c7f157.randy.dunlap@oracle.com>
+	Wed, 3 Oct 2007 21:51:00 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:45564 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752693AbXJDBu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Oct 2007 21:50:59 -0400
+Message-ID: <391462657.01946@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 4 Oct 2007 09:50:53 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: richard kennedy <richard@rsk.demon.co.uk>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Greg KH <gregkh@suse.de>,
+       Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Krzysztof Oledzki <olel@ans.pl>, akpm@linux-foundation.org,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] writeback: avoid possible balance_dirty_pages() lockup
+	on a light-load bdi
+Message-ID: <20071004015053.GA5789@mail.ustc.edu.cn>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com> <391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com> <20071002020040.GA5275@mail.ustc.edu.cn> <1191415612.3123.21.camel@castor.rsk.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_bXEBHGtyhtgMrMC"
-Message-Id: <200710032046.03751.rob@landley.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191415612.3123.21.camel@castor.rsk.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_bXEBHGtyhtgMrMC
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Wednesday 03 October 2007 4:38:49 pm Randy Dunlap wrote:
-> On Wed, 03 Oct 2007 14:17:33 -0700 akpm@linux-foundation.org wrote:
-> > The patch titled
-> >      Add Documentation/{w1,w1/masters}/00-INDEX
-> > has been added to the -mm tree.  Its filename is
-> >      add-documentation-w1w1-masters-00-index.patch
-> >
-> > *** Remember to use Documentation/SubmitChecklist when testing your code
-> > ***
-> >
-> > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to
-> > find out what to do about this
-> >
-> > ------------------------------------------------------
-> > Subject: Add Documentation/{w1,w1/masters}/00-INDEX
-> > From: Rob Landley <rob@landley.net>
-> >
-> > Two 00-INDEX files under Documentation/w1
-> >
-> > Signed-off-by: Rob Landley <rob@landley.net>
-> > Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+On Wed, Oct 03, 2007 at 01:46:52PM +0100, richard kennedy wrote:
+> On Tue, 2007-10-02 at 10:00 +0800, Fengguang Wu wrote:
 > > ---
-> >
-> >
-> > diff -puN /dev/null Documentation/w1/00-INDEX
-> > --- /dev/null
-> > +++ a/Documentation/w1/00-INDEX
-> > @@ -0,0 +1,8 @@
-> > +00-INDEX
-> > +	- This file
-> > +masters/
-> > +	- Individual chips providing 1-wire busses.
-> > +w1.generic
-> > +	- The 1-wire (w1) bus
-> > +w1.netlink
-> > +	- Userspace communication protocol over connector [1].
-> > diff -puN /dev/null Documentation/w1/masters/00-INDEX
-> > --- /dev/null
-> > +++ a/Documentation/w1/masters/00-INDEX
-> > @@ -0,0 +1,6 @@
-> > +00-INDEX
-> > +	- This file
-> > +ds2482
-> > +	- The Maixm/Dallas Semiconductor DS2482 provides 1-wire busses.
-> > +ds2490
-> > +	- The Maixm/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
->
->               Maxim (2 times)
+> >  mm/page-writeback.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > --- linux-2.6.22.orig/mm/page-writeback.c
+> > +++ linux-2.6.22/mm/page-writeback.c
+> > @@ -250,6 +250,11 @@ static void balance_dirty_pages(struct a
+> >  			pages_written += write_chunk - wbc.nr_to_write;
+> >  			if (pages_written >= write_chunk)
+> >  				break;		/* We've done our duty */
+> > +			if (list_empty(&mapping->host->i_sb->s_dirty) &&
+> > +			    list_empty(&mapping->host->i_sb->s_io) &&
+> > +			    nr_reclaimable + global_page_state(NR_WRITEBACK) <=
+> > +				    dirty_thresh + (1 << (20-PAGE_CACHE_SHIFT)))
+> > +				break;
+> >  		}
+> >  		congestion_wait(WRITE, HZ/10);
+> >  	}
+> 
+> I've been testing 2.6.23-rc9 + this patch all morning but have just seen
+> a lockup. As usual it happened  just after a large file copy finished
+> and while nr_dirty is still large. I'm sorry to say I didn't have a
+> serial console running so I don't have an other info. I will try again
+> and see if I can capture some more data.
+> 
+> I did notice that at the beginning of my tests the dirty blocks are
+> written back more quickly than usual
+> 
+> nr_dirty count after the copy finished and then 60 seconds later :-
+> after copy	+60 seconds
+> 73520		0
+> 73533		0
+> 68554		1
+>  
+> but after several iterations of my testcase & just before the lockup
+> 68560		57165
+> 71974		62896
+>  
+> which is about the same as a unpatched kernel.
 
-That typo was cut and paste from the the "Description" section of both files.  
-(Lines 18 and 13, respectively.)  :(
+Hi Richard,
 
-Attached is an updated version that spells it "maxim" and also fixes the typos 
-in the source files, if that helps...
+Thank you for the testing.
 
->
-> Was this patch posted to a mailing list?  if so, which one?
-> I didn't see it.
+However, my patch is kind of duplicate efforts. I was taking the
+'do it if simple' attitude.  I can continue to improve it if you 
+really want it. Otherwise I'd recommend you to test the coming
+2.6.24-rc1 or backport the -mm writeback patches back to 2.6.23 and
+test it there. Peter has did a good job on it.
 
-LKML on saturday.
-http://lkml.org/lkml/2007/9/29/168
+Fengguang
 
-My pending patches are all at http://landley.net/kdocs/make/patches although 
-I'm waiting for the current batch to work through before posting more.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
-
---Boundary-00=_bXEBHGtyhtgMrMC
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="docw1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="docw1.patch"
-
-From: Rob Landley <rob@landley.net>
-
-Two 00-INDEX files under Documentation/w1 plus typo fixes.
-
-Signed-off-by: Rob Landley <rob@landley.net>
----
-
- Documentation/w1/masters/ds2482 |    2 +-
- Documentation/w1/masters/ds2490 |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -r de183081194a Documentation/w1/masters/ds2482
---- a/Documentation/w1/masters/ds2482	Tue Oct 02 18:00:56 2007 +0000
-+++ b/Documentation/w1/masters/ds2482	Wed Oct 03 20:28:05 2007 -0500
-@@ -15,7 +15,7 @@ Description
- Description
- -----------
- 
--The Maixm/Dallas Semiconductor DS2482 is a I2C device that provides
-+The Maxim/Dallas Semiconductor DS2482 is a I2C device that provides
- one (DS2482-100) or eight (DS2482-800) 1-wire busses.
- 
- 
-diff -r de183081194a Documentation/w1/masters/ds2490
---- a/Documentation/w1/masters/ds2490	Tue Oct 02 18:00:56 2007 +0000
-+++ b/Documentation/w1/masters/ds2490	Wed Oct 03 20:28:05 2007 -0500
-@@ -10,7 +10,7 @@ Description
- Description
- -----------
- 
--The Maixm/Dallas Semiconductor DS2490 is a chip
-+The Maxim/Dallas Semiconductor DS2490 is a chip
- which allows to build USB <-> W1 bridges.
- 
- DS9490(R) is a USB <-> W1 bus master device
---- /dev/null	2007-04-23 10:59:00.000000000 -0500
-+++ hg/Documentation/w1/00-INDEX	2007-10-03 20:26:38.000000000 -0500
-@@ -0,0 +1,8 @@
-+00-INDEX
-+	- This file
-+masters/
-+	- Individual chips providing 1-wire busses.
-+w1.generic
-+	- The 1-wire (w1) bus
-+w1.netlink
-+	- Userspace communication protocol over connector [1].
---- /dev/null	2007-04-23 10:59:00.000000000 -0500
-+++ hg/Documentation/w1/masters/00-INDEX	2007-10-03 20:26:55.000000000 -0500
-@@ -0,0 +1,6 @@
-+00-INDEX
-+	- This file
-+ds2482
-+	- The Maxim/Dallas Semiconductor DS2482 provides 1-wire busses.
-+ds2490
-+	- The Maxim/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
-
---Boundary-00=_bXEBHGtyhtgMrMC--
