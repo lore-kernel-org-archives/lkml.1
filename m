@@ -1,72 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbXJDBop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbXJDBqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbXJDBop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 21:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXJDBof
+	id S1756339AbXJDBqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Oct 2007 21:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbXJDBqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 21:44:35 -0400
-Received: from ns.miraclelinux.com ([219.118.163.66]:53077 "EHLO
-	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968AbXJDBoe (ORCPT
+	Wed, 3 Oct 2007 21:46:09 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57376
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751968AbXJDBqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 21:44:34 -0400
-X-Greylist: delayed 1897 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Oct 2007 21:44:34 EDT
-Date: Thu, 04 Oct 2007 10:11:53 +0900 (JST)
-Message-Id: <20071004.101153.28792915.hyoshiok@miraclelinux.com>
-To: torvalds@linux-foundation.org
-Cc: penberg@cs.helsinki.fi, neil@romig.demon.co.uk,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       hyoshiok@miraclelinux.com
-Subject: Re: File corruption when using kernels 2.6.18+
-From: Hiro Yoshioka <hyoshiok@miraclelinux.com>
-In-Reply-To: <alpine.LFD.0.999.0710031247030.3579@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710031209450.3579@woody.linux-foundation.org>
-	<84144f020710031235r29986ceaj3260e8271eee6ddb@mail.gmail.com>
-	<alpine.LFD.0.999.0710031247030.3579@woody.linux-foundation.org>
-X-Mailer: Mew version 3.3 on XEmacs 21.4.13 (Rational FORTRAN)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.10.3.175225
+	Wed, 3 Oct 2007 21:46:07 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: + add-documentation-w1w1-masters-00-index.patch added to -mm tree
+Date: Wed, 3 Oct 2007 20:46:03 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       johnpol@2ka.mipt.ru
+References: <200710032117.l93LHXI0009109@imap1.linux-foundation.org> <20071003143849.46c7f157.randy.dunlap@oracle.com>
+In-Reply-To: <20071003143849.46c7f157.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_bXEBHGtyhtgMrMC"
+Message-Id: <200710032046.03751.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Boundary-00=_bXEBHGtyhtgMrMC
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-> On Wed, 3 Oct 2007, Pekka Enberg wrote:
-> > 
-> > On 10/3/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > I would bet that the reason the intel-optimized memcpy triggers this is
-> > > that the non-temporal stores just means that you go out directly on the
-> > > bus, and it probably just shows a weakness in the chipset or bus that
-> > > doesn't show with the normal cacheline accesses.
-> > 
-> > But that should show up with memtest too, no?
-> 
-> Not unless memtest uses non-temporal stores with the same (or similar) 
-> access patterns.
-> 
-> The thing is, the CPU cache hides a *lot* of activity from the chipset, 
-> and changes the access patterns radically. 
-> 
-> With normal cached accesses, you'd normally see just the "fill cacheline" 
-> and "write out cacheline" pattern. With movnt, you'd see non-cacheline 
-> accesses to memory. If the chipset was tested under mostly normal loads, 
-> the movnt cases have been getting a lot less coverage.
+On Wednesday 03 October 2007 4:38:49 pm Randy Dunlap wrote:
+> On Wed, 03 Oct 2007 14:17:33 -0700 akpm@linux-foundation.org wrote:
+> > The patch titled
+> >      Add Documentation/{w1,w1/masters}/00-INDEX
+> > has been added to the -mm tree.  Its filename is
+> >      add-documentation-w1w1-masters-00-index.patch
+> >
+> > *** Remember to use Documentation/SubmitChecklist when testing your code
+> > ***
+> >
+> > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to
+> > find out what to do about this
+> >
+> > ------------------------------------------------------
+> > Subject: Add Documentation/{w1,w1/masters}/00-INDEX
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Two 00-INDEX files under Documentation/w1
+> >
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> > Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> >
+> >
+> > diff -puN /dev/null Documentation/w1/00-INDEX
+> > --- /dev/null
+> > +++ a/Documentation/w1/00-INDEX
+> > @@ -0,0 +1,8 @@
+> > +00-INDEX
+> > +	- This file
+> > +masters/
+> > +	- Individual chips providing 1-wire busses.
+> > +w1.generic
+> > +	- The 1-wire (w1) bus
+> > +w1.netlink
+> > +	- Userspace communication protocol over connector [1].
+> > diff -puN /dev/null Documentation/w1/masters/00-INDEX
+> > --- /dev/null
+> > +++ a/Documentation/w1/masters/00-INDEX
+> > @@ -0,0 +1,6 @@
+> > +00-INDEX
+> > +	- This file
+> > +ds2482
+> > +	- The Maixm/Dallas Semiconductor DS2482 provides 1-wire busses.
+> > +ds2490
+> > +	- The Maixm/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
+>
+>               Maxim (2 times)
 
-I'm not so sure whether it is chipset's bug or not.
+That typo was cut and paste from the the "Description" section of both files.  
+(Lines 18 and 13, respectively.)  :(
 
-The movnt does have the WC (write combining) semantics and
-bypass the hardware cache to store the data.
+Attached is an updated version that spells it "maxim" and also fixes the typos 
+in the source files, if that helps...
 
-http://www.intel.com/products/processor/manuals/index.htm
+>
+> Was this patch posted to a mailing list?  if so, which one?
+> I didn't see it.
 
-Intel 64 and IA-32 Architectures Software Developer's Manual
-Volume 1: Basic Architecture
+LKML on saturday.
+http://lkml.org/lkml/2007/9/29/168
 
-Intel 64 and IA-32 Architectures Software Developer's Manual
-Volume 3A: System Programming Guide
+My pending patches are all at http://landley.net/kdocs/make/patches although 
+I'm waiting for the current batch to work through before posting more.
 
-Thanks in advance,
-  Hiro
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
+
+--Boundary-00=_bXEBHGtyhtgMrMC
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="docw1.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="docw1.patch"
+
+From: Rob Landley <rob@landley.net>
+
+Two 00-INDEX files under Documentation/w1 plus typo fixes.
+
+Signed-off-by: Rob Landley <rob@landley.net>
+---
+
+ Documentation/w1/masters/ds2482 |    2 +-
+ Documentation/w1/masters/ds2490 |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff -r de183081194a Documentation/w1/masters/ds2482
+--- a/Documentation/w1/masters/ds2482	Tue Oct 02 18:00:56 2007 +0000
++++ b/Documentation/w1/masters/ds2482	Wed Oct 03 20:28:05 2007 -0500
+@@ -15,7 +15,7 @@ Description
+ Description
+ -----------
+ 
+-The Maixm/Dallas Semiconductor DS2482 is a I2C device that provides
++The Maxim/Dallas Semiconductor DS2482 is a I2C device that provides
+ one (DS2482-100) or eight (DS2482-800) 1-wire busses.
+ 
+ 
+diff -r de183081194a Documentation/w1/masters/ds2490
+--- a/Documentation/w1/masters/ds2490	Tue Oct 02 18:00:56 2007 +0000
++++ b/Documentation/w1/masters/ds2490	Wed Oct 03 20:28:05 2007 -0500
+@@ -10,7 +10,7 @@ Description
+ Description
+ -----------
+ 
+-The Maixm/Dallas Semiconductor DS2490 is a chip
++The Maxim/Dallas Semiconductor DS2490 is a chip
+ which allows to build USB <-> W1 bridges.
+ 
+ DS9490(R) is a USB <-> W1 bus master device
+--- /dev/null	2007-04-23 10:59:00.000000000 -0500
++++ hg/Documentation/w1/00-INDEX	2007-10-03 20:26:38.000000000 -0500
+@@ -0,0 +1,8 @@
++00-INDEX
++	- This file
++masters/
++	- Individual chips providing 1-wire busses.
++w1.generic
++	- The 1-wire (w1) bus
++w1.netlink
++	- Userspace communication protocol over connector [1].
+--- /dev/null	2007-04-23 10:59:00.000000000 -0500
++++ hg/Documentation/w1/masters/00-INDEX	2007-10-03 20:26:55.000000000 -0500
+@@ -0,0 +1,6 @@
++00-INDEX
++	- This file
++ds2482
++	- The Maxim/Dallas Semiconductor DS2482 provides 1-wire busses.
++ds2490
++	- The Maxim/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
+
+--Boundary-00=_bXEBHGtyhtgMrMC--
