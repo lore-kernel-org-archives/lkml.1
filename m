@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbXJDUmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbXJDUoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760626AbXJDUmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 16:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbXJDUmI
+	id S1760955AbXJDUoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 16:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXJDUoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 16:42:08 -0400
-Received: from mailhost.nmt.edu ([129.138.4.52]:39606 "EHLO mailhost.nmt.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757202AbXJDUmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 16:42:07 -0400
-Date: Thu, 4 Oct 2007 14:42:01 -0600
-From: Valerie Henson <val@nmt.edu>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rrbranco@br.ibm.com,
-       twichell@us.ibm.com, ycai@us.ibm.com
-Subject: Re: [ANNOUNCE] ebizzy 0.2 released
-Message-ID: <20071004204201.GB6090@rainbow>
-References: <20070823010626.GC11402@rainbow> <20070930.172703.79041329.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070930.172703.79041329.davem@davemloft.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 4 Oct 2007 16:44:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49991 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757649AbXJDUoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 16:44:24 -0400
+Date: Thu, 4 Oct 2007 13:43:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: w@1wt.eu, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] printk: add KERN_CONT annotation
+Message-Id: <20071004134320.a9160974.akpm@linux-foundation.org>
+In-Reply-To: <20071002051852.GC28345@elte.hu>
+References: <20070928105345.GC18163@shadowen.org>
+	<20071001064448.GA4239@elte.hu>
+	<20071001003007.4e90143b.akpm@linux-foundation.org>
+	<20071002043408.GM10199@1wt.eu>
+	<20071002051852.GC28345@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 30, 2007 at 05:27:03PM -0700, David Miller wrote:
-> From: Valerie Henson <val@nmt.edu>
-> Date: Wed, 22 Aug 2007 19:06:26 -0600
+On Tue, 2 Oct 2007 07:18:52 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> > ebizzy is designed to generate a workload resembling common web
-> > application server workloads.
+> printk: add the KERN_CONT annotation (which is empty string but via 
+> which checkpatch.pl can notice that the lacking KERN_ level is fine). 
+> This useful for multiple calls of hand-crafted printk output done by 
+> early debug code or similar.
 > 
-> I downloaded this only to be basically disappointed.
+
+I like it.  Sort of self-documenting notation.
+
 > 
-> Any program which claims to generate workloads "resembling common web
-> application server workloads", and yet does zero network activity and
-> absolutely nothing with sockets is so far disconnected from reality
-> that I truly question how useful it really is even in the context it
-> was designed for.
-> 
-> Please describe this program differently, "a threaded cpu eater", "a
-> threaded memory scanner", "a threaded hash lookup", or something
-> suitably matching what it really does.
-> 
-> I'm sure there are at least 10 or even more programs in LTP that one
-> could run under "time" and get the same exact functionality.
+> Index: linux/include/linux/kernel.h
+> ===================================================================
+> --- linux.orig/include/linux/kernel.h
+> +++ linux/include/linux/kernel.h
+> @@ -61,6 +61,13 @@ extern const char linux_proc_banner[];
+>  #define	KERN_INFO	"<6>"	/* informational			*/
+>  #define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
+>  
+> +/*
+> + * Annotation for a "continued" line of log printout (only done after a
+> + * line that had no enclosing \n). Only to be used by core/arch code
+> + * during early bootup (a continued line is not SMP-safe otherwise).
+> + */
+> +#define	KERN_CONT	""
+> +
+>  extern int console_printk[];
+>  
+>  #define console_loglevel (console_printk[0])
+> Index: linux/kernel/sched.c
 
-You're right, that part of the description is misleading. (I've even
-had people ask me if it's a file systems benchmark!)
+I get rejects from the sched.c hunk and that's your stuff anwyay, so I
+dropped that bit.
 
-Ebizzy is based on a real web application server and does do things
-that are fairly common in such applications (multithreaded memory
-allocation and memory access), but it ignores networking for two
-reasons: the network stack was not the bottleneck for this workload,
-the VM was, and really good network benchmarks already exist. :)
-ebizzy is not useful to networking (or file systems) developer, but it
-has been used to improve malloc() behavior in glibc and to test VMA
-handling optimizations.
-
-In general, I try to make the source of a benchmark clear because it's
-so tempting to optimize for completely artificial benchmarks.  The
-trick is to do this without misleading the reader (or breaking my NDA).
-
-ebizzy
-------
-
-ebizzy is a workload that stresses memory allocation and the virtual
-memory subsystem.  It was initially written to model the local
-computation portion of a web application server running a large
-internet commerce site.  ebizzy is highly threaded, has a large
-in-memory working set with poor locality, and allocates and
-deallocates memory frequently.  When running most efficiently, ebizzy
-will max out the CPU.  When running inefficiently, it will be blocked
-much of the time.
-
--VAL
