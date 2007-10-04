@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbXJDQnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbXJDQrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760784AbXJDQnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbXJDQnI
+	id S1759898AbXJDQrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbXJDQq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 12:43:08 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:38552 "EHLO smtp.drzeus.cx"
+	Thu, 4 Oct 2007 12:46:56 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:42780 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758758AbXJDQnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 12:43:07 -0400
-Date: Thu, 4 Oct 2007 18:43:04 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Peter Staubach <staubach@redhat.com>, nfsv4@linux-nfs.org,
-       Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
+	id S1758311AbXJDQq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 12:46:56 -0400
+Date: Thu, 4 Oct 2007 18:46:53 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Don Mullis <dwm@meer.net>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
- client git tree...
-Message-ID: <20071004184304.6e71ab6d@poseidon.drzeus.cx>
-In-Reply-To: <1191506450.6685.17.camel@heimdal.trondhjem.org>
-References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
-	<20071004085206.0a8e37b5@poseidon.drzeus.cx>
-	<1191506450.6685.17.camel@heimdal.trondhjem.org>
+Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
+Message-ID: <20071004184653.14201ff6@poseidon.drzeus.cx>
+In-Reply-To: <20071004164225.GF5711@kernel.dk>
+References: <1191478262.21598.5.camel@dmullis-laptop>
+	<20071003231659.f41df5ed.akpm@linux-foundation.org>
+	<20071004072515.GC5236@kernel.dk>
+	<1191514780.30871.1.camel@dmullis-laptop>
+	<20071004183555.3e0ed9eb@poseidon.drzeus.cx>
+	<20071004164225.GF5711@kernel.dk>
 X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-5710-1191516388-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Oct 2007 10:00:50 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
-> > On Wed, 03 Oct 2007 19:41:16 -0400
-> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > 
-> > > 
-> > > We also have the 64-bit inode support from RedHat/Peter Staubach.
-> > > 
-> > 
-> > As has been pointed[1] out[2], this will cause regressions for
-> > non-LFS applications (of which there are still lots and lots). This
-> > change should be in feature-removal (the "feature" being removed is
-> > legacy support for non-LFS applications using NFS servers that make
-> > full use of the protocol) and preferably accompanied with
-> > appropriate user space changes (e.g. compatibility option in glibc).
-> > 
-> > [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
-> > [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
-> > 
-> > Rgds
-> 
-> How about a boot/module parameter to turn it on or off?
-> 
+--=_hera.drzeus.cx-5710-1191516388-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-That would be perfect. It can even be in non-legacy mode by default,
-just as long as you can go back to the old behaviour when/if you run
-into a non-LFS application.
+On Thu, 4 Oct 2007 18:42:25 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> I don't see any point in having a sysctl for something like this:
-> either you have legacy applications or you don't. It is not something
-> that you switch off as you go off to lunch.
-> A compile parameter, OTOH, would be too restrictive since it would
-> force distros to choose just one behaviour (which would mean they
-> would have to choose the most conservative).
-> 
+>=20
+> diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+> index b0abc7d..a5d0354 100644
+> --- a/drivers/mmc/card/queue.c
+> +++ b/drivers/mmc/card/queue.c
 
-Agreed.
+Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+
+(Provided it works ;))
+
+I have no patches touching queue.c in my tree, so there should be no
+problems with merge conflicts.
 
 Rgds
--- 
-     -- Pierre Ossman
+Pierre
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+--=_hera.drzeus.cx-5710-1191516388-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHBRj97b8eESbyJLgRAqEbAKDVVr9az/e2Ugwq3YBcASmhHsaH8gCggCEf
+hd49jVGVO5u4GHWynyKGPyQ=
+=h2mU
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-5710-1191516388-0001-2--
