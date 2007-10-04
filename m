@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbXJDEDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbXJDED7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbXJDEDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbXJDEAU
+	id S1758304AbXJDED7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXJDEAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53771 "EHLO
+	Thu, 4 Oct 2007 00:00:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37866 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750736AbXJDEAF (ORCPT
+	with ESMTP id S1750744AbXJDEAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 00:00:05 -0400
-Message-Id: <20071004040004.936534357@sgi.com>
+Message-Id: <20071004040003.797970826@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:49 -0700
+Date: Wed, 03 Oct 2007 20:59:44 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       travis@sgi.com
-Subject: [14/18] Configure stack size
-Content-Disposition: inline; filename=vcompound_x86_64_config_stack_size
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [09/18] Vcompound: GFP_VFALLBACK debugging aid
+Content-Disposition: inline; filename=vcompound_debugging_aid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the stack size configurable now that we can fallback to vmalloc if
-necessary. SGI NUMA configurations may need more stack because cpumasks
-and nodemasks are at times kept on the stack. With the coming 16k cpu
-support this is going to be 2k just for the mask. This patch allows to
-run with 16k or 32k kernel stacks on x86_74.
+Virtual fallbacks are rare and thus subtle bugs may creep in if we do not
+test the fallbacks. CONFIG_VFALLBACK_ALWAYS makes all GFP_VFALLBACK
+allocations fall back to virtual mapping.
 
-Cc: ak@suse.de
-Cc: travis@sgi.com
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- arch/x86_64/Kconfig              |    6 ++++++
- include/asm-x86_64/page.h        |    3 +--
- include/asm-x86_64/thread_info.h |    4 ++--
- 3 files changed, 9 insertions(+), 4 deletions(-)
+ lib/Kconfig.debug |   11 +++++++++++
+ mm/page_alloc.c   |    6 ++++++
+ 2 files changed, 17 insertions(+)
 
-Index: linux-2.6/arch/x86_64/Kconfig
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/arch/x86_64/Kconfig	2007-10-03 18:11:20.000000000 -0700
-+++ linux-2.6/arch/x86_64/Kconfig	2007-10-03 18:12:13.000000000 -0700
-@@ -363,6 +363,12 @@ config NODES_SHIFT
- 	default "6"
- 	depends on NEED_MULTIPLE_NODES
+--- linux-2.6.orig/mm/page_alloc.c	2007-10-03 18:04:33.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-10-03 18:07:16.000000000 -0700
+@@ -1257,6 +1257,12 @@ zonelist_scan:
+ 			}
+ 		}
  
-+config THREAD_ORDER
-+	int "Kernel stack size (in page order)"
-+	default "1"
++#ifdef CONFIG_VFALLBACK_ALWAYS
++		if ((gfp_mask & __GFP_VFALLBACK) &&
++				system_state == SYSTEM_RUNNING)
++			return alloc_vcompound(gfp_mask, order,
++					zonelist, alloc_flags);
++#endif
+ 		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
+ 		if (page)
+ 			break;
+Index: linux-2.6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.orig/lib/Kconfig.debug	2007-10-03 18:04:29.000000000 -0700
++++ linux-2.6/lib/Kconfig.debug	2007-10-03 18:07:16.000000000 -0700
+@@ -105,6 +105,17 @@ config DETECT_SOFTLOCKUP
+ 	   can be detected via the NMI-watchdog, on platforms that
+ 	   support it.)
+ 
++config VFALLBACK_ALWAYS
++	bool "Always fall back to Virtual Compound pages"
++	default y
 +	help
-+	  Page order for the thread stack.
++	  Virtual compound pages are only allocated if there is no linear
++	  memory available. They are a fallback and errors created by the
++	  use of virtual mappings instead of linear ones may not surface
++	  because of their infrequent use. This option makes every
++	  allocation that allows a fallback to a virtual mapping use
++	  the virtual mapping. May have a significant performance impact.
 +
- # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
- 
- config X86_64_ACPI_NUMA
-Index: linux-2.6/include/asm-x86_64/page.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/page.h	2007-10-03 18:11:20.000000000 -0700
-+++ linux-2.6/include/asm-x86_64/page.h	2007-10-03 18:12:13.000000000 -0700
-@@ -9,8 +9,7 @@
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- #define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
- 
--#define THREAD_ORDER 1 
--#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
-+#define THREAD_SIZE  (PAGE_SIZE << CONFIG_THREAD_ORDER)
- #define CURRENT_MASK (~(THREAD_SIZE-1))
- 
- #define EXCEPTION_STACK_ORDER 0
-Index: linux-2.6/include/asm-x86_64/thread_info.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/thread_info.h	2007-10-03 18:12:13.000000000 -0700
-+++ linux-2.6/include/asm-x86_64/thread_info.h	2007-10-03 18:12:13.000000000 -0700
-@@ -80,9 +80,9 @@ static inline struct thread_info *stack_
- #endif
- 
- #define alloc_thread_info(tsk) \
--	((struct thread_info *) __get_free_pages(THREAD_FLAGS, THREAD_ORDER))
-+	((struct thread_info *) __get_free_pages(THREAD_FLAGS, CONFIG_THREAD_ORDER))
- 
--#define free_thread_info(ti) free_pages((unsigned long) (ti), THREAD_ORDER)
-+#define free_thread_info(ti) free_pages((unsigned long) (ti), CONFIG_THREAD_ORDER)
- 
- #else /* !__ASSEMBLY__ */
- 
+ config SCHED_DEBUG
+ 	bool "Collect scheduler debugging info"
+ 	depends on DEBUG_KERNEL && PROC_FS
 
 -- 
