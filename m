@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbXJDWjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbXJDWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762186AbXJDWjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760581AbXJDWjk
+	id S1762314AbXJDWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXJDWkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:39:40 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:38983 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760516AbXJDWjj (ORCPT
+	Thu, 4 Oct 2007 18:40:47 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:51021 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760348AbXJDWkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:39:39 -0400
-To: akpm@linux-foundation.org
-CC: miklos@szeredi.hu, wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-reply-to: <20071004145640.18ced770.akpm@linux-foundation.org> (message from
-	Andrew Morton on Thu, 4 Oct 2007 14:56:40 -0700)
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <20071004145640.18ced770.akpm@linux-foundation.org>
-Message-Id: <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 05 Oct 2007 00:39:16 +0200
+	Thu, 4 Oct 2007 18:40:46 -0400
+Date: Thu, 4 Oct 2007 16:40:44 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sho@tnes.nec.co.jp, jack@suse.cz, clameter@sgi.com
+Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
+Message-ID: <20071004224044.GH5628@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	cmm@us.ibm.com, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, sho@tnes.nec.co.jp, jack@suse.cz,
+	clameter@sgi.com
+References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com> <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain> <1191285346.11737.58.camel@localhost.localdomain> <20071004131207.65406a7b.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004131207.65406a7b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> None of the above.
+On Oct 04, 2007  13:12 -0700, Andrew Morton wrote:
+> On Mon, 01 Oct 2007 17:35:46 -0700
+> > ext2: Avoid rec_len overflow with 64KB block size
+> > 
+> > into 16 bits we have for entry lenght. So we store 0xffff instead and
+> > convert value when read from / written to disk.
 > 
->     [PATCH] vm: pageout throttling
->     
->     With silly pageout testcases it is possible to place huge amounts of memory
->     under I/O.  With a large request queue (CFQ uses 8192 requests) it is
->     possible to place _all_ memory under I/O at the same time.
->     
->     This means that all memory is pinned and unreclaimable and the VM gets
->     upset and goes oom.
->     
->     The patch limits the amount of memory which is under pageout writeout to be
->     a little more than the amount of memory at which balance_dirty_pages()
->     callers will synchronously throttle.
->     
->     This means that heavy pageout activity can starve heavy writeback activity
->     completely, but heavy writeback activity will not cause starvation of
->     pageout.  Because we don't want a simple `dd' to be causing excessive
->     latencies in page reclaim.
-> 
-> afaict that problem is still there.  It is possible to get all of
-> ZONE_NORMAL dirty on a highmem machine.  With a large queue (or lots of
-> queues), vmscan can them place all of ZONE_NORMAL under IO.
-> 
-> It could be that we've fixed this problem via other means in the interrim,
-> but from a quick peek to seems to me that the scanner will still do a 100%
-> CPU burn when all of a zone's pages are under writeback.
+> This patch clashes in non-trivial ways with
+> ext2-convert-to-new-aops-fix.patch and perhaps other things which are
+> already queued for 2.6.24 inclusion, so I'll need to ask for an updated
+> patch, please.
 
-Ah, OK.
+If the rel_len overflow patch isn't going to make it, then we also need
+to revert the EXT*_MAX_BLOCK_SIZE change to 65536.  It would be possible
+to allow this to be up to 32768 w/o the rec_len overflow fix however.
 
-I did read the changelog, but you added quite a bit of translation ;)
+Yes, this does imply that those patches were in the wrong order in the
+patch series, and I apologize for that, even if it isn't my fault.
 
-> throttle_vm_writeout() should be a per-zone thing, I guess.  Perhaps fixing
-> that would fix your deadlock.  That's doubtful, but I don't know anything
-> about your deadlock so I cannot say.
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-No, doing the throttling per-zone won't in itself fix the deadlock.
-
-Here's a deadlock example:
-
-Total memory = 32M
-/proc/sys/vm/dirty_ratio = 10
-dirty_threshold = 3M
-ratelimit_pages = 1M
-
-Some program dirties 4M (dirty_threshold + ratelimit_pages) of mmap on
-a fuse fs.  Page balancing is called which turns all these into
-writeback pages.
-
-Then userspace filesystem gets a write request, and tries to allocate
-memory needed to complete the writeout.
-
-That will possibly trigger direct reclaim, and throttle_vm_writeout()
-will be called.  That will block until nr_writeback goes below 3.3M
-(dirty_threshold + 10%).  But since all 4M of writeback is from the
-fuse fs, that will never happen.
-
-Does that explain it better?
-
-Miklos
