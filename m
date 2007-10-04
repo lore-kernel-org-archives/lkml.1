@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbXJDUoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbXJDUsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbXJDUoc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 16:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXJDUoZ
+	id S1760270AbXJDUsq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 16:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757129AbXJDUsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 16:44:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49991 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757649AbXJDUoY (ORCPT
+	Thu, 4 Oct 2007 16:48:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46871
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756464AbXJDUsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 16:44:24 -0400
-Date: Thu, 4 Oct 2007 13:43:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: w@1wt.eu, apw@shadowen.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] printk: add KERN_CONT annotation
-Message-Id: <20071004134320.a9160974.akpm@linux-foundation.org>
-In-Reply-To: <20071002051852.GC28345@elte.hu>
-References: <20070928105345.GC18163@shadowen.org>
-	<20071001064448.GA4239@elte.hu>
-	<20071001003007.4e90143b.akpm@linux-foundation.org>
-	<20071002043408.GM10199@1wt.eu>
-	<20071002051852.GC28345@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 4 Oct 2007 16:48:35 -0400
+Date: Thu, 04 Oct 2007 13:48:34 -0700 (PDT)
+Message-Id: <20071004.134834.112622292.davem@davemloft.net>
+To: arjan@infradead.org
+Cc: clameter@sgi.com, willy@linux.intel.com, nickpiggin@yahoo.com.au,
+       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com
+Subject: Re: SLUB performance regression vs SLAB
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071004105046.7b019fe8@laptopd505.fenrus.org>
+References: <20071004161621.GO12049@parisc-linux.org>
+	<Pine.LNX.4.64.0710041034550.10854@schroedinger.engr.sgi.com>
+	<20071004105046.7b019fe8@laptopd505.fenrus.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Oct 2007 07:18:52 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+From: Arjan van de Ven <arjan@infradead.org>
+Date: Thu, 4 Oct 2007 10:50:46 -0700
 
-> 
-> printk: add the KERN_CONT annotation (which is empty string but via 
-> which checkpatch.pl can notice that the lacking KERN_ level is fine). 
-> This useful for multiple calls of hand-crafted printk output done by 
-> early debug code or similar.
-> 
+> Ok every time something says anything not 100% positive about SLUB you
+> come back with "but it's fixed in the next patch set"... *every time*.
 
-I like it.  Sort of self-documenting notation.
+I think this is partly Christoph subconsciously venting his
+frustration that he's never given a reproducable test case he can use
+to fix the problem.
 
-> 
-> Index: linux/include/linux/kernel.h
-> ===================================================================
-> --- linux.orig/include/linux/kernel.h
-> +++ linux/include/linux/kernel.h
-> @@ -61,6 +61,13 @@ extern const char linux_proc_banner[];
->  #define	KERN_INFO	"<6>"	/* informational			*/
->  #define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
->  
-> +/*
-> + * Annotation for a "continued" line of log printout (only done after a
-> + * line that had no enclosing \n). Only to be used by core/arch code
-> + * during early bootup (a continued line is not SMP-safe otherwise).
-> + */
-> +#define	KERN_CONT	""
-> +
->  extern int console_printk[];
->  
->  #define console_loglevel (console_printk[0])
-> Index: linux/kernel/sched.c
+There comes a point where it is the reporter's responsibility to help
+the developer come up with a publishable test case the developer can
+use to work on fixing the problem and help ensure it stays fixed.
 
-I get rejects from the sched.c hunk and that's your stuff anwyay, so I
-dropped that bit.
+Using an unpublishable benchmark, whose results even cannot be
+published, really stretches the limits of "reasonable" don't you
+think?
 
+This "SLUB isn't ready yet" bullshit is just a shamans dance which
+distracts attention away from the real problem, which is that a
+reproducable, publishable test case, is not being provided to the
+developer so he can work on fixing the problem.
+
+I can tell you this thing would be fixed overnight if a proper test
+case had been provided by now.
