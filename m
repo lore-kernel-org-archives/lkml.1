@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbXJDOBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbXJDOMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbXJDOBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 10:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXJDOB0
+	id S1758054AbXJDOMe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 10:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbXJDOM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 10:01:26 -0400
-Received: from pat.uio.no ([129.240.10.15]:57934 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbXJDOBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 10:01:25 -0400
-Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
-	client git tree...
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Pierre Ossman <drzeus-list@drzeus.cx>,
-       Peter Staubach <staubach@redhat.com>
-Cc: nfsv4@linux-nfs.org, Andrew Morton <akpm@linux-foundation.org>,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20071004085206.0a8e37b5@poseidon.drzeus.cx>
-References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
-	 <20071004085206.0a8e37b5@poseidon.drzeus.cx>
-Content-Type: text/plain
-Date: Thu, 04 Oct 2007 10:00:50 -0400
-Message-Id: <1191506450.6685.17.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.064)
-X-UiO-Scanned: 10F124300EF3587D410B4FE17398176AD06BB5E6
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 22 total 4291636 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Thu, 4 Oct 2007 10:12:27 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57291 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755844AbXJDOM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 10:12:26 -0400
+Date: Thu, 4 Oct 2007 16:12:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] crash when reading /proc/mounts (was: Re: Linux
+	2.6.23-rc9 and a heads-up for the 2.6.24 series..)
+Message-ID: <20071004141251.GG10852@stusta.de>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071003084607.GC32218@elte.hu> <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710030804310.3579@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
-> On Wed, 03 Oct 2007 19:41:16 -0400
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> 
-> > 
-> > We also have the 64-bit inode support from RedHat/Peter Staubach.
-> > 
-> 
-> As has been pointed[1] out[2], this will cause regressions for non-LFS
-> applications (of which there are still lots and lots). This change
-> should be in feature-removal (the "feature" being removed is legacy
-> support for non-LFS applications using NFS servers that make full use
-> of the protocol) and preferably accompanied with appropriate user space
-> changes (e.g. compatibility option in glibc).
-> 
-> [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
-> [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
-> 
-> Rgds
+On Wed, Oct 03, 2007 at 08:11:05AM -0700, Linus Torvalds wrote:
+>...
+> and btw, there is no question what-so-ever about whether your compiler 
+> might be doing a legal optimization - the compiler really is wrong, and is 
+> total shit. You need to make a gcc bug-report.
+>...
 
-How about a boot/module parameter to turn it on or off?
+Ingo can't send a gcc bug-report since gcc 4.0 is no longer supported 
+upstream and a 4.1.2 compiler was confirmed to work.
 
-I don't see any point in having a sysctl for something like this: either
-you have legacy applications or you don't. It is not something that you
-switch off as you go off to lunch.
-A compile parameter, OTOH, would be too restrictive since it would force
-distros to choose just one behaviour (which would mean they would have
-to choose the most conservative).
+Our only options are to either stop supporting the broken gcc versions 
+as compiler for the kernel or to work around this compiler bug in the 
+kernel.
 
-Trond
+> 			Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
