@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbXJDRzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbXJDR66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbXJDRzE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 13:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXJDRyz
+	id S1759320AbXJDR66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 13:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbXJDR6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 13:54:55 -0400
-Received: from mail.suse.de ([195.135.220.2]:59633 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbXJDRyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 13:54:54 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
-Date: Thu, 4 Oct 2007 19:53:16 +0200
-User-Agent: KMail/1.9.6
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071004052153.GA15131@wotan.suse.de> <20071004052258.GB15131@wotan.suse.de> <20071004173203.GC5828@redhat.com>
-In-Reply-To: <20071004173203.GC5828@redhat.com>
+	Thu, 4 Oct 2007 13:58:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42870 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754490AbXJDR6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 13:58:48 -0400
+Date: Thu, 4 Oct 2007 10:58:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Matthew Wilcox <willy@linux.intel.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SLUB performance regression vs SLAB
+In-Reply-To: <20071004105046.7b019fe8@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0710041056500.11525@schroedinger.engr.sgi.com>
+References: <20070919033605.785839297@sgi.com> <200709280742.38262.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+ <200709281514.48293.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0710011343020.19779@schroedinger.engr.sgi.com>
+ <20071004161621.GO12049@parisc-linux.org> <Pine.LNX.4.64.0710041034550.10854@schroedinger.engr.sgi.com>
+ <20071004105046.7b019fe8@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710041953.16656.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Oct 2007, Arjan van de Ven wrote:
 
-> The only vendor that ever implemented OOSTOREs was Centaur, and they
-> only did in the Winchip generation of the CPUs.  When they dropped it
-> from the C3, I asked whether they intended to bring it back, and the
-> answer was "extremely unlikely".
->
+> Ok every time something says anything not 100% positive about SLUB you
+> come back with "but it's fixed in the next patch set"... *every time*.
 
-Do you know if it made a big performance difference?
-
-But yes we should probably just remove this special case to make 
-maintenance easier.
-
--Andi
+All I ask that people test the fixes that have been out there for the 
+known issues. If there are remaining performance issues then lets figure 
+them out and address them.
