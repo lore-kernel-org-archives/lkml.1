@@ -1,111 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbXJDHmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbXJDH6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759129AbXJDHmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 03:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbXJDHmD
+	id S1757461AbXJDH6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 03:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXJDH6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 03:42:03 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:36041 "EHLO aun.it.uu.se"
+	Thu, 4 Oct 2007 03:58:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35841 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756517AbXJDHmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 03:42:00 -0400
-Date: Thu, 4 Oct 2007 09:41:38 +0200 (MEST)
-Message-Id: <200710040741.l947fcVQ012708@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org, riku.voipio@iki.fi
-Subject: Re: [PATCH][RFC] unbreak generic futex_atomic_cmpxchg_inatomic() on UP
-Cc: buytenh@wantstofly.org, mikpe@it.uu.se
+	id S1752164AbXJDH6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 03:58:08 -0400
+Date: Thu, 4 Oct 2007 09:57:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH -v2] Add sysfs control to modify a user's cpu share
+Message-ID: <20071004075750.GD9176@elte.hu>
+References: <20070925131717.GM26289@linux.vnet.ibm.com> <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu> <20071003171029.GA5423@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071003171029.GA5423@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Oct 2007 22:33:46 +0300, Riku Voipio wrote:
-> What's the state of this patch? I can confirm tst-robust1
-> from glibc testsuite locks a armv5 machine hard. With this patch
-> applied, the test succeeds.
 
-There were no comments from any Linux arch or futex maintainer.
-Because of that I intend to submit an ARM-only patch when 2.6.23
-has been released.
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-/Mikael
+> Hi Ingo,
+> 
+> Can you please drop commit b1add858a10cece3a68b2d8cb9e7350843700a58 (last
+> version of this patch) and try this instead?
 
-> > The higher-end archs (x86, sparc64, ppc64, etc) provide fully-functional
-> > asm/futex.h implementations, but a number of archs (alpha, arm, arm26,
-> > avr32, blackfin, cris, h8300, m32r, m68k, mk68knommu, sh64, sparc, um,
-> > v850, and xtensa) use asm-generic/futex.h, which makes robust futexes
-> > horribly broken on them. There have also been reports recently that PI
-> > futexes are broken due to the generic futex_atomic_cmpxchg_inatomic()
-> > just being an -ENOSYS stub.
-> 
-> This an effective local DOS bug on the affected architectures, too.. 
-> 
-> > The patch below implements the generic futex_atomic_cmpxchg_inatomic() in
-> > terms of __copy_{from,to}_user_inatomic() and preempt_{disable,enable}().
-> > It obviously doesn't support SMP, but UP-only support should go a long
-> > way for users of the affected archs.
-> > 
-> > I'm using this patch now and it has allowed me to build and use glibc-2.4
-> > with NPTL on ARM (glibc-2.4-11.src.rpm from FC5 + ARM fixes).
-> > (Finally I can ditch LinuxThreads :->)
-> > 
-> > Comments?
-> > 
-> > /Mikael
-> > 
-> > --- linux-2.6.22/include/asm-generic/futex.h.~1~	2007-02-04 19:44:54.000000000 +0100
-> > +++ linux-2.6.22/include/asm-generic/futex.h	2007-08-01 19:03:43.000000000 +0200
-> > @@ -4,6 +4,7 @@
-> >  #ifdef __KERNEL__
-> >  
-> >  #include <linux/futex.h>
-> > +#include <linux/preempt.h>
-> >  #include <asm/errno.h>
-> >  #include <asm/uaccess.h>
-> >  
-> > @@ -52,7 +53,34 @@ futex_atomic_op_inuser (int encoded_op, 
-> >  static inline int
-> >  futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
-> > {
-> > +#ifdef CONFIG_SMP
-> >  	return -ENOSYS;
-> > +#else
-> > +	int curval, ret;
-> > +
-> > +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-> > +		return -EFAULT;
-> > +
-> > +	preempt_disable();
-> > +
-> > +	ret = -EFAULT;
-> > +	if (__copy_from_user_inatomic(&curval, uaddr, sizeof(int)))
-> > +		goto out;
-> > +
-> > +	ret = curval;
-> > +	if (curval != oldval)
-> > +		goto out;
-> > +
-> > +	ret = -EFAULT;
-> > +	if (__copy_to_user_inatomic(uaddr, &newval, sizeof(int)))
-> > +		goto out;
-> > +
-> > +	ret = newval;
-> > +
-> > + out:
-> > +	preempt_enable();
-> > +	return ret;
-> > +#endif
-> >  }
-> >  
-> >  #endif
-> > -
-> 
-> - -- 
-> "rm -rf" only sounds scary if you don't have backups
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.6 (GNU/Linux)
-> 
-> iD8DBQFHA+6aibPvMsrqrwMRAlMuAKCBf7qpD2dETgU+RgnDG4ArVvFp3gCgrewq
-> 4KvOt40U1MAPM7g4F/Ps5jk=
-> =68gr
-> -----END PGP SIGNATURE-----
-> 
+> Changelog since v1:
+> 1. Added a mutex to serialize directory creation/destruction for a user in
+>    sysfs
+> 2. Added a spinlock in the task_group structure to serialize writes to
+>    tg->shares.
+> 3. Removed /proc/root_user_cpu_shares.
+> 4. Added Documentation about the group scheduler.
+
+thanks - I have added this to the queue.
+
+i'm wondering about the following: could not (yet) existing UIDs be made 
+configurable too? I.e. if i do this in a bootup script:
+
+  echo 2048 > /sys/kernel/uids/500/cpu_share
+
+this should just work too, regardless of there not being any UID 500 
+tasks yet. Likewise, once configured, the /sys/kernel/uids/* directories 
+(with the settings in them) should probably not go away either.
+
+	Ingo
