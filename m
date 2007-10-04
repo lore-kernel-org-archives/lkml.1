@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbXJDXkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbXJDXpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762592AbXJDXkX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbXJDXkJ
+	id S1762336AbXJDXpM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 19:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbXJDXo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:40:09 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2111 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758389AbXJDXkH (ORCPT
+	Thu, 4 Oct 2007 19:44:58 -0400
+Received: from ams-iport-1.cisco.com ([144.254.224.140]:10431 "EHLO
+	ams-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758326AbXJDXo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:40:07 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: SLUB performance regression vs SLAB
-Date: Thu, 4 Oct 2007 16:39:53 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEFNHEAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20071004.134834.112622292.davem@davemloft.net>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 04 Oct 2007 16:39:57 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 04 Oct 2007 16:39:59 -0700
+	Thu, 4 Oct 2007 19:44:57 -0400
+X-IronPort-AV: E=Sophos;i="4.21,232,1188770400"; 
+   d="scan'208";a="154952408"
+Date: Fri, 5 Oct 2007 00:44:54 +0100
+From: Derek Fawcus <dfawcus@cisco.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20071005004454.A10105@mrwint.cisco.com>
+References: <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <alpine.LFD.0.999.0710021615520.3579@woody.linux-foundation.org> <20071003011246.7313facb@the-village.bc.nu> <20071004235600.A4177@mrwint.cisco.com> <470574D7.6070605@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Mailer: Mutt 1.0.1i
+In-Reply-To: <470574D7.6070605@redhat.com>; from cebbert@redhat.com on Thu, Oct 04, 2007 at 07:18:47PM -0400
+Authentication-Results: ams-dkim-1; header.From=dfawcus@cisco.com; dkim=pass (
+	sig from cisco.com/amsdkim1002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 04, 2007 at 07:18:47PM -0400, Chuck Ebbert wrote:
+> > I ran firefox setuid to a different (not my main user),  uid+gid,  gave
+> > my main account that gid as a supplemental group,  and gave that uid
+> > access to the X magic cookie.
+> 
+> You need to use runxas to get any kind of real security.
 
-David Miller wrote:
+Interesting script - sad how everyone reinvents equivalent things.
 
-> Using an unpublishable benchmark, whose results even cannot be
-> published, really stretches the limits of "reasonable" don't you
-> think?
->
-> This "SLUB isn't ready yet" bullshit is just a shamans dance which
-> distracts attention away from the real problem, which is that a
-> reproducable, publishable test case, is not being provided to the
-> developer so he can work on fixing the problem.
->
-> I can tell you this thing would be fixed overnight if a proper test
-> case had been provided by now.
+I had been experimenting with running the whole lot under Xnest,
+with two extra users - one for the Xnest which had the main X
+cookie, and another for the browser.  But found that it was just
+too awkward (since I use multiple browser windows as well a tabs).
 
-I would just like to echo what you said just a bit angrier. This is the same
-as someone asking him to fix a bug that they can only see with a binary-only
-kernel module. I think he's perfectly justified in simply responding "the
-bug is as likely to be in your code as mine".
+So I ended up trading a small security gain vs usablity.
 
-Now, just because he's justified in doing that doesn't mean he should. I
-presume he has an honest desire to improve his own code and if they've found
-a real problem, I'm sure he'd love to fix it.
+The other thing I started playing with was the NX version of Xnest,
+since it allows for a rootless server...
 
-But this is just a preposterous position to put him in. If there's no
-reproduceable test case, then why should he care that one program he can't
-even see works badly? If you care, you fix it.
-
-Matthew Wilcox wrote:
-
-> Yet here we stand.  Christoph is aggressively trying to get slab removed
-> from the tree.  There is a testcase which shows slub performing worse
-> than slab.  It's not my fault I can't publish it.  And just because I
-> can't publish it doesn't mean it doesn't exist.
-
-It means it may or may not exist. All we have is your word that slub is the
-problem. If I said I found a bug in the Linux kernel that caused it to panic
-but I could only reproduce it with the nVidia driver, I'd be laughed at.
-
-It may even be that slub is better, your benchmark simply interprets this as
-worse. Without the details of your benchmark, we can't know. For example,
-I've seen benchmarks that (usually unintentionally) actually do a *variable*
-amount of work and details of the implementation may result in the benchmark
-actually doing *more* work, so it taking longer does not mean it ran slower.
-
-DS
-
-
+DF
