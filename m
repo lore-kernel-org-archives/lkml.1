@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbXJDEF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbXJDEFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758941AbXJDEF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbXJDEA1
+	id S1751896AbXJDEFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbXJDEA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37872 "EHLO
+	Thu, 4 Oct 2007 00:00:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37869 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751033AbXJDEAG (ORCPT
+	with ESMTP id S1750908AbXJDEAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 00:00:06 -0400
-Message-Id: <20071004040005.850376534@sgi.com>
+Message-Id: <20071004040004.482614498@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:53 -0700
+Date: Wed, 03 Oct 2007 20:59:47 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [18/18] SLUB: Use fallback for table of callers/freers of a slab cache
-Content-Disposition: inline; filename=vcompound_slub_safe
+Subject: [12/18] Wait: Allow bit_waitqueue to wait on a bit in a virtual compound page
+Content-Disposition: inline; filename=vcompound_wait_on_virtually_mapped_object
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The caller table can get quite large if there are many call sites for a
-particular slab. Add GFP_FALLBACK allows falling back to vmalloc in case
-the caller table gets too big and memory is fragmented. Currently we
-would fail the operation.
+If bit waitqueue is passed a virtual address then it must use
+virt_to_head_page instead of virt_to_page.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/slub.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ kernel/wait.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/kernel/wait.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2007-10-03 20:00:23.000000000 -0700
-+++ linux-2.6/mm/slub.c	2007-10-03 20:01:12.000000000 -0700
-@@ -3003,7 +3003,8 @@ static int alloc_loc_track(struct loc_tr
+--- linux-2.6.orig/kernel/wait.c	2007-10-03 17:44:21.000000000 -0700
++++ linux-2.6/kernel/wait.c	2007-10-03 17:53:07.000000000 -0700
+@@ -245,7 +245,7 @@ EXPORT_SYMBOL(wake_up_bit);
+ fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit)
+ {
+ 	const int shift = BITS_PER_LONG == 32 ? 5 : 6;
+-	const struct zone *zone = page_zone(virt_to_page(word));
++	const struct zone *zone = page_zone(virt_to_head_page(word));
+ 	unsigned long val = (unsigned long)word << shift | bit;
  
- 	order = get_order(sizeof(struct location) * max);
- 
--	l = (void *)__get_free_pages(flags, order);
-+	l = (void *)__get_free_pages(flags | __GFP_COMP | __GFP_VFALLBACK,
-+								order);
- 	if (!l)
- 		return 0;
- 
+ 	return &zone->wait_table[hash_long(val, zone->wait_table_bits)];
 
 -- 
