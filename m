@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbXJDUkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbXJDUmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbXJDUkc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 16:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbXJDUkZ
+	id S1760626AbXJDUmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 16:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbXJDUmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 16:40:25 -0400
-Received: from mga07.intel.com ([143.182.124.22]:23968 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755990AbXJDUkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 16:40:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,232,1188802800"; 
-   d="scan'208";a="292820871"
-Date: Thu, 4 Oct 2007 13:39:52 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: arjan@infradead.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       mark.gross@intel.com
-Subject: Re: [PATCH] PM_QOS 1 of 2
-Message-ID: <20071004203952.GB19803@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071001234528.GA5238@linux.intel.com> <20071004125356.69e01dfe.akpm@linux-foundation.org>
+	Thu, 4 Oct 2007 16:42:08 -0400
+Received: from mailhost.nmt.edu ([129.138.4.52]:39606 "EHLO mailhost.nmt.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757202AbXJDUmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 16:42:07 -0400
+Date: Thu, 4 Oct 2007 14:42:01 -0600
+From: Valerie Henson <val@nmt.edu>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rrbranco@br.ibm.com,
+       twichell@us.ibm.com, ycai@us.ibm.com
+Subject: Re: [ANNOUNCE] ebizzy 0.2 released
+Message-ID: <20071004204201.GB6090@rainbow>
+References: <20070823010626.GC11402@rainbow> <20070930.172703.79041329.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071004125356.69e01dfe.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070930.172703.79041329.davem@davemloft.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 12:53:56PM -0700, Andrew Morton wrote:
-> On Mon, 1 Oct 2007 16:45:28 -0700
-> Mark Gross <mgross@linux.intel.com> wrote:
+On Sun, Sep 30, 2007 at 05:27:03PM -0700, David Miller wrote:
+> From: Valerie Henson <val@nmt.edu>
+> Date: Wed, 22 Aug 2007 19:06:26 -0600
 > 
-> > The following is the cleaned up patch implementing the power management
-> > quality of service infrastructure discussed at the pm summit last June.
-> > 
-> > It is a genralization of the latency code put into the kernel last year
-> > by Arjan.
-> > 
-> > I would like to get this code included in the MM tree and to get some
-> > milage on it.
-> > 
-> > One thing to note about this implementation is that it exposes an
-> > interface to user space for registering pm_qos constraints in addition
-> > to the kernel exports.  Its a file based interface where a module can
-> > register a constraint and the constraint is valid only as long as the
-> > device node is held open.  Upon closing of the device node that
-> > constraint is cleaned up.
-> > 
-> > The patch set is in two postings.  
-> > 1) the base parameter code (this email)
-> > 2) replacing of latency.c/latenc.h with pm_qos_params.c/pm_qos_params.h
+> > ebizzy is designed to generate a workload resembling common web
+> > application server workloads.
 > 
-> I wouldn't really view this as an adequate changelog.
+> I downloaded this only to be basically disappointed.
 > 
-> - The Subject:s are pretty pathetic (please see my suggesed replacements)
+> Any program which claims to generate workloads "resembling common web
+> application server workloads", and yet does zero network activity and
+> absolutely nothing with sockets is so far disconnected from reality
+> that I truly question how useful it really is even in the context it
+> was designed for.
+> 
+> Please describe this program differently, "a threaded cpu eater", "a
+> threaded memory scanner", "a threaded hash lookup", or something
+> suitably matching what it really does.
+> 
+> I'm sure there are at least 10 or even more programs in LTP that one
+> could run under "time" and get the same exact functionality.
 
-uhg.  Your right.
+You're right, that part of the description is misleading. (I've even
+had people ask me if it's a file systems benchmark!)
 
-> 
-> - There is no description of the proposed new kernel<->userspace
->   interfaces.
-> 
+Ebizzy is based on a real web application server and does do things
+that are fairly common in such applications (multithreaded memory
+allocation and memory access), but it ignores networking for two
+reasons: the network stack was not the bottleneck for this workload,
+the VM was, and really good network benchmarks already exist. :)
+ebizzy is not useful to networking (or file systems) developer, but it
+has been used to improve malloc() behavior in glibc and to test VMA
+handling optimizations.
 
-the above description is light on specific details. 
+In general, I try to make the source of a benchmark clear because it's
+so tempting to optimize for completely artificial benchmarks.  The
+trick is to do this without misleading the reader (or breaking my NDA).
 
->   As you are proposing new and permanent enhancements to the Linux API,
->   this is something which should be spelled out in some detail.  Because we
->   can change the implementation, but we can not ever change your interface.
-> 
->   It would be nice to get that interface described in Documentation/
->   somewhere, but it is *critical* that the design be fully revealed right
->   now, during review.
+ebizzy
+------
 
-I'll provide this.
+ebizzy is a workload that stresses memory allocation and the virtual
+memory subsystem.  It was initially written to model the local
+computation portion of a web application server running a large
+internet commerce site.  ebizzy is highly threaded, has a large
+in-memory working set with poor locality, and allocates and
+deallocates memory frequently.  When running most efficiently, ebizzy
+will max out the CPU.  When running inefficiently, it will be blocked
+much of the time.
 
-> 
-> 
-> Anyway, I am not a suitable person to review this submission.
-> 
-> I'll put the patches in -mm for a bit of eyeball-and-test (not that anyone
-> will know how to test it, due to the secret interfaces) but I do not want
-> to move this code into mainline until someone who is familiar with the PM
-> code has performed a detailed review of both the implementation and the
-> design (whatever that is!).
-> 
-> Please send new, complete descriptions of these patches.  I don't think
-> they can be effectively reviewed without that information.  Except perhaps
-> by someone who was at the PM summit, but that's cheating.
-> 
-
-I will do this.
-
---mgross
+-VAL
