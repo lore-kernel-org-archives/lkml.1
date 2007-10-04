@@ -1,181 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761076AbXJDQKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbXJDQKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761076AbXJDQKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbXJDP7e
+	id S1762788AbXJDQKs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762224AbXJDQKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:59:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51189 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760484AbXJDP7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:59:30 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 30/32] IGET: Stop HOSTFS from using iget() and read_inode()
-	[try #2]
-To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Thu, 04 Oct 2007 16:58:35 +0100
-Message-ID: <20071004155835.2814.57139.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
-References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.13
+	Thu, 4 Oct 2007 12:10:32 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:13971 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760117AbXJDQK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 12:10:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=gGu1UYblDEm5bXnGAiHeFlS3/p6tMFtMEMJu6cxriClfqKmOrUW06C93X8Up5g0VL
+	bAY/nlnC2kOd7KGAgi1NQ==
+Message-ID: <6599ad830710040910u3696df8p3c0448555cac23e@mail.gmail.com>
+Date: Thu, 4 Oct 2007 09:10:02 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pavel Emelianov" <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <4701C737.8070906@linux.vnet.ibm.com>
+	 <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the HOSTFS filesystem from using iget() and read_inode().  Provide
-hostfs_iget(), and call that instead of iget().  hostfs_iget() then uses
-iget_locked() directly and returns a proper error code instead of an inode in
-the event of an error.
+On 10/2/07, Hugh Dickins <hugh@veritas.com> wrote:
+>
+> I accept that full swap control is something you're intending to add
+> incrementally later; but the current state doesn't make sense to me.
 
-hostfs_fill_sb_common() returns any error incurred when getting the root inode
-instead of EINVAL.
+One comment on swap - ideally it should be a separate subsystem from
+the memory controller. That way people who are using cpusets to
+provide memory isolation (rather than using the page-based memory
+controller) can also get swap isolation.
 
-Note that the contents of hostfs_kern.c need to be examined:
-
- (*) hostfs_iget() should perhaps subsume init_inode() and hostfs_read_inode().
-
- (*) It would appear that all hostfs inodes are the same inode because iget()
-     was being called with inode number 0 - which forms the lookup key.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/hostfs/hostfs_kern.c |   58 ++++++++++++++++++++++++++++++++---------------
- 1 files changed, 39 insertions(+), 19 deletions(-)
-
-diff --git a/fs/hostfs/hostfs_kern.c b/fs/hostfs/hostfs_kern.c
-index c778620..c6a456a 100644
---- a/fs/hostfs/hostfs_kern.c
-+++ b/fs/hostfs/hostfs_kern.c
-@@ -208,7 +208,7 @@ static char *follow_link(char *link)
- 	return ERR_PTR(n);
- }
- 
--static int read_inode(struct inode *ino)
-+static int hostfs_read_inode(struct inode *ino)
- {
- 	char *name;
- 	int err = 0;
-@@ -238,6 +238,25 @@ static int read_inode(struct inode *ino)
- 	return err;
- }
- 
-+static struct inode *hostfs_iget(struct super_block *sb)
-+{
-+	struct inode *inode;
-+	long ret;
-+
-+	inode = iget_locked(sb, 0);
-+	if (!inode)
-+		return ERR_PTR(-ENOMEM);
-+	if (inode->i_state & I_NEW) {
-+		ret = hostfs_read_inode(inode);
-+		if (ret < 0) {
-+			iget_failed(inode);
-+			return ERR_PTR(ret);
-+		}
-+		unlock_new_inode(inode);
-+	}
-+	return inode;
-+}
-+
- int hostfs_statfs(struct dentry *dentry, struct kstatfs *sf)
- {
- 	/* do_statfs uses struct statfs64 internally, but the linux kernel
-@@ -305,17 +324,11 @@ static void hostfs_destroy_inode(struct inode *inode)
- 	kfree(HOSTFS_I(inode));
- }
- 
--static void hostfs_read_inode(struct inode *inode)
--{
--	read_inode(inode);
--}
--
- static const struct super_operations hostfs_sbops = {
- 	.alloc_inode	= hostfs_alloc_inode,
- 	.drop_inode	= generic_delete_inode,
- 	.delete_inode   = hostfs_delete_inode,
- 	.destroy_inode	= hostfs_destroy_inode,
--	.read_inode	= hostfs_read_inode,
- 	.statfs		= hostfs_statfs,
- };
- 
-@@ -584,9 +597,11 @@ int hostfs_create(struct inode *dir, struct dentry *dentry, int mode,
- 	char *name;
- 	int error, fd;
- 
--	error = -ENOMEM;
--	inode = iget(dir->i_sb, 0);
--	if(inode == NULL) goto out;
-+	inode = hostfs_iget(dir->i_sb);
-+	if (IS_ERR(inode)) {
-+		error = PTR_ERR(inode);
-+		goto out;
-+	}
- 
- 	error = init_inode(inode, dentry);
- 	if(error)
-@@ -627,10 +642,11 @@ struct dentry *hostfs_lookup(struct inode *ino, struct dentry *dentry,
- 	char *name;
- 	int err;
- 
--	err = -ENOMEM;
--	inode = iget(ino->i_sb, 0);
--	if(inode == NULL)
-+	inode = hostfs_iget(ino->i_sb);
-+	if (IS_ERR(inode)) {
-+		err = PTR_ERR(inode);
- 		goto out;
-+	}
- 
- 	err = init_inode(inode, dentry);
- 	if(err)
-@@ -748,11 +764,13 @@ int hostfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
- {
- 	struct inode *inode;
- 	char *name;
--	int err = -ENOMEM;
-+	int err;
- 
--	inode = iget(dir->i_sb, 0);
--	if(inode == NULL)
-+	inode = hostfs_iget(dir->i_sb);
-+	if (IS_ERR(inode)) {
-+		err = PTR_ERR(inode);
- 		goto out;
-+	}
- 
- 	err = init_inode(inode, dentry);
- 	if(err)
-@@ -973,9 +991,11 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
- 
- 	sprintf(host_root_path, "%s/%s", root_ino, req_root);
- 
--	root_inode = iget(sb, 0);
--	if(root_inode == NULL)
-+	root_inode = hostfs_iget(sb);
-+	if (IS_ERR(root_inode)) {
-+		err = PTR_ERR(root_inode);
- 		goto out_free;
-+	}
- 
- 	err = init_inode(root_inode, NULL);
- 	if(err)
-@@ -991,7 +1011,7 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
- 	if(sb->s_root == NULL)
- 		goto out_put;
- 
--	err = read_inode(root_inode);
-+	err = hostfs_read_inode(root_inode);
- 	if(err){
- 		/* No iput in this case because the dput does that for us */
- 		dput(sb->s_root);
-
+Paul
