@@ -1,60 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbXJDPSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbXJDPYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbXJDPSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 11:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbXJDPSG
+	id S1758769AbXJDPYa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 11:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXJDPYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:18:06 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:60739 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbXJDPSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:18:05 -0400
-Subject: [PATCH] RCU trace fix possible mem-leak
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain
-Date: Thu, 04 Oct 2007 11:16:50 -0400
-Message-Id: <1191511010.15186.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Thu, 4 Oct 2007 11:24:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44110 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754430AbXJDPYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 11:24:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pekka Pietikainen <pp@ee.oulu.fi>
+Subject: Re: 2.6.23-rc8-git2 possible recursive locking when running screen
+Date: Thu, 4 Oct 2007 17:39:12 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20071003092408.GA17356@ee.oulu.fi>
+In-Reply-To: <20071003092408.GA17356@ee.oulu.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710041739.12726.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ For RCU trace which is not yet in mainline ]
+On Wednesday, 3 October 2007 11:24, Pekka Pietikainen wrote:
+> Seen this a few times lately on a machine running rawhide when running
+> screen (and doing "something", it's not automatic. And box works just fine).
+> I think I saw this a few weeks back, so it's not a new regression.
 
-In the initialization of the RCU trace module, if
-rcupreempt_debugfs_init() fails, we never free the the trace buffer.
+Did it happen with 2.6.22?
 
-This patch frees the trace buffer in case the debugfs fails.
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.23-rc9-rt1/kernel/rcupreempt_trace.c
-===================================================================
---- linux-2.6.23-rc9-rt1.orig/kernel/rcupreempt_trace.c
-+++ linux-2.6.23-rc9-rt1/kernel/rcupreempt_trace.c
-@@ -309,11 +309,16 @@ out:
- 
- static int __init rcupreempt_trace_init(void)
- {
-+	int ret;
-+
- 	mutex_init(&rcupreempt_trace_mutex);
- 	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
- 	if (!rcupreempt_trace_buf)
- 		return 1;
--	return rcupreempt_debugfs_init();
-+	ret = rcupreempt_debugfs_init();
-+	if (ret)
-+		kfree(rcupreempt_trace_buf);
-+	return ret;
- }
- 
- static void __exit rcupreempt_trace_cleanup(void)
-
-
+Rafael
