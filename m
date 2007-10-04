@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbXJDJX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXJDJXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbXJDJX1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759504AbXJDJRr
+	id S1760632AbXJDJXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbXJDJRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:17:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58771 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:17:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58773 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759268AbXJDJRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:17:46 -0400
+	id S1759506AbXJDJRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:17:48 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Denis Cheng <crquan@gmail.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 17/51] [GFS2] unneeded typecast
-Date: Thu,  4 Oct 2007 09:49:10 +0100
-Message-Id: <11914878214113-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 18/51] [GFS2] better code for translating characters
+Date: Thu,  4 Oct 2007 09:49:11 +0100
+Message-Id: <11914878231394-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11914878191964-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878214113-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -34,29 +34,31 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <1191487815172-git-send-email-swhiteho@redhat.com>
  <11914878173677-git-send-email-swhiteho@redhat.com>
  <11914878191964-git-send-email-swhiteho@redhat.com>
+ <11914878214113-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Denis Cheng <crquan@gmail.com>
 
-sb->s_fs_info is a void pointer, thus the type cast is not needed.
+the original code could work, but I think this code could work better.
 
 Signed-off-by: Denis Cheng <crquan@gmail.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
 diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 32b2859..25cfab9 100644
+index 25cfab9..6c820cb 100644
 --- a/fs/gfs2/ops_fstype.c
 +++ b/fs/gfs2/ops_fstype.c
-@@ -849,7 +849,7 @@ static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
- 		error = -ENOENT;
- 		goto error;
- 	}
--	sdp = (struct gfs2_sbd*) sb->s_fs_info;
-+	sdp = sb->s_fs_info;
- 	if (sdp->sd_vfs_meta) {
- 		printk(KERN_WARNING "GFS2: gfs2meta mount already exists\n");
- 		error = -EBUSY;
+@@ -144,7 +144,8 @@ static int init_names(struct gfs2_sbd *sdp, int silent)
+ 	snprintf(sdp->sd_proto_name, GFS2_FSNAME_LEN, "%s", proto);
+ 	snprintf(sdp->sd_table_name, GFS2_FSNAME_LEN, "%s", table);
+ 
+-	while ((table = strchr(sdp->sd_table_name, '/')))
++	table = sdp->sd_table_name;
++	while ((table = strchr(table, '/')))
+ 		*table = '_';
+ 
+ out:
 -- 
 1.5.1.2
 
