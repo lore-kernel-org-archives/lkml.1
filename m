@@ -1,82 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbXJDEO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbXJDEQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbXJDEO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758421AbXJDEOe
+	id S1758532AbXJDEQz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXJDEQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:14:34 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:50881 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758345AbXJDEOc (ORCPT
+	Thu, 4 Oct 2007 00:16:47 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:55880 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbXJDEQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 00:14:32 -0400
-Date: Wed, 03 Oct 2007 22:13:23 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/3] Sysace: sparse fixes
-In-reply-to: <20071004041114.20868.34605.stgit@trillian.cg.shawcable.net>
-To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Message-id: <20071004041323.20868.70997.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-References: <20071004041114.20868.34605.stgit@trillian.cg.shawcable.net>
-User-Agent: StGIT/0.12.1
+	Thu, 4 Oct 2007 00:16:45 -0400
+Message-ID: <47046922.4030709@linux.vnet.ibm.com>
+Date: Thu, 04 Oct 2007 09:46:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: Memory controller merge (was Re: -mm merge plans for 2.6.24)
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org> <4701C737.8070906@linux.vnet.ibm.com> <Pine.LNX.4.64.0710021604260.4916@blonde.wat.veritas.com> <47034F12.8020505@linux.vnet.ibm.com> <Pine.LNX.4.64.0710031918470.9414@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0710031918470.9414@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Hugh Dickins wrote:
+> On Wed, 3 Oct 2007, Balbir Singh wrote:
+>> Hugh Dickins wrote:
+>>> Sorry, Balbir, I've failed to get back to you, still attending to
+>>> priorities.  Let me briefly summarize my issue with the mem controller:
+>>> you've not yet given enough attention to swap.
+>> I am open to suggestions and ways and means of making swap control
+>> complete and more usable.
+> 
+> Well, swap control is another subject.  I guess for that you'll need
+> to track which cgroup each swap page belongs to (rather more expensive
+> than the current swap_map of unsigned shorts).  And I doubt it'll be
+> swap control as such that's required, but control of rss+swap.
+> 
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+I see what you mean now, other people have recommending a per cgroup
+swap file/device.
 
- drivers/block/xsysace.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+> But here I'm just worrying about how the existence of swap makes
+> something of a nonsense of your rss control.
+> 
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 3847464..5b73471 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -195,7 +195,7 @@ struct ace_device {
- 
- 	/* Details of hardware device */
- 	unsigned long physaddr;
--	void *baseaddr;
-+	void __iomem *baseaddr;
- 	int irq;
- 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
- 	struct ace_reg_ops *reg_ops;
-@@ -227,20 +227,20 @@ struct ace_reg_ops {
- /* 8 Bit bus width */
- static u16 ace_in_8(struct ace_device *ace, int reg)
- {
--	void *r = ace->baseaddr + reg;
-+	void __iomem *r = ace->baseaddr + reg;
- 	return in_8(r) | (in_8(r + 1) << 8);
- }
- 
- static void ace_out_8(struct ace_device *ace, int reg, u16 val)
- {
--	void *r = ace->baseaddr + reg;
-+	void __iomem *r = ace->baseaddr + reg;
- 	out_8(r, val);
- 	out_8(r + 1, val >> 8);
- }
- 
- static void ace_datain_8(struct ace_device *ace)
- {
--	void *r = ace->baseaddr + 0x40;
-+	void __iomem *r = ace->baseaddr + 0x40;
- 	u8 *dst = ace->data_ptr;
- 	int i = ACE_FIFO_SIZE;
- 	while (i--)
-@@ -250,7 +250,7 @@ static void ace_datain_8(struct ace_device *ace)
- 
- static void ace_dataout_8(struct ace_device *ace)
- {
--	void *r = ace->baseaddr + 0x40;
-+	void __iomem *r = ace->baseaddr + 0x40;
- 	u8 *src = ace->data_ptr;
- 	int i = ACE_FIFO_SIZE;
- 	while (i--)
+Ideally, pages would not reside for too long in swap cache (unless
+I've misunderstood swap cache or there are special cases for tmpfs/
+ramfs). Once pages have been swapped back in, they get assigned
+back to their respective cgroup's in do_swap_page() (where we charge
+them back to the cgroup).
 
+The swap cache pages will be the first ones to go, once the cgroup
+exceeds its limit.
+
+There might be gaps in my understanding or I might be missing a use
+case scenario, where things work differently.
+
+>>> I accept that full swap control is something you're intending to add
+>>> incrementally later; but the current state doesn't make sense to me.
+>>>
+>>> The problems are swapoff and swapin readahead.  These pull pages into
+>>> the swap cache, which are assigned to the cgroup (or the whatever-we-
+>>> call-the-remainder-outside-all-the-cgroups) which is running swapoff
+>          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> I'd appreciate it if you'd teach me the right name for that!
+> 
+
+In the past people have used names like default cgroup, we could use
+the root cgroup as the default cgroup.
+
+>>> or faulting in its own page; yet they very clearly don't (in general)
+>>> belong to that cgroup, but to other cgroups which will be discovered
+>>> later.
+>> I understand what your trying to say, but with several approaches that
+>> we tried in the past, we found caches the hardest to most accurately
+>> account. IIRC, with readahead, we don't even know if all the pages
+>> readahead will be used, that's why we charge everything to the cgroup
+>> that added the page to the cache.
+> 
+> Yes, readahead is anyway problematic.  My guess is that in the file
+> cache case, you'll tend not to go too far wrong by charging to the
+> one that added - though we're all aware that's fairly unsatisfactory.
+> 
+> My point is that in the swap cache case, it's badly wrong: there's
+> no page more obviously owned by a cgroup than its anonymous pages
+> (forgetting for a moment that minority shared between cgroups
+> until copy-on-write), so it's very wrong for swapin readahead
+> or swapoff to go charging those to another or to no cgroup.
+> 
+> Imagine a cgroup at its rss limit, with more out on swap.  Then
+> another cgroup does some swap readahead, bringing pages private
+> to the first into cache.  Or runs swapoff which actually plugs
+> them into the rss of the first cgroup, so it goes over limit.
+> 
+> Those are pages we'd want to swap out when the first cgroup
+> faults to go further over its limit; but they're now not even
+> identified as belonging to the right cgroup, so won't be found.
+> 
+
+Won't the right cgroup assignment happen as discussed above?
+
+>>> I did try removing the cgroup mods to mm/swap_state.c, so swap pages
+>>> get assigned to a cgroup only once it's really known; but that's not
+>>> enough by itself, because cgroup RSS reclaim doesn't touch those
+>>> pages, so the cgroup can easily OOM much too soon.  I was thinking
+>>> that you need a "limbo" cgroup for these pages, which can be attacked
+>>> for reclaim along with any cgroup being reclaimed, but from which
+>>> pages are readily migrated to their real cgroup once that's known.
+>>>
+>> Is migrating the charge to the real cgroup really required?
+> 
+> My answer is definitely yes.  I'm not suggesting that you need
+> general migration between cgroups at this stage (something for
+> later quite likely); but I am suggesting you need one pseudo-cgroup
+> to hold these cases temporarily, and that you cannot properly track
+> rss without it (if there is any swap).
+> 
+
+If what I understand and discussed earlier is, then we don't need
+to go this route. But I think the idea of having a pseduo cgroup
+is interesting (needs more thought).
+
+>>> So in the current memory controller, that unuse_pte mem charge I was
+>>> originally worried about failing (I hadn't at that point delved in
+>>> to see how it tries to reclaim) actually never fails (and never
+>>> does anything): the page is already assigned to some cgroup-or-
+>>> whatever and is never charged to vma->vm_mm at that point.
+>>>
+>> Excellent!
+> 
+> Umm, please explain what's excellent about that.
+> 
+
+Nothing really, I was glad that we dont fail, even though we might
+assign pages to some other cgroup. Not really exciting, but not
+failing was a relief :-) In summary, there's nothing excellent
+about it.
+
+> Hugh
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
