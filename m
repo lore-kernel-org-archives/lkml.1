@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXJDLmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbXJDLnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbXJDLmo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 07:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbXJDLfA
+	id S1762207AbXJDLnf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 07:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761124AbXJDLk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 07:35:00 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:35524 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760991AbXJDLe6 (ORCPT
+	Thu, 4 Oct 2007 07:40:57 -0400
+Received: from adsl45-199.ath.forthnet.gr ([77.49.76.199]:42797 "EHLO
+	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761875AbXJDLk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 07:34:58 -0400
-X-Trace: 613277508-mk-filter-4.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
-X-SBRS: None
-X-RemoteIP: 81.1.76.66
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAL1qBEdRAUxC/2dsb2JhbACBWQ
-Message-ID: <54609.217.150.108.178.1191497676.squirrel@newgolddream.dyndns.info>
-In-Reply-To: <20071004100151.GA17628@linux-sh.org>
-References: <1191359367.17654.24.camel@localhost.localdomain>
-    <20071003061805.GA8851@linux-sh.org>
-    <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
-    <20071004100151.GA17628@linux-sh.org>
-Date: Thu, 4 Oct 2007 12:34:36 +0100 (BST)
-Subject: Re: [PATCH] Fix SH DMAC code to handle PVR2 cascade
-From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
-       "linux-sh" <linuxsh-dev@lists.sourceforge.net>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.9a
+	Thu, 4 Oct 2007 07:40:56 -0400
+X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 07:40:55 EDT
+Message-ID: <4704CFEA.6000307@vergina.dyndns.org>
+Date: Thu, 04 Oct 2007 14:35:06 +0300
+From: Aggelos Manousidis <agg@vergina.dyndns.org>
+Reply-To: agg@vergina.dyndns.org
+User-Agent: Thunderbird 2.0.0.6 (X11/20070806)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: linux-kernel@vger.kernel.org
+Subject: How to reset a sata pcmcia controller port to UDMA/100 ?
+Content-Type: text/plain; charset=ISO-8859-7
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, October 4, 2007 11:01 am, Paul Mundt wrote:
-> So for PVR2 cascade, what does the CHCR value work out to? Both
-> CHCR_TS_MASK and CHCR_TS_SHIFT haven't changed for SH7750, so this
-> suggests that either the CHCR value is just wrong or we've had a
-> long-standing bug with the CHCR.TS mask.
->
-> Either way, we are not going to hardcode a ts_shift value when the CHCR
-> has all of the information encoded in it!
->
+I have a esata (external) disk drive, which I keep permanently connected
+to a sata pcmcia port (using a esata-sata cable). The pcmcia
+controller's chipset as reported by lspci is:
 
-There *is* a long standing bug in CHCR_TS_MASK. It is meant to mask out
-all but bits 6:4 but in fact only masks bits 5 and 4. If it is set to 0x70
-and not 0x30 this should work - though as usual I cannot make a patch to
-check this out at the moment.
+02:00.0 Mass storage controller: Silicon Image, Inc. SiI 3112
+[SATALink/SATARaid] Serial ATA Controller (rev 02)
+
+and I have built a custom kernel:
+
+laptop ~ # grep -i sil /usr/src/linux/.config
+CONFIG_SATA_SIL=y
+# CONFIG_SATA_SIL24 is not set
+CONFIG_PATA_SIL680=m
+# CONFIG_FB_ASILIANT is not set
+laptop ~ #
+
+Modules loaded are:
+laptop ~ # lsmod
+Module                  Size  Used by
+af_packet              11272  2
+snd_pcm_oss            33952  0
+snd_mixer_oss          12640  1 snd_pcm_oss
+snd_seq_oss            24768  0
+snd_seq_midi_event      5184  1 snd_seq_oss
+snd_seq                37424  4 snd_seq_oss,snd_seq_midi_event
+snd_seq_device          5804  2 snd_seq_oss,snd_seq
+tun                     7296  0
+backlight               4032  0
+lcd                     3680  0
+nfsd                   75240  13
+exportfs                3840  1 nfsd
+lockd                  52904  2 nfsd
+sunrpc                131100  8 nfsd,lockd
+usbhid                 14196  0
+snd_maestro3           18852  1
+snd_ac97_codec         88420  1 snd_maestro3
+ac97_bus                1792  1 snd_ac97_codec
+snd_pcm                57288  3 snd_pcm_oss,snd_maestro3,snd_ac97_codec
+snd_timer              15332  2 snd_seq,snd_pcm
+snd_page_alloc          7080  1 snd_pcm
+parport_pc             20036  0
+parport                18304  1 parport_pc
+floppy                 46404  0
+i2c_piix4               6860  0
+i2c_core               17808  1 i2c_piix4
+uhci_hcd               18412  0
+usbcore                98872  3 usbhid,uhci_hcd
+rtc                     8504  0
+intel_agp              19764  1
+agpgart                24112  1 intel_agp
+unix                   18416  813
+laptop ~ #
+
+The problem:
+The plug on the pcmcia card seems very sensitive, cause if I try to
+touch / slightly move the plug, dmesg gives:
+
+ata4: exception Emask 0x10 SAct 0x0 SErr 0x90000 action 0x2 frozen
+ata4: hard resetting port
+ata4: port is slow to respond, please be patient (Status 0xff)
+ata4: COMRESET failed (errno=-16)
+ata4: hard resetting port
+ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata4.00: configured for UDMA/66
+ata4: EH pending after completion, repeating EH (cnt=4)
+ata4: EH complete
+sd 3:0:0:0: [sdb] 586072368 512-byte hardware sectors (300069 MB)
+sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+
+Question: Is there a command to reset the port to UDMA/100 ?
