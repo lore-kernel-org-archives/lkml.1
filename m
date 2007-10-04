@@ -1,149 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbXJDFET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbXJDFPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbXJDFET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXJDFEK
+	id S1756064AbXJDFPN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbXJDFO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:04:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41904 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751304AbXJDFEJ (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 01:04:09 -0400
-Date: Thu, 4 Oct 2007 15:03:44 +1000
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>
-Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to indicate more io
-Message-ID: <20071004050344.GF23367404@sgi.com>
-References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn> <20071003024119.GL23367404@sgi.com> <20071004022133.GA6244@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004022133.GA6244@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 4 Oct 2007 01:14:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:13772 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751362AbXJDFO7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 01:14:59 -0400
+Message-ID: <47047651.6040808@oracle.com>
+Date: Wed, 03 Oct 2007 22:12:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Rob Landley <rob@landley.net>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       johnpol@2ka.mipt.ru
+Subject: Re: + add-documentation-w1w1-masters-00-index.patch added to -mm
+ tree
+References: <200710032117.l93LHXI0009109@imap1.linux-foundation.org> <20071003143849.46c7f157.randy.dunlap@oracle.com> <200710032046.03751.rob@landley.net>
+In-Reply-To: <200710032046.03751.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 10:21:33AM +0800, Fengguang Wu wrote:
-> On Wed, Oct 03, 2007 at 12:41:19PM +1000, David Chinner wrote:
-> > On Wed, Oct 03, 2007 at 09:34:39AM +0800, Fengguang Wu wrote:
-> > > On Wed, Oct 03, 2007 at 07:47:45AM +1000, David Chinner wrote:
-> > > > On Tue, Oct 02, 2007 at 04:41:48PM +0800, Fengguang Wu wrote:
-> > > > >  		wbc.pages_skipped = 0;
-> > > > > @@ -560,8 +561,9 @@ static void background_writeout(unsigned
-> > > > >  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> > > > >  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
-> > > > >  			/* Wrote less than expected */
-> > > > > -			congestion_wait(WRITE, HZ/10);
-> > > > > -			if (!wbc.encountered_congestion)
-> > > > > +			if (wbc.encountered_congestion || wbc.more_io)
-> > > > > +				congestion_wait(WRITE, HZ/10);
-> > > > > +			else
-> > > > >  				break;
-> > > > >  		}
-> > > > 
-> > > > Why do you call congestion_wait() if there is more I/O to issue?  If
-> > > > we have a fast filesystem, this might cause the device queues to
-> > > > fill, then drain on congestion_wait(), then fill again, etc. i.e. we
-> > > > will have trouble keeping the queues full, right?
-> > > 
-> > > You mean slow writers and fast RAID? That would be exactly the case
-> > > these patches try to improve.
-> > 
-> > I mean any writers and a fast block device (raid or otherwise).
-> > 
-> > > This patchset makes kupdate/background writeback more responsible,
-> > > so that if (avg-write-speed < device-capabilities), the dirty data are
-> > > synced timely, and we don't have to go for balance_dirty_pages().
-> > 
-> > Sure, but I'm asking about the effect of the patches on the
-> > (avg-write-speed == device-capabilities) case. I agree that
-> > they are necessary for timely syncing of data but I'm trying
-> > to understand what effect they have on the normal write case
+Rob Landley wrote:
+>>> +	- The Maixm/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
+>>               Maxim (2 times)
 > 
-> > (i.e. keeping the disk at full write throughput).
+> That typo was cut and paste from the the "Description" section of both files.  
+> (Lines 18 and 13, respectively.)  :(
 > 
-> OK, I guess it is the focus of all your questions: Why should we sleep
-> in congestion_wait() and possibly hurt the write throughput? I'll try
-> to summary it:
+> Attached is an updated version that spells it "maxim" and also fixes the typos 
+> in the source files, if that helps...
 > 
-> - congestion_wait() is necessary
-> Besides device congestions, there may be other blockades we have to
-> wait on, e.g. temporary page locks, NFS/journal issues(I guess).
-
-We skip locked pages in writeback, and if some filesystems have
-blocking issues that require non-blocking writeback waits for some
-I/O to complete before re-entering writeback, then perhaps they should be
-setting wbc->encountered_congestion to tell writeback to back off.
-
-The question I'm asking is that if more_io tells us we have more
-work to do, why do we have to sleep first if the block dev is
-able to take more I/O?
-
+>> Was this patch posted to a mailing list?  if so, which one?
+>> I didn't see it.
 > 
-> - congestion_wait() is called only when necessary
-> congestion_wait() will only be called we saw blockades:
->         if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
->                 congestion_wait(WRITE, HZ/10);
->         }
-> So in normal case, it may well write 128MB data without any waiting.
-
-Sure, but wbc.more_io doesn't indicate a blockade - just that there
-is more work to do, right?
-
-> - congestion_wait() won't hurt write throughput
-> When not congested, congestion_wait() will be wake up on each write
-> completion.
-
-What happens if there I/O we issued has already completed before we
-got back up to the congestion_wait() call? We'll spend 100ms
-sleeping when we shouldn't have and throughput goes down by 10% on
-every occurrence....
-
-if we've got more work to do, then we should do it without an
-arbitrary, non-deterministic delay being inserted. If the delay is
-needed to prevent he system from "going mad" (whatever tht means),
-then what's the explaination for the system "going mad"?
-
-> Note that MAX_WRITEBACK_PAGES=1024 and
-> /sys/block/sda/queue/max_sectors_kb=512(for me),
-> which means we are gave the chance to sync 4MB on every 512KB written,
-> which means we are able to submit write IOs 8 times faster than the
-> device capability. congestion_wait() is a magical timer :-)
-
-So, with Jens Axboe's sglist chaining, that single I/O could now
-be up to 32MB on some hardware. IOWs, we push 1024 pages, and that
-could end up as a single I/O being issued to disk.
-
-Your magic just broke. :/
-
-> > > So for your question of queue depth, the answer is: the queue length
-> > > will not build up in the first place. 
-> > 
-> > Which queue are you talking about here? The block deivce queue?
+> LKML on saturday.
+> http://lkml.org/lkml/2007/9/29/168
 > 
-> Yes, the elevator's queues.
+> My pending patches are all at http://landley.net/kdocs/make/patches although 
+> I'm waiting for the current batch to work through before posting more.
 
-I think this is the wrong thing to be doing and is detrimental
-to I/o perfomrance because it wil reduce elevator efficiency.
 
-The elevator can only work efficiently if we allow the queues to
-build up. The deeper the queue, the better the elevator can sort the
-I/o requests and keep the device at maximum efficiency.  If we don't
-push enough I/O into the queues the we miss opportunities to combine
-adjacent I/Os and reduce the seek load of writeback. Also, a shallow
-queue will run dry if we don't get back to it in time which is
-possible if we wait for I/o to complete before we go and flush
-more....
+Thanks.  Looks good.
 
-Cheers,
+> From: Rob Landley <rob@landley.net>
+> 
+> Two 00-INDEX files under Documentation/w1 plus typo fixes.
+> 
+> Signed-off-by: Rob Landley <rob@landley.net>
+> ---
+> 
+>  Documentation/w1/masters/ds2482 |    2 +-
+>  Documentation/w1/masters/ds2490 |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -r de183081194a Documentation/w1/masters/ds2482
+> --- a/Documentation/w1/masters/ds2482	Tue Oct 02 18:00:56 2007 +0000
+> +++ b/Documentation/w1/masters/ds2482	Wed Oct 03 20:28:05 2007 -0500
+> @@ -15,7 +15,7 @@ Description
+>  Description
+>  -----------
+>  
+> -The Maixm/Dallas Semiconductor DS2482 is a I2C device that provides
+> +The Maxim/Dallas Semiconductor DS2482 is a I2C device that provides
+>  one (DS2482-100) or eight (DS2482-800) 1-wire busses.
+>  
+>  
+> diff -r de183081194a Documentation/w1/masters/ds2490
+> --- a/Documentation/w1/masters/ds2490	Tue Oct 02 18:00:56 2007 +0000
+> +++ b/Documentation/w1/masters/ds2490	Wed Oct 03 20:28:05 2007 -0500
+> @@ -10,7 +10,7 @@ Description
+>  Description
+>  -----------
+>  
+> -The Maixm/Dallas Semiconductor DS2490 is a chip
+> +The Maxim/Dallas Semiconductor DS2490 is a chip
+>  which allows to build USB <-> W1 bridges.
+>  
+>  DS9490(R) is a USB <-> W1 bus master device
+> --- /dev/null	2007-04-23 10:59:00.000000000 -0500
+> +++ hg/Documentation/w1/00-INDEX	2007-10-03 20:26:38.000000000 -0500
+> @@ -0,0 +1,8 @@
+> +00-INDEX
+> +	- This file
+> +masters/
+> +	- Individual chips providing 1-wire busses.
+> +w1.generic
+> +	- The 1-wire (w1) bus
+> +w1.netlink
+> +	- Userspace communication protocol over connector [1].
+> --- /dev/null	2007-04-23 10:59:00.000000000 -0500
+> +++ hg/Documentation/w1/masters/00-INDEX	2007-10-03 20:26:55.000000000 -0500
+> @@ -0,0 +1,6 @@
+> +00-INDEX
+> +	- This file
+> +ds2482
+> +	- The Maxim/Dallas Semiconductor DS2482 provides 1-wire busses.
+> +ds2490
+> +	- The Maxim/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
 
-Dave.
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+~Randy
