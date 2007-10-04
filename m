@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbXJDJyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbXJDJ4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760239AbXJDJyX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbXJDJyK
+	id S1760772AbXJDJ4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbXJDJ4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:54:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55859 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758825AbXJDJyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:54:08 -0400
-Date: Thu, 4 Oct 2007 02:53:55 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Paul Menage <menage@google.com>
-Cc: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com, serue@us.ibm.com,
-       clg@fr.ibm.com, ebiederm@xmission.com, xemul@openvz.org,
-       rientjes@google.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       a.p.zijlstra@chello.nl, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/33] task containersv11 make cpusets a client of
- containers
-Message-Id: <20071004025355.4a096316.pj@sgi.com>
-In-Reply-To: <20070917210427.888917000@menage.corp.google.com>
-References: <20070917210307.116234000@menage.corp.google.com>
-	<20070917210427.888917000@menage.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 05:56:38 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37050 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754606AbXJDJ4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:56:38 -0400
+Date: Thu, 4 Oct 2007 11:54:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Subject: lp_console: cleanups
+Message-ID: <20071004095454.GA838@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M,
+Remove NULL initializers and clean whitespace a bit.
 
-This snippet from the memory allocation hot path worries me a bit.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Once per memory page allocation, we go through here, needing to peak inside
-the current tasks cpuset to see if it has changed (it's 'mems_generation'
-value doesn't match the last seen value we have stashed in the task struct.)
-
-@@ -653,20 +379,19 @@ void cpuset_update_task_memory_state(voi
- 	struct task_struct *tsk = current;
- 	struct cpuset *cs;
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index 62051f8..8267ff8 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -144,7 +144,7 @@ static unsigned int lp_count = 0;
+ static struct class *lp_class;
  
--	if (tsk->cpuset == &top_cpuset) {
-+	if (task_cs(tsk) == &top_cpuset) {
- 		/* Don't need rcu for top_cpuset.  It's never freed. */
- 		my_cpusets_mem_gen = top_cpuset.mems_generation;
- 	} else {
- 		rcu_read_lock();
--		cs = rcu_dereference(tsk->cpuset);
--		my_cpusets_mem_gen = cs->mems_generation;
-+		my_cpusets_mem_gen = task_cs(current)->mems_generation;
- 		rcu_read_unlock();
+ #ifdef CONFIG_LP_CONSOLE
+-static struct parport *console_registered; // initially NULL
++static struct parport *console_registered;
+ #endif /* CONFIG_LP_CONSOLE */
+ 
+ #undef LP_DEBUG
+@@ -749,8 +749,8 @@ #endif /* console on line printer */
+ /* --- initialisation code ------------------------------------- */
+ 
+ static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
+-static char *parport[LP_NO] = { NULL,  };
+-static int reset = 0;
++static char *parport[LP_NO];
++static int reset;
+ 
+ module_param_array(parport, charp, NULL, 0);
+ module_param(reset, bool, 0);
+@@ -758,10 +758,10 @@ module_param(reset, bool, 0);
+ #ifndef MODULE
+ static int __init lp_setup (char *str)
+ {
+-	static int parport_ptr; // initially zero
++	static int parport_ptr;
+ 	int x;
+ 
+-	if (get_option (&str, &x)) {
++	if (get_option(&str, &x)) {
+ 		if (x == 0) {
+ 			/* disable driver on "lp=" or "lp=0" */
+ 			parport_nr[0] = LP_PARPORT_OFF;
+@@ -808,7 +808,7 @@ static int lp_register(int nr, struct pa
+ #ifdef CONFIG_LP_CONSOLE
+ 	if (!nr) {
+ 		if (port->modes & PARPORT_MODE_SAFEININT) {
+-			register_console (&lpcons);
++			register_console(&lpcons);
+ 			console_registered = port;
+ 			printk (KERN_INFO "lp%d: console ready\n", CONSOLE_LP);
+ 		} else
+@@ -824,8 +824,7 @@ static void lp_attach (struct parport *p
+ {
+ 	unsigned int i;
+ 
+-	switch (parport_nr[0])
+-	{
++	switch (parport_nr[0]) {
+ 	case LP_PARPORT_UNSPEC:
+ 	case LP_PARPORT_AUTO:
+ 		if (parport_nr[0] == LP_PARPORT_AUTO &&
+@@ -856,7 +855,7 @@ static void lp_detach (struct parport *p
+ 	/* Write this some day. */
+ #ifdef CONFIG_LP_CONSOLE
+ 	if (console_registered == port) {
+-		unregister_console (&lpcons);
++		unregister_console(&lpcons);
+ 		console_registered = NULL;
  	}
-
-With this new cgroup code, the task_cs macro was added, -twice-,
-which deals with the fact that what used to be a single pointer
-in the task struct directly to the tasks cpuset is now roughly
-two more dereferences and an indexing away:
-
-    static inline struct cpuset *task_cs(struct task_struct *task)
-    {
-	    return container_of(task_subsys_state(task, cpuset_subsys_id),
-				struct cpuset, css);
-    }
-
-    static inline struct cgroup_subsys_state *task_subsys_state(
-	    struct task_struct *task, int subsys_id)
-    {
-	    return rcu_dereference(task->cgroups->subsys[subsys_id]);
-    }
-
-
-At a minimum, could you change that last added line to use 'tsk'
-instead of 'current'?   This should save one instruction, as 'tsk'
-will likely already be in a register.
-
-+		my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
-
-I guess the two, rather than one, invocations of task_cs() won't matter
-much, as they are on the same address, so the second invocation will
-hit cache lines just found on the first invocation.
-
-I wonder if we can save any cache line hits on this, or if there is
-someway to measure whether or not this has noticeable performance
-impact.
-
-... Probably this is all lost in the noise of the other stuff that
-gets coded in the memory allocation hot path.  It would be nice to
-think that it actually matters however.
+ #endif /* CONFIG_LP_CONSOLE */
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
