@@ -1,93 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXJDKCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXJDKCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbXJDKCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 06:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXJDKCG
+	id S1760028AbXJDKCl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 06:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbXJDKCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 06:02:06 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:59595 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752510AbXJDKCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 06:02:05 -0400
-Date: Thu, 4 Oct 2007 19:01:51 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: linux-sh <linuxsh-dev@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix SH DMAC code to handle PVR2 cascade
-Message-ID: <20071004100151.GA17628@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	linux-sh <linuxsh-dev@lists.sourceforge.net>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1191359367.17654.24.camel@localhost.localdomain> <20071003061805.GA8851@linux-sh.org> <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
+	Thu, 4 Oct 2007 06:02:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:46461 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754597AbXJDKC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 06:02:29 -0400
+Message-ID: <4704BA1F.4070408@oracle.com>
+Date: Thu, 04 Oct 2007 15:32:07 +0530
+From: gurudas pai <gurudas.pai@oracle.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] kernel BUG at arch/i386/mm/highmem.c:15!  on 2.6.23-rc8/rc9
+References: <47048A0C.4020608@oracle.com> <200710040053.19570.nickpiggin@yahoo.com.au> <200710040139.04201.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710040139.04201.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 04:41:37PM +0100, Adrian McMenamin wrote:
-> On Wed, October 3, 2007 7:18 am, Paul Mundt wrote:
-> > On Tue, Oct 02, 2007 at 10:09:27PM +0100, Adrian McMenamin wrote:
-> >> Fix SH DMAC code to correctly handle PVR2 cascade DMA.
-> >>
-> >> This updates http://lkml.org/lkml/2007/10/2/276
-> >>
-> >> (I decided it was better to have the true size of the transfer put in
-> >> via the API and refactor this here. And calc_xmit_shift(chan) should
-> >> return 5 but only returns 3 so I've not used it here)
-> >>
-> > It would be helpful to know why calc_xmit_shift() is broken here rather
-> > than just coding around it, as this will have implications for the other
-> > DMA channels on SH7091/SH7750.
-> 
-> 
-> >From include/asm-sh/cpu-sh4/dma.h
-> 
-> 53 /*
-> 54  * The DMA count is defined as the number of bytes to transfer.
-> 55  */
-> 56 static unsigned int ts_shift[] __maybe_unused = {
-> 57         [XMIT_SZ_64BIT]         = 3,
-> 58         [XMIT_SZ_8BIT]          = 0,
-> 59         [XMIT_SZ_16BIT]         = 1,
-> 60         [XMIT_SZ_32BIT]         = 2,
-> 61         [XMIT_SZ_256BIT]        = 5,
-> 62 };
-> 63 #endif
-> 
-> ie ts_shift returns the number of bytes per transfer, but is then used as
-> a bit shift:
-> 
-Er, no it doesn't, try again. ts_shift returns the transfer size _shift_.
-The comment refers to the DMA count, which is a different matter. Your
-32-byte transfer where you want the >> 5 shift == ts_shift[XMIT_SZ_256BIT],
-and there's nothing wrong with that. So the issue becomes why you don't
-get a ts_shift[] offset of XMIT_SZ_256BIT for that channel, and that's
-the bug that has to be fixed.
 
-> 45 /*
-> 46  * We determine the correct shift size based off of the CHCR transmit size
-> 47  * for the given channel. Since we know that it will take:
-> 48  *
-> 49  *      info->count >> ts_shift[transmit_size]
-> 50  *
-> 51  * iterations to complete the transfer.
-> 52  */
-> 53 static inline unsigned int calc_xmit_shift(struct dma_channel *chan)
-> 54 {
-> 55         u32 chcr = ctrl_inl(CHCR[chan->chan]);
-> 56
-> 57         return ts_shift[(chcr & CHCR_TS_MASK)>>CHCR_TS_SHIFT];
-> 58 }
+>>> While running Oracle database test on x86/6GB RAM machine panics with
+>>> following messages.
+>> Hi,
+>>
+>> Hmm, seems like something in sys_remap_file_pages might have broken.
+>> It's a bit hard to work out from the backtrace, though.
+>>
+>> Is it possible you can strace to find the arguments for the
+>> remap_file_pages that goes wrong?
 > 
-So for PVR2 cascade, what does the CHCR value work out to? Both
-CHCR_TS_MASK and CHCR_TS_SHIFT haven't changed for SH7750, so this
-suggests that either the CHCR value is just wrong or we've had a
-long-standing bug with the CHCR.TS mask.
+> Ahh, I think it's just underflowing the preempt count somewhere, which
+> is leading highmem.c:15 to just *think* it is in an interrupt.
+> 
+> But you aren't running a preemptible kernel, which makes it unusual...
+> it would have to be coming from interrupt code (or just random corruption).
+> Still, preempt debugging should catch those cases as well.
+> 
+> So, can you disregard my last message, and instead compile a kernel
+> with CONFIG_PREEMPT and CONFIG_DEBUG_PREEMPT, and see what
+> messages come up?
+With CONFIG_PREEMPT and CONFIG_DEBUG_PREEMPT set I got following 
+messages on rc9.
 
-Either way, we are not going to hardcode a ts_shift value when the CHCR
-has all of the information encoded in it!
+
+BUG: using smp_processor_id() in preemptible [00000001] code: oracle/3631
+caller is kunmap_atomic+0xb/0x82
+  [<c04ec241>] debug_smp_processor_id+0xa1/0xb4
+  [<c0420dd0>] kunmap_atomic+0xb/0x82
+  [<c045fae3>] __do_fault+0x55/0x35b
+  [<c04623e8>] handle_mm_fault+0x4d0/0x909
+  [<c0460624>] follow_page+0x1d9/0x228
+  [<c0462a71>] get_user_pages+0x250/0x332
+  [<c0462bce>] make_pages_present+0x7b/0x90
+  [<c045f06a>] sys_remap_file_pages+0x2de/0x330
+  [<c0404f0e>] syscall_call+0x7/0xb
+  [<c0620000>] ioctl_standard_call+0x209/0x2ce
+  =======================
+WARNING: at kernel/sched.c:3389 sub_preempt_count()
+  [<c0420e2f>] kunmap_atomic+0x6a/0x82
+  [<c045fae3>] __do_fault+0x55/0x35b
+  [<c04623e8>] handle_mm_fault+0x4d0/0x909
+  [<c0460624>] follow_page+0x1d9/0x228
+  [<c0462a71>] get_user_pages+0x250/0x332
+  [<c0462bce>] make_pages_present+0x7b/0x90
+  [<c045f06a>] sys_remap_file_pages+0x2de/0x330
+  [<c0404f0e>] syscall_call+0x7/0xb
+  [<c0620000>] ioctl_standard_call+0x209/0x2ce
+  =======================
+------------[ cut here ]------------
+kernel BUG at arch/i386/mm/highmem.c:70!
+invalid opcode: 0000 [#1]
+PREEMPT SMP
+Modules linked in: netconsole autofs4 hidp nfs lockd nfs_acl rfcomm 
+l2cap bluetooth sunrpc ipv6 dm_mirror dm_mod video output sbs battery ac 
+parport_pc lp parport scb2_flash mtd chipreg sg floppy i2c_piix4 
+i2c_core tg3 e1000 button ide_cd serio_raw cdrom aic7xxx 
+scsi_transport_spi sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+CPU:    1
+EIP:    0060:[<c0420e21>]    Not tainted VLI
+EFLAGS: 00010206   (2.6.23-rc9-debug #2)
+EIP is at kunmap_atomic+0x5c/0x82
+eax: fff8f000   ebx: 0000000f   ecx: 0000002a   edx: 00070000
+esi: fffaa000   edi: 97322000   ebp: 000490b1   esp: f672ce1c
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process oracle (pid: 3617, ti=f672c000 task=f7587320 task.ti=f672c000)
+Stack: 00000003 c341038c c045fae3 c401c080 97322000 f7893b1c f77f85c0 
+01000000
+        00000000 c341038c 000013d6 00000000 c3410380 00000040 000490b1 
+00000003
+        000490b1 97322000 00000000 f672ce78 fffaa910 c341038c 00000040 
+000490b1
+Call Trace:
+  [<c045fae3>] __do_fault+0x55/0x35b
+  [<c04623e8>] handle_mm_fault+0x4d0/0x909
+  [<c0460624>] follow_page+0x1d9/0x228
+  [<c0462a71>] get_user_pages+0x250/0x332
+  [<c0462bce>] make_pages_present+0x7b/0x90
+  [<c045f06a>] sys_remap_file_pages+0x2de/0x330
+  [<c0404f0e>] syscall_call+0x7/0xb
+  [<c0620000>] ioctl_standard_call+0x209/0x2ce
+  =======================
+Code: 00 00 00 29 d0 c7 00 00 00 00 00 c7 40 04 00 00 00 00 0f 01 3e eb 
+18 81 fe ff ff ff bf 77 04 0f 0b eb fe 3b 35 8c 89 7d c0 72 04 <0f> 0b 
+eb fe b8 01 00 00 00 e8 4d 51 00 00 89 e0 25 00 f0 ff ff
+EIP: [<c0420e21>] kunmap_atomic+0x5c/0x82 SS:ESP 0068:f672ce1c
+
+
+
+Thanks,
+-Guru
