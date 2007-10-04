@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbXJDJn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXJDJqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760199AbXJDJn5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXJDJnu
+	id S1760054AbXJDJqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXJDJqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:43:50 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35992 "EHLO amd.ucw.cz"
+	Thu, 4 Oct 2007 05:46:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41329 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752509AbXJDJnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:43:49 -0400
-Date: Thu, 4 Oct 2007 11:42:06 +0200
+	id S1756471AbXJDJqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:46:06 -0400
+Date: Thu, 4 Oct 2007 11:44:22 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: linux-kernel@vger.kernel.org, bwalle@suse.de,
-       Andrew Morton <akpm@osdl.org>
-Subject: kdump: documentation cleanups
-Message-ID: <20071004094206.GA564@elf.ucw.cz>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Subject: CodingStyle: mention bitfields/whitespace style, prefer (!foo) in
+	examples
+Message-ID: <20071004094422.GA652@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,51 +24,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This cleans up kdump documentation a bit. Plus I do not think we want
-to mention Linux trademark in _every_ file in documentation....
+Mention whitespace and bitfields style, prefer (!foo) to (foo == NULL)
+in examples.
 
 Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-index 2fedc08..faf0e27 100644
---- a/Documentation/kdump/kdump.txt
-+++ b/Documentation/kdump/kdump.txt
-@@ -13,7 +13,7 @@ dump of the system kernel's memory needs
- the system panics). The system kernel's memory image is preserved across
- the reboot and is accessible to the dump-capture kernel.
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index 7f1730f..1595a45 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -71,6 +71,15 @@ used for indentation, and the above exam
  
--You can use common Linux commands, such as cp and scp, to copy the
-+You can use common commands, such as cp and scp, to copy the
- memory image to a dump file on the local disk, or across the network to
- a remote system.
+ Get a decent editor and don't leave whitespace at the end of lines.
  
-@@ -69,7 +69,7 @@ http://www.kernel.org/pub/linux/kernel/p
++Bitfield variables should be indented like this:
++
++	unsigned int foo :1;
++
++Do not put whitespace between any of the unary operators and their operand.
++
++It is usually unnecessary to have whitespace around parentheses as
++part of expressions, around brackets, or around the operators . and
++->.
  
- This is a symlink to the latest version, which at the time of writing is
- 20061214, the only release of kexec-tools-testing so far. As other versions
--are made released, the older onese will remain available at
-+are released, the older ones will remain available at
- http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+ 		Chapter 2: Breaking long lines and strings
  
- Note: Latest kexec-tools-testing git tree is available at
-@@ -360,7 +360,7 @@ If die() is called, and it happens to be
- is called inside interrupt context or die() is called and panic_on_oops is set,
- the system will boot into the dump-capture kernel.
+@@ -403,7 +412,7 @@ int fun(int a)
+ 	int result = 0;
+ 	char *buffer = kmalloc(SIZE);
  
--On powererpc systems when a soft-reset is generated, die() is called by all cpus
-+On powerpc systems when a soft-reset is generated, die() is called by all cpus
- and the system will boot into the dump-capture kernel.
+-	if (buffer == NULL)
++	if (!buffer)
+ 		return -ENOMEM;
  
- For testing purposes, you can trigger a crash by using "ALT-SysRq-c",
-@@ -426,9 +426,3 @@ Contact
- Vivek Goyal (vgoyal@in.ibm.com)
- Maneesh Soni (maneesh@in.ibm.com)
- 
--
--Trademark
--=========
--
--Linux is a trademark of Linus Torvalds in the United States, other
--countries, or both.
+ 	if (condition1) {
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
