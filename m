@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbXJDJ0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760950AbXJDJ06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759754AbXJDJ0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbXJDJSE
+	id S1760950AbXJDJ06 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759549AbXJDJSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:18:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58787 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:18:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58789 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756200AbXJDJSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:18:00 -0400
+	id S1759459AbXJDJSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:18:02 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Wendy Cheng <wcheng@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 25/51] [GFS2] Reduce truncate IO traffic
-Date: Thu,  4 Oct 2007 09:49:18 +0100
-Message-Id: <11914878361239-git-send-email-swhiteho@redhat.com>
+Cc: Patrick Caulfield <pcaulfie@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 26/51] [DLM] Fix lowcomms socket closing
+Date: Thu,  4 Oct 2007 09:49:19 +0100
+Message-Id: <11914878383633-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11914878342921-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878361239-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -42,71 +43,52 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914878304004-git-send-email-swhiteho@redhat.com>
  <11914878323899-git-send-email-swhiteho@redhat.com>
  <11914878342921-git-send-email-swhiteho@redhat.com>
+ <11914878361239-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wendy Cheng <wcheng@redhat.com>
+From: Patrick Caulfield <pcaulfie@redhat.com>
 
-Current GFS2 setattr call unconditionally invokes do_shrink even the
-requested size and actual file size are equal. This has generated large
-amount of extra IOs found during NFS benchmark runs. This patch moves
-the relevant logic out of shrink code path. Since setattr is a system
-call, the time stamps update is still required.
+This patch fixes the slight mess made in lowcomms closing by previous patches
+and fixes all sorts of DLM hangs.
 
-Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index cd805a6..9b89904 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -1085,6 +1085,33 @@ static int do_shrink(struct gfs2_inode *ip, u64 size)
- 	return error;
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 9e9d2e8..62a8a6c 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -334,18 +334,8 @@ static void close_connection(struct connection *con, bool and_other)
+ 		con->rx_page = NULL;
+ 	}
+ 
+-	/* If we are an 'othercon' then NULL the pointer to us
+-	   from the parent and tidy ourself up */
+-	if (test_bit(CF_IS_OTHERCON, &con->flags)) {
+-		struct connection *parent = __nodeid2con(con->nodeid, 0);
+-		parent->othercon = NULL;
+-		kmem_cache_free(con_cache, con);
+-	}
+-	else {
+-		/* Parent connections get reused */
+-		con->retries = 0;
+-		mutex_unlock(&con->sock_mutex);
+-	}
++	con->retries = 0;
++	mutex_unlock(&con->sock_mutex);
  }
  
-+static int do_touch(struct gfs2_inode *ip, u64 size)
-+{
-+	struct gfs2_sbd *sdp = GFS2_SB(&ip->i_inode);
-+	struct buffer_head *dibh;
-+	int error;
-+
-+	error = gfs2_trans_begin(sdp, RES_DINODE, 0);
-+	if (error)
-+		return error;
-+
-+	down_write(&ip->i_rw_mutex);
-+
-+	error = gfs2_meta_inode_buffer(ip, &dibh);
-+	if (error)
-+		goto do_touch_out;
-+
-+	ip->i_inode.i_mtime = ip->i_inode.i_ctime = CURRENT_TIME;
-+	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
-+	gfs2_dinode_out(ip, dibh->b_data);
-+	brelse(dibh);
-+
-+do_touch_out:
-+	up_write(&ip->i_rw_mutex);
-+	gfs2_trans_end(sdp);
-+	return error;
-+}
-+
- /**
-  * gfs2_truncatei - make a file a given size
-  * @ip: the inode
-@@ -1105,8 +1132,11 @@ int gfs2_truncatei(struct gfs2_inode *ip, u64 size)
- 
- 	if (size > ip->i_di.di_size)
- 		error = do_grow(ip, size);
--	else
-+	else if (size < ip->i_di.di_size)
- 		error = do_shrink(ip, size);
-+	else
-+		/* update time stamps */
-+		error = do_touch(ip, size);
- 
- 	return error;
- }
+ /* We only send shutdown messages to nodes that are not part of the cluster */
+@@ -731,6 +721,8 @@ static int tcp_accept_from_sock(struct connection *con)
+ 			INIT_WORK(&othercon->swork, process_send_sockets);
+ 			INIT_WORK(&othercon->rwork, process_recv_sockets);
+ 			set_bit(CF_IS_OTHERCON, &othercon->flags);
++		}
++		if (!othercon->sock) {
+ 			newcon->othercon = othercon;
+ 			othercon->sock = newsock;
+ 			newsock->sk->sk_user_data = othercon;
 -- 
 1.5.1.2
 
