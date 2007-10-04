@@ -1,119 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbXJDD7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbXJDEAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbXJDD7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Oct 2007 23:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXJDD7J
+	id S1752660AbXJDEAW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbXJDEAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Oct 2007 23:59:09 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52679 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654AbXJDD7I (ORCPT
+	Thu, 4 Oct 2007 00:00:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53748 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753486AbXJDEAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Oct 2007 23:59:08 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Loic Prylli <loic@myri.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: MSI problem since 2.6.21 for devices not providing a mask in their MSI capability
-References: <470405BB.2000208@myri.com>
-	<m14ph7amxq.fsf@ebiederm.dsl.xmission.com> <47044565.5070606@myri.com>
-Date: Wed, 03 Oct 2007 21:58:29 -0600
-In-Reply-To: <47044565.5070606@myri.com> (Loic Prylli's message of "Wed, 03
-	Oct 2007 21:44:05 -0400")
-Message-ID: <m1myuzy1i2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Oct 2007 00:00:04 -0400
+Message-Id: <20071004035935.042951211@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Oct 2007 20:59:35 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: akpm@linux-foundation.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [00/18] Virtual Compound Page Support V2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Loic Prylli <loic@myri.com> writes:
+Allocations of larger pages are not reliable in Linux. If larger
+pages have to be allocated then one faces various choices of allowing
+graceful fallback or using vmalloc with a performance penalty due
+to the use of a page table. Virtual Compound pages are
+a simple solution out of this dilemma. If an allocation specifies
+GFP_VFALLBACK then the page allocator will first attempt to satisfy
+the request with physically contiguous memory. If that is not possible
+then the page allocator will create a virtually contiguous memory
+area for the caller. That way large allocations may perhaps be
+considered "reliable" indepedent of the memory fragmentation situation.
 
-> Even if the INTx line is not raised, you cannot rely on the device to
-> retain memory of a interrupt triggered while MSI are disabled, and
-> expect it to fire it under MSI form later when MSI are reenabled. 
+This means that memory with optimal performance is used when available.
+We are currently gradually introducing methods to reduce memory
+defragmentation. The better these methods become the less the
+chances that fallback will occur.
 
-Sure.  My expectation is if we happened to hit such a narrow window
-the irq would simply be dropped.
+Fallback is rare in particular on machines with contemporary memory
+sizes of 1G or more. It seems to take special load situations that
+pin a lot of memory and systems with low memory in order to get
+system memory so fragmented that the fallback scheme must kick in.
 
->
->> If you have a mask bit implemented you are required to be
->> able to refire it after the msi is enabled. 
->
->
->
-> Indeed the masking case is well-defined by the spec (including the
-> operation of the pending bits). And my subject was definitely restricted
-> to devices without that masking capability.
+There is therefore a compile time option to switch on fallback for
+testing purposes. Virtually mapped mmemory may behave differently
+and the CONFIG_FALLBACK_ALWAYS option will insure that the code is
+tested to deal with virtual memory.
 
-Right.  And INTx has such a pending bit as well.  I guess I figured
-if MSI was enabled transferring it over would be the obvious thing to
-do.
+The patchset then addresses a series of issues in the current code
+through the use of fallbacks:
 
-> OK no-op was a bug, but using the enable-bit for temporary masking
-> purposes still feels like a bug. I am afraid the only safe solution
-> might be to prohibit any operation that absolutely requires masking if
-> real masking is not available. Maybe the set_affinity method should
-> simply be disabled for device not supported masking (unless there is an
-> option of doing it without masking for instance by guaranteeing only one
-> word of the MSI capability is changed).
+- Fallback for x86_64 stack allocations. The default stack size
+  is 8k which requires an order 1 allocation.
 
-It's worth looking at, I think that happens in the common case.
+- Removes the manual fallback to vmalloc for sparsemem
+  through the use of GFP_VFALLBACK.
 
-Of course it might even make sense simply to refuse to enable MSI
-if there is not a masking capability present.
+- Uses a compound page for the wait table in the zone thereby
+  avoiding having to go through a page table to get to the
+  data structures used for waiting on events in pages.
 
->> The PCI spec requires disabling/masking the msi when reprogramming it.
->> So as a general rule we can not do better. 
->
->
->
-> Do you have a reference for that requirement. The spec only vaguely
-> associates MSI programming with "configuration", but I haven't found any
-> explicit indication that it should not work.
+- Allows fallback for the order 2 allocation in the crypto
+  subsystem.
 
-I would have to look it up again but it said that the result is only
-defined in the case when it is disabled/masked, when I looked a couple
-of months ago.
+- Allows fallback for the caller table used by SLUB when determining
+  the call sites for slab caches for sysfs output.
 
->> I suspect what needs to happen is a spec search to verify that the
->> current linux behavior is at least reasonable within the spec.
->>   
->
->
-> I don't see how you can disable MSI through the control bit (which is
-> equivalent to switching the device to INTx whether or not the INTx
-> disable bit is set in PCI_COMMAND) in the middle of operations, not tell
-> the driver, and not risk loosing interrupts (unless you rely on much
-> more than the spec).
+- Allows a configurable stack size on x86_64 (up to 32k).
 
-I will relook.  My impression is that bit is defined as MSI enable.
-Not mode switch.   Although myrinet has clearly implemented it as
-mode switch.
+More uses are possible by simply adding GFP_VFALLBACK to the page
+flags or by converting vmalloc calls to regular page allocator calls.
 
->> I don't want to break anyones hardware, but at the same time I want us
->> to be careful and in spec for the default case.
->>
->>   
->
->
-> The interrupt while doing set_affinity masking would certainly cause a
-> problem for the device we use (MSI-enable switch between INTx and MSI
-> mode, and both interrupts are not acked the same way assuming they would
-> even be delivered to the driver), but I got some new data: upon further
-> examination, the lost interrupts we have seen seems in fact caused at a
-> different time:
-> - the problem is the  mask_ack_irq() done in handle_edge_irq() when a
-> new interrupt arrives before the IRQ_PROGRESS bit is cleared at the end
-> of the function.
->
-> Again here, switching MSI-off during hot operation breaks the interrupt
-> accounting and handshaking between our driver and device. At least this
-> case might be easier to handle, it seems safe to not mask there (when
-> some proven masking is not available).
+It is likely that we have had to avoid the use of larger memory areas
+because of the reliability issues. The patch may simplify future coding
+of handling large memoryh areas because these issues are taken care of
+by the page allocator. For HPC uses we constantly have to deal with
+demands for larger and larger memory areas to speed up various loads.
 
-Interesting.  So an irq fires before the driver has finished
-processing the last instance of the irq.  This is very close to a
-screaming irq and something we may actually want to deal with.
+Additional patches exist to enable SLUB and the Large Blocksize Patchset
+to use these fallbacks.
 
-Eric
+The patchset is also available via git from the largeblock git tree via
+
+git pull
+  git://git.kernel.org/pub/scm/linux/kernel/git/christoph/largeblocksize.git
+    vcompound
+
+V1->V2
+- Remove some cleanup patches and the SLUB patches from this set.
+- Transparent vcompound support through page_address() and
+  virt_to_head_page().
+- Additional use cases.
+- Factor the code better for an easier read
+- Add configurable stack size.
+- Follow up on various suggestions made for V1
+
+RFC->V1
+- Complete support for all compound functions for virtual compound pages
+  (including the compound_nth_page() necessary for LBS mmap support)
+- Fix various bugs
+- Fix i386 build
+
+-- 
