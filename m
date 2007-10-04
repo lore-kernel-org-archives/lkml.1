@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759660AbXJDSK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbXJDSM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759660AbXJDSK6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 14:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbXJDSKv
+	id S1760283AbXJDSM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 14:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXJDSMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 14:10:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51329 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbXJDSKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 14:10:50 -0400
-Date: Thu, 4 Oct 2007 14:10:44 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
-Message-ID: <20071004181044.GA23300@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	Nick Piggin <npiggin@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071004052153.GA15131@wotan.suse.de> <20071004052258.GB15131@wotan.suse.de> <20071004173203.GC5828@redhat.com> <200710041953.16656.ak@suse.de>
+	Thu, 4 Oct 2007 14:12:46 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:42669 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490AbXJDSMo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 14:12:44 -0400
+X-IronPort-AV: E=Sophos;i="4.21,231,1188802800"; 
+   d="scan'208";a="531467775"
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Vague maybe ppp-related panic report for 2.6.23-rc9
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 04 Oct 2007 11:12:42 -0700
+Message-ID: <ada4ph6da05.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710041953.16656.ak@suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+X-OriginalArrivalTime: 04 Oct 2007 18:12:42.0425 (UTC) FILETIME=[27F32290:01C806B2]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 07:53:16PM +0200, Andi Kleen wrote:
- > 
- > > The only vendor that ever implemented OOSTOREs was Centaur, and they
- > > only did in the Winchip generation of the CPUs.  When they dropped it
- > > from the C3, I asked whether they intended to bring it back, and the
- > > answer was "extremely unlikely".
- > >
- > 
- > Do you know if it made a big performance difference?
+I'm running 2.6.23-rc9 on my laptop, and when in a coffee shop I use
+a Verizon EVDO card to get network access.  This is a kyocera device
+that looks like a serial adapter behind an ohci usb controller, and
+uses the airprime driver (for usb device 0c88:17da).  The actual IP
+networking is ppp over that serial adapter.
 
-On the winchip, it was a huge win. I can't remember exact numbers,
-but pretty much every benchmark I threw at it at the time showed
-significant improvement.
+The connection is slightly flaky (I blame this on the Verizon
+coverage), so I end up restarting things every so often.  The point of
+this email (at last) is that I've just seen my second panic (only
+info: blinking caps lock led, since I've been in X) that seems
+correlated to stopping/restarting pppd.
 
- > But yes we should probably just remove this special case to make 
- > maintenance easier.
+Sorry for the lack of detail -- I've just switched to running in the
+console so if I can provoke the crash again I'll get a little more
+info.  I just wanted to mention this in case someone has seen
+something similar or has any good ideas about how to capture debugging
+output on a laptop (when I'm not home and have no other boxes handy).
 
-It's CONFIG_SMP anyway, which none of the winchips were.
-SMP+OOSTORE just didn't happen, and I'd be surprised if
-any vendor makes it happen any time soon.
-(Even if so, it's likely we'd need to make additional changes
- anyway, so adding it back shouldn't be a big deal.)
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+ - R.
