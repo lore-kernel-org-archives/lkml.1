@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbXJDEEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbXJDEE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759014AbXJDEEk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXJDEAY
+	id S1759141AbXJDEE5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXJDEAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53773 "EHLO
+	Thu, 4 Oct 2007 00:00:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37871 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750902AbXJDEAG (ORCPT
+	with ESMTP id S1751018AbXJDEAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 00:00:06 -0400
-Message-Id: <20071004040005.396698805@sgi.com>
+Message-Id: <20071004040005.631121150@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:51 -0700
+Date: Wed, 03 Oct 2007 20:59:52 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [16/18] Virtual Compound page allocation from interrupt context.
-Content-Disposition: inline; filename=vcompound_interrupt_alloc
+Subject: [17/18] Virtual compound page freeing in interrupt context
+Content-Disposition: inline; filename=vcompound_interrupt_free
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In an interrupt context we cannot wait for the vmlist_lock in
-__get_vm_area_node(). So use a trylock instead. If the trylock fails
-then the atomic allocation will fail and subsequently be retried.
+If we are in an interrupt context then simply defer the free via a workqueue.
 
-This only works because the flush_cache_vunmap in use for
-allocation is never performing any IPIs in contrast to flush_tlb_...
-in use for freeing.  flush_cache_vunmap is only used on architectures
-with a virtually mapped cache (xtensa, pa-risc).
-
-[Note: Nick Piggin is working on a scheme to make this simpler by
-no longer requiring flushes]
+Removing a virtual mappping *must* be done with interrupts enabled
+since tlb_xx functions are called that rely on interrupts for
+processor to processor communications.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/vmalloc.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/mm/vmalloc.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/mm/vmalloc.c	2007-10-03 16:21:10.000000000 -0700
-+++ linux-2.6/mm/vmalloc.c	2007-10-03 16:25:17.000000000 -0700
-@@ -177,7 +177,6 @@ static struct vm_struct *__get_vm_area_n
- 	unsigned long align = 1;
- 	unsigned long addr;
+--- linux-2.6.orig/mm/page_alloc.c	2007-10-03 20:00:37.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-10-03 20:01:09.000000000 -0700
+@@ -294,10 +294,20 @@ static void __free_vcompound(void *addr)
+ 	kfree(pages);
+ }
  
--	BUG_ON(in_interrupt());
- 	if (flags & VM_IOREMAP) {
- 		int bit = fls(size);
++static void vcompound_free_work(struct work_struct *w)
++{
++	__free_vcompound((void *)w);
++}
  
-@@ -202,7 +201,14 @@ static struct vm_struct *__get_vm_area_n
- 	 */
- 	size += PAGE_SIZE;
+ static void free_vcompound(void *addr)
+ {
+-	__free_vcompound(addr);
++	struct work_struct *w = addr;
++
++	if (irqs_disabled() || in_interrupt()) {
++		INIT_WORK(w, vcompound_free_work);
++		schedule_work(w);
++	} else
++		__free_vcompound(w);
+ }
  
--	write_lock(&vmlist_lock);
-+	if (gfp_mask & __GFP_WAIT)
-+		write_lock(&vmlist_lock);
-+	else {
-+		if (!write_trylock(&vmlist_lock)) {
-+			kfree(area);
-+			return NULL;
-+		}
-+	}
- 	for (p = &vmlist; (tmp = *p) != NULL ;p = &tmp->next) {
- 		if ((unsigned long)tmp->addr < addr) {
- 			if((unsigned long)tmp->addr + tmp->size >= addr)
+ static void free_compound_page(struct page *page)
 
 -- 
