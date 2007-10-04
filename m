@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbXJDJLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbXJDJMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbXJDJLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXJDJLD
+	id S1759244AbXJDJMi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXJDJM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:11:03 -0400
-Received: from sacred.ru ([62.205.161.221]:47554 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752509AbXJDJLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:11:01 -0400
-Message-ID: <4704AA39.5030208@openvz.org>
-Date: Thu, 04 Oct 2007 12:54:17 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH 2/3] Prepare pid_nr() etc functions to work with not-NULL
- pids
-References: <4703A44F.9020402@openvz.org> <4703A53B.9090804@openvz.org> <20071003164258.GS19691@waste.org>
-In-Reply-To: <20071003164258.GS19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Oct 2007 05:12:28 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:6636 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754254AbXJDJM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:12:26 -0400
+X-IronPort-AV: i="4.21,228,1188792000"; 
+   d="scan'208"; a="41086454:sNHT29288098"
+Subject: Re: Blackfin Ethernet MAC driver compile error
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, bryan.wu@analog.com
+In-Reply-To: <a425f86c0710020430o3507eeb2veb104dc936f230dd@mail.gmail.com>
+References: <a425f86c0710020430o3507eeb2veb104dc936f230dd@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 04 Oct 2007 12:56:45 +0400 (MSD)
+Organization: Analog Devices, Ltd.
+Date: Thu, 04 Oct 2007 17:12:21 +0800
+Message-Id: <1191489141.6139.1.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 04 Oct 2007 09:12:25.0060 (UTC) FILETIME=[ADB1CA40:01C80666]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Wed, Oct 03, 2007 at 06:20:43PM +0400, Pavel Emelyanov wrote:
->> Just make the __pid_nr() etc functions that expect the argument
->> to always be not NULL.
->>
->> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+On Tue, 2007-10-02 at 19:30 +0800, Kalle Pokki wrote:
+> The Blackfin Ethernet MAC driver does not compile. It seems the driver
+> is 
+> missing some pinmux defines.
 > 
->>  static inline pid_t pid_nr(struct pid *pid)
->>  {
->>  	pid_t nr = 0;
->>  	if (pid)
->> -		nr = pid->numbers[0].nr;
->> +		nr = __pid_nr(pid);
->>  	return nr;
->>  }
+>   CC      drivers/net/bfin_mac.o 
+> drivers/net/bfin_mac.c: In function 'setup_pin_mux': 
+> drivers/net/bfin_mac.c:275: error: 'P_MII0' undeclared (first use in 
+> this function) 
+> drivers/net/bfin_mac.c:275: error: (Each undeclared identifier is 
+> reported only once 
+> drivers/net/bfin_mac.c:275: error: for each function it appears in.) 
+> drivers/net/bfin_mac.c:279: error: implicit declaration of function 
+> 'peripheral_request_list' 
+> drivers/net/bfin_mac.c:285: error: implicit declaration of function 
+> 'peripheral_free_list' 
+> make[2]: *** [drivers/net/bfin_mac.o] Error 1 
+> make[1]: *** [drivers/net] Error 2 
+> make: *** [drivers] Error 2
 > 
-> Is there a patch that removes these inlines? Otherwise this looks good
-> to me.
+Sorry for missing the pinmux patches.
+After Linus's git-pull, it should be fixed in the latest Linus mainline
+git tree.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=66b1f1a982bf4dbad9fa0de25b8d95c4936f05c4
 
-Not yet. Some of are uninlined already, but others are not. I'd like 
-to make some testing before uninline them.
-
-> --
-> Mathematics is the supreme nostalgia of our time.
-> 
-
+Thanks a lot
+-Bryan
