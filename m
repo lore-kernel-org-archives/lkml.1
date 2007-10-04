@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbXJDUsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXJDUtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760270AbXJDUsq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 16:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757129AbXJDUsg
+	id S1761389AbXJDUtA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 16:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759272AbXJDUsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 16:48:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46871
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756464AbXJDUsf (ORCPT
+	Thu, 4 Oct 2007 16:48:43 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54253 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758175AbXJDUsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 16:48:35 -0400
-Date: Thu, 04 Oct 2007 13:48:34 -0700 (PDT)
-Message-Id: <20071004.134834.112622292.davem@davemloft.net>
-To: arjan@infradead.org
-Cc: clameter@sgi.com, willy@linux.intel.com, nickpiggin@yahoo.com.au,
-       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com
-Subject: Re: SLUB performance regression vs SLAB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071004105046.7b019fe8@laptopd505.fenrus.org>
-References: <20071004161621.GO12049@parisc-linux.org>
-	<Pine.LNX.4.64.0710041034550.10854@schroedinger.engr.sgi.com>
-	<20071004105046.7b019fe8@laptopd505.fenrus.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 4 Oct 2007 16:48:42 -0400
+Date: Thu, 4 Oct 2007 21:52:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
+Message-ID: <20071004215255.33f05e92@the-village.bc.nu>
+In-Reply-To: <20071004190837.GD23300@redhat.com>
+References: <20071004052153.GA15131@wotan.suse.de>
+	<200710042021.59704.ak@suse.de>
+	<20071004184107.GC23300@redhat.com>
+	<200710042058.27640.ak@suse.de>
+	<20071004190837.GD23300@redhat.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
-Date: Thu, 4 Oct 2007 10:50:46 -0700
+>  > > "Worth about 10-20% performance" according to the 2.4.18pre9-ac4
+>  > > release notes: http://www.linuxtoday.com/news_story.php3?ltsn=2002-02-14-015-20-NW-KN
+>  > 
+>  > Are there numbers for a newer kernel available too?
+> 
+> no idea, my winchips died about 5 years ago
 
-> Ok every time something says anything not 100% positive about SLUB you
-> come back with "but it's fixed in the next patch set"... *every time*.
-
-I think this is partly Christoph subconsciously venting his
-frustration that he's never given a reproducable test case he can use
-to fix the problem.
-
-There comes a point where it is the reporter's responsibility to help
-the developer come up with a publishable test case the developer can
-use to work on fixing the problem and help ensure it stays fixed.
-
-Using an unpublishable benchmark, whose results even cannot be
-published, really stretches the limits of "reasonable" don't you
-think?
-
-This "SLUB isn't ready yet" bullshit is just a shamans dance which
-distracts attention away from the real problem, which is that a
-reproducable, publishable test case, is not being provided to the
-developer so he can work on fixing the problem.
-
-I can tell you this thing would be fixed overnight if a proper test
-case had been provided by now.
+Got a couple here just need a mainboard 8)
