@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXJDUtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbXJDUvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761389AbXJDUtA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 16:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759272AbXJDUsn
+	id S1761237AbXJDUvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 16:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbXJDUvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 16:48:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54253 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758175AbXJDUsm (ORCPT
+	Thu, 4 Oct 2007 16:51:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45454
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757269AbXJDUvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 16:48:42 -0400
-Date: Thu, 4 Oct 2007 21:52:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Jones <davej@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
-Message-ID: <20071004215255.33f05e92@the-village.bc.nu>
-In-Reply-To: <20071004190837.GD23300@redhat.com>
-References: <20071004052153.GA15131@wotan.suse.de>
-	<200710042021.59704.ak@suse.de>
-	<20071004184107.GC23300@redhat.com>
-	<200710042058.27640.ak@suse.de>
-	<20071004190837.GD23300@redhat.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 4 Oct 2007 16:51:14 -0400
+Date: Thu, 04 Oct 2007 13:51:13 -0700 (PDT)
+Message-Id: <20071004.135113.48807663.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: Vague maybe ppp-related panic report for 2.6.23-rc9
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <ada4ph6da05.fsf@cisco.com>
+References: <ada4ph6da05.fsf@cisco.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  > > "Worth about 10-20% performance" according to the 2.4.18pre9-ac4
->  > > release notes: http://www.linuxtoday.com/news_story.php3?ltsn=2002-02-14-015-20-NW-KN
->  > 
->  > Are there numbers for a newer kernel available too?
-> 
-> no idea, my winchips died about 5 years ago
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 04 Oct 2007 11:12:42 -0700
 
-Got a couple here just need a mainboard 8)
+> Sorry for the lack of detail -- I've just switched to running in the
+> console so if I can provoke the crash again I'll get a little more
+> info.  I just wanted to mention this in case someone has seen
+> something similar or has any good ideas about how to capture debugging
+> output on a laptop (when I'm not home and have no other boxes handy).
+
+I don't want to jump the gun on the analysis but it just might
+be the packet sharing fixes Herbert put in a short time ago.
+
+What you could do is go back to say rc2 and see if you still get
+the panics, then bisect from there to narrow it down.
+
+If rc2 still gives the panic, it's something else, perhaps device
+specific.
