@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXJDQgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXJDQjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760482AbXJDQgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXJDQgG
+	id S1760643AbXJDQjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbXJDQjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 12:36:06 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:35471 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757395AbXJDQgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 12:36:05 -0400
-Date: Thu, 4 Oct 2007 18:35:55 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Don Mullis <dwm@meer.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
+	Thu, 4 Oct 2007 12:39:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43202 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755796AbXJDQjK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 12:39:10 -0400
+Date: Thu, 4 Oct 2007 09:38:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: gurudas pai <gurudas.pai@oracle.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
-Message-ID: <20071004183555.3e0ed9eb@poseidon.drzeus.cx>
-In-Reply-To: <1191514780.30871.1.camel@dmullis-laptop>
-References: <1191478262.21598.5.camel@dmullis-laptop>
-	<20071003231659.f41df5ed.akpm@linux-foundation.org>
-	<20071004072515.GC5236@kernel.dk>
-	<1191514780.30871.1.camel@dmullis-laptop>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-5652-1191515735-0001-2"
+Subject: Re: [BUG] kernel BUG at arch/i386/mm/highmem.c:15!  on
+ 2.6.23-rc8/rc9
+In-Reply-To: <Pine.LNX.4.64.0710041647090.17987@blonde.wat.veritas.com>
+Message-ID: <alpine.LFD.0.999.0710040920400.23684@woody.linux-foundation.org>
+References: <47048A0C.4020608@oracle.com> <200710040053.19570.nickpiggin@yahoo.com.au>
+ <200710040139.04201.nickpiggin@yahoo.com.au> <4704BA1F.4070408@oracle.com>
+ <Pine.LNX.4.64.0710041647090.17987@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_hera.drzeus.cx-5652-1191515735-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 04 Oct 2007 09:19:40 -0700
-Don Mullis <dwm@meer.net> wrote:
+On Thu, 4 Oct 2007, Hugh Dickins wrote:
+> 
+> Very helpful, thanks.  Guru, please try the appended patch, I think
+> you'll find it fixes it for you (it did for me, once I'd puzzled out
+> why I was failing to reproduce the problem - tests on ext3 don't work).
+> Thank you so much for reporting this just in time!
 
-> This patch fixes the boot.
->=20
+Ouch.
 
-Fantastic. Then will try to get this upstream then.
+The patch looks obviously correct, to the point that I don't understand 
+how this bug happened in the first place.  It seems to have been 
+introduced by Nick in d0217ac04ca6591841e5665f518e38064f4e65bd ("mm: fault 
+feedback #1") if I read it right.
 
-> >=20
-> > It looks like missing init of the sg list in mmc, does this work?
-> >=20
+So "do_nonlinear_fault()" would effectively end up unmapping the PTE 
+twice, right? And if I understand the problem right, this wasn't noticed 
+immediately, because it probably only matters on:
 
-Jens, is this zeroing needed for each invocation, or really just once
-to get the list in a known state?
+ - CONFIG_HIGHPTE
+*and*
+ - a filesystem that allows VM_NONLINEAR, which became very rare with 
+   dirty accounting.
 
-Also, is chaining already upstream so Linus should have this for 2.6.23?
+Correct?
 
-Rgds
-Pierre
-
---=_hera.drzeus.cx-5652-1191515735-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHBRZr7b8eESbyJLgRApL5AKDGdbI56/vgy4YUAkFhR1Z/5kLWBQCg1N6K
-Cc8WZ0OmOSu7j7MMPXSaVxk=
-=Ws4J
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-5652-1191515735-0001-2--
+			Linus
