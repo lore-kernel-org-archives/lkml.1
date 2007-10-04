@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761510AbXJDSoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbXJDSpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761510AbXJDSoK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 14:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXJDSn5
+	id S1759871AbXJDSpE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 14:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbXJDSoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 14:43:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38569 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757535AbXJDSn4 (ORCPT
+	Thu, 4 Oct 2007 14:44:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:50761 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756064AbXJDSox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 14:43:56 -0400
-Date: Thu, 4 Oct 2007 11:42:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: trond.myklebust@fys.uio.no, staubach@redhat.com, nfsv4@linux-nfs.org,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
- client git tree...
-Message-Id: <20071004114243.3161af16.akpm@linux-foundation.org>
-In-Reply-To: <20071004184304.6e71ab6d@poseidon.drzeus.cx>
-References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
-	<20071004085206.0a8e37b5@poseidon.drzeus.cx>
-	<1191506450.6685.17.camel@heimdal.trondhjem.org>
-	<20071004184304.6e71ab6d@poseidon.drzeus.cx>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Oct 2007 14:44:53 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Fix blktrace setup 32-bit ioctl on 64-bit kernels
+Date: Thu, 4 Oct 2007 20:44:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+References: <20071002073943.GC5236@kernel.dk> <200710040048.20676.arnd@arndb.de> <20071004181606.GH5711@kernel.dk>
+In-Reply-To: <20071004181606.GH5711@kernel.dk>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, hch@lst.de,
+       Al Viro <viro@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710042044.14698.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/34aMHe0NQz222iVHoP3cZHLDrzysFQSwbop/
+ H5y8sMM/pxASst2d03/4YdRO29xHxQnRBv5APlod65RbEp+X66
+ aCIgZd9nsQeWFL6Jy6WUA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Oct 2007 18:43:04 +0200
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+On Thursday 04 October 2007, you wrote:
+> This looks a lot better! I don't mind seperating the block bits, when we
+> get the whole bunch in there. Just seemed overly silly and complicated
+> to do it for just one ioctl command. When you are happy with this patch,
+> I'll add it to the pending block stuff for 2.6.24. The blktrace fix
+> isn't a regression so need not go into 2.6.23.
 
-> On Thu, 04 Oct 2007 10:00:50 -0400
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> 
-> > On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
-> > > On Wed, 03 Oct 2007 19:41:16 -0400
-> > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > 
-> > > > 
-> > > > We also have the 64-bit inode support from RedHat/Peter Staubach.
-> > > > 
-> > > 
-> > > As has been pointed[1] out[2], this will cause regressions for
-> > > non-LFS applications (of which there are still lots and lots). This
-> > > change should be in feature-removal (the "feature" being removed is
-> > > legacy support for non-LFS applications using NFS servers that make
-> > > full use of the protocol) and preferably accompanied with
-> > > appropriate user space changes (e.g. compatibility option in glibc).
-> > > 
-> > > [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
-> > > [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
-> > > 
-> > > Rgds
-> > 
-> > How about a boot/module parameter to turn it on or off?
-> > 
-> 
-> That would be perfect. It can even be in non-legacy mode by default,
-> just as long as you can go back to the old behaviour when/if you run
-> into a non-LFS application.
-> 
+ok.
 
-Wouldn't a mount option be better?
+> It seems some bits are missing though (like BLKTRACESETUP32), did you
+> send the whole thing?
+
+I did the large patch on top of the blktrace patch I sent earlier,
+so it doesn't apply cleanly. When doing the final version, I'll use
+a more sensible patch order.
+
+	Arnd <><
