@@ -1,118 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXJDFzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXJDF4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759505AbXJDFzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbXJDFvh
+	id S1759550AbXJDF4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJDFvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:37 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44825 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:39 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44812 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753159AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:10 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ext4: Convert ext4_extent.ee_start to ext4_extent.ee_start_lo
-Date: Thu,  4 Oct 2007 01:50:57 -0400
-Message-Id: <1191477059-5357-23-git-send-email-tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, "Jose R. Santos" <jrs@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] JBD2: debug code cleanup.
+Date: Thu,  4 Oct 2007 01:50:41 -0400
+Message-Id: <1191477059-5357-7-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-22-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-6-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-2-git-send-email-tytso@mit.edu>
  <1191477059-5357-3-git-send-email-tytso@mit.edu>
  <1191477059-5357-4-git-send-email-tytso@mit.edu>
  <1191477059-5357-5-git-send-email-tytso@mit.edu>
  <1191477059-5357-6-git-send-email-tytso@mit.edu>
- <1191477059-5357-7-git-send-email-tytso@mit.edu>
- <1191477059-5357-8-git-send-email-tytso@mit.edu>
- <1191477059-5357-9-git-send-email-tytso@mit.edu>
- <1191477059-5357-10-git-send-email-tytso@mit.edu>
- <1191477059-5357-11-git-send-email-tytso@mit.edu>
- <1191477059-5357-12-git-send-email-tytso@mit.edu>
- <1191477059-5357-13-git-send-email-tytso@mit.edu>
- <1191477059-5357-14-git-send-email-tytso@mit.edu>
- <1191477059-5357-15-git-send-email-tytso@mit.edu>
- <1191477059-5357-16-git-send-email-tytso@mit.edu>
- <1191477059-5357-17-git-send-email-tytso@mit.edu>
- <1191477059-5357-18-git-send-email-tytso@mit.edu>
- <1191477059-5357-19-git-send-email-tytso@mit.edu>
- <1191477059-5357-20-git-send-email-tytso@mit.edu>
- <1191477059-5357-21-git-send-email-tytso@mit.edu>
- <1191477059-5357-22-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Jose R. Santos <jrs@us.ibm.com>
 
-Convert ext4_extent.ee_start to ext4_extent.ee_start_lo
-This helps in finding BUGs due to direct partial access of
-these split 48 bit values
+Mostly stolen from akpm's JBD cleanup patch.
 
-Also fix direct partial access in ext4 code
+- use `#ifdef foo' instead of `#if defined(foo)'
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+- Make journal_enable_debug __read_mostly just for the heck of it
+
+- Make jbd_debugfs_dir and jbd_debug static
+
+- debugfs_remove(NULL) is legal: remove unneeded tests
+
+- remove unnecessary empty loops
+
+Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/ext4/extents.c               |    8 +++-----
- include/linux/ext4_fs_extents.h |    2 +-
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ fs/jbd2/journal.c |   20 ++++++--------------
+ 1 files changed, 6 insertions(+), 14 deletions(-)
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 2be404f..c03056a 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -52,7 +52,7 @@ static ext4_fsblk_t ext_pblock(struct ext4_extent *ex)
- {
- 	ext4_fsblk_t block;
- 
--	block = le32_to_cpu(ex->ee_start);
-+	block = le32_to_cpu(ex->ee_start_lo);
- 	block |= ((ext4_fsblk_t) le16_to_cpu(ex->ee_start_hi) << 31) << 1;
- 	return block;
- }
-@@ -77,7 +77,7 @@ static ext4_fsblk_t idx_pblock(struct ext4_extent_idx *ix)
-  */
- static void ext4_ext_store_pblock(struct ext4_extent *ex, ext4_fsblk_t pb)
- {
--	ex->ee_start = cpu_to_le32((unsigned long) (pb & 0xffffffff));
-+	ex->ee_start_lo = cpu_to_le32((unsigned long) (pb & 0xffffffff));
- 	ex->ee_start_hi = cpu_to_le16((unsigned long) ((pb >> 31) >> 1) & 0xffff);
- }
- 
-@@ -1409,8 +1409,7 @@ has_space:
- 	eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries)+1);
- 	nearex = path[depth].p_ext;
- 	nearex->ee_block = newext->ee_block;
--	nearex->ee_start = newext->ee_start;
--	nearex->ee_start_hi = newext->ee_start_hi;
-+	ext4_ext_store_pblock(nearex, ext_pblock(newext));
- 	nearex->ee_len = newext->ee_len;
- 
- merge:
-@@ -2177,7 +2176,6 @@ int ext4_ext_convert_to_initialized(handle_t *handle, struct inode *inode,
- 	}
- 	/* ex2: iblock to iblock + maxblocks-1 : initialised */
- 	ex2->ee_block = cpu_to_le32(iblock);
--	ex2->ee_start = cpu_to_le32(newblock);
- 	ext4_ext_store_pblock(ex2, newblock);
- 	ex2->ee_len = cpu_to_le16(allocated);
- 	if (ex2 != ex)
-diff --git a/include/linux/ext4_fs_extents.h b/include/linux/ext4_fs_extents.h
-index 81406f3..cb2dfbb 100644
---- a/include/linux/ext4_fs_extents.h
-+++ b/include/linux/ext4_fs_extents.h
-@@ -74,7 +74,7 @@ struct ext4_extent {
- 	__le32	ee_block;	/* first logical block extent covers */
- 	__le16	ee_len;		/* number of blocks covered by extent */
- 	__le16	ee_start_hi;	/* high 16 bits of physical block */
--	__le32	ee_start;	/* low 32 bits of physical block */
-+	__le32	ee_start_lo;	/* low 32 bits of physical block */
- };
- 
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index ff07bff..6ddc553 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1864,16 +1864,14 @@ void jbd2_journal_put_journal_head(struct journal_head *jh)
  /*
+  * debugfs tunables
+  */
+-#if defined(CONFIG_JBD2_DEBUG)
+-u8 jbd2_journal_enable_debug;
++#ifdef CONFIG_JBD2_DEBUG
++u8 jbd2_journal_enable_debug __read_mostly;
+ EXPORT_SYMBOL(jbd2_journal_enable_debug);
+-#endif
+-
+-#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
+ 
+ #define JBD2_DEBUG_NAME "jbd2-debug"
+ 
+-struct dentry *jbd2_debugfs_dir, *jbd2_debug;
++static struct dentry *jbd2_debugfs_dir;
++static struct dentry *jbd2_debug;
+ 
+ static void __init jbd2_create_debugfs_entry(void)
+ {
+@@ -1886,24 +1884,18 @@ static void __init jbd2_create_debugfs_entry(void)
+ 
+ static void __exit jbd2_remove_debugfs_entry(void)
+ {
+-	if (jbd2_debug)
+-		debugfs_remove(jbd2_debug);
+-	if (jbd2_debugfs_dir)
+-		debugfs_remove(jbd2_debugfs_dir);
++	debugfs_remove(jbd2_debug);
++	debugfs_remove(jbd2_debugfs_dir);
+ }
+ 
+ #else
+ 
+ static void __init jbd2_create_debugfs_entry(void)
+ {
+-	do {
+-	} while (0);
+ }
+ 
+ static void __exit jbd2_remove_debugfs_entry(void)
+ {
+-	do {
+-	} while (0);
+ }
+ 
+ #endif
 -- 
 1.5.3.2.81.g17ed
 
