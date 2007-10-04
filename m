@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXJDEEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbXJDEEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbXJDEEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbXJDEAX
+	id S1759014AbXJDEEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXJDEAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37867 "EHLO
+	Thu, 4 Oct 2007 00:00:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53773 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750815AbXJDEAF (ORCPT
+	with ESMTP id S1750902AbXJDEAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 00:00:05 -0400
-Message-Id: <20071004040004.041950009@sgi.com>
+	Thu, 4 Oct 2007 00:00:06 -0400
+Message-Id: <20071004040005.396698805@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:45 -0700
+Date: Wed, 03 Oct 2007 20:59:51 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, apw@shadowen.org
-Subject: [10/18] Sparsemem: Use fallback for the memmap.
-Content-Disposition: inline; filename=vcompound_sparse_gfp_vfallback
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [16/18] Virtual Compound page allocation from interrupt context.
+Content-Disposition: inline; filename=vcompound_interrupt_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparsemem currently attempts first to do a physically contiguous mapping
-and then falls back to vmalloc. The same thing can now be accomplished
-using GFP_VFALLBACK.
+In an interrupt context we cannot wait for the vmlist_lock in
+__get_vm_area_node(). So use a trylock instead. If the trylock fails
+then the atomic allocation will fail and subsequently be retried.
 
-Cc: apw@shadowen.org
+This only works because the flush_cache_vunmap in use for
+allocation is never performing any IPIs in contrast to flush_tlb_...
+in use for freeing.  flush_cache_vunmap is only used on architectures
+with a virtually mapped cache (xtensa, pa-risc).
+
+[Note: Nick Piggin is working on a scheme to make this simpler by
+no longer requiring flushes]
+
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/sparse.c |   33 +++------------------------------
- 1 file changed, 3 insertions(+), 30 deletions(-)
+ mm/vmalloc.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/mm/sparse.c
+Index: linux-2.6/mm/vmalloc.c
 ===================================================================
---- linux-2.6.orig/mm/sparse.c	2007-10-02 22:02:58.000000000 -0700
-+++ linux-2.6/mm/sparse.c	2007-10-02 22:19:58.000000000 -0700
-@@ -269,40 +269,13 @@ void __init sparse_init(void)
- #ifdef CONFIG_MEMORY_HOTPLUG
- static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
- {
--	struct page *page, *ret;
--	unsigned long memmap_size = sizeof(struct page) * nr_pages;
--
--	page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
--	if (page)
--		goto got_map_page;
--
--	ret = vmalloc(memmap_size);
--	if (ret)
--		goto got_map_ptr;
--
--	return NULL;
--got_map_page:
--	ret = (struct page *)pfn_to_kaddr(page_to_pfn(page));
--got_map_ptr:
--	memset(ret, 0, memmap_size);
--
--	return ret;
--}
--
--static int vaddr_in_vmalloc_area(void *addr)
--{
--	if (addr >= (void *)VMALLOC_START &&
--	    addr < (void *)VMALLOC_END)
--		return 1;
--	return 0;
-+	return (struct page *)__get_free_pages(GFP_VFALLBACK,
-+			get_order(memmap_size));
- }
+--- linux-2.6.orig/mm/vmalloc.c	2007-10-03 16:21:10.000000000 -0700
++++ linux-2.6/mm/vmalloc.c	2007-10-03 16:25:17.000000000 -0700
+@@ -177,7 +177,6 @@ static struct vm_struct *__get_vm_area_n
+ 	unsigned long align = 1;
+ 	unsigned long addr;
  
- static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
- {
--	if (vaddr_in_vmalloc_area(memmap))
--		vfree(memmap);
--	else
--		free_pages((unsigned long)memmap,
-+	free_pages((unsigned long)memmap,
- 			   get_order(sizeof(struct page) * nr_pages));
- }
+-	BUG_ON(in_interrupt());
+ 	if (flags & VM_IOREMAP) {
+ 		int bit = fls(size);
  
+@@ -202,7 +201,14 @@ static struct vm_struct *__get_vm_area_n
+ 	 */
+ 	size += PAGE_SIZE;
+ 
+-	write_lock(&vmlist_lock);
++	if (gfp_mask & __GFP_WAIT)
++		write_lock(&vmlist_lock);
++	else {
++		if (!write_trylock(&vmlist_lock)) {
++			kfree(area);
++			return NULL;
++		}
++	}
+ 	for (p = &vmlist; (tmp = *p) != NULL ;p = &tmp->next) {
+ 		if ((unsigned long)tmp->addr < addr) {
+ 			if((unsigned long)tmp->addr + tmp->size >= addr)
 
 -- 
