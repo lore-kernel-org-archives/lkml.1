@@ -1,57 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbXJDXMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXJDXNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbXJDXMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXJDXME
+	id S1762298AbXJDXNJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 19:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbXJDXM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:12:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34242 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754537AbXJDXMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:12:01 -0400
-Date: Thu, 4 Oct 2007 16:11:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: cmm@us.ibm.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sho@tnes.nec.co.jp, jack@suse.cz, clameter@sgi.com
-Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
-Message-Id: <20071004161121.f51972e8.akpm@linux-foundation.org>
-In-Reply-To: <20071004224044.GH5628@schatzie.adilger.int>
-References: <20070828190551.415127746@sgi.com>
-	<20070828190735.292638294@sgi.com>
-	<1188432669.3799.35.camel@localhost.localdomain>
-	<1188434857.3799.76.camel@localhost.localdomain>
-	<1191285346.11737.58.camel@localhost.localdomain>
-	<20071004131207.65406a7b.akpm@linux-foundation.org>
-	<20071004224044.GH5628@schatzie.adilger.int>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Oct 2007 19:12:56 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46990 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752978AbXJDXM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 19:12:56 -0400
+Message-ID: <4705735F.7000209@us.ibm.com>
+Date: Thu, 04 Oct 2007 16:12:31 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       randy.dunlap@oracle.com, hch@infradead.org,
+       systemtap@sources.redhat.com
+Subject: Re: [patch 1/3]  Trace code and documentation
+References: <1191342800.31351.9.camel@lc4eb748232119.ibm.com> <p73odff5j1x.fsf@bingen.suse.de> <47053CC7.7090206@us.ibm.com> <20071004211905.GA14399@one.firstfloor.org>
+In-Reply-To: <20071004211905.GA14399@one.firstfloor.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Oct 2007 16:40:44 -0600
-Andreas Dilger <adilger@clusterfs.com> wrote:
-
-> On Oct 04, 2007  13:12 -0700, Andrew Morton wrote:
-> > On Mon, 01 Oct 2007 17:35:46 -0700
-> > > ext2: Avoid rec_len overflow with 64KB block size
-> > > 
-> > > into 16 bits we have for entry lenght. So we store 0xffff instead and
-> > > convert value when read from / written to disk.
-> > 
-> > This patch clashes in non-trivial ways with
-> > ext2-convert-to-new-aops-fix.patch and perhaps other things which are
-> > already queued for 2.6.24 inclusion, so I'll need to ask for an updated
-> > patch, please.
+Andi Kleen wrote:
+> On Thu, Oct 04, 2007 at 12:19:35PM -0700, David Wilder wrote:
+>> Andi Kleen wrote:
+>>> "David J. Wilder" <dwilder@us.ibm.com> writes:
+>>>> @@ -0,0 +1,160 @@
+>>>> +Trace Setup and Control
+>>>> +=======================
+>>>> +In the kernel, the trace interface provides a simple mechanism for
+>>>> +starting and managing data channels (traces) to user space.
+>>> Wasn't relayfs supposed to do that already? Why do you need another
+>>> wrapper around it? 
+>> The code in trace is exactly what all the current users of relay do. 
+>> Therefor trace reduces the duplication of code.
 > 
-> If the rel_len overflow patch isn't going to make it, then we also need
-> to revert the EXT*_MAX_BLOCK_SIZE change to 65536.  It would be possible
-> to allow this to be up to 32768 w/o the rec_len overflow fix however.
+> If everybody does this then the code should be just put into
+> relayfs?
+
+I disagree, I keeping the code separate (layering if you will) makes it 
+easer to use and maintain.
+
+> 
+>>
+>>> Is this also really still faster than a printk below log level
+>>> (without console driver overhead). If not then why not just
+>>> use printk?
+>> Are you arguing against relayfs or trace?  Trace just makes relayfs 
+>> easer to use.  I think relayfs can stand up for it's self.
+> 
+> I'm arguing against complicated trace mechanisms that are not fast.
+
+What makes trace complicated?  It is just, open ,start/stop, close.  I 
+can't see how an trace API could be any simpler.
+
+> 
+> At some point when I looked at relayfs it seemed to be reasonably
+> fast (per cpu buffers; not much locking,
+  over head per call roughtly like putchar()),
+> but that might have regressed. 
+
+No regression has occurred.  According the relay documentation if you 
+use global bufferers you must use locking.  If you don't want to use 
+locking use per-cpu bufferers.
+
+> 
+> Your example module with its lock definitely looks very slow and I don't approve
+> of it.
 > 
 
-Ok, thanks, I dropped ext3-support-large-blocksize-up-to-pagesize.patch and
-ext2-support-large-blocksize-up-to-pagesize.patch.
+If you don't approve of the locking then use per-cpu bufferers.  The 
+example will do ether.
+
+>>
+>> The example shows a way to create an ASCII data layer.
+> 
+> ASCII layers don't make much sense imho -- these should just use printk.
+> 
+
+So the only way I should pass ASCII to user space is using printk?  I 
+don't understand that.  Again nothing in trace limits you to ASCII data.
+
+> Fast dedicated binary log channels make sense though; but you don't
+> seem really to be very concentrated on that.
+
+I impose no restriction on what type of data you can pass over trace's 
+fast dedicated channels.
+
+> 
+>> True, to make trace "fast" you need a data layer that can handle the 
+>> requirements of per-cpu buffers.  However there are still advantages of 
+>> trace over printk even when using global bufferers: selectable bufferer 
+>> sizes,
+> 
+> printk has selectable buffer sizes too.
+> 
+>>    "Long term we probably want more complex tracing based on lttng,
+>>     but I'm a big fan of starting out simple and doing incremental
+>>     changes."
+> 
+> It's just that relayfs + another not simple layer are definitely not simple.
+> 
+> For a simple logger I'm thinking more like something like SGI's old
+> ktrace module (which undoubtedly many other people have recreated many
+> times for specific debugging scenarios)
+> 
+> But that all only makes sense if the overhead is really kept low
+> and i don't see that in your approach.
+
+Is your complaint with the overhead of setting up a trace channel or the 
+overhead of writing to a trace channel?   For the later, trace adds 
+almost no overhead on top of relay.
+
+> 
+> 
+>> One advantage of the trace approach is separating control and data 
+>> layers, therefor trace can support multiple data layers to fit multiple 
+>> requirements.
+>>
+>> I have my ideas on how to develop data layer, others may have their own 
+>> ideas and I welcome the input.
+> 
+> relayfs was supposed to be that data layer.
+
+I am using the layer definitions described in trace.txt.  In this 
+definition relay is a buffering layer.
+
+> 
+>> PS: Systemtap has been criticized for introducing out-of-tree kernel 
+>> code.  A clear direction from the community is to move re-usable code 
+>> in-tree where it can be maintained.  Trace is a move in that direction.
+> 
+> I'm all for that. I believe a simple fast efficient no frills logger
+> would serve systemtap just fine too. But the approach here seems
+> to be more to add all kinds of knobs and whizzles until you end
+> up with something as slow with printk. And since we already have
+> printk another one just doesn't seem to make much sense.
+
+If by knobs you mean the trace controls.  The only one that has any 
+effect on the "speed" of tracing is the control to start and stop 
+tracing.  And that had been designed to impose the minimal impact 
+possible (one "if" in the tracing path).
+
+> 
+> -Andi
+> 
 
