@@ -1,53 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbXJDV7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXJDWC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762085AbXJDV7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 17:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758326AbXJDV7D
+	id S1762243AbXJDWC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbXJDWCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 17:59:03 -0400
-Received: from mx1.lost-oasis.net ([212.85.153.8]:47092 "EHLO
-	mx1.lost-oasis.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756647AbXJDV7B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 17:59:01 -0400
-Date: Thu, 4 Oct 2007 23:58:57 +0200
-From: Mathieu Chouquet-Stringer <mchouque@free.fr>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ollie Wild <aaw@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] Linux 2.6.23-rc9 and MAX_ARG_PAGES
-Message-ID: <20071004215857.GA29513@bigip.bigip.mine.nu>
-Mail-Followup-To: Mathieu Chouquet-Stringer <mchouque@free.fr>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ollie Wild <aaw@google.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@stusta.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <m3wsu2u7y6.fsf@bigip.mine.nu> <1191518270.5574.21.camel@lappy>
+	Thu, 4 Oct 2007 18:02:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45992 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758792AbXJDWCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 18:02:17 -0400
+Message-ID: <470562B9.6060200@redhat.com>
+Date: Thu, 04 Oct 2007 18:01:29 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191518270.5574.21.camel@lappy>
-X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK'.w
-	3:{EoxBR
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Luca Tettamanti <kronos.it@gmail.com>, Frans Pop <elendil@planet.nl>,
+       Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       "Alexander E. Patrakov" <patrakov@ums.usu.ru>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH for testing] Re: Decreasing stime running confuses top
+References: <200710031433.34504.elendil@planet.nl> <200710042200.03489.borntraeger@de.ibm.com> <47054B2E.1050906@redhat.com> <200710042310.25223.borntraeger@de.ibm.com>
+In-Reply-To: <200710042310.25223.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 07:17:50PM +0200, Peter Zijlstra wrote:
-> what happens if you up the stack limit to say 128M ?
-> 
-> Also, do you happen to have execve syscall audit stuff enabled?
+On 10/04/2007 05:10 PM, Christian Borntraeger wrote:
 
-Actually, you were right, not only it's enabled but it's also the
-culprit.  If I stop it, all is well...
+> <patch reverting to 2.6.22 behavior>
 
-Sorry for the noise.
+Alternative patch:
 
--- 
-Mathieu Chouquet-Stringer                           mchouque@free.fr
-            The sun itself sees not till heaven clears.
-	             -- William Shakespeare --
+procfs: Don't read runtime twice when computing task's stime
+
+Current code reads p->se.sum_exec_runtime twice and goes through
+multiple type conversions to calculate stime. Read it once and
+skip some of the conversions.
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+
+--- linux-2.6.23-rc6-dell.orig/fs/proc/array.c
++++ linux-2.6.23-rc6-dell/fs/proc/array.c
+@@ -334,39 +334,38 @@ static cputime_t task_stime(struct task_
+ 	return p->stime;
+ }
+ #else
+-static cputime_t task_utime(struct task_struct *p)
++static clock_t __task_utime(struct task_struct *p, u64 runtime)
+ {
+ 	clock_t utime = cputime_to_clock_t(p->utime),
+ 		total = utime + cputime_to_clock_t(p->stime);
+-	u64 temp;
+ 
+ 	/*
+ 	 * Use CFS's precise accounting:
+ 	 */
+-	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
+-
+ 	if (total) {
+-		temp *= utime;
+-		do_div(temp, total);
++		runtime *= utime;
++		do_div(runtime, total);
+ 	}
+-	utime = (clock_t)temp;
++	return (clock_t)runtime;
++}
+ 
+-	return clock_t_to_cputime(utime);
++static cputime_t task_utime(struct task_struct *p)
++{
++	u64 runtime = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
++
++	return clock_t_to_cputime(__task_utime(p, runtime));
+ }
+ 
+ static cputime_t task_stime(struct task_struct *p)
+ {
+-	clock_t stime;
++	u64 runtime = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
+ 
+ 	/*
+ 	 * Use CFS's precise accounting. (we subtract utime from
+ 	 * the total, to make sure the total observed by userspace
+ 	 * grows monotonically - apps rely on that):
+ 	 */
+-	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
+-			cputime_to_clock_t(task_utime(p));
+-
+-	return clock_t_to_cputime(stime);
++	return clock_t_to_cputime(runtime - __task_utime(p, runtime));
+ }
+ #endif
+ 
+
