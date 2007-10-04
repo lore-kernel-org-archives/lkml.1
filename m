@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbXJDTIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbXJDTJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760821AbXJDTIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 15:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbXJDTIn
+	id S1758868AbXJDTJH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 15:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760932AbXJDTIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 15:08:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33864 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 15:08:53 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33504 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757315AbXJDTIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 15:08:43 -0400
-Date: Thu, 4 Oct 2007 15:08:37 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
-Message-ID: <20071004190837.GD23300@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	Nick Piggin <npiggin@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071004052153.GA15131@wotan.suse.de> <200710042021.59704.ak@suse.de> <20071004184107.GC23300@redhat.com> <200710042058.27640.ak@suse.de>
-MIME-Version: 1.0
+	id S1760739AbXJDTIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 15:08:51 -0400
+Date: Thu, 4 Oct 2007 21:10:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [patch 00/34] s390 patches for 2.6.24
+Message-ID: <20071004191015.GA23211@uranus.ravnborg.org>
+References: <20071004112706.574737175@de.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710042058.27640.ak@suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071004112706.574737175@de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 08:58:27PM +0200, Andi Kleen wrote:
- > On Thursday 04 October 2007 20:41:07 Dave Jones wrote:
- > > On Thu, Oct 04, 2007 at 08:21:59PM +0200, Andi Kleen wrote:
- > >  > On Thursday 04 October 2007 20:10:44 Dave Jones wrote:
- > >  > > On Thu, Oct 04, 2007 at 07:53:16PM +0200, Andi Kleen wrote:
- > >  > >  > 
- > >  > >  > > The only vendor that ever implemented OOSTOREs was Centaur, and they
- > >  > >  > > only did in the Winchip generation of the CPUs.  When they dropped it
- > >  > >  > > from the C3, I asked whether they intended to bring it back, and the
- > >  > >  > > answer was "extremely unlikely".
- > >  > >  > >
- > >  > >  > 
- > >  > >  > Do you know if it made a big performance difference?
- > >  > > 
- > >  > > On the winchip, it was a huge win. I can't remember exact numbers,
- > >  > > but pretty much every benchmark I threw at it at the time showed
- > >  > > significant improvement.
- > >  > 
- > >  > Significant as in >10%?
- > > 
- > > "Worth about 10-20% performance" according to the 2.4.18pre9-ac4
- > > release notes: http://www.linuxtoday.com/news_story.php3?ltsn=2002-02-14-015-20-NW-KN
- > 
- > Are there numbers for a newer kernel available too?
+Hi Martin.
+On Thu, Oct 04, 2007 at 01:27:06PM +0200, Martin Schwidefsky wrote:
+> The current set of s390 patches ready to be pushed once 2.6.23
+> has hit the streets.
 
-no idea, my winchips died about 5 years ago.
+I noticed that I had not yet beautified the vmlinux.lds file of s390.
+Please consider the next two patches for 2.6.24.
 
-	Dave
+The first patch refactor vmlinux.lds to a consistent (and more readable)
+style that is being gradually introduced for all archs.
+Rationale behind a consistent style is to make across-all-archs
+changes less error prone and to better recongnize similar patterns.
+The patch moves a few labels so they get the correct value even if
+ld decide to align the section a few bytes.
 
--- 
-http://www.codemonkey.org.uk
+The second patch introduce use of PAGE_SIZE as replacemnt of the
+hardcoded value 4096 and convert a few decimal numbers to hex.
+
+	Sam
