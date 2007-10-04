@@ -1,108 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760699AbXJDLm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXJDLmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760699AbXJDLm3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 07:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXJDL3c
+	id S1762138AbXJDLmo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 07:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbXJDLfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 07:29:32 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:53241 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbXJDL2Y (ORCPT
+	Thu, 4 Oct 2007 07:35:00 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:35524 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760991AbXJDLe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 07:28:24 -0400
-Message-Id: <20071004112826.700814369@de.ibm.com>
-References: <20071004112706.574737175@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Oct 2007 13:27:14 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 08/34] cio: Disable channel path measurements on shutdown/reboot.
-Content-Disposition: inline; filename=008-cio-cmf.diff
+	Thu, 4 Oct 2007 07:34:58 -0400
+X-Trace: 613277508-mk-filter-4.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.76.66
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAL1qBEdRAUxC/2dsb2JhbACBWQ
+Message-ID: <54609.217.150.108.178.1191497676.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <20071004100151.GA17628@linux-sh.org>
+References: <1191359367.17654.24.camel@localhost.localdomain>
+    <20071003061805.GA8851@linux-sh.org>
+    <63320.217.150.108.178.1191426097.squirrel@newgolddream.dyndns.info>
+    <20071004100151.GA17628@linux-sh.org>
+Date: Thu, 4 Oct 2007 12:34:36 +0100 (BST)
+Subject: Re: [PATCH] Fix SH DMAC code to handle PVR2 cascade
+From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+To: "Paul Mundt" <lethal@linux-sh.org>,
+       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
+       "linux-sh" <linuxsh-dev@lists.sourceforge.net>,
+       "LKML" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Thu, October 4, 2007 11:01 am, Paul Mundt wrote:
+> So for PVR2 cascade, what does the CHCR value work out to? Both
+> CHCR_TS_MASK and CHCR_TS_SHIFT haven't changed for SH7750, so this
+> suggests that either the CHCR value is just wrong or we've had a
+> long-standing bug with the CHCR.TS mask.
+>
+> Either way, we are not going to hardcode a ts_shift value when the CHCR
+> has all of the information encoded in it!
+>
 
-Make sure channel path measurements are disabled via a reboot notifier
-since we cannot rely on userspace to disable it again after enabling
-it. This is 1. clean and 2. makes sure that channel path measurements
-do not stay enabled after a reboot not involving a subsystem reset
-(which would lead to the channel subsystem scribbling onto random
-memory).
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/s390/cio/css.c |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
-
-Index: quilt-2.6/drivers/s390/cio/css.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/css.c
-+++ quilt-2.6/drivers/s390/cio/css.c
-@@ -13,6 +13,7 @@
- #include <linux/slab.h>
- #include <linux/errno.h>
- #include <linux/list.h>
-+#include <linux/reboot.h>
- 
- #include "css.h"
- #include "cio.h"
-@@ -632,6 +633,29 @@ static int __init setup_css(int nr)
- 	return 0;
- }
- 
-+static int css_reboot_event(struct notifier_block *this,
-+			    unsigned long event,
-+			    void *ptr)
-+{
-+	int ret, i;
-+
-+	ret = NOTIFY_DONE;
-+	for (i = 0; i <= __MAX_CSSID; i++) {
-+		struct channel_subsystem *css;
-+
-+		css = channel_subsystems[i];
-+		if (css->cm_enabled)
-+			if (chsc_secm(css, 0))
-+				ret = NOTIFY_BAD;
-+	}
-+
-+	return ret;
-+}
-+
-+static struct notifier_block css_reboot_notifier = {
-+	.notifier_call = css_reboot_event,
-+};
-+
- /*
-  * Now that the driver core is running, we can setup our channel subsystem.
-  * The struct subchannel's are created during probing (except for the
-@@ -697,12 +721,17 @@ init_channel_subsystem (void)
- 		if (ret)
- 			goto out_file;
- 	}
-+	ret = register_reboot_notifier(&css_reboot_notifier);
-+	if (ret)
-+		goto out_pseudo;
- 	css_init_done = 1;
- 
- 	ctl_set_bit(6, 28);
- 
- 	for_each_subchannel(__init_channel_subsystem, NULL);
- 	return 0;
-+out_pseudo:
-+	device_unregister(&channel_subsystems[i]->pseudo_subchannel->dev);
- out_file:
- 	device_remove_file(&channel_subsystems[i]->device,
- 			   &dev_attr_cm_enable);
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+There *is* a long standing bug in CHCR_TS_MASK. It is meant to mask out
+all but bits 6:4 but in fact only masks bits 5 and 4. If it is set to 0x70
+and not 0x30 this should work - though as usual I cannot make a patch to
+check this out at the moment.
