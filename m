@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbXJDWk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbXJDWpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbXJDWk4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXJDWkr
+	id S1762120AbXJDWpW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXJDWpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:40:47 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:51021 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760348AbXJDWkq (ORCPT
+	Thu, 4 Oct 2007 18:45:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58271 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758242AbXJDWpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:40:46 -0400
-Date: Thu, 4 Oct 2007 16:40:44 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sho@tnes.nec.co.jp, jack@suse.cz, clameter@sgi.com
-Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
-Message-ID: <20071004224044.GH5628@schatzie.adilger.int>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	cmm@us.ibm.com, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, sho@tnes.nec.co.jp, jack@suse.cz,
-	clameter@sgi.com
-References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com> <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain> <1191285346.11737.58.camel@localhost.localdomain> <20071004131207.65406a7b.akpm@linux-foundation.org>
+	Thu, 4 Oct 2007 18:45:05 -0400
+Date: Thu, 4 Oct 2007 15:43:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, jakub.bogusz@gemius.pl
+Subject: Re: [patch 02/12] fuse: fix race between getattr and write
+Message-Id: <20071004154348.71535f47.akpm@linux-foundation.org>
+In-Reply-To: <20071002155213.312599553@szeredi.hu>
+References: <20071002155026.650555479@szeredi.hu>
+	<20071002155213.312599553@szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004131207.65406a7b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 04, 2007  13:12 -0700, Andrew Morton wrote:
-> On Mon, 01 Oct 2007 17:35:46 -0700
-> > ext2: Avoid rec_len overflow with 64KB block size
-> > 
-> > into 16 bits we have for entry lenght. So we store 0xffff instead and
-> > convert value when read from / written to disk.
-> 
-> This patch clashes in non-trivial ways with
-> ext2-convert-to-new-aops-fix.patch and perhaps other things which are
-> already queued for 2.6.24 inclusion, so I'll need to ask for an updated
-> patch, please.
+On Tue, 02 Oct 2007 17:50:28 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-If the rel_len overflow patch isn't going to make it, then we also need
-to revert the EXT*_MAX_BLOCK_SIZE change to 65536.  It would be possible
-to allow this to be up to 32768 w/o the rec_len overflow fix however.
+> @@ -228,6 +243,7 @@ static struct dentry *fuse_lookup(struct
+>  	struct fuse_conn *fc = get_fuse_conn(dir);
+>  	struct fuse_req *req;
+>  	struct fuse_req *forget_req;
+> +	u64 attr_version;
+>  
+>  	if (entry->d_name.len > FUSE_NAME_MAX)
+>  		return ERR_PTR(-ENAMETOOLONG);
+> @@ -242,6 +258,10 @@ static struct dentry *fuse_lookup(struct
+>  		return ERR_PTR(PTR_ERR(forget_req));
+>  	}
+>  
+> +	spin_lock(&fc->lock);
+> +	attr_version = fc->attr_version;
+> +	spin_unlock(&fc->lock);
 
-Yes, this does imply that those patches were in the wrong order in the
-patch series, and I apologize for that, even if it isn't my fault.
+You might want to do this (oft-repeated) operation in a little helper
+function.
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+Because I suspect that the lock isn't needed if CONFIG_64BIT=y.
