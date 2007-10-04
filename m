@@ -1,96 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762645AbXJDXtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbXJDXtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762645AbXJDXtA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbXJDXsw
+	id S1762770AbXJDXtp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 19:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760250AbXJDXti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:48:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33989 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757438AbXJDXsw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:48:52 -0400
-Date: Thu, 4 Oct 2007 16:48:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: miklos@szeredi.hu, wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-Message-Id: <20071004164801.d8478727.akpm@linux-foundation.org>
-In-Reply-To: <E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-	<20071004145640.18ced770.akpm@linux-foundation.org>
-	<E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
-	<20071004160941.e0c0c7e5.akpm@linux-foundation.org>
-	<E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 4 Oct 2007 19:49:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46763 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757930AbXJDXth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 19:49:37 -0400
+Message-ID: <47057C10.5030603@redhat.com>
+Date: Thu, 04 Oct 2007 19:49:36 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: davids@webmaster.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SLUB performance regression vs SLAB
+References: <MDEHLPKNGKAHNMBLJOLKMEFNHEAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMEFNHEAC.davids@webmaster.com>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Oct 2007 01:26:12 +0200
-Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > This is a somewhat general problem: a userspace process is in the IO path. 
-> > Userspace block drivers, for example - pretty much anything which involves
-> > kernel->userspace upcalls for storage applications.
-> > 
-> > I solved it once in the past by marking the userspace process as
-> > PF_MEMALLOC and I beleive that others have implemented the same hack.
-> > 
-> > I suspect that what we need is a general solution, and that the solution
-> > will involve explicitly telling the kernel that this process is one which
-> > actually cleans memory and needs special treatment.
-> > 
-> > Because I bet there will be other corner-cases where such a process needs
-> > kernel help, and there might be optimisation opportunities as well.
-> > 
-> > Problem is, any such mark-me-as-special syscall would need to be
-> > privileged, and FUSE servers presently don't require special perms (do
-> > they?)
+On 10/04/2007 07:39 PM, David Schwartz wrote:
+> But this is just a preposterous position to put him in. If there's no
+> reproduceable test case, then why should he care that one program he can't
+> even see works badly? If you care, you fix it.
 > 
-> No, and that's a rather important feature, that I'd rather not give
-> up.
 
-Can fuse do it?  Perhaps the fs can diddle the server's task_struct at
-registration time?
-
->  But with the dirty limiting, the memory cleaning really shouldn't
-> be a problem, as there is plenty of memory _not_ used for dirty file
-> data, that the filesystem can use during the writeback.
-
-I don't think I understand that.  Sure, it _shouldn't_ be a problem.  But it
-_is_.  That's what we're trying to fix, isn't it?
-
-> So the only thing the kernel should be careful about, is not to block
-> on an allocation if not strictly necessary.
-> 
-> Actually a trivial fix for this problem could be to just tweak the
-> thresholds, so to make the above scenario impossible.  Although I'm
-> still not convinced, this patch is perfect, because the dirty
-> threshold can actually change in time...
-> 
-> Index: linux/mm/page-writeback.c
-> ===================================================================
-> --- linux.orig/mm/page-writeback.c      2007-10-05 00:31:01.000000000 +0200
-> +++ linux/mm/page-writeback.c   2007-10-05 00:50:11.000000000 +0200
-> @@ -515,6 +515,12 @@ void throttle_vm_writeout(gfp_t gfp_mask
->          for ( ; ; ) {
->                 get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
-> 
-> +               /*
-> +                * Make sure the theshold is over the hard limit of
-> +                * dirty_thresh + ratelimit_pages * nr_cpus
-> +                */
-> +               dirty_thresh += ratelimit_pages * num_online_cpus();
-> +
->                  /*
->                   * Boost the allowable dirty threshold a bit for page
->                   * allocators so they don't get DoS'ed by heavy writers
-
-I can probably kind of guess what you're trying to do here.  But if
-ratelimit_pages * num_online_cpus() exceeds the size of the offending zone
-then things might go bad.
-
+People have been trying for years to make reproducible test cases
+for huge and complex workloads. It doesn't work. The tests that do
+work take weeks to run and need to be carefully validated before
+they can be officially released. The open source community can and
+should be working on similar tests, but they will never be simple.
