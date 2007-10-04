@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbXJDQdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXJDQgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbXJDQdm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXJDQde
+	id S1760482AbXJDQgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXJDQgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 12:33:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57969 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbXJDQdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 12:33:33 -0400
-Message-ID: <470514E7.4030809@zytor.com>
-Date: Thu, 04 Oct 2007 09:29:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       kernel list <linux-kernel@vger.kernel.org>, jikos@jikos.cz
-Subject: Re: video resume stuff
-References: <20071004130513.GA16076@elf.ucw.cz> <20071004062848.0c55d182@laptopd505.fenrus.org> <20071004142437.GA4484@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071004142437.GA4484@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 12:36:06 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:35471 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757395AbXJDQgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 12:36:05 -0400
+Date: Thu, 4 Oct 2007 18:35:55 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Don Mullis <dwm@meer.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
+Message-ID: <20071004183555.3e0ed9eb@poseidon.drzeus.cx>
+In-Reply-To: <1191514780.30871.1.camel@dmullis-laptop>
+References: <1191478262.21598.5.camel@dmullis-laptop>
+	<20071003231659.f41df5ed.akpm@linux-foundation.org>
+	<20071004072515.GC5236@kernel.dk>
+	<1191514780.30871.1.camel@dmullis-laptop>
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-5652-1191515735-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->> On Thu, 4 Oct 2007 15:05:13 +0200
->> Pavel Machek <pavel@ucw.cz> wrote:
->>
->>> Hi!
->>>
->>> I'm thinking about how to clean up video resume/how to get it to work
->>> for non-VESA video modes (jikos' case).
->>
->> I suspect in the medium run, the video mode setting stuff that's moving
->> into the kernel is the real answer to this problem... maybe it's more
->> efficient to move that in in a hurry ;)
-> 
-> Violently agreed... but we still want fallback for vesafb ;-).
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-It should also be pointed out that the first mode setting might very 
-well be different from an already-in-operation modeset, if the procedure 
-that we have access to doesn't initialize everything necessary.
+--=_hera.drzeus.cx-5652-1191515735-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+On Thu, 04 Oct 2007 09:19:40 -0700
+Don Mullis <dwm@meer.net> wrote:
+
+> This patch fixes the boot.
+>=20
+
+Fantastic. Then will try to get this upstream then.
+
+> >=20
+> > It looks like missing init of the sg list in mmc, does this work?
+> >=20
+
+Jens, is this zeroing needed for each invocation, or really just once
+to get the list in a known state?
+
+Also, is chaining already upstream so Linus should have this for 2.6.23?
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-5652-1191515735-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHBRZr7b8eESbyJLgRApL5AKDGdbI56/vgy4YUAkFhR1Z/5kLWBQCg1N6K
+Cc8WZ0OmOSu7j7MMPXSaVxk=
+=Ws4J
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-5652-1191515735-0001-2--
