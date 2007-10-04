@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbXJDI4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbXJDJAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbXJDI4P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 04:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbXJDI4A
+	id S1758818AbXJDJAQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbXJDJAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 04:56:00 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:28987 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753939AbXJDIz7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 04:55:59 -0400
-Date: Thu, 4 Oct 2007 10:54:51 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH -v2] Add sysfs control to modify a user's cpu share
-Message-ID: <20071004085451.GA8108@osiris.boeblingen.de.ibm.com>
-References: <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu> <20071003171029.GA5423@linux.vnet.ibm.com> <20071004075750.GD9176@elte.hu>
+	Thu, 4 Oct 2007 05:00:00 -0400
+Received: from sacred.ru ([62.205.161.221]:58852 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753939AbXJDI77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 04:59:59 -0400
+Message-ID: <4704AAC5.2040701@openvz.org>
+Date: Thu, 04 Oct 2007 12:56:37 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004075750.GD9176@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 1/3] Introduce the dummy_pid
+References: <4703A44F.9020402@openvz.org>	<4703A4D5.3000100@openvz.org> <20071003110610.08156d75.randy.dunlap@oracle.com>
+In-Reply-To: <20071003110610.08156d75.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 04 Oct 2007 12:59:02 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Changelog since v1:
-> > 1. Added a mutex to serialize directory creation/destruction for a user in
-> >    sysfs
-> > 2. Added a spinlock in the task_group structure to serialize writes to
-> >    tg->shares.
-> > 3. Removed /proc/root_user_cpu_shares.
-> > 4. Added Documentation about the group scheduler.
+Randy Dunlap wrote:
+> On Wed, 03 Oct 2007 18:19:01 +0400 Pavel Emelyanov wrote:
 > 
-> thanks - I have added this to the queue.
+>> This is a pid which is attached to tasks when they detach
+>> their pids. This is done in detach_pid() and transfer_pid().
+>> The pid_alive() check is changed to reflect this fact.
+>>
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+>>
+>> ---
+>>
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 4f21af1..e17b8f8 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -1286,9 +1286,11 @@ static inline pid_t task_ppid_nr_ns(stru
+>>   * If pid_alive fails, then pointers within the task structure
+>>   * can be stale and must not be dereferenced.
+>>   */
+>> +extern struct pid dummy_pid;
+>> +
+>>  static inline int pid_alive(struct task_struct *p)
+>>  {
+>> -	return p->pids[PIDTYPE_PID].pid != NULL;
+>> +	return p->pids[PIDTYPE_PID].pid != &dummy_pid;
+>>  }
+>>  
+>>  /**
+>> diff --git a/kernel/pid.c b/kernel/pid.c
+>> index d7388d7..b7a11cf 100644
+>> --- a/kernel/pid.c
+>> +++ b/kernel/pid.c
+>> @@ -81,6 +81,17 @@ struct pid_namespace init_pid_ns = {
+>>  };
+>>  EXPORT_SYMBOL_GPL(init_pid_ns);
+>>  
+>> +struct pid dummy_pid = {
+>> +	.count 		= ATOMIC_INIT(1),
+>> +	.numbers	= { {
+>> +		.nr		= 0,		/* this is what pid_nr will return
+>> +						 * for tasks with no pids
+>> +						 */
+>> +		.ns		= &init_pid_ns,
+>> +	}, }
+>> +};
+>> +EXPORT_SYMBOL(dummy_pid);
 > 
-> i'm wondering about the following: could not (yet) existing UIDs be made 
-> configurable too? I.e. if i do this in a bootup script:
-> 
->   echo 2048 > /sys/kernel/uids/500/cpu_share
-> 
-> this should just work too, regardless of there not being any UID 500 
-> tasks yet. Likewise, once configured, the /sys/kernel/uids/* directories 
-> (with the settings in them) should probably not go away either.
+> Why is the EXPORT_SYMBOL() needed?
 
-Shouldn't that be done via uevents? E.g. UID x gets added to the sysfs tree,
-generates a uevent and a script then figures out the cpu_share and sets it.
-That way you also don't need to keep the directories. No?
+Because pid_alive() uses it and is declared in sched.h, so
+some module can use it.
+
+> IOW, is some loadable module going to use this?
+
+Right now - no modules use it. You're right - I will remove this export.
+
+> ---
+> ~Randy
+> 
+
