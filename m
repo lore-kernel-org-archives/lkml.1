@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbXJDF6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbXJDF6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759972AbXJDF6b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbXJDFvz
+	id S1759598AbXJDF6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbXJDFv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:55 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44844 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:58 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44846 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbXJDFvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753346AbXJDFvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:11 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org, Eric Sandeen <sandeen@redhat.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ext4: remove #ifdef CONFIG_EXT4_INDEX
-Date: Thu,  4 Oct 2007 01:50:43 -0400
-Message-Id: <1191477059-5357-9-git-send-email-tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, Takashi Sato <sho@tnes.nec.co.jp>,
+       Mingming Cao <cmm@us.ibm.com>
+Subject: [PATCH] Support large blocksize up to PAGESIZE (max 64KB) for ext3
+Date: Thu,  4 Oct 2007 01:50:50 -0400
+Message-Id: <1191477059-5357-16-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-8-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-15-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-2-git-send-email-tytso@mit.edu>
  <1191477059-5357-3-git-send-email-tytso@mit.edu>
@@ -27,248 +26,78 @@ References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-6-git-send-email-tytso@mit.edu>
  <1191477059-5357-7-git-send-email-tytso@mit.edu>
  <1191477059-5357-8-git-send-email-tytso@mit.edu>
+ <1191477059-5357-9-git-send-email-tytso@mit.edu>
+ <1191477059-5357-10-git-send-email-tytso@mit.edu>
+ <1191477059-5357-11-git-send-email-tytso@mit.edu>
+ <1191477059-5357-12-git-send-email-tytso@mit.edu>
+ <1191477059-5357-13-git-send-email-tytso@mit.edu>
+ <1191477059-5357-14-git-send-email-tytso@mit.edu>
+ <1191477059-5357-15-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Sandeen <sandeen@redhat.com>
+From: Takashi Sato <sho@tnes.nec.co.jp>
 
-CONFIG_EXT4_INDEX is not an exposed config option in the kernel, and it is
-unconditionally defined in ext4_fs.h.  tune2fs is already able to turn off
-dir indexing, so at this point it's just cluttering up the code.  Remove
-it.
+This patch set supports large block size(>4k, <=64k) in ext3
+just enlarging the block size limit. But it is NOT possible to have 64kB
+blocksize on ext3 without some changes to the directory handling
+code.  The reason is that an empty 64kB directory block would have a
+rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
+the filesystem.  The proposed solution is treat 64k rec_len
+with a an impossible value like rec_len = 0xffff to handle this.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+The Patch-set consists of the following 2 patches.
+  [1/2]  ext3: enlarge blocksize
+         - Allow blocksize up to pagesize
+
+  [2/2]  ext3: fix rec_len overflow
+         - prevent rec_len from overflow with 64KB blocksize
+
+Now on 64k page ppc64 box runs with this patch set we could create a 64k
+block size ext3, and able to handle empty directory block.
+
+Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/ext4/dir.c           |    7 -------
- fs/ext4/namei.c         |   20 --------------------
- include/linux/ext4_fs.h |   14 ++------------
- 3 files changed, 2 insertions(+), 39 deletions(-)
+ fs/ext3/super.c         |    6 +++++-
+ include/linux/ext3_fs.h |    4 ++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
-index 3ab01c0..2ba49ff 100644
---- a/fs/ext4/dir.c
-+++ b/fs/ext4/dir.c
-@@ -47,9 +47,7 @@ const struct file_operations ext4_dir_operations = {
- 	.compat_ioctl	= ext4_compat_ioctl,
- #endif
- 	.fsync		= ext4_sync_file,	/* BKL held */
--#ifdef CONFIG_EXT4_INDEX
- 	.release	= ext4_release_dir,
--#endif
- };
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index 9537316..b4bfd36 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -1549,7 +1549,11 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
+ 		}
  
- 
-@@ -107,7 +105,6 @@ static int ext4_readdir(struct file * filp,
- 
- 	sb = inode->i_sb;
- 
--#ifdef CONFIG_EXT4_INDEX
- 	if (EXT4_HAS_COMPAT_FEATURE(inode->i_sb,
- 				    EXT4_FEATURE_COMPAT_DIR_INDEX) &&
- 	    ((EXT4_I(inode)->i_flags & EXT4_INDEX_FL) ||
-@@ -123,7 +120,6 @@ static int ext4_readdir(struct file * filp,
- 		 */
- 		EXT4_I(filp->f_path.dentry->d_inode)->i_flags &= ~EXT4_INDEX_FL;
- 	}
--#endif
- 	stored = 0;
- 	offset = filp->f_pos & (sb->s_blocksize - 1);
- 
-@@ -232,7 +228,6 @@ out:
- 	return ret;
- }
- 
--#ifdef CONFIG_EXT4_INDEX
- /*
-  * These functions convert from the major/minor hash to an f_pos
-  * value.
-@@ -518,5 +513,3 @@ static int ext4_release_dir (struct inode * inode, struct file * filp)
- 
- 	return 0;
- }
--
--#endif
-diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-index 5fdb862..94ee6f3 100644
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -144,7 +144,6 @@ struct dx_map_entry
- 	u16 size;
- };
- 
--#ifdef CONFIG_EXT4_INDEX
- static inline unsigned dx_get_block (struct dx_entry *entry);
- static void dx_set_block (struct dx_entry *entry, unsigned value);
- static inline unsigned dx_get_hash (struct dx_entry *entry);
-@@ -766,8 +765,6 @@ static void dx_insert_block(struct dx_frame *frame, u32 hash, u32 block)
- 	dx_set_block(new, block);
- 	dx_set_count(entries, count + 1);
- }
--#endif
--
- 
- static void ext4_update_dx_flag(struct inode *inode)
- {
-@@ -869,7 +866,6 @@ static struct buffer_head * ext4_find_entry (struct dentry *dentry,
- 	name = dentry->d_name.name;
- 	if (namelen > EXT4_NAME_LEN)
- 		return NULL;
--#ifdef CONFIG_EXT4_INDEX
- 	if (is_dx(dir)) {
- 		bh = ext4_dx_find_entry(dentry, res_dir, &err);
- 		/*
-@@ -881,7 +877,6 @@ static struct buffer_head * ext4_find_entry (struct dentry *dentry,
- 			return bh;
- 		dxtrace(printk("ext4_find_entry: dx failed, falling back\n"));
- 	}
--#endif
- 	nblocks = dir->i_size >> EXT4_BLOCK_SIZE_BITS(sb);
- 	start = EXT4_I(dir)->i_dir_start_lookup;
- 	if (start >= nblocks)
-@@ -957,7 +952,6 @@ cleanup_and_exit:
- 	return ret;
- }
- 
--#ifdef CONFIG_EXT4_INDEX
- static struct buffer_head * ext4_dx_find_entry(struct dentry *dentry,
- 		       struct ext4_dir_entry_2 **res_dir, int *err)
- {
-@@ -1025,7 +1019,6 @@ errout:
- 	dx_release (frames);
- 	return NULL;
- }
--#endif
- 
- static struct dentry *ext4_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
- {
-@@ -1121,7 +1114,6 @@ static inline void ext4_set_de_type(struct super_block *sb,
- 		de->file_type = ext4_type_by_mode[(mode & S_IFMT)>>S_SHIFT];
- }
- 
--#ifdef CONFIG_EXT4_INDEX
- /*
-  * Move count entries from end of map between two memory locations.
-  * Returns pointer to last entry moved.
-@@ -1266,8 +1258,6 @@ errout:
- 	*error = err;
- 	return NULL;
- }
--#endif
--
- 
- /*
-  * Add a new entry into a directory (leaf) block.  If de is non-NULL,
-@@ -1364,7 +1354,6 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
- 	return 0;
- }
- 
--#ifdef CONFIG_EXT4_INDEX
- /*
-  * This converts a one block unindexed directory to a 3 block indexed
-  * directory, and adds the dentry to the indexed directory.
-@@ -1443,7 +1432,6 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
- 
- 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
- }
--#endif
- 
- /*
-  *	ext4_add_entry()
-@@ -1464,9 +1452,7 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 	struct ext4_dir_entry_2 *de;
- 	struct super_block * sb;
- 	int	retval;
--#ifdef CONFIG_EXT4_INDEX
- 	int	dx_fallback=0;
--#endif
- 	unsigned blocksize;
- 	u32 block, blocks;
- 
-@@ -1474,7 +1460,6 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 	blocksize = sb->s_blocksize;
- 	if (!dentry->d_name.len)
- 		return -EINVAL;
--#ifdef CONFIG_EXT4_INDEX
- 	if (is_dx(dir)) {
- 		retval = ext4_dx_add_entry(handle, dentry, inode);
- 		if (!retval || (retval != ERR_BAD_DX_DIR))
-@@ -1483,7 +1468,6 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 		dx_fallback++;
- 		ext4_mark_inode_dirty(handle, dir);
- 	}
--#endif
- 	blocks = dir->i_size >> sb->s_blocksize_bits;
- 	for (block = 0, offset = 0; block < blocks; block++) {
- 		bh = ext4_bread(handle, dir, block, 0, &retval);
-@@ -1493,11 +1477,9 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 		if (retval != -ENOSPC)
- 			return retval;
- 
--#ifdef CONFIG_EXT4_INDEX
- 		if (blocks == 1 && !dx_fallback &&
- 		    EXT4_HAS_COMPAT_FEATURE(sb, EXT4_FEATURE_COMPAT_DIR_INDEX))
- 			return make_indexed_dir(handle, dentry, inode, bh);
--#endif
- 		brelse(bh);
- 	}
- 	bh = ext4_append(handle, dir, &block, &retval);
-@@ -1509,7 +1491,6 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
- }
- 
--#ifdef CONFIG_EXT4_INDEX
- /*
-  * Returns 0 for success, or a negative error value
+ 		brelse (bh);
+-		sb_set_blocksize(sb, blocksize);
++		if (!sb_set_blocksize(sb, blocksize)) {
++			printk(KERN_ERR "EXT3-fs: bad blocksize %d.\n",
++				blocksize);
++			goto out_fail;
++		}
+ 		logic_sb_block = (sb_block * EXT3_MIN_BLOCK_SIZE) / blocksize;
+ 		offset = (sb_block * EXT3_MIN_BLOCK_SIZE) % blocksize;
+ 		bh = sb_bread(sb, logic_sb_block);
+diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+index ece49a8..7aa5556 100644
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -76,8 +76,8 @@
+  * Macro-instructions used to manage several block sizes
   */
-@@ -1644,7 +1625,6 @@ cleanup:
- 	dx_release(frames);
- 	return err;
- }
--#endif
- 
- /*
-  * ext4_delete_entry deletes a directory entry by merging it with the
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index 3baeb99..151738a 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -36,10 +36,6 @@
- /*max window size: 1024(direct blocks) + 3([t,d]indirect blocks) */
- #define EXT4_MAX_RESERVE_BLOCKS		1027
- #define EXT4_RESERVE_WINDOW_NOT_ALLOCATED 0
--/*
-- * Always enable hashed directories
-- */
--#define CONFIG_EXT4_INDEX
- 
- /*
-  * Debug code
-@@ -766,17 +762,11 @@ struct ext4_dir_entry_2 {
-  * (c) Daniel Phillips, 2001
-  */
- 
--#ifdef CONFIG_EXT4_INDEX
--  #define is_dx(dir) (EXT4_HAS_COMPAT_FEATURE(dir->i_sb, \
--					      EXT4_FEATURE_COMPAT_DIR_INDEX) && \
-+#define is_dx(dir) (EXT4_HAS_COMPAT_FEATURE(dir->i_sb, \
-+				      EXT4_FEATURE_COMPAT_DIR_INDEX) && \
- 		      (EXT4_I(dir)->i_flags & EXT4_INDEX_FL))
- #define EXT4_DIR_LINK_MAX(dir) (!is_dx(dir) && (dir)->i_nlink >= EXT4_LINK_MAX)
- #define EXT4_DIR_LINK_EMPTY(dir) ((dir)->i_nlink == 2 || (dir)->i_nlink == 1)
--#else
--  #define is_dx(dir) 0
--#define EXT4_DIR_LINK_MAX(dir) ((dir)->i_nlink >= EXT4_LINK_MAX)
--#define EXT4_DIR_LINK_EMPTY(dir) ((dir)->i_nlink == 2)
--#endif
- 
- /* Legal values for the dx_root hash_version field: */
- 
+ #define EXT3_MIN_BLOCK_SIZE		1024
+-#define	EXT3_MAX_BLOCK_SIZE		4096
+-#define EXT3_MIN_BLOCK_LOG_SIZE		  10
++#define	EXT3_MAX_BLOCK_SIZE		65536
++#define EXT3_MIN_BLOCK_LOG_SIZE		10
+ #ifdef __KERNEL__
+ # define EXT3_BLOCK_SIZE(s)		((s)->s_blocksize)
+ #else
 -- 
 1.5.3.2.81.g17ed
 
