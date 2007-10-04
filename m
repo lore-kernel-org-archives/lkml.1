@@ -1,73 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbXJDQHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762371AbXJDQHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760658AbXJDQHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 12:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760248AbXJDP6v
+	id S1762371AbXJDQHl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 12:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760273AbXJDP6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 11:58:51 -0400
-Received: from mail.tmr.com ([64.65.253.246]:39108 "EHLO gaimboi.tmr.com"
+	Thu, 4 Oct 2007 11:58:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45732 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760239AbXJDP6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 11:58:49 -0400
-Message-ID: <47050E79.6020100@tmr.com>
-Date: Thu, 04 Oct 2007 12:02:01 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1760005AbXJDP6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 11:58:50 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 25/32] IGET: Stop QNX4 from using iget() and read_inode() [try
+	#2]
+To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Thu, 04 Oct 2007 16:58:09 +0100
+Message-ID: <20071004155809.2814.73232.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
+References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH -v2] Add sysfs control to modify a user's cpu share
-References: <1190725693.13716.10.camel@Homer.simpson.net> <20070925132528.GN26289@linux.vnet.ibm.com> <1190726682.11260.1.camel@Homer.simpson.net> <20070925140559.GB26310@linux.vnet.ibm.com> <20070925143755.GA15594@elte.hu> <20070926210737.GA8663@elte.hu> <20071001140454.GA19439@linux.vnet.ibm.com> <20071001144402.GA3505@elte.hu> <20071003171029.GA5423@linux.vnet.ibm.com> <20071004075750.GD9176@elte.hu> <20071004085451.GA8108@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20071004085451.GA8108@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
->>> Changelog since v1:
->>> 1. Added a mutex to serialize directory creation/destruction for a user in
->>>    sysfs
->>> 2. Added a spinlock in the task_group structure to serialize writes to
->>>    tg->shares.
->>> 3. Removed /proc/root_user_cpu_shares.
->>> 4. Added Documentation about the group scheduler.
->> thanks - I have added this to the queue.
->>
->> i'm wondering about the following: could not (yet) existing UIDs be made 
->> configurable too? I.e. if i do this in a bootup script:
->>
->>   echo 2048 > /sys/kernel/uids/500/cpu_share
->>
->> this should just work too, regardless of there not being any UID 500 
->> tasks yet. Likewise, once configured, the /sys/kernel/uids/* directories 
->> (with the settings in them) should probably not go away either.
-> 
-> Shouldn't that be done via uevents? E.g. UID x gets added to the sysfs tree,
-> generates a uevent and a script then figures out the cpu_share and sets it.
-> That way you also don't need to keep the directories. No?
+Stop the QNX4 filesystem from using iget() and read_inode().  Replace
+qnx4_read_inode() with qnx4_iget(), and call that instead of iget().
+qnx4_iget() then uses iget_locked() directly and returns a proper error code
+instead of an inode in the event of an error.
 
-That sounds complex administratively. It means that instead of setting a 
-higher or lower than default once and having it persist until reboot I 
-have to create a script, which *will* in some cases be left in place 
-even after the need has gone.
+qnx4_fill_super() returns any error incurred when getting the root inode
+instead of EINVAL.
 
-I agree with Ingo, once it's done it should be persistent.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-And as another administrative convenience I can look at that set of 
-values and see what shares are being used, even when the user is not 
-currently active.
+ fs/qnx4/inode.c         |   45 ++++++++++++++++++++++++++++++---------------
+ fs/qnx4/namei.c         |    8 +++++---
+ include/linux/qnx4_fs.h |    1 +
+ 3 files changed, 36 insertions(+), 18 deletions(-)
 
-Final question, how do setuid processes map into this implementation?
+diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
+index 1bc8d87..3eba8fe 100644
+--- a/fs/qnx4/inode.c
++++ b/fs/qnx4/inode.c
+@@ -125,7 +125,6 @@ static int qnx4_write_inode(struct inode *inode, int unused)
+ static void qnx4_put_super(struct super_block *sb);
+ static struct inode *qnx4_alloc_inode(struct super_block *sb);
+ static void qnx4_destroy_inode(struct inode *inode);
+-static void qnx4_read_inode(struct inode *);
+ static int qnx4_remount(struct super_block *sb, int *flags, char *data);
+ static int qnx4_statfs(struct dentry *, struct kstatfs *);
+ 
+@@ -133,7 +132,6 @@ static const struct super_operations qnx4_sops =
+ {
+ 	.alloc_inode	= qnx4_alloc_inode,
+ 	.destroy_inode	= qnx4_destroy_inode,
+-	.read_inode	= qnx4_read_inode,
+ 	.put_super	= qnx4_put_super,
+ 	.statfs		= qnx4_statfs,
+ 	.remount_fs	= qnx4_remount,
+@@ -357,6 +355,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
+ 	struct inode *root;
+ 	const char *errmsg;
+ 	struct qnx4_sb_info *qs;
++	int ret = -EINVAL;
+ 
+ 	qs = kzalloc(sizeof(struct qnx4_sb_info), GFP_KERNEL);
+ 	if (!qs)
+@@ -396,12 +395,14 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
+ 	}
+ 
+  	/* does root not have inode number QNX4_ROOT_INO ?? */
+- 	root = iget(s, QNX4_ROOT_INO * QNX4_INODES_PER_BLOCK);
+- 	if (!root) {
++ 	root = qnx4_iget(s, QNX4_ROOT_INO * QNX4_INODES_PER_BLOCK);
++ 	if (IS_ERR(root)) {
+  		printk("qnx4: get inode failed\n");
++		ret = PTR_ERR(root);
+  		goto out;
+  	}
+ 
++	ret = -ENOMEM;
+  	s->s_root = d_alloc_root(root);
+  	if (s->s_root == NULL)
+  		goto outi;
+@@ -417,7 +418,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
+       outnobh:
+ 	kfree(qs);
+ 	s->s_fs_info = NULL;
+-	return -EINVAL;
++	return ret;
+ }
+ 
+ static void qnx4_put_super(struct super_block *sb)
+@@ -457,29 +458,37 @@ static const struct address_space_operations qnx4_aops = {
+ 	.bmap		= qnx4_bmap
+ };
+ 
+-static void qnx4_read_inode(struct inode *inode)
++struct inode *qnx4_iget(struct super_block *sb, unsigned long ino)
+ {
+ 	struct buffer_head *bh;
+ 	struct qnx4_inode_entry *raw_inode;
+-	int block, ino;
+-	struct super_block *sb = inode->i_sb;
+-	struct qnx4_inode_entry *qnx4_inode = qnx4_raw_inode(inode);
++	int block;
++	struct qnx4_inode_entry *qnx4_inode;
++	struct inode *inode;
+ 
+-	ino = inode->i_ino;
++	inode = iget_locked(sb, ino);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++	if (!(inode->i_state & I_NEW))
++		return inode;
++
++	qnx4_inode = qnx4_raw_inode(inode);
+ 	inode->i_mode = 0;
+ 
+ 	QNX4DEBUG(("Reading inode : [%d]\n", ino));
+ 	if (!ino) {
+-		printk("qnx4: bad inode number on dev %s: %d is out of range\n",
++		printk("qnx4: bad inode number on dev %s: %lu is out of range\n",
+ 		       sb->s_id, ino);
+-		return;
++		iget_failed(inode);
++		return ERR_PTR(-EIO);
+ 	}
+ 	block = ino / QNX4_INODES_PER_BLOCK;
+ 
+ 	if (!(bh = sb_bread(sb, block))) {
+ 		printk("qnx4: major problem: unable to read inode from dev "
+ 		       "%s\n", sb->s_id);
+-		return;
++		iget_failed(inode);
++		return ERR_PTR(-EIO);
+ 	}
+ 	raw_inode = ((struct qnx4_inode_entry *) bh->b_data) +
+ 	    (ino % QNX4_INODES_PER_BLOCK);
+@@ -510,9 +519,15 @@ static void qnx4_read_inode(struct inode *inode)
+ 		inode->i_op = &page_symlink_inode_operations;
+ 		inode->i_mapping->a_ops = &qnx4_aops;
+ 		qnx4_i(inode)->mmu_private = inode->i_size;
+-	} else
+-		printk("qnx4: bad inode %d on dev %s\n",ino,sb->s_id);
++	} else {
++		printk("qnx4: bad inode %lu on dev %s\n",ino,sb->s_id);
++		iget_failed(inode);
++		brelse(bh);
++		return ERR_PTR(-EIO);
++	}
+ 	brelse(bh);
++	unlock_new_inode(inode);
++	return inode;
+ }
+ 
+ static struct kmem_cache *qnx4_inode_cachep;
+diff --git a/fs/qnx4/namei.c b/fs/qnx4/namei.c
+index 733cdf0..775eed3 100644
+--- a/fs/qnx4/namei.c
++++ b/fs/qnx4/namei.c
+@@ -128,10 +128,12 @@ struct dentry * qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nam
+ 	}
+ 	brelse(bh);
+ 
+-	if ((foundinode = iget(dir->i_sb, ino)) == NULL) {
++	foundinode = qnx4_iget(dir->i_sb, ino);
++	if (IS_ERR(foundinode)) {
+ 		unlock_kernel();
+-		QNX4DEBUG(("qnx4: lookup->iget -> NULL\n"));
+-		return ERR_PTR(-EACCES);
++		QNX4DEBUG(("qnx4: lookup->iget -> error %ld\n",
++			   PTR_ERR(foundinode)));
++		return ERR_CAST(foundinode);
+ 	}
+ out:
+ 	unlock_kernel();
+diff --git a/include/linux/qnx4_fs.h b/include/linux/qnx4_fs.h
+index 19bc9b8..34a196e 100644
+--- a/include/linux/qnx4_fs.h
++++ b/include/linux/qnx4_fs.h
+@@ -110,6 +110,7 @@ struct qnx4_inode_info {
+ 	struct inode vfs_inode;
+ };
+ 
++extern struct inode *qnx4_iget(struct super_block *, unsigned long);
+ extern struct dentry *qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd);
+ extern unsigned long qnx4_count_free_blocks(struct super_block *sb);
+ extern unsigned long qnx4_block_map(struct inode *inode, long iblock);
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
