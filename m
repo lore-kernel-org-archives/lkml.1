@@ -1,102 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbXJDECl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbXJDEC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758466AbXJDECl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXJDEAQ
+	id S1758623AbXJDEC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXJDEAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37858 "EHLO
+	Thu, 4 Oct 2007 00:00:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53760 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750714AbXJDEAF (ORCPT
+	with ESMTP id S1750729AbXJDEAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 00:00:05 -0400
-Message-Id: <20071004040003.082188692@sgi.com>
+Message-Id: <20071004040003.556122828@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:41 -0700
+Date: Wed, 03 Oct 2007 20:59:43 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, apw@shadowen.org
-Subject: [06/18] Vcompound: Update page address determination
-Content-Disposition: inline; filename=vcompound_page_address
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [08/18] GFP_VFALLBACK: Allow fallback of compound pages to virtual mappings
+Content-Disposition: inline; filename=vcompound_core
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make page_address() correctly determine the address of a potentially
-virtually mapped compound page.
+Add a new gfp flag
 
-There are 3 cases to consider:
+	__GFP_VFALLBACK
 
-1. !HASHED_PAGE_VIRTUAL && !WANT_PAGE_VIRTUAL
+If specified during a higher order allocation then the system will fall
+back to vmap if no physically contiguous pages can be found. This will
+create a virtually contiguous area instead of a physically contiguous area.
+In many cases the virtually contiguous area can stand in for the physically
+contiguous area (with some loss of performance).
 
-Call vmalloc_address() directly from the page_address function
-defined in mm.h.
-
-2. HASHED_PAGE_VIRTUAL
-
-Modify page_address() in highmem.c to call vmalloc_address().
-
-3. WANT_PAGE_VIRTUAL
-
-set_page_address() is used to set up the virtual addresses of
-all pages that are part of the virtual compound.
-
-Cc: apw@shadowen.org
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm.h |    9 ++++++++-
- mm/highmem.c       |   10 ++++++++--
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ include/linux/gfp.h |    5 +
+ mm/page_alloc.c     |  139 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 139 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h	2007-10-03 19:39:52.000000000 -0700
-+++ linux-2.6/include/linux/mm.h	2007-10-03 19:40:29.000000000 -0700
-@@ -605,7 +605,14 @@ void page_address_init(void);
- #endif
+--- linux-2.6.orig/mm/page_alloc.c	2007-10-03 19:44:07.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-10-03 19:44:08.000000000 -0700
+@@ -60,6 +60,9 @@ long nr_swap_pages;
+ int percpu_pagelist_fraction;
  
- #if !defined(HASHED_PAGE_VIRTUAL) && !defined(WANT_PAGE_VIRTUAL)
--#define page_address(page) lowmem_page_address(page)
-+
-+static inline void *page_address(struct page *page)
+ static void __free_pages_ok(struct page *page, unsigned int order);
++static struct page *alloc_vcompound(gfp_t, int,
++					struct zonelist *, unsigned long);
++static void destroy_compound_page(struct page *page, unsigned long order);
+ 
+ /*
+  * results with 256, 32 in the lowmem_reserve sysctl:
+@@ -260,9 +263,51 @@ static void bad_page(struct page *page)
+  * This usage means that zero-order pages may not be compound.
+  */
+ 
++static void __free_vcompound(void *addr)
 +{
-+	if (unlikely(PageVcompound(page)))
-+		return vmalloc_address(page);
-+	return lowmem_page_address(page);
-+}
++	struct page **pages;
++	int i;
++	struct page *page = vmalloc_to_page(addr);
++	int order = compound_order(page);
++	int nr_pages = 1 << order;
 +
- #define set_page_address(page, address)  do { } while(0)
- #define page_address_init()  do { } while(0)
- #endif
-Index: linux-2.6/mm/highmem.c
-===================================================================
---- linux-2.6.orig/mm/highmem.c	2007-10-03 19:39:25.000000000 -0700
-+++ linux-2.6/mm/highmem.c	2007-10-03 19:40:29.000000000 -0700
-@@ -265,8 +265,11 @@ void *page_address(struct page *page)
- 	void *ret;
- 	struct page_address_slot *pas;
- 
--	if (!PageHighMem(page))
-+	if (!PageHighMem(page)) {
-+		if (PageVcompound(page))
-+			return vmalloc_address(page);
- 		return lowmem_page_address(page);
-+	}
- 
- 	pas = page_slot(page);
- 	ret = NULL;
-@@ -294,7 +297,10 @@ void set_page_address(struct page *page,
- 	struct page_address_slot *pas;
- 	struct page_address_map *pam;
- 
--	BUG_ON(!PageHighMem(page));
-+	if (!PageHighMem(page)) {
-+		BUG_ON(!PageVcompound(page));
++	if (!PageVcompound(page) || !PageHead(page)) {
++		bad_page(page);
 +		return;
 +	}
++	destroy_compound_page(page, order);
++	pages = vunmap(addr);
++	/*
++	 * First page will have zero refcount since it maintains state
++	 * for the compound and was decremented before we got here.
++	 */
++	set_page_address(page, NULL);
++	__ClearPageVcompound(page);
++	free_hot_page(page);
++
++	for (i = 1; i < nr_pages; i++) {
++		page = pages[i];
++		set_page_address(page, NULL);
++		__ClearPageVcompound(page);
++		__free_page(page);
++	}
++	kfree(pages);
++}
++
++
++static void free_vcompound(void *addr)
++{
++	__free_vcompound(addr);
++}
++
+ static void free_compound_page(struct page *page)
+ {
+-	__free_pages_ok(page, compound_order(page));
++	if (PageVcompound(page))
++		free_vcompound(page_address(page));
++	else {
++		destroy_compound_page(page, compound_order(page));
++		__free_pages_ok(page, compound_order(page));
++	}
+ }
  
- 	pas = page_slot(page);
- 	if (virtual) {		/* Add */
+ static void prep_compound_page(struct page *page, unsigned long order)
+@@ -1259,6 +1304,67 @@ try_next_zone:
+ }
+ 
+ /*
++ * Virtual Compound Page support.
++ *
++ * Virtual Compound Pages are used to fall back to order 0 allocations if large
++ * linear mappings are not available and __GFP_VFALLBACK is set. They are
++ * formatted according to compound page conventions. I.e. following
++ * page->first_page if PageTail(page) is set can be used to determine the
++ * head page.
++ */
++static noinline struct page *alloc_vcompound(gfp_t gfp_mask, int order,
++		struct zonelist *zonelist, unsigned long alloc_flags)
++{
++	struct page *page;
++	int i;
++	struct vm_struct *vm;
++	int nr_pages = 1 << order;
++	struct page **pages = kmalloc(nr_pages * sizeof(struct page *),
++						gfp_mask & GFP_LEVEL_MASK);
++	struct page **pages2;
++
++	if (!pages)
++		return NULL;
++
++	gfp_mask &= ~(__GFP_COMP | __GFP_VFALLBACK);
++	for (i = 0; i < nr_pages; i++) {
++		page = get_page_from_freelist(gfp_mask, 0, zonelist,
++							alloc_flags);
++		if (!page)
++			goto abort;
++
++		/* Sets PageCompound which makes PageHead(page) true */
++		__SetPageVcompound(page);
++		pages[i] = page;
++	}
++
++	vm = get_vm_area_node(nr_pages << PAGE_SHIFT, VM_MAP,
++			zone_to_nid(zonelist->zones[0]), gfp_mask);
++	pages2 = pages;
++	if (map_vm_area(vm, PAGE_KERNEL, &pages2))
++		goto abort;
++
++	prep_compound_page(pages[0], order);
++
++	for (i = 0; i < nr_pages; i++)
++		set_page_address(pages[0], vm->addr + (i << PAGE_SHIFT));
++
++	return pages[0];
++
++abort:
++	while (i-- > 0) {
++		page = pages[i];
++		if (!page)
++			continue;
++		set_page_address(page, NULL);
++		__ClearPageVcompound(page);
++		__free_page(page);
++	}
++	kfree(pages);
++	return NULL;
++}
++
++/*
+  * This is the 'heart' of the zoned buddy allocator.
+  */
+ struct page * fastcall
+@@ -1353,12 +1459,12 @@ nofail_alloc:
+ 				goto nofail_alloc;
+ 			}
+ 		}
+-		goto nopage;
++		goto try_vcompound;
+ 	}
+ 
+ 	/* Atomic allocations - we can't balance anything */
+ 	if (!wait)
+-		goto nopage;
++		goto try_vcompound;
+ 
+ 	cond_resched();
+ 
+@@ -1389,6 +1495,11 @@ nofail_alloc:
+ 		 */
+ 		page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
+ 				zonelist, ALLOC_WMARK_HIGH|ALLOC_CPUSET);
++
++		if (!page && order && (gfp_mask & __GFP_VFALLBACK))
++			page = alloc_vcompound(gfp_mask, order,
++					zonelist, alloc_flags);
++
+ 		if (page)
+ 			goto got_pg;
+ 
+@@ -1420,6 +1531,14 @@ nofail_alloc:
+ 		goto rebalance;
+ 	}
+ 
++try_vcompound:
++	/* Last chance before failing the allocation */
++	if (order && (gfp_mask & __GFP_VFALLBACK)) {
++		page = alloc_vcompound(gfp_mask, order,
++					zonelist, alloc_flags);
++		if (page)
++			goto got_pg;
++	}
+ nopage:
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
+ 		printk(KERN_WARNING "%s: page allocation failure."
+@@ -1480,6 +1599,9 @@ fastcall void __free_pages(struct page *
+ 		if (order == 0)
+ 			free_hot_page(page);
+ 		else
++		if (unlikely(PageHead(page)))
++			free_compound_page(page);
++		else
+ 			__free_pages_ok(page, order);
+ 	}
+ }
+@@ -1489,8 +1611,15 @@ EXPORT_SYMBOL(__free_pages);
+ fastcall void free_pages(unsigned long addr, unsigned int order)
+ {
+ 	if (addr != 0) {
+-		VM_BUG_ON(!virt_addr_valid((void *)addr));
+-		__free_pages(virt_to_page((void *)addr), order);
++		struct page *page;
++
++		if (unlikely(addr >= VMALLOC_START && addr < VMALLOC_END))
++			page = vmalloc_to_page((void *)addr);
++		else {
++			VM_BUG_ON(!virt_addr_valid(addr));
++			page  = virt_to_page(addr);
++		};
++		__free_pages(page, order);
+ 	}
+ }
+ 
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h	2007-10-03 19:44:07.000000000 -0700
++++ linux-2.6/include/linux/gfp.h	2007-10-03 19:44:08.000000000 -0700
+@@ -43,6 +43,7 @@ struct vm_area_struct;
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* Retry the allocation.  Might fail */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* Retry for ever.  Cannot fail */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* Do not retry.  Might fail */
++#define __GFP_VFALLBACK	((__force gfp_t)0x2000u)/* Permit fallback to vmalloc */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+@@ -86,6 +87,10 @@ struct vm_area_struct;
+ #define GFP_THISNODE	((__force gfp_t)0)
+ #endif
+ 
++/*
++ * Allocate large page but allow fallback to a virtually mapped page
++ */
++#define GFP_VFALLBACK	(GFP_KERNEL | __GFP_VFALLBACK)
+ 
+ /* Flag - indicates that the buffer will be suitable for DMA.  Ignored on some
+    platforms, used as appropriate on others */
 
 -- 
