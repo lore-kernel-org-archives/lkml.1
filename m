@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXJDSlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761510AbXJDSoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbXJDSlX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 14:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXJDSlP
+	id S1761510AbXJDSoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 14:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXJDSn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 14:41:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43698 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756414AbXJDSlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 14:41:14 -0400
-Date: Thu, 4 Oct 2007 14:41:07 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 2/3] x86: fix IO write barriers
-Message-ID: <20071004184107.GC23300@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	Nick Piggin <npiggin@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071004052153.GA15131@wotan.suse.de> <200710041953.16656.ak@suse.de> <20071004181044.GA23300@redhat.com> <200710042021.59704.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710042021.59704.ak@suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 4 Oct 2007 14:43:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38569 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757535AbXJDSn4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 14:43:56 -0400
+Date: Thu, 4 Oct 2007 11:42:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: trond.myklebust@fys.uio.no, staubach@redhat.com, nfsv4@linux-nfs.org,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
+ client git tree...
+Message-Id: <20071004114243.3161af16.akpm@linux-foundation.org>
+In-Reply-To: <20071004184304.6e71ab6d@poseidon.drzeus.cx>
+References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
+	<20071004085206.0a8e37b5@poseidon.drzeus.cx>
+	<1191506450.6685.17.camel@heimdal.trondhjem.org>
+	<20071004184304.6e71ab6d@poseidon.drzeus.cx>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 08:21:59PM +0200, Andi Kleen wrote:
- > On Thursday 04 October 2007 20:10:44 Dave Jones wrote:
- > > On Thu, Oct 04, 2007 at 07:53:16PM +0200, Andi Kleen wrote:
- > >  > 
- > >  > > The only vendor that ever implemented OOSTOREs was Centaur, and they
- > >  > > only did in the Winchip generation of the CPUs.  When they dropped it
- > >  > > from the C3, I asked whether they intended to bring it back, and the
- > >  > > answer was "extremely unlikely".
- > >  > >
- > >  > 
- > >  > Do you know if it made a big performance difference?
- > > 
- > > On the winchip, it was a huge win. I can't remember exact numbers,
- > > but pretty much every benchmark I threw at it at the time showed
- > > significant improvement.
- > 
- > Significant as in >10%?
+On Thu, 4 Oct 2007 18:43:04 +0200
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-"Worth about 10-20% performance" according to the 2.4.18pre9-ac4
-release notes: http://www.linuxtoday.com/news_story.php3?ltsn=2002-02-14-015-20-NW-KN
+> On Thu, 04 Oct 2007 10:00:50 -0400
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+> > On Thu, 2007-10-04 at 08:52 +0200, Pierre Ossman wrote:
+> > > On Wed, 03 Oct 2007 19:41:16 -0400
+> > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > > 
+> > > > 
+> > > > We also have the 64-bit inode support from RedHat/Peter Staubach.
+> > > > 
+> > > 
+> > > As has been pointed[1] out[2], this will cause regressions for
+> > > non-LFS applications (of which there are still lots and lots). This
+> > > change should be in feature-removal (the "feature" being removed is
+> > > legacy support for non-LFS applications using NFS servers that make
+> > > full use of the protocol) and preferably accompanied with
+> > > appropriate user space changes (e.g. compatibility option in glibc).
+> > > 
+> > > [1] https://bugzilla.redhat.com/show_bug.cgi?id=241348
+> > > [2] http://marc.info/?l=linux-nfs&m=118701088726477&w=2
+> > > 
+> > > Rgds
+> > 
+> > How about a boot/module parameter to turn it on or off?
+> > 
+> 
+> That would be perfect. It can even be in non-legacy mode by default,
+> just as long as you can go back to the old behaviour when/if you run
+> into a non-LFS application.
+> 
 
- > >  > But yes we should probably just remove this special case to make 
- > >  > maintenance easier.
- > > It's CONFIG_SMP anyway, which none of the winchips were.
- > 
- > It's not.
-
-You're right it isn't now, but Nicks patch seems to change it so that it is.
-
-...
-
- #ifdef CONFIG_SMP
- #define smp_mb()       mb()
- #define smp_rmb()      rmb()
--#define smp_wmb()      wmb()
-+#ifdef CONFIG_X86_OOSTORE
-+# define smp_wmb()     wmb()
-+#else
-+# define smp_wmb()     barrier()
-+#endif
-
- > And we need memory barriers even without SMP 
- > when talking to device drivers. Only the smp_*b()s get noped
- > on UP.
-
-Good point.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Wouldn't a mount option be better?
