@@ -1,182 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761245AbXJDLia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbXJDLiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761245AbXJDLia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 07:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbXJDL3M
+	id S1761452AbXJDLiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 07:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757734AbXJDL3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 07:29:12 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:57492 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756082AbXJDL2c (ORCPT
+	Thu, 4 Oct 2007 07:29:14 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:51253 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756162AbXJDL2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 07:28:32 -0400
-Message-Id: <20071004112833.790464002@de.ibm.com>
+Message-Id: <20071004112834.521260994@de.ibm.com>
 References: <20071004112706.574737175@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Oct 2007 13:27:38 +0200
+Date: Thu, 04 Oct 2007 13:27:40 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 32/34] cpcmd: fix inline assembly usage.
-Content-Disposition: inline; filename=032-cpcmd-inline.diff
+Subject: [patch 34/34] vmwatchdog: fix broken inline assembly.
+Content-Disposition: inline; filename=034-vmwatchdog.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-After assigning values to specific registers memset was called. This
-may clobber the contents of the used registers.
-To solve this extract the two used inline assemblies into small
-functions that don't call any functions.
+Constraint for err is wrong since it is preinitialized and the code
+relies on it in case of an exception.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/cpcmd.c |  100 +++++++++++++++++++++++++----------------------
- 1 file changed, 55 insertions(+), 45 deletions(-)
+ drivers/s390/char/vmwatchdog.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: quilt-2.6/arch/s390/kernel/cpcmd.c
+Index: quilt-2.6/drivers/s390/char/vmwatchdog.c
 ===================================================================
---- quilt-2.6.orig/arch/s390/kernel/cpcmd.c
-+++ quilt-2.6/arch/s390/kernel/cpcmd.c
-@@ -2,7 +2,7 @@
-  *  arch/s390/kernel/cpcmd.c
-  *
-  *  S390 version
-- *    Copyright (C) 1999,2005 IBM Deutschland Entwicklung GmbH, IBM Corporation
-+ *    Copyright IBM Corp. 1999,2007
-  *    Author(s): Martin Schwidefsky (schwidefsky@de.ibm.com),
-  *               Christian Borntraeger (cborntra@de.ibm.com),
-  */
-@@ -21,6 +21,49 @@
- static DEFINE_SPINLOCK(cpcmd_lock);
- static char cpcmd_buf[241];
- 
-+static int diag8_noresponse(int cmdlen)
-+{
-+	register unsigned long reg2 asm ("2") = (addr_t) cpcmd_buf;
-+	register unsigned long reg3 asm ("3") = cmdlen;
-+
-+	asm volatile(
-+#ifndef CONFIG_64BIT
-+		"	diag	%1,%0,0x8\n"
-+#else /* CONFIG_64BIT */
-+		"	sam31\n"
-+		"	diag	%1,%0,0x8\n"
-+		"	sam64\n"
-+#endif /* CONFIG_64BIT */
-+		: "+d" (reg3) : "d" (reg2) : "cc");
-+	return reg3;
-+}
-+
-+static int diag8_response(int cmdlen, char *response, int *rlen)
-+{
-+	register unsigned long reg2 asm ("2") = (addr_t) cpcmd_buf;
-+	register unsigned long reg3 asm ("3") = (addr_t) response;
-+	register unsigned long reg4 asm ("4") = cmdlen | 0x40000000L;
-+	register unsigned long reg5 asm ("5") = *rlen;
-+
-+	asm volatile(
-+#ifndef CONFIG_64BIT
-+		"	diag	%2,%0,0x8\n"
-+		"	brc	8,1f\n"
-+		"	ar	%1,%4\n"
-+#else /* CONFIG_64BIT */
-+		"	sam31\n"
-+		"	diag	%2,%0,0x8\n"
-+		"	sam64\n"
-+		"	brc	8,1f\n"
-+		"	agr	%1,%4\n"
-+#endif /* CONFIG_64BIT */
-+		"1:\n"
-+		: "+d" (reg4), "+d" (reg5)
-+		: "d" (reg2), "d" (reg3), "d" (*rlen) : "cc");
-+	*rlen = reg5;
-+	return reg4;
-+}
-+
- /*
-  * __cpcmd has some restrictions over cpcmd
-  *  - the response buffer must reside below 2GB (if any)
-@@ -28,59 +71,27 @@ static char cpcmd_buf[241];
-  */
- int  __cpcmd(const char *cmd, char *response, int rlen, int *response_code)
- {
--	unsigned cmdlen;
--	int return_code, return_len;
-+	int cmdlen;
-+	int rc;
-+	int response_len;
- 
- 	cmdlen = strlen(cmd);
- 	BUG_ON(cmdlen > 240);
- 	memcpy(cpcmd_buf, cmd, cmdlen);
- 	ASCEBC(cpcmd_buf, cmdlen);
- 
--	if (response != NULL && rlen > 0) {
--		register unsigned long reg2 asm ("2") = (addr_t) cpcmd_buf;
--		register unsigned long reg3 asm ("3") = (addr_t) response;
--		register unsigned long reg4 asm ("4") = cmdlen | 0x40000000L;
--		register unsigned long reg5 asm ("5") = rlen;
--
-+	if (response) {
- 		memset(response, 0, rlen);
--		asm volatile(
--#ifndef CONFIG_64BIT
--			"	diag	%2,%0,0x8\n"
--			"	brc	8,1f\n"
--			"	ar	%1,%4\n"
--#else /* CONFIG_64BIT */
--			"	sam31\n"
--			"	diag	%2,%0,0x8\n"
--			"	sam64\n"
--			"	brc	8,1f\n"
--			"	agr	%1,%4\n"
--#endif /* CONFIG_64BIT */
--			"1:\n"
--			: "+d" (reg4), "+d" (reg5)
--			: "d" (reg2), "d" (reg3), "d" (rlen) : "cc");
--		return_code = (int) reg4;
--		return_len = (int) reg5;
--                EBCASC(response, rlen);
-+		response_len = rlen;
-+		rc = diag8_response(cmdlen, response, &rlen);
-+		EBCASC(response, response_len);
-         } else {
--		register unsigned long reg2 asm ("2") = (addr_t) cpcmd_buf;
--		register unsigned long reg3 asm ("3") = cmdlen;
--		return_len = 0;
--		asm volatile(
--#ifndef CONFIG_64BIT
--			"	diag	%1,%0,0x8\n"
--#else /* CONFIG_64BIT */
--			"	sam31\n"
--			"	diag	%1,%0,0x8\n"
--			"	sam64\n"
--#endif /* CONFIG_64BIT */
--			: "+d" (reg3) : "d" (reg2) : "cc");
--		return_code = (int) reg3;
-+		rc = diag8_noresponse(cmdlen);
-         }
--	if (response_code != NULL)
--		*response_code = return_code;
--	return return_len;
-+	if (response_code)
-+		*response_code = rc;
-+	return rlen;
+--- quilt-2.6.orig/drivers/s390/char/vmwatchdog.c
++++ quilt-2.6/drivers/s390/char/vmwatchdog.c
+@@ -66,8 +66,8 @@ static int __diag288(enum vmwdt_func fun
+ 		"0:	la	%0,0\n"
+ 		"1:\n"
+ 		EX_TABLE(0b,1b)
+-		: "=d" (err) : "d"(__func), "d"(__timeout),
+-		  "d"(__cmdp), "d"(__cmdl), "0" (-EINVAL) : "1", "cc");
++		: "+d" (err) : "d"(__func), "d"(__timeout),
++		  "d"(__cmdp), "d"(__cmdl) : "1", "cc");
+ 	return err;
  }
--
- EXPORT_SYMBOL(__cpcmd);
  
- int cpcmd(const char *cmd, char *response, int rlen, int *response_code)
-@@ -109,5 +120,4 @@ int cpcmd(const char *cmd, char *respons
- 	}
- 	return len;
- }
--
- EXPORT_SYMBOL(cpcmd);
 
 -- 
 blue skies,
