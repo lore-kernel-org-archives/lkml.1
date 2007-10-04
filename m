@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbXJDEE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbXJDEF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759141AbXJDEE5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 00:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXJDEAZ
+	id S1758941AbXJDEF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 00:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbXJDEA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 00:00:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37871 "EHLO
+	Thu, 4 Oct 2007 00:00:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37872 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751018AbXJDEAG (ORCPT
+	with ESMTP id S1751033AbXJDEAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 00:00:06 -0400
-Message-Id: <20071004040005.631121150@sgi.com>
+Message-Id: <20071004040005.850376534@sgi.com>
 References: <20071004035935.042951211@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Oct 2007 20:59:52 -0700
+Date: Wed, 03 Oct 2007 20:59:53 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [17/18] Virtual compound page freeing in interrupt context
-Content-Disposition: inline; filename=vcompound_interrupt_free
+Subject: [18/18] SLUB: Use fallback for table of callers/freers of a slab cache
+Content-Disposition: inline; filename=vcompound_slub_safe
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we are in an interrupt context then simply defer the free via a workqueue.
-
-Removing a virtual mappping *must* be done with interrupts enabled
-since tlb_xx functions are called that rely on interrupts for
-processor to processor communications.
+The caller table can get quite large if there are many call sites for a
+particular slab. Add GFP_FALLBACK allows falling back to vmalloc in case
+the caller table gets too big and memory is fragmented. Currently we
+would fail the operation.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/page_alloc.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ mm/slub.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c	2007-10-03 20:00:37.000000000 -0700
-+++ linux-2.6/mm/page_alloc.c	2007-10-03 20:01:09.000000000 -0700
-@@ -294,10 +294,20 @@ static void __free_vcompound(void *addr)
- 	kfree(pages);
- }
+--- linux-2.6.orig/mm/slub.c	2007-10-03 20:00:23.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-10-03 20:01:12.000000000 -0700
+@@ -3003,7 +3003,8 @@ static int alloc_loc_track(struct loc_tr
  
-+static void vcompound_free_work(struct work_struct *w)
-+{
-+	__free_vcompound((void *)w);
-+}
+ 	order = get_order(sizeof(struct location) * max);
  
- static void free_vcompound(void *addr)
- {
--	__free_vcompound(addr);
-+	struct work_struct *w = addr;
-+
-+	if (irqs_disabled() || in_interrupt()) {
-+		INIT_WORK(w, vcompound_free_work);
-+		schedule_work(w);
-+	} else
-+		__free_vcompound(w);
- }
+-	l = (void *)__get_free_pages(flags, order);
++	l = (void *)__get_free_pages(flags | __GFP_COMP | __GFP_VFALLBACK,
++								order);
+ 	if (!l)
+ 		return 0;
  
- static void free_compound_page(struct page *page)
 
 -- 
