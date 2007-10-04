@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbXJDMC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbXJDMI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbXJDMC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 08:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759423AbXJDMCp
+	id S1758897AbXJDMI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 08:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbXJDMIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 08:02:45 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:42558 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1756893AbXJDMCo (ORCPT
+	Thu, 4 Oct 2007 08:08:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47629 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755261AbXJDMIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 08:02:44 -0400
-Message-ID: <4704D77D.1040005@ru.mvista.com>
-Date: Thu, 04 Oct 2007 16:07:25 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-User-Agent: Thunderbird 1.5 (X11/20060313)
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       linuxppc@ozlabs.org, adaplas@gmail.com
-Subject: Re: [PATCH 5/6] Xilinxfb: cleanup platform_bus binding to use platform
- bus API.
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net> <20071001155754.6114.6830.stgit@trillian.cg.shawcable.net>
-In-Reply-To: <20071001155754.6114.6830.stgit@trillian.cg.shawcable.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 4 Oct 2007 08:08:18 -0400
+Subject: Re: [13/18] x86_64: Allow fallback for the stack
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, travis@sgi.com
+In-Reply-To: <200710041356.51750.ak@suse.de>
+References: <20071004035935.042951211@sgi.com>
+	 <20071004040004.708466159@sgi.com>  <200710041356.51750.ak@suse.de>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 14:08:12 +0200
+Message-Id: <1191499692.22357.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Thu, 2007-10-04 at 13:56 +0200, Andi Kleen wrote:
+> On Thursday 04 October 2007 05:59:48 Christoph Lameter wrote:
+> > Peter Zijlstra has recently demonstrated that we can have order 1 allocation
+> > failures under memory pressure with small memory configurations. The
+> > x86_64 stack has a size of 8k and thus requires a order 1 allocation.
 > 
-> Change the platform bus binding to make use of the established
-> platform_bus API.
+> We've known for ages that it is possible. But it has been always so rare
+> that it was ignored.
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+> Is there any evidence this is more common now than it used to be?
 
-Acked-by: Andrei Konovalov <akonovalov@ru.mvista.com>
+The order-1 allocation failures where GFP_ATOMIC, because SLUB uses !0
+order for everything. Kernel stack allocation is GFP_KERNEL I presume.
+Also, I use 4k stacks on all my machines.
 
->  drivers/video/xilinxfb.c |   32 ++++++++++++++++----------------
->  1 files changed, 16 insertions(+), 16 deletions(-)
+Maybe the cpumask thing needs an extended api, one that falls back to
+kmalloc if NR_CPUS >> sane.
+
+That way that cannot be an argument to inflate stacks.
+
