@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761791AbXJDJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761571AbXJDJd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761791AbXJDJdm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759658AbXJDJSj
+	id S1761571AbXJDJd7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759667AbXJDJSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:18:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58817 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:18:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58820 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759596AbXJDJSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:18:31 -0400
+	id S1759616AbXJDJSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:18:32 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Wendy Cheng <wcheng@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 42/51] [GFS2] Move inode deletion out of blocking_cb
-Date: Thu,  4 Oct 2007 09:49:35 +0100
-Message-Id: <11914878661743-git-send-email-swhiteho@redhat.com>
+Cc: Patrick Caulfield <pcaulfie@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 43/51] [DLM] Make dlm_sendd cond_resched more
+Date: Thu,  4 Oct 2007 09:49:36 +0100
+Message-Id: <11914878683674-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1191487864951-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878661743-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -59,36 +60,43 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <1191487861683-git-send-email-swhiteho@redhat.com>
  <11914878632211-git-send-email-swhiteho@redhat.com>
  <1191487864951-git-send-email-swhiteho@redhat.com>
+ <11914878661743-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wendy Cheng <wcheng@redhat.com>
+From: Patrick Caulfield <pcaulfie@redhat.com>
 
-Move inode deletion code out of blocking_cb handle_callback route to
-avoid racy conditions that end up blocking lock_dlm1 thread. Fix
-bugzilla 286821.
+Under high recovery loads dlm_sendd can monopolise the CPU and cause soft lockups.
 
-Signed-off-by: Wendy Cheng <wcheng@redhat.com>
+This one extra and one moved cond_resched() make it yield a little more during
+such times keeping work moving.
+
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index d631cad..a37efe4 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -716,12 +716,8 @@ static void handle_callback(struct gfs2_glock *gl, unsigned int state,
- 		gl->gl_demote_time = jiffies;
- 		if (remote && gl->gl_ops->go_type == LM_TYPE_IOPEN &&
- 		    gl->gl_object) {
--			struct inode *inode = igrab(gl->gl_object);
-+			gfs2_glock_schedule_for_reclaim(gl);
- 			spin_unlock(&gl->gl_spin);
--			if (inode) {
--				d_prune_aliases(inode);
--				iput(inode);
--			}
- 			return;
- 		}
- 	} else if (gl->gl_demote_state != LM_ST_UNLOCKED &&
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 62a8a6c..58bf3f5 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -1264,14 +1264,15 @@ static void send_to_sock(struct connection *con)
+ 		if (len) {
+ 			ret = sendpage(con->sock, e->page, offset, len,
+ 				       msg_flags);
+-			if (ret == -EAGAIN || ret == 0)
++			if (ret == -EAGAIN || ret == 0) {
++				cond_resched();
+ 				goto out;
++			}
+ 			if (ret <= 0)
+ 				goto send_error;
+-		} else {
++		}
+ 			/* Don't starve people filling buffers */
+ 			cond_resched();
+-		}
+ 
+ 		spin_lock(&con->writequeue_lock);
+ 		e->offset += ret;
 -- 
 1.5.1.2
 
