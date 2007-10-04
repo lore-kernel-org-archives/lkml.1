@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbXJDF5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759779AbXJDF5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759811AbXJDF5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbXJDFvs
+	id S1759779AbXJDF5n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758409AbXJDFvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:48 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44840 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:49 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44842 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbXJDFvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752807AbXJDFvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:11 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ext4@vger.kernel.org, Takashi Sato <sho@tnes.nec.co.jp>,
        Mingming Cao <cmm@us.ibm.com>
-Subject: [PATCH] Support large blocksize up to PAGESIZE (max 64KB) for ext4
-Date: Thu,  4 Oct 2007 01:50:47 -0400
-Message-Id: <1191477059-5357-13-git-send-email-tytso@mit.edu>
+Subject: [PATCH] Support large blocksize up to PAGESIZE (max 64KB) for ext2
+Date: Thu,  4 Oct 2007 01:50:49 -0400
+Message-Id: <1191477059-5357-15-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-12-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-14-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-2-git-send-email-tytso@mit.edu>
  <1191477059-5357-3-git-send-email-tytso@mit.edu>
@@ -30,6 +30,8 @@ References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-10-git-send-email-tytso@mit.edu>
  <1191477059-5357-11-git-send-email-tytso@mit.edu>
  <1191477059-5357-12-git-send-email-tytso@mit.edu>
+ <1191477059-5357-13-git-send-email-tytso@mit.edu>
+ <1191477059-5357-14-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -38,61 +40,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Takashi Sato <sho@tnes.nec.co.jp>
 
-This patch set supports large block size(>4k, <=64k) in ext4,
+This patch set supports large block size(>4k, <=64k) in ext2,
 just enlarging the block size limit. But it is NOT possible to have 64kB
-blocksize on ext4 without some changes to the directory handling
+blocksize on ext2 without some changes to the directory handling
 code.  The reason is that an empty 64kB directory block would have a
 rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
 the filesystem.  The proposed solution is treat 64k rec_len
 with a an impossible value like rec_len = 0xffff to handle this.
 
 The Patch-set consists of the following 2 patches.
-  [1/2]  ext4: enlarge blocksize
+  [1/2]  ext2: enlarge blocksize
          - Allow blocksize up to pagesize
 
-  [2/2]  ext4: fix rec_len overflow
+  [2/2]  ext2: fix rec_len overflow
          - prevent rec_len from overflow with 64KB blocksize
 
 Now on 64k page ppc64 box runs with this patch set we could create a 64k
-block size ext4dev, and able to handle empty directory block.
+block size ext2, and able to handle empty directory block.
 
 Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 ---
- fs/ext4/super.c         |    5 +++++
- include/linux/ext4_fs.h |    4 ++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ fs/ext2/super.c         |    3 ++-
+ include/linux/ext2_fs.h |    4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 619db84..d8bb279 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1548,6 +1548,11 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 		goto out_fail;
- 	}
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index 639a32c..765c805 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -775,7 +775,8 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
+ 		brelse(bh);
  
-+	if (!sb_set_blocksize(sb, blocksize)) {
-+		printk(KERN_ERR "EXT4-fs: bad blocksize %d.\n", blocksize);
-+		goto out_fail;
-+	}
-+
- 	/*
- 	 * The ext4 superblock will not be buffer aligned for other than 1kB
- 	 * block sizes.  We need to calculate the offset from buffer start.
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index 46b304d..5d90616 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -73,8 +73,8 @@
+ 		if (!sb_set_blocksize(sb, blocksize)) {
+-			printk(KERN_ERR "EXT2-fs: blocksize too small for device.\n");
++			printk(KERN_ERR "EXT2-fs: bad blocksize %d.\n",
++				blocksize);
+ 			goto failed_sbi;
+ 		}
+ 
+diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+index 153d755..910a705 100644
+--- a/include/linux/ext2_fs.h
++++ b/include/linux/ext2_fs.h
+@@ -86,8 +86,8 @@ static inline struct ext2_sb_info *EXT2_SB(struct super_block *sb)
   * Macro-instructions used to manage several block sizes
   */
- #define EXT4_MIN_BLOCK_SIZE		1024
--#define	EXT4_MAX_BLOCK_SIZE		4096
--#define EXT4_MIN_BLOCK_LOG_SIZE		  10
-+#define	EXT4_MAX_BLOCK_SIZE		65536
-+#define EXT4_MIN_BLOCK_LOG_SIZE		10
+ #define EXT2_MIN_BLOCK_SIZE		1024
+-#define	EXT2_MAX_BLOCK_SIZE		4096
+-#define EXT2_MIN_BLOCK_LOG_SIZE		  10
++#define EXT2_MAX_BLOCK_SIZE		65536
++#define EXT2_MIN_BLOCK_LOG_SIZE		10
  #ifdef __KERNEL__
- # define EXT4_BLOCK_SIZE(s)		((s)->s_blocksize)
+ # define EXT2_BLOCK_SIZE(s)		((s)->s_blocksize)
  #else
 -- 
 1.5.3.2.81.g17ed
