@@ -1,85 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbXJDH2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbXJDH3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758650AbXJDH2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 03:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbXJDH2s
+	id S1758913AbXJDH3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 03:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbXJDH3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 03:28:48 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:51838 "EHLO smtp.drzeus.cx"
+	Thu, 4 Oct 2007 03:29:44 -0400
+Received: from sargon.lncsa.com ([212.99.8.251]:46367 "EHLO sargon.lncsa.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbXJDH2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 03:28:47 -0400
-Date: Thu, 4 Oct 2007 09:28:41 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Don Mullis <dwm@meer.net>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.23-rc8-mm2: OOPS in mmc on boot
-Message-ID: <20071004092841.322a3476@poseidon.drzeus.cx>
-In-Reply-To: <20071003231659.f41df5ed.akpm@linux-foundation.org>
-References: <1191478262.21598.5.camel@dmullis-laptop>
-	<20071003231659.f41df5ed.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-30782-1191482899-0001-2"
+	id S1751108AbXJDH3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 03:29:42 -0400
+Date: Thu, 4 Oct 2007 09:29:40 +0200
+From: Laurent Caron <lcaron@lncsa.com>
+To: drbd-user@linbit.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Crash on 2.6.21.7 Vanilla + DRBD 0.7
+Message-ID: <20071004092111.ahweigho@trusted.lncsa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_hera.drzeus.cx-30782-1191482899-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, 3 Oct 2007 23:16:59 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+I did compile a fresh 2.6.21.7 kernel from kernel.org (no distro patch, ....), and latest svn (3062) 0.7.X drbd.
 
-> On Wed, 03 Oct 2007 23:11:02 -0700 Don Mullis <dwm@meer.net> wrote:
->=20
-> > OOPS followed by a 3 minute timeout, then completion of boot.
-> > Not seen if card (Kingston microSD adapter) is ejected; not seen in
-> > 2.6.23-rc8. Running on a Dell XPS M1330 laptop.
-> >=20
+After just 2 days of uptime, I did experience another crash.
 
-Impossible! My code is bug free!
+I wonder if it is an XFS related bug, a DRBD one, or related to XFS on top of DRBD.
 
-> > [   13.709831] EIP is at blk_rq_map_sg+0xc0/0x160
-> > [   13.711857] Call Trace:
-> > [   13.711971]  [<f8c39e58>] mmc_queue_map_sg+0x28/0xc0 [mmc_block]
-> > [   13.712085]  [<f8c396c9>] mmc_blk_issue_rq+0x199/0x780 [mmc_block]
-> > [   13.712193]  [<f8c3a168>] mmc_queue_thread+0x78/0xe0 [mmc_block]
+This bug seems to occur with intensive IO operations.
 
-Seems to be in the handling of the bounce buffer. I don't see how any
-of the parameters to blk_rq_map_sg() could be incorrect though, so I
-suspect the problem is not in the mmc layer.
+What do you think about it ?
 
-Don, is MMC_BLOCK_BOUNCE enabled? Could you try toggling it and see if
-things change?
+Thanks
 
->=20
-> This could be due to git-block changes (or a lack of them ;))
->=20
+Laurent
 
-There are no pending patches, or recent changes that mess about in any
-real way in there.
 
-Don, when did this work last?
 
-Rgds
-Pierre
 
---=_hera.drzeus.cx-30782-1191482899-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+Oct  3 18:55:23  kernel: Oops: 0002 [#1]
+Oct  3 18:55:23  kernel: SMP 
+Oct  3 18:55:23  kernel: CPU:    7
+Oct  3 18:55:23  kernel: EIP:    0060:[<c016540c>]    Not tainted VLI
+Oct  3 18:55:23  kernel: EFLAGS: 00010046   (2.6.21-dl380-g5-20071001 #1)
+Oct  3 18:55:23  kernel: EIP is at cache_alloc_refill+0x11c/0x4f0
+Oct  3 18:55:23  kernel: eax: f79c2940   ebx: 00000015   ecx: 00000005   edx: 65b567b0
+Oct  3 18:55:23  kernel: esi: 0000000a   edi: d5d26000   ebp: f79d03c0   esp: d2531c98
+Oct  3 18:55:23  kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Oct  3 18:55:23  kernel: Process rsync (pid: 22409, ti=d2530000 task=da1e8070 task.ti=d2530000)
+Oct  3 18:55:23  kernel: Stack: 00000010 000002d0 ce9ca0b8 000002d0 f79cfe00 f79d1c00 f79c2940 00000000 
+Oct  3 18:55:23  kernel: 00000001 d2531cd4 ce9ca088 c022aade d5d2601c 00000282 f79cfe00 000002d0 
+Oct  3 18:55:23  kernel: f79cfe00 c01652e6 00000000 00000001 c0265a4e 00000011 d2531d60 d7acfb40 
+Oct  3 18:55:23  kernel: Call Trace:
+Oct  3 18:55:23  kernel: [<c022aade>] xfs_da_brelse+0x6e/0xb0
+Oct  3 18:55:23  kernel: [<c01652e6>] kmem_cache_alloc+0x46/0x50
+Oct  3 18:55:23  kernel: [<c0265a4e>] kmem_zone_alloc+0x4e/0xc0
+Oct  3 18:55:23  kernel: [<c027015f>] xfs_fs_alloc_inode+0xf/0x20
+Oct  3 18:55:23  kernel: [<c017bbd6>] alloc_inode+0x16/0x170
+Oct  3 18:55:23  kernel: [<c017bd89>] iget_locked+0x59/0x130
+Oct  3 18:55:23  kernel: [<c023fa38>] xfs_iget+0x78/0x160
+Oct  3 18:55:23  kernel: [<c020a49c>] xfs_acl_vget+0x6c/0x160
+Oct  3 18:55:23  kernel: [<c025b143>] xfs_dir_lookup_int+0x93/0xf0
+Oct  3 18:55:23  kernel: [<c025ea55>] xfs_lookup+0x75/0xa0
+Oct  3 18:55:23  kernel: [<c026d0c2>] xfs_vn_lookup+0x52/0x90
+Oct  3 18:55:23  kernel: [<c016fd08>] do_lookup+0x148/0x190
+Oct  3 18:55:23  kernel: [<c0171cb4>] __link_path_walk+0x814/0xe40
+Oct  3 18:55:23  kernel: [<c0172325>] link_path_walk+0x45/0xc0
+Oct  3 18:55:23  kernel: [<c0172581>] do_path_lookup+0x81/0x1c0
+Oct  3 18:55:23  kernel: [<c01712c3>] getname+0xb3/0xe0
+Oct  3 18:55:23  kernel: [<c0172f8b>] __user_walk_fd+0x3b/0x60
+Oct  3 18:55:23  kernel: [<c016bcdf>] vfs_lstat_fd+0x1f/0x50
+Oct  3 18:55:23  kernel: [<c016bd5f>] sys_lstat64+0xf/0x30
+Oct  3 18:55:23  kernel: [<c01040b0>] sysenter_past_esp+0x5d/0x81
+Oct  3 18:55:23  kernel: =======================
+Oct  3 18:55:23  kernel: Code: 10 8b 77 14 01 c2 8b 44 24 30 8b 34 b0 89 77 14 89 54 8d 14 8d 51 01 89 55 00 8b 44 24 10 8b 77 10 3b 70 5c 72 c0 8b 17 8b 47 04 <89> 42 04 89 10 83 7f 14 ff c7 07 00 01 10 00 c7 47 04 00 02 20 
+Oct  3 18:55:23  kernel: EIP: [<c016540c>] cache_alloc_refill+0x11c/0x4f0 SS:ESP 0068:d2531c98
+Oct  3 18:55:26  kernel: Oops: 0002 [#2]
+Oct  3 18:55:26  kernel: SMP 
+Oct  3 18:55:26  kernel: CPU:    7
+Oct  3 18:55:26  kernel: EIP:    0060:[<c017bbe0>]    Not tainted VLI
+Oct  3 18:55:26  kernel: EFLAGS: 00210282   (2.6.21-dl380-g5-20071001 #1)
+Oct  3 18:55:26  kernel: EIP is at alloc_inode+0x20/0x170
+Oct  3 18:55:26  kernel: eax: b4fd89ba   ebx: b4fd89ba   ecx: b4fd89ba   edx: b4fd89ba
+Oct  3 18:55:26  kernel: esi: f29bb000   edi: f29bb000   ebp: ca743575   esp: d6747c64
+Oct  3 18:55:26  kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Oct  3 18:55:26  kernel: Process imapd (pid: 20054, ti=d6746000 task=e04a20b0 task.ti=d6746000)
+Oct  3 18:55:26  kernel: Stack: 00000000 c76fe0dc f29bb000 c017bd89 ffffffff ffffffff c04abda0 ca743575 
+Oct  3 18:55:26  kernel: ca743575 f53b5800 c023fa38 cb2b4524 1b2595f3 00000020 f0dd7400 ded8b7a8 
+Oct  3 18:55:26  kernel: 00000000 f53b5800 c04abda0 cb2b4524 cb2b4524 ca743575 00000000 00000004 
+Oct  3 18:55:26  kernel: Call Trace:
+Oct  3 18:55:26  kernel: [<c017bd89>] iget_locked+0x59/0x130
+Oct  3 18:55:26  kernel: [<c023fa38>] xfs_iget+0x78/0x160
+Oct  3 18:55:26  kernel: [<c025a697>] xfs_trans_iget+0x117/0x190
+Oct  3 18:55:26  kernel: [<c0243d87>] xfs_ialloc+0xc7/0x570
+Oct  3 18:55:26  kernel: [<c024aabc>] xlog_grant_push_ail+0x3c/0x150
+Oct  3 18:55:26  kernel: [<c025b261>] xfs_dir_ialloc+0x81/0x2d0
+Oct  3 18:55:26  kernel: [<c025855b>] xfs_trans_reserve+0xab/0x230
+Oct  3 18:55:26  kernel: [<c0261aa5>] xfs_create+0x395/0x6a0
+Oct  3 18:55:26  kernel: [<c023eac5>] xfs_iunlock+0x85/0xa0
+Oct  3 18:55:26  kernel: [<c026d6b5>] xfs_vn_mknod+0x235/0x360
+Oct  3 18:55:26  kernel: [<c01705cd>] vfs_create+0xdd/0x140
+Oct  3 18:55:26  kernel: [<c01738ae>] open_namei+0x58e/0x5f0
+Oct  3 18:55:26  kernel: [<c016716e>] do_filp_open+0x2e/0x60
+Oct  3 18:55:26  kernel: [<c0166e4f>] get_unused_fd+0x4f/0xb0
+Oct  3 18:55:26  kernel: [<c01671ea>] do_sys_open+0x4a/0xe0
+Oct  3 18:55:26  kernel: [<c01672bc>] sys_open+0x1c/0x20
+Oct  3 18:55:26  kernel: [<c01040b0>] sysenter_past_esp+0x5d/0x81
+Oct  3 18:55:26  kernel: =======================
+Oct  3 18:55:26  kernel: Code: 90 90 90 90 90 90 90 90 90 90 90 57 56 89 c6 53 8b 40 20 8b 10 85 d2 0f 84 1e 01 00 00 89 f0 ff d2 89 c3 85 db 0f 84 ee 00 00 00 <89> b3 98 00 00 00 b9 02 00 00 00 0f b6 46 10 8d bb f8 00 00 00 
+Oct  3 18:55:26  kernel: EIP: [<c017bbe0>] alloc_inode+0x20/0x170 SS:ESP 0068:d6747c64
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFHBJYp7b8eESbyJLgRArMrAJ9G0ZRI8Y9TFJvECDqLgiKTGeIOFgCeKUAo
-x3k8Y+ag7V1c4reNtX5JUZU=
-=fdLJ
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-30782-1191482899-0001-2--
