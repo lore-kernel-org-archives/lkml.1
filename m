@@ -1,108 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXJDF4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbXJDF4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759550AbXJDF4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 01:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJDFvj
+	id S1759619AbXJDF4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 01:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbXJDFvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 01:51:39 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44812 "EHLO thunker.thunk.org"
+	Thu, 4 Oct 2007 01:51:43 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44823 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753159AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753312AbXJDFvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Oct 2007 01:51:10 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org, "Jose R. Santos" <jrs@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] JBD2: debug code cleanup.
-Date: Thu,  4 Oct 2007 01:50:41 -0400
-Message-Id: <1191477059-5357-7-git-send-email-tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] ext4: sparse fixes
+Date: Thu,  4 Oct 2007 01:50:59 -0400
+Message-Id: <1191477059-5357-25-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.3.2.81.g17ed
-In-Reply-To: <1191477059-5357-6-git-send-email-tytso@mit.edu>
+In-Reply-To: <1191477059-5357-24-git-send-email-tytso@mit.edu>
 References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
  <1191477059-5357-2-git-send-email-tytso@mit.edu>
  <1191477059-5357-3-git-send-email-tytso@mit.edu>
  <1191477059-5357-4-git-send-email-tytso@mit.edu>
  <1191477059-5357-5-git-send-email-tytso@mit.edu>
  <1191477059-5357-6-git-send-email-tytso@mit.edu>
+ <1191477059-5357-7-git-send-email-tytso@mit.edu>
+ <1191477059-5357-8-git-send-email-tytso@mit.edu>
+ <1191477059-5357-9-git-send-email-tytso@mit.edu>
+ <1191477059-5357-10-git-send-email-tytso@mit.edu>
+ <1191477059-5357-11-git-send-email-tytso@mit.edu>
+ <1191477059-5357-12-git-send-email-tytso@mit.edu>
+ <1191477059-5357-13-git-send-email-tytso@mit.edu>
+ <1191477059-5357-14-git-send-email-tytso@mit.edu>
+ <1191477059-5357-15-git-send-email-tytso@mit.edu>
+ <1191477059-5357-16-git-send-email-tytso@mit.edu>
+ <1191477059-5357-17-git-send-email-tytso@mit.edu>
+ <1191477059-5357-18-git-send-email-tytso@mit.edu>
+ <1191477059-5357-19-git-send-email-tytso@mit.edu>
+ <1191477059-5357-20-git-send-email-tytso@mit.edu>
+ <1191477059-5357-21-git-send-email-tytso@mit.edu>
+ <1191477059-5357-22-git-send-email-tytso@mit.edu>
+ <1191477059-5357-23-git-send-email-tytso@mit.edu>
+ <1191477059-5357-24-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jose R. Santos <jrs@us.ibm.com>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Mostly stolen from akpm's JBD cleanup patch.
-
-- use `#ifdef foo' instead of `#if defined(foo)'
-
-- Make journal_enable_debug __read_mostly just for the heck of it
-
-- Make jbd_debugfs_dir and jbd_debug static
-
-- debugfs_remove(NULL) is legal: remove unneeded tests
-
-- remove unnecessary empty loops
-
-Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/jbd2/journal.c |   20 ++++++--------------
- 1 files changed, 6 insertions(+), 14 deletions(-)
+ fs/ext4/fsync.c |    2 +-
+ fs/ext4/inode.c |    2 +-
+ fs/ext4/xattr.c |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index ff07bff..6ddc553 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -1864,16 +1864,14 @@ void jbd2_journal_put_journal_head(struct journal_head *jh)
- /*
-  * debugfs tunables
-  */
--#if defined(CONFIG_JBD2_DEBUG)
--u8 jbd2_journal_enable_debug;
-+#ifdef CONFIG_JBD2_DEBUG
-+u8 jbd2_journal_enable_debug __read_mostly;
- EXPORT_SYMBOL(jbd2_journal_enable_debug);
--#endif
--
--#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
+diff --git a/fs/ext4/fsync.c b/fs/ext4/fsync.c
+index 2a167d7..8d50879 100644
+--- a/fs/ext4/fsync.c
++++ b/fs/ext4/fsync.c
+@@ -47,7 +47,7 @@ int ext4_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ 	struct inode *inode = dentry->d_inode;
+ 	int ret = 0;
  
- #define JBD2_DEBUG_NAME "jbd2-debug"
+-	J_ASSERT(ext4_journal_current_handle() == 0);
++	J_ASSERT(ext4_journal_current_handle() == NULL);
  
--struct dentry *jbd2_debugfs_dir, *jbd2_debug;
-+static struct dentry *jbd2_debugfs_dir;
-+static struct dentry *jbd2_debug;
+ 	/*
+ 	 * data=writeback:
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index a2e1ea4..07afd4a 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1027,7 +1027,7 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
+ 		}
+ 		if (buffer_new(&dummy)) {
+ 			J_ASSERT(create != 0);
+-			J_ASSERT(handle != 0);
++			J_ASSERT(handle != NULL);
  
- static void __init jbd2_create_debugfs_entry(void)
- {
-@@ -1886,24 +1884,18 @@ static void __init jbd2_create_debugfs_entry(void)
+ 			/*
+ 			 * Now that we do not always journal data, we should
+diff --git a/fs/ext4/xattr.c b/fs/ext4/xattr.c
+index 12c7d65..8638730 100644
+--- a/fs/ext4/xattr.c
++++ b/fs/ext4/xattr.c
+@@ -1120,7 +1120,7 @@ int ext4_expand_extra_isize_ea(struct inode *inode, int new_extra_isize,
+ 	int total_ino, total_blk;
+ 	void *base, *start, *end;
+ 	int extra_isize = 0, error = 0, tried_min_extra_isize = 0;
+-	int s_min_extra_isize = EXT4_SB(inode->i_sb)->s_es->s_min_extra_isize;
++	int s_min_extra_isize = le16_to_cpu(EXT4_SB(inode->i_sb)->s_es->s_min_extra_isize);
  
- static void __exit jbd2_remove_debugfs_entry(void)
- {
--	if (jbd2_debug)
--		debugfs_remove(jbd2_debug);
--	if (jbd2_debugfs_dir)
--		debugfs_remove(jbd2_debugfs_dir);
-+	debugfs_remove(jbd2_debug);
-+	debugfs_remove(jbd2_debugfs_dir);
- }
+ 	down_write(&EXT4_I(inode)->xattr_sem);
+ retry:
+@@ -1292,7 +1292,7 @@ retry:
  
- #else
- 
- static void __init jbd2_create_debugfs_entry(void)
- {
--	do {
--	} while (0);
- }
- 
- static void __exit jbd2_remove_debugfs_entry(void)
- {
--	do {
--	} while (0);
- }
- 
- #endif
+ 		i.name = b_entry_name;
+ 		i.value = buffer;
+-		i.value_len = cpu_to_le32(size);
++		i.value_len = size;
+ 		error = ext4_xattr_block_find(inode, &i, bs);
+ 		if (error)
+ 			goto cleanup;
 -- 
 1.5.3.2.81.g17ed
 
