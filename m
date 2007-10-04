@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXJDVAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbXJDVFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761642AbXJDVAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 17:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbXJDVAj
+	id S1761002AbXJDVFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 17:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbXJDVFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 17:00:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40917
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756974AbXJDVAj (ORCPT
+	Thu, 4 Oct 2007 17:05:21 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38801 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757129AbXJDVFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 17:00:39 -0400
-Date: Thu, 04 Oct 2007 14:00:38 -0700 (PDT)
-Message-Id: <20071004.140038.126762674.davem@davemloft.net>
-To: val@nmt.edu
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rrbranco@br.ibm.com,
-       twichell@us.ibm.com, ycai@us.ibm.com
-Subject: Re: [ANNOUNCE] ebizzy 0.2 released
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071004204201.GB6090@rainbow>
-References: <20070823010626.GC11402@rainbow>
-	<20070930.172703.79041329.davem@davemloft.net>
-	<20071004204201.GB6090@rainbow>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 17:05:20 -0400
+Date: Thu, 4 Oct 2007 15:05:18 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: David Miller <davem@davemloft.net>
+Cc: willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
+       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com, jens.axboe@oracle.com,
+       suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+Message-ID: <20071004210518.GR12049@parisc-linux.org>
+References: <20071004183224.GA8641@linux.intel.com> <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com> <20071004192824.GA9852@linux.intel.com> <20071004.135537.39158051.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004.135537.39158051.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Valerie Henson <val@nmt.edu>
-Date: Thu, 4 Oct 2007 14:42:01 -0600
+On Thu, Oct 04, 2007 at 01:55:37PM -0700, David Miller wrote:
+> Anything, I do mean anything, can be simulated using small test
+> programs.  Pointing at a big fancy machine with lots of storage
+> and disk is a passive aggressive way to avoid the real issues,
+> in that nobody is putting forth the effort to try and come up
+> with an at least publishable test case that Christoph can use to
+> help you guys.
+> 
+> If coming up with a reproducable and publishable test case is
+> the difference between this getting fixed and it not getting
+> fixed, are you going to invest the time to do that?
 
-> Ebizzy is based on a real web application server and does do things
-> that are fairly common in such applications (multithreaded memory
-> allocation and memory access), but it ignores networking for two
-> reasons: the network stack was not the bottleneck for this workload,
-> the VM was, and really good network benchmarks already exist. :)
-> ebizzy is not useful to networking (or file systems) developer, but it
-> has been used to improve malloc() behavior in glibc and to test VMA
-> handling optimizations.
+If that's what it takes, then yes.  But I'm far from convinced that
+it's as easy to come up with a TPC benchmark simulator as you think.
+There have been efforts in the past (orasim, for example), but
+presumably Christoph has already tried these benchmarks.
 
-Thanks for clarifying all of this Valerie.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
