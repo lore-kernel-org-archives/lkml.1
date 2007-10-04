@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbXJDWcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbXJDWjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbXJDWcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 18:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761983AbXJDWbo
+	id S1762186AbXJDWjs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 18:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760581AbXJDWjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 18:31:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35249 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760478AbXJDWbm (ORCPT
+	Thu, 4 Oct 2007 18:39:40 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:38983 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760516AbXJDWjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 18:31:42 -0400
-Message-Id: <20071004223141.599952000@sgi.com>
-References: <20071004223141.413776000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Oct 2007 15:31:42 -0700
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: [PATCH 1/1] ia64: Convert cpu_sibling_map to a per_cpu data array FIX
-Content-Disposition: inline; filename=convert-cpu_sibling_map-to-a-per_cpu-data-array-ia64-fix
+	Thu, 4 Oct 2007 18:39:39 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-reply-to: <20071004145640.18ced770.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 4 Oct 2007 14:56:40 -0700)
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <20071004145640.18ced770.akpm@linux-foundation.org>
+Message-Id: <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Oct 2007 00:39:16 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are two versions of per_cpu_init() for ia64.  This patch corrects
-the problem that one of the versions did not insert the boot cpu
-into the cpu sibling and core maps.
+> None of the above.
+> 
+>     [PATCH] vm: pageout throttling
+>     
+>     With silly pageout testcases it is possible to place huge amounts of memory
+>     under I/O.  With a large request queue (CFQ uses 8192 requests) it is
+>     possible to place _all_ memory under I/O at the same time.
+>     
+>     This means that all memory is pinned and unreclaimable and the VM gets
+>     upset and goes oom.
+>     
+>     The patch limits the amount of memory which is under pageout writeout to be
+>     a little more than the amount of memory at which balance_dirty_pages()
+>     callers will synchronously throttle.
+>     
+>     This means that heavy pageout activity can starve heavy writeback activity
+>     completely, but heavy writeback activity will not cause starvation of
+>     pageout.  Because we don't want a simple `dd' to be causing excessive
+>     latencies in page reclaim.
+> 
+> afaict that problem is still there.  It is possible to get all of
+> ZONE_NORMAL dirty on a highmem machine.  With a large queue (or lots of
+> queues), vmscan can them place all of ZONE_NORMAL under IO.
+> 
+> It could be that we've fixed this problem via other means in the interrim,
+> but from a quick peek to seems to me that the scanner will still do a 100%
+> CPU burn when all of a zone's pages are under writeback.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/ia64/kernel/setup.c |    8 ++++++++
- arch/ia64/mm/contig.c    |    6 ------
- 2 files changed, 8 insertions(+), 6 deletions(-)
+Ah, OK.
 
---- linux.orig/arch/ia64/kernel/setup.c	2007-10-04 14:38:53.000000000 -0700
-+++ linux/arch/ia64/kernel/setup.c	2007-10-04 14:51:46.289055433 -0700
-@@ -873,6 +873,14 @@ cpu_init (void)
- 	void *cpu_data;
- 
- 	cpu_data = per_cpu_init();
-+	/*
-+	 * insert boot cpu into sibling and core mapes
-+	 * (must be done after per_cpu area is setup)
-+	 */
-+	if (smp_processor_id() == 0) {
-+		cpu_set(0, per_cpu(cpu_sibling_map, 0));
-+		cpu_set(0, cpu_core_map[0]);
-+	}
- 
- 	/*
- 	 * We set ar.k3 so that assembly code in MCA handler can compute
---- linux.orig/arch/ia64/mm/contig.c	2007-10-04 14:38:53.000000000 -0700
-+++ linux/arch/ia64/mm/contig.c	2007-10-04 14:50:12.699513748 -0700
-@@ -212,12 +212,6 @@ per_cpu_init (void)
- 			cpu_data += PERCPU_PAGE_SIZE;
- 			per_cpu(local_per_cpu_offset, cpu) = __per_cpu_offset[cpu];
- 		}
--		/*
--		 * cpu_sibling_map is now a per_cpu variable - it needs to
--		 * be accessed after per_cpu_init() sets up the per_cpu area.
--		 */
--		cpu_set(0, per_cpu(cpu_sibling_map, 0));
--		cpu_set(0, cpu_core_map[0]);
- 	}
- 	return __per_cpu_start + __per_cpu_offset[smp_processor_id()];
- }
+I did read the changelog, but you added quite a bit of translation ;)
 
--- 
+> throttle_vm_writeout() should be a per-zone thing, I guess.  Perhaps fixing
+> that would fix your deadlock.  That's doubtful, but I don't know anything
+> about your deadlock so I cannot say.
+
+No, doing the throttling per-zone won't in itself fix the deadlock.
+
+Here's a deadlock example:
+
+Total memory = 32M
+/proc/sys/vm/dirty_ratio = 10
+dirty_threshold = 3M
+ratelimit_pages = 1M
+
+Some program dirties 4M (dirty_threshold + ratelimit_pages) of mmap on
+a fuse fs.  Page balancing is called which turns all these into
+writeback pages.
+
+Then userspace filesystem gets a write request, and tries to allocate
+memory needed to complete the writeout.
+
+That will possibly trigger direct reclaim, and throttle_vm_writeout()
+will be called.  That will block until nr_writeback goes below 3.3M
+(dirty_threshold + 10%).  But since all 4M of writeback is from the
+fuse fs, that will never happen.
+
+Does that explain it better?
+
+Miklos
