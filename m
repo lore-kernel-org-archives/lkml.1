@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXJDJXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXJDJX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbXJDJXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 05:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbXJDJRu
+	id S1760695AbXJDJX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 05:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759522AbXJDJRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 05:17:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58773 "EHLO mx1.redhat.com"
+	Thu, 4 Oct 2007 05:17:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58774 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759506AbXJDJRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 05:17:48 -0400
+	id S1759512AbXJDJRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 05:17:50 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Denis Cheng <crquan@gmail.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 18/51] [GFS2] better code for translating characters
-Date: Thu,  4 Oct 2007 09:49:11 +0100
-Message-Id: <11914878231394-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 19/51] [GFS2] Force unstuff of hidden quota inode
+Date: Thu,  4 Oct 2007 09:49:12 +0100
+Message-Id: <11914878252873-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11914878214113-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <11914878231394-git-send-email-swhiteho@redhat.com>
 References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914877912880-git-send-email-swhiteho@redhat.com>
  <11914877934041-git-send-email-swhiteho@redhat.com>
@@ -35,30 +35,41 @@ References: <11914877842142-git-send-email-swhiteho@redhat.com>
  <11914878173677-git-send-email-swhiteho@redhat.com>
  <11914878191964-git-send-email-swhiteho@redhat.com>
  <11914878214113-git-send-email-swhiteho@redhat.com>
+ <11914878231394-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis Cheng <crquan@gmail.com>
+From: Abhijith Das <adas@redhat.com>
 
-the original code could work, but I think this code could work better.
+This patch forcibly unstuffs (if stuffed) the hidden quota inode at the
+first availble opportunity. In any practical scenario the quota inode
+won't be stuffed, so this is ok to do. Unstuffing the quota inode allows
+us to ignore the case of a stuffed quota inode in gfs2_adjust_quota().
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 25cfab9..6c820cb 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -144,7 +144,8 @@ static int init_names(struct gfs2_sbd *sdp, int silent)
- 	snprintf(sdp->sd_proto_name, GFS2_FSNAME_LEN, "%s", proto);
- 	snprintf(sdp->sd_table_name, GFS2_FSNAME_LEN, "%s", table);
+diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
+index 6e546ee..5dfa465 100644
+--- a/fs/gfs2/quota.c
++++ b/fs/gfs2/quota.c
+@@ -614,6 +614,16 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
+ 	s64 value;
+ 	int err = -EIO;
  
--	while ((table = strchr(sdp->sd_table_name, '/')))
-+	table = sdp->sd_table_name;
-+	while ((table = strchr(table, '/')))
- 		*table = '_';
- 
- out:
++	if (gfs2_is_stuffed(ip)) {
++		struct gfs2_alloc *al = NULL;
++		al = gfs2_alloc_get(ip);
++		/* just request 1 blk */
++		al->al_requested = 1;
++		gfs2_inplace_reserve(ip);
++		gfs2_unstuff_dinode(ip, NULL);
++		gfs2_inplace_release(ip);
++		gfs2_alloc_put(ip);
++	}
+ 	page = grab_cache_page(mapping, index);
+ 	if (!page)
+ 		return -ENOMEM;
 -- 
 1.5.1.2
 
