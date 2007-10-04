@@ -1,63 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbXJDHK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbXJDHTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbXJDHK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 03:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXJDHKO
+	id S1757154AbXJDHTY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 03:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbXJDHTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 03:10:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:35328 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbXJDHKM (ORCPT
+	Thu, 4 Oct 2007 03:19:16 -0400
+Received: from outbound0.mx.meer.net ([209.157.153.23]:1612 "EHLO
+	outbound0.mx.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbXJDHTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 03:10:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=odFDC5DV1b/tAbKAQUOBvB6ce66Gqih/lpkWhcJqQJny7t5Yd/J8grCop1fdrAmqLAsGx+e1ePvJbRbuI3ukCxSifBdep3wfXdQMcRJ9PFBMfAu1PfsGNbq3Lv6gjCeP/4HgzYL9T/ArKNrZctTh9m9x34KsPhh9Zbmk+7x4c78=
-Message-ID: <84144f020710040010r4804c69x746bf78db17e9fa1@mail.gmail.com>
-Date: Thu, 4 Oct 2007 10:10:10 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [Bug] 2.6.23-rc9 - kernel BUG at mm/slab.c:592!
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       samba-technical@lists.samba.org,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>
-In-Reply-To: <47048DD8.2090405@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Oct 2007 03:19:15 -0400
+X-Greylist: delayed 4012 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Oct 2007 03:19:15 EDT
+Subject: 2.6.23-rc8-mm2: OOPS in mmc on boot
+From: Don Mullis <dwm@meer.net>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org, drzeus@drzeus.cx
+Content-Type: text/plain
+Date: Wed, 03 Oct 2007 23:11:02 -0700
+Message-Id: <1191478262.21598.5.camel@dmullis-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47048DD8.2090405@linux.vnet.ibm.com>
-X-Google-Sender-Auth: 9fcd6b93adda82c1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kamalesh,
+OOPS followed by a 3 minute timeout, then completion of boot.
+Not seen if card (Kingston microSD adapter) is ejected; not seen in 2.6.23-rc8.
+Running on a Dell XPS M1330 laptop.
 
-On 10/4/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> Kernel bug hit, while running fsstress over the CIFS mounted partition on
-> the ppc64 machine
->
-> cpu 0x0: Vector: 700 (Program Check) at [c000000106ec75f0]
->
->     pc: c0000000000d69cc: .kmem_cache_free+0xac/0x154
->
->     lr: c0000000000b05f0: .mempool_free_slab+0x1c/0x30
->
->     sp: c000000106ec7870
->
->    msr: 8000000000029032
->
->   current = 0xc000000007cf64c0
->
->   paca    = 0xc0000000007ecf00
->
->     pid   = 8210, comm = fsstress
->
-> kernel BUG at mm/slab.c:592!
+`dmesg` reports:
 
-Looks like someone passed a non-slab pointer to
-mempool_free()/kmem_cache_free() so it's likely that the problem is in
-cifs, not mm.
+[   13.695045] mmcblk0: mmc0:e95c SD02G 1966080KiB
+[   13.695155]  mmcblk0: p1
+[   13.706907] BUG: unable to handle kernel paging request at virtual address 6b6b6b7a
+[   13.707026] printing eip: c01f09f0 *pde = 00000000
+[   13.707174] Oops: 0000 [#1] SMP
+[   13.707326] last sysfs file: /class/mmc_host/mmc0/mmc0:e95c/serial
+[   13.707389] Modules linked in: mmc_block sr_mod iwl4965 cdrom serio_raw mac80211 piix sdhci pcspkr psmouse ide_core iTCO_wdt iTCO_vendor_support watchdog_core watchdog_dev cfg80211 mmc_core shpchp pci_hotplug intel_agp agpgart battery ac power_supply button evdev ata_generic ext3 jbd mbcache sg sd_mod usbhid hid ahci ata_piix libata scsi_mod ohci1394 tg3 ieee1394 ehci_hcd uhci_hcd thermal processor fan fuse
+[   13.709649]
+[   13.709705] Pid: 4089, comm: mmcqd Not tainted (2.6.23-rc8-mm2 #27)
+[   13.709767] EIP: 0060:[<c01f09f0>] EFLAGS: 00010206 CPU: 0
+[   13.709831] EIP is at blk_rq_map_sg+0xc0/0x160
+[   13.709889] EAX: 04b6a000 EBX: c4a030e0 ECX: 04b6b000 EDX: c1000000
+[   13.709951] ESI: 6b6b6b6a EDI: c11535d0 EBP: c4971e30 ESP: c4971df4
+[   13.710013]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[   13.710074] Process mmcqd (pid: 4089, ti=c4970000 task=c387b660 task.ti=c4970000)
+[   13.710137] last branch before last exception/interrupt
+[   13.710249]  from c0129bf8 (vprintk+0x1d8/0x340)
+[   13.710359]  to c0129c9c (vprintk+0x27c/0x340)
+[   13.710453] Stack: c4971e08 c013d85f c48a0440 00002000 04b6c000 c3914180 00000001 00000001
+[   13.710920]        00001000 00000000 c4923700 01000000 c48ca3a0 c48f6d88 c48f6d88 c4971e40
+[   13.711390]        f8c39e58 c48f6d88 c4a9f020 c4971fbc f8c396c9 c017de04 00000004 c4971e84
+[   13.711857] Call Trace:
+[   13.711971]  [<f8c39e58>] mmc_queue_map_sg+0x28/0xc0 [mmc_block]
+[   13.712085]  [<f8c396c9>] mmc_blk_issue_rq+0x199/0x780 [mmc_block]
+[   13.712193]  [<f8c3a168>] mmc_queue_thread+0x78/0xe0 [mmc_block]
+[   13.712309]  [<c013d382>] kthread+0x42/0x70
+[   13.712415]  [<c0104e73>] kernel_thread_helper+0x7/0x14
+[   13.712523]  =======================
+[   13.712584] Code: 0c 03 4f 08 8b 7f 04 01 cf 89 7d d4 8b 3b 89 f8 29 d0 c1 f8 03 69 c0 39 8e e3 38 c1 e0 0c 03 43 08 39 45 d4 74 73 90 8d 74 26 00 <8b> 46 10 8d 4e 10 89 3e 89 c2 83 e2 fe a8 01 8b 45 e4 0f 45 ca
+[   13.715555] EIP: [<c01f09f0>] blk_rq_map_sg+0xc0/0x160 SS:ESP 0068:c4971df4
+[   13.845668] Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1c0b1, caps: 0xa04753/0x200000
+[   13.879914] input: SynPS/2 Synaptics TouchPad as /class/input/input7
+[  192.162711] Adding 2731008k swap on /dev/sda7.  Priority:-1 extents:1 across:2731008k
 
-                                             Pekka
+
+`lspci -vvv` reports:
+
+03:01.1 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22) (prog-if 01)
+        Subsystem: Dell Unknown device 0209
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 22
+        Region 0: Memory at fe4ff400 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+03:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+        Subsystem: Dell Unknown device 0209
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 4
+        Region 0: Memory at fe4ff500 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+03:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+        Subsystem: Dell Unknown device 0209
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 4
+        Region 0: Memory at fe4ff600 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+03:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
+        Subsystem: Dell Unknown device 0209
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 4
+        Region 0: Memory at fe4ff700 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+
+
