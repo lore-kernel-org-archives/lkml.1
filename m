@@ -1,122 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbXJDLjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXJDLkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761679AbXJDLjv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 07:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbXJDL3T
+	id S1760952AbXJDLkW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 07:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757907AbXJDL3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 07:29:19 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:25476 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836AbXJDL23 (ORCPT
+	Thu, 4 Oct 2007 07:29:21 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:57486 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755598AbXJDL22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 07:28:29 -0400
-Message-Id: <20071004112831.176824054@de.ibm.com>
+	Thu, 4 Oct 2007 07:28:28 -0400
+Message-Id: <20071004112830.024915273@de.ibm.com>
 References: <20071004112706.574737175@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Oct 2007 13:27:30 +0200
+Date: Thu, 04 Oct 2007 13:27:26 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 24/34] qdio: dont cast function pointers and use them to call functions.
-Content-Disposition: inline; filename=024-qdio-casts.diff
+Subject: [patch 20/34] disassembler: Remove redundant variable assignment
+Content-Disposition: inline; filename=020-dis-assign.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-According to C99 6.3.2.3 it's undefined what happens if a converted
-pointer is used to call a function whose type is not compatible with
-the pointed-to type.
-That's what the qdio code is doing, so fix it.
+There is no need to assign "0" to "hops" twice. Remove one assigment.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/cio/qdio.c |   37 +++++++++++++++++++------------------
- 1 file changed, 19 insertions(+), 18 deletions(-)
+ arch/s390/kernel/dis.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Index: quilt-2.6/drivers/s390/cio/qdio.c
+Index: quilt-2.6/arch/s390/kernel/dis.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/cio/qdio.c
-+++ quilt-2.6/drivers/s390/cio/qdio.c
-@@ -1024,9 +1024,9 @@ __qdio_outbound_processing(struct qdio_q
- }
- 
- static void
--qdio_outbound_processing(struct qdio_q *q)
-+qdio_outbound_processing(unsigned long q)
- {
--	__qdio_outbound_processing(q);
-+	__qdio_outbound_processing((struct qdio_q *) q);
- }
- 
- /************************* INBOUND ROUTINES *******************************/
-@@ -1449,9 +1449,10 @@ out:
- }
- 
- static void
--tiqdio_inbound_processing(struct qdio_q *q)
-+tiqdio_inbound_processing(unsigned long q)
- {
--	__tiqdio_inbound_processing(q, atomic_read(&spare_indicator_usecount));
-+	__tiqdio_inbound_processing((struct qdio_q *) q,
-+				    atomic_read(&spare_indicator_usecount));
- }
- 
- static void
-@@ -1494,9 +1495,9 @@ again:
- }
- 
- static void
--qdio_inbound_processing(struct qdio_q *q)
-+qdio_inbound_processing(unsigned long q)
- {
--	__qdio_inbound_processing(q);
-+	__qdio_inbound_processing((struct qdio_q *) q);
- }
- 
- /************************* MAIN ROUTINES *******************************/
-@@ -1760,12 +1761,15 @@ qdio_fill_qs(struct qdio_irq *irq_ptr, s
- 		q->handler=input_handler;
- 		q->dev_st_chg_ind=irq_ptr->dev_st_chg_ind;
- 
--		q->tasklet.data=(unsigned long)q;
- 		/* q->is_thinint_q isn't valid at this time, but
--		 * irq_ptr->is_thinint_irq is */
--		q->tasklet.func=(void(*)(unsigned long))
--			((irq_ptr->is_thinint_irq)?&tiqdio_inbound_processing:
--			 &qdio_inbound_processing);
-+		 * irq_ptr->is_thinint_irq is
-+		 */
-+		if (irq_ptr->is_thinint_irq)
-+			tasklet_init(&q->tasklet, tiqdio_inbound_processing,
-+				     (unsigned long) q);
-+		else
-+			tasklet_init(&q->tasklet, qdio_inbound_processing,
-+				     (unsigned long) q);
- 
- 		/* actually this is not used for inbound queues. yet. */
- 		atomic_set(&q->busy_siga_counter,0);
-@@ -1836,13 +1840,10 @@ qdio_fill_qs(struct qdio_irq *irq_ptr, s
- 		q->last_move_ftc=0;
- 		q->handler=output_handler;
- 
--		q->tasklet.data=(unsigned long)q;
--		q->tasklet.func=(void(*)(unsigned long))
--			&qdio_outbound_processing;
--		q->timer.function=(void(*)(unsigned long))
--			&qdio_outbound_processing;
--		q->timer.data = (long)q;
--		init_timer(&q->timer);
-+		tasklet_init(&q->tasklet, qdio_outbound_processing,
-+			     (unsigned long) q);
-+		setup_timer(&q->timer, qdio_outbound_processing,
-+			    (unsigned long) q);
- 
- 		atomic_set(&q->busy_siga_counter,0);
- 		q->timing.busy_start=0;
+--- quilt-2.6.orig/arch/s390/kernel/dis.c
++++ quilt-2.6/arch/s390/kernel/dis.c
+@@ -1243,7 +1243,6 @@ void show_code(struct pt_regs *regs)
+ 	}
+ 	/* Find a starting point for the disassembly. */
+ 	while (start < 32) {
+-		hops = 0;
+ 		for (i = 0, hops = 0; start + i < 32 && hops < 3; hops++) {
+ 			if (!find_insn(code + start + i))
+ 				break;
 
 -- 
 blue skies,
