@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbXJEFwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbXJEFx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbXJEFwA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 01:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXJEFvw
+	id S1759700AbXJEFx2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 01:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXJEFxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 01:51:52 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:60768 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbXJEFvv (ORCPT
+	Fri, 5 Oct 2007 01:53:20 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:58695 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbXJEFxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 01:51:51 -0400
-Message-ID: <4705D070.7080403@ah.jp.nec.com>
-Date: Fri, 05 Oct 2007 14:49:36 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-CC: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
-       Bernhard Walle <bwalle@suse.de>, Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 1/2] add tunable_notifier function
-References: <4704D0BA.4090507@ah.jp.nec.com> <20071005054205.GB4893@in.ibm.com>
-In-Reply-To: <20071005054205.GB4893@in.ibm.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 01:53:20 -0400
+Date: Thu, 4 Oct 2007 22:53:17 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 0/3] Make tasks always have non-zero pids
+Message-ID: <20071005055317.GB28111@us.ibm.com>
+References: <4703A44F.9020402@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4703A44F.9020402@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Oct 04, 2007 at 08:38:34PM +0900, Takenori Nagano wrote:
->> This patch adds new notifier function tunable_notifier_chain. Its base is
->> atomic_notifier_chain.
->>
->> Thanks,
->>
->> ---
->>
->> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
->>
->> ---
->> diff -uprN linux-2.6.23-rc9.orig/include/linux/notifier.h
->> linux-2.6.23-rc9/include/linux/notifier.h
->> --- linux-2.6.23-rc9.orig/include/linux/notifier.h	2007-10-02 12:24:52.000000000
->> +0900
->> +++ linux-2.6.23-rc9/include/linux/notifier.h	2007-10-03 14:48:04.288000000 +0900
->> @@ -13,6 +13,7 @@
->>  #include <linux/mutex.h>
->>  #include <linux/rwsem.h>
->>  #include <linux/srcu.h>
->> +#include <linux/kobject.h>
->>
->>  /*
->>   * Notifier chains are of four types:
->> @@ -53,6 +54,14 @@ struct notifier_block {
->>  	int priority;
->>  };
->>
->> +struct tunable_notifier_block {
->> +	struct notifier_block *nb;
->> +	struct tunable_notifier_head *head;
->> +	struct dentry *dir;
->> +	struct dentry *pri_dentry;
->> +	struct dentry *desc_dentry;
->> +};
->> +
-> 
-> Should this be tunable_atomic_notifier_block? I think there are two kind
-> of lists. One where handlers have to be atomic and other one where handlers
-> can be blocking one. I think you are making atomic one tunable. If that's
-> the case it should be reflected in the naming everywhere.
+Pavel Emelianov [xemul@openvz.org] wrote:
+| Some time ago Sukadev noticed that the vmlinux size has
 
-Hi Vivek,
+Cedric pointed it out to me first :-)
 
-Yes, it based on atomic_notifier_list. I think your opinion is reasonable.
-I'll change the name tunable_notifier to tunable_atomic_notifier.
+| grown 5Kb due to merged pid namespaces. One of the big
+| problems with it was fat inline functions. The other thing
+| was noticed by Matt - the checks for task's pid to be not
+| NULL take place and make the kernel grow due to inlining,
+| but these checks are not always needed.
+| 
+| In this series I introduce a static pid (dummy), according
+| to Matt's proposal, which is assigned to tasks during the 
+| detach_pid and transfer_pid instead of NULL. This pid lives 
+| in the init pid namespace and has the id = 0, so all the 
+| task_xid_xnr() calls will still return 0 on a dead task.
+| 
+| Places that get the struct pid from task either get it from
+| the current (in this case they will never get this dummy),
+| or use it to compare with some other value (so they will 
+| work the same for both NULL and dummy pids).
+| 
+| This saves up to 340 bytes for i386 kernel with minimal 
+| config  and probably more with more users of pids.
+| 
+| Tested on i386 and x86_64 boxes. Tasks still live and die,
+| namespaces and proc still work.
+| 
+| Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Thanks,
-
-Takenori Nagano <t-nagano@ah.jp.nec.com>
+Acked-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
