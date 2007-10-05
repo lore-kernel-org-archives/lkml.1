@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764711AbXJEWo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764018AbXJEW6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764711AbXJEWo4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 18:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762556AbXJEWot
+	id S1764018AbXJEW6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 18:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761445AbXJEW6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 18:44:49 -0400
-Received: from rwcrmhc12.comcast.net ([204.127.192.82]:39610 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762132AbXJEWos (ORCPT
+	Fri, 5 Oct 2007 18:58:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46698 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760794AbXJEW6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 18:44:48 -0400
-Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
-From: Nicholas Miell <nmiell@comcast.net>
-To: chris@pcburn.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4706AD19.4040605@pcburn.com>
-References: <4706AD19.4040605@pcburn.com>
-Content-Type: text/plain
-Date: Fri, 05 Oct 2007 15:43:50 -0700
-Message-Id: <1191624230.2695.15.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7.0.njm.1) 
+	Fri, 5 Oct 2007 18:58:07 -0400
+Message-ID: <4706C177.3010100@zytor.com>
+Date: Fri, 05 Oct 2007 15:57:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [code] Unlimited partitions, a try
+References: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr> <4706B6A8.2060800@zytor.com> <Pine.LNX.4.64.0710060022530.18723@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710060022530.18723@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-05 at 17:31 -0400, Chris Bergeron wrote:
-> Hello all,
+Jan Engelhardt wrote:
+> On Oct 5 2007 15:11, H. Peter Anvin wrote:
+>> Jan Engelhardt wrote:
+>>> 15 partitions (at least for sd_mod devices) are too few.
+>> Now when we have 20-bit minors, can't we simply recycle some of the 
+>> higher bits for additional partitions, across the board?  63 
+>> partitions seem to have been sufficient; at least I haven't heard 
+>> anyone complain about that for 15 years.
 > 
-> I've just installed a multiport serial card released by an outfit called 
-> Syba.  This is an 8 port serial-only card with an Octopus style breakout 
-> cable.  The main chipset on it is an ITE IT8871F.
-> 
-> I've got two questions on this: Is there a driver I should try force 
-> loading on it (and if so, what options to use)?  and is there any useful 
-> testing I can do to report back to the LKML on this card?
-> 
-> Thanks for your time, diagnostic output follows.
-> -- Chris
-> 
-> The following comes up from an "lspci -vv"
-> 
-> 01:06.0 Serial controller: PLX Technology, Inc. Unknown device 9016 (rev 
-> 01) (prog-if 02 [16550])
->         Subsystem: Unknown device 544e:0008
->         Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- 
-> ParErr- Stepping- SERR- FastB2B-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-> <TAbort- <MAbort- >SERR- <PERR-
->         Interrupt: pin A routed to IRQ 16
->         Region 0: I/O ports at a000 [size=64]
->         Region 1: I/O ports at a400 [size=16]
->         Region 2: I/O ports at a800 [size=16]
->         Region 3: Memory at f5000000 (32-bit, non-prefetchable) [size=4K]
->         Region 4: Memory at f5001000 (32-bit, non-prefetchable) [size=4K]
->         Region 5: Memory at f5002000 (32-bit, non-prefetchable) [size=4K]
+> GPT allows up to 128 partitions, and the linux partition code currently 
+> allows for up to MAX_PART (256). Assuming 1048576/128, that would give 
+> 8192 disks. With dynamic minor allocation and reuse, all that goes away 
+> and the limit becomes a bit less than 1048576 _partitions_.
 
-Try echo -n "10b5 9016" > /sys/bus/pci/drivers/serial/new_id and let
-Russell King (rmk+serial@arm.linux.org.uk) know if it works (or if it
-doesn't, for that matter).
+Yes, but you're proposing something with substantially higher switch 
+threshold...
 
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+	-hpa
