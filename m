@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbXJEMik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762580AbXJEMki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762278AbXJEMik (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJEMib
+	id S1762580AbXJEMki (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbXJEMkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:38:31 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:28350 "EHLO kernel.dk"
+	Fri, 5 Oct 2007 08:40:31 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:28364 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbXJEMia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:38:30 -0400
-Date: Fri, 5 Oct 2007 14:39:53 +0200
+	id S1753174AbXJEMka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 08:40:30 -0400
+Date: Fri, 5 Oct 2007 14:41:53 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Chinner <dgc@sgi.com>,
-       David Miller <davem@davemloft.net>, cebbert@redhat.com,
-       willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
-       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: SLUB performance regression vs SLAB
-Message-ID: <20071005123953.GS5711@kernel.dk>
-References: <470554D9.2050505@redhat.com> <20071004.141113.08322956.davem@davemloft.net> <47055F84.109@redhat.com> <20071004.150718.95506800.davem@davemloft.net> <20071004222356.GH23367404@sgi.com> <20071005064853.GI5711@kernel.dk> <84144f020710050219k2460631cjfd556d6eae645887@mail.gmail.com> <20071005092822.GL5711@kernel.dk> <p73bqbd6cip.fsf@bingen.suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, hch@lst.de,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] block: move ioctl conversion to compat_blkdev_ioctl
+Message-ID: <20071005124153.GT5711@kernel.dk>
+References: <20071002073943.GC5236@kernel.dk> <200710042044.14698.arnd@arndb.de> <20071005104142.GO5711@kernel.dk> <200710051430.39792.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73bqbd6cip.fsf@bingen.suse.de>
+In-Reply-To: <200710051430.39792.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05 2007, Andi Kleen wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
-> > 
-> > Writing a small test module to exercise slub/slab in various ways
-> > (allocating from all cpus freeing from one, as described) should not be
-> > too hard. Perhaps that would be enough to find this performance
-> > discrepancy between slab and slub?
+On Fri, Oct 05 2007, Arnd Bergmann wrote:
+> fs/compat_ioctl.c is still a mess and I'd prefer to get rid of it
+> over time, by moving everything to the respective drivers.
 > 
-> You could simulate that by just sending packets using unix sockets
-> between threads bound to different CPUs. Sending a packet allocates;
-> receiving deallocates.
+> A significant portion of our ioctl numbers are common to a number
+> of block drivers, so should not handle them in each driver separately,
+> but rather in the block layer.
+> 
+> In the process, we remove a few indirections from the call graph
+> for compat block ioctls. This patch is still an entirely untested
+> preview and should be split into smaller chunks.
 
-Sure, there are a host of ways to accomplish the same thing.
-
-> But it's not clear that will really simulate the cache bounce
-> environment of the database test. I don't think all passing of data
-> between CPUs using slub objects is slow.
-
-It might not, it might. The point is trying to isolate the problem and
-making a simple test case that could be used to reproduce it, so that
-Christoph (or someone else) can easily fix it.
+As before, this looks pretty good. I'll toss it in the tester and see if
+things still work.
 
 -- 
 Jens Axboe
