@@ -1,258 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbXJEDf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbXJEDhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbXJEDf2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 23:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXJEDfO
+	id S1759517AbXJEDhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 23:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXJEDg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 23:35:14 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:55691 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754563AbXJEDfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 23:35:11 -0400
-Date: Thu, 4 Oct 2007 20:34:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] RCU torture update for preemption
-Message-ID: <20071005033458.GA23372@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1191445191.11881.33.camel@localhost.localdomain>
+	Thu, 4 Oct 2007 23:36:58 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:48535 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755523AbXJEDg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 23:36:57 -0400
+Message-ID: <391555416.09807@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 5 Oct 2007 11:36:52 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: David Chinner <dgc@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to
+	indicate more io
+Message-ID: <20071005033652.GA6448@mail.ustc.edu.cn>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn> <20071003024119.GL23367404@sgi.com> <20071004022133.GA6244@mail.ustc.edu.cn> <20071004050344.GF23367404@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1191445191.11881.33.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071004050344.GF23367404@sgi.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 03, 2007 at 04:59:51PM -0400, Steven Rostedt wrote:
-> Paul,
+On Thu, Oct 04, 2007 at 03:03:44PM +1000, David Chinner wrote:
+> On Thu, Oct 04, 2007 at 10:21:33AM +0800, Fengguang Wu wrote:
+> > On Wed, Oct 03, 2007 at 12:41:19PM +1000, David Chinner wrote:
+> > > On Wed, Oct 03, 2007 at 09:34:39AM +0800, Fengguang Wu wrote:
+> > > > On Wed, Oct 03, 2007 at 07:47:45AM +1000, David Chinner wrote:
+> > > > > On Tue, Oct 02, 2007 at 04:41:48PM +0800, Fengguang Wu wrote:
+> > > > > >  		wbc.pages_skipped = 0;
+> > > > > > @@ -560,8 +561,9 @@ static void background_writeout(unsigned
+> > > > > >  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+> > > > > >  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+> > > > > >  			/* Wrote less than expected */
+> > > > > > -			congestion_wait(WRITE, HZ/10);
+> > > > > > -			if (!wbc.encountered_congestion)
+> > > > > > +			if (wbc.encountered_congestion || wbc.more_io)
+> > > > > > +				congestion_wait(WRITE, HZ/10);
+> > > > > > +			else
+> > > > > >  				break;
+> > > > > >  		}
+> > > > > 
+> > > > > Why do you call congestion_wait() if there is more I/O to issue?  If
+> > > > > we have a fast filesystem, this might cause the device queues to
+> > > > > fill, then drain on congestion_wait(), then fill again, etc. i.e. we
+> > > > > will have trouble keeping the queues full, right?
+> > > > 
+> > > > You mean slow writers and fast RAID? That would be exactly the case
+> > > > these patches try to improve.
+> > > 
+> > > I mean any writers and a fast block device (raid or otherwise).
+> > > 
+> > > > This patchset makes kupdate/background writeback more responsible,
+> > > > so that if (avg-write-speed < device-capabilities), the dirty data are
+> > > > synced timely, and we don't have to go for balance_dirty_pages().
+> > > 
+> > > Sure, but I'm asking about the effect of the patches on the
+> > > (avg-write-speed == device-capabilities) case. I agree that
+> > > they are necessary for timely syncing of data but I'm trying
+> > > to understand what effect they have on the normal write case
+> > 
+> > > (i.e. keeping the disk at full write throughput).
+> > 
+> > OK, I guess it is the focus of all your questions: Why should we sleep
+> > in congestion_wait() and possibly hurt the write throughput? I'll try
+> > to summary it:
+> > 
+> > - congestion_wait() is necessary
+> > Besides device congestions, there may be other blockades we have to
+> > wait on, e.g. temporary page locks, NFS/journal issues(I guess).
 > 
-> I ran your original preemption test of RCU torture, and after several
-> minutes, my preempt boost patch had one Preemption stall.  I then
-> disabled preemption boosting, and ran the preempt torture again, and it
-> seemed to never stall.  Something seemed strange, so I took a look.
-> 
-> Looks like you have a single thread that will run at max prio that runs
-> for 10 secs and then sleeps again. This thread seems to only push rcu
-> readers around. But it doesn't seem to do much else. That is a good test
-> to see if RCU readers can handle being pushed around, but it doesn't
-> test preemption boosting.
+> We skip locked pages in writeback, and if some filesystems have
+> blocking issues that require non-blocking writeback waits for some
+> I/O to complete before re-entering writeback, then perhaps they should be
+> setting wbc->encountered_congestion to tell writeback to back off.
 
-Looks like I shot myself in the foot by complaining about a bug...  :-/
+We have wbc->pages_skipped for that :-)
 
-	http://lkml.org/lkml/2007/6/10/234
+> The question I'm asking is that if more_io tells us we have more
+> work to do, why do we have to sleep first if the block dev is
+> able to take more I/O?
 
-With the bug, the readers weren't migrating, without it, they do.
+See below.
 
-Good catch!!!  Thank you!!!
+> > 
+> > - congestion_wait() is called only when necessary
+> > congestion_wait() will only be called we saw blockades:
+> >         if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+> >                 congestion_wait(WRITE, HZ/10);
+> >         }
+> > So in normal case, it may well write 128MB data without any waiting.
+> 
+> Sure, but wbc.more_io doesn't indicate a blockade - just that there
+> is more work to do, right?
+ 
+It's not wbc.more_io, but the context(wbc.pages_skipped > 0) indicates
+a blockade:
+        
+if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {    /* all-written or blockade... */
+        if (wbc.encountered_congestion || wbc.more_io) /* blockade! */
+                congestion_wait(WRITE, HZ/10);
+        else                                           /* all-written! */
+                break;
+}
 
-> To do that, I modified the test to create CPUS-1 preempt boost hogs (or
-> 1 if it is UP). But instead of putting it at max prio, I set it to the
-> lowest RT prio of 1. This way it's still at a higher priority than the
-> readers. I also switched the writers to run at 1+n where n increases for
-> every fake writer there is.
-> 
-> Without preempt boosting, after a couple of minutes I had 83 preemption
-> stalls.  When I turned my boosting back on, after several minutes (still
-> running as I type this) it has no preemption stalls.
-> 
-> This seems to be a good test for RCU preemption boosting.
+We can also read the whole background_writeout() logic as
 
-I am testing it out against my earlier patchset, with some encouraging
-results -- I will incorporate into the next round of my mainline patchset.
-Some questions and comments below.
+while (!done) {
+        /* sync _all_ sync-able data */
+        congestion_wait(100ms);
+}
 
-> -- Steve
-> 
-> PS. I got rid of your rcu_preeempt_task for rcu_preempt_tasks ;-)
-> 
-> (No the above is _not_ a typo)
+And an example run could be:
 
-:-/
+sync 1000MB, skipped 100MB
+congestion_wait(100ms);
+sync 100MB, skipped 10MB
+congestion_wait(100ms);
+sync 10MB, all done
 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Index: linux-2.6.23-rc9-rt1/kernel/rcutorture.c
-> ===================================================================
-> --- linux-2.6.23-rc9-rt1.orig/kernel/rcutorture.c
-> +++ linux-2.6.23-rc9-rt1/kernel/rcutorture.c
-> @@ -54,6 +54,7 @@ MODULE_AUTHOR("Paul E. McKenney <paulmck
-> 
->  static int nreaders = -1;	/* # reader threads, defaults to 2*ncpus */
->  static int nfakewriters = 4;	/* # fake writer threads */
-> +static int npreempthogs = -1; 	/* # preempt hogs to run (defaults to ncpus-1) or 1 */
->  static int stat_interval;	/* Interval between stats, in seconds. */
->  				/*  Defaults to "only at end of test". */
->  static int verbose;		/* Print more debug info. */
-> @@ -90,9 +91,11 @@ MODULE_PARM_DESC(torture_type, "Type of 
->  static char printk_buf[4096];
-> 
->  static int nrealreaders;
-> +static int nrealpreempthogs;
+Note that it's far from "wait 100ms for every 4MB" (which is merely
+the worst possible case).
 
-I made the above be a module parameter.  This OK?
+> > - congestion_wait() won't hurt write throughput
+> > When not congested, congestion_wait() will be wake up on each write
+> > completion.
+> 
+> What happens if the I/O we issued has already completed before we
+> got back up to the congestion_wait() call? We'll spend 100ms
+> sleeping when we shouldn't have and throughput goes down by 10% on
+> every occurrence....
 
->  static struct task_struct *writer_task;
->  static struct task_struct **fakewriter_tasks;
->  static struct task_struct **reader_tasks;
-> +static struct task_struct **rcu_preempt_tasks;
->  static struct task_struct *stats_task;
->  static struct task_struct *shuffler_task;
-> 
-> @@ -264,7 +267,6 @@ static void rcu_torture_deferred_free(st
->  	call_rcu(&p->rtort_rcu, rcu_torture_cb);
->  }
-> 
-> -static struct task_struct *rcu_preeempt_task;
->  static unsigned long rcu_torture_preempt_errors;
-> 
->  static int rcu_torture_preempt(void *arg)
-> @@ -274,7 +276,7 @@ static int rcu_torture_preempt(void *arg
->  	time_t gcstart;
->  	struct sched_param sp;
-> 
-> -	sp.sched_priority = MAX_RT_PRIO - 1;
-> +	sp.sched_priority = 1;
->  	err = sched_setscheduler(current, SCHED_RR, &sp);
->  	if (err != 0)
->  		printk(KERN_ALERT "rcu_torture_preempt() priority err: %d\n",
-> @@ -297,24 +299,43 @@ static int rcu_torture_preempt(void *arg
->  static long rcu_preempt_start(void)
->  {
->  	long retval = 0;
-> +	int i;
-> 
-> -	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
-> -					"rcu_torture_preempt");
-> -	if (IS_ERR(rcu_preeempt_task)) {
-> -		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
-> -		retval = PTR_ERR(rcu_preeempt_task);
-> -		rcu_preeempt_task = NULL;
-> +	rcu_preempt_tasks = kzalloc(nrealpreempthogs * sizeof(rcu_preempt_tasks[0]),
-> +				GFP_KERNEL);
-> +	if (rcu_preempt_tasks == NULL) {
-> +		VERBOSE_PRINTK_ERRSTRING("out of memory");
-> +		retval = -ENOMEM;
-> +		goto out;
->  	}
-> +
-> +	for (i=0; i < nrealpreempthogs; i++) {
-> +		rcu_preempt_tasks[i] = kthread_run(rcu_torture_preempt, NULL,
-> +						"rcu_torture_preempt");
-> +		if (IS_ERR(rcu_preempt_tasks[i])) {
-> +			VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
-> +			retval = PTR_ERR(rcu_preempt_tasks[i]);
-> +			rcu_preempt_tasks[i] = NULL;
-> +			break;
-> +		}
-> +	}
-> + out:
->  	return retval;
->  }
-> 
->  static void rcu_preempt_end(void)
->  {
-> -	if (rcu_preeempt_task != NULL) {
-> -		VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
-> -		kthread_stop(rcu_preeempt_task);
-> +	int i;
-> +	if (rcu_preempt_tasks) {
-> +		for (i=0; i < nrealpreempthogs; i++) {
-> +			if (rcu_preempt_tasks[i] != NULL) {
-> +				VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
-> +				kthread_stop(rcu_preempt_tasks[i]);
-> +			}
-> +			rcu_preempt_tasks[i] = NULL;
-> +		}
-> +		kfree(rcu_preempt_tasks);
->  	}
-> -	rcu_preeempt_task = NULL;
->  }
-> 
->  static int rcu_preempt_stats(char *page)
-> @@ -613,10 +634,20 @@ rcu_torture_writer(void *arg)
->  static int
->  rcu_torture_fakewriter(void *arg)
->  {
-> +	struct sched_param sp;
-> +	long id = (long) arg;
-> +	int err;
->  	DEFINE_RCU_RANDOM(rand);
-> 
->  	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
-> -	set_user_nice(current, 19);
-> +	/*
-> +	 * Set up at a higher prio than the readers.
-> +	 */
-> +	sp.sched_priority = 1 + id;
-> +	err = sched_setscheduler(current, SCHED_RR, &sp);
-> +	if (err != 0)
-> +		printk(KERN_ALERT "rcu_torture_writer() priority err: %d\n",
-> +		       err);
+Ah, that was out of my imagination. Maybe we could do with
 
-The idea here is to force inheritance, to force the writer to continue
-pushing grace periods even when the hogs are running, or both?
+        if (wbc.more_io)
+                congestion_wait(WRITE, 1);
 
->  	do {
->  		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
-> @@ -849,9 +880,11 @@ rcu_torture_print_module_parms(char *tag
->  {
->  	printk(KERN_ALERT "%s" TORTURE_FLAG
->  		"--- %s: nreaders=%d nfakewriters=%d "
-> +	        "npreempthogs=%d "
->  		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
->  		"shuffle_interval=%d preempt_torture=%d\n",
->  		torture_type, tag, nrealreaders, nfakewriters,
-> +		nrealpreempthogs,
->  		stat_interval, verbose, test_no_idle_hz, shuffle_interval,
->  		preempt_torture);
->  }
-> @@ -925,7 +958,7 @@ rcu_torture_cleanup(void)
->  static int __init
->  rcu_torture_init(void)
->  {
-> -	int i;
-> +	long i;
->  	int cpu;
->  	int firsterr = 0;
->  	static struct rcu_torture_ops *torture_ops[] =
-> @@ -953,6 +986,12 @@ rcu_torture_init(void)
->  	rcu_torture_print_module_parms("Start of test");
->  	fullstop = 0;
-> 
-> +	if (npreempthogs >= 0)
-> +		nrealpreempthogs = npreempthogs;
-> +	else
-> +		nrealpreempthogs = num_online_cpus() == 1 ? 1 :
-> +			num_online_cpus() - 1;
+It's at least 10 times better.
 
-OK -- the idea here is to leave at least one CPU to respond to keyboard
-and mouse?  I end up with all the readers getting shoved to the left-over
-CPU.  I am experimenting with ways of synchronizing the hogs and also
-allowing synchronized idle time...
+> if we've got more work to do, then we should do it without an
+> arbitrary, non-deterministic delay being inserted. If the delay is
+> needed to prevent he system from "going mad" (whatever tht means),
+> then what's the explaination for the system "going mad"?
 
-> +
->  	/* Set up the freelist. */
+"going mad" means "busy waiting".
+
+> > Note that MAX_WRITEBACK_PAGES=1024 and
+> > /sys/block/sda/queue/max_sectors_kb=512(for me),
+> > which means we are gave the chance to sync 4MB on every 512KB written,
+> > which means we are able to submit write IOs 8 times faster than the
+> > device capability. congestion_wait() is a magical timer :-)
 > 
->  	INIT_LIST_HEAD(&rcu_torture_freelist);
-> @@ -1000,7 +1039,7 @@ rcu_torture_init(void)
->  	}
->  	for (i = 0; i < nfakewriters; i++) {
->  		VERBOSE_PRINTK_STRING("Creating rcu_torture_fakewriter task");
-> -		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, NULL,
-> +		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, (void*)i,
->  		                                  "rcu_torture_fakewriter");
->  		if (IS_ERR(fakewriter_tasks[i])) {
->  			firsterr = PTR_ERR(fakewriter_tasks[i]);
+> So, with Jens Axboe's sglist chaining, that single I/O could now
+> be up to 32MB on some hardware. IOWs, we push 1024 pages, and that
+> could end up as a single I/O being issued to disk.
 > 
+> Your magic just broke. :/
+
+Hmm, congestion_wait(WRITE, 1) could re-establish the balance ;-)
+Which waits <10ms for HZ=100.
+ 
+> > > > So for your question of queue depth, the answer is: the queue length
+> > > > will not build up in the first place. 
+> > > 
+> > > Which queue are you talking about here? The block deivce queue?
+> > 
+> > Yes, the elevator's queues.
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I think this is the wrong thing to be doing and is detrimental
+> to I/o perfomrance because it wil reduce elevator efficiency.
 > 
+> The elevator can only work efficiently if we allow the queues to
+> build up. The deeper the queue, the better the elevator can sort the
+> I/o requests and keep the device at maximum efficiency.  If we don't
+> push enough I/O into the queues the we miss opportunities to combine
+> adjacent I/Os and reduce the seek load of writeback. Also, a shallow
+> queue will run dry if we don't get back to it in time which is
+> possible if we wait for I/o to complete before we go and flush
+> more....
+
+Sure, the queues should be filled as fast as possible.
+How fast can we fill the queue? Let's measure it:
+
+//generated by the patch below
+
+[  871.430700] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 54289 global 29911 0 0 wc _M tw -12 sk 0
+[  871.444718] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 53253 global 28857 0 0 wc _M tw -12 sk 0
+[  871.458764] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 52217 global 27834 0 0 wc _M tw -12 sk 0
+[  871.472797] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 51181 global 26780 0 0 wc _M tw -12 sk 0
+[  871.486825] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 50145 global 25757 0 0 wc _M tw -12 sk 0
+[  871.500857] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 49109 global 24734 0 0 wc _M tw -12 sk 0
+[  871.514864] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 48073 global 23680 0 0 wc _M tw -12 sk 0
+[  871.528889] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 47037 global 22657 0 0 wc _M tw -12 sk 0
+[  871.542894] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 46001 global 21603 0 0 wc _M tw -12 sk 0
+[  871.556927] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 44965 global 20580 0 0 wc _M tw -12 sk 0
+[  871.570961] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 43929 global 19557 0 0 wc _M tw -12 sk 0
+[  871.584992] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 42893 global 18503 0 0 wc _M tw -12 sk 0
+[  871.599005] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 41857 global 17480 0 0 wc _M tw -12 sk 0
+[  871.613027] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 40821 global 16426 0 0 wc _M tw -12 sk 0
+[  871.628626] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 39785 global 15403 961 0 wc _M tw -12 sk 0
+[  871.644439] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 38749 global 14380 1550 0 wc _M tw -12 sk 0
+[  871.660267] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 37713 global 13326 2573 0 wc _M tw -12 sk 0
+[  871.676236] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 36677 global 12303 3224 0 wc _M tw -12 sk 0
+[  871.692021] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 35641 global 11280 4154 0 wc _M tw -12 sk 0
+[  871.707824] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 34605 global 10226 4929 0 wc _M tw -12 sk 0
+[  871.723638] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 33569 global 9203 5735 0 wc _M tw -12 sk 0
+[  871.739708] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 32533 global 8149 6603 0 wc _M tw -12 sk 0
+[  871.756407] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 31497 global 7126 7409 0 wc _M tw -12 sk 0
+[  871.772165] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 30461 global 6103 8246 0 wc _M tw -12 sk 0
+[  871.788035] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 29425 global 5049 9052 0 wc _M tw -12 sk 0
+[  871.803896] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 28389 global 4026 9982 0 wc _M tw -12 sk 0
+[  871.820427] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 27353 global 2972 10757 0 wc _M tw -12 sk 0
+[  871.836728] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 26317 global 1949 11656 0 wc _M tw -12 sk 0
+[  871.853286] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 25281 global 895 12431 0 wc _M tw -12 sk 0
+[  871.868762] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 24245 global 58 13051 0 wc __ tw 168 sk 0
+
+It's an Intel Core 2 2.93GHz CPU and a SATA disk.
+The trace shows that
+- there's no congestion_wait() called in wb_kupdate()
+- it takes wb_kupdate() ~15ms to sync every 4MB 
+
+So I guess congestion_wait(WRITE, 1) will be more than enough.
+
+However, wb_kupdate() is syncing the data a bit slow(4*1000/15=266MB/s),
+could it be because of a lot of cond_resched()?
+
+
+Fengguang
+---
+ mm/page-writeback.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+--- linux-2.6.23-rc8-mm2.orig/mm/page-writeback.c
++++ linux-2.6.23-rc8-mm2/mm/page-writeback.c
+@@ -98,6 +98,26 @@ EXPORT_SYMBOL(laptop_mode);
+ 
+ /* End of sysctl-exported parameters */
+ 
++#define writeback_debug_report(n, wbc) do {                               \
++	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
++} while (0)
++
++void __writeback_debug_report(long n, struct writeback_control *wbc,
++		const char *file, int line, const char *func)
++{
++	printk("%s %d %s: %s(%d) %ld "
++			"global %lu %lu %lu "
++			"wc %c%c tw %ld sk %ld\n",
++			file, line, func,
++			current->comm, current->pid, n,
++			global_page_state(NR_FILE_DIRTY),
++			global_page_state(NR_WRITEBACK),
++			global_page_state(NR_UNSTABLE_NFS),
++			wbc->encountered_congestion ? 'C':'_',
++			wbc->more_io ? 'M':'_',
++			wbc->nr_to_write,
++			wbc->pages_skipped);
++}
+ 
+ static void background_writeout(unsigned long _min_pages);
+ 
+@@ -404,6 +424,7 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			get_dirty_limits(&background_thresh, &dirty_thresh,
+ 				       &bdi_thresh, bdi);
++			writeback_debug_report(pages_written, &wbc);
+ 		}
+ 
+ 		/*
+@@ -568,6 +589,7 @@ static void background_writeout(unsigned
+ 		wbc.pages_skipped = 0;
+ 		writeback_inodes(&wbc);
+ 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
++		writeback_debug_report(min_pages, &wbc);
+ 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+ 			/* Wrote less than expected */
+ 			if (wbc.encountered_congestion)
+@@ -643,6 +665,7 @@ static void wb_kupdate(unsigned long arg
+ 		wbc.encountered_congestion = 0;
+ 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+ 		writeback_inodes(&wbc);
++		writeback_debug_report(nr_to_write, &wbc);
+ 		if (wbc.nr_to_write > 0) {
+ 			if (wbc.encountered_congestion)
+ 				congestion_wait(WRITE, HZ/10);
+
