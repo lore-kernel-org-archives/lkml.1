@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbXJET5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763868AbXJEUEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932205AbXJET5I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 15:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762273AbXJET4y
+	id S1763868AbXJEUEa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 16:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759853AbXJEUEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 15:56:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47058 "EHLO mx1.redhat.com"
+	Fri, 5 Oct 2007 16:04:22 -0400
+Received: from mail.suse.de ([195.135.220.2]:34915 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761872AbXJET4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 15:56:51 -0400
-Date: Fri, 5 Oct 2007 15:56:34 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Hugh Dickins <hugh@veritas.com>, David Rientjes <rientjes@google.com>,
-       Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Keir Fraser <keir@xensource.com>,
+	id S1759624AbXJEUEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 16:04:21 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Timur Tabi <timur@freescale.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-Message-ID: <20071005155634.7d677970@cuia.boston.redhat.com>
-In-Reply-To: <47069315.8030802@goop.org>
-References: <470596C4.8060804@goop.org>
-	<Pine.LNX.4.64.0710051146300.25518@blonde.wat.veritas.com>
-	<20071005145828.17ba9c69@cuia.boston.redhat.com>
-	<47069315.8030802@goop.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com>
+	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>
+	<470691EB.7020209@freescale.com>
+	<Pine.LNX.4.64.0710052138070.13406@fbirervta.pbzchgretzou.qr>
+	<470694E0.7030408@freescale.com>
+X-Yow: It's a lot of fun being alive...  I wonder if my bed is made?!?
+Date: Fri, 05 Oct 2007 22:04:18 +0200
+In-Reply-To: <470694E0.7030408@freescale.com> (Timur Tabi's message of "Fri\,
+	05 Oct 2007 14\:47\:44 -0500")
+Message-ID: <jed4vtnxa5.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Oct 2007 12:40:05 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Timur Tabi <timur@freescale.com> writes:
 
-> Well, isn't the correct fix to make Xen take all the pagetable locks
-> while pinning/unpinning?  Adding exception handling to
-> test_and_clear_bit would solve this particular race, but are there
-> others (either now or potentially)?  Seems fragile.
+> I'm writing a driver that talks to hardware that has a shift register.
+> The register can be shifted either left or right, so all the bits
+> obviously have to be in order, but it can be either order.
 
-You're right, holding the pagetable lock(s) across pinning/unpinning
-operations would avoid the problem too.
+Bit addressing is strictly internal to the cpu, the smallest unit that
+the cpu can address externally is a byte.  The only place where bit
+order matters on the C level is in a bitfield that is overlayed over a
+block of memory, but this is not visible outside the cpu.
 
-While we do not care about the accessed bit, there are similar operations
-going on with the dirty bit - which is a lot more important :)
+> What I want to do is to have the driver detect when byte-endianness
+> doesn't match bit-endianness when it writes the the word to a
+> memory-mapped device.
+
+The bit mapping on your device is strictly internal to the device and
+has nothing to do with bit order on the C level.
+
+Andreas.
 
 -- 
-All Rights Reversed
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
