@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbXJEJTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXJEJXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbXJEJTj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 05:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXJEJTa
+	id S1760695AbXJEJXg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 05:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXJEJX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 05:19:30 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:38849 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755434AbXJEJT3 (ORCPT
+	Fri, 5 Oct 2007 05:23:29 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:42740 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbXJEJX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 05:19:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=YHcJP5ui944jwgGjQrBcRFSha4fJkBAeR655iln6YmmHXjORwfU1Ha2NO8QYUrOHBgecIe49gGoe2AhyMeOLJi3oecrVWBVaSgAcuerpoHRkUmjbuRJYRYPGfWV8g/0R9OWs8bU1QaDs6HFyydxs01I+VpKu2WdKyi3oIIC4Dx0=
-Message-ID: <84144f020710050219k2460631cjfd556d6eae645887@mail.gmail.com>
-Date: Fri, 5 Oct 2007 12:19:28 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: SLUB performance regression vs SLAB
-Cc: "David Chinner" <dgc@sgi.com>, "David Miller" <davem@davemloft.net>,
-       cebbert@redhat.com, willy@linux.intel.com, clameter@sgi.com,
-       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com
-In-Reply-To: <20071005064853.GI5711@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <470554D9.2050505@redhat.com>
-	 <20071004.141113.08322956.davem@davemloft.net>
-	 <47055F84.109@redhat.com>
-	 <20071004.150718.95506800.davem@davemloft.net>
-	 <20071004222356.GH23367404@sgi.com> <20071005064853.GI5711@kernel.dk>
-X-Google-Sender-Auth: fda9d7c1f2c49342
+	Fri, 5 Oct 2007 05:23:28 -0400
+To: a.p.zijlstra@chello.nl
+CC: akpm@linux-foundation.org, miklos@szeredi.hu, wfg@mail.ustc.edu.cn,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-reply-to: <1191572520.22357.42.camel@twins> (message from Peter Zijlstra on
+	Fri, 05 Oct 2007 10:22:00 +0200)
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	 <20071004145640.18ced770.akpm@linux-foundation.org>
+	 <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+	 <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+	 <E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
+	 <20071004164801.d8478727.akpm@linux-foundation.org>
+	 <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
+	 <20071004174851.b34a3220.akpm@linux-foundation.org> <1191572520.22357.42.camel@twins>
+Message-Id: <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Oct 2007 11:22:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> So how do we end up with more writeback pages than that? should we teach
+> pdflush about these limits as well?
 
-On 10/5/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> I'd like to second Davids emails here, this is a serious problem. Having
-> a reproducible test case lowers the barrier for getting the problem
-> fixed by orders of magnitude. It's the difference between the problem
-> getting fixed in a day or two and it potentially lingering for months,
-> because email ping-pong takes forever and "the test team has moved on to
-> other tests, we'll let you know the results of test foo in 3 weeks time
-> when we have a new slot on the box" just removing any developer
-> motivation to work on the issue.
+Ugh.
 
-What I don't understand is that why don't the people who _have_ access
-to the test case fix the problem? Unlike slab, slub is not a pile of
-crap that only Christoph can hack on...
+I think we should rather fix vmscan to not spin when all pages of a
+zone are already under writeout.  Which is the _real_ problem,
+according to Andrew.
 
-                                   Pekka
+Miklos
