@@ -1,47 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763363AbXJEP32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762884AbXJEPbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763363AbXJEP32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 11:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbXJEP3T
+	id S1762884AbXJEPbc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 11:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbXJEPbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 11:29:19 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60383 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757409AbXJEP3R (ORCPT
+	Fri, 5 Oct 2007 11:31:23 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43874 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756770AbXJEPbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 11:29:17 -0400
-Date: Fri, 5 Oct 2007 16:29:13 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, viro@ftp.linux.org.uk,
-       torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/32] IGET: Mark iget() and read_inode() as being obsolete [try #2]
-Message-ID: <20071005152913.GA6356@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-	torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <9519.1191597148@redhat.com> <20071005144739.GC3072@infradead.org> <20071004155602.2814.47731.stgit@warthog.procyon.org.uk> <20071004155632.2814.55633.stgit@warthog.procyon.org.uk> <17504.1191597664@redhat.com>
+	Fri, 5 Oct 2007 11:31:21 -0400
+Subject: [PATCH 1/2]  i_version update - vfs part
+From: Cordenner jean noel <jean-noel.cordenner@bull.net>
+Reply-To: jean-noel.cordenner@bull.net
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Organization: BULL S.A.
+Date: Fri, 05 Oct 2007 17:28:08 +0200
+Message-Id: <1191598088.24615.45.camel@frecb002711.frec.bull.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17504.1191597664@redhat.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/10/2007 17:37:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/10/2007 17:37:34,
+	Serialize complete at 05/10/2007 17:37:34
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 04:21:04PM +0100, David Howells wrote:
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> > > Why do you move it out of line?
-> > 
-> > Because otherwise every file that gets compiled that includes linux/fs.h will
-> > emit a warning that the implementation of that function is deprecated.
-> 
-> Or, rather, that read_inode() is deprecated.
+Hi, 
 
-So what about not actually marking it deprectated?  The last patch in the
-series rips it out anyway (right so!)
+This is an update of the i_version patch. 
+The i_version field is a 64bit counter that is set on every inode 
+creation and that is incremented every time the inode data is modified 
+(similarly to the "ctime" time-stamp). 
+The aim is to fulfill a NFSv4 requirement for rfc3530: 
+"5.5.  Mandatory Attributes - Definitions 
+Name        #    DataType   Access   Description 
+___________________________________________________________________ 
+change        3    uint64       READ     A value created by the 
+        server that the client can use to determine if file 
+        data, directory contents or attributes of the object 
+        have been modified.  The servermay return the object's 
+        time_metadata attribute for this attribute's value but 
+        only if the filesystem object can not be updated more 
+        frequently than the resolution of time_metadata. 
+"
+
+This first part deals with adding a flag in the super block and incrementing the i_version in the vfs.
+
+Signed-off-by: Jean Noel Cordenner <jean-noel.cordenner@bull.net>
+--- 
+ fs/inode.c         |   23 +++++++++++++++++++++++
+ fs/libfs.c         |   12 ++++++++++++
+ include/linux/fs.h |    3 +++
+ 3 files changed, 38 insertions(+)
+
+Index: linux-2.6.23-rc8-ext4-i_version/fs/inode.c
+===================================================================
+--- linux-2.6.23-rc8-ext4-i_version.orig/fs/inode.c	2007-09-26 14:41:41.000000000 +0200
++++ linux-2.6.23-rc8-ext4-i_version/fs/inode.c	2007-10-05 16:14:41.000000000 +0200
+@@ -1216,6 +1216,24 @@
+ EXPORT_SYMBOL(touch_atime);
+ 
+ /**
++ *	inode_inc_iversion	-	increments i_version
++ *	@inode: inode that need to be updated
++ *
++ *	Every time the inode is modified, the i_version field
++ *	will be incremented.
++ *	The filesystem has to be mounted with i_version flag
++ *
++ */
++
++void inode_inc_iversion(struct inode *inode)
++{
++	spin_lock(&inode->i_lock);
++	inode->i_version++;
++	spin_unlock(&inode->i_lock);
++}
++EXPORT_SYMBOL(inode_inc_iversion);
++
++/**
+  *	file_update_time	-	update mtime and ctime time
+  *	@file: file accessed
+  *
+@@ -1249,6 +1267,11 @@
+ 		sync_it = 1;
+ 	}
+ 
++	if (IS_I_VERSION(inode)) {
++		inode_inc_iversion(inode);
++		sync_it = 1;
++	}
++
+ 	if (sync_it)
+ 		mark_inode_dirty_sync(inode);
+ }
+Index: linux-2.6.23-rc8-ext4-i_version/fs/libfs.c
+===================================================================
+--- linux-2.6.23-rc8-ext4-i_version.orig/fs/libfs.c	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.23-rc8-ext4-i_version/fs/libfs.c	2007-09-26 14:51:08.000000000 +0200
+@@ -255,6 +255,10 @@
+ 	struct inode *inode = old_dentry->d_inode;
+ 
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
++	if (IS_I_VERSION(inode)) {
++		inode_inc_iversion(inode);
++		inode_inc_iversion(dir);
++	}
+ 	inc_nlink(inode);
+ 	atomic_inc(&inode->i_count);
+ 	dget(dentry);
+@@ -287,6 +291,10 @@
+ 	struct inode *inode = dentry->d_inode;
+ 
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
++	if (IS_I_VERSION(inode)) {
++		inode_inc_iversion(inode);
++		inode_inc_iversion(dir);
++	}
+ 	drop_nlink(inode);
+ 	dput(dentry);
+ 	return 0;
+@@ -323,6 +331,10 @@
+ 
+ 	old_dir->i_ctime = old_dir->i_mtime = new_dir->i_ctime =
+ 		new_dir->i_mtime = inode->i_ctime = CURRENT_TIME;
++	if (IS_I_VERSION(old_dir)) {
++		inode_inc_iversion(old_dir);
++		inode_inc_iversion(new_dir);
++	}
+ 
+ 	return 0;
+ }
+Index: linux-2.6.23-rc8-ext4-i_version/include/linux/fs.h
+===================================================================
+--- linux-2.6.23-rc8-ext4-i_version.orig/include/linux/fs.h	2007-09-26 14:46:15.000000000 +0200
++++ linux-2.6.23-rc8-ext4-i_version/include/linux/fs.h	2007-09-26 14:51:08.000000000 +0200
+@@ -123,6 +123,7 @@
+ #define MS_SLAVE	(1<<19)	/* change to slave */
+ #define MS_SHARED	(1<<20)	/* change to shared */
+ #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
++#define MS_I_VERSION	(1<<22)	/* Update inode i_version field */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
+@@ -172,6 +173,7 @@
+ 					((inode)->i_flags & (S_SYNC|S_DIRSYNC)))
+ #define IS_MANDLOCK(inode)	__IS_FLG(inode, MS_MANDLOCK)
+ #define IS_NOATIME(inode)   __IS_FLG(inode, MS_RDONLY|MS_NOATIME)
++#define IS_I_VERSION(inode)	__IS_FLG(inode, MS_I_VERSION)
+ 
+ #define IS_NOQUOTA(inode)	((inode)->i_flags & S_NOQUOTA)
+ #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
+@@ -1284,6 +1286,7 @@
+ 	mark_inode_dirty(inode);
+ }
+ 
++extern void inode_inc_iversion(struct inode *inode);
+ extern void touch_atime(struct vfsmount *mnt, struct dentry *dentry);
+ static inline void file_accessed(struct file *file)
+ {
+
+
