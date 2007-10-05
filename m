@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbXJEOvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762962AbXJEPAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763405AbXJEOvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 10:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762582AbXJEOvM
+	id S1762962AbXJEPAg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 11:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXJEPA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 10:51:12 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55105 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756313AbXJEOvK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 10:51:10 -0400
-Subject: Re: 2.6.23-rc9: Oops in cache_alloc_refill()  mm/slab.c
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Valerie Clement <valerie.clement@bull.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>, cmm@us.ibm.com
-In-Reply-To: <47063EF3.4050302@bull.net>
-References: <4705113A.7030908@bull.net>
-	 <1191534231.6106.99.camel@dyn9047017100.beaverton.ibm.com>
-	 <47063EF3.4050302@bull.net>
-Content-Type: text/plain
-Date: Fri, 05 Oct 2007 07:54:17 -0700
-Message-Id: <1191596057.6106.106.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 11:00:27 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:57585 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751421AbXJEPA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 11:00:26 -0400
+Date: Fri, 5 Oct 2007 16:59:55 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Pavel Machek <pavel@ucw.cz>
+cc: "H. Peter Anvin" <hpa@zytor.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: video resume stuff
+In-Reply-To: <20071005073238.GA19065@atrey.karlin.mff.cuni.cz>
+Message-ID: <Pine.LNX.4.64.0710051648440.25413@twin.jikos.cz>
+References: <20071004130513.GA16076@elf.ucw.cz> <470511A9.4060705@zytor.com>
+ <20071005073238.GA19065@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-05 at 15:41 +0200, Valerie Clement wrote:
-> Badari Pulavarty wrote:
-> > On Thu, 2007-10-04 at 18:13 +0200, Valerie Clement wrote:
-> >> While running ffsb tests on my ext4 filesystem, I got an Oops in 
-> >> cache_alloc_refill().
-> >> I turned on SLAB debugging and here is the message I got:
-> >>
-> >> slab: Internal list corruption detected in cache 'buffer_head'(30), 
-> >> slabp ffff81007e100100(1515870810). Hexdump:
-> > 
-> > slabp->inuse = 1515870810 looks bogus. Is this easily reproducible ?
-> 
-> Hi Badari,
-> Thanks for your answer.
-> I didn't reproduce it without the latest ext4 patches. So I suspect a 
-> bug in one of them.
-> But how debugging this?
-> Which other debug traces can I turn on?
+On Fri, 5 Oct 2007, Pavel Machek wrote:
 
-Let me understand. You applied latest ext4 patchsets ? If so, Mingming
-has some slab-cleanup changes in the patchset. You can try backing them
-out and see. 
+> > I suggest we tackle this *after* the x86 merge.
+> Well, we still have the regression on jikos' strange system, and I would 
+> like to understand what is going on there.
 
-Thanks,
-Badari
+Sorry for this taking too long. Finally I had the time to play with this 
+again, so here goes the current summary. I have a system here, that:
 
+- with 1d67953f2bda8876045c24ae58841f27d9bb7572 (just before the setup 
+  code rewrite), resumes nicely in VGA console 
+  (acpi_sleep=s3_bios,s3_mode kernel parameter is needed), everything 
+  works
+
+- with c39736823232bc3ca113c8228fa852c09fba300e (just after the setup code 
+  rewrite), VGA text console is garbled after resume - looks like the 
+  video RAM contains some strange data (patterns from BIOS post can be 
+  recognized, there are some various-colored stripes across the screen, 
+  etc). The machine also seems to be frozen (no keyboard LEDs working, 
+  etc).
+
+- with 2.6.23-rc9, the video doesn't come up at all, I can't even see the 
+  garbled picture any more - the display stays blank, the LED diod is 
+  yellow (i.e. looks like completely no signal from VGA card). On the 
+  other hand, the machine seems to work otherwise
+
+-- 
+Jiri Kosina
