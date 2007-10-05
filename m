@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762671AbXJEAB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762219AbXJEAKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762671AbXJEAB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 20:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbXJEABv
+	id S1762219AbXJEAKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 20:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbXJEAKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 20:01:51 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:40157 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbXJEABt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 20:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bvxwhx2QD+OXAvVpIKRu2Xxm14b0e8QsTevwkWlmaviw0qtiioRsC26kuDp3yH7aRWiSpJdCmRBK91HFQw9DXH6rAmI5JxOebKvwDtZ6EcF0SVrjQs38EH5HNny5VKI0KPsLdf1pDdnSV2x5G0eFSEQoPyvCNuscEiW6q3fI42A=
-Message-ID: <29495f1d0710041701g4ed73441ie583058c78f95857@mail.gmail.com>
-Date: Thu, 4 Oct 2007 17:01:47 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Tony Breeds" <tony@bakeyournoodle.com>
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Cc: "Michael Ellerman" <michael@ellerman.id.au>,
-       "Linas Vepstas" <linas@austin.ibm.com>, linuxppc-dev@ozlabs.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071003011909.GG9814@bakeyournoodle.com>
+	Thu, 4 Oct 2007 20:10:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59700 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755585AbXJEAKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 20:10:37 -0400
+Message-ID: <470580F7.4030100@redhat.com>
+Date: Thu, 04 Oct 2007 20:10:31 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: William Cattey <wdc@MIT.EDU>
+CC: Andi Kleen <andi@firstfloor.org>, Chuck Anderson <cra@WPI.EDU>,
+       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: vm86.c audit_syscall_exit() call trashes registers
+References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu> <20070814212858.GB23308@one.firstfloor.org> <07759638-DE7C-4341-A642-D611A897614F@MIT.EDU> <20070814214622.GE23308@one.firstfloor.org> <6655DD8B-D9C6-495D-9E22-2FDF6B375C9D@MIT.EDU> <20070814221927.GH23308@one.firstfloor.org> <9D5ACA40-5F33-4F49-8255-D51F554889E7@MIT.EDU> <4702758A.20205@redhat.com> <42824DD7-AD58-4C2C-A15C-C88EBFAC2C56@MIT.EDU>
+In-Reply-To: <42824DD7-AD58-4C2C-A15C-C88EBFAC2C56@MIT.EDU>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	 <20070924123531.GC30855@shadowen.org>
-	 <20071002232819.GN4338@austin.ibm.com>
-	 <20071003002646.GD9814@bakeyournoodle.com>
-	 <1191371416.8073.1.camel@concordia>
-	 <20071003011909.GG9814@bakeyournoodle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/2/07, Tony Breeds <tony@bakeyournoodle.com> wrote:
-> On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
->
-> > I realise it'll make the patch bigger, but this doesn't seem like a
-> > particularly good name for the variable anymore.
->
-> Sure, what about?
->
-> Clarify when RTAS logging is enabled.
->
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+On 10/04/2007 07:58 PM, William Cattey wrote:
+> 
+> Sadly, the effect of the patch is the same as the most recent candidate
+> patch from Jeremy Fitzhardinge:  The EDID transfer still comes up all
+> zeros.
+> 
 
-For what it's worth, on a different ppc64 box, this resolves a similar
-panic for me.
+I think maybe a better question is: why does read_edid still work?
+The X server might be making some invalid assumption about system
+state. Comparing the code the two programs use could provide some clues.
 
-Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
-Thanks,
-Nish
