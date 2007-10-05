@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXJEQsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbXJEQ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbXJEQsg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 12:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbXJEQs1
+	id S1760898AbXJEQ42 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 12:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbXJEQ4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 12:48:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:57641 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755242AbXJEQs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 12:48:26 -0400
-Message-ID: <47066AD0.4010102@goop.org>
-Date: Fri, 05 Oct 2007 09:48:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Keir Fraser <keir@xensource.com>
-CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
-       Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-References: <C32C1AD6.167B3%keir@xensource.com>
-In-Reply-To: <C32C1AD6.167B3%keir@xensource.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 12:56:21 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55209 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbXJEQ4U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 12:56:20 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
+Cc: linux-kernel@vger.kernel.org, Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 3/3] CHECKFILES: new small shell script to check multiple source files
+Date: Fri,  5 Oct 2007 12:56:08 -0400
+Message-Id: <11916033693587-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
+References: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keir Fraser wrote:
-> I didn't think that nobbling config options for particular pv_ops
-> implementations was acceptable? I'm rather out of the loop though, and could
-> be wrong.
->   
+Examples:
+	./scripts/checkfiles fs/foo/bar.c
+	./scripts/checkfiles fs/foo/*.c
+	./scripts/checkfiles fs/foo	# check all sources under fs/foo
+	./scripts/checkfiles .		# check entire kernel
 
-As a workaround it would be OK.  As a dependency, perhaps.
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+---
+ scripts/checkfiles |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
+ create mode 100644 scripts/checkfiles
 
-> The PREEMPT_BITS limitation is a good argument for at least taking the pte
-> locks in small batches though (small batches is preferable to one-by-one
-> since we will want to batch the make-readonly-and-pin hypercall requests to
-> amortise the cost of the hypervisor trap).
->   
+diff --git a/scripts/checkfiles b/scripts/checkfiles
+new file mode 100644
+index 0000000..bd5d3f0
+--- /dev/null
++++ b/scripts/checkfiles
+@@ -0,0 +1,34 @@
++#!/bin/sh
++# (c) 2007, Erez Zadok <ezk@cs.sunysb.edu> (initial version)
++# Licensed under the terms of the GNU GPL License version 2
++#
++# Check source files for compliance with coding standards, using terse
++# output in the style that g/cc produces.  This output can be easily parsed
++# within text editors (e.g., emacs/vim) which can produce a split text
++# screen showing in one screen the error message, and in another screen the
++# corresponding source file, with the cursor placed on the offending line.
++# See for example the documentation for Emacs's "next-error" command, often
++# bound to M-x ` (ESC x back-tick).
++
++# Usage: checkfiles file [files...]
++#        if "file" is a directory, will check all *.[hc] files recursively
++
++# check usage
++usage() {
++	echo "Usage: checkfiles file [files...]"
++	echo "(if \"file\" is a directory, check recursively for all C sources/headers)"
++	exit 1
++}
++if test -z "$1" ; then
++	usage
++fi
++if ! test -f scripts/checkpatch.pl ; then
++	echo "checkfiles: must run from top level source tree"
++	exit 1
++fi
++
++# check coding-style compliance of each source file found, using terse output
++find "$@" -type f -name '*.[hc]' | \
++while read f ; do
++	diff -u /dev/null $f | perl scripts/checkpatch.pl -t -
++done
+-- 
+1.5.2.2
 
-Hm, that's a good point.  The pagetable permissions changes are batched
-more or less asynchronously from the actual loop structure; that will
-complicate adding the locking.
-
-       J
