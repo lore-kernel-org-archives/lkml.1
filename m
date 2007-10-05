@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764488AbXJEVN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXJEVRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764488AbXJEVN3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 17:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763366AbXJEVNK
+	id S932278AbXJEVRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 17:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763457AbXJEVRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 17:13:10 -0400
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:64370 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763034AbXJEVNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 17:13:09 -0400
-Date: Fri, 5 Oct 2007 23:13:06 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: Various problems on Axis 700 Lite VIA C7
-Message-ID: <20071005231306.447e91f8@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.60.0710052215510.10392@poirot.grange>
-References: <Pine.LNX.4.44L0.0710051021230.4446-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.60.0710052215510.10392@poirot.grange>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 17:17:25 -0400
+Received: from ns.suse.de ([195.135.220.2]:39613 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763034AbXJEVRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 17:17:25 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Timur Tabi <timur@freescale.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com>
+	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>
+	<470691EB.7020209@freescale.com>
+	<Pine.LNX.4.64.0710052138070.13406@fbirervta.pbzchgretzou.qr>
+	<470694E0.7030408@freescale.com> <jed4vtnxa5.fsf@sykes.suse.de>
+	<47069982.9030009@freescale.com>
+X-Yow: I'm thinking about DIGITAL READ-OUT systems and
+ computer-generated IMAGE FORMATIONS..
+Date: Fri, 05 Oct 2007 23:17:22 +0200
+In-Reply-To: <47069982.9030009@freescale.com> (Timur Tabi's message of "Fri\,
+	05 Oct 2007 15\:07\:30 -0500")
+Message-ID: <jezlyxmfbx.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Guennadi,
+Timur Tabi <timur@freescale.com> writes:
 
-On Fri, 5 Oct 2007 22:22:08 +0200 (CEST), Guennadi Liakhovetski wrote:
-> Ok, after a day of biseting, it turns out to be a compiler problem. The 
-> gcc-3.3.5 produces at least these two problems (Oops on i2c-viapro probe 
-> and disabled IRQs in USB), whereas 4.1.2 has no problem so far. Up to now 
-> 3.3.5 had no problem compiling 2.6.20+ kernels here, for example, for P-II 
-> SMP. Does it at all look realistic that such "random" run-time problems 
-> are caused by a miscompilation?...
+> Then I don't understand that point of defining __LITTLE_ENDIAN_BITFIELD.
+> What does it mean for a C-level bitfield ordering to be little-endian if
+> the processor is BIG_ENDIAN?
 
-Miscompilation can do about anything. There have been a number of other
-reports about compiler issues lately. Ingo Molnar here:
-http://kerneltrap.org/Linux/Compiler_Optimization_Bugs_and_World_Domination
-Me here:
-http://marc.info/?l=linux-kernel&m=119127234804440&w=2
+Byte endianess and bit endianness are orthogonal concecpts.  A cpu can
+have insns using both little and big endian bit addressing (btst
+vs. bftst on m68k).  The bitfield ordering is a property of the ABI and
+may even be different from how the cpu numbers the bits in its ISA.
 
-The trend I am seeing is that we are optimizing for, and testing with,
-recent compilers (gcc 4.1 and later) and that older compilers tend to
-break, even though compilers as old as gcc 3.2 are still supposed to be
-supported. Not good.
+Andreas.
 
 -- 
-Jean Delvare
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
