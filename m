@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764078AbXJEUV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXJEUYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764078AbXJEUV5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 16:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762066AbXJEUVv
+	id S1764101AbXJEUYH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 16:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762304AbXJEUX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 16:21:51 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57246 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762051AbXJEUVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 16:21:50 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19OmUx8a59OUZB15CmjTaY/Qm7XYGDQ5H6nMfA4R2
-	n56gFFC2M2hasm
-Date: Fri, 5 Oct 2007 22:22:08 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>
-cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: Various problems on Axis 700 Lite VIA C7
-In-Reply-To: <Pine.LNX.4.44L0.0710051021230.4446-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.60.0710052215510.10392@poirot.grange>
-References: <Pine.LNX.4.44L0.0710051021230.4446-100000@iolanthe.rowland.org>
+	Fri, 5 Oct 2007 16:23:56 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:60218 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761666AbXJEUXz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 16:23:55 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Cute feature: colored printk output
+Date: Fri, 5 Oct 2007 13:23:47 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E27016250DE@az33exm24.fsl.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Cute feature: colored printk output
+Thread-Index: AcgHg+r4s8OAMtIUQZqNAf/CsHBGwQACVz6A
+References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr>
+From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi Jan,
 
-Ok, after a day of biseting, it turns out to be a compiler problem. The 
-gcc-3.3.5 produces at least these two problems (Oops on i2c-viapro probe 
-and disabled IRQs in USB), whereas 4.1.2 has no problem so far. Up to now 
-3.3.5 had no problem compiling 2.6.20+ kernels here, for example, for P-II 
-SMP. Does it at all look realistic that such "random" run-time problems 
-are caused by a miscompilation?...
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Jan 
+> Engelhardt
+> Sent: Friday, October 05, 2007 2:14 PM
+> To: Linux Kernel Mailing List
+> Cc: Andrew Morton
+> Subject: [PATCH] Cute feature: colored printk output
+> 
+> 
+> Colored kernel message output
+> 
+> Let's work more on Linux's cuteness! 
+> [http://lkml.org/lkml/2007/10/4/431]
+> The following patch makes it possible to give kernel messages a
+> selectable color which helps to distinguish it from other noise,
+> such as boot messages. NetBSD has it, OpenBSD has it, FreeBSD to some
+> extent, so I think Linux should too.
+> 
+> Inspired by cko (http://freshmeat.net/p/cko/), but independently
+> written, later contributed forth and back.
+> 
+> Already posted at: http://lkml.org/lkml/2007/4/1/162
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+
+I like it. A somewhat related nice feature would be to print different
+loglevels with different colors.
+
+
+Cheers,
+Emil.
