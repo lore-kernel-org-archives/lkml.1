@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbXJELBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbXJELMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760988AbXJELBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXJELB1
+	id S1757634AbXJELMq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXJELMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:01:27 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:56206 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754537AbXJELB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:01:27 -0400
-Message-ID: <391582087.27602@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 5 Oct 2007 19:01:23 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-Subject: Re: BUG on unloading the fuse module
-Message-ID: <20071005110123.GA5489@mail.ustc.edu.cn>
-References: <391574553.18064@ustc.edu.cn> <E1Idjd8-0002rY-00@dorka.pomaz.szeredi.hu> <391581094.26735@ustc.edu.cn> <E1Idkor-0002v6-00@dorka.pomaz.szeredi.hu>
+	Fri, 5 Oct 2007 07:12:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47654 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751940AbXJELMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 07:12:34 -0400
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Chinner <dgc@sgi.com>,
+       David Miller <davem@davemloft.net>, cebbert@redhat.com,
+       willy@linux.intel.com, clameter@sgi.com, nickpiggin@yahoo.com.au,
+       hch@lst.de, mel@skynet.ie, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+References: <470554D9.2050505@redhat.com>
+	<20071004.141113.08322956.davem@davemloft.net>
+	<47055F84.109@redhat.com>
+	<20071004.150718.95506800.davem@davemloft.net>
+	<20071004222356.GH23367404@sgi.com> <20071005064853.GI5711@kernel.dk>
+	<84144f020710050219k2460631cjfd556d6eae645887@mail.gmail.com>
+	<20071005092822.GL5711@kernel.dk>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 05 Oct 2007 13:12:30 +0200
+In-Reply-To: <20071005092822.GL5711@kernel.dk>
+Message-ID: <p73bqbd6cip.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Idkor-0002v6-00@dorka.pomaz.szeredi.hu>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 12:54:09PM +0200, Miklos Szeredi wrote:
-> > > > In 2.6.23-rc8-mm2, the fuse module always bugs on unloading.
-> > > 
-> > > It's fixed in Greg's patch queue.
-> > > 
-> > > This patch against -mm will also fix it.
-> > 
-> > Oh no, it panics:
+Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> How about this one?
+> Writing a small test module to exercise slub/slab in various ways
+> (allocating from all cpus freeing from one, as described) should not be
+> too hard. Perhaps that would be enough to find this performance
+> discrepancy between slab and slub?
 
-Yes, it did the trick.
+You could simulate that by just sending packets using unix sockets 
+between threads bound to different CPUs. Sending a packet allocates; receiving 
+deallocates.
 
-Thank you!
-Fengguang
-> ---
-> 
-> Index: linux/lib/kobject.c
-> ===================================================================
-> --- linux.orig/lib/kobject.c	2007-10-02 17:20:04.000000000 +0200
-> +++ linux/lib/kobject.c	2007-10-05 12:52:52.000000000 +0200
-> @@ -498,18 +498,18 @@ void kobject_cleanup(struct kobject * ko
->  	struct kobj_type * t = get_ktype(kobj);
->  	struct kset * s = kobj->kset;
->  	struct kobject * parent = kobj->parent;
-> -	const char *k_name = kobj->k_name;
->  
->  	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
-> -	kobj->k_name = NULL;
-> -	if (t && t->release)
-> +	if (t && t->release) {
-> +		const char *k_name = kobj->k_name;
-> +		kobj->k_name = NULL;
->  		t->release(kobj);
-> -	else
-> +		kfree(k_name);
-> +	} else
->  		pr_debug("kobject '%s' does not have a release() function, "
->  			"if this is not a directory kobject, it is broken "
->  			"and must be fixed.\n",
-> -			k_name);
-> -	kfree(k_name);
-> +			kobj->k_name);
->  	if (s)
->  		kset_put(s);
->  	kobject_put(parent);
+But it's not clear that will really simulate the cache bounce environment
+of the database test. I don't think all passing of data between CPUs 
+using slub objects is slow.
 
+-Andi
