@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbXJEKwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbXJEKyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759399AbXJEKwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 06:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJEKwQ
+	id S1759583AbXJEKyg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 06:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJEKy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 06:52:16 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:44161 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbXJEKwP (ORCPT
+	Fri, 5 Oct 2007 06:54:29 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:39747 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXJEKy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 06:52:15 -0400
-Date: Fri, 5 Oct 2007 11:52:09 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Steven J. Hill" <sjhill@realitydiluted.com>,
-       veerasena reddy <veerasena_b@yahoo.co.in>,
-       linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: unresoved symbol _gp_disp
-Message-ID: <20071005105209.GB1404@linux-mips.org>
-References: <230962.51223.qm@web8408.mail.in.yahoo.com> <20071004173928.GA32033@real.realitydiluted.com> <p73k5q268d4.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73k5q268d4.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 5 Oct 2007 06:54:28 -0400
+To: wfg@mail.ustc.edu.cn
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       akpm@linux-foundation.org
+In-reply-to: <391581094.26735@ustc.edu.cn> (message from Fengguang Wu on Fri,
+	5 Oct 2007 18:44:50 +0800)
+Subject: Re: BUG on unloading the fuse module
+References: <391574553.18064@ustc.edu.cn> <E1Idjd8-0002rY-00@dorka.pomaz.szeredi.hu> <391581094.26735@ustc.edu.cn>
+Message-Id: <E1Idkor-0002v6-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Oct 2007 12:54:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 08:29:59PM +0200, Andi Kleen wrote:
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: 04 Oct 2007 20:29:59 +0200
-> To: "Steven J. Hill" <sjhill@realitydiluted.com>
-> Cc: veerasena reddy <veerasena_b@yahoo.co.in>,
-> 	linux-mips <linux-mips@linux-mips.org>,
-> 	"linux-kernel.org" <linux-kernel@vger.kernel.org>
-> Subject: Re: unresoved symbol _gp_disp
-> Content-Type: text/plain; charset=us-ascii
+> > > In 2.6.23-rc8-mm2, the fuse module always bugs on unloading.
+> > 
+> > It's fixed in Greg's patch queue.
+> > 
+> > This patch against -mm will also fix it.
 > 
-> "Steven J. Hill" <sjhill@realitydiluted.com> writes:
-> 
-> > > I have written a loadble module ( which gets complied
-> > > along with kernel) which does some floating point
-> > > operation.
-> > >  
-> > NO FLOATING POINT in the kernel PERIOD. Either use integer
-> > operations, or redo your software architecture and do the
-> > floating point in userspace.
-> 
-> You can use floating point; you just have to make sure to 
-> save the FP context explicitely and disable preemption. Details
-> on how to do this vary by architecture.
-> 
-> The problem is that FP code typically takes often a lot of CPU time
-> and it is quite antisocial to disable preemption for a long time
-> because that impacts real time latency for everybody.
-> 
-> Besides many uses can be relatively easily rewritten to fixed
-> point.
+> Oh no, it panics:
 
-He said he was using software floating point which from a kernel perspective
-really just is integer stuff anyway.
+How about this one?
 
-Hardware floating point in a MIPS kernel would be require solving a few
-interesting problems; the kernel floating point assist software is only
-designed to support userspace.  Or alternativle well written FP code
-that avoids all the corner cases which would normally be handled by the
-kernel fp software.
+Thanks,
+Miklos
+---
 
-The biggest argument against floating point use in the kernel is that most
-of the time it's an indicator for poor division of work between kernel
-and userspace.
-
-  Ralf
+Index: linux/lib/kobject.c
+===================================================================
+--- linux.orig/lib/kobject.c	2007-10-02 17:20:04.000000000 +0200
++++ linux/lib/kobject.c	2007-10-05 12:52:52.000000000 +0200
+@@ -498,18 +498,18 @@ void kobject_cleanup(struct kobject * ko
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+ 	struct kobject * parent = kobj->parent;
+-	const char *k_name = kobj->k_name;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+-	kobj->k_name = NULL;
+-	if (t && t->release)
++	if (t && t->release) {
++		const char *k_name = kobj->k_name;
++		kobj->k_name = NULL;
+ 		t->release(kobj);
+-	else
++		kfree(k_name);
++	} else
+ 		pr_debug("kobject '%s' does not have a release() function, "
+ 			"if this is not a directory kobject, it is broken "
+ 			"and must be fixed.\n",
+-			k_name);
+-	kfree(k_name);
++			kobj->k_name);
+ 	if (s)
+ 		kset_put(s);
+ 	kobject_put(parent);
