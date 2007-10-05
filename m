@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764064AbXJEXLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764378AbXJEXOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764064AbXJEXLZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 19:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758268AbXJEXLP
+	id S1764378AbXJEXOb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 19:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXJEXOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 19:11:15 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:40169 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757721AbXJEXLN (ORCPT
+	Fri, 5 Oct 2007 19:14:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58900 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761530AbXJEXOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 19:11:13 -0400
-X-IronPort-AV: E=Sophos;i="4.21,237,1188802800"; 
-   d="scan'208";a="532044632"
-To: "Sean Hefty" <sean.hefty@intel.com>
-Cc: <general@lists.openfabrics.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-X-Message-Flag: Warning: May contain useful information
-References: <adahclymos8.fsf@cisco.com>
-	<000401c7f632$c993e8e0$65cc180a@amr.corp.intel.com>
-	<adatzpyl1mm.fsf@cisco.com>
-	<000001c7f6f7$074584e0$9c98070a@amr.corp.intel.com>
-	<adaprzxgyoi.fsf@cisco.com>
-	<000601c80525$0b661f30$ff0da8c0@amr.corp.intel.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 05 Oct 2007 16:10:59 -0700
-In-Reply-To: <000601c80525$0b661f30$ff0da8c0@amr.corp.intel.com> (Sean Hefty's message of "Tue, 2 Oct 2007 11:50:04 -0700")
-Message-ID: <adave9lkvi4.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Oct 2007 23:11:00.0136 (UTC) FILETIME=[FE3ADA80:01C807A4]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Fri, 5 Oct 2007 19:14:22 -0400
+Date: Fri, 5 Oct 2007 16:13:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jackson <pj@sgi.com>
+Cc: nickpiggin@yahoo.com.au, randy.dunlap@oracle.com, menage@google.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       mingo@elte.hu
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag fixes
+Message-Id: <20071005161305.af27f452.akpm@linux-foundation.org>
+In-Reply-To: <20071003114401.32194.73464.sendpatchset@jackhammer.engr.sgi.com>
+References: <20071003114401.32194.73464.sendpatchset@jackhammer.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I tested this by simulating a slow passive side responder, and it worked as
- > expected for those tests.  Using an MRA does add another MAD to the CM exchange,
- > which is why it is sent only after seeing a duplicate request.  Alternatively,
- > we can take the OFED module parameter patch.
+On Wed, 03 Oct 2007 04:44:01 -0700
+Paul Jackson <pj@sgi.com> wrote:
 
-What the heck, I added this for 2.6.24.  If it doesn't work out we can
-back it out.
+> From: Paul Jackson <pj@sgi.com>
+> 
+> Thanks to Randy Dunlap for the review that caught
+> some of the following.
+> 
+> Some bug fixes and coding style fixes:
+>  1) only one statement per line, please.
+>  2) don't need to guard kfree() calls with a NULL check
+>  3) use kfifo_free, not kfree, if it came from kfifo_alloc
+>  4) a pair of curly brackets got lost along the way
+>  5) missing .read, .write callbacks for sched_load_balance
+> 
+> Without (3), one kfifo buffer memory was leaked each time
+> one rebuilt scheduler domains
+> 
+> Without (4), the current task was summarily killed each
+> time one tried to rebuild scheduler domains
+> 
+> Without (5), every read or write system call on a per-cpuset
+> special file 'sched_load_balance' failed, EINVAL.
+> 
+> Signed-off-by: Paul Jackson <pj@sgi.com>
+> 
+> ---
+> 
+> Andrew,
+> 
+>   These fixes go right after the patch they fix:
+>     [PATCH] cpuset and sched domains: sched_load_balance flag
 
- - R.
+I'm getting 100% rejects from this - probably whatever patch it is
+patching got lost or unrecognisably mangled.
