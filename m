@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760666AbXJELfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbXJELhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760666AbXJELfT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXJELfH
+	id S1761072AbXJELhF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXJELgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:35:07 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45804 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751940AbXJELfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:35:05 -0400
-Message-ID: <391584104.28633@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 5 Oct 2007 19:35:00 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-Subject: Re: BUG on unloading the fuse module
-Message-ID: <20071005113500.GA10052@mail.ustc.edu.cn>
-References: <391574553.18064@ustc.edu.cn> <E1Idjd8-0002rY-00@dorka.pomaz.szeredi.hu> <391581094.26735@ustc.edu.cn> <E1Idkor-0002v6-00@dorka.pomaz.szeredi.hu> <391582087.27602@ustc.edu.cn> <E1IdlQc-0002wt-00@dorka.pomaz.szeredi.hu>
+	Fri, 5 Oct 2007 07:36:55 -0400
+Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:55294 "EHLO
+	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752011AbXJELgy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 07:36:54 -0400
+Message-ID: <470621A9.10004@gmail.com>
+Date: Fri, 05 Oct 2007 14:36:09 +0300
+From: Anssi Hannula <anssi.hannula@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IdlQc-0002wt-00@dorka.pomaz.szeredi.hu>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Ben Gamari <ben@mw0.ath.cx>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.23-rc9 regression] commit 4f01a757 broke HAL input support
+References: <1191198186.13785.21.camel@mercury>	 <1191477703.6408.20.camel@mercury> <200710042311.27864.arvidjaar@mail.ru>	 <200710042240.07039.dmitry.torokhov@gmail.com> <1191557863.6579.0.camel@mercury>
+In-Reply-To: <1191557863.6579.0.camel@mercury>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 01:33:10PM +0200, Miklos Szeredi wrote:
-> > > > > > In 2.6.23-rc8-mm2, the fuse module always bugs on unloading.
-> > > > > 
-> > > > > It's fixed in Greg's patch queue.
-> > > > > 
-> > > > > This patch against -mm will also fix it.
-> > > > 
-> > > > Oh no, it panics:
-> > > 
-> > > How about this one?
-> > 
-> > Yes, it did the trick.
+Ben Gamari wrote:
+> On Thu, 2007-10-04 at 22:40 -0400, Dmitry Torokhov wrote:
+>> 4f01a757e75f2a3cab2bab89c4176498963946b9.
 > 
-> Thanks.
-> 
-> It seems, some kobject ->release() function is freeing kobj->k_name,
-> so we need to free it, and set it to NULL _before_ calling
-> ->release().
+> The change that Dmitry proposed would still require
+> CONFIG_SYSFS_DEPRECATED, right?
 
-Agreed.
+What proposed change?
+The changeset you quote is already applied.
 
-> Greg, can you please fix that in your queue?
+Andrey Borzenkov wrote:
+>> Actually this specific problem was introduced by 
+>> 4f01a757e75f2a3cab2bab89c4176498963946b9. This commit seems to have 
+>> completely disassociated eventX from corresponding inputY
+>> 
+>> To summarize.
+>> 
+>> 1. Any kernel with SYSFS_DEPRECATED unset
+>> 
+>> events are sent for /devices/...
+>> /devices/.../eventX is direct child of /devices/.../inputY
+>> HAL checks for parent of eventX, finds inputY and is happy
+>> 
+>> 2. SYSFS_DEPRECATED=y, pre-2.6.23 kernel
+>> 
+>> events are sent for /class/...
+>> /class/.../eventX is direct child of /class/.../inputY
+>> HAL checks for parent of eventX, finds inputY and works
+>> 
+>> 3. SYSFS_DEPRECATED=y, 2.6.23 before commit 
+>> 4f01a757e75f2a3cab2bab89c4176498963946b9. 
+>> 
+>> events are sent for /class/...
+>> /class/.../eventX is *not* child of /class/.../inputY
+>> /class/.../eventX/device points to .../inputY
+>> HAL checks for .../device link, finds inputY and works
+>> 
+>> 4. SYSFS_DEPRECATED=y, 2.6.23 after commit 
+>> 4f01a757e75f2a3cab2bab89c4176498963946b9. 
+>> 
+>> /class/.../eventX is *not* child of /class/.../inputY
+>> /class/.../eventX/device points to some physical device
+>> HAL finds inputY neither as ../inputY nor as device link and breaks
+>> 
+>> But what is worse, now the only way to find which inputY corresponds to which 
+>> eventX is to scan the whole /class/input, check for device link and compare. 
 
-Acked-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+>> I am afraid that we have to bite the bullet and just accept that 2.6.23 breaks 
+>> user space this way or that. Frankly fixing path_id seems to be the least 
+>> evil.
 
+I'd hate to see such breakage. IMO the sysfs structure of input devices 
+should be made compatible with both HAL and udev, with both 
+CONFIG_SYSFS_DEPRECATED and without it, as in 2.6.22 and before.
+
+>> Is it possible to fall back to /class/input/inputX/eventY if SYSFS_DEPRECATED 
+>> is set?
+
+Hopefully.
+
+-- 
+Anssi Hannula
