@@ -1,63 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbXJENMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbXJENNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761130AbXJENMQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJENL6
+	id S1762450AbXJENNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXJENNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:11:58 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:58940 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbXJENL5 (ORCPT
+	Fri, 5 Oct 2007 09:13:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:17648 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755781AbXJENNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:11:57 -0400
-Date: Fri, 5 Oct 2007 15:11:15 +0200
-From: maximilian attems <max@stro.at>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: e1000e oops
-Message-ID: <20071005131115.GA31453@stro.at>
+	Fri, 5 Oct 2007 09:13:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lR9myqEMB9ZzKeGYtbIJ/1Q6bJsAQZem5UHQORr3mRF2I/eskf/7GWfx1PzkWHZ1yDDJfZVbh1lABK1j10ILjWv7YfPyYIPZu/OHaJKM170fr27yOKqgO/hHGRDdv8Mh2eruYpTSKSabVYzQnEvd49KCJOUYHQBOpziBFw4KXmk=
+Message-ID: <19f34abd0710050613y62fe6417lb47dc2bc7ad69b28@mail.gmail.com>
+Date: Fri, 5 Oct 2007 15:13:09 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [RFC][PATCH] New message-logging API (kprint)
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>,
+       "Dick Streefland" <dick.streefland@altium.nl>,
+       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Emil Medve" <Emilian.Medve@freescale.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "linux@horizon.com" <linux@horizon.com>,
+       "Miguel Ojeda" <maxextreme@gmail.com>
+In-Reply-To: <200710042059.25721.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1191528247.13580.11.camel@grianne>
+	 <20071004131703.25046db9.randy.dunlap@oracle.com>
+	 <200710042059.25721.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux tau 2.6.23-rc8-mm2-686 #1 SMP Wed Oct 3 23:56:32 CEST 2007 i686
-GNU/Linux
+On 10/5/07, Rob Landley <rob@landley.net> wrote:
+> On Thursday 04 October 2007 3:17:03 pm Randy Dunlap wrote:
+> > On Thu, 04 Oct 2007 22:04:07 +0200 Vegard Nossum wrote:
+> > > Description: This patch largely implements the kprint API as previously
+> > > posted to the LKML and described in Documentation/kprint.txt (see patch).
+> > >
+> > > The main purpose of this change is provide a unified logging API to the
+> > > kernel and at the same time make it easy to add extensions, now and
+> > > later.
+> > >
+> > > My changes and additions are as follows:
+> >
+> > $ diffstat -p1 -w70 kprint.patch
+> ...
+> >  40 files changed, 1660 insertions(+), 72 deletions(-)
+>
+> I started this thread by posting an idea I had for shrinking the kernel by
+> allowing more code to be configured out.  The API change was exactly one new
+> parameter, with a direct 1->1 mapping from the old API to the new one, which
+> was trivial to convert and which the compiler would catch if you missed one.
+>
+> The result of the discussion is a patch adding 1600 lines to the kernel,
+> without removing anything.
 
-eth0 renamed to eth1
-sysfs: duplicate filename 'eth1' can not be created
-WARNING: at fs/sysfs/dir.c:433 sysfs_add_one()
- [<c0104f9c>] dump_trace+0x68/0x1d5
- [<c0105121>] show_trace_log_lvl+0x18/0x2c
- [<c0105b9b>] show_trace+0xf/0x11
- [<c0105c81>] dump_stack+0x12/0x14
- [<c01ac02e>] sysfs_add_one+0x54/0xb8
- [<c01acc2a>] sysfs_create_link+0xb3/0x125
- [<c023c05f>] device_rename+0x13d/0x196
- [<c025a970>] dev_change_name+0x137/0x205
- [<c025b12c>] dev_ioctl+0x357/0x44f
- [<c017b05f>] do_ioctl+0x1f/0x62
- [<c017b2d9>] vfs_ioctl+0x237/0x249
- [<c017b330>] sys_ioctl+0x45/0x5d
- [<c0103eda>] syscall_call+0x7/0xb
- [<b7edbde4>] 0xb7edbde4
- =======================
-net eth1: device_rename: sysfs_create_symlink failed (-17)
+Of course. If you look at the diffstat, as kindly posted by Randy,
+you'll notice that about 500-600 of those lines are documentation,
+configuration files, and headers.
 
-00:19.0 Ethernet controller [0200]: Intel Corporation 82801I (ICH9 Family) Gigabit Ethernet Controller [8086:294c] (rev 02)
-        Subsystem: Intel Corporation Unknown device [8086:0001]
-        Flags: bus master, fast devsel, latency 0, IRQ 218
-        Memory at 50380000 (32-bit, non-prefetchable) [size=128K]
-        Memory at 503a4000 (32-bit, non-prefetchable) [size=4K]
-        I/O ports at 20e0 [size=32]
-        Capabilities: [c8] Power Management version 2
-        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
-        Capabilities: [e0] Vendor Specific Information
+What's really a concern (and a valid argument) is the overhead
+introduced for each call to printk(); the defconfig kernel on x86
+increases with about 210K. I will try to improve this.
+
+> Last I checked, the current prink() worked just fine.  Why is this _not_ the
+> dreaded "infrastructure in search of a use"?  What exactly can we _not_ do
+> with the current code?  What does this allow us to remove and simplify?
+
+With the current code, localisation is not possible to do in a sane
+way. My change is a "catch all" in desired features -- not just
+removing some unwanted printks.
 
 
-no idea if aboves belongs to netdev or sysfs dep.
-
--- 
-maks
+Vegard
