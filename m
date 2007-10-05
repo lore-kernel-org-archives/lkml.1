@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXJEVRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbXJEVW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932278AbXJEVRd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 17:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763457AbXJEVRZ
+	id S1764083AbXJEVW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 17:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXJEVWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 17:17:25 -0400
-Received: from ns.suse.de ([195.135.220.2]:39613 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763034AbXJEVRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 17:17:25 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Timur Tabi <timur@freescale.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
-References: <4706822D.4070509@freescale.com>
-	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>
-	<470691EB.7020209@freescale.com>
-	<Pine.LNX.4.64.0710052138070.13406@fbirervta.pbzchgretzou.qr>
-	<470694E0.7030408@freescale.com> <jed4vtnxa5.fsf@sykes.suse.de>
-	<47069982.9030009@freescale.com>
-X-Yow: I'm thinking about DIGITAL READ-OUT systems and
- computer-generated IMAGE FORMATIONS..
-Date: Fri, 05 Oct 2007 23:17:22 +0200
-In-Reply-To: <47069982.9030009@freescale.com> (Timur Tabi's message of "Fri\,
-	05 Oct 2007 15\:07\:30 -0500")
-Message-ID: <jezlyxmfbx.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Fri, 5 Oct 2007 17:22:17 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35013 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbXJEVWQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 17:22:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: maximilian attems <max@stro.at>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Subject: Re: e1000e oops, sysfs related?
+References: <20071005131115.GA31453@stro.at> <47066838.7030209@intel.com>
+Date: Fri, 05 Oct 2007 15:21:41 -0600
+In-Reply-To: <47066838.7030209@intel.com> (Auke Kok's message of "Fri, 05 Oct
+	2007 09:37:12 -0700")
+Message-ID: <m1zlyxgsuy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi <timur@freescale.com> writes:
+"Kok, Auke" <auke-jan.h.kok@intel.com> writes:
 
-> Then I don't understand that point of defining __LITTLE_ENDIAN_BITFIELD.
-> What does it mean for a C-level bitfield ordering to be little-endian if
-> the processor is BIG_ENDIAN?
+> maximilian attems wrote:
+>> Linux tau 2.6.23-rc8-mm2-686 #1 SMP Wed Oct 3 23:56:32 CEST 2007 i686
+>> GNU/Linux
+>> 
+>> eth0 renamed to eth1
+>> sysfs: duplicate filename 'eth1' can not be created
+>> WARNING: at fs/sysfs/dir.c:433 sysfs_add_one()
+>>  [<c0104f9c>] dump_trace+0x68/0x1d5
+>>  [<c0105121>] show_trace_log_lvl+0x18/0x2c
+>>  [<c0105b9b>] show_trace+0xf/0x11
+>>  [<c0105c81>] dump_stack+0x12/0x14
+>>  [<c01ac02e>] sysfs_add_one+0x54/0xb8
+>>  [<c01acc2a>] sysfs_create_link+0xb3/0x125
+>>  [<c023c05f>] device_rename+0x13d/0x196
+>>  [<c025a970>] dev_change_name+0x137/0x205
+>>  [<c025b12c>] dev_ioctl+0x357/0x44f
+>>  [<c017b05f>] do_ioctl+0x1f/0x62
+>>  [<c017b2d9>] vfs_ioctl+0x237/0x249
+>>  [<c017b330>] sys_ioctl+0x45/0x5d
+>>  [<c0103eda>] syscall_call+0x7/0xb
+>>  [<b7edbde4>] 0xb7edbde4
+>>  =======================
+>> net eth1: device_rename: sysfs_create_symlink failed (-17)
+>> 
 
-Byte endianess and bit endianness are orthogonal concecpts.  A cpu can
-have insns using both little and big endian bit addressing (btst
-vs. bftst on m68k).  The bitfield ordering is a property of the ABI and
-may even be different from how the cpu numbers the bits in its ISA.
+> I'm seeing the same when removing/inserting network drivers frequently, ixgbe
+> does
+> the same thing: (git://davem/net-2.6.24)
+>
+> ixgbe 0000:01:00.0: (PCI Express:2.5Gb/s:Width x8) 00:1a:64:3b:81:c3
+> ixgbe 0000:01:00.0: MAC: 0, PHY: 0, PBA No: d95854-003
+> ixgbe 0000:01:00.0: Intel(R) 10 Gigabit Network Connection
+> net eth2: device_rename: sysfs_create_symlink failed (-17)
+>
+> but I can't make it throw a stack trace.
+>
+> perhaps one of the sysfs knowledgeable people can take a look at this. We might
+> be
+> doing something wrong in e1000e / ixgbe at setup time, but I have no idea what.
 
-Andreas.
+To reach this path you need to run the equivalent of:
+ip link set eth0 name eth1
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I have seen this a bit and my memory is that the error is generally
+harmless.  It is trying to create a symlink with the same name as the
+directory or something like that.  Which makes with one setting of
+CONFIG_SYSFS_DEPRECATED but not the other.
+
+So I don't believe this is a driver bug, and I suspect the renames
+come from using something like /etc/mactab which forces ethernet
+devices with specific mac addresses to specific ethernet device
+names.
+
+With whatever is sitting in my development tree I'm pretty certain
+this error isn't present.  I don't recall if I did anything specific
+to fix this though.  In particular I don't recall if this still
+happens with gregkh's queued sysfs patches applied.
+
+Eric
