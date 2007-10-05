@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXJEOZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763137AbXJEO0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762967AbXJEOZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 10:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXJEOZv
+	id S1763137AbXJEO0V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 10:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbXJEO0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 10:25:51 -0400
-Received: from smtp1.netcabo.pt ([212.113.174.28]:24823 "EHLO
-	exch01smtp11.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755242AbXJEOZu (ORCPT
+	Fri, 5 Oct 2007 10:26:10 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:37490
+	"EHLO ghaskins-t60p.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762856AbXJEO0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 10:25:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsG1AD7mBUdViow7PGdsb2JhbACBWYVEhxIBAQEBHRg
-Date: Fri, 5 Oct 2007 15:25:43 +0100
-From: Luciano Rocha <strange@nsk.no-ip.org>
-To: linux-kernel@vger.kernel.org
-Subject: can't change euid 0 to uid != running user
-Message-ID: <20071005142541.GA9224@bit.office.eurotux.com>
-Mail-Followup-To: Luciano Rocha <strange@nsk.no-ip.org>,
-	linux-kernel@vger.kernel.org
+	Fri, 5 Oct 2007 10:26:08 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] RT: Add a per-cpu rt_overload indication
+To: mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ghaskins@novell.com
+Date: Fri, 05 Oct 2007 10:23:49 -0400
+Message-ID: <20071005142230.23643.28807.stgit@ghaskins-t60p.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-OriginalArrivalTime: 05 Oct 2007 14:25:47.0257 (UTC) FILETIME=[9F171E90:01C8075B]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The -rt scheduler currently evaluates all online CPUs whenever one or more
+enters an rt_overload condition.  This suffers from scalability limitations
+as the # of online CPUs increases since each rq->lock needs to be acquired by
+each cpu.  So we introduce a cpumask to track exactly which CPUs need RT
+balancing.
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
+ kernel/sched.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-Hello,
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 93fd6de..aaacec2 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -631,6 +631,7 @@ static inline struct rq *this_rq_lock(void)
+ 
+ #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+ static __cacheline_aligned_in_smp atomic_t rt_overload;
++static cpumask_t rto_cpus;
+ #endif
+ 
+ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+@@ -639,8 +640,11 @@ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+ 	if (rt_task(p)) {
+ 		rq->rt_nr_running++;
+ # ifdef CONFIG_SMP
+-		if (rq->rt_nr_running == 2)
++		if (rq->rt_nr_running == 2) {
++			cpu_set(rq->cpu, rto_cpus);
++			smp_wmb();
+ 			atomic_inc(&rt_overload);
++		}
+ # endif
+ 	}
+ #endif
+@@ -653,8 +657,10 @@ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+ 		WARN_ON(!rq->rt_nr_running);
+ 		rq->rt_nr_running--;
+ # ifdef CONFIG_SMP
+-		if (rq->rt_nr_running == 1)
++		if (rq->rt_nr_running == 1) {
+ 			atomic_dec(&rt_overload);
++			cpu_clear(rq->cpu, rto_cpus);
++		}
+ # endif
+ 	}
+ #endif
+@@ -1503,7 +1509,7 @@ static void balance_rt_tasks(struct rq *this_rq, int this_cpu)
+ 	 */
+ 	next = pick_next_task(this_rq, this_rq->curr);
+ 
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_mask(cpu, rto_cpus) {
+ 		if (cpu == this_cpu)
+ 			continue;
+ 		src_rq = cpu_rq(cpu);
 
-I have the following problem:
-$ sudo -u ie -s # or sudo su ie
-unable to change to runas uid: Resource temporarily unavailable
-
-Works:
-$ sudo su, followed by su ie
-
-The first sudo also worked while I had a shell under user ie.
-
-When I exited, it stopped working, but it is now working every time I
-trie it.
-
-dmesg shows:
-
-[82602.729330] kobject_add failed for 504 with -EEXIST, don't try to
-               register things with the same name in the same directory.
-[82602.729365]  [<c04b9195>] kobject_shadow_add+0x16e/0x1a0
-[82602.729383]  [<c04b9480>] kobject_set_name+0x29/0x92
-[82602.729504]  [<c04238ea>] user_kobject_create+0x6a/0x90
-[82602.729520]  [<c0423cce>] alloc_uid+0x18f/0x1d7
-[82602.729530]  [<c0427030>] set_user+0x1c/0x8f
-[82602.729539]  [<c0428b5f>] sys_setresuid+0xd5/0x162
-[82602.729552]  [<c0403e6a>] syscall_call+0x7/0xb
-[82602.729575]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
-
-$ git describe
-v2.6.23-rc9-156-ga95dacb
-
-(Clone of Linus' tree, after rc9, with some patches from
-mingo/linux-2.6-sched-devel.git, and a fix for lguest (didn't link due
-to kasprintf)).
-
---=20
-lfr
-0/0
-
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHBkllinSul6a7oB8RAlAcAJ426gNv58tRZj7aljNSK3dNmkVAWgCcCAsE
-qpYOqAw27nBapElLMBQufjw=
-=PY6y
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
