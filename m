@@ -1,108 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXJEQ4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbXJEQ44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXJEQ4n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 12:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbXJEQ4V
+	id S1762652AbXJEQ44 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 12:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761736AbXJEQ4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 12:56:21 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55210 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756558AbXJEQ4U (ORCPT
+	Fri, 5 Oct 2007 12:56:40 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35730 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761613AbXJEQ4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 12:56:20 -0400
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
-Cc: linux-kernel@vger.kernel.org, Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 2/3] CHECKPATCH: add terse output option to checkpatch.pl
-Date: Fri,  5 Oct 2007 12:56:07 -0400
-Message-Id: <11916033691871-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
-References: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
+	Fri, 5 Oct 2007 12:56:38 -0400
+Subject: Re: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial
+	console
+From: Gregory Haskins <ghaskins@novell.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LRH.0.999.0710051831000.10191@www.tglx.de>
+References: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net>
+	 <alpine.LRH.0.999.0710051831000.10191@www.tglx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-pid9s/QmLfp6q3NZQnaG"
+Date: Fri, 05 Oct 2007 12:54:13 -0400
+Message-Id: <1191603253.5019.211.camel@ghaskins-t60p.haskins.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Such terse output complies with g/cc and looks like
 
-	file_name:line_number:error_message
+--=-pid9s/QmLfp6q3NZQnaG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This output can be easily parsed within text editors (e.g., emacs/vim) that
-can produce a split text screen showing in one screen the error message, and
-in another screen the corresponding source file, with the cursor placed on
-the offending line.
+On Fri, 2007-10-05 at 18:41 +0200, Thomas Gleixner wrote:
+> On Fri, 5 Oct 2007, Gregory Haskins wrote:
+> > This series may help debugging certain circumstances where the serial
+> > console is unreponsive (e.g. RT51+ spinner, or scheduler problem).  It =
+changes
+> > the serial8250 driver to use IRQF_NODELAY so that interrupts execute in=
+ irq
+> > context instead of a kthread.
+> >=20
+> > It works pretty well on this end, though it is admitted not fully baked=
+  For
+> > instance, a few paths in sysrq can still call into non-raw spinlocks
+> > (sched_debug_show, for instance) which will cause subsequent errors.  A=
+lso,
+> > if you use KDB, be sure to convert the kdb_printf_lock to raw as well. =
+ I may
+> > send a KDB related patch seperately.
+> >=20
+> > I am sending this out now in case it is helpful to someone.
+>=20
+> The simple non-patch solution is to up the priority of the serial=20
+> console irq to maximum. That's usually sufficient to catch runnaway tasks=
+=20
+> etc. It does not interfere with the system in normal operation as long as=
+=20
+> you do not hit keys in your minicom.
+>=20
+> I doubt that your patch has a chance to survive lockdep and anything whic=
+h=20
+> is not a sysrq.
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
----
- scripts/checkpatch.pl |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+Your point is valid, and I thought of this too.  The one problem with it
+is that it is not immune to problems in the scheduler itself (which at
+the time, I thought I was chasing..turned out to be lockdep), but that
+is probably a rarity.  In any case, we have been using it on a number of
+debug systems here for a few weeks and the console continues to work
+well in all functions besides sysrq, believe it or not (*).  But I don't
+see this as being anything used for real.  Just thought I would throw it
+out there in case it was useful or inspired someone to give it some
+love.
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index ecbb030..f8bd630 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -18,12 +18,14 @@ my $tree = 1;
- my $chk_signoff = 1;
- my $chk_patch = 1;
- my $tst_type = 0;
-+my $terse = 0;		# terse ouput: report using g/cc error style
- GetOptions(
- 	'q|quiet'	=> \$quiet,
- 	'tree!'		=> \$tree,
- 	'signoff!'	=> \$chk_signoff,
- 	'patch!'	=> \$chk_patch,
- 	'test-type!'	=> \$tst_type,
-+	't|terse'	=> \$terse,
- ) or exit;
- 
- my $exit = 0;
-@@ -34,6 +36,7 @@ if ($#ARGV < 0) {
- 	print "options: -q           => quiet\n";
- 	print "         --no-tree    => run without a kernel tree\n";
- 	print "         --no-signoff => don't check for signed-off-by\n";
-+	print "         -t           => report errors using terse cc-style output (implies -q)\n";
- 	exit(1);
- }
- 
-@@ -267,7 +270,16 @@ sub cat_vet {
- 
- my @report = ();
- sub report {
--	push(@report, $_[0]);
-+	if (!$terse) {
-+		push(@report, $_[0]);
-+		return;
-+	}
-+	# if terse output, extract filename, linenumber, and short message;
-+	# format them as a new one-line message and push onto report
-+	my($msg, $location, @rest) = split(/\n/, $_[0]);
-+	@rest = split(/: /, $location);
-+	my($newreport) = sprintf("%s%s\n", $rest[2], $msg);
-+	push(@report, $newreport);
- }
- sub report_dump {
- 	@report;
-@@ -1097,17 +1109,17 @@ sub process {
- 	if ($chk_patch && !$is_patch) {
- 		ERROR("Does not appear to be a unified-diff format patch\n");
- 	}
--	if ($is_patch && $chk_signoff && $signoff == 0) {
-+	if ($terse == 0 && $is_patch && $chk_signoff && $signoff == 0) {
- 		ERROR("Missing Signed-off-by: line(s)\n");
- 	}
- 
- 	if ($clean == 0 && ($chk_patch || $is_patch)) {
- 		print report_dump();
- 	}
--	if ($clean == 1 && $quiet == 0) {
-+	if ($terse == 0 && $clean == 1 && $quiet == 0) {
- 		print "Your patch has no obvious style problems and is ready for submission.\n"
- 	}
--	if ($clean == 0 && $quiet == 0) {
-+	if ($terse == 0 && $clean == 0 && $quiet == 0) {
- 		print "Your patch has style problems, please review.  If any of these errors\n";
- 		print "are false positives report them to the maintainer, see\n";
- 		print "CHECKPATCH in MAINTAINERS.\n";
--- 
-1.5.2.2
+Regards,
+-Greg
+
+(*) The trick is that once it figures out its not for sysrq, it
+schedules a (kthread based) tasklet to do the actual tty() callbacks.
+
+--=-pid9s/QmLfp6q3NZQnaG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBHBmw1SW61Ku6jJPkRAncsAKDKxZ2bsR3HcaggQigNbjuvZq+uawCgs0NI
+uBfeYYlT6mXMbukmyoQVNDg=
+=/s93
+-----END PGP SIGNATURE-----
+
+--=-pid9s/QmLfp6q3NZQnaG--
 
