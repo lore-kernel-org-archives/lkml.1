@@ -1,92 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbXJELhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbXJELiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761072AbXJELhF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXJELgz
+	id S1761319AbXJELiV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXJELiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:36:55 -0400
-Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:55294 "EHLO
-	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752011AbXJELgy (ORCPT
+	Fri, 5 Oct 2007 07:38:14 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42744 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbXJELiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:36:54 -0400
-Message-ID: <470621A9.10004@gmail.com>
-Date: Fri, 05 Oct 2007 14:36:09 +0300
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
+	Fri, 5 Oct 2007 07:38:12 -0400
+Date: Fri, 5 Oct 2007 12:36:33 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: David Rientjes <rientjes@google.com>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Keir Fraser <keir@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
+ pagetable setup/pulldown
+In-Reply-To: <470596C4.8060804@goop.org>
+Message-ID: <Pine.LNX.4.64.0710051146300.25518@blonde.wat.veritas.com>
+References: <470596C4.8060804@goop.org>
 MIME-Version: 1.0
-To: Ben Gamari <ben@mw0.ath.cx>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23-rc9 regression] commit 4f01a757 broke HAL input support
-References: <1191198186.13785.21.camel@mercury>	 <1191477703.6408.20.camel@mercury> <200710042311.27864.arvidjaar@mail.ru>	 <200710042240.07039.dmitry.torokhov@gmail.com> <1191557863.6579.0.camel@mercury>
-In-Reply-To: <1191557863.6579.0.camel@mercury>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Gamari wrote:
-> On Thu, 2007-10-04 at 22:40 -0400, Dmitry Torokhov wrote:
->> 4f01a757e75f2a3cab2bab89c4176498963946b9.
+I see the discussion has somehow moved on to pagetable locking -
+mysterious because the word "lock" never once appears in your
+otherwise very helpful elucidation below, for which many thanks.
+
+Maybe what I have to add is now of historical interest only, or none,
+but I was prevented from answering your original mail earlier...
+
+On Thu, 4 Oct 2007, Jeremy Fitzhardinge wrote:
+
+> David's change 10a8d6ae4b3182d6588a5809a8366343bc295c20, "i386: add
+> ptep_test_and_clear_{dirty,young}" has introduced an SMP race which
+> affects the Xen pv-ops backend.
+
+I think that race with Xen has been there all along, not introduced
+by David's commit.  Take a look at ptep_clear_flush_young() in the
+2.6.21 include/asm-i386/pgtable.h, it looks equally a problem to me.
+
 > 
-> The change that Dmitry proposed would still require
-> CONFIG_SYSFS_DEPRECATED, right?
+> In Xen, pagetables are normally kept RO so that the hypervisor can
+> mediate all updates to them.  If Xen sees a write to an active
+> (currently pointed to by cr3) or pinned (a currently inactive but
+> registered pagetable), it will trap the write fault and emulate the
+> instruction making the update; this means that most pagetable-modifying
+> code doesn't need to know or care that pagetables are RO.
+> 
+> When a pagetable is first created (either in execve or fork), the the
+> Xen paravirt backend pins the pagetable, and conversely, on exit it is
+> unpinned; this is done via the arch_dup_mmap() and activate_mm() hooks. 
+> Pinning is done in two phases: first the pagetable pages are marked RO,
+> and then the pagetable is registered with Xen; unpinning is the
 
-What proposed change?
-The changeset you quote is already applied.
+To my naive mind, your problem actually lies in those two stages:
+whatever marks the pages RO should not be keeping Xen in ignorance.
 
-Andrey Borzenkov wrote:
->> Actually this specific problem was introduced by 
->> 4f01a757e75f2a3cab2bab89c4176498963946b9. This commit seems to have 
->> completely disassociated eventX from corresponding inputY
->> 
->> To summarize.
->> 
->> 1. Any kernel with SYSFS_DEPRECATED unset
->> 
->> events are sent for /devices/...
->> /devices/.../eventX is direct child of /devices/.../inputY
->> HAL checks for parent of eventX, finds inputY and is happy
->> 
->> 2. SYSFS_DEPRECATED=y, pre-2.6.23 kernel
->> 
->> events are sent for /class/...
->> /class/.../eventX is direct child of /class/.../inputY
->> HAL checks for parent of eventX, finds inputY and works
->> 
->> 3. SYSFS_DEPRECATED=y, 2.6.23 before commit 
->> 4f01a757e75f2a3cab2bab89c4176498963946b9. 
->> 
->> events are sent for /class/...
->> /class/.../eventX is *not* child of /class/.../inputY
->> /class/.../eventX/device points to .../inputY
->> HAL checks for .../device link, finds inputY and works
->> 
->> 4. SYSFS_DEPRECATED=y, 2.6.23 after commit 
->> 4f01a757e75f2a3cab2bab89c4176498963946b9. 
->> 
->> /class/.../eventX is *not* child of /class/.../inputY
->> /class/.../eventX/device points to some physical device
->> HAL finds inputY neither as ../inputY nor as device link and breaks
->> 
->> But what is worse, now the only way to find which inputY corresponds to which 
->> eventX is to scan the whole /class/input, check for device link and compare. 
+> opposite.  This works assuming that the pagetable is not in use, and not
+> yet visible to other cpus.
+> 
+> The race on pagetable creation is this: in kernel/fork.c:dup_mmap(), it
+> copies the old pagetable into the new one, and registers each vma with
+> the rmap prio tree.  Once everything is copied, it calls
+> arch_dup_mmap(), which ends up doing the Xen pagetable pin.  However,
+> because the pagetable is visible to other cpus via the prio tree,
+> pagetable modifications (specifically, clearing the access bit) can race
+> with pinning.  If it hits between making the pagetable pages RO but
+> before they're registered with Xen, modifications to the flags will
+> fault, and Xen won't know to do the fixup.
+> 
+> The converse is also true in exit_mmap(): arch_exit_mmap is called
+> before removing the vmas from the prio tree, so it can race with unpinning.
+> 
+[oops snipped]
+> 
+> It all worked OK before David's change, because asm-generic/pgtable.h
+> uses set_pte_at(), which ends up making a hypercall to update the
+> pagetable, which always works regardless of the state of the pagetable
+> pages.
 
->> I am afraid that we have to bite the bullet and just accept that 2.6.23 breaks 
->> user space this way or that. Frankly fixing path_id seems to be the least 
->> evil.
+Except ptep_clear_flush_young() didn't use set_pte_at().
 
-I'd hate to see such breakage. IMO the sysfs structure of input devices 
-should be made compatible with both HAL and udev, with both 
-CONFIG_SYSFS_DEPRECATED and without it, as in 2.6.22 and before.
+> 
+> It seems to me that there are a few ways to fix this:
+> 
+>    1. Use asm-generic/pgtable.h when CONFIG_PARAVIRT is enabled.  This
+>       will clearly work, but is pretty blunt.
 
->> Is it possible to fall back to /class/input/inputX/eventY if SYSFS_DEPRECATED 
->> is set?
+No.  The asm-generic/pgtable.h version of ptep_test_and_clear_young()
+does set_pte_at((__vma)->vm_mm, (__address), (__ptep), pte_mkold(__pte)),
+which may be nice for Xen, but is dangerously racy on i386 SMP (I hope
+it's not racy on the other architectures using it...): it's in danger
+of losing the dirty bit if that gets set in userspace in between us
+reading __pte and setting the pte_mkold version of __pte.  There's
+no issue if we were to lose the young bit while setting the dirty
+bit, but losing the dirty in setting the young is a no no.
 
-Hopefully.
+>    2. Make test_and_clear_pte_flags a new paravirt-op, which can be
+>       implemented in Xen as a hypercall, and as a raw test_and_clear_bit
+>       for everyone else.  The downside is adding yet another pv-op.
 
--- 
-Anssi Hannula
+Maybe (if this turns out to be more than just a muddle over pagetable
+locking).  But note that you have a problem, not just with the
+ptep_clear_flush_young from page_referenced_one, but also with the
+ptep_clear_flush (which ends up using native_ptep_get_and_clear on
+i386 I think) from try_to_unmap_one: you just won't hit that one
+as often as the page_referenced_one case.
+
+Anything in include/asm-i386/pgtable.h which uses pte_update or
+pte_update_defer ought to be considered; but I expect that you'll
+find all the other instances are only used from safe contexts,
+which cannot race with yours.  The pte_update comes after the op
+that concerns you: maybe there should be a pte_about_to_update
+just before, to handle your case?
+
+>    3. Restructure the pagetable setup code so that the mm is not added
+>       to the prio tree until after arch_dup_mmap has been called (and
+>       the converse for exit_mmap).  This is arguably cleaner, but I
+>       haven't looked to see how much trouble this would be.
+
+No.  It is intentional that we make those ptes visible as early as
+possible, so that concurrent pageout (and less importantly swapoff)
+has the best chance of finding all references to a page (or swap ent).
+If they only became visible at the final arch_dup_mmap stage, then
+it might become impossible to fork a large well-populated mm, if it
+contains those very pages which need to be freed to make space to
+allocate pagetables for the child.
+
+Hugh
