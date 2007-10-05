@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759775AbXJEIab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbXJEIbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759775AbXJEIab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 04:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXJEIaX
+	id S1760312AbXJEIbN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 04:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXJEIa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 04:30:23 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:39828 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753856AbXJEIaV (ORCPT
+	Fri, 5 Oct 2007 04:30:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39145 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754025AbXJEIa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 04:30:21 -0400
-Subject: Re: [patch 00/34] s390 patches for 2.6.24
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <20071004191015.GA23211@uranus.ravnborg.org>
-References: <20071004112706.574737175@de.ibm.com>
-	 <20071004191015.GA23211@uranus.ravnborg.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 05 Oct 2007 10:30:17 +0200
-Message-Id: <1191573017.18414.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 04:30:57 -0400
+Date: Fri, 5 Oct 2007 10:31:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: werner <werner@copaya.yi.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug in drm  modules of kernel 2.6.23-rc9-git2
+Message-ID: <20071005083122.GH10852@stusta.de>
+References: <1191565675.4842@copaya.yi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1191565675.4842@copaya.yi.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-04 at 21:10 +0200, Sam Ravnborg wrote:
-> Hi Martin.
-> On Thu, Oct 04, 2007 at 01:27:06PM +0200, Martin Schwidefsky wrote:
-> > The current set of s390 patches ready to be pushed once 2.6.23
-> > has hit the streets.
+On Fri, Oct 05, 2007 at 03:27:55AM -0300, werner wrote:
+> attn:  linux-kernel@vger.kernel.org
 > 
-> I noticed that I had not yet beautified the vmlinux.lds file of s390.
-> Please consider the next two patches for 2.6.24.
 > 
-> The first patch refactor vmlinux.lds to a consistent (and more readable)
-> style that is being gradually introduced for all archs.
-> Rationale behind a consistent style is to make across-all-archs
-> changes less error prone and to better recongnize similar patterns.
-> The patch moves a few labels so they get the correct value even if
-> ld decide to align the section a few bytes.
+> There is a bug in the drm modules,  w.r.t. radeon and savage grafic cards (at least)
+> This bug is present on kernel 2.6.23-rc9-git2 ,  it was NOT present on 2.6.23-rc8-git4
+> nor in the previous kernels.   Without drm, also compiz snapshot don't work longer
 > 
-> The second patch introduce use of PAGE_SIZE as replacemnt of the
-> hardcoded value 4096 and convert a few decimal numbers to hex.
+> I hope you can find and repair this before the 2.6.23 release
+> 
+> Below is the beginning of dmesg  for the two kernels what I quoted above.
+> 
+> Werner Landgraf
+> www.copaya.yi.org
+> 
+> 
+> ==============  dmesg 2.6.23-rc9-git2 (drm no working longer ...) ===================================
+> Linux version 2.6.23-rc9-git2-i486-1mn (root@werner) (gcc version 4.2.0 20061031 (prerelease)) #1 SMP Thu Oct 4 15:32:50 GFT 2007
+>...
+> via_agp: Unknown symbol agp_bridge
+> via_agp: Unknown symbol agp3_generic_sizes
+> via_agp: Unknown symbol global_cache_flush
+> via_agp: Unknown symbol agp_generic_enable
+> via_agp: Unknown symbol agp_generic_insert_memory
+> via_agp: Unknown symbol agp_generic_destroy_page
+> via_agp: Unknown symbol agp_off
+> via_agp: Unknown symbol agp_remove_bridge
+> via_agp: Unknown symbol agp_generic_mask_memory
+> via_agp: Unknown symbol agp_generic_alloc_by_type
+> via_agp: Unknown symbol agp_generic_free_by_type
+> via_agp: Unknown symbol agp_alloc_bridge
+> via_agp: Unknown symbol agp_add_bridge
+> via_agp: Unknown symbol get_agp_version
+> via_agp: Unknown symbol agp_generic_remove_memory
+> via_agp: Unknown symbol agp_generic_create_gatt_table
+> via_agp: Unknown symbol agp_generic_type_to_mask_type
+> via_agp: Unknown symbol agp_generic_free_gatt_table
+> via_agp: Unknown symbol agp_generic_alloc_page
+> via_agp: Unknown symbol agp_put_bridge
+>...
 
-Patches look good, I'll add them to the repository.
+The agpgart module is not present.
+
+This indicates that something went wrong with building or installing 
+your modules.
+
+Is it still present if you wipe the 2.6.23-rc9-git2 sources, image and 
+modules from your disk, freshly unpack the sources, recompile the 
+kernel and install the modules?
+
+cu
+Adrian
 
 -- 
-blue skies,
-  Martin.
 
-"Reality continues to ruin my life." - Calvin.
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
