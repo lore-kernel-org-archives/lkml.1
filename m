@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbXJEQml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXJEQsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759560AbXJEQml (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 12:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbXJEQmc
+	id S1760133AbXJEQsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 12:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbXJEQs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 12:42:32 -0400
-Received: from www.tglx.de ([62.245.132.106]:38096 "EHLO www.tglx.de"
+	Fri, 5 Oct 2007 12:48:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:57641 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756615AbXJEQmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 12:42:31 -0400
-Date: Fri, 5 Oct 2007 18:41:59 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gregory Haskins <ghaskins@novell.com>
-cc: mingo@elte.hu, rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial
- console
-In-Reply-To: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net>
-Message-ID: <alpine.LRH.0.999.0710051831000.10191@www.tglx.de>
-References: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net>
+	id S1755242AbXJEQs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 12:48:26 -0400
+Message-ID: <47066AD0.4010102@goop.org>
+Date: Fri, 05 Oct 2007 09:48:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Keir Fraser <keir@xensource.com>
+CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Zachary Amsden <zach@vmware.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
+ pagetable setup/pulldown
+References: <C32C1AD6.167B3%keir@xensource.com>
+In-Reply-To: <C32C1AD6.167B3%keir@xensource.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Oct 2007, Gregory Haskins wrote:
-> This series may help debugging certain circumstances where the serial
-> console is unreponsive (e.g. RT51+ spinner, or scheduler problem).  It changes
-> the serial8250 driver to use IRQF_NODELAY so that interrupts execute in irq
-> context instead of a kthread.
-> 
-> It works pretty well on this end, though it is admitted not fully baked.  For
-> instance, a few paths in sysrq can still call into non-raw spinlocks
-> (sched_debug_show, for instance) which will cause subsequent errors.  Also,
-> if you use KDB, be sure to convert the kdb_printf_lock to raw as well.  I may
-> send a KDB related patch seperately.
-> 
-> I am sending this out now in case it is helpful to someone.
+Keir Fraser wrote:
+> I didn't think that nobbling config options for particular pv_ops
+> implementations was acceptable? I'm rather out of the loop though, and could
+> be wrong.
+>   
 
-The simple non-patch solution is to up the priority of the serial 
-console irq to maximum. That's usually sufficient to catch runnaway tasks 
-etc. It does not interfere with the system in normal operation as long as 
-you do not hit keys in your minicom.
+As a workaround it would be OK.  As a dependency, perhaps.
 
-I doubt that your patch has a chance to survive lockdep and anything which 
-is not a sysrq.
+> The PREEMPT_BITS limitation is a good argument for at least taking the pte
+> locks in small batches though (small batches is preferable to one-by-one
+> since we will want to batch the make-readonly-and-pin hypercall requests to
+> amortise the cost of the hypervisor trap).
+>   
 
-	tglx
+Hm, that's a good point.  The pagetable permissions changes are batched
+more or less asynchronously from the actual loop structure; that will
+complicate adding the locking.
+
+       J
