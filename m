@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXJEMMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXJEMOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbXJEMMz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbXJEMMs
+	id S1761903AbXJEMOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbXJEMOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:12:48 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:55831 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbXJEMMr (ORCPT
+	Fri, 5 Oct 2007 08:14:03 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40388 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755052AbXJEMOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:12:47 -0400
-Message-ID: <47062A03.1000603@aitel.hist.no>
-Date: Fri, 05 Oct 2007 14:11:47 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Fri, 5 Oct 2007 08:14:01 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
+References: <11902755392688-git-send-email-htejun@gmail.com>
+	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
+	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
+	<20071005062302.GB16914@kroah.com>
+Date: Fri, 05 Oct 2007 06:12:41 -0600
+In-Reply-To: <20071005062302.GB16914@kroah.com> (Greg KH's message of "Thu, 4
+	Oct 2007 23:23:02 -0700")
+Message-ID: <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: x86-64 sporadic hang in  2.6.23rc7 and 2.6.22
-References: <46F8273B.8030904@aitel.hist.no> <1190669351.4035.254.camel@chaos>	<46FE5C98.1030507@aitel.hist.no> <p734phb96cb.fsf@bingen.suse.de>
-In-Reply-To: <p734phb96cb.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Helge Hafting <helge.hafting@aitel.hist.no> writes:
->   
->> shrink_dcache_memory
->>     
+Greg KH <greg@kroah.com> writes:
 >
-> That usually means random memory corruption from somewhere -- dcache
-> tends to use a lot of memory and when it is corrupted anywhere these 
-> functions tend to crash while walking the lists. 
+>>   Also fun is that the dev file implementation needs to be able to
+>>   report different major:minor numbers based on which mount of
+>>   sysfs we are dealing with.
 >
-> Unfortunately memory corruption is hard to track down because
-> the messenger is usually not the one to blame.
->
-> Perhaps enable slab debugging and see if it turns
-> something up. Could be also broken hardware. Does an older kernel
-> run stable? If yes and if it can be reproduced bisecting would
-> be good.
->   
-I attempted bisecting - and failed. The problem is that
-2.6.23rc7 seems very unstable, but 2.6.22rc4 is much better
-but not perfect. 2.6.22rc4 only crashed once - it can compile for
-hours and swap lots and keep running. But it died at least once.
+> Um, no, that's not going to happen.  /dev/sda will _always_ have the
+> same major:minor number, as defined by the LSB spec.  You can not break
+> that at all.  So while you might not want to show all mounts
+> /sys/devices/block/sda/ the ones that you do, will all have the LSB
+> defined major:minor number assigned to it.
 
-I'll try running recent kernels with more debugging instead.
-I think I used SLUB instead of SLAB - either way I can switch
-that over to see if it changes things.
+Hmm.  If that is in the LSB it must come from
+Documentation/devices.txt  I'm not after changing the user
+visible major/minor assignments.
 
-Helge Hafting
+Let me see if a concrete example will help.  Suppose I have
+have a SAN with two disks:  disk-1 and disk-2.  I have
+two machines A and B.  On machine A I get the mapping:
+sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
+a different probe order so I get the mapping: sda -> disk-2
+sdb ->disk-1.
 
+To be very clear by sda I mean the block device with major 8 and
+minor 0, and by sdb I mean the block device with major 8 and minor
+16.
+
+So I decide I want an environment on machine B that looks just
+like the environment on machine A, so I can bring transfer over
+a running program or whatever.  So I run around looking at UUID
+labels and what not and I discover that the machine B knows disk-1 as
+sdb and that machine A knows disk-1 as sda.  So I want to say:
+/sys/devices/block/sdb show up in this other device namespace as
+/sys/devices/block/sda.
+
+In that instance a running program won't notice the difference.
+
+Eric
