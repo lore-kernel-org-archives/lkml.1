@@ -1,156 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXJEDy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbXJED5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbXJEDy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 23:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXJEDyt
+	id S1758871AbXJED5f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 23:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXJED51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 23:54:49 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38665 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbXJEDys (ORCPT
+	Thu, 4 Oct 2007 23:57:27 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:33140 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbXJED50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 23:54:48 -0400
-Message-ID: <4705B568.6020502@oracle.com>
-Date: Fri, 05 Oct 2007 09:24:16 +0530
-From: gurudas pai <gurudas.pai@oracle.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 4 Oct 2007 23:57:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uOq/mUDKvjfGDm50ANDQCk+Czn87TSu5SWIFFG3GkOrdv2Vc1ERzWYyHuMwa2cXw87inUuK7fGDUr07gywsF2qPDEkFwbpMwgInYdAxp8PeRv4To4A8tfER6qkmZmHyINvVtkovs5pNH5XMlhYL+p34H/Hp7wf4nPZoIY3RBHjo=
+Message-ID: <b681c62b0710042057m6942eb72t498e4f59ebd8ae3a@mail.gmail.com>
+Date: Fri, 5 Oct 2007 09:27:25 +0530
+From: "yogeshwar sonawane" <yogyas@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: Accessing 64-bit BARs
+Cc: "Rolf Eike Beer" <eike-kernel@sf-tec.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <adasl4qdhpn.fsf@cisco.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] kernel BUG at arch/i386/mm/highmem.c:15!  on 2.6.23-rc8/rc9
-References: <47048A0C.4020608@oracle.com> <200710040053.19570.nickpiggin@yahoo.com.au> <200710040139.04201.nickpiggin@yahoo.com.au> <4704BA1F.4070408@oracle.com> <Pine.LNX.4.64.0710041647090.17987@blonde.wat.veritas.com> <4705A63A.1090103@oracle.com>
-In-Reply-To: <4705A63A.1090103@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <b681c62b0710040153w5b4779fat1ccc7fa3e5775c2c@mail.gmail.com>
+	 <200710041440.15464.eike-kernel@sf-tec.de> <adasl4qdhpn.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gurudas pai wrote:
-> Hugh Dickins wrote:
->> On Thu, 4 Oct 2007, gurudas pai wrote:
->>> Nick Piggin wrote:
->>>>>> While running Oracle database test on x86/6GB RAM machine panics with
->>>>>> following messages.
->>>>> Hmm, seems like something in sys_remap_file_pages might have broken.
->>>>> It's a bit hard to work out from the backtrace, though.
->>>>>
->>>>> Is it possible you can strace to find the arguments for the
->>>>> remap_file_pages that goes wrong?
->>>> Ahh, I think it's just underflowing the preempt count somewhere, which
->>>> is leading highmem.c:15 to just *think* it is in an interrupt.
->>>>
->>>> But you aren't running a preemptible kernel, which makes it unusual...
->>>> it would have to be coming from interrupt code (or just random 
->>>> corruption).
->>>> Still, preempt debugging should catch those cases as well.
->>>>
->>>> So, can you disregard my last message, and instead compile a kernel
->>>> with CONFIG_PREEMPT and CONFIG_DEBUG_PREEMPT, and see what
->>>> messages come up?
->>> With CONFIG_PREEMPT and CONFIG_DEBUG_PREEMPT set I got following 
->>> messages on
->>> rc9.
->>>
->>> BUG: using smp_processor_id() in preemptible [00000001] code: 
->>> oracle/3631
->>> caller is kunmap_atomic+0xb/0x82
->>>  [<c04ec241>] debug_smp_processor_id+0xa1/0xb4
->>>  [<c0420dd0>] kunmap_atomic+0xb/0x82
->>>  [<c045fae3>] __do_fault+0x55/0x35b
->>>  [<c04623e8>] handle_mm_fault+0x4d0/0x909
->>>  [<c0460624>] follow_page+0x1d9/0x228
->>>  [<c0462a71>] get_user_pages+0x250/0x332
->>>  [<c0462bce>] make_pages_present+0x7b/0x90
->>>  [<c045f06a>] sys_remap_file_pages+0x2de/0x330
->>>  [<c0404f0e>] syscall_call+0x7/0xb
->>>  [<c0620000>] ioctl_standard_call+0x209/0x2ce
->>
->> Very helpful, thanks.  Guru, please try the appended patch, I think
->> you'll find it fixes it for you (it did for me, once I'd puzzled out
->> why I was failing to reproduce the problem - tests on ext3 don't work).
->> Thank you so much for reporting this just in time!
->>
->>
->> [PATCH] fix sys_remap_file_pages BUG at highmem.c:15!
->>
->> Gurudas Pai reports kernel BUG at arch/i386/mm/highmem.c:15! below
->> sys_remap_file_pages, while running Oracle database test on x86 in 6GB 
->> RAM:
->> kunmap thinks we're in_interrupt because the preempt count has wrapped.
->>
->> That's because __do_fault expected to unmap page_table, but one of its 
->> two
->> callers do_nonlinear_fault already unmapped it: let do_linear_fault unmap
->> it first too, and then there's no need to pass the page_table arg down.
->>
->> Why have we been so slow to notice this?  Probably through forgetting
->> that the mapping_cap_account_dirty test means that sys_remap_file_pages
->> nowadays only goes the full nonlinear vma route on a few memory-backed
->> filesystems like ramfs, tmpfs and hugetlbfs.
->>
->> Signed-off-by: Hugh Dickins <hugh@veritas.com>
->>
->> --- 2.6.23-rc9/mm/memory.c    2007-07-26 19:49:58.000000000 +0100
->> +++ linux/mm/memory.c    2007-10-04 15:42:20.000000000 +0100
->> @@ -2307,13 +2307,14 @@ oom:
->>   * do not need to flush old virtual caches or the TLB.
->>   *
->>   * We enter with non-exclusive mmap_sem (to exclude vma changes,
->> - * but allow concurrent faults), and pte mapped but not yet locked.
->> + * but allow concurrent faults), and pte neither mapped nor locked.
->>   * We return with mmap_sem still held, but pte unmapped and unlocked.
->>   */
->>  static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
->> -        unsigned long address, pte_t *page_table, pmd_t *pmd,
->> +        unsigned long address, pmd_t *pmd,
->>          pgoff_t pgoff, unsigned int flags, pte_t orig_pte)
->>  {
->> +    pte_t *page_table;
->>      spinlock_t *ptl;
->>      struct page *page;
->>      pte_t entry;
->> @@ -2327,7 +2328,6 @@ static int __do_fault(struct mm_struct *
->>      vmf.flags = flags;
->>      vmf.page = NULL;
->>  
->> -    pte_unmap(page_table);
->>      BUG_ON(vma->vm_flags & VM_PFNMAP);
->>  
->>      if (likely(vma->vm_ops->fault)) {
->> @@ -2468,8 +2468,8 @@ static int do_linear_fault(struct mm_str
->>              - vma->vm_start) >> PAGE_CACHE_SHIFT) + vma->vm_pgoff;
->>      unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
->>  
->> -    return __do_fault(mm, vma, address, page_table, pmd, pgoff,
->> -                            flags, orig_pte);
->> +    pte_unmap(page_table);
->> +    return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
->>  }
->>  
->>  
->> @@ -2552,9 +2552,7 @@ static int do_nonlinear_fault(struct mm_
->>      }
->>  
->>      pgoff = pte_to_pgoff(orig_pte);
->> -
->> -    return __do_fault(mm, vma, address, page_table, pmd, pgoff,
->> -                            flags, orig_pte);
->> +    return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
->>  }
->>  
->>  /*
-> 
-> Yes, indeed this patch worked for me , test completed successfully!! (on 
-> preempt kernel). Will continue testing with non-preempt kernel and 
-> update you if I hit any issue.
+hello,
+Thanks rolf & roland.
 
-Completed testing on non-preempt successfully without any issue.
+pci_iomap() is not doing something extra. only it is some kind of
+abstraction for IO-mapped OR memory mapped.
+I know that my BARs are MMIO, so using ioremap() & readl()/writel()
+combination should be fine.
 
-Thanks,
--Guru
+But for the problem as explained in my first mail, any
+help/suggestions will be helpful.
+
+-Yogeshwar
+
+On 10/4/07, Roland Dreier <rdreier@cisco.com> wrote:
+>  > You should use pci_iomap() to get an access pointer to the BAR. After this you
+>  > can access the memory with ioread*() and iowrite*(). See "man pci_iomap(9)"
+>  > if you build kernel manpages.
+>
+> That works fine, but ioremap() and readl()/writel() is also perfectly
+> fine for regions that you know are always MMIO.
+>
+>  - R.
+>
