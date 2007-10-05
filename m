@@ -1,47 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbXJEAh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbXJEAt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761984AbXJEAh3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 20:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbXJEAhR
+	id S1762000AbXJEAt7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 20:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759245AbXJEAtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 20:37:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46133 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756397AbXJEAhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 20:37:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.23-rc9-git2: Known regressions from 2.6.22
-Date: Fri, 5 Oct 2007 02:51:46 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200710050011.12433.rjw@sisk.pl> <47058144.6030208@zytor.com>
-In-Reply-To: <47058144.6030208@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 20:49:49 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3367 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753550AbXJEAts (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 20:49:48 -0400
+Date: Fri, 5 Oct 2007 08:49:41 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: rdreier@cisco.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Vague maybe ppp-related panic report for 2.6.23-rc9
+Message-ID: <20071005004941.GA8160@gondor.apana.org.au>
+References: <ada4ph6da05.fsf@cisco.com> <20071004.135113.48807663.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710050251.47486.rjw@sisk.pl>
+In-Reply-To: <20071004.135113.48807663.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 5 October 2007 02:11, H. Peter Anvin wrote:
-> Rafael J. Wysocki wrote:
-> > 
-> > Subject:	vga text console not working on 2.6.23-rc8
-> > Submitter:	Santiago Garcia Mantinan <manty@manty.net>
-> > References:	http://lkml.org/lkml/2007/9/28/342
-> > 		http://bugzilla.kernel.org/show_bug.cgi?id=9099
-> > Handled-By:	H. Peter Anvin <hpa@zytor.com>
-> > 		Antonino A. Daplas <adaplas@gmail.com>
-> > 
+On Thu, Oct 04, 2007 at 01:51:13PM -0700, David Miller wrote:
 > 
-> This one was user error.  Not a regression.
+> I don't want to jump the gun on the analysis but it just might
+> be the packet sharing fixes Herbert put in a short time ago.
 
-OK, will drop.
+I think the only change of mine that could affect ppp over a
+serial line is this one.  I couldn't see anything obvious in
+it but maybe someone else can.
 
-Thanks,
-Rafael
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+2a38b775b77f99308a4e571c13d908df78ac5e57
+diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
+index 7e21342..4b49d0e 100644
+--- a/drivers/net/ppp_generic.c
++++ b/drivers/net/ppp_generic.c
+@@ -1525,7 +1525,7 @@ ppp_input_error(struct ppp_channel *chan, int code)
+ static void
+ ppp_receive_frame(struct ppp *ppp, struct sk_buff *skb, struct channel *pch)
+ {
+-	if (skb->len >= 2) {
++	if (pskb_may_pull(skb, 2)) {
+ #ifdef CONFIG_PPP_MULTILINK
+ 		/* XXX do channel-level decompression here */
+ 		if (PPP_PROTO(skb) == PPP_MP)
+@@ -1577,7 +1577,7 @@ ppp_receive_nonmp_frame(struct ppp *ppp, struct sk_buff *skb)
+ 		if (ppp->vj == 0 || (ppp->flags & SC_REJ_COMP_TCP))
+ 			goto err;
+ 
+-		if (skb_tailroom(skb) < 124) {
++		if (skb_tailroom(skb) < 124 || skb_cloned(skb)) {
+ 			/* copy to a new sk_buff with more tailroom */
+ 			ns = dev_alloc_skb(skb->len + 128);
+ 			if (ns == 0) {
+@@ -1648,23 +1648,29 @@ ppp_receive_nonmp_frame(struct ppp *ppp, struct sk_buff *skb)
+ 		/* check if the packet passes the pass and active filters */
+ 		/* the filter instructions are constructed assuming
+ 		   a four-byte PPP header on each packet */
+-		*skb_push(skb, 2) = 0;
+-		if (ppp->pass_filter
+-		    && sk_run_filter(skb, ppp->pass_filter,
+-				     ppp->pass_len) == 0) {
+-			if (ppp->debug & 1)
+-				printk(KERN_DEBUG "PPP: inbound frame not passed\n");
+-			kfree_skb(skb);
+-			return;
+-		}
+-		if (!(ppp->active_filter
+-		      && sk_run_filter(skb, ppp->active_filter,
+-				       ppp->active_len) == 0))
+-			ppp->last_recv = jiffies;
+-		skb_pull(skb, 2);
+-#else
+-		ppp->last_recv = jiffies;
++		if (ppp->pass_filter || ppp->active_filter) {
++			if (skb_cloned(skb) &&
++			    pskb_expand_head(skb, 0, 0, GFP_ATOMIC))
++				goto err;
++
++			*skb_push(skb, 2) = 0;
++			if (ppp->pass_filter
++			    && sk_run_filter(skb, ppp->pass_filter,
++					     ppp->pass_len) == 0) {
++				if (ppp->debug & 1)
++					printk(KERN_DEBUG "PPP: inbound frame "
++					       "not passed\n");
++				kfree_skb(skb);
++				return;
++			}
++			if (!(ppp->active_filter
++			      && sk_run_filter(skb, ppp->active_filter,
++					       ppp->active_len) == 0))
++				ppp->last_recv = jiffies;
++			__skb_pull(skb, 2);
++		} else
+ #endif /* CONFIG_PPP_FILTER */
++			ppp->last_recv = jiffies;
+ 
+ 		if ((ppp->dev->flags & IFF_UP) == 0
+ 		    || ppp->npmode[npi] != NPMODE_PASS) {
+@@ -1762,7 +1768,7 @@ ppp_receive_mp_frame(struct ppp *ppp, struct sk_buff *skb, struct channel *pch)
+ 	struct channel *ch;
+ 	int mphdrlen = (ppp->flags & SC_MP_SHORTSEQ)? MPHDRLEN_SSN: MPHDRLEN;
+ 
+-	if (!pskb_may_pull(skb, mphdrlen) || ppp->mrru == 0)
++	if (!pskb_may_pull(skb, mphdrlen + 1) || ppp->mrru == 0)
+ 		goto err;		/* no good, throw it away */
+ 
+ 	/* Decode sequence number and begin/end bits */
