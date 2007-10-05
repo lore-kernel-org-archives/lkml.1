@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763363AbXJEQ74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760457AbXJERLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763363AbXJEQ74 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 12:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXJEQ7r
+	id S1760457AbXJERLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 13:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbXJERL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 12:59:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44335 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757083AbXJEQ7q (ORCPT
+	Fri, 5 Oct 2007 13:11:26 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:56501 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755242AbXJERL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 12:59:46 -0400
-Date: Fri, 5 Oct 2007 18:01:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rob Landley <rob@landley.net>
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
-       "Joe Perches" <joe@perches.com>,
-       "Dick Streefland" <dick.streefland@altium.nl>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Arnd Bergmann" <arnd@arndb.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Emil Medve" <Emilian.Medve@freescale.com>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "linux@horizon.com" <linux@horizon.com>,
-       "Miguel Ojeda" <maxextreme@gmail.com>
-Subject: Re: [RFC][PATCH] New message-logging API (kprint)
-Message-ID: <20071005180111.6111ccb3@the-village.bc.nu>
-In-Reply-To: <200710051105.27731.rob@landley.net>
-References: <1191528247.13580.11.camel@grianne>
-	<200710042059.25721.rob@landley.net>
-	<19f34abd0710050613y62fe6417lb47dc2bc7ad69b28@mail.gmail.com>
-	<200710051105.27731.rob@landley.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 13:11:26 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] 0/3 checkpatch updates, new checkfiles script
+Date: Fri,  5 Oct 2007 12:56:05 -0400
+Message-Id: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > With the current code, localisation is not possible to do in a sane
-> > way.
-> 
-> Run dmesg through a filter in userspace using lots of regular expressions.  
-> Your average perl junkie could knock out a basic prototype in 20 minutes.
 
-He did say "sane".
+This series of patches adds a -t option to checkpatch, so it can print terse
+messages one per line, in a format compatible with g/cc
+(filename:linenumber:message).  This format can be parsed by various tools
+and editors that can help show the errors in one window and the offending
+file+line in another window.
 
-Good internationalisation requires you know where the messages are and
-where the substitutions (%foo) are. So the entire operation would in fact
-require
+This patch series also introduces a new small shell script wrapper, called
+scripts/checkfiles, that checks the compliance of source files (not in diff
+format); the script can operate on any mix of files and directories
+(recursively checking).  For example, to check the entire Linux kernel, run:
 
-1.	An option to set "translation friendly please"
+$ ./scripts/checkfiles .
 
-2.	A tiny modification to the snprintfoo code to support putting
-some kind of marker before/after arguments and maybe doubling a symbol to
-avoid vagueness
+So, I ran the above script and it found nearly 1.5 million reported
+warnings/errors, with drivers being the largest abuser, not surprisingly.
+Here's the sorted breakdown per top-level subsystem:
 
-The submission is overkill compared to what is required for translation
-tools and syslog.
+     32 usr
+    162 init
+    266 block
+    293 Documentation
+    471 ipc
+    819 mm
+   1115 security
+   1915 scripts
+   1948 kernel
+   4569 lib
+   4793 crypto
+  13851 net
+  80025 sound
+  86484 include
+ 115789 arch
+ 116623 fs
+1035158 drivers
+-------+-------
+1464313 TOTAL
 
-Alan
+Any volunteers? :-)
+
+
+Erez Zadok (3):
+      CHECKPATCH: update usage string for checkpatch.pl
+      CHECKPATCH: add terse output option to checkpatch.pl
+      CHECKFILES: new small shell script to check multiple source files
+
+ checkfiles    |   34 ++++++++++++++++++++++++++++++++++
+ checkpatch.pl |   21 +++++++++++++++++----
+ 2 files changed, 51 insertions(+), 4 deletions(-)
+
+---
+Erez Zadok
+ezk@cs.sunysb.edu
