@@ -1,138 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764193AbXJEUht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXJEUiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764193AbXJEUht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 16:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763271AbXJEUhl
+	id S1764284AbXJEUiB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 16:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764219AbXJEUhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 16:37:41 -0400
-Received: from www.tglx.de ([62.245.132.106]:39260 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761765AbXJEUhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 16:37:40 -0400
-Date: Fri, 5 Oct 2007 22:37:07 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       David Bahi <dbahi@novell.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <GHaskins@novell.com>
-Subject: RE: nmi_watchdog fix for x86_64 to be more like i386
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F501797305@scsmsx415.amr.corp.intel.com>
-Message-ID: <alpine.LRH.0.999.0710052230480.10191@www.tglx.de>
-References: <46FA4A800200006C000192FE@sinclair.provo.novell.com>
- <200710020007.09864.ak@suse.de> <alpine.LFD.0.9999.0710020043450.20478@localhost.localdomain>
- <200710020751.42994.ak@suse.de> <alpine.LFD.0.9999.0710020815370.3348@localhost.localdomain>
- <653FFBB4508B9042B5D43DC9E18836F501797305@scsmsx415.amr.corp.intel.com>
+	Fri, 5 Oct 2007 16:37:53 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:63527 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763271AbXJEUhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 16:37:52 -0400
+Message-ID: <4706A096.4000700@freescale.com>
+Date: Fri, 05 Oct 2007 15:37:42 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+CC: Andreas Schwab <schwab@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com> <Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr> <470691EB.7020209@freescale.com> <Pine.LNX.4.64.0710052138070.13406@fbirervta.pbzchgretzou.qr> <470694E0.7030408@freescale.com> <jed4vtnxa5.fsf@sykes.suse.de> <47069982.9030009@freescale.com> <Pine.LNX.4.61.0710051623060.29533@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0710051623060.29533@chaos.analogic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Oct 2007, Pallipadi, Venkatesh wrote:
-> >-----Original Message-----
-> >From: linux-kernel-owner@vger.kernel.org 
-> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
-> >Thomas Gleixner
-> >Sent: Monday, October 01, 2007 11:19 PM
-> >To: Andi Kleen
-> >Cc: Arjan van de Ven; David Bahi; LKML; 
-> >linux-rt-users@vger.kernel.org; Andrew Morton; Ingo Molnar; 
-> >Gregory Haskins
-> >Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
-> >
-> >>
-> >> The only workaround for chipsets ignoring IRQ affinity would 
-> >be to keep
-> >> track on which CPU irq 0 happens and then restart APIC timer 
-> >interrupts
-> >> on the others (or send IPIs) as needed. But that would be 
-> >fairly ugly.
-> >
-> >The clock events code does handle this already. The broadcast 
-> >interrupt 
-> >can come in on any cpu. It's just the nmi watchdog which would 
-> >be affected 
-> >by that.
-> >
-> 
-> Probably we can workaround this by keeping track of IRQ0 count at percpu
-> level and
-> use local apic timer + this percpu counter in NMI. Or just increment
-> local
-> apic timer count in IRQ0 with nohz enabled.
+linux-os (Dick Johnson) wrote:
 
-No, I tried that. It's ugly.
+> It makes no sense because a bitfield is something having to
+> do with a 'C' compiler and it must NEVER be used as a template
+> to address hardware! 'C' gives no guarantee of the ordering
+> within machine words. The only way you can access them is
+> using 'C'. They don't have addresses like other objects
+> (of course they do exist --somewhere). They are put into
+> "storage units," according to the standard, and these
+> storage units are otherwise undefined although you can
+> align them (don't go there).
 
-The per cpu accounting is the correct way to go if we want to take
-care of those systems, which ignore the CPU0 binding of irq0.
+Well, if it doesn't make any sense why do we have __LITTLE_ENDIAN_BITFIELD and 
+__BIG_ENDIAN_BITFIELD?  That is, why do we do this:
 
-See patch against the x86 tree below.
+#if defined(__BIG_ENDIAN_BITFIELD)
+	__u8 reserved1		: 2;
+	__u8 ili		: 1;
+	__u8 reserved2		: 1;
+	__u8 sense_key		: 4;
+#elif defined(__LITTLE_ENDIAN_BITFIELD)
+	__u8 sense_key		: 4;
+	__u8 reserved2		: 1;
+	__u8 ili		: 1;
+	__u8 reserved1		: 2;
+#endif
 
-	tglx
+when we can just do this:
 
--------------------->
-commit 093976c7ad206a008bd5de4619f40f6bca4a79c3
-Author: Thomas Gleixner <tglx@inhelltoy.tec.linutronix.de>
-Date:   Fri Oct 5 22:19:18 2007 +0200
+#if defined(__BIG_ENDIAN)
+	__u8 reserved1		: 2;
+	__u8 ili		: 1;
+	__u8 reserved2		: 1;
+	__u8 sense_key		: 4;
+#elif defined(__LITTLE_ENDIAN)
+	__u8 sense_key		: 4;
+	__u8 reserved2		: 1;
+	__u8 ili		: 1;
+	__u8 reserved1		: 2;
+#endif
 
-    x86: Fix irq0 / local apic timer accounting
-    
-    The clock events merge introduced a change to the nmi watchdog code to
-    handle the not longer increasing local apic timer count in the
-    broadcast mode. This is fine for UP, but on SMP it pampers over a
-    stuck CPU which is not handling the broadcast interrupt due to the
-    unconditional sum up of local apic timer count and irq0 count.
-    
-    To cover all cases we need to keep track on which CPU irq0 is
-    handled. In theory this is CPU#0 due to the explicit disabling of irq
-    balancing for irq0, but there are systems which ignore this on the
-    hardware level. The per cpu irq0 accounting allows us to remove the
-    irq0 to CPU0 binding as well.
-    
-    Add a per cpu counter for irq0 and evaluate this instead of the global
-    irq0 count in the nmi watchdog code.
-    
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> If you want to call machine-control bits by name, just
+> define them as hexadecimal numbers (unsigned ints) and,
+> if your hardware is for both little/big endian, use
+> a macro that resolves the issue between the number
+> and the hardware.
 
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index c7227e2..95d3fc2 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -353,7 +353,8 @@ __kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
- 	 * Take the local apic timer and PIT/HPET into account. We don't
- 	 * know which one is active, when we have highres/dyntick on
- 	 */
--	sum = per_cpu(irq_stat, cpu).apic_timer_irqs + kstat_cpu(cpu).irqs[0];
-+	sum = per_cpu(irq_stat, cpu).apic_timer_irqs +
-+		per_cpu(irq_stat, cpu).irq0_irqs;
- 
- 	/* if the none of the timers isn't firing, this cpu isn't doing much */
- 	if (!touched && last_irq_sums[cpu] == sum) {
-diff --git a/arch/x86/kernel/time_32.c b/arch/x86/kernel/time_32.c
-index 19a6c67..3571d0a 100644
---- a/arch/x86/kernel/time_32.c
-+++ b/arch/x86/kernel/time_32.c
-@@ -157,6 +157,9 @@ EXPORT_SYMBOL(profile_pc);
-  */
- irqreturn_t timer_interrupt(int irq, void *dev_id)
- {
-+	/* Keep nmi watchdog up to date */
-+	per_cpu(irq_stat, cpu).irq0_irqs++;
-+
- #ifdef CONFIG_X86_IO_APIC
- 	if (timer_ack) {
- 		/*
-diff --git a/include/asm-x86/hardirq_32.h b/include/asm-x86/hardirq_32.h
-index ed7cf97..9188635 100644
---- a/include/asm-x86/hardirq_32.h
-+++ b/include/asm-x86/hardirq_32.h
-@@ -9,6 +9,7 @@ typedef struct {
- 	unsigned long idle_timestamp;
- 	unsigned int __nmi_count;	/* arch dependent */
- 	unsigned int apic_timer_irqs;	/* arch dependent */
-+	unsigned int irq0_irqs;
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+That wasn't my intention.  I was hoping that __LITTLE_ENDIAN_BITFIELD could be 
+used to test bit-endianness, but I guess it can't.
 
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
