@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXJEL2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbXJELdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXJEL2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbXJEL2g
+	id S1760033AbXJELdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXJELdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:28:36 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44402 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbXJEL2f (ORCPT
+	Fri, 5 Oct 2007 07:33:37 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:46467 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbXJELdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:28:35 -0400
-To: a.p.zijlstra@chello.nl
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, wfg@mail.ustc.edu.cn,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       trond.myklebust@fys.uio.no
-In-reply-to: <1191581854.22357.85.camel@twins> (message from Peter Zijlstra on
-	Fri, 05 Oct 2007 12:57:34 +0200)
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-	 <20071004145640.18ced770.akpm@linux-foundation.org>
-	 <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
-	 <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
-	 <E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
-	 <20071004164801.d8478727.akpm@linux-foundation.org>
-	 <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
-	 <20071004174851.b34a3220.akpm@linux-foundation.org>
-	 <1191572520.22357.42.camel@twins>
-	 <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu>
-	 <1191577623.22357.69.camel@twins>
-	 <E1IdkOf-0002tK-00@dorka.pomaz.szeredi.hu> <1191581854.22357.85.camel@twins>
-Message-Id: <E1IdlKu-0002wW-00@dorka.pomaz.szeredi.hu>
+	Fri, 5 Oct 2007 07:33:37 -0400
+To: wfg@mail.ustc.edu.cn
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       akpm@linux-foundation.org
+In-reply-to: <391582087.27602@ustc.edu.cn> (message from Fengguang Wu on Fri,
+	5 Oct 2007 19:01:23 +0800)
+Subject: Re: BUG on unloading the fuse module
+References: <391574553.18064@ustc.edu.cn> <E1Idjd8-0002rY-00@dorka.pomaz.szeredi.hu> <391581094.26735@ustc.edu.cn> <E1Idkor-0002v6-00@dorka.pomaz.szeredi.hu> <391582087.27602@ustc.edu.cn>
+Message-Id: <E1IdlQc-0002wt-00@dorka.pomaz.szeredi.hu>
 From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 05 Oct 2007 13:27:16 +0200
+Date: Fri, 05 Oct 2007 13:33:10 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Limiting FUSE to say 50% (suggestion from your other email) sounds like
-> a horrible hack to me. - Need more time to think on this.
+> > > > > In 2.6.23-rc8-mm2, the fuse module always bugs on unloading.
+> > > > 
+> > > > It's fixed in Greg's patch queue.
+> > > > 
+> > > > This patch against -mm will also fix it.
+> > > 
+> > > Oh no, it panics:
+> > 
+> > How about this one?
+> 
+> Yes, it did the trick.
 
-I don't really understand all that page balancing stuff, but I think
-this will probably never or very rarely happen, because the allocator
-will prefer the bigger zones, and the dirty page limiting will not let
-the bigger zones get too full of dirty pages.
+Thanks.
 
-And even it can happen, it's not necessarily a fuse-only thing.
+It seems, some kobject ->release() function is freeing kobj->k_name,
+so we need to free it, and set it to NULL _before_ calling
+->release().
 
-It makes tons of sense to make sure, that we don't fully dirty _any_
-specialized zone.  One special zone group are the low-memory pages.
-And currently balance_dirty_pages() makes sure we don't fill that up
-with dirty file backed pages.  So something like that should make
-sense for other special zones like DMA as well.
-
-I'm not saying it's trivial, or even possible to implement, just
-thinking...
+Greg, can you please fix that in your queue?
 
 Miklos
