@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbXJECjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbXJECoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbXJECjS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 22:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbXJECjH
+	id S1757215AbXJECoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 22:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXJECoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 22:39:07 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2601 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751421AbXJECjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 22:39:06 -0400
-Date: Fri, 5 Oct 2007 04:35:41 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: "Elyse M. Grasso" <emgrasso@data-raptors.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>
-Subject: Re: [kbuild-devel] A bit of kconfig rewrite (Re: [PATCH] 9p: fix
- compile error if !CONFIG_SYSCTL)
-In-Reply-To: <E1IcFgK-0005oI-5p@flower>
-Message-ID: <Pine.LNX.4.64.0710050408550.1819@scrub.home>
-References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
- <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com>
- <E1IcFgK-0005oI-5p@flower>
+	Thu, 4 Oct 2007 22:44:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51466 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750732AbXJECn7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 22:43:59 -0400
+Date: Thu, 4 Oct 2007 19:43:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: David Miller <davem@davemloft.net>, willy@linux.intel.com,
+       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dgc@sgi.com, jens.axboe@oracle.com, suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+In-Reply-To: <20071004210518.GR12049@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0710041917020.14135@schroedinger.engr.sgi.com>
+References: <20071004183224.GA8641@linux.intel.com>
+ <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com>
+ <20071004192824.GA9852@linux.intel.com> <20071004.135537.39158051.davem@davemloft.net>
+ <20071004210518.GR12049@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I just spend some time looking at the functions that you see high in the 
+list. The trouble is that I have to speculate and that I have nothing to 
+verify my thoughts. If you could give me the hitlist for each of the 
+3 runs then this would help to check my thinking. I could be totally off 
+here.
 
-On Mon, 1 Oct 2007, Oleg Verych wrote:
+It seems that we miss the per cpu slab frequently on slab_free() which 
+leads to the calling of __slab_free() and which in turn needs to take a 
+lock on the page (in the page struct). Typically the page lock is 
+uncontended which seems to not be the case here otherwise it would not be 
+that high up.
 
-> Today's kconfig was proposed and accepted in a very unpleasant
-> circumstances, has very poor design, development and no working
-> alternative (for 5+ years now).
+The per cpu patch in mm should reduce the contention on the page struct by 
+not touching the page struct on alloc and on free. Does not seem to work 
+all the way though. slab_free() still has to touch the page struct if the 
+free is not to the currently active cpu slab.
 
-If you want to make such statements, you have to offer a little more than 
-the hot air you're producing right now...
-If you want to improve the design, you're more than welcome. I'm the first 
-one to admit that there's still lots of room for improvement, but if you 
-want to claim this can only be done via a rewrite, then you have to be 
-a lot more specific what's wrong the current design and why it's 
-unfixable.
-Quite some thought has been put into this design and if you were a little 
-more specific, I could actually tell you why it is this way and maybe how 
-to improve it incrementally instead of trying to reinvent everything.
+So there could still be page struct contention left if multiple processors 
+frequently and simultaneously free to the same slab and that slab is not 
+the per cpu slab of a cpu. That could be addressed by optimizing the 
+object free handling further to not touch the page struct even if we miss 
+the per cpu slab.
 
->   + shell-like[0] (not like CML1, which is just shell) scripting, allowing
->     to extend easily (if there is no one available) capabilities,
->     config values or actions for particular sub-system or compilation
->     unit,
+That get_partial* is far up indicates contention on the list lock that 
+should be addressable by either increasing the slab size or by changing 
+the object free handling to batch in some form.
 
-Just to pick this one point as example: I like scripting and maybe I 
-should just update the swig wrapper script I already have and merge it, 
-which would make it easier to play with the kconfig database in whatever 
-language you like.
-OTOH due to the necessary build dependencies I don't see this become a 
-mandatory feature, so unless there is a compelling reason a certain set of 
-base function will remain in C.
-
-bye, Roman
+This is an SMP system right? 2 cores with 4 cpus each? The main loop is 
+always hitting on the same slabs? Which slabs would this be? Am I right in 
+thinking that one process allocates objects and then lets multiple other 
+processors do work and then the allocated object is freed from a cpu that 
+did not allocate the object? If neighboring objects in one slab are 
+allocated on one cpu and then are almost simultaneously freed from a set 
+of different cpus then this may be explain the situation.
