@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbXJEIbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbXJEIdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbXJEIbN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 04:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXJEIa6
+	id S1760418AbXJEIdP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 04:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXJEIdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 04:30:58 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39145 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754025AbXJEIa5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 04:30:57 -0400
-Date: Fri, 5 Oct 2007 10:31:22 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: werner <werner@copaya.yi.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Bug in drm  modules of kernel 2.6.23-rc9-git2
-Message-ID: <20071005083122.GH10852@stusta.de>
-References: <1191565675.4842@copaya.yi.org>
+	Fri, 5 Oct 2007 04:33:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:53225 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbXJEIc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 04:32:58 -0400
+Date: Fri, 5 Oct 2007 10:32:40 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
+In-Reply-To: <20071005061106.GA27798@uranus.ravnborg.org>
+Message-ID: <alpine.LRH.0.999.0710051026200.10191@www.tglx.de>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
+ <200710022351.48971.alistair@devzero.co.uk> <20071005053813.GA25242@elte.hu>
+ <20071005061106.GA27798@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1191565675.4842@copaya.yi.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 03:27:55AM -0300, werner wrote:
-> attn:  linux-kernel@vger.kernel.org
+On Fri, 5 Oct 2007, Sam Ravnborg wrote:
+> > > cp: cannot stat `arch/x86_64/boot/bzImage': No such file or directory
+> > > 
+> > > Obviously, this file has moved to arch/x86/boot, but it seems like 
+> > > possibly unnecessary breakage. I've been copying bzImage for years 
+> > > from arch/x86_64/boot, and I'm sure there's a handful of scripts 
+> > > (other than Debian's kernel-image) doing this too.
+> > > 
+> > > For now, I hacked the tool[1]. Maybe, if we care, a symlink could be 
+> > > set up between arch/x86/boot and arch/$ARCH/boot ? Or would papering 
+> > > over this be more trouble than it's worth?
+> > 
+> > yeah, a symlink is the right solution i think. Our first-step goal is to 
+> > make the switchover seamless for all practical purposes, and a 
+> > compatibility symlink in arch/i386/boot/ will not hurt. (we shouldnt 
+> > worry about the really old zImage target though)
 > 
+> But when can we then get rid of it?
+> This is a simple question about when we take the noise..
+> And right now people know we are shifting to x86 - so it makes
+> sense to let the dependent userspace tools take the pain now and not later.
 > 
-> There is a bug in the drm modules,  w.r.t. radeon and savage grafic cards (at least)
-> This bug is present on kernel 2.6.23-rc9-git2 ,  it was NOT present on 2.6.23-rc8-git4
-> nor in the previous kernels.   Without drm, also compiz snapshot don't work longer
+> Starting to fill up a build kernel with symlinks for compatibility with
+> random progarms seems to be the wrong approach.
 > 
-> I hope you can find and repair this before the 2.6.23 release
-> 
-> Below is the beginning of dmesg  for the two kernels what I quoted above.
-> 
-> Werner Landgraf
-> www.copaya.yi.org
-> 
-> 
-> ==============  dmesg 2.6.23-rc9-git2 (drm no working longer ...) ===================================
-> Linux version 2.6.23-rc9-git2-i486-1mn (root@werner) (gcc version 4.2.0 20061031 (prerelease)) #1 SMP Thu Oct 4 15:32:50 GFT 2007
->...
-> via_agp: Unknown symbol agp_bridge
-> via_agp: Unknown symbol agp3_generic_sizes
-> via_agp: Unknown symbol global_cache_flush
-> via_agp: Unknown symbol agp_generic_enable
-> via_agp: Unknown symbol agp_generic_insert_memory
-> via_agp: Unknown symbol agp_generic_destroy_page
-> via_agp: Unknown symbol agp_off
-> via_agp: Unknown symbol agp_remove_bridge
-> via_agp: Unknown symbol agp_generic_mask_memory
-> via_agp: Unknown symbol agp_generic_alloc_by_type
-> via_agp: Unknown symbol agp_generic_free_by_type
-> via_agp: Unknown symbol agp_alloc_bridge
-> via_agp: Unknown symbol agp_add_bridge
-> via_agp: Unknown symbol get_agp_version
-> via_agp: Unknown symbol agp_generic_remove_memory
-> via_agp: Unknown symbol agp_generic_create_gatt_table
-> via_agp: Unknown symbol agp_generic_type_to_mask_type
-> via_agp: Unknown symbol agp_generic_free_gatt_table
-> via_agp: Unknown symbol agp_generic_alloc_page
-> via_agp: Unknown symbol agp_put_bridge
->...
+> 	Sam - that dislike especially the asm symlink
 
-The agpgart module is not present.
+Sam,
 
-This indicates that something went wrong with building or installing 
-your modules.
+I completely agree with you, but we want to keep the migration noise
+as low as possible. Adding the symlink right now along with an entry
+into features-removal.txt (6 month grace period) allows a smoother
+transition. The distro folks should better get their gear together
+until then.
 
-Is it still present if you wipe the 2.6.23-rc9-git2 sources, image and 
-modules from your disk, freshly unpack the sources, recompile the 
-kernel and install the modules?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	tglx
