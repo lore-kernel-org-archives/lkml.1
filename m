@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbXJEFin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbXJEFll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbXJEFin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 01:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXJEFig
+	id S1756464AbXJEFll (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 01:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJEFld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 01:38:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37009 "EHLO mx2.mail.elte.hu"
+	Fri, 5 Oct 2007 01:41:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33277 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751421AbXJEFif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 01:38:35 -0400
-Date: Fri, 5 Oct 2007 07:38:13 +0200
+	id S1751478AbXJEFlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 01:41:32 -0400
+Date: Fri, 5 Oct 2007 07:41:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Glauber de Oliveira Costa <glommer@gmail.com>
+Cc: Alistair John Strachan <alistair@devzero.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
        Sam Ravnborg <sam@ravnborg.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Message-ID: <20071005053813.GA25242@elte.hu>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <200710022351.48971.alistair@devzero.co.uk>
+Message-ID: <20071005054117.GB25242@elte.hu>
+References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <200710022351.48971.alistair@devzero.co.uk> <5d6222a80710021600tb42532bhd4001060b464bb48@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710022351.48971.alistair@devzero.co.uk>
+In-Reply-To: <5d6222a80710021600tb42532bhd4001060b464bb48@mail.gmail.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,34 +38,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alistair John Strachan <alistair@devzero.co.uk> wrote:
+* Glauber de Oliveira Costa <glommer@gmail.com> wrote:
 
-> On Tuesday 02 October 2007 04:41:49 Linus Torvalds wrote:
-> [snip]
-> > In other words, people who know they may be affected and would want to
-> > prepare can look at (for example)
+> On 10/2/07, Alistair John Strachan <alistair@devzero.co.uk> wrote:
+> > This is certainly a tool issue, but if I use Debian's kernel-image "make-kpkg"
+> > wrapper around the kernel build system, it fails with:
 > >
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git x86
+> > cp: cannot stat `arch/x86_64/boot/bzImage': No such file or directory
 > >
-> > and generally get ready for the switch-over.
+> > Obviously, this file has moved to arch/x86/boot, but it seems like possibly
+> > unnecessary breakage. I've been copying bzImage for years from
+> > arch/x86_64/boot, and I'm sure there's a handful of scripts (other than
+> > Debian's kernel-image) doing this too.
 > 
-> This is certainly a tool issue, but if I use Debian's kernel-image "make-kpkg" 
-> wrapper around the kernel build system, it fails with:
-> 
-> cp: cannot stat `arch/x86_64/boot/bzImage': No such file or directory
-> 
-> Obviously, this file has moved to arch/x86/boot, but it seems like 
-> possibly unnecessary breakage. I've been copying bzImage for years 
-> from arch/x86_64/boot, and I'm sure there's a handful of scripts 
-> (other than Debian's kernel-image) doing this too.
-> 
-> For now, I hacked the tool[1]. Maybe, if we care, a symlink could be 
-> set up between arch/x86/boot and arch/$ARCH/boot ? Or would papering 
-> over this be more trouble than it's worth?
+> I believe most sane tools would be using the output of uname -m, so a 
+> possible way to fix this would be fixing the data passed to userspace 
+> from uname. However, that might be the case that it creates a new set 
+> of problems too, with tools relying on the output of uname -m to 
+> determine wheter the machine is 32 or 64 bit, and so on.
 
-yeah, a symlink is the right solution i think. Our first-step goal is to 
-make the switchover seamless for all practical purposes, and a 
-compatibility symlink in arch/i386/boot/ will not hurt. (we shouldnt 
-worry about the really old zImage target though)
+there are two problems with the use of uname -m:
+
+- the build machine architecture is not necessarily the same as the
+  target architecture. (for example i cross-compile all my 32-bit
+  kernels on a 64-bit box.)
+
+- we kept uname -m compatile. multilib depends on it, and other pieces
+  of userspace as well. So uname -m still outputs 'i386' on 32-bit and
+  'x86_64' on 64-bit - not 'x86'.
+
+a symlink looks like the best solution to me.
 
 	Ingo
