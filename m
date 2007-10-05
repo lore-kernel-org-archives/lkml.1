@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbXJETyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbXJETzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763368AbXJETyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 15:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXJETyd
+	id S932135AbXJETzl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 15:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbXJETzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 15:54:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46996 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbXJETyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 15:54:32 -0400
-Date: Fri, 5 Oct 2007 15:54:18 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, wfg@mail.ustc.edu.cn,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-Message-ID: <20071005155418.5309e9c3@cuia.boston.redhat.com>
-In-Reply-To: <1191569577.22357.22.camel@twins>
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-	<20071004145640.18ced770.akpm@linux-foundation.org>
-	<E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
-	<20071004160941.e0c0c7e5.akpm@linux-foundation.org>
-	<1191569577.22357.22.camel@twins>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 15:55:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56810 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757959AbXJETzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 15:55:19 -0400
+Date: Fri, 5 Oct 2007 21:55:18 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Cute feature: colored printk output
+In-Reply-To: <20071005194326.GD4000@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0710052144580.13406@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr>
+ <20071005191940.GA4003@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0710052120270.13406@fbirervta.pbzchgretzou.qr>
+ <20071005192404.GB4003@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0710052126271.13406@fbirervta.pbzchgretzou.qr>
+ <20071005194326.GD4000@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Oct 2007 09:32:57 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> I think just adding nr_cpus * ratelimit_pages to the dirth_thresh in
-> throttle_vm_writeout() will also solve the problem
+On Oct 5 2007 15:43, Lennart Sorensen wrote:
+>On Fri, Oct 05, 2007 at 09:32:11PM +0200, Jan Engelhardt wrote:
+>> Ah you seem to be a proponent of http://www.blackgoogle.com/
+>> then :-)  Unfortunately, it seems like Xft uses Grayscale AA
+>> (http://antigrain.com/research/font_rasterization/index.html)
+>> so black background make the font look thinner.
+>
+>I was mainly thinking someone with a server with a screen showing their
+>console might like to not make too much heat in the server room.
 
-Agreed, that should fix the main latency issues.
- 
--- 
-All Rights Reversed
+"Ha, ok, I see where you're going with this one."
+
+This patch is perfectly suited to reduce heat at home and in the server
+room, especially during kernel development and debugging, but the
+average kernel usage already pays off. Just add vt.printk_color=0x08
+and all your kernel messages and oopses will be printed using low-power
+electrons. Extremely useful on SGI Altix 4700, which does print a lot
+(number of CPU cores), or SunFire X4500 (number of disks). Even if not
+using one of these systems, CKO can contribute to the lower power usage
+of PetaBox™ [http://www.archive.org/web/petabox.php]... ;-)
