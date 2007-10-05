@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbXJEAMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXJEANR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761237AbXJEAMz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 20:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759553AbXJEAMo
+	id S1761326AbXJEANR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 20:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761275AbXJEAM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 20:12:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55401 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757930AbXJEAMn (ORCPT
+	Thu, 4 Oct 2007 20:12:58 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:36690 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762831AbXJEAMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 20:12:43 -0400
-Date: Thu, 4 Oct 2007 17:12:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-cc: Mathieu Chouquet-Stringer <mchouque@free.fr>, Ollie Wild <aaw@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] Linux 2.6.23-rc9 and MAX_ARG_PAGES
-In-Reply-To: <18181.26846.253191.684845@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LFD.0.999.0710041707260.23684@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org>
- <m3wsu2u7y6.fsf@bigip.mine.nu> <alpine.LFD.0.999.0710041023480.23684@woody.linux-foundation.org>
- <20071004204443.GA28483@bigip.bigip.mine.nu>
- <alpine.LFD.0.999.0710041413020.23684@woody.linux-foundation.org>
- <18181.26846.253191.684845@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 4 Oct 2007 20:12:53 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, miklos@szeredi.hu, wfg@mail.ustc.edu.cn,
+       a.p.zijlstra@chello.nl, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20071004164801.d8478727.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 4 Oct 2007 16:48:01 -0700)
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	<20071004145640.18ced770.akpm@linux-foundation.org>
+	<E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+	<20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+	<E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu> <20071004164801.d8478727.akpm@linux-foundation.org>
+Message-Id: <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Oct 2007 02:12:30 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 5 Oct 2007, Paul Mackerras wrote:
-> Linus Torvalds writes:
+> > > This is a somewhat general problem: a userspace process is in the IO path. 
+> > > Userspace block drivers, for example - pretty much anything which involves
+> > > kernel->userspace upcalls for storage applications.
+> > > 
+> > > I solved it once in the past by marking the userspace process as
+> > > PF_MEMALLOC and I beleive that others have implemented the same hack.
+> > > 
+> > > I suspect that what we need is a general solution, and that the solution
+> > > will involve explicitly telling the kernel that this process is one which
+> > > actually cleans memory and needs special treatment.
+> > > 
+> > > Because I bet there will be other corner-cases where such a process needs
+> > > kernel help, and there might be optimisation opportunities as well.
+> > > 
+> > > Problem is, any such mark-me-as-special syscall would need to be
+> > > privileged, and FUSE servers presently don't require special perms (do
+> > > they?)
 > > 
-> > Well, since others definitely don't see this, including me, and I can do 
-> > things like 62MB exec arrays:
-> > 
-> > 	[torvalds@woody linux]$ echo $(find /home/torvalds/) | wc
-> > 	      1  883304 63000962
+> > No, and that's a rather important feature, that I'd rather not give
+> > up.
 > 
-> That wouldn't actually do an exec, assuming you're using bash, since
-> echo is a shell builtin in bash.  You'd need to do /bin/echo.
+> Can fuse do it?  Perhaps the fs can diddle the server's task_struct at
+> registration time?
 
-Right you are, silly me. But yes, it works for me even with that (and 
-since I downloaded the gcc source tree, it now has six more megs of 
-arguments).
+No, it's futile.  What if another process is involved (ssh in case of
+sshfs), etc.
 
-I also tested that "ulimit -s" seems to do the right thing for me.
+> >  But with the dirty limiting, the memory cleaning really shouldn't
+> > be a problem, as there is plenty of memory _not_ used for dirty file
+> > data, that the filesystem can use during the writeback.
+> 
+> I don't think I understand that.  Sure, it _shouldn't_ be a problem.  But it
+> _is_.  That's what we're trying to fix, isn't it?
 
-I'm also assuming Mathieu is running x86 (or x86-64): HP-PA has a stack 
-that grows upwards, and that has traditionally been exciting.
+The problem, I believe is in the memory allocation code, not in fuse.
 
-IA64 also has some strange things for the register backing store.
+In the example, memory allocation may be blocking indefinitely,
+because we have 4MB under writeback, even though 28MB can still be
+made available.  And that _should_ be fixable.
 
-			Linus
+> > So the only thing the kernel should be careful about, is not to block
+> > on an allocation if not strictly necessary.
+> > 
+> > Actually a trivial fix for this problem could be to just tweak the
+> > thresholds, so to make the above scenario impossible.  Although I'm
+> > still not convinced, this patch is perfect, because the dirty
+> > threshold can actually change in time...
+> > 
+> > Index: linux/mm/page-writeback.c
+> > ===================================================================
+> > --- linux.orig/mm/page-writeback.c      2007-10-05 00:31:01.000000000 +0200
+> > +++ linux/mm/page-writeback.c   2007-10-05 00:50:11.000000000 +0200
+> > @@ -515,6 +515,12 @@ void throttle_vm_writeout(gfp_t gfp_mask
+> >          for ( ; ; ) {
+> >                 get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+> > 
+> > +               /*
+> > +                * Make sure the theshold is over the hard limit of
+> > +                * dirty_thresh + ratelimit_pages * nr_cpus
+> > +                */
+> > +               dirty_thresh += ratelimit_pages * num_online_cpus();
+> > +
+> >                  /*
+> >                   * Boost the allowable dirty threshold a bit for page
+> >                   * allocators so they don't get DoS'ed by heavy writers
+> 
+> I can probably kind of guess what you're trying to do here.  But if
+> ratelimit_pages * num_online_cpus() exceeds the size of the offending zone
+> then things might go bad.
+
+I think the admin can do quite a bit of other damage, by setting
+dirty_ratio too high.
+
+Maybe this writeback throttling should just have a fixed limit of 80%
+ZONE_NORMAL, and limit dirty_ratio to something like 50%.
+
+Miklos
