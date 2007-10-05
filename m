@@ -1,192 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXJELz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXJEL4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbXJELz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXJELzQ
+	id S1757240AbXJEL4F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXJELzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:55:16 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:57914 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751940AbXJELzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:55:14 -0400
-Message-ID: <391585312.05654@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 5 Oct 2007 19:55:08 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: David Chinner <dgc@sgi.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Ken Chen <kenchen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>
-Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to
-	indicate more io
-Message-ID: <20071005115508.GA9998@mail.ustc.edu.cn>
-References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn> <20071003024119.GL23367404@sgi.com> <20071004022133.GA6244@mail.ustc.edu.cn> <20071004050344.GF23367404@sgi.com> <20071005033652.GA6448@mail.ustc.edu.cn> <20071005074103.GM23367404@sgi.com>
+	Fri, 5 Oct 2007 07:55:54 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37732 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbXJELzx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 07:55:53 -0400
+Date: Fri, 5 Oct 2007 13:55:52 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       adaplas@gmail.com
+Subject: [PATCH] vc bell config
+Message-ID: <Pine.LNX.4.64.0710051347000.13406@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071005074103.GM23367404@sgi.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 05:41:03PM +1000, David Chinner wrote:
-> On Fri, Oct 05, 2007 at 11:36:52AM +0800, Fengguang Wu wrote:
-> > On Thu, Oct 04, 2007 at 03:03:44PM +1000, David Chinner wrote:
-> > > On Thu, Oct 04, 2007 at 10:21:33AM +0800, Fengguang Wu wrote:
 
-> > if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {    /* all-written or blockade... */
-> >         if (wbc.encountered_congestion || wbc.more_io) /* blockade! */
-> >                 congestion_wait(WRITE, HZ/10);
-> >         else                                           /* all-written! */
-> >                 break;
-> > }
-> 
-> >From this, if we have more_io on one superblock and we skip pages on a
-> different superblock, the combination of the two will causes us to stop
-> writeback for a while. Is this the right thing to do?
+It is already possible to deactivate the vc bell on a per-tty basis,
+by using echo -en "\e[11;0]", but this is reset on reset(1).
 
-No, the two cases will occur at the same time to a super_block.
-See below.
+This adds a sysfs parameter to globally control the vc bell, as well
+as sysfs parameters for default pitch and duration.
 
-> > We can also read the whole background_writeout() logic as
-> > 
-> > while (!done) {
-> >         /* sync _all_ sync-able data */
-> >         congestion_wait(100ms);
-> > }
-> 
-> To me it reads as:
-> 
-> 	while (!done) {
-> 		/* sync all data or until one inode skips */
-> 		congestion_wait(up to 100ms);
-> 	}
-> 
-> and it ignores that we might have more superblocks with dirty data
-> on them that we haven't flushed because we skipped pages on
-> an inode on a different block device.
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-AFAIK, generic_sync_sb_inodes() will simply skip the inode in trouble
-and _continue_ to sync other inodes:
+---
+ drivers/char/vt.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-                if (wbc->pages_skipped != pages_skipped) {
-                        /*
-                         * writeback is not making progress due to locked
-                         * buffers.  Skip this inode for now.
-                         */
-                        redirty_tail(inode);
-                }
-
-Note that there's no "break" here.
-
-> > Sure, the queues should be filled as fast as possible.
-> > How fast can we fill the queue? Let's measure it:
-> > 
-> > //generated by the patch below
-> > 
-> > [  871.430700] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 54289 global 29911 0 0 wc _M tw -12 sk 0
-> > [  871.444718] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 53253 global 28857 0 0 wc _M tw -12 sk 0
-> > [  871.458764] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 52217 global 27834 0 0 wc _M tw -12 sk 0
-> > [  871.472797] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 51181 global 26780 0 0 wc _M tw -12 sk 0
-> > [  871.486825] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 50145 global 25757 0 0 wc _M tw -12 sk 0
-> > [  871.500857] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 49109 global 24734 0 0 wc _M tw -12 sk 0
-> > [  871.514864] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 48073 global 23680 0 0 wc _M tw -12 sk 0
-> > [  871.528889] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 47037 global 22657 0 0 wc _M tw -12 sk 0
-> > [  871.542894] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 46001 global 21603 0 0 wc _M tw -12 sk 0
-> > [  871.556927] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 44965 global 20580 0 0 wc _M tw -12 sk 0
-> > [  871.570961] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 43929 global 19557 0 0 wc _M tw -12 sk 0
-> > [  871.584992] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 42893 global 18503 0 0 wc _M tw -12 sk 0
-> > [  871.599005] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 41857 global 17480 0 0 wc _M tw -12 sk 0
-> > [  871.613027] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 40821 global 16426 0 0 wc _M tw -12 sk 0
-> > [  871.628626] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 39785 global 15403 961 0 wc _M tw -12 sk 0
-> > [  871.644439] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 38749 global 14380 1550 0 wc _M tw -12 sk 0
-> > [  871.660267] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 37713 global 13326 2573 0 wc _M tw -12 sk 0
-> > [  871.676236] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 36677 global 12303 3224 0 wc _M tw -12 sk 0
-> > [  871.692021] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 35641 global 11280 4154 0 wc _M tw -12 sk 0
-> > [  871.707824] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 34605 global 10226 4929 0 wc _M tw -12 sk 0
-> > [  871.723638] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 33569 global 9203 5735 0 wc _M tw -12 sk 0
-> > [  871.739708] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 32533 global 8149 6603 0 wc _M tw -12 sk 0
-> > [  871.756407] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 31497 global 7126 7409 0 wc _M tw -12 sk 0
-> > [  871.772165] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 30461 global 6103 8246 0 wc _M tw -12 sk 0
-> > [  871.788035] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 29425 global 5049 9052 0 wc _M tw -12 sk 0
-> > [  871.803896] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 28389 global 4026 9982 0 wc _M tw -12 sk 0
-> > [  871.820427] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 27353 global 2972 10757 0 wc _M tw -12 sk 0
-> > [  871.836728] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 26317 global 1949 11656 0 wc _M tw -12 sk 0
-> > [  871.853286] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 25281 global 895 12431 0 wc _M tw -12 sk 0
-> > [  871.868762] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 24245 global 58 13051 0 wc __ tw 168 sk 0
-> > 
-> > It's an Intel Core 2 2.93GHz CPU and a SATA disk.
-> > The trace shows that
-> > - there's no congestion_wait() called in wb_kupdate()
-> > - it takes wb_kupdate() ~15ms to sync every 4MB 
-> 
-> But it takes a modern SATA disk ~40-50ms to write 4MB (80-100MB/s).
-> IOWs, what you've timed above is a burst workload, not a steady
-> state behaviour. And it actually shows that the elevator queues
-> are growing in constrast to your goal of preventing them from
-> growing.
-
-My goal really? ;-)
+Index: linux-2.6.23/drivers/char/vt.c
+===================================================================
+--- linux-2.6.23.orig/drivers/char/vt.c
++++ linux-2.6.23/drivers/char/vt.c
+@@ -134,8 +134,12 @@ const struct consw *conswitchp;
+ /*
+  * Here is the default bell parameters: 750HZ, 1/8th of a second
+  */
+-#define DEFAULT_BELL_PITCH	750
+-#define DEFAULT_BELL_DURATION	(HZ/8)
++static unsigned int default_bell_pitch = 750;
++static unsigned int default_bell_duration = HZ / 8;
++static unsigned int vc_bell_enabled = true;
++module_param_named(bell_pitch, default_bell_pitch, uint, S_IRUGO | S_IWUSR);
++module_param_named(bell_duration, default_bell_duration, uint, S_IRUGO | S_IWUSR);
++module_param_named(bell_enabled, vc_bell_enabled, uint, S_IRUGO | S_IWUSR);
  
-> In more detail, the first half of the trace indicates no pages under
-> writeback, that tends to imply that all I/O is complete by the
-> time wb_kupdate is woken - it's been sucked into the drive
-> cache as fast as possible.
-
-Right.
+ struct vc vc_cons [MAX_NR_CONSOLES];
  
-> About half way through we start to see windup of the the number of
-> pages under writeback of about 800-900 pages per printk.  That's
-> 1024 pages minus 1 or 2 512k I/Os. This implies that the disk cache
-> is now full and the disk has reached saturation. I/O is now
-> being queued in the elevator. The last trace has 13051 pages under
-> writeback, which at 128 pages per I/O is ~100 queued 512k I/Os.
-> 
-> The default queue depth with cfq is 128 requests, and IIRC it
-> congests at 7/8s full, or 112 requests. IOWs, you file that you
-> wrote was about 10MB short of what is needed to see congestion on
-> your test rig.
-
-Exactly.
-
-wfg ~% cat /sys/block/sda/queue/nr_requests   
-128
-wfg ~% cat /sys/block/sda/queue/max_sectors_kb
-512
+@@ -1401,14 +1405,14 @@ static void setterm_command(struct vc_da
+ 			if (vc->vc_npar >= 1)
+ 				vc->vc_bell_pitch = vc->vc_par[1];
+ 			else
+-				vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
++				vc->vc_bell_pitch = default_bell_pitch;
+ 			break;
+ 		case 11: /* set bell duration in msec */
+ 			if (vc->vc_npar >= 1)
+ 				vc->vc_bell_duration = (vc->vc_par[1] < 2000) ?
+ 					vc->vc_par[1] * HZ / 1000 : 0;
+ 			else
+-				vc->vc_bell_duration = DEFAULT_BELL_DURATION;
++				vc->vc_bell_duration = default_bell_duration;
+ 			break;
+ 		case 12: /* bring specified console to the front */
+ 			if (vc->vc_par[1] >= 1 && vc_cons_allocated(vc->vc_par[1] - 1))
+@@ -1554,8 +1558,8 @@ static void reset_terminal(struct vc_dat
+ 	vc->vc_tab_stop[3]	=
+ 	vc->vc_tab_stop[4]	= 0x01010101;
  
-More exactly, I was writing a huge file. It produces
-balance_dirty_pages, background_writeout, and at last wb_kupdate. The
-trace messages are collected after the copy completes, when
-wb_kupdate() starts to sync the remaining (< background_thresh) data.
-
-> So the trace shows we slept on neither congestion or more_io
-> and it points towards congestion being the thing will typically
-> block us on large file I/O. Before drawing any conclusions on
-> whether wbc.more_io is needed or not, do you have any way of
-> producing skipped pages when more_io is set?
-
-No(and not that easy). (pages_skipped && more_io) events are rare indeed.
-
-> > However, wb_kupdate() is syncing the data a bit slow(4*1000/15=266MB/s),
-> > could it be because of a lot of cond_resched()?
-> 
-> You are using ext3? That would be my guess based simply on the write
-> rate - ext3 has long been stuck at about that speed for buffered
-> writes even on much faster block devices.  If I'm right, try using
-> XFS and see how much differently it behaves. I bet you hit
-> congestion much sooner than you expect. ;)
-
-Yes, I was running ext3.  It seems that XFS is about the same speed:
-
-[ 1427.278454] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 37974 global 16727 0 0 wc _M tw -4 sk 0
-[ 1427.293653] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 36946 global 15704 0 0 wc _M tw -3 sk 0
-[ 1427.308891] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 35919 global 14650 0 0 wc _M tw -13 sk 0
-[ 1427.322462] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 34882 global 13937 0 0 wc _M tw 300 sk 0
-[ 1427.338194] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 34158 global 12914 0 0 wc _M tw -9 sk 0
-[ 1427.353473] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 33125 global 11860 0 0 wc _M tw -12 sk 0
-[ 1427.362984] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 32089 global 11860 0 0 wc _M tw 1018 sk 0
-
-That's 14ms per 4MB.  Maybe it's a VFS issue.
+-	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
+-	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
++	vc->vc_bell_pitch = default_bell_pitch;
++	vc->vc_bell_duration = default_bell_duration;
+ 
+ 	gotoxy(vc, 0, 0);
+ 	save_cur(vc);
+@@ -1574,7 +1578,7 @@ static void do_con_trol(struct tty_struc
+ 	case 0:
+ 		return;
+ 	case 7:
+-		if (vc->vc_bell_duration)
++		if (vc_bell_enabled && vc->vc_bell_duration)
+ 			kd_mksound(vc->vc_bell_pitch, vc->vc_bell_duration);
+ 		return;
+ 	case 8:
 
