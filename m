@@ -1,215 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758414AbXJEHle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXJEHmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758414AbXJEHle (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 03:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbXJEHlZ
+	id S1760050AbXJEHmY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 03:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXJEHmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 03:41:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37701 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751734AbXJEHlY (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 03:41:24 -0400
-Date: Fri, 5 Oct 2007 17:41:03 +1000
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>
-Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to indicate more io
-Message-ID: <20071005074103.GM23367404@sgi.com>
-References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn> <20071003024119.GL23367404@sgi.com> <20071004022133.GA6244@mail.ustc.edu.cn> <20071004050344.GF23367404@sgi.com> <20071005033652.GA6448@mail.ustc.edu.cn>
-Mime-Version: 1.0
+	Fri, 5 Oct 2007 03:42:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60262 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752143AbXJEHmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 03:42:16 -0400
+Date: Fri, 5 Oct 2007 00:44:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+Subject: Re: [OOPS] AXIS 700 Lite (VIA C7 CPU) BUG with 2.6.23-rc9-git (i2c)
+Message-ID: <20071005074423.GA17572@suse.de>
+References: <Pine.LNX.4.60.0710042343030.4537@poirot.grange> <20071005092844.26d27198@hyperion.delvare>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071005033652.GA6448@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071005092844.26d27198@hyperion.delvare>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 11:36:52AM +0800, Fengguang Wu wrote:
-> On Thu, Oct 04, 2007 at 03:03:44PM +1000, David Chinner wrote:
-> > On Thu, Oct 04, 2007 at 10:21:33AM +0800, Fengguang Wu wrote:
-> > > OK, I guess it is the focus of all your questions: Why should we sleep
-> > > in congestion_wait() and possibly hurt the write throughput? I'll try
-> > > to summary it:
-> > > 
-> > > - congestion_wait() is necessary
-> > > Besides device congestions, there may be other blockades we have to
-> > > wait on, e.g. temporary page locks, NFS/journal issues(I guess).
+On Fri, Oct 05, 2007 at 09:28:44AM +0200, Jean Delvare wrote:
+> Hi Guennadi,
+> 
+> On Fri, 5 Oct 2007 00:46:59 +0200 (CEST), Guennadi Liakhovetski wrote:
+> > Got an AXIS 700 Lite thin client with a C7 CPU and CN700 chipset in it, 
+> > compiled today's git snapshot, and it Oopses in i2c_viapro:
 > > 
-> > We skip locked pages in writeback, and if some filesystems have
-> > blocking issues that require non-blocking writeback waits for some
-> > I/O to complete before re-entering writeback, then perhaps they should be
-> > setting wbc->encountered_congestion to tell writeback to back off.
+> > BUG: unable to handle kernel paging request at virtual address 016c0555
+> >  printing eip:
+> > c01a60ed
+> > *pde = 00000000
+> > Oops: 0000 [#1]
+> > PREEMPT 
+> > Modules linked in: i2c_viapro i2c_dev i2c_core loop
+> > CPU:    0
+> > EIP:    0060:[<c01a60ed>]    Not tainted VLI
+> > EFLAGS: 00010282   (2.6.23-rc9-g804b3f9a #5)
+> > EIP is at sysfs_create_group+0x1d/0xe0
+> > eax: f889b828   ebx: 00000000   ecx: f7d764b0   edx: 016c0555
+> > esi: 016c0555   edi: 00000000   ebp: f7d71dc4   esp: f7d71da8
+> > ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+> > Process modprobe (pid: 1214, ti=f7d70000 task=c18f3560 task.ti=f7d70000)
+> > Stack: c03ceba0 f7d7647c f7d71dd8 c01a392b f7d764b0 00000000 f889f3a0 f7d71ddc 
+> >        c0248b38 f889b828 f889b7c0 00000000 00000000 f7d71df4 c0248c0c 00000000 
+> >        f889b7c0 00000000 f889b864 f7d71e20 c02491ee f889b828 c0367b56 f889b864 
+> > Call Trace:
+> >  [<c0104e7c>] show_trace_log_lvl+0x1c/0x40
+> >  [<c0104f5a>] show_stack_log_lvl+0x9a/0xc0
+> >  [<c01051bc>] show_registers+0x1dc/0x340
+> >  [<c01054b2>] die+0x102/0x210
+> >  [<c01183c6>] do_page_fault+0x266/0x600
+> >  [<c031102a>] error_code+0x6a/0x70
+> >  [<c0248b38>] device_add_groups+0x28/0x60
+> >  [<c0248c0c>] device_add_attrs+0x5c/0xb0
+> >  [<c02491ee>] device_add+0xfe/0x330
+> >  [<c0249432>] device_register+0x12/0x20
+> >  [<f889f53d>] i2c_register_adapter+0xbd/0x170 [i2c_core]
+> >  [<f889f66a>] i2c_add_adapter+0x7a/0x80 [i2c_core]
+> >  [<f889a605>] vt596_probe+0x145/0x370 [i2c_viapro]
+> >  [<c01ef7dd>] pci_call_probe+0xd/0x10
+> >  [<c01ef82f>] __pci_device_probe+0x4f/0x60
+> >  [<c01ef869>] pci_device_probe+0x29/0x50
+> >  [<c024b864>] really_probe+0x94/0x140
+> >  [<c024b970>] driver_probe_device+0x40/0x60
+> >  [<c024baaa>] __driver_attach+0x7a/0x80
+> >  [<c024aa74>] bus_for_each_dev+0x54/0x70
+> >  [<c024bac9>] driver_attach+0x19/0x20
+> >  [<c024b177>] bus_add_driver+0x77/0x130
+> >  [<c024bed5>] driver_register+0x75/0x80
+> >  [<c01efb7a>] __pci_register_driver+0x4a/0x80
+> >  [<f8890017>] i2c_vt596_init+0x17/0x19 [i2c_viapro]
+> >  [<c01420a2>] sys_init_module+0xe2/0x140
+> >  [<c0104162>] sysenter_past_esp+0x5f/0x85
+> >  =======================
+> > Code: e8 8d b6 00 00 00 00 8d bc 27 00 00 00 00 55 89 e5 56 89 d6 53 83 ec 
+> > 14 85 c0 0f 84 b2 00 00 00 8b 48 30 85 c9 0f 84 a7 00 00 00 <8b> 12 85 d2 
+> > 0f 85 89 00 00 00 89 4d f4 8b 5d f4 85 db 74 0b 8b 
+> > EIP: [<c01a60ed>] sysfs_create_group+0x1d/0xe0 SS:ESP 0068:f7d71da8
 > 
-> We have wbc->pages_skipped for that :-)
+> Thanks for letting us know. From the stack trace above, the oops
+> happens in the driver core. Greg, did you touch something in this area
+> recently?
 
-I walked right into that one ;)
+No I have not, sorry.
 
-> if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {    /* all-written or blockade... */
->         if (wbc.encountered_congestion || wbc.more_io) /* blockade! */
->                 congestion_wait(WRITE, HZ/10);
->         else                                           /* all-written! */
->                 break;
-> }
+thanks,
 
->From this, if we have more_io on one superblock and we skip pages on a
-different superblock, the combination of the two will causes us to stop
-writeback for a while. Is this the right thing to do?
-
-> We can also read the whole background_writeout() logic as
-> 
-> while (!done) {
->         /* sync _all_ sync-able data */
->         congestion_wait(100ms);
-> }
-
-To me it reads as:
-
-	while (!done) {
-		/* sync all data or until one inode skips */
-		congestion_wait(up to 100ms);
-	}
-
-and it ignores that we might have more superblocks with dirty data
-on them that we haven't flushed because we skipped pages on
-an inode on a different block device.
-
-
-> Note that it's far from "wait 100ms for every 4MB" (which is merely
-> the worst possible case).
-
-If that's the worst case, then it's far better than the current
-"wait 30s for every 4MB".  ;)
-
-Still, if it can be improved....
-
-> > > - congestion_wait() won't hurt write throughput
-> > > When not congested, congestion_wait() will be wake up on each write
-> > > completion.
-> > 
-> > What happens if the I/O we issued has already completed before we
-> > got back up to the congestion_wait() call? We'll spend 100ms
-> > sleeping when we shouldn't have and throughput goes down by 10% on
-> > every occurrence....
-> 
-> Ah, that was out of my imagination. Maybe we could do with
-> 
->         if (wbc.more_io)
->                 congestion_wait(WRITE, 1);
-> 
-> It's at least 10 times better.
-
-And probably good enough to make it unnoticable.
-
-> "going mad" means "busy waiting".
-
-Ah, ok. that I understand ;)
-
-> > > > > So for your question of queue depth, the answer is: the queue length
-> > > > > will not build up in the first place. 
-> > > > 
-> > > > Which queue are you talking about here? The block deivce queue?
-> > > 
-> > > Yes, the elevator's queues.
-> > 
-> > I think this is the wrong thing to be doing and is detrimental
-> > to I/o perfomrance because it wil reduce elevator efficiency.
-> > 
-> > The elevator can only work efficiently if we allow the queues to
-> > build up. The deeper the queue, the better the elevator can sort the
-> > I/o requests and keep the device at maximum efficiency.  If we don't
-> > push enough I/O into the queues the we miss opportunities to combine
-> > adjacent I/Os and reduce the seek load of writeback. Also, a shallow
-> > queue will run dry if we don't get back to it in time which is
-> > possible if we wait for I/o to complete before we go and flush
-> > more....
-> 
-> Sure, the queues should be filled as fast as possible.
-> How fast can we fill the queue? Let's measure it:
-> 
-> //generated by the patch below
-> 
-> [  871.430700] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 54289 global 29911 0 0 wc _M tw -12 sk 0
-> [  871.444718] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 53253 global 28857 0 0 wc _M tw -12 sk 0
-> [  871.458764] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 52217 global 27834 0 0 wc _M tw -12 sk 0
-> [  871.472797] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 51181 global 26780 0 0 wc _M tw -12 sk 0
-> [  871.486825] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 50145 global 25757 0 0 wc _M tw -12 sk 0
-> [  871.500857] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 49109 global 24734 0 0 wc _M tw -12 sk 0
-> [  871.514864] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 48073 global 23680 0 0 wc _M tw -12 sk 0
-> [  871.528889] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 47037 global 22657 0 0 wc _M tw -12 sk 0
-> [  871.542894] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 46001 global 21603 0 0 wc _M tw -12 sk 0
-> [  871.556927] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 44965 global 20580 0 0 wc _M tw -12 sk 0
-> [  871.570961] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 43929 global 19557 0 0 wc _M tw -12 sk 0
-> [  871.584992] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 42893 global 18503 0 0 wc _M tw -12 sk 0
-> [  871.599005] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 41857 global 17480 0 0 wc _M tw -12 sk 0
-> [  871.613027] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 40821 global 16426 0 0 wc _M tw -12 sk 0
-> [  871.628626] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 39785 global 15403 961 0 wc _M tw -12 sk 0
-> [  871.644439] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 38749 global 14380 1550 0 wc _M tw -12 sk 0
-> [  871.660267] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 37713 global 13326 2573 0 wc _M tw -12 sk 0
-> [  871.676236] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 36677 global 12303 3224 0 wc _M tw -12 sk 0
-> [  871.692021] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 35641 global 11280 4154 0 wc _M tw -12 sk 0
-> [  871.707824] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 34605 global 10226 4929 0 wc _M tw -12 sk 0
-> [  871.723638] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 33569 global 9203 5735 0 wc _M tw -12 sk 0
-> [  871.739708] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 32533 global 8149 6603 0 wc _M tw -12 sk 0
-> [  871.756407] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 31497 global 7126 7409 0 wc _M tw -12 sk 0
-> [  871.772165] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 30461 global 6103 8246 0 wc _M tw -12 sk 0
-> [  871.788035] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 29425 global 5049 9052 0 wc _M tw -12 sk 0
-> [  871.803896] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 28389 global 4026 9982 0 wc _M tw -12 sk 0
-> [  871.820427] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 27353 global 2972 10757 0 wc _M tw -12 sk 0
-> [  871.836728] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 26317 global 1949 11656 0 wc _M tw -12 sk 0
-> [  871.853286] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 25281 global 895 12431 0 wc _M tw -12 sk 0
-> [  871.868762] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 24245 global 58 13051 0 wc __ tw 168 sk 0
-> 
-> It's an Intel Core 2 2.93GHz CPU and a SATA disk.
-> The trace shows that
-> - there's no congestion_wait() called in wb_kupdate()
-> - it takes wb_kupdate() ~15ms to sync every 4MB 
-
-But it takes a modern SATA disk ~40-50ms to write 4MB (80-100MB/s).
-IOWs, what you've timed above is a burst workload, not a steady
-state behaviour. And it actually shows that the elevator queues
-are growing in constrast to your goal of preventing them from
-growing.
-
-In more detail, the first half of the trace indicates no pages under
-writeback, that tends to imply that all I/O is complete by the
-time wb_kupdate is woken - it's been sucked into the drive
-cache as fast as possible.
-
-About half way through we start to see windup of the the number of
-pages under writeback of about 800-900 pages per printk.  That's
-1024 pages minus 1 or 2 512k I/Os. This implies that the disk cache
-is now full and the disk has reached saturation. I/O is now
-being queued in the elevator. The last trace has 13051 pages under
-writeback, which at 128 pages per I/O is ~100 queued 512k I/Os.
-
-The default queue depth with cfq is 128 requests, and IIRC it
-congests at 7/8s full, or 112 requests. IOWs, you file that you
-wrote was about 10MB short of what is needed to see congestion on
-your test rig.
-
-So the trace shows we slept on neither congestion or more_io
-and it points towards congestion being the thing will typically
-block us on large file I/O. Before drawing any conclusions on
-whether wbc.more_io is needed or not, do you have any way of
-producing skipped pages when more_io is set?
-
-> However, wb_kupdate() is syncing the data a bit slow(4*1000/15=266MB/s),
-> could it be because of a lot of cond_resched()?
-
-You are using ext3? That would be my guess based simply on the write
-rate - ext3 has long been stuck at about that speed for buffered
-writes even on much faster block devices.  If I'm right, try using
-XFS and see how much differently it behaves. I bet you hit
-congestion much sooner than you expect. ;)
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+greg k-h
