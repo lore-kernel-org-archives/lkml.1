@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763780AbXJEUbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764057AbXJEUcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763780AbXJEUbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 16:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXJEUbM
+	id S1764057AbXJEUcb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 16:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762212AbXJEUcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 16:31:12 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59507 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760238AbXJEUbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 16:31:11 -0400
-Subject: Re: 2.6.23-rc9: Oops in cache_alloc_refill()  mm/slab.c
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: Valerie Clement <valerie.clement@bull.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-In-Reply-To: <1191596057.6106.106.camel@dyn9047017100.beaverton.ibm.com>
-References: <4705113A.7030908@bull.net>
-	 <1191534231.6106.99.camel@dyn9047017100.beaverton.ibm.com>
-	 <47063EF3.4050302@bull.net>
-	 <1191596057.6106.106.camel@dyn9047017100.beaverton.ibm.com>
+	Fri, 5 Oct 2007 16:32:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52323 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761008AbXJEUcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 16:32:21 -0400
+Subject: Re: SLUB performance regression vs SLAB
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: David Miller <davem@davemloft.net>, willy@linux.intel.com,
+       clameter@sgi.com, nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dgc@sgi.com, jens.axboe@oracle.com, suresh.b.siddha@intel.com
+In-Reply-To: <470554D9.2050505@redhat.com>
+References: <20071004183224.GA8641@linux.intel.com>
+	 <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com>
+	 <20071004192824.GA9852@linux.intel.com>
+	 <20071004.135537.39158051.davem@davemloft.net>
+	 <470554D9.2050505@redhat.com>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 05 Oct 2007 13:30:52 -0700
-Message-Id: <1191616252.3861.5.camel@localhost.localdomain>
+Date: Fri, 05 Oct 2007 22:32:00 +0200
+Message-Id: <1191616320.5838.26.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-05 at 07:54 -0700, Badari Pulavarty wrote:
-> On Fri, 2007-10-05 at 15:41 +0200, Valerie Clement wrote:
-> > Badari Pulavarty wrote:
-> > > On Thu, 2007-10-04 at 18:13 +0200, Valerie Clement wrote:
-> > >> While running ffsb tests on my ext4 filesystem, I got an Oops in 
-> > >> cache_alloc_refill().
-> > >> I turned on SLAB debugging and here is the message I got:
-> > >>
-> > >> slab: Internal list corruption detected in cache 'buffer_head'(30), 
-> > >> slabp ffff81007e100100(1515870810). Hexdump:
-> > > 
-> > > slabp->inuse = 1515870810 looks bogus. Is this easily reproducible ?
+
+On Thu, 2007-10-04 at 17:02 -0400, Chuck Ebbert wrote:
+> On 10/04/2007 04:55 PM, David Miller wrote:
 > > 
-> > Hi Badari,
-> > Thanks for your answer.
-> > I didn't reproduce it without the latest ext4 patches. So I suspect a 
-> > bug in one of them.
-> > But how debugging this?
-> > Which other debug traces can I turn on?
+> > Anything, I do mean anything, can be simulated using small test
+> > programs.
 > 
-> Let me understand. You applied latest ext4 patchsets ? If so, Mingming
-> has some slab-cleanup changes in the patchset. You can try backing them
-> out and see. 
-> 
+> How do you simulate reading 100TB of data spread across 3000 disks,
+> selecting 10% of it using some criterion, then sorting and summarizing
+> the result?
 
-It's unlikely to be the jbd_slab_cleanup.patch, which actually get rid
-of slab allocation for buffers passing down to disk IO, and replace with
-get_free_page directly.
+Focus on the slab allocator usage, instrument it, record a trace,
+generate a statistical model that matches, and write a small
+programm/kernel module that has the same allocation pattern. Then verify
+this statistical workload still shows the same performance difference.
 
-Could you send me the profile used for ffsb test?
+Easy: no
+Doable: yes
 
-Thanks,
-Mingming
+
 
