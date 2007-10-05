@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXJEMOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbXJEMUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbXJEMOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbXJEMOD
+	id S1759482AbXJEMUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbXJEMUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:14:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40388 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755052AbXJEMOB (ORCPT
+	Fri, 5 Oct 2007 08:20:46 -0400
+Received: from guri.is.scarlet.be ([193.74.71.22]:34200 "EHLO
+	guri.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752232AbXJEMUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:14:01 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
-References: <11902755392688-git-send-email-htejun@gmail.com>
-	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
-	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
-	<20071005062302.GB16914@kroah.com>
-Date: Fri, 05 Oct 2007 06:12:41 -0600
-In-Reply-To: <20071005062302.GB16914@kroah.com> (Greg KH's message of "Thu, 4
-	Oct 2007 23:23:02 -0700")
-Message-ID: <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 5 Oct 2007 08:20:45 -0400
+X-Greylist: delayed 13694 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Oct 2007 08:20:44 EDT
+Message-ID: <4705F658.1050106@joow.be>
+Date: Fri, 05 Oct 2007 10:31:20 +0200
+From: Pieter Palmers <pieterp@joow.be>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       =?UTF-8?B?S3Jpc3RpYW4gSMO4?= =?UTF-8?B?Z3NiZXJn?= 
+	<krh@redhat.com>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: adopt read cycle timer ABI from raw1394
+References: <tkrat.9b780b2f580f1733@s5r6.in-berlin.de>	 <tkrat.4aa1f1b5ce7df936@s5r6.in-berlin.de> <4700BE87.2040107@joow.be> <59ad55d30710010903y76330624ka45747c0b5983cfd@mail.gmail.com>
+In-Reply-To: <59ad55d30710010903y76330624ka45747c0b5983cfd@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-DCC-scarlet.be-Metrics: guri 20001; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
->
->>   Also fun is that the dev file implementation needs to be able to
->>   report different major:minor numbers based on which mount of
->>   sysfs we are dealing with.
->
-> Um, no, that's not going to happen.  /dev/sda will _always_ have the
-> same major:minor number, as defined by the LSB spec.  You can not break
-> that at all.  So while you might not want to show all mounts
-> /sys/devices/block/sda/ the ones that you do, will all have the LSB
-> defined major:minor number assigned to it.
+Kristian Høgsberg wrote:
+> On 10/1/07, Pieter Palmers <pieterp@joow.be> wrote:
+>> Stefan Richter wrote:
+>>>> This duplicates the read cycle timer feature of raw1394 (added in Linux
+>>>> 2.6.21) in firewire-core's userspace ABI.
+>>> Kristian and Pieter, does this simple duplication of the ioctl make
+>>> sense on its own?  AFAIU rawiso's iso packet buffers look different from
+>>> fw-cdevs's. It seems to me as if rawiso always put the cycle into a user
+>>> buffer for each iso packet received...
+>>>
+>>> raw1394.h::struct raw1394_iso_packet_info {
+>>>       __u32 offset;
+>>>       __u16 len;
+>>>       __u16 cycle;   /* recv only */
+>>>       __u8  channel; /* recv only */
+>>>       __u8  tag;
+>>>       __u8  sy;
+>>> };
+>>>
+>>> raw1394.c::raw1394_iso_recv_packets()
+>>>
+>>>       /* copy the packet_infos out */
+>>>       for (i = 0; i < upackets.n_packets; i++) {
+>>>               if (__copy_to_user(&upackets.infos[i],
+>>>                                  &fi->iso_handle->infos[packet],
+>>>                                  sizeof(struct raw1394_iso_packet_info)))
+>>>                       return -EFAULT;
+>>>
+>>>               packet = (packet + 1) % fi->iso_handle->buf_packets;
+>>>       }
+>>>
+>>> ...while the Juju ABI returns the cycle only for those packets whose
+>>> fw_cdev_iso_packet.control had the FW_CDEV_ISO_INTERRUPT flag set.
+>>> The cycle is then written out in the fw_cdev_event_iso_interrupt event
+>>> which happens when this particular packet was received.  Right?
+>>>
+>>> Pieter, do applications like yours need the cycle counter only for a few
+>>> predetermined packets or for each and every packet?
+>> We need it for every packet for two reasons:
+>> 1) it's the only way to determine how many packets were dropped when
+>> packet drops are flagged in the callback
+> 
+> Your application should know what the timestamp should be for each iso
+> receive callback and if you see a larger value than expected you can
+> use that to calculate how many cycles were lost.
+I'm not convinced here. It's rather easy to come up with a scenario 
+where more than 16 packets are lost, hence the timestamp wraps around 
+and you have the impression that no packets are lost. Losing 16 packets 
+is a serious issue in streaming audio, so we definitely have to be able 
+to detect this.
 
-Hmm.  If that is in the LSB it must come from
-Documentation/devices.txt  I'm not after changing the user
-visible major/minor assignments.
+The point is that currently we use the cycle value for every callback 
+since that's how the libraw API is defined. So if our current code is 
+supposed to work with the new kernel modules through the adapted libraw 
+it obviously has to provide the cycle parameter for every callback. 
+Therefore I suppose the discussion is about a new API that is being 
+designed.
 
-Let me see if a concrete example will help.  Suppose I have
-have a SAN with two disks:  disk-1 and disk-2.  I have
-two machines A and B.  On machine A I get the mapping:
-sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
-a different probe order so I get the mapping: sda -> disk-2
-sdb ->disk-1.
+> 
+>> 2) we convert the 16-bit SYT timestamp of a packet to a full 32-bit
+>> cycle counter value. This because the range of the 16-bit SYT is too
+>> small (only 16 packets) for systems that have large buffering.
+> 
+> If you get the timestamp for the first packet in a receive batch, you
+> can still do this, right?
 
-To be very clear by sda I mean the block device with major 8 and
-minor 0, and by sdb I mean the block device with major 8 and minor
-16.
+If we can calculate the cycle a packet is received on one way or 
+another, we are ok. So whether this is done by receiving a cycle value 
+for each packet, or having the cycle for the first packet in a batch and 
+then using offset calculations it is ok. The only precondition for this 
+is that a batch should be continuous, i.e. there should not be any 
+missing packets in a batch. Only between batches.
 
-So I decide I want an environment on machine B that looks just
-like the environment on machine A, so I can bring transfer over
-a running program or whatever.  So I run around looking at UUID
-labels and what not and I discover that the machine B knows disk-1 as
-sdb and that machine A knows disk-1 as sda.  So I want to say:
-/sys/devices/block/sdb show up in this other device namespace as
-/sys/devices/block/sda.
+We will probably only be able to comment on this thoroughly once we 
+start implementing the juju based streaming system. I don't see this 
+happening in the next 6 months though.
 
-In that instance a running program won't notice the difference.
+Greets,
 
-Eric
+Pieter
+
