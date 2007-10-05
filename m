@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764494AbXJEVbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764660AbXJEVcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764494AbXJEVbf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 17:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763107AbXJEVb0
+	id S1764660AbXJEVcq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 17:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762412AbXJEVci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 17:31:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46310
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752095AbXJEVbZ (ORCPT
+	Fri, 5 Oct 2007 17:32:38 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:53042 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760900AbXJEVch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 17:31:25 -0400
-Date: Fri, 05 Oct 2007 14:31:24 -0700 (PDT)
-Message-Id: <20071005.143124.74549703.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: cebbert@redhat.com, willy@linux.intel.com, clameter@sgi.com,
-       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dgc@sgi.com, jens.axboe@oracle.com, suresh.b.siddha@intel.com
-Subject: Re: SLUB performance regression vs SLAB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1191616320.5838.26.camel@lappy>
-References: <20071004.135537.39158051.davem@davemloft.net>
-	<470554D9.2050505@redhat.com>
-	<1191616320.5838.26.camel@lappy>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 5 Oct 2007 17:32:37 -0400
+Message-ID: <4706AD62.6030705@freescale.com>
+Date: Fri, 05 Oct 2007 16:32:18 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@suse.de>
+CC: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com>	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>	<470691EB.7020209@freescale.com>	<AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>	<4706A842.9030507@freescale.com> <jer6k9mesf.fsf@sykes.suse.de>
+In-Reply-To: <jer6k9mesf.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 05 Oct 2007 22:32:00 +0200
-
-> Focus on the slab allocator usage, instrument it, record a trace,
-> generate a statistical model that matches, and write a small
-> programm/kernel module that has the same allocation pattern. Then verify
-> this statistical workload still shows the same performance difference.
+Andreas Schwab wrote:
+> Timur Tabi <timur@freescale.com> writes:
 > 
-> Easy: no
-> Doable: yes
+>> The CPU shift operation, yes.  I'm talking about shift operations on
+>> external memory-mapped devices.
+> 
+> That is a property of how the device is wired to the bus.  The cpu will
+> always put a value of 128 on the bus such that D7 = 1 and D0-D6 = 0.
 
-The other important bit is likely to generate a lot of DMA traffic
-such that the L2 cache bandwidth is getting used on the bus
-side by the PCI controller doing invalidations of both dirty
-and clean L2 cache lines as devices DMA to/from them.
+Yes, but is D7 on the left or on the right?
 
-This will also be exercising the memory controller, further contending
-with the cpu when SLAB touches cold data structures.
+Anyway, this is academic now.  I now know that __LITTLE_ENDIAN_BITFIELD is not 
+what I want, and that there's no macro that will tell how the lines from the 
+CPU to external memory are mapped.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
