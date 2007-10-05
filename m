@@ -1,46 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXJEK1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbXJEK1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbXJEK1W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 06:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXJEK1O
+	id S1753864AbXJEK1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 06:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbXJEK1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 06:27:14 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:37814 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751997AbXJEK1N (ORCPT
+	Fri, 5 Oct 2007 06:27:30 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:49510 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbXJEK13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 06:27:13 -0400
-Date: Fri, 5 Oct 2007 11:26:34 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: gurudas pai <gurudas.pai@oracle.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] kernel BUG at arch/i386/mm/highmem.c:15!  on 2.6.23-rc8/rc9
-In-Reply-To: <4705B568.6020502@oracle.com>
-Message-ID: <Pine.LNX.4.64.0710051124280.24560@blonde.wat.veritas.com>
-References: <47048A0C.4020608@oracle.com> <200710040053.19570.nickpiggin@yahoo.com.au>
- <200710040139.04201.nickpiggin@yahoo.com.au> <4704BA1F.4070408@oracle.com>
- <Pine.LNX.4.64.0710041647090.17987@blonde.wat.veritas.com> <4705A63A.1090103@oracle.com>
- <4705B568.6020502@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 5 Oct 2007 06:27:29 -0400
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, wfg@mail.ustc.edu.cn,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-reply-to: <1191577623.22357.69.camel@twins> (message from Peter Zijlstra on
+	Fri, 05 Oct 2007 11:47:03 +0200)
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	 <20071004145640.18ced770.akpm@linux-foundation.org>
+	 <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+	 <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+	 <E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
+	 <20071004164801.d8478727.akpm@linux-foundation.org>
+	 <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
+	 <20071004174851.b34a3220.akpm@linux-foundation.org>
+	 <1191572520.22357.42.camel@twins>
+	 <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu> <1191577623.22357.69.camel@twins>
+Message-Id: <E1IdkOf-0002tK-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Oct 2007 12:27:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Oct 2007, gurudas pai wrote:
-> gurudas pai wrote:
-> > Hugh Dickins wrote:
-> > >
-> > > [PATCH] fix sys_remap_file_pages BUG at highmem.c:15!
-> > 
-> > Yes, indeed this patch worked for me , test completed successfully!! (on
-> > preempt kernel). Will continue testing with non-preempt kernel and update
-> > you if I hit any issue.
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index 4ef4d22..eff2438 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -88,7 +88,7 @@ static inline void wait_on_inode(struct inode *inode)
+>  int wakeup_pdflush(long nr_pages);
+>  void laptop_io_completion(void);
+>  void laptop_sync_completion(void);
+> -void throttle_vm_writeout(gfp_t gfp_mask);
+> +void throttle_vm_writeout(struct zone *zone, gfp_t gfp_mask);
+>  
+>  /* These are exported to sysctl. */
+>  extern int dirty_background_ratio;
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index eec1481..f949997 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -326,11 +326,8 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+>  }
+>  EXPORT_SYMBOL(balance_dirty_pages_ratelimited_nr);
+>  
+> -void throttle_vm_writeout(gfp_t gfp_mask)
+> +void throttle_vm_writeout(struct zone *zone, gfp_t gfp_mask)
+>  {
+> -	long background_thresh;
+> -	long dirty_thresh;
+> -
+>  	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+>  		/*
+>  		 * The caller might hold locks which can prevent IO completion
+> @@ -342,17 +339,16 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+>  	}
+>  
+>          for ( ; ; ) {
+> -		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
+> +		unsigned long thresh = zone_page_state(zone, NR_ACTIVE) +
+> +			zone_page_state(zone, NR_INACTIVE);
+>  
+> -                /*
+> -                 * Boost the allowable dirty threshold a bit for page
+> -                 * allocators so they don't get DoS'ed by heavy writers
+> -                 */
+> -                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+> +		/*
+> +		 * wait when 75% of the zone's pages are under writeback
+> +		 */
+> +		thresh -= thresh >> 2;
+> +		if (zone_page_state(zone, NR_WRITEBACK) < thresh)
+> +			break;
+>  
+> -                if (global_page_state(NR_UNSTABLE_NFS) +
+> -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> -                        	break;
+>                  congestion_wait(WRITE, HZ/10);
+>          }
+>  }
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 1be5a63..7dd6bd9 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -948,7 +948,7 @@ static unsigned long shrink_zone(int priority, struct zone *zone,
+>  		}
+>  	}
+>  
+> -	throttle_vm_writeout(sc->gfp_mask);
+> +	throttle_vm_writeout(zone, sc->gfp_mask);
+>  
+>  	atomic_dec(&zone->reclaim_in_progress);
+>  	return nr_reclaimed;
 > 
-> Completed testing on non-preempt successfully without any issue.
+> 
 
-Great: many thanks for your report and testing and feedback.
+I think that's an improvement in all respects.
 
-Hugh
+However it still does not generally address the deadlock scenario: if
+there's a small DMA zone, and fuse manages to put all of those pages
+under writeout, then there's trouble.
+
+But it's not really fuse specific.  If it was a normal filesystem that
+did that, and it needed a GFP_DMA allocation for writeout, it is in
+trouble also, as that allocation would fail (at least no deadlock).
+
+Or is GFP_DMA never used by fs/io writeout paths?
+
+Miklos
