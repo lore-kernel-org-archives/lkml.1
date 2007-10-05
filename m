@@ -1,121 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbXJEAt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762683AbXJEAub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762000AbXJEAt7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 20:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759245AbXJEAtt
+	id S1762683AbXJEAub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 20:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbXJEAuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 20:49:49 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3367 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753550AbXJEAts (ORCPT
+	Thu, 4 Oct 2007 20:50:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46438 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761790AbXJEAuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 20:49:48 -0400
-Date: Fri, 5 Oct 2007 08:49:41 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: rdreier@cisco.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Vague maybe ppp-related panic report for 2.6.23-rc9
-Message-ID: <20071005004941.GA8160@gondor.apana.org.au>
-References: <ada4ph6da05.fsf@cisco.com> <20071004.135113.48807663.davem@davemloft.net>
+	Thu, 4 Oct 2007 20:50:10 -0400
+Date: Thu, 4 Oct 2007 17:48:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: wfg@mail.ustc.edu.cn, a.p.zijlstra@chello.nl, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-Id: <20071004174851.b34a3220.akpm@linux-foundation.org>
+In-Reply-To: <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	<20071004145640.18ced770.akpm@linux-foundation.org>
+	<E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+	<20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+	<E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
+	<20071004164801.d8478727.akpm@linux-foundation.org>
+	<E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004.135113.48807663.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 01:51:13PM -0700, David Miller wrote:
+On Fri, 05 Oct 2007 02:12:30 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > 
+> > I don't think I understand that.  Sure, it _shouldn't_ be a problem.  But it
+> > _is_.  That's what we're trying to fix, isn't it?
 > 
-> I don't want to jump the gun on the analysis but it just might
-> be the packet sharing fixes Herbert put in a short time ago.
+> The problem, I believe is in the memory allocation code, not in fuse.
 
-I think the only change of mine that could affect ppp over a
-serial line is this one.  I couldn't see anything obvious in
-it but maybe someone else can.
+fuse is trying to do something which page reclaim was not designed for. 
+Stuff broke.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-2a38b775b77f99308a4e571c13d908df78ac5e57
-diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
-index 7e21342..4b49d0e 100644
---- a/drivers/net/ppp_generic.c
-+++ b/drivers/net/ppp_generic.c
-@@ -1525,7 +1525,7 @@ ppp_input_error(struct ppp_channel *chan, int code)
- static void
- ppp_receive_frame(struct ppp *ppp, struct sk_buff *skb, struct channel *pch)
- {
--	if (skb->len >= 2) {
-+	if (pskb_may_pull(skb, 2)) {
- #ifdef CONFIG_PPP_MULTILINK
- 		/* XXX do channel-level decompression here */
- 		if (PPP_PROTO(skb) == PPP_MP)
-@@ -1577,7 +1577,7 @@ ppp_receive_nonmp_frame(struct ppp *ppp, struct sk_buff *skb)
- 		if (ppp->vj == 0 || (ppp->flags & SC_REJ_COMP_TCP))
- 			goto err;
- 
--		if (skb_tailroom(skb) < 124) {
-+		if (skb_tailroom(skb) < 124 || skb_cloned(skb)) {
- 			/* copy to a new sk_buff with more tailroom */
- 			ns = dev_alloc_skb(skb->len + 128);
- 			if (ns == 0) {
-@@ -1648,23 +1648,29 @@ ppp_receive_nonmp_frame(struct ppp *ppp, struct sk_buff *skb)
- 		/* check if the packet passes the pass and active filters */
- 		/* the filter instructions are constructed assuming
- 		   a four-byte PPP header on each packet */
--		*skb_push(skb, 2) = 0;
--		if (ppp->pass_filter
--		    && sk_run_filter(skb, ppp->pass_filter,
--				     ppp->pass_len) == 0) {
--			if (ppp->debug & 1)
--				printk(KERN_DEBUG "PPP: inbound frame not passed\n");
--			kfree_skb(skb);
--			return;
--		}
--		if (!(ppp->active_filter
--		      && sk_run_filter(skb, ppp->active_filter,
--				       ppp->active_len) == 0))
--			ppp->last_recv = jiffies;
--		skb_pull(skb, 2);
--#else
--		ppp->last_recv = jiffies;
-+		if (ppp->pass_filter || ppp->active_filter) {
-+			if (skb_cloned(skb) &&
-+			    pskb_expand_head(skb, 0, 0, GFP_ATOMIC))
-+				goto err;
-+
-+			*skb_push(skb, 2) = 0;
-+			if (ppp->pass_filter
-+			    && sk_run_filter(skb, ppp->pass_filter,
-+					     ppp->pass_len) == 0) {
-+				if (ppp->debug & 1)
-+					printk(KERN_DEBUG "PPP: inbound frame "
-+					       "not passed\n");
-+				kfree_skb(skb);
-+				return;
-+			}
-+			if (!(ppp->active_filter
-+			      && sk_run_filter(skb, ppp->active_filter,
-+					       ppp->active_len) == 0))
-+				ppp->last_recv = jiffies;
-+			__skb_pull(skb, 2);
-+		} else
- #endif /* CONFIG_PPP_FILTER */
-+			ppp->last_recv = jiffies;
- 
- 		if ((ppp->dev->flags & IFF_UP) == 0
- 		    || ppp->npmode[npi] != NPMODE_PASS) {
-@@ -1762,7 +1768,7 @@ ppp_receive_mp_frame(struct ppp *ppp, struct sk_buff *skb, struct channel *pch)
- 	struct channel *ch;
- 	int mphdrlen = (ppp->flags & SC_MP_SHORTSEQ)? MPHDRLEN_SSN: MPHDRLEN;
- 
--	if (!pskb_may_pull(skb, mphdrlen) || ppp->mrru == 0)
-+	if (!pskb_may_pull(skb, mphdrlen + 1) || ppp->mrru == 0)
- 		goto err;		/* no good, throw it away */
- 
- 	/* Decode sequence number and begin/end bits */
+> In the example, memory allocation may be blocking indefinitely,
+> because we have 4MB under writeback, even though 28MB can still be
+> made available.  And that _should_ be fixable.
+
+Well yes.  But we need to work out how, without re-breaking the thing which
+throttle_vm_writeout() fixed.
+
+> > > So the only thing the kernel should be careful about, is not to block
+> > > on an allocation if not strictly necessary.
+> > > 
+> > > Actually a trivial fix for this problem could be to just tweak the
+> > > thresholds, so to make the above scenario impossible.  Although I'm
+> > > still not convinced, this patch is perfect, because the dirty
+> > > threshold can actually change in time...
+> > > 
+> > > Index: linux/mm/page-writeback.c
+> > > ===================================================================
+> > > --- linux.orig/mm/page-writeback.c      2007-10-05 00:31:01.000000000 +0200
+> > > +++ linux/mm/page-writeback.c   2007-10-05 00:50:11.000000000 +0200
+> > > @@ -515,6 +515,12 @@ void throttle_vm_writeout(gfp_t gfp_mask
+> > >          for ( ; ; ) {
+> > >                 get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+> > > 
+> > > +               /*
+> > > +                * Make sure the theshold is over the hard limit of
+> > > +                * dirty_thresh + ratelimit_pages * nr_cpus
+> > > +                */
+> > > +               dirty_thresh += ratelimit_pages * num_online_cpus();
+> > > +
+> > >                  /*
+> > >                   * Boost the allowable dirty threshold a bit for page
+> > >                   * allocators so they don't get DoS'ed by heavy writers
+> > 
+> > I can probably kind of guess what you're trying to do here.  But if
+> > ratelimit_pages * num_online_cpus() exceeds the size of the offending zone
+> > then things might go bad.
+> 
+> I think the admin can do quite a bit of other damage, by setting
+> dirty_ratio too high.
+> 
+> Maybe this writeback throttling should just have a fixed limit of 80%
+> ZONE_NORMAL, and limit dirty_ratio to something like 50%.
+
+Bear in mind that the same problem will occur for the 16MB ZONE_DMA, and
+we cannot limit the system-wide dirty-memory threshold to 12MB.
+
+iow, throttle_vm_writeout() needs to become zone-aware.  Then it only
+throttles when, say, 80% of ZONE_FOO is under writeback.
+
+Except I don't think that'll fix the problem 100%: if your fuse kernel
+component somehow manages to put 80% of ZONE_FOO under writeback (and
+remmeber this might be only 12MB on a 16GB machine) then we get stuck again
+- the fuse server process (is that the correct terminology, btw?) ends up
+waiting upon itself.
+
+I'll think about it a bit.
