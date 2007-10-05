@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbXJEMyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762248AbXJENA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbXJEMyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXJEMyo
+	id S1762248AbXJENA2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbXJENAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:54:44 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60137 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755119AbXJEMyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:54:43 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com, k-miyoshi@cb.jp.nec.com,
-       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
-       Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 1/2] add tunable_notifier function
-References: <4704D0BA.4090507@ah.jp.nec.com>
-Date: Fri, 05 Oct 2007 06:49:40 -0600
-In-Reply-To: <4704D0BA.4090507@ah.jp.nec.com> (Takenori Nagano's message of
-	"Thu, 04 Oct 2007 20:38:34 +0900")
-Message-ID: <m1ir5llo9n.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 5 Oct 2007 09:00:21 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:21625 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754615AbXJENAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 09:00:20 -0400
+Message-ID: <4706363A.9030807@sw.ru>
+Date: Fri, 05 Oct 2007 17:03:54 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [Devel] Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject
+ and	driver model
+References: <11902755392688-git-send-email-htejun@gmail.com>	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>	<20071005062302.GB16914@kroah.com> <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takenori Nagano <t-nagano@ah.jp.nec.com> writes:
+Eric W. Biederman wrote:
+> Greg KH <greg@kroah.com> writes:
+> 
+>>>  Also fun is that the dev file implementation needs to be able to
+>>>  report different major:minor numbers based on which mount of
+>>>  sysfs we are dealing with.
+>>
+>>Um, no, that's not going to happen.  /dev/sda will _always_ have the
+>>same major:minor number, as defined by the LSB spec.  You can not break
+>>that at all.  So while you might not want to show all mounts
+>>/sys/devices/block/sda/ the ones that you do, will all have the LSB
+>>defined major:minor number assigned to it.
+> 
+> 
+> Hmm.  If that is in the LSB it must come from
+> Documentation/devices.txt  I'm not after changing the user
+> visible major/minor assignments.
+> 
+> Let me see if a concrete example will help.  Suppose I have
+> have a SAN with two disks:  disk-1 and disk-2.  I have
+> two machines A and B.  On machine A I get the mapping:
+> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
+> a different probe order so I get the mapping: sda -> disk-2
+> sdb ->disk-1.
+> 
+> To be very clear by sda I mean the block device with major 8 and
+> minor 0, and by sdb I mean the block device with major 8 and minor
+> 16.
+> 
+> So I decide I want an environment on machine B that looks just
+> like the environment on machine A, so I can bring transfer over
+> a running program or whatever.  So I run around looking at UUID
+> labels and what not and I discover that the machine B knows disk-1 as
+> sdb and that machine A knows disk-1 as sda.  So I want to say:
+> /sys/devices/block/sdb show up in this other device namespace as
+> /sys/devices/block/sda.
 
-> This patch adds new notifier function tunable_notifier_chain. Its base is
-> atomic_notifier_chain.
+Imho environments to be migratable should have no direct access to the devices.
+You can use any of stacked virtual filesystems to hide real
+device from container.
+You will have problems much bigger than this one otherwise
+(imagine access to video, sound etc.)
 
+Kirill
 
-
-> +/**
-> + * tunable_notifier_chain_register - Add notifier to an tunable notifier chain
-> + *	@nh: Pointer to head of the tunable notifier chain
-> + *	@n: New entry in notifier chain
-> + *	@name: Pointer to the name of this notifier chain
-> + *	@desc: Pointer to the description of new entry
-> + *
-> + *	Adds a notifier to an tunable notifier chain and makes control dir.
-> + *
-> + *	Returns zero on success or %-ENODEV on failure.
-> + */
-> +
-> +int tunable_notifier_chain_register(struct tunable_notifier_head *nh,
-> +		struct tunable_notifier_block *n, char *name, char *desc)
-> +{
-> +	unsigned long flags;
-> +	int ret = -EINVAL;
-> +	struct dentry *nh_dir, *nb_dir, *pri_dentry, *desc_dentry = NULL;
-> +
-> +	if (!name)
-> +		goto nb_fail;
-> +
-> +	ret = -ENOMEM;
-> +	if (!nh->dir) {
-> +		nh_dir = debugfs_create_dir(nh->name, NULL);
-
-Hmm. debugfs does not appear to be an appropriate place to create
-files that are supposed to be part of a serious user space interface.
-
-Eric
