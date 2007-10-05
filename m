@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761923AbXJEMER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXJEMGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761923AbXJEMER (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbXJEMEE
+	id S1761560AbXJEMGQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbXJEMF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:04:04 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:36155 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755347AbXJEMED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:04:03 -0400
-X-Sasl-enc: 5GZ9h90XoLYdJuDiZko8iM4hT3KRXoGszNSwW63vaHuY 1191585841
-Mime-Version: 1.0 (Apple Message framework v752.2)
-In-Reply-To: <1191513164.25019.1214154783@webmail.messagingengine.com>
-References: <1191513164.25019.1214154783@webmail.messagingengine.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DD4F5A27-64A9-4A16-B3B0-D825F9A88AAD@bluecamel.eml.cc>
-Content-Transfer-Encoding: 7bit
-From: Scott <linux-kernel@bluecamel.eml.cc>
-Subject: Re: cx88 pci_abort messages
-Date: Fri, 5 Oct 2007 08:04:04 -0400
-To: linux-kernel@vger.kernel.org
-X-Mailer: Apple Mail (2.752.2)
+	Fri, 5 Oct 2007 08:05:59 -0400
+Received: from THUNK.ORG ([69.25.196.29]:40628 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752135AbXJEMF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 08:05:58 -0400
+Date: Fri, 5 Oct 2007 08:05:29 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Howells <dhowells@redhat.com>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 13/32] IGET: Stop EXT2 from using iget() and read_inode() [try #2]
+Message-ID: <20071005120529.GA28985@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Howells <dhowells@redhat.com>, hch@infradead.org,
+	viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk> <20071004155708.2814.8998.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004155708.2814.8998.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 04, 2007 at 04:57:08PM +0100, David Howells wrote:
+> Stop the EXT2 filesystem from using iget() and read_inode().  Replace
+> ext2_read_inode() with ext2_iget(), and call that instead of iget().
+> ext2_iget() then uses iget_locked() directly and returns a proper error code
+> instead of an inode in the event of an error.
+> 
+> ext2_fill_super() returns any error incurred when getting the root inode
+> instead of EINVAL.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-On Oct 4, 2007, at 11:52 AM, Scott wrote:
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 
-> I'm having what I think is a PCI bus problem.
->
-> I have a ASUS P5B Intel 965 motherboard and a DVICO Fusion HDTV5 RT
-> adapter on the PCI bus. When this adapter is recording (anything) I  
-> see
-> pci_abort messages repeating in the /var/log/messages file. As a  
-> result
-> I see some minor video corruption during playback. I've installed the
-> adapter into a PCI slot that shares an IRQ with the onboard USB.
-> However, I've also disabled all USB support in BIOS, so the adapter is
-> the only thing on the IRQ, and still see the same errors.
->
-> Any suggestions for further troubleshooting? Is this a PCI bus  
-> quirk on
-> this motherboard? A copy of my .config is at
-> http://donpoo.net/kernel_config
->
-> Oct  2 21:59:12 htpc cx88[0]: irq mpeg  [0x80000] pci_abort*
-> Oct  2 21:59:12 htpc cx88[0]/2-mpeg: general errors: 0x00080000
-> Oct  2 21:59:20 htpc cx88[0]: irq mpeg  [0x80000] pci_abort*
-> Oct  2 21:59:20 htpc cx88[0]/2-mpeg: general errors: 0x00080000
-> Oct  2 21:59:32 htpc cx88[0]: irq mpeg  [0x80000] pci_abort*
-> Oct  2 21:59:32 htpc cx88[0]/2-mpeg: general errors: 0x0008000
-
-I was poking around the PCI bus with setpci/lspci last night and  
-tried adjusting the latency from 64 to 32. This didn't make a  
-difference. I also changed my core2duo speedstep governor from  
-ondemand to performance to prevent the CPUs from changing speed. I  
-eventualy saw the same pci_abort message but I might have seen less  
-of them.
-
-Is there a way to log every device pci device that throws an  
-interrupt? I'm thinking if I could find out which pci device was  
-stealing the interrupt that I could disable it or look at the code  
-and see what it was doing.
-
---
-Scott 
+							- Ted
