@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbXJECoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXJECpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbXJECoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 22:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXJECoB
+	id S1758670AbXJECpR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 22:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJECpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 22:44:01 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51466 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750732AbXJECn7 (ORCPT
+	Thu, 4 Oct 2007 22:45:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55296 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750815AbXJECpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 22:43:59 -0400
-Date: Thu, 4 Oct 2007 19:43:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: David Miller <davem@davemloft.net>, willy@linux.intel.com,
-       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dgc@sgi.com, jens.axboe@oracle.com, suresh.b.siddha@intel.com
-Subject: Re: SLUB performance regression vs SLAB
-In-Reply-To: <20071004210518.GR12049@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0710041917020.14135@schroedinger.engr.sgi.com>
-References: <20071004183224.GA8641@linux.intel.com>
- <Pine.LNX.4.64.0710041046270.11091@schroedinger.engr.sgi.com>
- <20071004192824.GA9852@linux.intel.com> <20071004.135537.39158051.davem@davemloft.net>
- <20071004210518.GR12049@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Oct 2007 22:45:00 -0400
+Date: Thu, 4 Oct 2007 19:44:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickens <hugh@veritas.com>, David Rientjes <rientjes@google.com>,
+       Zachary Amsden <zach@vmware.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Keir Fraser <keir@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
+ pagetable setup/pulldown
+Message-Id: <20071004194432.9b3353c2.akpm@linux-foundation.org>
+In-Reply-To: <470596C4.8060804@goop.org>
+References: <470596C4.8060804@goop.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just spend some time looking at the functions that you see high in the 
-list. The trouble is that I have to speculate and that I have nothing to 
-verify my thoughts. If you could give me the hitlist for each of the 
-3 runs then this would help to check my thinking. I could be totally off 
-here.
+On Thu, 04 Oct 2007 18:43:32 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-It seems that we miss the per cpu slab frequently on slab_free() which 
-leads to the calling of __slab_free() and which in turn needs to take a 
-lock on the page (in the page struct). Typically the page lock is 
-uncontended which seems to not be the case here otherwise it would not be 
-that high up.
+> David's change 10a8d6ae4b3182d6588a5809a8366343bc295c20, "i386: add
+> ptep_test_and_clear_{dirty,young}" has introduced an SMP race which
+> affects the Xen pv-ops backend.
 
-The per cpu patch in mm should reduce the contention on the page struct by 
-not touching the page struct on alloc and on free. Does not seem to work 
-all the way though. slab_free() still has to touch the page struct if the 
-free is not to the currently active cpu slab.
+y'know, I think I think it's been several years since I saw a report of an
+honest to goodness, genuine SMP race in core kernel.  We used to be
+infested by them, but the term has fallen into disuse.  Interesting, but
+OT.
 
-So there could still be page struct contention left if multiple processors 
-frequently and simultaneously free to the same slab and that slab is not 
-the per cpu slab of a cpu. That could be addressed by optimizing the 
-object free handling further to not touch the page struct even if we miss 
-the per cpu slab.
+> It seems to me that there are a few ways to fix this:
+> 
+>    1. Use asm-generic/pgtable.h when CONFIG_PARAVIRT is enabled.  This
+>       will clearly work, but is pretty blunt.
+>    2. Make test_and_clear_pte_flags a new paravirt-op, which can be
+>       implemented in Xen as a hypercall, and as a raw test_and_clear_bit
+>       for everyone else.  The downside is adding yet another pv-op.
+>    3. Restructure the pagetable setup code so that the mm is not added
+>       to the prio tree until after arch_dup_mmap has been called (and
+>       the converse for exit_mmap).  This is arguably cleaner, but I
+>       haven't looked to see how much trouble this would be.
+> 
+> Thoughts anyone?  Does making the pagetables visible "early" cause
+> problems for anyone else?
 
-That get_partial* is far up indicates contention on the list lock that 
-should be addressable by either increasing the slab size or by changing 
-the object free handling to batch in some form.
+I expect that 2) has the maximum niceness*suitable-for-2.6.23 product.
 
-This is an SMP system right? 2 cores with 4 cpus each? The main loop is 
-always hitting on the same slabs? Which slabs would this be? Am I right in 
-thinking that one process allocates objects and then lets multiple other 
-processors do work and then the allocated object is freed from a cpu that 
-did not allocate the object? If neighboring objects in one slab are 
-allocated on one cpu and then are almost simultaneously freed from a set 
-of different cpus then this may be explain the situation.
+That's if you actually care much about kernel.org major releases - do many
+people run kernel.org kernels on Xen?  If "not many" then we could perhaps
+do something more elaborate for 2.6.23.1.  But adding ever more pvops as
+core kernel evolves was always expected.
