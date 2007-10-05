@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbXJENl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbXJENqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbXJENl3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXJENlV
+	id S1762483AbXJENqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbXJENqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:41:21 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42952 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbXJENlU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:41:20 -0400
-Message-ID: <47063EF3.4050302@bull.net>
-Date: Fri, 05 Oct 2007 15:41:07 +0200
-From: Valerie Clement <valerie.clement@bull.net>
-User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
+	Fri, 5 Oct 2007 09:46:13 -0400
+Received: from rtr.ca ([76.10.145.34]:1757 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755344AbXJENqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 09:46:12 -0400
+Message-ID: <47064023.7080703@rtr.ca>
+Date: Fri, 05 Oct 2007 09:46:11 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: Re: 2.6.23-rc9: Oops in cache_alloc_refill()  mm/slab.c
-References: <4705113A.7030908@bull.net> <1191534231.6106.99.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1191534231.6106.99.camel@dyn9047017100.beaverton.ibm.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/10/2007 15:47:28,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/10/2007 15:47:29,
-	Serialize complete at 05/10/2007 15:47:29
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Brown, Len" <len.brown@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, simon.derr@bull.net,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 4/6] Fix SMP poweroff hangs
+References: <200710010820.l918KApW006834@imap1.linux-foundation.org>	<CFF307C98FEABE47A452B27C06B85BB603DA9AB8@hdsmsx411.amr.corp.intel.com>	<m1hclascwo.fsf@ebiederm.dsl.xmission.com>	<200710020048.38856.rjw@sisk.pl>	<m1myv2o13c.fsf@ebiederm.dsl.xmission.com> <470198B1.2030003@rtr.ca>	<m1ve9pn8d1.fsf@ebiederm.dsl.xmission.com> <470271EA.4040509@rtr.ca>	<m1ejgdif0f.fsf@ebiederm.dsl.xmission.com> <4702C902.7000504@rtr.ca>	<4702CCFB.1010000@pobox.com> <47052292.3090400@rtr.ca> <m1myuyv6qu.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1myuyv6qu.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> On Thu, 2007-10-04 at 18:13 +0200, Valerie Clement wrote:
->> While running ffsb tests on my ext4 filesystem, I got an Oops in 
->> cache_alloc_refill().
->> I turned on SLAB debugging and here is the message I got:
->>
->> slab: Internal list corruption detected in cache 'buffer_head'(30), 
->> slabp ffff81007e100100(1515870810). Hexdump:
+Eric W. Biederman wrote:
+> Mark Lord <lkml@rtr.ca> writes:
+>> Comments?  Eric?
 > 
-> slabp->inuse = 1515870810 looks bogus. Is this easily reproducible ?
+> Sorry -EBUSY.
+> 
+> The trylock on call_lock is a recent thing (.22), added to keep panic
+> from hanging.   It probably makes more sense to move bust_spinlocks(0)
+> down a few lines in kernel/panic.c and to test oops_in_progress in
+> smp_send_stop and make all screwy locking behavior depend on that.
 
-Hi Badari,
-Thanks for your answer.
-I didn't reproduce it without the latest ext4 patches. So I suspect a 
-bug in one of them.
-But how debugging this?
-Which other debug traces can I turn on?
+I've seen this issue (to a much lessor extent) on 2.6.17 as well.
+So if earlier kernels had the regular spin_lock() there (rather than trylock)
+then this is still *an* issue, but not *the* issue.  And in my specific
+case (only 2 CPUs), the trylock cannot be the problem here.
+But with more cores it definitely could be an issue.
 
-   Valérie
+> As for not waiting until cpus are in their stop loop that looks easy
+> enough to remedy.  I don't know if any of those is our culprit but
+> it certainly looks worth cleaning up.  If you are interested in
+> testing I will cook up a patch.
+
+I suspect this one more, as there really are not many other possibilities.
+One thing to try might be to just have the power_off() code do msleep(1000)
+before the ACPI poweroff call.  That would give enough time for the other
+core to "halt", and is easy enough to try for diagnosis purposes.
+
+I'm off rock climbing for a week or so, but if you cook something up
+in the meanwhile then I'll test it on return.
+
+> I haven't had a chance yet to walk through the other possible x86
+> sysdev devices to see if there are any other canidates.
+
+Cheers!
 
