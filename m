@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXJECpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXJECqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbXJECpR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 22:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJECpD
+	id S1759248AbXJECqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 22:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJECqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 22:45:03 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55296 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750815AbXJECpA (ORCPT
+	Thu, 4 Oct 2007 22:46:05 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51638 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXJECqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 22:45:00 -0400
-Date: Thu, 4 Oct 2007 19:44:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Hugh Dickens <hugh@veritas.com>, David Rientjes <rientjes@google.com>,
-       Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Keir Fraser <keir@xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-Message-Id: <20071004194432.9b3353c2.akpm@linux-foundation.org>
-In-Reply-To: <470596C4.8060804@goop.org>
-References: <470596C4.8060804@goop.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Oct 2007 22:46:04 -0400
+Date: Thu, 4 Oct 2007 20:46:02 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] isofs: add +w bit for non-RR discs
+Message-ID: <20071005024602.GU12049@parisc-linux.org>
+References: <Pine.LNX.4.64.0710021958230.7130@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710021958230.7130@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Oct 2007 18:43:32 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Tue, Oct 02, 2007 at 08:00:26PM +0200, Jan Engelhardt wrote:
+> Add %S_IWUGO bit for files on ISO-9660 filesystems without RockRidge
 
-> David's change 10a8d6ae4b3182d6588a5809a8366343bc295c20, "i386: add
-> ptep_test_and_clear_{dirty,young}" has introduced an SMP race which
-> affects the Xen pv-ops backend.
+Looks to me like you've added S_IWUSR, not S_IWUGO.
 
-y'know, I think I think it's been several years since I saw a report of an
-honest to goodness, genuine SMP race in core kernel.  We used to be
-infested by them, but the term has fallen into disuse.  Interesting, but
-OT.
+> -	popt->mode = S_IRUGO | S_IXUGO; /*
+> +	popt->mode = S_IRUGO | S_IWUSR | S_IXUGO;
+> -		inode->i_mode = S_IRUGO | S_IXUGO | S_IFDIR;
+> +		inode->i_mode = S_IRUGO | S_IWUSR | S_IXUGO | S_IFDIR;
 
-> It seems to me that there are a few ways to fix this:
-> 
->    1. Use asm-generic/pgtable.h when CONFIG_PARAVIRT is enabled.  This
->       will clearly work, but is pretty blunt.
->    2. Make test_and_clear_pte_flags a new paravirt-op, which can be
->       implemented in Xen as a hypercall, and as a raw test_and_clear_bit
->       for everyone else.  The downside is adding yet another pv-op.
->    3. Restructure the pagetable setup code so that the mm is not added
->       to the prio tree until after arch_dup_mmap has been called (and
->       the converse for exit_mmap).  This is arguably cleaner, but I
->       haven't looked to see how much trouble this would be.
-> 
-> Thoughts anyone?  Does making the pagetables visible "early" cause
-> problems for anyone else?
-
-I expect that 2) has the maximum niceness*suitable-for-2.6.23 product.
-
-That's if you actually care much about kernel.org major releases - do many
-people run kernel.org kernels on Xen?  If "not many" then we could perhaps
-do something more elaborate for 2.6.23.1.  But adding ever more pvops as
-core kernel evolves was always expected.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
