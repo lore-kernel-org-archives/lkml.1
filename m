@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbXJEVBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbXJEVBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932168AbXJEVBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 17:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761944AbXJEVBJ
+	id S932297AbXJEVBf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 17:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbXJEVBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 17:01:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37699 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761630AbXJEVBI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 17:01:08 -0400
-Date: Fri, 5 Oct 2007 14:00:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: bbpetkov@yahoo.de, linux-kernel@vger.kernel.org, muli@il.ibm.com,
-       satyam@infradead.org, amitkale@netxen.com, achim_leubner@adaptec.com
-Subject: Re: [PATCH 1/1] unify DMA_..BIT_MASK definitions: v3.1
-Message-Id: <20071005140050.655b7727.akpm@linux-foundation.org>
-In-Reply-To: <4706A20A.5060603@goop.org>
-References: <20070918194647.GA23800@gollum.tnic>
-	<20071005124705.6584e2f9.akpm@linux-foundation.org>
-	<4706A20A.5060603@goop.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Oct 2007 17:01:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49515 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762921AbXJEVBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 17:01:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [Q] APM depends on PM_SLEEP?
+Date: Fri, 5 Oct 2007 23:16:09 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.60.0710051615350.10392@poirot.grange> <200710051749.52685.rjw@sisk.pl> <Pine.LNX.4.60.0710051827020.10392@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0710051827020.10392@poirot.grange>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710052316.10215.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Oct 2007 13:43:54 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Andrew Morton wrote:
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> >
-> > Now that we have DMA_BIT_MASK(), these macros are pointless.
-> >   
+On Friday, 5 October 2007 18:27, Guennadi Liakhovetski wrote:
+> On Fri, 5 Oct 2007, Rafael J. Wysocki wrote:
 > 
-> Except, unfortunately, DMA_64BIT_MASK.  I guess we could special case
-> it, assuming this works in all the contexts the macro is used in (ie,
-> compile-time constant?):
+> > On Friday, 5 October 2007 16:18, Guennadi Liakhovetski wrote:
+> > > Why does APM depend on PM_SLEEP?
+> > 
+> > Because APM uses the suspend core functions in drivers/base/power .
 > 
-> #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
-> 
+> Ok, perhaps, a "select" would be better?...
 
-doh.  Thanks.
+Select doesn't work really well.
 
---- a/include/linux/dma-mapping.h~stop-using-dma_xxbit_mask-fix
-+++ a/include/linux/dma-mapping.h
-@@ -13,7 +13,7 @@ enum dma_data_direction {
- 	DMA_NONE = 3,
- };
- 
--#define DMA_BIT_MASK(n)	((1ULL<<(n))-1)
-+#define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
- 
- /*
-  * NOTE: do not use the below macros in new code and do not add new definitions
-@@ -21,7 +21,7 @@ enum dma_data_direction {
-  *
-  * Instead, just open-code DMA_BIT_MASK(n) within your driver
-  */
--#define DMA_64BIT_MASK	(~0ULL)
-+#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
- #define DMA_48BIT_MASK	DMA_BIT_MASK(48)
- #define DMA_47BIT_MASK	DMA_BIT_MASK(47)
- #define DMA_40BIT_MASK	DMA_BIT_MASK(40)
-_
+It probably would be better to add something like APM_SUSPEND
+depending on SUSPEND.
 
-
-it's irksome that there doesn't seem to be a neater way of doing
-this, until they give us unsigned long long longs.
+Greetings,
+Rafael
