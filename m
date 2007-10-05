@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXJEPsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763638AbXJEPto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbXJEPsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 11:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbXJEPs1
+	id S1763638AbXJEPto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 11:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbXJEPtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 11:48:27 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34091 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762869AbXJEPs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 11:48:26 -0400
-Date: Fri, 5 Oct 2007 21:29:35 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Luciano Rocha <strange@nsk.no-ip.org>, linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, dhaval@linux.vnet.ibm.com
-Subject: Re: can't change euid 0 to uid != running user
-Message-ID: <20071005155935.GA8148@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071005142541.GA9224@bit.office.eurotux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Oct 2007 11:49:36 -0400
+Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:19702 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757929AbXJEPtg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 11:49:36 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [PATCH for testing] Re: Decreasing stime running confuses top
+Date: Fri, 5 Oct 2007 17:49:32 +0200
+User-Agent: KMail/1.9.7
+Cc: Chuck Ebbert <cebbert@redhat.com>, Luca Tettamanti <kronos.it@gmail.com>,
+       Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
+       Ilpo =?iso-8859-1?q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       "Alexander E. Patrakov" <patrakov@ums.usu.ru>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200710031433.34504.elendil@planet.nl> <47054B2E.1050906@redhat.com> <200710042310.25223.borntraeger@de.ibm.com>
+In-Reply-To: <200710042310.25223.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071005142541.GA9224@bit.office.eurotux.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200710051749.33381.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Oct 2007 15:49:33.0677 (UTC) FILETIME=[5311F1D0:01C80767]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 03:25:43PM +0100, Luciano Rocha wrote:
-> I have the following problem:
-> $ sudo -u ie -s # or sudo su ie
-> unable to change to runas uid: Resource temporarily unavailable
-> 
-> Works:
-> $ sudo su, followed by su ie
-> 
-> The first sudo also worked while I had a shell under user ie.
-> 
-> When I exited, it stopped working, but it is now working every time I
-> trie it.
-> 
-> dmesg shows:
-> 
-> [82602.729330] kobject_add failed for 504 with -EEXIST, don't try to
->                register things with the same name in the same directory.
-> [82602.729365]  [<c04b9195>] kobject_shadow_add+0x16e/0x1a0
-> [82602.729383]  [<c04b9480>] kobject_set_name+0x29/0x92
-> [82602.729504]  [<c04238ea>] user_kobject_create+0x6a/0x90
-> [82602.729520]  [<c0423cce>] alloc_uid+0x18f/0x1d7
-> [82602.729530]  [<c0427030>] set_user+0x1c/0x8f
-> [82602.729539]  [<c0428b5f>] sys_setresuid+0xd5/0x162
-> [82602.729552]  [<c0403e6a>] syscall_call+0x7/0xb
-> [82602.729575]  =======================
+On Thursday 04 October 2007, you wrote:
+> Frans can you test this patch if this makes stime and utime monotic
+> again?
+>
+> It basically reverts the rest of 
+> b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa and should restore the 2.6.22
+> behavior. The process time is used from tasks utime and stime instead of
+> the scheduler clock. That means, in general after a long period of time,
+> it is less accurate than the current time and behaves like 2.6.22.
+>
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-This seems to be similar to the problem Ingo reported
-(http://marc.info/?l=linux-kernel&m=119125007102969). We have sent a fix
-for it subsequently (http://marc.info/?l=linux-kernel&m=119143193812026).
+Yes, this gives steady increases.
+For kontact it also again shows updates only once every minute. I really 
+wonder where all the other fluctuations for contact come from with the 
+alternative code.
 
-Can you resync to Ingo's latest cfs-devel tree (which will remove the
-bad patch you have), then apply the patch at
-http://marc.info/?l=linux-kernel&m=119143193812026 and verify if the
-problem goes away?
+It seems to me that this patch would be the best option for 2.6.23.
 
-
--- 
-Regards,
-vatsa
+Tested-by: Frans Pop <elendil@planet.nl>
