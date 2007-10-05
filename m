@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbXJENYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXJEN1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763040AbXJENYb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXJENYY
+	id S1762967AbXJEN1Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbXJEN1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:24:24 -0400
-Received: from sacred.ru ([62.205.161.221]:34592 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753593AbXJENYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:24:23 -0400
-Message-ID: <47063923.80607@openvz.org>
-Date: Fri, 05 Oct 2007 17:16:19 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 5 Oct 2007 09:27:04 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53362 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756307AbXJEN1C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 09:27:02 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Kirill Korotaev <dev@sw.ru>
+Cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [Devel] Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and	driver model
+References: <11902755392688-git-send-email-htejun@gmail.com>
+	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
+	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
+	<20071005062302.GB16914@kroah.com>
+	<m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com> <4706363A.9030807@sw.ru>
+Date: Fri, 05 Oct 2007 07:24:55 -0600
+In-Reply-To: <4706363A.9030807@sw.ru> (Kirill Korotaev's message of "Fri, 05
+	Oct 2007 17:03:54 +0400")
+Message-ID: <m1lkahk82g.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@osdl.org>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH 2/3] Prepare pid_nr() etc functions to work with not-NULL
- pids
-References: <4703A44F.9020402@openvz.org> <4703A53B.9090804@openvz.org> <20071003164258.GS19691@waste.org> <4704AA39.5030208@openvz.org> <20071004171311.GZ19691@waste.org>
-In-Reply-To: <20071004171311.GZ19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 05 Oct 2007 17:18:52 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Thu, Oct 04, 2007 at 12:54:17PM +0400, Pavel Emelyanov wrote:
->> Matt Mackall wrote:
->>> On Wed, Oct 03, 2007 at 06:20:43PM +0400, Pavel Emelyanov wrote:
->>>> Just make the __pid_nr() etc functions that expect the argument
->>>> to always be not NULL.
->>>>
->>>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
->>>>  static inline pid_t pid_nr(struct pid *pid)
->>>>  {
->>>>  	pid_t nr = 0;
->>>>  	if (pid)
->>>> -		nr = pid->numbers[0].nr;
->>>> +		nr = __pid_nr(pid);
->>>>  	return nr;
->>>>  }
->>> Is there a patch that removes these inlines? Otherwise this looks good
->>> to me.
->> Not yet. Some of are uninlined already, but others are not. I'd like 
->> to make some testing before uninline them.
-> 
-> I was asking about the whole function, actually, not the keyword. Is
-> this function not equivalent to __pid_nr now?
+Kirill Korotaev <dev@sw.ru> writes:
 
-Oh, I see. I haven't managed to check the whole kernel yet that all
-the users of pid_xnr() calls pass not-null pointer there. This is 
-in TODO list.
+> Imho environments to be migratable should have no direct access to the devices.
+> You can use any of stacked virtual filesystems to hide real
+> device from container.
+> You will have problems much bigger than this one otherwise
+> (imagine access to video, sound etc.)
 
-Thanks,
-Pavel
+What I am primarily concern about is when you can make the case that
+the hardware we are talking is present before and after the migration.
+
+When you are directly accessing a device.  For times when it makes
+sense to directly access hardware in a container (think infiniband
+OS-bypass NICs).  We need to tell user space that the device was
+unplugged and another one was plugged in.  If user space can cope with
+that things should continue to work.
+
+There are some very specific cases that we can support:
+- Stateless devices like /dev/zero and dev/random.
+- Virtual devices like ttys, ramdisks, loop devices
+- Remote block devices like SCSI disks on a san, iSCSI, nbd, ATAoE.
+- Local pseudo block devices like the backing devices for virtual
+  filesystems.
+
+There are very specific limits in which this can work and be useable,
+and I don't claim to have looked at all of the details, but for the
+block device case in particular we export the block device number
+to user space in stat.  There are some common applications which do
+memorize stat data for files things like: git, incremental backup
+software, and intrusion detection software.
+
+Frankly the times when this matters is rare enough I don't put a
+big priority on getting this done quickly.  However a strong case
+has been made for all of this filtering so we can run things like
+udev in a container.  Initially I only expect stateless character
+devices and ttys to be allowed in a namespace, and I don't have
+a clue what device number we will use in st_dev for stat in the
+case our block device isn't in the user space interface.  I just know
+that it sounds like where we want to be eventually and thinking
+about it now isn't a problem.
+
+Eric
 
