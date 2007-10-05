@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXJDX7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762671AbXJEAB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbXJDX7a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 19:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbXJDX7W
+	id S1762671AbXJEAB7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 20:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbXJEABv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 19:59:22 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65021 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759553AbXJDX7U (ORCPT
+	Thu, 4 Oct 2007 20:01:51 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:40157 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbXJEABt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 19:59:20 -0400
-In-Reply-To: <4702758A.20205@redhat.com>
-References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu> <20070814212858.GB23308@one.firstfloor.org> <07759638-DE7C-4341-A642-D611A897614F@MIT.EDU> <20070814214622.GE23308@one.firstfloor.org> <6655DD8B-D9C6-495D-9E22-2FDF6B375C9D@MIT.EDU> <20070814221927.GH23308@one.firstfloor.org> <9D5ACA40-5F33-4F49-8255-D51F554889E7@MIT.EDU> <4702758A.20205@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <42824DD7-AD58-4C2C-A15C-C88EBFAC2C56@MIT.EDU>
-Cc: Andi Kleen <andi@firstfloor.org>, Chuck Anderson <cra@WPI.EDU>,
-       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+	Thu, 4 Oct 2007 20:01:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bvxwhx2QD+OXAvVpIKRu2Xxm14b0e8QsTevwkWlmaviw0qtiioRsC26kuDp3yH7aRWiSpJdCmRBK91HFQw9DXH6rAmI5JxOebKvwDtZ6EcF0SVrjQs38EH5HNny5VKI0KPsLdf1pDdnSV2x5G0eFSEQoPyvCNuscEiW6q3fI42A=
+Message-ID: <29495f1d0710041701g4ed73441ie583058c78f95857@mail.gmail.com>
+Date: Thu, 4 Oct 2007 17:01:47 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Tony Breeds" <tony@bakeyournoodle.com>
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+Cc: "Michael Ellerman" <michael@ellerman.id.au>,
+       "Linas Vepstas" <linas@austin.ibm.com>, linuxppc-dev@ozlabs.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071003011909.GG9814@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: William Cattey <wdc@MIT.EDU>
-Subject: Re: vm86.c audit_syscall_exit() call trashes registers
-Date: Thu, 4 Oct 2007 19:58:37 -0400
-To: Chuck Ebbert <cebbert@redhat.com>
-X-Mailer: Apple Mail (2.752.3)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Disposition: inline
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	 <20070924123531.GC30855@shadowen.org>
+	 <20071002232819.GN4338@austin.ibm.com>
+	 <20071003002646.GD9814@bakeyournoodle.com>
+	 <1191371416.8073.1.camel@concordia>
+	 <20071003011909.GG9814@bakeyournoodle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks very much for thinking about this and providing a revised  
-candidate patch.
-
-Sadly, the effect of the patch is the same as the most recent  
-candidate patch from Jeremy Fitzhardinge:  The EDID transfer still  
-comes up all zeros.
-
-This is very perplexing to me.  If I take the code that appears in  
-2.6.18's vm86.c, and simply put #if 0 around the call to  
-audit_syscall_exit I get good data.
-
-If this is indeed a correct minimal correction to the  
-audit_syscall_exit code, then perhaps there's some other condition  
-being exercised.  I guess my next step is to take the whole pt_regs  
-patch (commit 49d26b6eaa8e970c8cf6e299e6ccba2474191bf5) from  
-kernel.org and see if that has a beneficial effect.
-
--Bill
-
-----
-
-William Cattey
-Linux Platform Coordinator
-MIT Information Services & Technology
-
-N42-040M, 617-253-0140, wdc@mit.edu
-http://web.mit.edu/wdc/www/
-
-
-On Oct 2, 2007, at 12:44 PM, Chuck Ebbert wrote:
-
-> On 09/25/2007 07:38 PM, William Cattey wrote:
->>
->> I'd feel a lot more confident we were on the right track if I  
->> could just
->> correctly patch Fitzhardinge's cleanup into the test setup I have  
->> now.
->>
+On 10/2/07, Tony Breeds <tony@bakeyournoodle.com> wrote:
+> On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
 >
-> I think you need to zero both registers if you're using 2.6.16, and  
-> force
-> %eax as the source so it doesn't choose %ebp?
+> > I realise it'll make the patch bigger, but this doesn't seem like a
+> > particularly good name for the variable anymore.
 >
-> --- a/arch/i386/kernel/vm86.c
-> +++ b/arch/i386/kernel/vm86.c
-> @@ -306,19 +334,19 @@ static void do_sys_vm86(struct  
-> kernel_vm86_struct *info, struct task_struct *tsk
->  	tsk->thread.screen_bitmap = info->screen_bitmap;
->  	if (info->flags & VM86_SCREEN_BITMAP)
->  		mark_screen_rdonly(tsk->mm);
-> -	__asm__ __volatile__("xorl %eax,%eax; movl %eax,%fs; movl %eax,%gs 
-> \n\t");
-> -	__asm__ __volatile__("movl %%eax, %0\n" :"=r"(eax));
+> Sure, what about?
 >
->  	/*call audit_syscall_exit since we do not exit via the normal  
-> paths */
->  	if (unlikely(current->audit_context))
-> -		audit_syscall_exit(AUDITSC_RESULT(eax), eax);
-> +		audit_syscall_exit(AUDITSC_RESULT(0), 0);
+> Clarify when RTAS logging is enabled.
 >
->  	__asm__ __volatile__(
->  		"movl %0,%%esp\n\t"
->  		"movl %1,%%ebp\n\t"
-> +		"mov  %2, %%fs\n\t"
-> +		"mov  %2, %%gs\n\t"
->  		"jmp resume_userspace"
->  		: /* no outputs */
-> -		:"r" (&info->regs), "r" (task_thread_info(tsk)));
-> +		:"r" (&info->regs), "r" (task_thread_info(tsk)), "a" (0));
->  	/* we never return here */
->  }
->
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
+For what it's worth, on a different ppc64 box, this resolves a similar
+panic for me.
+
+Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+Thanks,
+Nish
