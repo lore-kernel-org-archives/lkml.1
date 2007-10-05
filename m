@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762837AbXJENPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbXJENRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762837AbXJENPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbXJENPp
+	id S1762867AbXJENRz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbXJENRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:15:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2168 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754615AbXJENPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:15:44 -0400
-Date: Fri, 5 Oct 2007 13:15:31 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Bernardo Innocenti <bernie@codewiz.org>
-Cc: Jordan Crouse <jordan.crouse@amd.com>,
-       Andres Solomon <dilinger@queued.net>,
-       OLPC Development <devel@laptop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] GEODE: decouple sleep/resume from powerdown/powerup
-Message-ID: <20071005131530.GC7397@ucw.cz>
-References: <1190589101921-git-send-email-bernie@codewiz.org>
+	Fri, 5 Oct 2007 09:17:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51518 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755062AbXJENRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 09:17:46 -0400
+Date: Fri, 5 Oct 2007 09:17:16 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickens <hugh@veritas.com>, David Rientjes <rientjes@google.com>,
+       Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Keir Fraser <keir@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
+ pagetable setup/pulldown
+Message-ID: <20071005091716.78d30446@bree.surriel.com>
+In-Reply-To: <4705BA56.5080605@goop.org>
+References: <470596C4.8060804@goop.org>
+	<20071004215231.42b1bc21@bree.surriel.com>
+	<4705BA56.5080605@goop.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190589101921-git-send-email-bernie@codewiz.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 04 Oct 2007 21:15:18 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> This patch merges the fb_powerup and fb_powerdown hooks in a single
-> operation fb_power with an additional "state" parameter ranging
-> from 0 (running) to 3 (poweroff).
+> Rik van Riel wrote:
+> > Either of these two would work.  Another alternative could be to
+> > let test_and_clear_pte_flags have an exception table entry, where
+> > we jump right to the next instruction if the instruction clearing
+> > the flag fails.
+> >
+> > That is the essentially variant you need for Xen, except the fast
+> > path is still exactly the same it is as when running on native
+> > hardware.
+> >   
+> 
+> Hm, that wouldn't end up clearing the bit. 
 
-No, please don't. Having int with 0/3 being valid specifying what to
-do is evil.
+Big deal.  We don't care *that* much.
 
-enum is less evil, but what's wrong about having 3 functions?
+As long as the bit gets cleared 99.9% of the time, we're fine.
+All that bit is for is determining when to swap out a page.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
