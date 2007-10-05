@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbXJEPq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763575AbXJEPsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763585AbXJEPq3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 11:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759852AbXJEPqV
+	id S1763575AbXJEPsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 11:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbXJEPrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 11:46:21 -0400
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:15582 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758492AbXJEPqU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 11:46:20 -0400
-User-Agent: Microsoft-Entourage/11.3.6.070618
-Date: Fri, 05 Oct 2007 16:46:14 +0100
-Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-From: Keir Fraser <keir@xensource.com>
-To: Hugh Dickins <hugh@veritas.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
-       Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-ID: <C32C1AD6.167B3%keir@xensource.com>
-Thread-Topic: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-Thread-Index: AcgHZtwNGsbpFXNaEdynTQAX8io7RQ==
-In-Reply-To: <Pine.LNX.4.64.0710051601430.14565@blonde.wat.veritas.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 5 Oct 2007 11:47:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47261 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756405AbXJEPru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 11:47:50 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071005144605.GA3072@infradead.org>
+References: <20071005144605.GA3072@infradead.org> <20071004155602.2814.47731.stgit@warthog.procyon.org.uk> <20071004155607.2814.74947.stgit@warthog.procyon.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, torvalds@osdl.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/32] Add an ERR_CAST() macro to complement ERR_PTR and co. [try #2]
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Fri, 05 Oct 2007 16:47:36 +0100
+Message-ID: <17643.1191599256@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07 16:33, "Hugh Dickins" <hugh@veritas.com> wrote:
+Christoph Hellwig <hch@infradead.org> wrote:
 
-> If a 2.6.23 fix is needed, I suggest simply excluding split ptlocks
-> in the Xen case, as shown by the mm/Kconfig - line in Jan's patch.
+> I don't like this one very much, I'd rather take the variant Linus
+> outline in his last post on that topic..
 
-I didn't think that nobbling config options for particular pv_ops
-implementations was acceptable? I'm rather out of the loop though, and could
-be wrong.
+I'd rather not take that variant.
 
-The PREEMPT_BITS limitation is a good argument for at least taking the pte
-locks in small batches though (small batches is preferable to one-by-one
-since we will want to batch the make-readonly-and-pin hypercall requests to
-amortise the cost of the hypervisor trap).
-
- -- Keir
-
+David
