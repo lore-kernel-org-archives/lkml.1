@@ -1,62 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXJEMYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXJEMam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXJEMYl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXJEMYd
+	id S1761292AbXJEMam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXJEMae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:24:33 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:33762 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbXJEMYc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:24:32 -0400
-Date: Fri, 5 Oct 2007 08:24:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gautham R Shenoy <ego@in.ibm.com>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
-       a.p.zijlstra@chello.nl, bunk@kernel.org, oleg@tv-sign.ru
-Subject: Re: [PATCH RFC 6/9] RCU priority boosting for preemptible RCU
-In-Reply-To: <20071005114657.GA17788@in.ibm.com>
-Message-ID: <Pine.LNX.4.58.0710050822330.20859@gandalf.stny.rr.com>
-References: <20070910183004.GA3299@linux.vnet.ibm.com>
- <20070910183901.GF3819@linux.vnet.ibm.com> <20071005114657.GA17788@in.ibm.com>
+	Fri, 5 Oct 2007 08:30:34 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:50570 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752232AbXJEMad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 08:30:33 -0400
+Message-ID: <391587432.00784@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 5 Oct 2007 20:30:28 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-ID: <20071005123028.GA10372@mail.ustc.edu.cn>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <1191501626.22357.14.camel@twins> <E1IdQJn-0002Cv-00@dorka.pomaz.szeredi.hu> <1191504186.22357.20.camel@twins> <E1IdR58-0002Fq-00@dorka.pomaz.szeredi.hu> <1191516427.5574.7.camel@lappy> <20071004104650.d158121f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004104650.d158121f.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 04, 2007 at 10:46:50AM -0700, Andrew Morton wrote:
+> On Thu, 04 Oct 2007 18:47:07 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > > > > > But that said, there might be better ways to do that.
+> > > > > 
+> > > > > Sure, if we do need to globally limit the number of under-writeback
+> > > > > pages, then I think we need to do it independently of the dirty
+> > > > > accounting.
+> > > > 
+> > > > It need not be global, it could be per BDI as well, but yes.
+> > > 
+> > > For per-bdi limits we have the queue length.
+> > 
+> > Agreed, except for:
+> > 
+> > static int may_write_to_queue(struct backing_dev_info *bdi)
+> > {
+> > 	if (current->flags & PF_SWAPWRITE)
+> > 		return 1;
+> > 	if (!bdi_write_congested(bdi))
+> > 		return 1;
+> > 	if (bdi == current->backing_dev_info)
+> > 		return 1;
+> > 	return 0;
+> > }
+> > 
+> > Which will write to congested queues. Anybody know why?
+> 
+> 
+> commit c4e2d7ddde9693a4c05da7afd485db02c27a7a09
+> Author: akpm <akpm>
+> Date:   Sun Dec 22 01:07:33 2002 +0000
+> 
+>     [PATCH] Give kswapd writeback higher priority than pdflush
+>     
+>     The `low latency page reclaim' design works by preventing page
+>     allocators from blocking on request queues (and by preventing them from
+>     blocking against writeback of individual pages, but that is immaterial
+>     here).
+>     
+>     This has a problem under some situations.  pdflush (or a write(2)
+>     caller) could be saturating the queue with highmem pages.  This
+>     prevents anyone from writing back ZONE_NORMAL pages.  We end up doing
+>     enormous amounts of scenning.
 
+Sorry, I cannot not understand it. We now have balanced aging between
+zones. So the page allocations are expected to distribute proportionally
+between ZONE_HIGHMEM and ZONE_NORMAL?
 
+>     A test case is to mmap(MAP_SHARED) almost all of a 4G machine's memory,
+>     then kill the mmapping applications.  The machine instantly goes from
+>     0% of memory dirty to 95% or more.  pdflush kicks in and starts writing
+>     the least-recently-dirtied pages, which are all highmem.  The queue is
+>     congested so nobody will write back ZONE_NORMAL pages.  kswapd chews
+>     50% of the CPU scanning past dirty ZONE_NORMAL pages and page reclaim
+>     efficiency (pages_reclaimed/pages_scanned) falls to 2%.
+>     
+>     So this patch changes the policy for kswapd.  kswapd may use all of a
+>     request queue, and is prepared to block on request queues.
+>     
+>     What will now happen in the above scenario is:
+>     
+>     1: The page alloctor scans some pages, fails to reclaim enough
+>        memory and takes a nap in blk_congetion_wait().
+>     
+>     2: kswapd() will scan the ZONE_NORMAL LRU and will start writing
+>        back pages.  (These pages will be rotated to the tail of the
+>        inactive list at IO-completion interrupt time).
+>     
+>        This writeback will saturate the queue with ZONE_NORMAL pages.
+>        Conveniently, pdflush will avoid the congested queues.  So we end up
+>        writing the correct pages.
+>     
+>     In this test, kswapd CPU utilisation falls from 50% to 2%, page reclaim
+>     efficiency rises from 2% to 40% and things are generally a lot happier.
 
-On Fri, 5 Oct 2007, Gautham R Shenoy wrote:
+We may see the same problem and improvement in the absent of 'all
+writeback goes to one zone' assumption.
 
-> On Mon, Sep 10, 2007 at 11:39:01AM -0700, Paul E. McKenney wrote:
->
-> [snip]
->
-> > +
-> > +/*
-> > + * Return the list from which to boost target tasks.
-> > + * May only be invoked by the booster task, so guaranteed to
-> > + * already be initialized.  Use rcu_boost_dat element least recently
-> > + * the destination for task blocking in RCU read-side critical sections.
-> > + */
-> > +static inline struct rcu_boost_dat *rcu_rbd_boosting(int cpu)
-> > +{
-> > +	int idx = (rcu_boost_idx + 1) & (RCU_BOOST_ELEMENTS - 1);
->
-> Why is this masking required? When we increment
-> the rcu_boost_idx in rcu_booster, we do perform a modulo operation
-> to ensure that it wraps around RCU_BOOST_ELEMENTS.
+The problem could be:
+- dirty_thresh is exceeded, so balance_dirty_pages() starts syncing
+  data and quickly _congests_ the queue;
+- dirty pages are slowly but continuously turned into clean pages by
+  balance_dirty_pages(), but they still stay in the same place in LRU;
+- the zones are mostly dirty/writeback pages, kswapd has a hard time
+  finding the randomly distributed clean pages;
+- kswapd cannot do the writeout because the queue is congested!
 
-Because we are not masking rcu_boost_idx, we are masking
- (rcu_boost_idx + 1) which may extend the bounderies of
-RCU_BOOST_ELEMENTS.
+The improvement could be:
+- kswapd is now explicitly preferred to do the writeout;
+- the pages written by kswapd will be rotated and easy for kswapd to reclaim;
+- it becomes possible for kswapd to wait for the congested queue,
+  instead of doing the vmscan like mad.
 
--- Steve
+The congestion wait looks like a pretty natural way to throttle the kswapd.
+Instead of doing the vmscan at 1000MB/s and actually freeing pages at
+60MB/s(about the write throughput), kswapd will be relaxed to do vmscan at
+maybe 150MB/s.
+
+Fengguang
+---
+>     The downside is that kswapd may now do a lot less page reclaim,
+>     increasing page allocation latency, causing more direct reclaim,
+>     increasing lock contention in the VM, etc.  But I have not been able to
+>     demonstrate that in testing.
+>     
+>     
+>     The other problem is that there is only one kswapd, and there are lots
+>     of disks.  That is a generic problem - without being able to co-opt
+>     user processes we don't have enough threads to keep lots of disks saturated.
+>     
+>     One fix for this would be to add an additional "really congested"
+>     threshold in the request queues, so kswapd can still perform
+>     nonblocking writeout.  This gives kswapd priority over pdflush while
+>     allowing kswapd to feed many disk queues.  I doubt if this will be
+>     called for.
+>     
+>     BKrev: 3e051055aitHp3bZBPSqmq21KGs5aQ
+> 
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index c635f39..9ab0209 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -7,6 +7,7 @@ #include <linux/kdev_t.h>
+>  #include <linux/linkage.h>
+>  #include <linux/mmzone.h>
+>  #include <linux/list.h>
+> +#include <linux/sched.h>
+>  #include <asm/atomic.h>
+>  #include <asm/page.h>
+>  
+> @@ -14,6 +15,11 @@ #define SWAP_FLAG_PREFER	0x8000	/* set i
+>  #define SWAP_FLAG_PRIO_MASK	0x7fff
+>  #define SWAP_FLAG_PRIO_SHIFT	0
+>  
+> +static inline int current_is_kswapd(void)
+> +{
+> +	return current->flags & PF_KSWAPD;
+> +}
+> +
+>  /*
+>   * MAX_SWAPFILES defines the maximum number of swaptypes: things which can
+>   * be swapped to.  The swap type and the offset into that swap type are
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index aeab1e3..a8b9d2c 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -204,6 +204,19 @@ static inline int is_page_cache_freeable
+>  	return page_count(page) - !!PagePrivate(page) == 2;
+>  }
+>  
+> +static int may_write_to_queue(struct backing_dev_info *bdi)
+> +{
+> +	if (current_is_kswapd())
+> +		return 1;
+> +	if (current_is_pdflush())	/* This is unlikely, but why not... */
+> +		return 1;
+> +	if (!bdi_write_congested(bdi))
+> +		return 1;
+> +	if (bdi == current->backing_dev_info)
+> +		return 1;
+> +	return 0;
+> +}
+> +
+>  /*
+>   * shrink_list returns the number of reclaimed pages
+>   */
+> @@ -303,8 +316,6 @@ #endif /* CONFIG_SWAP */
+>  		 * See swapfile.c:page_queue_congested().
+>  		 */
+>  		if (PageDirty(page)) {
+> -			struct backing_dev_info *bdi;
+> -
+>  			if (!is_page_cache_freeable(page))
+>  				goto keep_locked;
+>  			if (!mapping)
+> @@ -313,9 +324,7 @@ #endif /* CONFIG_SWAP */
+>  				goto activate_locked;
+>  			if (!may_enter_fs)
+>  				goto keep_locked;
+> -			bdi = mapping->backing_dev_info;
+> -			if (bdi != current->backing_dev_info &&
+> -					bdi_write_congested(bdi))
+> +			if (!may_write_to_queue(mapping->backing_dev_info))
+>  				goto keep_locked;
+>  			write_lock(&mapping->page_lock);
+>  			if (test_clear_page_dirty(page)) {
+> @@ -424,7 +433,7 @@ keep:
+>  	if (pagevec_count(&freed_pvec))
+>  		__pagevec_release_nonlru(&freed_pvec);
+>  	mod_page_state(pgsteal, ret);
+> -	if (current->flags & PF_KSWAPD)
+> +	if (current_is_kswapd())
+>  		mod_page_state(kswapd_steal, ret);
+>  	mod_page_state(pgactivate, pgactivate);
+>  	return ret;
+> 
+
