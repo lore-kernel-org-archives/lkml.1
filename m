@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764335AbXJEWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764350AbXJEWft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764335AbXJEWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 18:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbXJEWds
+	id S1764350AbXJEWft (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 18:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761983AbXJEWfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 18:33:48 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38994 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761412AbXJEWdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 18:33:47 -0400
-Subject: Re: [PATCH] jbd/jbd2: JBD memory allocation cleanups
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20071004065204.GA21481@infradead.org>
-References: <1191477059-5357-1-git-send-email-tytso@mit.edu>
-	 <1191477059-5357-2-git-send-email-tytso@mit.edu>
-	 <20071004065204.GA21481@infradead.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 05 Oct 2007 15:33:23 -0700
-Message-Id: <1191623603.3861.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Fri, 5 Oct 2007 18:35:41 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:17331 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbXJEWfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 18:35:40 -0400
+X-IronPort-AV: i="4.21,237,1188792000"; 
+   d="scan'208"; a="41222592:sNHT34185172"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ralf Baechle" <ralf@linux-mips.org>
+Subject: Re: [PATCH] Replace __attribute_pure__ with __pure
+Date: Fri, 5 Oct 2007 18:36:23 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, "Bryan Wu" <bryan.wu@analog.com>
+References: <20071005131309.GA445@linux-mips.org>
+In-Reply-To: <20071005131309.GA445@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710051836.23936.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 05 Oct 2007 22:35:38.0895 (UTC) FILETIME=[0DDF29F0:01C807A0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-04 at 07:52 +0100, Christoph Hellwig wrote:
-> On Thu, Oct 04, 2007 at 01:50:36AM -0400, Theodore Ts'o wrote:
-> > From: Mingming Cao <cmm@us.ibm.com>
-> > 
-> > JBD: Replace slab allocations with page cache allocations
-> 
-> It's page allocations, not page cache allocations.
-> 
-> > Also this patch cleans up jbd_kmalloc and replace it with kmalloc directly
-> 
-> That sounds like it should be a different patch..
+On Fri 5 Oct 2007 09:13, Ralf Baechle pondered:
+> And btw why does Analog list half their employees in the MAINTAINERS
+> entry?
+> Seems a little over the top ...
 
-Okay. Will sent the patches, that also separate JBD2 changes to a
-different patch.
+Yeah, the original submission got a little carried away...
 
+We can cut that down to just Bryan and the mailing list I think.
+
+-Robin
