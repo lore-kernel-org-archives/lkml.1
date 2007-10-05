@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbXJERlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762443AbXJERl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761332AbXJERlK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 13:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbXJERk4
+	id S1762443AbXJERl0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 13:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbXJERk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 13:40:56 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37100 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757449AbXJERkz (ORCPT
+	Fri, 5 Oct 2007 13:40:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59665 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758445AbXJERk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 13:40:55 -0400
-Subject: Re: nmi_watchdog fix for x86_64 to be more like i386
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Andi Kleen <ak@suse.de>
-Cc: David Bahi <dbahi@novell.com>, mingo@elte.hu, arjan@infradead.org,
-       tglx@linutronix.de, akpm@linux-foundation.org,
-       Gregory Haskins <GHaskins@novell.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <200710051803.32016.ak@suse.de>
-References: <47060B680200006C00019B7B@sinclair.provo.novell.com>
-	 <200710051803.32016.ak@suse.de>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Fri, 05 Oct 2007 11:38:12 -0600
-Message-Id: <1191605892.31605.198.camel@hermosa.morrealenet>
+	Fri, 5 Oct 2007 13:40:58 -0400
+Date: Fri, 5 Oct 2007 10:40:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: strange@nsk.no-ip.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [patch available] Re: lguest compilation problem in 2.6.23-rc9
+Message-Id: <20071005104009.b836b196.akpm@linux-foundation.org>
+In-Reply-To: <20071005091809.d11f8003.randy.dunlap@oracle.com>
+References: <20071005152147.GA8160@bit.office.eurotux.com>
+	<20071005091809.d11f8003.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-05 at 18:03 +0200, Andi Kleen wrote:
-> > If it's agreed that this is the fix - can you submit a proper [PATCH] so
-> > all users of watchdog_use_timer_and_hpet_on_x86_64.patch can be removed,
-> > and replaced with yours.
+On Fri, 5 Oct 2007 09:18:09 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> > BUILD   arch/i386/boot/bzImage
+> > Root device is (254, 3)
+> > Setup is 11496 bytes (padded to 11776 bytes).
+> > System is 1234 kB
+> > Kernel: arch/i386/boot/bzImage is ready  (#2)
+> >   Building modules, stage 2.
+> >   MODPOST 282 modules
+> > ERROR: "kasprintf" [drivers/lguest/lg.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
+> > 
+> > Config follows.
 > 
-> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/watchdog-fix
+> Fixed by
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/broken-out/move-kasprintfo-to-obj-y.patch
 > 
-> -Andi
-> 
+> Need to merge now?
 
-Hummm, a directory appears to be protected, or DNE.  I get  "failed to
-change directory". 
+yup, I'll add it to the for-2.6.23 queue.
 
-Thx,
--PWM
+Which presently consists of
 
+fix-sys_remap_file_pages-bug-at-highmemc15.patch
+fix-timer_stats-printout-of-events-sec.patch
+longhaul-add-auto-enabled-revid_errata-option.patch
+lockstat-documentation.patch
+move-kasprintfo-to-obj-y.patch
 
-
+I'll get those out today.
