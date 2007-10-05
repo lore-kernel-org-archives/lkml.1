@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764291AbXJEUsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbXJEUuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764291AbXJEUsL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 16:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762541AbXJEUr6
+	id S1764309AbXJEUuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 16:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762541AbXJEUuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 16:47:58 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:22290 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752359AbXJEUr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 16:47:57 -0400
-Message-ID: <4706A2F7.8050508@msgid.tls.msk.ru>
-Date: Sat, 06 Oct 2007 00:47:51 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Fri, 5 Oct 2007 16:50:00 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:18588 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761487AbXJEUt7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 16:49:59 -0400
+Date: Fri, 5 Oct 2007 21:49:45 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Guennadi Liakhovetski <lg@denx.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: tmpfs disabled in .config but in /proc/filesystems
+In-Reply-To: <Pine.LNX.4.60.0710052134180.10392@poirot.grange>
+Message-ID: <Pine.LNX.4.64.0710052136460.17084@blonde.wat.veritas.com>
+References: <Pine.LNX.4.60.0710051637200.10392@poirot.grange>
+ <Pine.LNX.4.64.0710051637380.16909@blonde.wat.veritas.com>
+ <Pine.LNX.4.60.0710052134180.10392@poirot.grange>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: Various problems on Axis 700 Lite VIA C7
-References: <Pine.LNX.4.44L0.0710051021230.4446-100000@iolanthe.rowland.org> <Pine.LNX.4.60.0710052215510.10392@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0710052215510.10392@poirot.grange>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-> Hi
+On Fri, 5 Oct 2007, Guennadi Liakhovetski wrote:
+> On Fri, 5 Oct 2007, Hugh Dickins wrote:
+> > On Fri, 5 Oct 2007, Guennadi Liakhovetski wrote:
+> > > Am I running crazy here (some 2.6.23-rc6-ish)?
+> > > 
+> > > $ zcat /proc/config.gz | grep TMPFS
+> > > # CONFIG_TMPFS is not set
+> > > $ grep tmpfs /proc/filesystems
+> > > nodev   tmpfs
+> > 
+> > tmpfs (mm/shmem.c) is used by the kernel to support shared memory
+> > of various kinds even when CONFIG_TMPFS is not set.  But only when
+> > CONFIG_TMPFS=y can users mount a tmpfs as a fully capable filesystem.
+> > Confusing, yes: sorry for putting the fear of craziness upon you.
 > 
-> Ok, after a day of biseting, it turns out to be a compiler problem. The 
-> gcc-3.3.5 produces at least these two problems (Oops on i2c-viapro probe 
-> and disabled IRQs in USB), whereas 4.1.2 has no problem so far. Up to now 
-> 3.3.5 had no problem compiling 2.6.20+ kernels here, for example, for P-II 
-> SMP. Does it at all look realistic that such "random" run-time problems 
-> are caused by a miscompilation?...
+> Oops, sorry, now I remember reading about this... As a matter of fact, the 
+> presence in /proc/filesystem - was it a deliberate decision, or 
+> technically preferrable or a mistake?
 
-I can't say about compilers (but it looks to me somewhat possible still),
-but I can say a bit about the platform/CPU.  You can find my thread titled
-"VIA C7 anyone" from several months back in archives - that was my first
-expirience.  Since that, I received several emails from others with similar
-problems.
+d) None of the above!
 
-The things is that at least boards I'm using, but I suspect it's CPU not
-the board, -- are somewhat... flaky, so to say, and their reliability (or
-even ability to work) depends on several factors, starting with production
-conditions (environment at a time when it has been produced) and up to
-various thermal factors.
+I've never really thought about it, but I think it's simply a natural
+side-effect of the register_filesystem and vfs_kern_mount it has to
+do in order to get the services it needs from the VFS.
 
-It seems there's quite significant percentage of C7-based boards that are
-flaky/unreliable, replacing one with another from the same batch usually
-fixes the prob.
+If I were to look back in history, I expect I'd find that it used
+to display as "shmfs" or "shmemfs" rather than "tmpfs", and that
+we adjusted the naming later on.   You might prefer that we hadn't,
+or that we registered under both names if CONFIG_TMPFS (maybe we did
+do it like that at one stage, I vaguely remember but haven't checked).
 
-Next, some boards are VERY sensitive to themperature, and their thermal
-sensors are WRONG - it seems - 100% of the time, showing ~20% less
-themperature than it really is (say, when the sensor shows 35 degrees
-celsius, the themp really is about 45..50 degrees) -- when the themperature
-(on SOME samples) grows above 40 degrees, the system becomes unreliable
-and may crash randomly here and there.
+> Wouldn't it be more logical to 
+> completely hide it from the user then?
 
-More, due to geometry of the CPU chip, with very small square area that
-touches the headsink and relatively large headsink, it's sometimes enouth
-to just touch the headsink so it positions wrongly, with bad thermo-contact
-between the CPU and the headsink, resulting in high themperatures and
-system instability.
+Sorry, I find it hard to get excited about!
+I'm inclined not to mess around with it now.
+With apologies to your sanity ;)
 
-And even more interesting -- it seems that some sequence of instructions
-are more frequently misinterpreted (under "abnormal" conditions above)
-than other sequences doing the same thing.  That is, the same program
-compiled with gcc-3.4 may work almost 100% correct while the same thing
-compiled with gcc-4.1 may almost alway fail (usually due to segmentation
-fault), or exactly the opposite.
-
-So umm.... ;)
-
-I'm running VIA C7 on this machine where I'm typing right now - no single
-glitch since the time I replaced the failing one (at a time of mentioned
-thread), it's rock-solid.  I even removed the fan from the headsink - the
-themp grows up to 70..80 degrees celsius (according to lm-sensors, so actual
-themperature should be higher) when I run CPU-intensive apps, and nothing
-breaks.  Previous motherboard which I replaced (the same model, from the
-same batch) was breaking randomly, but worked relatively stable when
-placed on the street and with a large "external" fan used in rooms for
-ventilation... ;)  even without any load when onboard sensors showed 35
-degrees.
-
-That to say - it may be some miscompilations, but may be some probs with
-hardware itself.  If you can, try to reproduce the same on another board
-(I just tried to boot 2.6.23-rc5 on this machine, compiled for PIII CPU
-using gcc-4.1.2 (no other version installed, sorry) - no issues so far).
-
-And no, I'm not trying to say "don't use ViA C7" etc -- I just love this
-my box, it's very good, powerful enouth and quiet.  Just be prepared for
-some... issues, which happens - rarely but still.
-
-/mjt
-
+Hugh
