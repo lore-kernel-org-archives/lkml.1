@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762248AbXJENA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbXJENCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762248AbXJENA2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbXJENAV
+	id S1762793AbXJENCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbXJENCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:00:21 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:21625 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754615AbXJENAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:00:20 -0400
-Message-ID: <4706363A.9030807@sw.ru>
-Date: Fri, 05 Oct 2007 17:03:54 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Fri, 5 Oct 2007 09:02:00 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39647 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756516AbXJENB7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 09:01:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
+Subject: Re: [PATCH 0/2] add new notifier function
+References: <4704D09D.6080503@ah.jp.nec.com>
+Date: Fri, 05 Oct 2007 07:01:17 -0600
+In-Reply-To: <4704D09D.6080503@ah.jp.nec.com> (Takenori Nagano's message of
+	"Thu, 04 Oct 2007 20:38:05 +0900")
+Message-ID: <m1641llnqa.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [Devel] Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject
- and	driver model
-References: <11902755392688-git-send-email-htejun@gmail.com>	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>	<20071005062302.GB16914@kroah.com> <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Greg KH <greg@kroah.com> writes:
-> 
->>>  Also fun is that the dev file implementation needs to be able to
->>>  report different major:minor numbers based on which mount of
->>>  sysfs we are dealing with.
->>
->>Um, no, that's not going to happen.  /dev/sda will _always_ have the
->>same major:minor number, as defined by the LSB spec.  You can not break
->>that at all.  So while you might not want to show all mounts
->>/sys/devices/block/sda/ the ones that you do, will all have the LSB
->>defined major:minor number assigned to it.
-> 
-> 
-> Hmm.  If that is in the LSB it must come from
-> Documentation/devices.txt  I'm not after changing the user
-> visible major/minor assignments.
-> 
-> Let me see if a concrete example will help.  Suppose I have
-> have a SAN with two disks:  disk-1 and disk-2.  I have
-> two machines A and B.  On machine A I get the mapping:
-> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
-> a different probe order so I get the mapping: sda -> disk-2
-> sdb ->disk-1.
-> 
-> To be very clear by sda I mean the block device with major 8 and
-> minor 0, and by sdb I mean the block device with major 8 and minor
-> 16.
-> 
-> So I decide I want an environment on machine B that looks just
-> like the environment on machine A, so I can bring transfer over
-> a running program or whatever.  So I run around looking at UUID
-> labels and what not and I discover that the machine B knows disk-1 as
-> sdb and that machine A knows disk-1 as sda.  So I want to say:
-> /sys/devices/block/sdb show up in this other device namespace as
-> /sys/devices/block/sda.
+Takenori Nagano <t-nagano@ah.jp.nec.com> writes:
 
-Imho environments to be migratable should have no direct access to the devices.
-You can use any of stacked virtual filesystems to hide real
-device from container.
-You will have problems much bigger than this one otherwise
-(imagine access to video, sound etc.)
+> Hi,
+>
+> These patches add new notifier function and implement it to panic_notifier_list.
+> We used the hardcoded notifier chain so far, but it was not flexible. New
+> notifier is very flexible, because user can change a list of order by debugfs.
 
-Kirill
+How is the lack of flexibility a problem?
+Specifics please.
 
+My impression is that the purpose of this patchset is to build
+infrastructure to sort out a conflict between kdb and the kexec code,
+which it does not do, and it can not do if it does not own up to
+it's real purpose.
+
+If I am correct in understanding the purpose of this patchset it does
+not even address the problem it is aimed at solving.
+
+Eric
