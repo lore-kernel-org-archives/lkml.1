@@ -1,310 +1,4301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbXJEQ1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbXJEQfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760518AbXJEQ1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 12:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761173AbXJEQ1K
+	id S1759460AbXJEQfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 12:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXJEQfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 12:27:10 -0400
-Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:37582 "HELO
-	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760878AbXJEQ1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 12:27:08 -0400
-X-YMail-OSG: NDCUmYcVM1nhTAE38SJW6i2Q1YHGKDuOQIGnZorJzlYvSnbqeCuXK17IJHC2mUeDSajXlO7WEw--
-X-RocketYMMF: rancidfat
-Date: Fri, 5 Oct 2007 09:27:06 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: Kyle Moffett <mrmacman_g4@mac.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serge@hallyn.com>
-In-Reply-To: <A508A802-AB11-4DFF-9CA8-498897CE5D03@mac.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <63003.78064.qm@web36613.mail.mud.yahoo.com>
+	Fri, 5 Oct 2007 12:35:13 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:35452 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753242AbXJEQfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 12:35:02 -0400
+Subject: 2.6.23-rc8-mm2 ACPI Battery Info in /sys but not /proc/acpi
+From: Zan Lynx <zlynx@acm.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-k7Q2jzq8vDRQ/GdXH0MO"
+Date: Fri, 05 Oct 2007 10:34:57 -0600
+Message-Id: <1191602098.61085.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20071005/1Idq8g-00069q-3T-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+--=-k7Q2jzq8vDRQ/GdXH0MO
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Oct 05, 2007, at 00:45:17, Eric W. Biederman wrote:
-> > Kyle Moffett <mrmacman_g4@mac.com> writes:
-> >
-> >> On Oct 04, 2007, at 21:44:02, Eric W. Biederman wrote:
-> >>> SElinux is not all encompassing or it is generally  
-> >>> incomprehensible I don't know which.  Or someone long ago would  
-> >>> have said a better  way to implement containers was with a  
-> >>> selinux ruleset, here is a  selinux ruleset that does that.   
-> >>> Although it is completely possible  to implement all of the  
-> >>> isolation with the existing LSM hooks as  Serge showed.
-> >>
-> >> The difference between SELinux and containers is that SELinux (and  
-> >> LSM as a whole) returns -EPERM to operations outside the scope of  
-> >> the  subject, whereas containers return -ENOENT (because it's not  
-> >> even in  the same namespace).
-> >
-> > Yes.  However if you look at what the first implementations were.   
-> > Especially something like linux-vserver.  All they provided was  
-> > isolation.  So perhaps you would not see every process ps but they  
-> > all had unique pid values.
-> >
-> > I'm pretty certain Serge at least prototyped a simplified version  
-> > of that using the LSM hooks.  Is there something I'm not remember  
-> > in those hooks that allows hiding of information like processes?
-> >
-> > Yes. Currently with containers we are taking that one step farther  
-> > as that solves a wider set of problems.
-> 
-> IMHO, containers have a subtly different purpose from LSM even though  
-> both are about information hiding.  Basically a container is  
-> information hiding primarily for administrative reasons; either as a  
-> convenience to help prevent errors or as a way of describing  
-> administrative boundaries.  For example, even in an environment where  
-> all sysadmins are trusted employees, a few head-honcho sysadmins  
-> would get root container access, and all others would get access to  
-> specific containers as a way of preventing "oops" errors.  Basically  
-> a container is about "full access inside this box and no access  
-> outside".
-> 
-> By contrast, LSM is more strictly about providing *limited* access to  
-> resources.  For an accounting business all client records would  
-> grouped and associated together, however those which have passed this  
-> year's review are read-only except by specific staff and others may  
-> have information restricted to some subset of the employees.
->
-> So containers are exclusive subsets of "the system" while LSM should  
-> be about non-exclusive information restriction.
+I have these directories in /proc:
+/proc/acpi
+/proc/acpi/thermal_zone
+/proc/acpi/thermal_zone/THRM
+/proc/acpi/processor
+/proc/acpi/processor/CPU0
+/proc/acpi/video
+/proc/acpi/video/VGA
+/proc/acpi/video/VGA/TV
+/proc/acpi/video/VGA/LCD
+/proc/acpi/video/VGA/CRT
+/proc/acpi/fan
+/proc/acpi/button
+/proc/acpi/button/lid
+/proc/acpi/button/lid/LID
+/proc/acpi/button/power
+/proc/acpi/button/power/PWRB
+/proc/acpi/button/power/PWRF
+/proc/acpi/ac_adapter
+/proc/acpi/ac_adapter/ACAD
+/proc/acpi/power_resource
+/proc/acpi/embedded_controller
+/proc/acpi/embedded_controller/EC0
 
-Yes. Isolation is a much simpler problem than access control.
+but not the battery information.
+In /sys I have:
+/sys/class/power_supply/BAT1
+which is a link to:
+../../devices/LNXSYSTM:00/device:00/PNP0A03:00/device:15/PNP0C0A:00/power_s=
+upply/BAT1
+and *that* directory contains all the battery information.
 
-> >>> We also have in the kernel another parallel security mechanism  
-> >>> (for what is generally a different class of operations) that has  
-> >>> been  quite successful, and different groups get along quite  
-> >>> well, and  ordinary mortals can understand it.   The linux  
-> >>> firewalling code.
-> >>
-> >> Well, I wouldn't go so far as the "ordinary mortals can understand  
-> >> it" part; it's still pretty high on the obtuse-o-meter.
-> >
-> > True.  Probably a more accurate statement is:`unix command line  
-> > power users can and do handle it after reading the docs.  That's  
-> > not quite ordinary mortals but it feels like it some days.  It  
-> > might all be perception...
-> 
-> I have seen more *wrong* iptables firewalls than I've seen correct  
-> ones.  Securing TCP/IP traffic properly requires either a lot of  
-> training/experience or a good out-of-the-box system like Shorewall  
-> which structures the necessary restrictions for you based on an  
-> abstract description of the desired functionality.  For instance what  
-> percentage of admins do you think could correctly set up their  
-> netfilter firewalls to log christmas-tree packets, smurfs, etc  
-> without the help of some external tool?  Hell, I don't trust myself  
-> to reliably do it without a lot of reading of docs and testing, and  
-> I've been doing netfilter firewalls for a while.
-> 
-> The bottom line is that with iptables it is *CRITICAL* to have a good  
-> set of interface tools to take the users' "My system is set up  
-> like..." description in some form and turn it into the necessary set  
-> of efficient security rules.  The *exact* same issue applies to  
-> SELinux, with 2 major additional problems:
-> 
-> 1)  Half the tools are still somewhat beta-ish and under heavy  
-> development.  Furthermore the semi-official reference policy is  
-> nowhere near comprehensive and pretty ugly to read (go back to the  
-> point about the tools being beta-ish).
-> 
-> 2)  If you break your system description or translation tools then  
-> instead of just your network dying your entire *system* dies.
-> 
-> 
-> >>> The linux firewalling codes has hooks all throughout the  
-> >>> networking stack, just like the LSM has hooks all throughout the  
-> >>> rest of linux  kernel.  There is a difference however.  The linux  
-> >>> firewalling code in addition to hooks has tables behind those  
-> >>> hooks that it  consults. There is generic code to walk those  
-> >>> tables and consult with different kernel modules to decide if we  
-> >>> should drop a packet.  Each of those kernel modules provides a  
-> >>> different capability that can be used to generate a firewall.
-> >>
-> >> This is almost *EXACTLY* what SELinux provides as an LSM module.   
-> >> The one difference is that with SELinux some compromises and  
-> >> restrictions  have been made so that (theoretically) the resulting  
-> >> policy can be  exhaustively analyzed to *prove* what it allows and  
-> >> disallows.  It  may be that SELinux should be split into 2 parts,  
-> >> one that provides  the underlying table-matching and the other  
-> >> that uses it to provide  the provability guarantees.  Here's a   
-> >> direct comparison:
-> >>
-> >> netfilter:
-> >>   (A) Each packet has src, dst, port, etc that can be matched
-> >>   (B) Table of rules applied sequentially (MATCH => ACTION)
-> >>   (C) Rules may alter the properties of packets as they are routed/
-> >> bridged/etc
-> >>
-> >> selinux:
-> >>   (A) Each object has user, role, and type that can be matched
-> >>   (B) Table of rules searched by object parameters (MATCH => allow/
-> >> auditallow/transition)
-> >>   (C) Rules may alter the properties of objects through transition  
-> >> rules.
-> >
-> > Ok.  There is something here.
-> >
-> > However in a generic setup, at least role would be an extended  
-> > match criteria provided by the selinux module.  It would not be a  
-> > core attribute.  It would need to depend on some extra  
-> > functionality being compiled in.
-> 
-> Now see I think *THAT* is where Casey should be going with his SMACK  
-> code.  Don't add another LSM, start looking at SELinux and figuring  
-> out what parts he does not need and how they can be parameterized out  
-> at build time for smaller systems.
+This is causing all sorts of problems for me.  If I disconnect the AC
+power from the laptop, the scripts immediately send it into hibernate
+mode because battery level is not found / 0%.  None of my monitoring
+tools can report estimated run-time.  Etc, etc.
 
-Good suggestion. In fact, that is exactly how I approached my
-first two attempts at the problem. What you get if you take that
-route is an imposing infrastructure that has virually nothing
-to do and that adds no value to the solution. Programming to the
-LSM interface, on the other hand, allowed me to drastically reduce
-the size and complexity of the implementation.
+Here is the .config:
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.23-rc8-mm2
+# Thu Oct  4 20:44:27 2007
+#
+CONFIG_X86_64=3Dy
+CONFIG_64BIT=3Dy
+CONFIG_X86=3Dy
+CONFIG_GENERIC_TIME=3Dy
+CONFIG_GENERIC_CLOCKEVENTS=3Dy
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=3Dy
+CONFIG_NONIRQ_WAKEUP=3Dy
+CONFIG_GENERIC_TIME_VSYSCALL=3Dy
+CONFIG_GENERIC_CMOS_UPDATE=3Dy
+CONFIG_ZONE_DMA32=3Dy
+CONFIG_LOCKDEP_SUPPORT=3Dy
+CONFIG_STACKTRACE_SUPPORT=3Dy
+CONFIG_SEMAPHORE_SLEEPERS=3Dy
+CONFIG_MMU=3Dy
+CONFIG_ZONE_DMA=3Dy
+CONFIG_RWSEM_GENERIC_SPINLOCK=3Dy
+CONFIG_GENERIC_HWEIGHT=3Dy
+CONFIG_GENERIC_CALIBRATE_DELAY=3Dy
+CONFIG_X86_CMPXCHG=3Dy
+CONFIG_EARLY_PRINTK=3Dy
+CONFIG_GENERIC_ISA_DMA=3Dy
+CONFIG_GENERIC_IOMAP=3Dy
+CONFIG_ARCH_MAY_HAVE_PC_FDC=3Dy
+CONFIG_ARCH_POPULATES_NODE_MAP=3Dy
+CONFIG_DMI=3Dy
+CONFIG_AUDIT_ARCH=3Dy
+CONFIG_GENERIC_BUG=3Dy
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_DEFCONFIG_LIST=3D"/lib/modules/$UNAME_RELEASE/.config"
 
-> On the other hand, the "user" and "role" fields in SELinux are  
-> already fairly flexible.  The one constant is that user=>role and  
-> role=>type must both be allowed for a label to be valid.  Other than  
-> that, the constraints specify what must be true for a transition to  
-> be allowed.  For example the standard strict reference policy  
-> includes this bit:
-> 
-> constrain process transition (
-> 	(u1 == u2) or
-> 	(t1 == can_change_process_identity and t2 == process_user_target) or
-> 	(t1 == cron_source_domain and (t2 == cron_job_domain or u2 ==  
-> system_u)) or
-> 	(t1 == can_system_change and u2 == system_u) or
-> 	(t1 == process_uncond_exempt)
-> );
-> 
-> Basically all constraints on a particular access vector must be  
-> satisfied for that to be allowed (in addition to other things).  For  
-> the above example, a process running exec() may only change its user  
-> if one of the following:
-> 
->   * It's a login-like program and is starting a user entrypoint
->   * It's a cron-like program and is starting a user or system cronjob
->   * It's a process allowed to start system processes (admin runs  
-> initscripts)
->   * It's unconditionally exempt
-> 
-> By creating types and assigning meaningful attributes to those types  
-> you may restrict the changing of the "user" and "role" however you  
-> would like, including not at all.
-> 
-> Really SELinux is just a fairly elaborate security state-machine.   
-> Each process on the system is in a given "state", defined by its  
-> label, and "state transitions" are only allowed based on the rules  
-> defined in the database.  Since there are 4 extremely common security  
-> models that people like to combine there are 4 fields in each SELinux  
-> label:
->    (A)  User: User A may not poke user B's processes/data, even if  
-> they happen to be running in the same UNIX UID
->    (B)  Role: Users may only perform operations for the role they are  
-> currently logged in as
->    (C)  Type-enforcement: An apache process may only read files that  
-> it needs to operate correctly
->    (D)  Multi-level:  Top-secret data can't magically become  
-> unclassified
-> 
-> Perhaps the thing to do would be to make it possible to compile out  
-> the portions which people don't want.  That would certainly satisfy  
-> Casey, he would build only the "Type-enforcement" portion or only the  
-> "Multi-level" portion and be able to do exactly the same things he  
-> does now with a bit finer granularity of operations.  By defining the  
-> lists of operations he cares about for "r" (read), "w" (write),  
-> "x" (exec), "a" (append), and requires-capabilities, you can just  
-> give those permissions directly in a simplified SELinux-type policy.
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=3Dy
+CONFIG_LOCK_KERNEL=3Dy
+CONFIG_INIT_ENV_ARG_LIMIT=3D32
+CONFIG_LOCALVERSION=3D""
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_SWAP=3Dy
+CONFIG_SYSVIPC=3Dy
+CONFIG_SYSVIPC_SYSCTL=3Dy
+CONFIG_POSIX_MQUEUE=3Dy
+# CONFIG_BSD_PROCESS_ACCT is not set
+CONFIG_TASKSTATS=3Dy
+CONFIG_TASK_DELAY_ACCT=3Dy
+CONFIG_TASK_XACCT=3Dy
+CONFIG_TASK_IO_ACCOUNTING=3Dy
+# CONFIG_USER_NS is not set
+CONFIG_AUDIT=3Dy
+CONFIG_AUDITSYSCALL=3Dy
+CONFIG_AUDIT_TREE=3Dy
+CONFIG_IKCONFIG=3Dy
+CONFIG_IKCONFIG_PROC=3Dy
+CONFIG_LOG_BUF_SHIFT=3D18
+# CONFIG_CGROUPS is not set
+CONFIG_FAIR_GROUP_SCHED=3Dy
+CONFIG_FAIR_USER_SCHED=3Dy
+# CONFIG_SYSFS_DEPRECATED is not set
+CONFIG_RELAY=3Dy
+CONFIG_BLK_DEV_INITRD=3Dy
+CONFIG_INITRAMFS_SOURCE=3D"/initramfs"
+CONFIG_INITRAMFS_ROOT_UID=3D0
+CONFIG_INITRAMFS_ROOT_GID=3D0
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=3Dy
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=3Dy
+CONFIG_SYSCTL_SYSCALL=3Dy
+CONFIG_KALLSYMS=3Dy
+CONFIG_KALLSYMS_ALL=3Dy
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=3Dy
+CONFIG_PRINTK=3Dy
+CONFIG_BUG=3Dy
+CONFIG_ELF_CORE=3Dy
+CONFIG_BASE_FULL=3Dy
+CONFIG_FUTEX=3Dy
+CONFIG_ANON_INODES=3Dy
+CONFIG_EPOLL=3Dy
+CONFIG_SIGNALFD=3Dy
+CONFIG_EVENTFD=3Dy
+CONFIG_SHMEM=3Dy
+CONFIG_VM_EVENT_COUNTERS=3Dy
+CONFIG_SLUB_DEBUG=3Dy
+# CONFIG_SLAB is not set
+CONFIG_SLUB=3Dy
+# CONFIG_SLOB is not set
+CONFIG_PROC_PAGE_MONITOR=3Dy
+CONFIG_PROC_KPAGEMAP=3Dy
+CONFIG_RT_MUTEXES=3Dy
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=3D0
+CONFIG_MODULES=3Dy
+CONFIG_MODULE_UNLOAD=3Dy
+CONFIG_MODULE_FORCE_UNLOAD=3Dy
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=3Dy
+CONFIG_STOP_MACHINE=3Dy
+CONFIG_BLOCK=3Dy
+CONFIG_BLK_DEV_IO_TRACE=3Dy
+CONFIG_BLK_DEV_BSG=3Dy
 
-But Kyle, it's already possible to compile out the part I don't
-want. I configure SELinux off and away I go.
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=3Dy
+CONFIG_IOSCHED_AS=3Dy
+CONFIG_IOSCHED_DEADLINE=3Dy
+CONFIG_IOSCHED_CFQ=3Dy
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=3Dy
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED=3D"cfq"
 
-Smack is not a subset of SELinux, it behaves differently. SELinux
-has a policy that is program behavior oriented, Smack is strictly
-subjet/object oriented. Your 4 components (A-D) are meaningless to
-Smack.
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=3Dy
+CONFIG_NO_HZ=3Dy
+CONFIG_HIGH_RES_TIMERS=3Dy
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=3Dy
+CONFIG_X86_PC=3Dy
+# CONFIG_X86_VSMP is not set
+CONFIG_MK8=3Dy
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_GENERIC_CPU is not set
+CONFIG_X86_L1_CACHE_BYTES=3D64
+CONFIG_X86_L1_CACHE_SHIFT=3D6
+CONFIG_X86_INTERNODE_CACHE_BYTES=3D64
+CONFIG_X86_TSC=3Dy
+CONFIG_X86_GOOD_APIC=3Dy
+# CONFIG_MICROCODE is not set
+CONFIG_X86_MSR=3Dy
+CONFIG_X86_CPUID=3Dy
+CONFIG_X86_IO_APIC=3Dy
+CONFIG_X86_LOCAL_APIC=3Dy
+CONFIG_MTRR=3Dy
+CONFIG_SMP=3Dy
+# CONFIG_SCHED_SMT is not set
+# CONFIG_SCHED_MC is not set
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=3Dy
+# CONFIG_PREEMPT is not set
+# CONFIG_PREEMPT_BKL is not set
+# CONFIG_NUMA is not set
+CONFIG_ARCH_SPARSEMEM_ENABLE=3Dy
+CONFIG_ARCH_FLATMEM_ENABLE=3Dy
+CONFIG_SELECT_MEMORY_MODEL=3Dy
+CONFIG_FLATMEM_MANUAL=3Dy
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=3Dy
+CONFIG_FLAT_NODE_MEM_MAP=3Dy
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=3Dy
+CONFIG_SPLIT_PTLOCK_CPUS=3D4
+CONFIG_RESOURCES_64BIT=3Dy
+CONFIG_ZONE_DMA_FLAG=3D1
+CONFIG_BOUNCE=3Dy
+CONFIG_VIRT_TO_BUS=3Dy
+CONFIG_NR_CPUS=3D8
+CONFIG_PHYSICAL_ALIGN=3D0x200000
+CONFIG_HOTPLUG_CPU=3Dy
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=3Dy
+CONFIG_HPET_TIMER=3Dy
+CONFIG_HPET_EMULATE_RTC=3Dy
+CONFIG_IOMMU=3Dy
+# CONFIG_CALGARY_IOMMU is not set
+CONFIG_SWIOTLB=3Dy
+CONFIG_X86_MCE=3Dy
+# CONFIG_X86_MCE_INTEL is not set
+CONFIG_X86_MCE_AMD=3Dy
+CONFIG_KEXEC=3Dy
+# CONFIG_CRASH_DUMP is not set
+# CONFIG_RELOCATABLE is not set
+CONFIG_PHYSICAL_START=3D0x200000
+CONFIG_SECCOMP=3Dy
+CONFIG_CC_STACKPROTECTOR=3Dy
+# CONFIG_CC_STACKPROTECTOR_ALL is not set
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+CONFIG_HZ_1000=3Dy
+CONFIG_HZ=3D1000
+CONFIG_K8_NB=3Dy
+CONFIG_GENERIC_HARDIRQS=3Dy
+CONFIG_GENERIC_IRQ_PROBE=3Dy
+CONFIG_ISA_DMA_API=3Dy
+CONFIG_GENERIC_PENDING_IRQ=3Dy
 
-> >>> I'm not yet annoyed enough to go implement an iptables like  
-> >>> interface to the LSM enhancing it with more generic mechanism to  
-> >>> make the problem simpler, but I'm getting there.  Perhaps next  
-> >>> time  I'm bored.
-> >>
-> >> I think a fair amount of what we need is already done in SELinux,  
-> >> and efforts would be better spent in figuring out what seems too  
-> >> complicated in SELinux and making it simpler.
+#
+# Power management options
+#
+CONFIG_PM=3Dy
+# CONFIG_PM_LEGACY is not set
+CONFIG_PM_DEBUG=3Dy
+# CONFIG_PM_VERBOSE is not set
+# CONFIG_PM_TRACE is not set
+CONFIG_PM_SLEEP_SMP=3Dy
+CONFIG_PM_SLEEP=3Dy
+CONFIG_SUSPEND_SMP_POSSIBLE=3Dy
+CONFIG_SUSPEND=3Dy
+CONFIG_HIBERNATION_SMP_POSSIBLE=3Dy
+CONFIG_HIBERNATION=3Dy
+CONFIG_PM_STD_PARTITION=3D"/dev/sda3"
+CONFIG_ARCH_HIBERNATION_HEADER=3Dy
+CONFIG_ACPI=3Dy
+CONFIG_ACPI_SLEEP=3Dy
+# CONFIG_ACPI_PROCFS is not set
+CONFIG_ACPI_PROC_EVENT=3Dy
+CONFIG_ACPI_AC=3Dy
+CONFIG_ACPI_BATTERY=3Dy
+CONFIG_ACPI_BUTTON=3Dy
+CONFIG_ACPI_VIDEO=3Dy
+CONFIG_ACPI_FAN=3Dy
+CONFIG_ACPI_DOCK=3Dy
+CONFIG_ACPI_BAY=3Dy
+CONFIG_ACPI_PROCESSOR=3Dy
+CONFIG_ACPI_HOTPLUG_CPU=3Dy
+CONFIG_ACPI_THERMAL=3Dy
+# CONFIG_ACPI_ASUS is not set
+# CONFIG_ACPI_TOSHIBA is not set
+CONFIG_ACPI_BLACKLIST_YEAR=3D0
+CONFIG_ACPI_DEBUG=3Dy
+# CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
+CONFIG_ACPI_EC=3Dy
+CONFIG_ACPI_POWER=3Dy
+CONFIG_ACPI_SYSTEM=3Dy
+CONFIG_X86_PM_TIMER=3Dy
+CONFIG_ACPI_CONTAINER=3Dy
+# CONFIG_ACPI_SBS is not set
 
-The granularity and consequently the size of the policy specificiation
-result in policies that are too complicated. Tieing the policy to the
-expected behavior of specific applications adds to the complexity.
-SELinux is designed to increase in complexity as it evolves. Making
-it simpler would conflict with the design goal of finer granularity.
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=3Dy
+CONFIG_CPU_FREQ_TABLE=3Dy
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_STAT=3Dy
+CONFIG_CPU_FREQ_STAT_DETAILS=3Dy
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=3Dy
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
+CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
+CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
+CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dy
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dy
 
-> >> Probably a fair amount  of that just means better tools.
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_POWERNOW_K8=3Dy
+CONFIG_X86_POWERNOW_K8_ACPI=3Dy
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+CONFIG_X86_ACPI_CPUFREQ=3Dy
 
-Now what kind of tools are you talking about? Static analysis?
-Data flow diagrammers for Java?
+#
+# shared options
+#
+# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
+# CONFIG_X86_SPEEDSTEP_LIB is not set
 
-> > How about thinking of it another way.
-> >
-> > Perform the split up you talked about above and move the table  
-> > matching into the LSM hooks.
-> >
-> > Use something like the iptables action and match to module mapping  
-> > code so we can have multiple modules compiled in and useable at the  
-> > same time with the LSM hooks.
-> >
-> > I think it is firmly established that selling SElinux to everyone  
-> > is politically untenable.  However enhancing the LSM (even if it is  
-> > mostly selinux code movement down a layer) I think can be sold.
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=3Dy
+CONFIG_PCI_DIRECT=3Dy
+CONFIG_PCI_MMCONFIG=3Dy
+# CONFIG_DMAR is not set
+# CONFIG_PCIEPORTBUS is not set
+CONFIG_ARCH_SUPPORTS_MSI=3Dy
+CONFIG_PCI_MSI=3Dy
+# CONFIG_PCI_DEBUG is not set
+CONFIG_HT_IRQ=3Dy
+CONFIG_PCCARD=3Dy
+CONFIG_PCMCIA_DEBUG=3Dy
+CONFIG_PCMCIA=3Dy
+CONFIG_PCMCIA_LOAD_CIS=3Dy
+CONFIG_CARDBUS=3Dy
 
-That would be silly. Smack uses a significantly smaller set of hooks
-than SELinux requires and still does interesting things. We went through
-the "replace LSM with the SELinux interface" exercise a couple years
-ago, I would hate to have to regurgitate all those discussions.
+#
+# PC-card bridges
+#
+CONFIG_YENTA=3Dy
+CONFIG_YENTA_O2=3Dy
+CONFIG_YENTA_RICOH=3Dy
+CONFIG_YENTA_TI=3Dy
+CONFIG_YENTA_ENE_TUNE=3Dy
+CONFIG_YENTA_TOSHIBA=3Dy
+# CONFIG_PD6729 is not set
+# CONFIG_I82092 is not set
+CONFIG_PCCARD_NONSTATIC=3Dy
+# CONFIG_HOTPLUG_PCI is not set
 
-> > If I could run Serge's isolation code and selinux rules at the same  
-> > time that would be interesting.
-> >
-> > My impression is that selinux is one monolithic blob that doesn't  
-> > allow me to incrementally add matching or action features that I  
-> > find interesting.
-> 
-> Well the major problem here is the performance one.  As anybody who  
-> has tried to do a thousand-linear-rule IPtables set will quickly tell  
-> you, it makes performance go all to hell.  Good iptables frontends  
-> like shorewall build little subchains to keep the fast-path as  
-> efficient as possible but regardless the search is a linear rule- 
-> traversal (IE: O(N) where N is the number of rules you had to test).   
-> In order to get good enough performance out of SELinux they had to  
-> *start* with an O(log(N) rule traversal which means that execution- 
-> order-style rules are impossible, so you *MUST* limit the fields and  
-> prevent any overlap between rules.  For example, in SELinux nobody  
-> writes "deny" rules because the interpretation-order is undefined.   
-> Instead you only write "allow" rules for the things you actually want  
-> to allow.  The one exception is "neverallow" rules which are verified  
-> at compile time as sanity checks and never actually loaded in the  
-> kernel.
-> 
-> Cheers,
-> Kyle Moffett
-> 
-> 
-> 
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=3Dy
+CONFIG_BINFMT_MISC=3Dy
+CONFIG_IA32_EMULATION=3Dy
+CONFIG_IA32_AOUT=3Dy
+CONFIG_COMPAT=3Dy
+CONFIG_COMPAT_FOR_U64_ALIGNMENT=3Dy
+CONFIG_SYSVIPC_COMPAT=3Dy
+
+#
+# Networking
+#
+CONFIG_NET=3Dy
+
+#
+# Networking options
+#
+CONFIG_PACKET=3Dy
+CONFIG_PACKET_MMAP=3Dy
+CONFIG_UNIX=3Dy
+CONFIG_XFRM=3Dy
+CONFIG_XFRM_USER=3Dy
+# CONFIG_XFRM_SUB_POLICY is not set
+CONFIG_XFRM_MIGRATE=3Dy
+CONFIG_NET_KEY=3Dy
+CONFIG_NET_KEY_MIGRATE=3Dy
+CONFIG_INET=3Dy
+CONFIG_IP_MULTICAST=3Dy
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=3Dy
+# CONFIG_IP_PNP is not set
+CONFIG_NET_IPIP=3Dm
+CONFIG_NET_IPGRE=3Dm
+# CONFIG_NET_IPGRE_BROADCAST is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+CONFIG_INET_AH=3Dm
+CONFIG_INET_ESP=3Dm
+CONFIG_INET_IPCOMP=3Dm
+CONFIG_INET_XFRM_TUNNEL=3Dm
+CONFIG_INET_TUNNEL=3Dm
+CONFIG_INET_XFRM_MODE_TRANSPORT=3Dy
+CONFIG_INET_XFRM_MODE_TUNNEL=3Dy
+CONFIG_INET_XFRM_MODE_BEET=3Dy
+CONFIG_INET_LRO=3Dy
+CONFIG_INET_DIAG=3Dy
+CONFIG_INET_TCP_DIAG=3Dy
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=3Dy
+CONFIG_DEFAULT_TCP_CONG=3D"cubic"
+# CONFIG_TCP_MD5SIG is not set
+CONFIG_IPV6=3Dm
+# CONFIG_IPV6_PRIVACY is not set
+# CONFIG_IPV6_ROUTER_PREF is not set
+# CONFIG_IPV6_OPTIMISTIC_DAD is not set
+# CONFIG_INET6_AH is not set
+# CONFIG_INET6_ESP is not set
+# CONFIG_INET6_IPCOMP is not set
+# CONFIG_IPV6_MIP6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+CONFIG_INET6_TUNNEL=3Dm
+# CONFIG_INET6_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET6_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET6_XFRM_MODE_BEET is not set
+# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+CONFIG_IPV6_SIT=3Dm
+CONFIG_IPV6_TUNNEL=3Dm
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+CONFIG_IP_DCCP=3Dm
+CONFIG_INET_DCCP_DIAG=3Dm
+CONFIG_IP_DCCP_ACKVEC=3Dy
+
+#
+# DCCP CCIDs Configuration (EXPERIMENTAL)
+#
+CONFIG_IP_DCCP_CCID2=3Dm
+# CONFIG_IP_DCCP_CCID2_DEBUG is not set
+CONFIG_IP_DCCP_CCID3=3Dm
+CONFIG_IP_DCCP_TFRC_LIB=3Dm
+# CONFIG_IP_DCCP_CCID3_DEBUG is not set
+CONFIG_IP_DCCP_CCID3_RTO=3D100
+
+#
+# DCCP Kernel Hacking
+#
+CONFIG_IP_DCCP_DEBUG=3Dy
+# CONFIG_NET_DCCPPROBE is not set
+CONFIG_IP_SCTP=3Dm
+# CONFIG_SCTP_DBG_MSG is not set
+# CONFIG_SCTP_DBG_OBJCNT is not set
+# CONFIG_SCTP_HMAC_NONE is not set
+CONFIG_SCTP_HMAC_SHA1=3Dy
+# CONFIG_SCTP_HMAC_MD5 is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+CONFIG_VLAN_8021Q=3Dm
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
+CONFIG_NET_SCH_FIFO=3Dy
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_NET_TCPPROBE is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+CONFIG_BT=3Dm
+CONFIG_BT_L2CAP=3Dm
+CONFIG_BT_SCO=3Dm
+CONFIG_BT_RFCOMM=3Dm
+CONFIG_BT_RFCOMM_TTY=3Dy
+CONFIG_BT_BNEP=3Dm
+CONFIG_BT_BNEP_MC_FILTER=3Dy
+CONFIG_BT_BNEP_PROTO_FILTER=3Dy
+CONFIG_BT_HIDP=3Dm
+
+#
+# Bluetooth device drivers
+#
+CONFIG_BT_HCIUSB=3Dm
+CONFIG_BT_HCIUSB_SCO=3Dy
+CONFIG_BT_HCIUART=3Dm
+CONFIG_BT_HCIUART_H4=3Dy
+CONFIG_BT_HCIUART_BCSP=3Dy
+CONFIG_BT_HCIBCM203X=3Dm
+CONFIG_BT_HCIBPA10X=3Dm
+CONFIG_BT_HCIBFUSB=3Dm
+CONFIG_BT_HCIDTL1=3Dm
+CONFIG_BT_HCIBT3C=3Dm
+CONFIG_BT_HCIBLUECARD=3Dm
+CONFIG_BT_HCIBTUART=3Dm
+CONFIG_BT_HCIVHCI=3Dm
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+CONFIG_CFG80211=3Dm
+CONFIG_NL80211=3Dy
+CONFIG_WIRELESS_EXT=3Dy
+CONFIG_MAC80211=3Dm
+CONFIG_MAC80211_LEDS=3Dy
+CONFIG_MAC80211_DEBUGFS=3Dy
+CONFIG_MAC80211_DEBUG=3Dy
+CONFIG_MAC80211_VERBOSE_DEBUG=3Dy
+CONFIG_MAC80211_LOWTX_FRAME_DUMP=3Dy
+CONFIG_TKIP_DEBUG=3Dy
+CONFIG_MAC80211_DEBUG_COUNTERS=3Dy
+# CONFIG_MAC80211_IBSS_DEBUG is not set
+# CONFIG_MAC80211_VERBOSE_PS_DEBUG is not set
+CONFIG_IEEE80211=3Dm
+CONFIG_IEEE80211_DEBUG=3Dy
+CONFIG_IEEE80211_CRYPT_WEP=3Dm
+CONFIG_IEEE80211_CRYPT_CCMP=3Dm
+CONFIG_IEEE80211_CRYPT_TKIP=3Dm
+CONFIG_IEEE80211_SOFTMAC=3Dm
+CONFIG_IEEE80211_SOFTMAC_DEBUG=3Dy
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH=3D"/sbin/hotplug"
+CONFIG_STANDALONE=3Dy
+CONFIG_PREVENT_FIRMWARE_BUILD=3Dy
+CONFIG_FW_LOADER=3Dy
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+CONFIG_CONNECTOR=3Dm
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=3Dy
+# CONFIG_PNP_DEBUG is not set
+
+#
+# Protocols
+#
+CONFIG_PNPACPI=3Dy
+CONFIG_BLK_DEV=3Dy
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=3Dy
+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+CONFIG_BLK_DEV_UB=3Dm
+# CONFIG_BLK_DEV_RAM is not set
+CONFIG_CDROM_PKTCDVD=3Dm
+CONFIG_CDROM_PKTCDVD_BUFFERS=3D8
+CONFIG_CDROM_PKTCDVD_WCACHE=3Dy
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_MISC_DEVICES=3Dy
+# CONFIG_IBM_ASM is not set
+# CONFIG_PHANTOM is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_SGI_IOC4 is not set
+CONFIG_TIFM_CORE=3Dm
+CONFIG_TIFM_7XX1=3Dm
+# CONFIG_ASUS_LAPTOP is not set
+# CONFIG_FUJITSU_LAPTOP is not set
+# CONFIG_MSI_LAPTOP is not set
+# CONFIG_SONY_LAPTOP is not set
+# CONFIG_THINKPAD_ACPI is not set
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=3Dy
+CONFIG_SCSI_DMA=3Dy
+CONFIG_SCSI_TGT=3Dm
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=3Dy
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+CONFIG_BLK_DEV_SR=3Dy
+# CONFIG_BLK_DEV_SR_VENDOR is not set
+CONFIG_CHR_DEV_SG=3Dm
+CONFIG_CHR_DEV_SCH=3Dm
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+CONFIG_SCSI_MULTI_LUN=3Dy
+# CONFIG_SCSI_CONSTANTS is not set
+# CONFIG_SCSI_LOGGING is not set
+CONFIG_SCSI_SCAN_ASYNC=3Dy
+CONFIG_SCSI_WAIT_SCAN=3Dm
+
+#
+# SCSI Transports
+#
+# CONFIG_SCSI_SPI_ATTRS is not set
+# CONFIG_SCSI_FC_ATTRS is not set
+# CONFIG_SCSI_ISCSI_ATTRS is not set
+# CONFIG_SCSI_SAS_ATTRS is not set
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=3Dy
+# CONFIG_ISCSI_TCP is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AACRAID is not set
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+# CONFIG_SCSI_AIC79XX is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_BUSLOGIC is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_EATA is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_GDTH is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+# CONFIG_SCSI_SYM53C8XX_2 is not set
+# CONFIG_SCSI_IPR is not set
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SRP is not set
+# CONFIG_SCSI_LOWLEVEL_PCMCIA is not set
+CONFIG_ATA=3Dy
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_ATA_ACPI=3Dy
+# CONFIG_SATA_AHCI is not set
+# CONFIG_SATA_SVW is not set
+# CONFIG_ATA_PIIX is not set
+# CONFIG_SATA_MV is not set
+# CONFIG_SATA_NV is not set
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIL24 is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+# CONFIG_SATA_VITESSE is not set
+# CONFIG_SATA_INIC162X is not set
+# CONFIG_PATA_ALI is not set
+CONFIG_PATA_AMD=3Dy
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CS5520 is not set
+# CONFIG_PATA_CS5530 is not set
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+CONFIG_ATA_GENERIC=3Dy
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_MARVELL is not set
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_OPTIDMA is not set
+CONFIG_PATA_PCMCIA=3Dy
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RZ1000 is not set
+# CONFIG_PATA_SC1200 is not set
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+CONFIG_MD=3Dy
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=3Dm
+# CONFIG_DM_DEBUG is not set
+CONFIG_DM_CRYPT=3Dm
+CONFIG_DM_SNAPSHOT=3Dm
+CONFIG_DM_MIRROR=3Dm
+CONFIG_DM_ZERO=3Dm
+# CONFIG_DM_MULTIPATH is not set
+# CONFIG_DM_DELAY is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+CONFIG_NETDEVICES=3Dy
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+CONFIG_BONDING=3Dm
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+CONFIG_TUN=3Dm
+CONFIG_VETH=3Dm
+# CONFIG_NET_SB1000 is not set
+# CONFIG_IP1000 is not set
+# CONFIG_ARCNET is not set
+CONFIG_PHYLIB=3Dy
+
+#
+# MII PHY device drivers
+#
+CONFIG_MARVELL_PHY=3Dy
+CONFIG_DAVICOM_PHY=3Dy
+CONFIG_QSEMI_PHY=3Dy
+CONFIG_LXT_PHY=3Dy
+CONFIG_CICADA_PHY=3Dy
+CONFIG_VITESSE_PHY=3Dy
+CONFIG_SMSC_PHY=3Dy
+CONFIG_BROADCOM_PHY=3Dy
+CONFIG_ICPLUS_PHY=3Dy
+# CONFIG_FIXED_PHY is not set
+CONFIG_NET_ETHERNET=3Dy
+CONFIG_MII=3Dy
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+CONFIG_NET_PCI=3Dy
+# CONFIG_PCNET32 is not set
+# CONFIG_AMD8111_ETH is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+# CONFIG_B44 is not set
+# CONFIG_FORCEDETH is not set
+# CONFIG_EEPRO100 is not set
+# CONFIG_E100 is not set
+# CONFIG_FEALNX is not set
+# CONFIG_NATSEMI is not set
+# CONFIG_NE2K_PCI is not set
+# CONFIG_8139CP is not set
+CONFIG_8139TOO=3Dy
+# CONFIG_8139TOO_PIO is not set
+# CONFIG_8139TOO_TUNE_TWISTER is not set
+# CONFIG_8139TOO_8129 is not set
+# CONFIG_8139_OLD_RX_RESET is not set
+# CONFIG_SIS900 is not set
+# CONFIG_EPIC100 is not set
+# CONFIG_SUNDANCE is not set
+# CONFIG_VIA_RHINE is not set
+# CONFIG_SC92031 is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+CONFIG_WLAN_80211=3Dy
+# CONFIG_PCMCIA_RAYCS is not set
+# CONFIG_IPW2100 is not set
+# CONFIG_IPW2200 is not set
+# CONFIG_LIBERTAS is not set
+# CONFIG_AIRO is not set
+# CONFIG_HERMES is not set
+# CONFIG_USB_ATMEL is not set
+# CONFIG_ATMEL is not set
+# CONFIG_AIRO_CS is not set
+# CONFIG_PCMCIA_WL3501 is not set
+# CONFIG_PRISM54 is not set
+# CONFIG_USB_ZD1201 is not set
+# CONFIG_RTL8187 is not set
+# CONFIG_ADM8211 is not set
+# CONFIG_P54_COMMON is not set
+# CONFIG_ATH5K is not set
+# CONFIG_IWLWIFI is not set
+# CONFIG_HOSTAP is not set
+# CONFIG_BCM43XX is not set
+# CONFIG_B43 is not set
+# CONFIG_B43LEGACY is not set
+# CONFIG_ZD1211RW is not set
+# CONFIG_RT2X00 is not set
+
+#
+# USB Network Adapters
+#
+CONFIG_USB_CATC=3Dm
+CONFIG_USB_KAWETH=3Dm
+CONFIG_USB_PEGASUS=3Dm
+CONFIG_USB_RTL8150=3Dm
+CONFIG_USB_USBNET_MII=3Dm
+CONFIG_USB_USBNET=3Dm
+CONFIG_USB_NET_AX8817X=3Dm
+CONFIG_USB_NET_CDCETHER=3Dm
+# CONFIG_USB_NET_DM9601 is not set
+CONFIG_USB_NET_GL620A=3Dm
+CONFIG_USB_NET_NET1080=3Dm
+CONFIG_USB_NET_PLUSB=3Dm
+# CONFIG_USB_NET_MCS7830 is not set
+CONFIG_USB_NET_RNDIS_HOST=3Dm
+CONFIG_USB_NET_CDC_SUBSET=3Dm
+CONFIG_USB_ALI_M5632=3Dy
+CONFIG_USB_AN2720=3Dy
+CONFIG_USB_BELKIN=3Dy
+CONFIG_USB_ARMLINUX=3Dy
+CONFIG_USB_EPSON2888=3Dy
+CONFIG_USB_KC2190=3Dy
+CONFIG_USB_NET_ZAURUS=3Dm
+CONFIG_NET_PCMCIA=3Dy
+CONFIG_PCMCIA_3C589=3Dm
+CONFIG_PCMCIA_3C574=3Dm
+CONFIG_PCMCIA_FMVJ18X=3Dm
+CONFIG_PCMCIA_PCNET=3Dm
+CONFIG_PCMCIA_NMCLAN=3Dm
+CONFIG_PCMCIA_SMC91C92=3Dm
+CONFIG_PCMCIA_XIRC2PS=3Dm
+CONFIG_PCMCIA_AXNET=3Dm
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+CONFIG_PPP=3Dm
+CONFIG_PPP_MULTILINK=3Dy
+CONFIG_PPP_FILTER=3Dy
+CONFIG_PPP_ASYNC=3Dm
+# CONFIG_PPP_SYNC_TTY is not set
+CONFIG_PPP_DEFLATE=3Dm
+CONFIG_PPP_BSDCOMP=3Dm
+CONFIG_PPP_MPPE=3Dm
+CONFIG_PPPOE=3Dm
+CONFIG_PPPOL2TP=3Dm
+# CONFIG_SLIP is not set
+CONFIG_SLHC=3Dm
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+CONFIG_NETCONSOLE=3Dm
+CONFIG_NETCONSOLE_DYNAMIC=3Dy
+CONFIG_NETPOLL=3Dy
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=3Dy
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=3Dy
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=3Dy
+CONFIG_INPUT_MOUSEDEV_PSAUX=3Dy
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=3D1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=3D640
+CONFIG_INPUT_JOYDEV=3Dm
+# CONFIG_INPUT_TSDEV is not set
+CONFIG_INPUT_EVDEV=3Dm
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=3Dy
+CONFIG_KEYBOARD_ATKBD=3Dy
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+CONFIG_INPUT_MOUSE=3Dy
+CONFIG_MOUSE_PS2=3Dm
+CONFIG_MOUSE_PS2_ALPS=3Dy
+CONFIG_MOUSE_PS2_LOGIPS2PP=3Dy
+CONFIG_MOUSE_PS2_SYNAPTICS=3Dy
+CONFIG_MOUSE_PS2_LIFEBOOK=3Dy
+CONFIG_MOUSE_PS2_TRACKPOINT=3Dy
+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
+# CONFIG_MOUSE_PS2_ELANTECH is not set
+# CONFIG_MOUSE_SERIAL is not set
+# CONFIG_MOUSE_APPLETOUCH is not set
+# CONFIG_MOUSE_VSXXXAA is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=3Dy
+CONFIG_SERIO_I8042=3Dy
+# CONFIG_SERIO_SERPORT is not set
+# CONFIG_SERIO_CT82C710 is not set
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=3Dy
+CONFIG_SERIO_RAW=3Dm
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=3Dy
+# CONFIG_VT_UNICODE is not set
+CONFIG_VT_CONSOLE=3Dy
+CONFIG_HW_CONSOLE=3Dy
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+# CONFIG_NOZOMI is not set
+
+#
+# Serial drivers
+#
+# CONFIG_SERIAL_8250 is not set
+CONFIG_FIX_EARLYCON_MEM=3Dy
+
+#
+# Non-8250 serial port support
+#
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=3Dy
+# CONFIG_LEGACY_PTYS is not set
+# CONFIG_IPMI_HANDLER is not set
+CONFIG_HW_RANDOM=3Dy
+# CONFIG_HW_RANDOM_INTEL is not set
+CONFIG_HW_RANDOM_AMD=3Dy
+CONFIG_NVRAM=3Dm
+CONFIG_RTC=3Dy
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+CONFIG_AGP=3Dy
+CONFIG_AGP_AMD64=3Dy
+# CONFIG_AGP_INTEL is not set
+# CONFIG_AGP_SIS is not set
+# CONFIG_AGP_VIA is not set
+# CONFIG_DRM is not set
+
+#
+# PCMCIA character devices
+#
+# CONFIG_SYNCLINK_CS is not set
+# CONFIG_CARDMAN_4000 is not set
+# CONFIG_CARDMAN_4040 is not set
+# CONFIG_IPWIRELESS_CS is not set
+# CONFIG_MWAVE is not set
+# CONFIG_PC8736x_GPIO is not set
+# CONFIG_RAW_DRIVER is not set
+CONFIG_HPET=3Dy
+# CONFIG_HPET_RTC_IRQ is not set
+CONFIG_HPET_MMAP=3Dy
+CONFIG_HANGCHECK_TIMER=3Dy
+# CONFIG_TCG_TPM is not set
+# CONFIG_TELCLOCK is not set
+CONFIG_DEVPORT=3Dy
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+CONFIG_SPI=3Dy
+# CONFIG_SPI_DEBUG is not set
+CONFIG_SPI_MASTER=3Dy
+
+#
+# SPI Master Controller Drivers
+#
+CONFIG_SPI_BITBANG=3Dm
+
+#
+# SPI Protocol Masters
+#
+# CONFIG_SPI_AT25 is not set
+# CONFIG_SPI_SPIDEV is not set
+# CONFIG_SPI_TLE62X0 is not set
+# CONFIG_W1 is not set
+CONFIG_POWER_SUPPLY=3Dy
+# CONFIG_POWER_SUPPLY_DEBUG is not set
+# CONFIG_PDA_POWER is not set
+# CONFIG_BATTERY_DS2760 is not set
+# CONFIG_HWMON is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=3Dy
+CONFIG_SSB=3Dm
+CONFIG_SSB_PCIHOST_POSSIBLE=3Dy
+CONFIG_SSB_PCIHOST=3Dy
+CONFIG_SSB_PCMCIAHOST_POSSIBLE=3Dy
+CONFIG_SSB_PCMCIAHOST=3Dy
+CONFIG_SSB_DEBUG=3Dy
+CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=3Dy
+CONFIG_SSB_DRIVER_PCICORE=3Dy
+# CONFIG_WATCHDOG is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+CONFIG_BACKLIGHT_LCD_SUPPORT=3Dy
+CONFIG_LCD_CLASS_DEVICE=3Dy
+# CONFIG_LCD_LTV350QV is not set
+CONFIG_BACKLIGHT_CLASS_DEVICE=3Dy
+# CONFIG_BACKLIGHT_PROGEAR is not set
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=3Dm
+
+#
+# Display hardware drivers
+#
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=3Dy
+# CONFIG_FB is not set
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=3Dy
+# CONFIG_VGACON_SOFT_SCROLLBACK is not set
+CONFIG_VIDEO_SELECT=3Dy
+CONFIG_DUMMY_CONSOLE=3Dy
+
+#
+# Sound
+#
+CONFIG_SOUND=3Dy
+
+#
+# Advanced Linux Sound Architecture
+#
+CONFIG_SND=3Dm
+CONFIG_SND_TIMER=3Dm
+CONFIG_SND_PCM=3Dm
+# CONFIG_SND_SEQUENCER is not set
+CONFIG_SND_OSSEMUL=3Dy
+CONFIG_SND_MIXER_OSS=3Dm
+CONFIG_SND_PCM_OSS=3Dm
+CONFIG_SND_PCM_OSS_PLUGINS=3Dy
+CONFIG_SND_RTCTIMER=3Dm
+# CONFIG_SND_DYNAMIC_MINORS is not set
+# CONFIG_SND_SUPPORT_OLD_API is not set
+CONFIG_SND_VERBOSE_PROCFS=3Dy
+# CONFIG_SND_VERBOSE_PRINTK is not set
+# CONFIG_SND_DEBUG is not set
+
+#
+# Generic devices
+#
+CONFIG_SND_AC97_CODEC=3Dm
+# CONFIG_SND_DUMMY is not set
+# CONFIG_SND_MTPAV is not set
+# CONFIG_SND_SERIAL_U16550 is not set
+# CONFIG_SND_MPU401 is not set
+
+#
+# PCI devices
+#
+# CONFIG_SND_AD1889 is not set
+# CONFIG_SND_ALS300 is not set
+# CONFIG_SND_ALS4000 is not set
+# CONFIG_SND_ALI5451 is not set
+# CONFIG_SND_ATIIXP is not set
+# CONFIG_SND_ATIIXP_MODEM is not set
+# CONFIG_SND_AU8810 is not set
+# CONFIG_SND_AU8820 is not set
+# CONFIG_SND_AU8830 is not set
+# CONFIG_SND_AZT3328 is not set
+# CONFIG_SND_BT87X is not set
+# CONFIG_SND_CA0106 is not set
+# CONFIG_SND_CMIPCI is not set
+# CONFIG_SND_CS4281 is not set
+# CONFIG_SND_CS46XX is not set
+# CONFIG_SND_CS5530 is not set
+# CONFIG_SND_DARLA20 is not set
+# CONFIG_SND_GINA20 is not set
+# CONFIG_SND_LAYLA20 is not set
+# CONFIG_SND_DARLA24 is not set
+# CONFIG_SND_GINA24 is not set
+# CONFIG_SND_LAYLA24 is not set
+# CONFIG_SND_MONA is not set
+# CONFIG_SND_MIA is not set
+# CONFIG_SND_ECHO3G is not set
+# CONFIG_SND_INDIGO is not set
+# CONFIG_SND_INDIGOIO is not set
+# CONFIG_SND_INDIGODJ is not set
+# CONFIG_SND_EMU10K1 is not set
+# CONFIG_SND_EMU10K1X is not set
+# CONFIG_SND_ENS1370 is not set
+# CONFIG_SND_ENS1371 is not set
+# CONFIG_SND_ES1938 is not set
+# CONFIG_SND_ES1968 is not set
+# CONFIG_SND_FM801 is not set
+# CONFIG_SND_HDA_INTEL is not set
+# CONFIG_SND_HDSP is not set
+# CONFIG_SND_HDSPM is not set
+# CONFIG_SND_ICE1712 is not set
+# CONFIG_SND_ICE1724 is not set
+CONFIG_SND_INTEL8X0=3Dm
+# CONFIG_SND_INTEL8X0M is not set
+# CONFIG_SND_KORG1212 is not set
+# CONFIG_SND_MAESTRO3 is not set
+# CONFIG_SND_MIXART is not set
+# CONFIG_SND_NM256 is not set
+# CONFIG_SND_PCXHR is not set
+# CONFIG_SND_RIPTIDE is not set
+# CONFIG_SND_RME32 is not set
+# CONFIG_SND_RME96 is not set
+# CONFIG_SND_RME9652 is not set
+# CONFIG_SND_SONICVIBES is not set
+# CONFIG_SND_TRIDENT is not set
+# CONFIG_SND_VIA82XX is not set
+# CONFIG_SND_VIA82XX_MODEM is not set
+# CONFIG_SND_VX222 is not set
+# CONFIG_SND_YMFPCI is not set
+CONFIG_SND_AC97_POWER_SAVE=3Dy
+CONFIG_SND_AC97_POWER_SAVE_DEFAULT=3D1
+
+#
+# SPI devices
+#
+
+#
+# USB devices
+#
+# CONFIG_SND_USB_AUDIO is not set
+# CONFIG_SND_USB_USX2Y is not set
+# CONFIG_SND_USB_CAIAQ is not set
+
+#
+# PCMCIA devices
+#
+# CONFIG_SND_VXPOCKET is not set
+# CONFIG_SND_PDAUDIOCF is not set
+
+#
+# System on Chip audio support
+#
+# CONFIG_SND_SOC is not set
+
+#
+# SoC Audio support for SuperH
+#
+
+#
+# Open Sound System
+#
+# CONFIG_SOUND_PRIME is not set
+CONFIG_AC97_BUS=3Dm
+CONFIG_HID_SUPPORT=3Dy
+CONFIG_HID=3Dm
+CONFIG_HID_DEBUG=3Dy
+# CONFIG_HIDRAW is not set
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=3Dm
+# CONFIG_USB_HIDINPUT_POWERBOOK is not set
+# CONFIG_HID_FF is not set
+# CONFIG_USB_HIDDEV is not set
+
+#
+# USB HID Boot Protocol drivers
+#
+# CONFIG_USB_KBD is not set
+# CONFIG_USB_MOUSE is not set
+CONFIG_USB_SUPPORT=3Dy
+CONFIG_USB_ARCH_HAS_HCD=3Dy
+CONFIG_USB_ARCH_HAS_OHCI=3Dy
+CONFIG_USB_ARCH_HAS_EHCI=3Dy
+CONFIG_USB=3Dm
+CONFIG_USB_DEBUG=3Dy
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=3Dy
+# CONFIG_USB_DEVICE_CLASS is not set
+CONFIG_USB_DYNAMIC_MINORS=3Dy
+CONFIG_USB_SUSPEND=3Dy
+# CONFIG_USB_PERSIST is not set
+# CONFIG_USB_OTG is not set
+
+#
+# USB Host Controller Drivers
+#
+CONFIG_USB_EHCI_HCD=3Dm
+CONFIG_USB_EHCI_SPLIT_ISO=3Dy
+CONFIG_USB_EHCI_ROOT_HUB_TT=3Dy
+CONFIG_USB_EHCI_TT_NEWSCHED=3Dy
+# CONFIG_USB_ISP116X_HCD is not set
+CONFIG_USB_OHCI_HCD=3Dm
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=3Dy
+# CONFIG_USB_UHCI_HCD is not set
+# CONFIG_USB_U132_HCD is not set
+# CONFIG_USB_SL811_HCD is not set
+# CONFIG_USB_R8A66597_HCD is not set
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=3Dm
+CONFIG_USB_PRINTER=3Dm
+
+#
+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+#
+
+#
+# may also be needed; see USB_STORAGE Help for more information
+#
+CONFIG_USB_STORAGE=3Dm
+# CONFIG_USB_STORAGE_DEBUG is not set
+CONFIG_USB_STORAGE_DATAFAB=3Dy
+CONFIG_USB_STORAGE_FREECOM=3Dy
+CONFIG_USB_STORAGE_DPCM=3Dy
+CONFIG_USB_STORAGE_USBAT=3Dy
+CONFIG_USB_STORAGE_SDDR09=3Dy
+CONFIG_USB_STORAGE_SDDR55=3Dy
+CONFIG_USB_STORAGE_JUMPSHOT=3Dy
+CONFIG_USB_STORAGE_ALAUDA=3Dy
+CONFIG_USB_STORAGE_KARMA=3Dy
+CONFIG_USB_LIBUSUAL=3Dy
+
+#
+# USB Imaging devices
+#
+CONFIG_USB_MDC800=3Dm
+# CONFIG_USB_MICROTEK is not set
+CONFIG_USB_MON=3Dy
+
+#
+# USB port drivers
+#
+
+#
+# USB Serial Converter support
+#
+CONFIG_USB_SERIAL=3Dm
+CONFIG_USB_SERIAL_GENERIC=3Dy
+CONFIG_USB_SERIAL_AIRCABLE=3Dm
+CONFIG_USB_SERIAL_AIRPRIME=3Dm
+CONFIG_USB_SERIAL_ARK3116=3Dm
+CONFIG_USB_SERIAL_BELKIN=3Dm
+CONFIG_USB_SERIAL_CH341=3Dm
+CONFIG_USB_SERIAL_WHITEHEAT=3Dm
+CONFIG_USB_SERIAL_DIGI_ACCELEPORT=3Dm
+CONFIG_USB_SERIAL_CP2101=3Dm
+CONFIG_USB_SERIAL_CYPRESS_M8=3Dm
+CONFIG_USB_SERIAL_EMPEG=3Dm
+CONFIG_USB_SERIAL_FTDI_SIO=3Dm
+CONFIG_USB_SERIAL_FUNSOFT=3Dm
+CONFIG_USB_SERIAL_VISOR=3Dm
+CONFIG_USB_SERIAL_IPAQ=3Dm
+CONFIG_USB_SERIAL_IR=3Dm
+CONFIG_USB_SERIAL_EDGEPORT=3Dm
+CONFIG_USB_SERIAL_EDGEPORT_TI=3Dm
+CONFIG_USB_SERIAL_GARMIN=3Dm
+CONFIG_USB_SERIAL_IPW=3Dm
+CONFIG_USB_SERIAL_KEYSPAN_PDA=3Dm
+CONFIG_USB_SERIAL_KEYSPAN=3Dm
+# CONFIG_USB_SERIAL_KEYSPAN_MPR is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28 is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28X is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28XA is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28XB is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19 is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA18X is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19W is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19QW is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19QI is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA49W is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA49WLC is not set
+# CONFIG_USB_SERIAL_KLSI is not set
+CONFIG_USB_SERIAL_KOBIL_SCT=3Dm
+CONFIG_USB_SERIAL_MCT_U232=3Dm
+CONFIG_USB_SERIAL_MOS7720=3Dm
+CONFIG_USB_SERIAL_MOS7840=3Dm
+CONFIG_USB_SERIAL_NAVMAN=3Dm
+CONFIG_USB_SERIAL_PL2303=3Dm
+CONFIG_USB_SERIAL_OTI6858=3Dm
+CONFIG_USB_SERIAL_HP4X=3Dm
+CONFIG_USB_SERIAL_SAFE=3Dm
+CONFIG_USB_SERIAL_SAFE_PADDED=3Dy
+CONFIG_USB_SERIAL_SIERRAWIRELESS=3Dm
+CONFIG_USB_SERIAL_TI=3Dm
+CONFIG_USB_SERIAL_CYBERJACK=3Dm
+CONFIG_USB_SERIAL_XIRCOM=3Dm
+CONFIG_USB_SERIAL_OPTION=3Dm
+CONFIG_USB_SERIAL_OMNINET=3Dm
+# CONFIG_USB_SERIAL_DEBUG is not set
+CONFIG_USB_EZUSB=3Dy
+
+#
+# USB Miscellaneous drivers
+#
+CONFIG_USB_EMI62=3Dm
+CONFIG_USB_EMI26=3Dm
+CONFIG_USB_ADUTUX=3Dm
+CONFIG_USB_AUERSWALD=3Dm
+CONFIG_USB_RIO500=3Dm
+CONFIG_USB_LEGOTOWER=3Dm
+CONFIG_USB_LCD=3Dm
+CONFIG_USB_BERRY_CHARGE=3Dm
+CONFIG_USB_LED=3Dm
+CONFIG_USB_CYPRESS_CY7C63=3Dm
+CONFIG_USB_CYTHERM=3Dm
+CONFIG_USB_PHIDGET=3Dm
+CONFIG_USB_PHIDGETKIT=3Dm
+CONFIG_USB_PHIDGETMOTORCONTROL=3Dm
+CONFIG_USB_PHIDGETSERVO=3Dm
+CONFIG_USB_IDMOUSE=3Dm
+CONFIG_USB_FTDI_ELAN=3Dm
+# CONFIG_USB_APPLEDISPLAY is not set
+# CONFIG_USB_SISUSBVGA is not set
+CONFIG_USB_LD=3Dm
+# CONFIG_USB_TRANCEVIBRATOR is not set
+CONFIG_USB_IOWARRIOR=3Dm
+CONFIG_USB_TEST=3Dm
+CONFIG_USB_GOTEMP=3Dm
+
+#
+# USB DSL modem support
+#
+
+#
+# USB Gadget Support
+#
+# CONFIG_USB_GADGET is not set
+CONFIG_MMC=3Dm
+CONFIG_MMC_DEBUG=3Dy
+# CONFIG_MMC_UNSAFE_RESUME is not set
+# CONFIG_MMC_PASSWORDS is not set
+
+#
+# MMC/SD Card Drivers
+#
+CONFIG_MMC_BLOCK=3Dm
+CONFIG_MMC_BLOCK_BOUNCE=3Dy
+# CONFIG_SDIO_UART is not set
+
+#
+# MMC/SD Host Controller Drivers
+#
+CONFIG_MMC_SDHCI=3Dm
+# CONFIG_MMC_WBSD is not set
+CONFIG_MMC_TIFM_SD=3Dm
+# CONFIG_MMC_SPI is not set
+CONFIG_NEW_LEDS=3Dy
+CONFIG_LEDS_CLASS=3Dy
+
+#
+# LED drivers
+#
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=3Dy
+CONFIG_LEDS_TRIGGER_TIMER=3Dy
+CONFIG_LEDS_TRIGGER_HEARTBEAT=3Dy
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+# CONFIG_RTC_CLASS is not set
+# CONFIG_DMADEVICES is not set
+# CONFIG_VIRTUALIZATION is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+# CONFIG_DELL_RBU is not set
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=3Dy
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=3Dm
+CONFIG_EXT2_FS_XATTR=3Dy
+CONFIG_EXT2_FS_POSIX_ACL=3Dy
+CONFIG_EXT2_FS_SECURITY=3Dy
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=3Dm
+CONFIG_EXT3_FS_XATTR=3Dy
+CONFIG_EXT3_FS_POSIX_ACL=3Dy
+CONFIG_EXT3_FS_SECURITY=3Dy
+CONFIG_EXT4DEV_FS=3Dm
+CONFIG_EXT4DEV_FS_XATTR=3Dy
+CONFIG_EXT4DEV_FS_POSIX_ACL=3Dy
+CONFIG_EXT4DEV_FS_SECURITY=3Dy
+CONFIG_JBD=3Dm
+# CONFIG_JBD_DEBUG is not set
+CONFIG_JBD2=3Dm
+# CONFIG_JBD2_DEBUG is not set
+CONFIG_FS_MBCACHE=3Dm
+CONFIG_REISER4_FS=3Dy
+# CONFIG_REISER4_DEBUG is not set
+CONFIG_REISERFS_FS=3Dy
+# CONFIG_REISERFS_CHECK is not set
+CONFIG_REISERFS_PROC_INFO=3Dy
+CONFIG_REISERFS_FS_XATTR=3Dy
+CONFIG_REISERFS_FS_POSIX_ACL=3Dy
+CONFIG_REISERFS_FS_SECURITY=3Dy
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=3Dy
+CONFIG_XFS_FS=3Dm
+CONFIG_XFS_QUOTA=3Dy
+CONFIG_XFS_SECURITY=3Dy
+CONFIG_XFS_POSIX_ACL=3Dy
+CONFIG_XFS_RT=3Dy
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=3Dy
+CONFIG_INOTIFY_USER=3Dy
+# CONFIG_QUOTA is not set
+CONFIG_QUOTACTL=3Dy
+CONFIG_DNOTIFY=3Dy
+# CONFIG_AUTOFS_FS is not set
+CONFIG_AUTOFS4_FS=3Dy
+CONFIG_FUSE_FS=3Dm
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=3Dm
+CONFIG_JOLIET=3Dy
+CONFIG_ZISOFS=3Dy
+CONFIG_UDF_FS=3Dm
+CONFIG_UDF_NLS=3Dy
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=3Dm
+CONFIG_MSDOS_FS=3Dm
+CONFIG_VFAT_FS=3Dm
+CONFIG_FAT_DEFAULT_CODEPAGE=3D437
+CONFIG_FAT_DEFAULT_IOCHARSET=3D"iso8859-1"
+CONFIG_NTFS_FS=3Dm
+# CONFIG_NTFS_DEBUG is not set
+# CONFIG_NTFS_RW is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=3Dy
+CONFIG_PROC_KCORE=3Dy
+CONFIG_PROC_SYSCTL=3Dy
+CONFIG_SYSFS=3Dy
+CONFIG_TMPFS=3Dy
+# CONFIG_TMPFS_POSIX_ACL is not set
+CONFIG_HUGETLBFS=3Dy
+CONFIG_HUGETLB_PAGE=3Dy
+CONFIG_CONFIGFS_FS=3Dm
+
+#
+# Layered filesystems
+#
+# CONFIG_ECRYPT_FS is not set
+# CONFIG_UNION_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=3Dy
+CONFIG_NFS_FS=3Dy
+CONFIG_NFS_V3=3Dy
+# CONFIG_NFS_V3_ACL is not set
+# CONFIG_NFS_V4 is not set
+# CONFIG_NFS_DIRECTIO is not set
+CONFIG_NFSD=3Dy
+CONFIG_NFSD_V3=3Dy
+# CONFIG_NFSD_V3_ACL is not set
+# CONFIG_NFSD_V4 is not set
+CONFIG_NFSD_TCP=3Dy
+CONFIG_LOCKD=3Dy
+CONFIG_LOCKD_V4=3Dy
+CONFIG_EXPORTFS=3Dy
+CONFIG_NFS_COMMON=3Dy
+CONFIG_SUNRPC=3Dy
+# CONFIG_SUNRPC_BIND34 is not set
+# CONFIG_RPCSEC_GSS_KRB5 is not set
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+CONFIG_CIFS=3Dm
+# CONFIG_CIFS_STATS is not set
+# CONFIG_CIFS_WEAK_PW_HASH is not set
+# CONFIG_CIFS_XATTR is not set
+# CONFIG_CIFS_DEBUG2 is not set
+# CONFIG_CIFS_EXPERIMENTAL is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=3Dy
+CONFIG_NLS=3Dm
+CONFIG_NLS_DEFAULT=3D"iso8859-1"
+CONFIG_NLS_CODEPAGE_437=3Dm
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+# CONFIG_NLS_ASCII is not set
+CONFIG_NLS_ISO8859_1=3Dm
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+# CONFIG_NLS_ISO8859_15 is not set
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=3Dm
+# CONFIG_DLM is not set
+
+#
+# Instrumentation Support
+#
+CONFIG_PROFILING=3Dy
+CONFIG_OPROFILE=3Dm
+CONFIG_KPROBES=3Dy
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=3Dy
+# CONFIG_PRINTK_TIME is not set
+# CONFIG_ENABLE_MUST_CHECK is not set
+CONFIG_MAGIC_SYSRQ=3Dy
+# CONFIG_UNUSED_SYMBOLS is not set
+# CONFIG_PAGE_OWNER is not set
+CONFIG_DEBUG_FS=3Dy
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=3Dy
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=3Dy
+CONFIG_SCHED_DEBUG=3Dy
+CONFIG_SCHEDSTATS=3Dy
+CONFIG_TIMER_STATS=3Dy
+CONFIG_SLUB_DEBUG_ON=3Dy
+CONFIG_DEBUG_RT_MUTEXES=3Dy
+CONFIG_DEBUG_PI_LIST=3Dy
+# CONFIG_RT_MUTEX_TESTER is not set
+CONFIG_DEBUG_SPINLOCK=3Dy
+CONFIG_DEBUG_MUTEXES=3Dy
+CONFIG_DEBUG_LOCK_ALLOC=3Dy
+CONFIG_PROVE_LOCKING=3Dy
+CONFIG_LOCKDEP=3Dy
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_LOCKDEP is not set
+CONFIG_TRACE_IRQFLAGS=3Dy
+CONFIG_DEBUG_SPINLOCK_SLEEP=3Dy
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=3Dy
+CONFIG_STACKTRACE=3Dy
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=3Dy
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_FRAME_POINTER is not set
+# CONFIG_UNWIND_INFO is not set
+# CONFIG_PROFILE_LIKELY is not set
+# CONFIG_FORCED_INLINING is not set
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_DEBUG_SYNCHRO_TEST is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_LKDTM is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_WANT_EXTRA_DEBUG_INFORMATION is not set
+# CONFIG_KGDB is not set
+# CONFIG_KGDB_ATTACH_WAIT is not set
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_IOMMU_DEBUG is not set
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+
+#
+# Security options
+#
+CONFIG_KEYS=3Dy
+CONFIG_KEYS_DEBUG_PROC_KEYS=3Dy
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+CONFIG_CRYPTO=3Dy
+CONFIG_CRYPTO_ALGAPI=3Dy
+CONFIG_CRYPTO_AEAD=3Dm
+CONFIG_CRYPTO_BLKCIPHER=3Dm
+CONFIG_CRYPTO_HASH=3Dy
+CONFIG_CRYPTO_MANAGER=3Dy
+CONFIG_CRYPTO_HMAC=3Dy
+CONFIG_CRYPTO_XCBC=3Dy
+CONFIG_CRYPTO_NULL=3Dm
+CONFIG_CRYPTO_MD4=3Dm
+CONFIG_CRYPTO_MD5=3Dm
+CONFIG_CRYPTO_SHA1=3Dm
+CONFIG_CRYPTO_SHA256=3Dm
+CONFIG_CRYPTO_SHA512=3Dm
+CONFIG_CRYPTO_WP512=3Dm
+CONFIG_CRYPTO_TGR192=3Dm
+CONFIG_CRYPTO_GF128MUL=3Dm
+CONFIG_CRYPTO_ECB=3Dm
+CONFIG_CRYPTO_CBC=3Dm
+CONFIG_CRYPTO_PCBC=3Dm
+CONFIG_CRYPTO_LRW=3Dm
+CONFIG_CRYPTO_XTS=3Dm
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_DES=3Dm
+CONFIG_CRYPTO_FCRYPT=3Dm
+CONFIG_CRYPTO_BLOWFISH=3Dm
+CONFIG_CRYPTO_TWOFISH=3Dm
+CONFIG_CRYPTO_TWOFISH_COMMON=3Dm
+CONFIG_CRYPTO_TWOFISH_X86_64=3Dm
+CONFIG_CRYPTO_SERPENT=3Dm
+CONFIG_CRYPTO_AES=3Dm
+CONFIG_CRYPTO_AES_X86_64=3Dm
+CONFIG_CRYPTO_CAST5=3Dm
+CONFIG_CRYPTO_CAST6=3Dm
+CONFIG_CRYPTO_TEA=3Dm
+CONFIG_CRYPTO_ARC4=3Dm
+CONFIG_CRYPTO_KHAZAD=3Dm
+CONFIG_CRYPTO_ANUBIS=3Dm
+CONFIG_CRYPTO_SEED=3Dm
+CONFIG_CRYPTO_DEFLATE=3Dm
+CONFIG_CRYPTO_MICHAEL_MIC=3Dm
+CONFIG_CRYPTO_CRC32C=3Dm
+CONFIG_CRYPTO_CAMELLIA=3Dm
+# CONFIG_CRYPTO_TEST is not set
+CONFIG_CRYPTO_AUTHENC=3Dm
+# CONFIG_CRYPTO_HW is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=3Dy
+CONFIG_CRC_CCITT=3Dm
+CONFIG_CRC16=3Dm
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=3Dy
+# CONFIG_CRC7 is not set
+CONFIG_LIBCRC32C=3Dm
+CONFIG_ZLIB_INFLATE=3Dy
+CONFIG_ZLIB_DEFLATE=3Dy
+CONFIG_LZO_COMPRESS=3Dy
+CONFIG_LZO_DECOMPRESS=3Dy
+CONFIG_PLIST=3Dy
+CONFIG_HAS_IOMEM=3Dy
+CONFIG_HAS_IOPORT=3Dy
+CONFIG_HAS_DMA=3Dy
+
+Here is dmesg:
+Linux version 2.6.23-rc8-mm2 (root@zephyr) (gcc version 4.2.0 (Gentoo 4.2.0=
+)) #4 SMP Thu Oct 4 20:45:26 MDT 2007
+Command line: root=3D/dev/sda2 rootfstype=3Dreiser4 rootflags=3Dno_write_ba=
+rrier,tmgr.atom_max_size=3D8000 ro i8042.nomux elevator=3Dcfq resume=3D/dev=
+/sda3 panic=3D5 nmi_watchdog=3D0,panic debug kernelcore=3D384M
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+ BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000d0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000003ff70000 (usable)
+ BIOS-e820: 000000003ff70000 - 000000003ff7f000 (ACPI data)
+ BIOS-e820: 000000003ff7f000 - 000000003ff80000 (ACPI NVS)
+ BIOS-e820: 000000003ff80000 - 0000000040000000 (reserved)
+ BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
+Entering add_active_range(0, 0, 159) 0 entries of 256 used
+Entering add_active_range(0, 256, 262000) 1 entries of 256 used
+end_pfn_map =3D 1048576
+DMI present.
+ACPI: RSDP 000F7240, 0014 (r0 PTLTD )
+ACPI: RSDT 3FF7A87E, 0034 (r1 PTLTD    RSDT    6040000  LTP        0)
+ACPI: FACP 3FF7EE13, 0074 (r1 NVIDIA CK8       6040000 PTL_    F4240)
+ACPI: DSDT 3FF7A8B2, 4561 (r1 NVIDIA      CK8  6040000 MSFT  100000E)
+ACPI: FACS 3FF7FFC0, 0040
+ACPI: APIC 3FF7EE87, 005A (r1 NVIDIA NV_APIC_  6040000  LTP        0)
+ACPI: BOOT 3FF7EEE1, 0028 (r1 PTLTD  $SBFTBL$  6040000  LTP        1)
+ACPI: SSDT 3FF7EF09, 00F7 (r1 PTLTD  POWERNOW  6040000  LTP        1)
+Entering add_active_range(0, 0, 159) 0 entries of 256 used
+Entering add_active_range(0, 256, 262000) 1 entries of 256 used
+No mptable found.
+sizeof(struct page) =3D 88
+Zone PFN ranges:
+  DMA             0 ->     4096
+  DMA32        4096 ->  1048576
+  Normal    1048576 ->  1048576
+Movable zone start PFN for each node
+  Node 0: 99328
+early_node_map[2] active PFN ranges
+    0:        0 ->      159
+    0:      256 ->   262000
+On node 0 totalpages: 261903
+Node 0 memmap at 0xffff810001000000 size 23068672 first pfn 0xffff810001000=
+000
+  DMA zone: 88 pages used for memmap
+  DMA zone: 2648 pages reserved
+  DMA zone: 1263 pages, LIFO batch:0
+  DMA32 zone: 2046 pages used for memmap
+  DMA32 zone: 93186 pages, LIFO batch:31
+  Normal zone: 0 pages used for memmap
+  Movable zone: 3494 pages used for memmap
+  Movable zone: 159178 pages, LIFO batch:31
+Nvidia board detected. Ignoring ACPI timer override.
+If you got timer trouble try acpi_use_timer_override
+ACPI: PM-Timer IO Port: 0x8008
+ACPI: Local APIC address 0xfee00000
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+Processor #0 (Bootup-CPU)
+ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+IOAPIC[0]: apic_id 2, address 0xfec00000, GSI 0-23
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+ACPI: BIOS IRQ0 pin2 override ignored.
+ACPI: IRQ9 used by override.
+Setting APIC routing to flat
+Using ACPI (MADT) for SMP configuration information
+swsusp: Registered nosave memory region: 000000000009f000 - 00000000000a000=
+0
+swsusp: Registered nosave memory region: 00000000000a0000 - 00000000000d000=
+0
+swsusp: Registered nosave memory region: 00000000000d0000 - 000000000010000=
+0
+Allocating PCI resources starting at 50000000 (gap: 40000000:bff80000)
+SMP: Allowing 1 CPUs, 0 hotplug CPUs
+PERCPU: Allocating 34848 bytes of per cpu data
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 253627
+Kernel command line: root=3D/dev/sda2 rootfstype=3Dreiser4 rootflags=3Dno_w=
+rite_barrier,tmgr.atom_max_size=3D8000 ro i8042.nomux elevator=3Dcfq resume=
+=3D/dev/sda3 panic=3D5 nmi_watchdog=3D0,panic debug kernelcore=3D384M
+Initializing CPU#0
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+TSC calibrated against PM_TIMER
+time.c: Detected 797.941 MHz processor.
+Console: colour VGA+ 80x25
+console [tty0] enabled
+Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+... MAX_LOCKDEP_SUBCLASSES:    8
+... MAX_LOCK_DEPTH:          30
+... MAX_LOCKDEP_KEYS:        2048
+... CLASSHASH_SIZE:           1024
+... MAX_LOCKDEP_ENTRIES:     8192
+... MAX_LOCKDEP_CHAINS:      16384
+... CHAINHASH_SIZE:          8192
+ memory used by lock dependency info: 1648 kB
+ per task-struct memory footprint: 1680 bytes
+------------------------
+| Locking API testsuite:
+---------------------------------------------------------------------------=
+-
+                                 | spin |wlock |rlock |mutex | wsem | rsem =
+|
+  -------------------------------------------------------------------------=
+-
+                     A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+                 A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+             A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+             A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+         A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+         A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+         A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+                    double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+                  initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+                 bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  =
+|
+  -------------------------------------------------------------------------=
+-
+              recursive read-lock:             |  ok  |             |  ok  =
+|
+           recursive read-lock #2:             |  ok  |             |  ok  =
+|
+            mixed read-write-lock:             |  ok  |             |  ok  =
+|
+            mixed write-read-lock:             |  ok  |             |  ok  =
+|
+  -------------------------------------------------------------------------=
+-
+     hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+     soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+     hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+     soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+       sirq-safe-A =3D> hirqs-on/12:  ok  |  ok  |  ok  |
+       sirq-safe-A =3D> hirqs-on/21:  ok  |  ok  |  ok  |
+         hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+         soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+         hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+         soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+    hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+    soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
+      hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
+      soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
+      hard-irq read-recursion/123:  ok  |
+      soft-irq read-recursion/123:  ok  |
+      hard-irq read-recursion/132:  ok  |
+      soft-irq read-recursion/132:  ok  |
+      hard-irq read-recursion/213:  ok  |
+      soft-irq read-recursion/213:  ok  |
+      hard-irq read-recursion/231:  ok  |
+      soft-irq read-recursion/231:  ok  |
+      hard-irq read-recursion/312:  ok  |
+      soft-irq read-recursion/312:  ok  |
+      hard-irq read-recursion/321:  ok  |
+      soft-irq read-recursion/321:  ok  |
+-------------------------------------------------------
+Good, all 218 testcases passed! |
+---------------------------------
+Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+Checking aperture...
+CPU 0: aperture @ e8000000 size 128 MB
+Memory: 1012496k/1048000k available (3332k kernel code, 34844k reserved, 15=
+99k data, 1112k init)
+SLUB: Genslabs=3D11, HWalign=3D64, Order=3D0-3, MinObjects=3D16, CPUs=3D1, =
+Nodes=3D1
+Calibrating delay using timer specific routine.. 1597.30 BogoMIPS (lpj=3D79=
+8654)
+kswapd reclaim order set to 3
+Mount-cache hash table entries: 256
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+SMP alternatives: switching to UP code
+Freeing SMP alternatives: 26k freed
+ACPI: Core revision 20070126
+Parsing all Control Methods:
+Table [DSDT](id 0001) - 650 Objects with 66 Devices 205 Methods 24 Regions
+Parsing all Control Methods:
+Table [SSDT](id 0002) - 3 Objects with 0 Devices 1 Methods 0 Regions
+ tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquire=
+d
+evxfevnt-0091 [00] enable                : Transition to ACPI mode successf=
+ul
+Using local APIC timer interrupts.
+APIC timer calibration result 12467832
+Detected 12.467 MHz APIC timer.
+Brought up 1 CPUs
+net_namespace: 136 bytes
+NET: Registered protocol family 16
+No dock devices found.
+ACPI: bus type pci registered
+PCI: Using configuration type 1
+evgpeblk-0956 [00] ev_create_gpe_block   : GPE 00 to 1F [_GPE] 4 regs on in=
+t 0x9
+evgpeblk-0956 [00] ev_create_gpe_block   : GPE 20 to 5F [_GPE] 8 regs on in=
+t 0x9
+evgpeblk-1052 [00] ev_initialize_gpe_bloc: Found 5 Wake, Enabled 1 Runtime =
+GPEs in this block
+evgpeblk-1052 [00] ev_initialize_gpe_bloc: Found 0 Wake, Enabled 1 Runtime =
+GPEs in this block
+ACPI: EC: Look up EC in DSDT
+Completing Region/Field/Buffer/Package initialization:.....................=
+...............................................
+Initialized 24/24 Regions 2/2 Fields 28/29 Buffers 14/21 Packages (662 node=
+s)
+Initializing Device/Processor/Thermal objects by executing _INI methods:.
+Executed 1 _INI methods requiring 0 _STA executions (examined 70 objects)
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3 S4 S5)
+ACPI: Using IOAPIC for interrupt routing
+ACPI: EC: GPE =3D 0x21, I/O: command/status =3D 0x66, data =3D 0x62
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P2P0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.AGP0._PRT]
+ACPI: PCI Interrupt Link [LNK1] (IRQs 16 18 19) *0
+ACPI: PCI Interrupt Link [LNK2] (IRQs 16 18 19) *0
+ACPI: PCI Interrupt Link [LNK3] (IRQs 17) *0
+ACPI: PCI Interrupt Link [LNK4] (IRQs 16 18 19) *0, disabled.
+ACPI: PCI Interrupt Link [LNK5] (IRQs 16 18 19) *0
+ACPI: PCI Interrupt Link [LSMB] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LUS0] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LUS1] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LUS2] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LMAC] (IRQs 20 21 22) *0, disabled.
+ACPI: PCI Interrupt Link [LACI] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LMCI] (IRQs 20 21 22) *0
+ACPI: PCI Interrupt Link [LPID] (IRQs 20 21 22) *0, disabled.
+ACPI: PCI Interrupt Link [LTID] (IRQs 20 21 22) *0, disabled.
+Linux Plug and Play Support v0.97 (c) Adam Belay
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 12 devices
+ACPI: ACPI bus type pnp unregistered
+Generic PHY: Registered new driver
+SCSI subsystem initialized
+libata version 2.21 loaded.
+PCI: Using ACPI for IRQ routing
+PCI: If a device doesn't work, try "pci=3Drouteirq".  If it helps, post a r=
+eport
+PCI: Cannot allocate resource region 0 of device 0000:00:00.0
+agpgart: Detected AGP bridge 0
+agpgart: Setting up Nforce3 AGP.
+agpgart: AGP aperture is 128M @ 0xe8000000
+Time: tsc clocksource has been installed.
+Switched to high resolution mode on CPU 0
+pnp: 00:01: ioport range 0x8000-0x807f has been reserved
+pnp: 00:01: ioport range 0x8080-0x80ff has been reserved
+pnp: 00:01: ioport range 0x8400-0x847f has been reserved
+pnp: 00:01: ioport range 0x8480-0x84ff has been reserved
+pnp: 00:01: ioport range 0x8800-0x887f has been reserved
+pnp: 00:01: ioport range 0x8880-0x88ff has been reserved
+pnp: 00:01: ioport range 0x2040-0x207f has been reserved
+pnp: 00:01: ioport range 0x2000-0x203f has been reserved
+pnp: 00:02: iomem range 0xfff80000-0xffffffff could not be reserved
+pnp: 00:02: iomem range 0xfec00000-0xfec00fff has been reserved
+pnp: 00:02: iomem range 0xfee00000-0xfeefffff could not be reserved
+pnp: 00:02: iomem range 0xfed00000-0xfed00fff has been reserved
+PCI: Failed to allocate mem resource #10:4000000@e4000000 for 0000:02:04.0
+PCI: Failed to allocate mem resource #10:4000000@e4000000 for 0000:02:04.1
+PCI: Bus 3, cardbus bridge: 0000:02:04.0
+  IO window: 00003000-000030ff
+  IO window: 00003400-000034ff
+  PREFETCH window: 50000000-53ffffff
+PCI: Bus 7, cardbus bridge: 0000:02:04.1
+  IO window: 00003800-000038ff
+  IO window: 00003c00-00003cff
+  PREFETCH window: 54000000-57ffffff
+PCI: Bridge: 0000:00:0a.0
+  IO window: 3000-7fff
+  MEM window: e0100000-e17fffff
+  PREFETCH window: 50000000-57ffffff
+PCI: Bridge: 0000:00:0b.0
+  IO window: disabled.
+  MEM window: e2000000-e2ffffff
+  PREFETCH window: f0000000-f80fffff
+PCI: Setting latency timer of device 0000:00:0a.0 to 64
+ACPI: PCI Interrupt Link [LNK1] enabled at IRQ 19
+ACPI: PCI Interrupt 0000:02:04.0[A] -> Link [LNK1] -> GSI 19 (level, low) -=
+> IRQ 19
+ACPI: PCI Interrupt Link [LNK2] enabled at IRQ 18
+ACPI: PCI Interrupt 0000:02:04.1[B] -> Link [LNK2] -> GSI 18 (level, low) -=
+> IRQ 18
+NET: Registered protocol family 2
+IP route cache hash table entries: 32768 (order: 6, 262144 bytes)
+TCP established hash table entries: 65536 (order: 10, 4194304 bytes)
+TCP bind hash table entries: 65536 (order: 9, 3670016 bytes)
+TCP: Hash tables configured (established 65536 bind 65536)
+TCP reno registered
+Simple Boot Flag at 0x37 set to 0x1
+audit: initializing netlink socket (disabled)
+audit(1191556564.825:1): initialized
+Total HugeTLB memory allocated, 0
+Loading Reiser4. See www.namesys.com for a description of Reiser4.
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+Boot video device is 0000:01:00.0
+ACPI: AC Adapter [ACAD] (off-line)
+ACPI: Battery Slot [BAT1] (battery present)
+input: Power Button (FF) as /devices/virtual/input/input0
+ACPI: Power Button (FF) [PWRF]
+input: Power Button (CM) as /devices/virtual/input/input1
+ACPI: Power Button (CM) [PWRB]
+input: Lid Switch as /devices/virtual/input/input2
+ACPI: Lid Switch [LID]
+input: Video Bus as /devices/virtual/input/input3
+ACPI: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+ACPI: CPU0 (power states: C1[C1] C2[C2])
+Marking TSC unstable due to possible TSC halt in C2
+Time: acpi_pm clocksource has been installed.
+ACPI Exception (thermal-0471): AE_NOT_FOUND, Invalid active threshold [0] [=
+20070126]
+ACPI: Thermal Zone [THRM] (33 C)
+Real Time Clock Driver v1.12ac
+Linux agpgart interface v0.102
+Hangcheck: starting hangcheck timer 0.9.0 (tick is 180 seconds, margin is 6=
+0 seconds).
+Hangcheck: Using get_cycles().
+loop: module loaded
+Marvell 88E1101: Registered new driver
+Marvell 88E1112: Registered new driver
+Marvell 88E1111: Registered new driver
+Marvell 88E1145: Registered new driver
+Davicom DM9161E: Registered new driver
+Davicom DM9161A: Registered new driver
+Davicom DM9131: Registered new driver
+Cicada Cis8204: Registered new driver
+Cicada Cis8201: Registered new driver
+LXT970: Registered new driver
+LXT971: Registered new driver
+QS6612: Registered new driver
+SMSC LAN83C185: Registered new driver
+Vitesse VSC8244: Registered new driver
+Broadcom BCM5411: Registered new driver
+Broadcom BCM5421: Registered new driver
+Broadcom BCM5461: Registered new driver
+ICPlus IP175C: Registered new driver
+8139too Fast Ethernet driver 0.9.28
+ACPI: PCI Interrupt 0000:02:01.0[A] -> Link [LNK2] -> GSI 18 (level, low) -=
+> IRQ 18
+eth0: RealTek RTL8139 at 0xffffc2000001c800, 00:0f:b0:07:dc:49, IRQ 18
+eth0:  Identified 8139 chip type 'RTL-8101'
+pata_amd 0000:00:08.0: version 0.3.9
+PCI: Setting latency timer of device 0000:00:08.0 to 64
+scsi0 : pata_amd
+scsi1 : pata_amd
+ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0x2080 irq 14
+ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0x2088 irq 15
+ata1: ACPI get timing mode failed (AE 0x1001)
+ata1.00: ATA-6: HTS721010G9AT00, MCZOA51A, max UDMA/100
+ata1.00: 195371568 sectors, multi 16: LBA48=20
+ata1.00: limited to UDMA/33 due to 40-wire cable
+ata1.00: configured for UDMA/33
+ata2: ACPI get timing mode failed (AE 0x1001)
+ata2.00: ATAPI: HL-DT-ST DVD+RW GCA-4040N, 1.19, max MWDMA2
+ata2.00: configured for MWDMA2
+scsi 0:0:0:0: Direct-Access     ATA      HTS721010G9AT00  MCZO PQ: 0 ANSI: =
+5
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors (100030 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't suppor=
+t DPO or FUA
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors (100030 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't suppor=
+t DPO or FUA
+ sda: sda1 sda2 sda3
+sd 0:0:0:0: [sda] Attached SCSI disk
+scsi 1:0:0:0: CD-ROM            HL-DT-ST DVD+RW GCA-4040N 1.19 PQ: 0 ANSI: =
+5
+sr0: scsi3-mmc drive: 40x/24x writer cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 1:0:0:0: Attached scsi CD-ROM sr0
+Yenta: CardBus bridge found at 0000:02:04.0 [103c:006d]
+PCI: Bus 3, cardbus bridge: 0000:02:04.0
+  IO window: 00003000-000030ff
+  IO window: 00003400-000034ff
+  PREFETCH window: 50000000-53ffffff
+  MEM window: e0400000-e07fffff
+Yenta: Enabling burst memory read transactions
+Yenta: Using CSCINT to route CSC interrupts to PCI
+Yenta: Routing CardBus interrupts to PCI
+Yenta TI: socket 0000:02:04.0, mfunc 0x01111d22, devctl 0x64
+Yenta: ISA IRQ mask 0x0cf8, PCI irq 19
+Socket status: 30000086
+Yenta: Raising subordinate bus# of parent bus (#02) from #02 to #06
+pcmcia: parent PCI bridge I/O window: 0x3000 - 0x7fff
+pcmcia: parent PCI bridge Memory window: 0xe0100000 - 0xe17fffff
+pcmcia: parent PCI bridge Memory window: 0x50000000 - 0x57ffffff
+Yenta: CardBus bridge found at 0000:02:04.1 [103c:006d]
+Yenta: Using CSCINT to route CSC interrupts to PCI
+Yenta: Routing CardBus interrupts to PCI
+Yenta TI: socket 0000:02:04.1, mfunc 0x01111d22, devctl 0x64
+Yenta: ISA IRQ mask 0x0cf8, PCI irq 18
+Socket status: 30000006
+Yenta: Raising subordinate bus# of parent bus (#02) from #06 to #0a
+pcmcia: parent PCI bridge I/O window: 0x3000 - 0x7fff
+pcmcia: parent PCI bridge Memory window: 0xe0100000 - 0xe17fffff
+pcmcia: parent PCI bridge Memory window: 0x50000000 - 0x57ffffff
+PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
+mice: PS/2 mouse device common for all mice
+TCP cubic registered
+Initializing XFRM netlink socket
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+NET: Registered protocol family 15
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+powernow-k8: Found 1 AMD Athlon(tm) 64 Processor 3400+ processors (1 cpu co=
+res) (version 2.00.00)
+powernow-k8:    0 : fid 0xe (2200 MHz), vid 0x2
+powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa
+powernow-k8:    2 : fid 0x0 (800 MHz), vid 0x12
+swsusp: Resume From Partition /dev/sda3
+PM: Checking swsusp image.
+PM: Resume from disk failed.
+registered taskstats version 1
+Freeing unused kernel memory: 1112k freed
+input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input=
+/input4
+reiser4: sda2: found disk format 4.0.0.
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+ACPI: PCI Interrupt Link [LACI] enabled at IRQ 22
+ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LACI] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:06.0 to 64
+ehci_hcd: block sizes: qh 160 qtd 96 itd 192 sitd 96
+ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
+ohci_hcd: block sizes: ed 80 td 96
+AC'97 0 analog subsections not ready
+input: PS/2 Mouse as /devices/virtual/input/input5
+input: AlpsPS/2 ALPS GlidePoint as /devices/platform/i8042/serio1/input/inp=
+ut6
+intel8x0_measure_ac97_clock: measured 50370 usecs
+intel8x0: measured clock 635 rejected
+intel8x0: clocking to 48000
+ACPI: PCI Interrupt Link [LUS2] enabled at IRQ 21
+ACPI: PCI Interrupt 0000:00:02.2[C] -> Link [LUS2] -> GSI 21 (level, low) -=
+> IRQ 21
+PCI: Setting latency timer of device 0000:00:02.2 to 64
+ehci_hcd 0000:00:02.2: EHCI Host Controller
+drivers/usb/core/inode.c: creating file 'devices'
+drivers/usb/core/inode.c: creating file '001'
+ehci_hcd 0000:00:02.2: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:00:02.2: reset hcs_params 0x102486 dbg=3D1 cc=3D2 pcc=3D4 !pp=
+c ports=3D6
+ehci_hcd 0000:00:02.2: reset portroute 0 0 1 1 1 0=20
+ehci_hcd 0000:00:02.2: reset hcc_params a086 caching frame 256/512/1024 par=
+k
+ehci_hcd 0000:00:02.2: park 0
+ehci_hcd 0000:00:02.2: reset command 080b02 park=3D3 ithresh=3D8 period=3D1=
+024 Reset HALT
+PCI: cache line size of 64 is not supported by device 0000:00:02.2
+ehci_hcd 0000:00:02.2: supports USB remote wakeup
+ehci_hcd 0000:00:02.2: irq 21, io mem 0xe0004000
+ehci_hcd 0000:00:02.2: reset command 080b02 park=3D3 ithresh=3D8 period=3D1=
+024 Reset HALT
+ehci_hcd 0000:00:02.2: init command 010009 (park)=3D0 ithresh=3D1 period=3D=
+256 RUN
+ehci_hcd 0000:00:02.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: default language 0x0409
+usb usb1: uevent
+usb usb1: usb_probe_device
+usb usb1: configuration #1 chosen from 1 choice
+usb usb1: adding 1-0:1.0 (config #1, interface 0)
+usb 1-0:1.0: uevent
+usb 1-0:1.0: uevent
+hub 1-0:1.0: usb_probe_interface
+hub 1-0:1.0: usb_probe_interface - got id
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 6 ports detected
+hub 1-0:1.0: standalone hub
+hub 1-0:1.0: no power switching (usb 1.0)
+hub 1-0:1.0: individual port over-current protection
+hub 1-0:1.0: Single TT
+hub 1-0:1.0: TT requires at most 8 FS bit times (666 ns)
+hub 1-0:1.0: power on to power good time: 20ms
+hub 1-0:1.0: local power source is good
+hub 1-0:1.0: trying to enable port power on non-switchable hub
+drivers/usb/core/inode.c: creating file '001'
+usb usb1: new device found, idVendor=3D0000, idProduct=3D0000
+usb usb1: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+usb usb1: Product: EHCI Host Controller
+usb usb1: Manufacturer: Linux 2.6.23-rc8-mm2 ehci_hcd
+usb usb1: SerialNumber: 0000:00:02.2
+hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0000
+PCI: Enabling device 0000:00:02.0 (0004 -> 0006)
+ACPI: PCI Interrupt Link [LUS0] enabled at IRQ 20
+ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUS0] -> GSI 20 (level, low) -=
+> IRQ 20
+PCI: Setting latency timer of device 0000:00:02.0 to 64
+ohci_hcd 0000:00:02.0: OHCI Host Controller
+drivers/usb/core/inode.c: creating file '002'
+ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
+ohci_hcd 0000:00:02.0: USB HC TakeOver from BIOS/SMM
+ohci_hcd 0000:00:02.0: created debug files
+ohci_hcd 0000:00:02.0: irq 20, io mem 0xe0000000
+ohci_hcd 0000:00:02.0: OHCI controller state
+ohci_hcd 0000:00:02.0: OHCI 1.0, NO legacy support registers
+ohci_hcd 0000:00:02.0: control 0x683 RWE RWC HCFS=3Doperational CBSR=3D3
+ohci_hcd 0000:00:02.0: cmdstatus 0x00000 SOC=3D0
+ohci_hcd 0000:00:02.0: intrstatus 0x00000004 SF
+ohci_hcd 0000:00:02.0: intrenable 0x8000004a MIE RHSC RD WDH
+ohci_hcd 0000:00:02.0: hcca frame #0003
+ohci_hcd 0000:00:02.0: roothub.a 01000203 POTPGT=3D1 NPS NDP=3D3(3)
+ohci_hcd 0000:00:02.0: roothub.b 00000000 PPCM=3D0000 DR=3D0000
+ohci_hcd 0000:00:02.0: roothub.status 00008000 DRWE
+ohci_hcd 0000:00:02.0: roothub.portstatus [0] 0x00000100 PPS
+ohci_hcd 0000:00:02.0: roothub.portstatus [1] 0x00000100 PPS
+ohci_hcd 0000:00:02.0: roothub.portstatus [2] 0x00000100 PPS
+usb usb2: default language 0x0409
+usb usb2: uevent
+usb usb2: usb_probe_device
+usb usb2: configuration #1 chosen from 1 choice
+usb usb2: adding 2-0:1.0 (config #1, interface 0)
+usb 2-0:1.0: uevent
+usb 2-0:1.0: uevent
+hub 2-0:1.0: usb_probe_interface
+hub 2-0:1.0: usb_probe_interface - got id
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 3 ports detected
+hub 2-0:1.0: standalone hub
+hub 2-0:1.0: no power switching (usb 1.0)
+hub 2-0:1.0: global over-current protection
+hub 2-0:1.0: power on to power good time: 2ms
+hub 2-0:1.0: local power source is good
+hub 2-0:1.0: no over-current condition exists
+hub 2-0:1.0: trying to enable port power on non-switchable hub
+drivers/usb/core/inode.c: creating file '001'
+usb usb2: new device found, idVendor=3D0000, idProduct=3D0000
+usb usb2: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+usb usb2: Product: OHCI Host Controller
+usb usb2: Manufacturer: Linux 2.6.23-rc8-mm2 ohci_hcd
+usb usb2: SerialNumber: 0000:00:02.0
+PCI: Enabling device 0000:00:02.1 (0004 -> 0006)
+ACPI: PCI Interrupt Link [LUS1] enabled at IRQ 22
+ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUS1] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:02.1 to 64
+ohci_hcd 0000:00:02.1: OHCI Host Controller
+drivers/usb/core/inode.c: creating file '003'
+ohci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 3
+ohci_hcd 0000:00:02.1: USB HC TakeOver from BIOS/SMM
+hub 2-0:1.0: state 7 ports 3 chg 0000 evt 0000
+ohci_hcd 0000:00:02.1: created debug files
+ohci_hcd 0000:00:02.1: irq 22, io mem 0xe0001000
+ohci_hcd 0000:00:02.1: OHCI controller state
+ohci_hcd 0000:00:02.1: OHCI 1.0, NO legacy support registers
+ohci_hcd 0000:00:02.1: control 0x683 RWE RWC HCFS=3Doperational CBSR=3D3
+ohci_hcd 0000:00:02.1: cmdstatus 0x00000 SOC=3D0
+ohci_hcd 0000:00:02.1: intrstatus 0x00000004 SF
+ohci_hcd 0000:00:02.1: intrenable 0x8000004a MIE RHSC RD WDH
+ohci_hcd 0000:00:02.1: hcca frame #0003
+ohci_hcd 0000:00:02.1: roothub.a 01000203 POTPGT=3D1 NPS NDP=3D3(3)
+ohci_hcd 0000:00:02.1: roothub.b 00000000 PPCM=3D0000 DR=3D0000
+ohci_hcd 0000:00:02.1: roothub.status 00008000 DRWE
+ohci_hcd 0000:00:02.1: roothub.portstatus [0] 0x00000100 PPS
+ohci_hcd 0000:00:02.1: roothub.portstatus [1] 0x00000100 PPS
+ohci_hcd 0000:00:02.1: roothub.portstatus [2] 0x00000100 PPS
+usb usb3: default language 0x0409
+usb usb3: uevent
+usb usb3: usb_probe_device
+usb usb3: configuration #1 chosen from 1 choice
+usb usb3: adding 3-0:1.0 (config #1, interface 0)
+usb 3-0:1.0: uevent
+usb 3-0:1.0: uevent
+hub 3-0:1.0: usb_probe_interface
+hub 3-0:1.0: usb_probe_interface - got id
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 3 ports detected
+hub 3-0:1.0: standalone hub
+hub 3-0:1.0: no power switching (usb 1.0)
+hub 3-0:1.0: global over-current protection
+hub 3-0:1.0: power on to power good time: 2ms
+hub 3-0:1.0: local power source is good
+hub 3-0:1.0: no over-current condition exists
+hub 3-0:1.0: trying to enable port power on non-switchable hub
+drivers/usb/core/inode.c: creating file '001'
+usb usb3: new device found, idVendor=3D0000, idProduct=3D0000
+usb usb3: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+usb usb3: Product: OHCI Host Controller
+usb usb3: Manufacturer: Linux 2.6.23-rc8-mm2 ohci_hcd
+usb usb3: SerialNumber: 0000:00:02.1
+hub 3-0:1.0: state 7 ports 3 chg 0000 evt 0000
+ACPI: PCI Interrupt Link [LNK3] enabled at IRQ 17
+ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNK3] -> GSI 17 (level, low) -=
+> IRQ 17
+ssb: Core 0 found: IEEE 802.11 (cc 0x812, rev 0x02, vendor 0x4243)
+ssb: Core 1 found: PCMCIA (cc 0x80D, rev 0x00, vendor 0x4243)
+ssb: Core 2 found: Fast Ethernet (cc 0x806, rev 0x02, vendor 0x4243)
+ssb: Core 3 found: V90 (cc 0x807, rev 0x01, vendor 0x4243)
+ssb: Core 4 found: PCI (cc 0x804, rev 0x03, vendor 0x4243)
+ssb: Sonics Silicon Backplane found on PCI device 0000:02:02.0
+ohci_hcd 0000:00:02.0: auto-stop root hub
+ohci_hcd 0000:00:02.1: auto-stop root hub
+hub 1-0:1.0: hub_suspend
+usb usb1: bus auto-suspend
+ehci_hcd 0000:00:02.2: suspend root hub
+hub 2-0:1.0: hub_suspend
+usb usb2: bus auto-suspend
+ohci_hcd 0000:00:02.0: suspend root hub
+hub 3-0:1.0: hub_suspend
+usb usb3: bus auto-suspend
+ohci_hcd 0000:00:02.1: suspend root hub
+NET: Registered protocol family 10
+sd 0:0:0:0: Attached scsi generic sg0 type 0
+sr 1:0:0:0: Attached scsi generic sg1 type 5
+ReiserFS: sda1: found reiserfs format "3.6" with standard journal
+ReiserFS: sda1: using ordered data mode
+ReiserFS: sda1: journal params: device sda1, size 8192, journal first block=
+ 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+ReiserFS: sda1: checking transaction log (sda1)
+ReiserFS: sda1: Using r5 hash to sort names
+Adding 2843496k swap on /dev/sda3.  Priority:100 extents:1 across:2843496k
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+[ INFO: possible circular locking dependency detected ]
+2.6.23-rc8-mm2 #4
+-------------------------------------------------------
+echo/4502 is trying to acquire lock:
+ (pm_mutex){--..}, at: [<ffffffff80270a52>] hibernate+0x12/0x1f0
+
+but task is already holding lock:
+ (&buffer->mutex){--..}, at: [<ffffffff802fec68>] sysfs_write_file+0x48/0x1=
+60
+
+which lock already depends on the new lock.
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&buffer->mutex){--..}:
+       [<ffffffff80264eab>] __lock_acquire+0xc8b/0x1180
+       [<ffffffff802653f3>] lock_acquire+0x53/0x70
+       [<ffffffff802fedc6>] sysfs_read_file+0x46/0x150
+       [<ffffffff80538db0>] __mutex_lock_slowpath+0x80/0x2c0
+       [<ffffffff802fedc6>] sysfs_read_file+0x46/0x150
+       [<ffffffff802b2005>] vfs_read+0xc5/0x180
+       [<ffffffff802b2503>] sys_read+0x53/0x90
+       [<ffffffff80209185>] try_name+0x75/0x210
+       [<ffffffff802cc17e>] sys_mount+0xce/0x100
+       [<ffffffff80538ebb>] __mutex_lock_slowpath+0x18b/0x2c0
+       [<ffffffff8020956d>] name_to_dev_t+0x24d/0x2a0
+       [<ffffffff80263c71>] trace_hardirqs_on+0xc1/0x160
+       [<ffffffff80270598>] software_resume+0x38/0x1a0
+       [<ffffffff806fe71b>] kernel_init+0x15b/0x340
+       [<ffffffff8053a3bc>] trace_hardirqs_on_thunk+0x35/0x37
+       [<ffffffff80263c71>] trace_hardirqs_on+0xc1/0x160
+       [<ffffffff8020d228>] child_rip+0xa/0x12
+       [<ffffffff8020c93c>] restore_args+0x0/0x30
+       [<ffffffff803f0fe0>] vgacon_cursor+0x0/0x1f0
+       [<ffffffff8023f8bb>] release_console_sem+0x4b/0x230
+       [<ffffffff806fe5c0>] kernel_init+0x0/0x340
+       [<ffffffff8020d21e>] child_rip+0x0/0x12
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #0 (pm_mutex){--..}:
+       [<ffffffff80263098>] print_circular_bug_header+0xe8/0xf0
+       [<ffffffff80264ce0>] __lock_acquire+0xac0/0x1180
+       [<ffffffff802653f3>] lock_acquire+0x53/0x70
+       [<ffffffff80270a52>] hibernate+0x12/0x1f0
+       [<ffffffff80538db0>] __mutex_lock_slowpath+0x80/0x2c0
+       [<ffffffff80270a52>] hibernate+0x12/0x1f0
+       [<ffffffff8026f3b0>] state_store+0xe0/0xf0
+       [<ffffffff802fed1e>] sysfs_write_file+0xfe/0x160
+       [<ffffffff802b1e88>] vfs_write+0xc8/0x180
+       [<ffffffff802b2593>] sys_write+0x53/0x90
+       [<ffffffff8020c39e>] system_call+0x7e/0x83
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+other info that might help us debug this:
+
+1 lock held by echo/4502:
+ #0:  (&buffer->mutex){--..}, at: [<ffffffff802fec68>] sysfs_write_file+0x4=
+8/0x160
+
+stack backtrace:
+
+Call Trace:
+ [<ffffffff80262be3>] print_circular_bug_tail+0x83/0x90
+ [<ffffffff80263098>] print_circular_bug_header+0xe8/0xf0
+ [<ffffffff80264ce0>] __lock_acquire+0xac0/0x1180
+ [<ffffffff802653f3>] lock_acquire+0x53/0x70
+ [<ffffffff80270a52>] hibernate+0x12/0x1f0
+ [<ffffffff80538db0>] __mutex_lock_slowpath+0x80/0x2c0
+ [<ffffffff80270a52>] hibernate+0x12/0x1f0
+ [<ffffffff8026f3b0>] state_store+0xe0/0xf0
+ [<ffffffff802fed1e>] sysfs_write_file+0xfe/0x160
+ [<ffffffff802b1e88>] vfs_write+0xc8/0x180
+ [<ffffffff802b2593>] sys_write+0x53/0x90
+ [<ffffffff8020c39e>] system_call+0x7e/0x83
+
+INFO: lockdep is turned off.
+swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
+swsusp: Basic memory bitmaps created
+Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.00 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+Shrinking memory...  =08-=08done (0 pages freed)
+Freed 0 kbytes in 0.07 seconds (0.00 MB/s)
+Suspending console(s)
+Suspending device vcsa1
+Suspending device vcs1
+Suspending device event6
+Suspending device event5
+Suspending device event4
+Suspending device event3
+Suspending device event2
+Suspending device event1
+Suspending device event0
+Suspending device ssb0:2
+Suspending device ssb0:1
+Suspending device ssb0:0
+Suspending device usbdev3.1_ep81
+Suspending device 3-0:1.0
+Suspending device usbdev3.1_ep00
+Suspending device usb3
+Suspending device usbdev2.1_ep81
+Suspending device 2-0:1.0
+Suspending device usbdev2.1_ep00
+Suspending device usb2
+Suspending device usbdev1.1_ep81
+Suspending device 1-0:1.0
+Suspending device usbdev1.1_ep00
+Suspending device usb1
+Suspending device controlC0
+Suspending device 0-0:AD1981B
+Suspending device pcmC0D0c
+Suspending device pcmC0D0p
+Suspending device pcmC0D1c
+Suspending device pcmC0D2p
+Suspending device card0
+Suspending device mouse1
+Suspending device input6
+Suspending device mouse0
+Suspending device input5
+Suspending device timer
+Suspending device input4
+Suspending device serio1
+Suspending device psaux
+Suspending device serio0
+Suspending device mice
+Suspending device i8042
+Suspending device pcmcia_socket1
+Suspending device pcmcia_socket0
+Suspending device 1:0:0:0
+Suspending device target1:0:0
+Suspending device 0:0:0:0
+sd 0:0:0:0: [sda] Synchronizing SCSI cache
+Suspending device target0:0:0
+Suspending device host1
+Suspending device host0
+Suspending device eth0
+Suspending device hpet
+Suspending device rtc
+Suspending device tty63
+Suspending device tty62
+Suspending device tty61
+Suspending device tty60
+Suspending device tty59
+Suspending device tty58
+Suspending device tty57
+Suspending device tty56
+Suspending device tty55
+Suspending device tty54
+Suspending device tty53
+Suspending device tty52
+Suspending device tty51
+Suspending device tty50
+Suspending device tty49
+Suspending device tty48
+Suspending device tty47
+Suspending device tty46
+Suspending device tty45
+Suspending device tty44
+Suspending device tty43
+Suspending device tty42
+Suspending device tty41
+Suspending device tty40
+Suspending device tty39
+Suspending device tty38
+Suspending device tty37
+Suspending device tty36
+Suspending device tty35
+Suspending device tty34
+Suspending device tty33
+Suspending device tty32
+Suspending device tty31
+Suspending device tty30
+Suspending device tty29
+Suspending device tty28
+Suspending device tty27
+Suspending device tty26
+Suspending device tty25
+Suspending device tty24
+Suspending device tty23
+Suspending device tty22
+Suspending device tty21
+Suspending device tty20
+Suspending device tty19
+Suspending device tty18
+Suspending device tty17
+Suspending device tty16
+Suspending device tty15
+Suspending device tty14
+Suspending device tty13
+Suspending device tty12
+Suspending device tty11
+Suspending device tty10
+Suspending device tty9
+Suspending device tty8
+Suspending device tty7
+Suspending device tty6
+Suspending device tty5
+Suspending device tty4
+Suspending device tty3
+Suspending device tty2
+Suspending device tty1
+Suspending device vcsa
+Suspending device vcs
+Suspending device tty0
+Suspending device ptmx
+Suspending device console
+Suspending device tty
+Suspending device input3
+Suspending device acpi_video2
+Suspending device acpi_video1
+Suspending device acpi_video0
+Suspending device input2
+Suspending device input1
+Suspending device input0
+Suspending device BAT1
+Suspending device ACAD
+Suspending device snapshot
+Suspending device pcspkr
+Suspending device cpu0
+Suspending device msr0
+Suspending device mcelog
+Suspending device lo
+Suspending device kmsg
+Suspending device urandom
+Suspending device random
+Suspending device full
+Suspending device zero
+Suspending device port
+Suspending device null
+Suspending device kmem
+Suspending device mem
+Suspending device agpgart
+Suspending device 00:0b
+Suspending device 00:0a
+Suspending device 00:09
+Suspending device 00:08
+Suspending device 00:07
+Suspending device 00:06
+Suspending device 00:05
+Suspending device 00:04
+Suspending device 00:03
+Suspending device 00:02
+Suspending device 00:01
+Suspending device 00:00
+Suspending device pnp0
+Suspending device 0000:01:00.0
+Suspending device 0000:02:04.2
+Suspending device 0000:02:04.1
+Suspending device 0000:02:04.0
+Suspending device 0000:02:02.0
+ACPI: PCI interrupt for device 0000:02:02.0 disabled
+Suspending device 0000:02:01.0
+Suspending device 0000:02:00.0
+Suspending device 0000:00:18.3
+Suspending device 0000:00:18.2
+Suspending device 0000:00:18.1
+Suspending device 0000:00:18.0
+Suspending device 0000:00:0b.0
+Suspending device 0000:00:0a.0
+Suspending device 0000:00:08.0
+Suspending device 0000:00:06.1
+Suspending device 0000:00:06.0
+codec_write 0: semaphore is not ready for register 0x26
+codec_write 0: semaphore is not ready for register 0x26
+ACPI: PCI interrupt for device 0000:00:06.0 disabled
+Suspending device 0000:00:02.2
+ACPI: PCI interrupt for device 0000:00:02.2 disabled
+ehci_hcd 0000:00:02.2: --> PCI D3/wakeup
+Suspending device 0000:00:02.1
+ACPI: PCI interrupt for device 0000:00:02.1 disabled
+ohci_hcd 0000:00:02.1: --> PCI D3/wakeup
+Suspending device 0000:00:02.0
+ACPI: PCI interrupt for device 0000:00:02.0 disabled
+ohci_hcd 0000:00:02.0: --> PCI D3/wakeup
+Suspending device 0000:00:01.1
+Suspending device 0000:00:01.0
+Suspending device 0000:00:00.0
+Suspending device pci0000:00
+Suspending device LNXTHERM:01
+Suspending device LNXTHERM:00
+Suspending device PNP0C0F:0d
+Suspending device PNP0C0F:0c
+Suspending device PNP0C0F:0b
+Suspending device PNP0C0F:0a
+Suspending device PNP0C0F:09
+Suspending device PNP0C0F:08
+Suspending device PNP0C0F:07
+Suspending device PNP0C0F:06
+Suspending device PNP0C0F:05
+Suspending device PNP0C0F:04
+Suspending device PNP0C0F:03
+Suspending device PNP0C0F:02
+Suspending device PNP0C0F:01
+Suspending device PNP0C0F:00
+Suspending device device:1b
+Suspending device device:1a
+Suspending device device:19
+Suspending device LNXVIDEO:00
+Suspending device device:18
+Suspending device device:17
+Suspending device device:16
+Suspending device PNP0401:00
+Suspending device PNP0700:00
+Suspending device PNP0A05:00
+Suspending device PNP0F13:00
+Suspending device PNP0303:00
+Suspending device PNP0C04:00
+Suspending device PNP0B00:00
+Suspending device PNP0800:00
+Suspending device PNP0200:00
+Suspending device PNP0100:00
+Suspending device PNP0000:00
+Suspending device PNP0C02:01
+Suspending device PNP0C0A:00
+Suspending device PNP0C09:00
+Suspending device PNP0C01:00
+Suspending device PNP0C02:00
+Suspending device ACPI0003:00
+Suspending device device:15
+Suspending device device:14
+Suspending device device:13
+Suspending device device:12
+Suspending device device:11
+Suspending device device:10
+Suspending device device:0f
+Suspending device device:0e
+Suspending device device:0d
+Suspending device device:0c
+Suspending device device:0b
+Suspending device device:0a
+Suspending device device:09
+Suspending device device:08
+Suspending device device:07
+Suspending device device:06
+Suspending device device:05
+Suspending device device:04
+Suspending device device:03
+Suspending device device:02
+Suspending device device:01
+Suspending device PNP0A03:00
+Suspending device PNP0C0D:00
+Suspending device PNP0C0C:00
+Suspending device pnp0c14:00
+Suspending device device:00
+Suspending device ACPI0007:00
+Suspending device LNXPWRBN:00
+Suspending device LNXSYSTM:00
+Suspending device id
+Suspending device vtcon0
+Suspending device platform
+Disabling non-boot CPUs ...
+swsusp: critical section:=20
+swsusp: Need to copy 22901 pages
+swsusp: Normal pages needed: 22901 + 1024 + 24, available pages: 238995
+evxfevnt-0079 [00] enable                : System is already in ACPI mode
+agpgart: Setting up Nforce3 AGP.
+ohci_hcd 0000:00:02.0: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUS0] -> GSI 20 (level, low) -=
+> IRQ 20
+PCI: Setting latency timer of device 0000:00:02.0 to 64
+PM: Writing back config space on device 0000:00:02.0 at offset 1 (was b0000=
+7, writing b00006)
+ohci_hcd 0000:00:02.1: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUS1] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:02.1 to 64
+PM: Writing back config space on device 0000:00:02.1 at offset 1 (was b0000=
+7, writing b00006)
+ehci_hcd 0000:00:02.2: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.2[C] -> Link [LUS2] -> GSI 21 (level, low) -=
+> IRQ 21
+PCI: Setting latency timer of device 0000:00:02.2 to 64
+ehci_hcd 0000:00:02.2: lost power, restarting
+usb usb1: root hub lost power or was reset
+ehci_hcd 0000:00:02.2: reset command 080b02 park=3D3 ithresh=3D8 period=3D1=
+024 Reset HALT
+PCI: cache line size of 64 is not supported by device 0000:00:02.2
+PM: Writing back config space on device 0000:00:06.0 at offset 1 (was b0000=
+7, writing b00003)
+ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LACI] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:06.0 to 64
+PM: Writing back config space on device 0000:00:08.0 at offset 1 (was b0000=
+1, writing b00005)
+PCI: Setting latency timer of device 0000:00:08.0 to 64
+PCI: Setting latency timer of device 0000:00:0a.0 to 64
+ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNK3] -> GSI 17 (level, low) -=
+> IRQ 17
+ata1: ACPI get timing mode failed (AE 0x1001)
+ata1.00: configured for UDMA/33
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors (100030 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't suppor=
+t DPO or FUA
+pnp: Failed to activate device 00:08.
+pnp: Failed to activate device 00:09.
+sd 0:0:0:0: [sda] Starting disk
+ata2: ACPI get timing mode failed (AE 0x1001)
+ata2.00: configured for MWDMA2
+usb usb1: usb resume
+ehci_hcd 0000:00:02.2: resume root hub after power loss
+hub 1-0:1.0: trying to enable port power on non-switchable hub
+usb usb2: usb resume
+ohci_hcd 0000:00:02.0: lost power
+ohci_hcd 0000:00:02.0: OHCI controller state
+ohci_hcd 0000:00:02.0: OHCI 1.0, NO legacy support registers
+ohci_hcd 0000:00:02.0: control 0x683 RWE RWC HCFS=3Doperational CBSR=3D3
+ohci_hcd 0000:00:02.0: cmdstatus 0x00000 SOC=3D0
+ohci_hcd 0000:00:02.0: intrstatus 0x00000004 SF
+ohci_hcd 0000:00:02.0: intrenable 0x8000004a MIE RHSC RD WDH
+ohci_hcd 0000:00:02.0: hcca frame #0003
+ohci_hcd 0000:00:02.0: roothub.a 01000203 POTPGT=3D1 NPS NDP=3D3(3)
+ohci_hcd 0000:00:02.0: roothub.b 00000000 PPCM=3D0000 DR=3D0000
+ohci_hcd 0000:00:02.0: roothub.status 00008000 DRWE
+ohci_hcd 0000:00:02.0: roothub.portstatus [0] 0x00000100 PPS
+ohci_hcd 0000:00:02.0: roothub.portstatus [1] 0x00000100 PPS
+ohci_hcd 0000:00:02.0: roothub.portstatus [2] 0x00000100 PPS
+ohci_hcd 0000:00:02.0: restart complete
+usb usb2: root hub lost power or was reset
+hub 2-0:1.0: trying to enable port power on non-switchable hub
+usb usb3: usb resume
+ohci_hcd 0000:00:02.1: lost power
+ohci_hcd 0000:00:02.1: OHCI controller state
+ohci_hcd 0000:00:02.1: OHCI 1.0, NO legacy support registers
+ohci_hcd 0000:00:02.1: control 0x683 RWE RWC HCFS=3Doperational CBSR=3D3
+ohci_hcd 0000:00:02.1: cmdstatus 0x00000 SOC=3D0
+ohci_hcd 0000:00:02.1: intrstatus 0x00000004 SF
+ohci_hcd 0000:00:02.1: intrenable 0x8000004a MIE RHSC RD WDH
+ohci_hcd 0000:00:02.1: hcca frame #0003
+ohci_hcd 0000:00:02.1: roothub.a 01000203 POTPGT=3D1 NPS NDP=3D3(3)
+ohci_hcd 0000:00:02.1: roothub.b 00000000 PPCM=3D0000 DR=3D0000
+ohci_hcd 0000:00:02.1: roothub.status 00008000 DRWE
+ohci_hcd 0000:00:02.1: roothub.portstatus [0] 0x00000100 PPS
+ohci_hcd 0000:00:02.1: roothub.portstatus [1] 0x00000100 PPS
+ohci_hcd 0000:00:02.1: roothub.portstatus [2] 0x00000100 PPS
+ohci_hcd 0000:00:02.1: restart complete
+usb usb3: root hub lost power or was reset
+hub 3-0:1.0: trying to enable port power on non-switchable hub
+PM: Image restored successfully.
+Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0000
+hub 2-0:1.0: state 7 ports 3 chg 0000 evt 0000
+hub 3-0:1.0: state 7 ports 3 chg 0000 evt 0000
+done.
+swsusp: Basic memory bitmaps freed
+ohci_hcd 0000:00:02.0: auto-stop root hub
+ohci_hcd 0000:00:02.1: auto-stop root hub
+hub 1-0:1.0: hub_suspend
+usb usb1: bus auto-suspend
+ehci_hcd 0000:00:02.2: suspend root hub
+hub 2-0:1.0: hub_suspend
+usb usb2: bus auto-suspend
+ohci_hcd 0000:00:02.0: suspend root hub
+hub 3-0:1.0: hub_suspend
+usb usb3: bus auto-suspend
+ohci_hcd 0000:00:02.1: suspend root hub
+eth0: link up, 100Mbps, full-duplex, lpa 0xC1E1
+netconsole: Unknown symbol config_group_init
+netconsole: Unknown symbol config_item_get
+netconsole: Unknown symbol configfs_unregister_subsystem
+netconsole: Unknown symbol configfs_register_subsystem
+netconsole: Unknown symbol config_item_init_type_name
+netconsole: Unknown symbol config_item_put
+ISO 9660 Extensions: Microsoft Joliet Level 3
+ISO 9660 Extensions: RRIP_1991A
+Hangcheck: hangcheck value past margin!
+usb usb1: usb resume
+ehci_hcd 0000:00:02.2: resume root hub
+hub 1-0:1.0: hub_resume
+hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0000
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001803 POWER sig=3Dj CSC CON=
+NECT
+hub 1-0:1.0: port 1, status 0501, change 0001, 480 Mb/s
+hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x501
+ehci_hcd 0000:00:02.2: port 1 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 1-1: new high speed USB device using ehci_hcd and address 2
+ehci_hcd 0000:00:02.2: port 1 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 1-1: default language 0x0409
+usb 1-1: uevent
+usb 1-1: usb_probe_device
+usb 1-1: configuration #1 chosen from 1 choice
+usb 1-1: adding 1-1:1.0 (config #1, interface 0)
+usb 1-1:1.0: uevent
+usb 1-1:1.0: uevent
+drivers/usb/core/inode.c: creating file '002'
+usb 1-1: new device found, idVendor=3D0bc2, idProduct=3D0502
+usb 1-1: new device strings: Mfr=3D5, Product=3D2, SerialNumber=3D1
+usb 1-1: Product: ST94811U2-RK
+usb 1-1: Manufacturer: Seagate
+usb 1-1: SerialNumber: 33504D304C573434
+libusual 1-1:1.0: usb_probe_interface
+libusual 1-1:1.0: usb_probe_interface - got id
+usbcore: registered new interface driver libusual
+Initializing USB Mass Storage driver...
+usb-storage 1-1:1.0: usb_probe_interface
+usb-storage 1-1:1.0: usb_probe_interface - got id
+scsi2 : SCSI emulation for USB Mass Storage devices
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+usb-storage: device found at 2
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+scsi 2:0:0:0: Direct-Access     ST350064 1A               3.AA PQ: 0 ANSI: =
+0
+sd 2:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 10 00 00 00
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+sd 2:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 10 00 00 00
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 2:0:0:0: [sdb] Attached SCSI disk
+sd 2:0:0:0: Attached scsi generic sg2 type 0
+ReiserFS: sdb1: found reiserfs format "3.6" with standard journal
+ReiserFS: sdb1: using ordered data mode
+ReiserFS: sdb1: journal params: device sdb1, size 8192, journal first block=
+ 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+ReiserFS: sdb1: checking transaction log (sdb1)
+ReiserFS: sdb1: Using r5 hash to sort names
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+vbetool[54306]: segfault at 000000000000548f rip 0000000000425ba7 rsp 00007=
+fff8b1a95f0 error 4
+Syncing filesystems ... done.
+PM: Preparing system for mem sleep
+Freezing user space processes ... (elapsed 0.01 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+PM: Entering mem sleep
+Suspending console(s)
+Suspending device 2:0:0:0
+Suspending device target2:0:0
+Suspending device host2
+Suspending device usbdev1.2_ep82
+Suspending device usbdev1.2_ep01
+Suspending device 1-1:1.0
+Suspending device usbdev1.2_ep00
+Suspending device 1-1
+usb 1-1: usb suspend
+Suspending device vcsa6
+Suspending device vcs6
+Suspending device vcsa4
+Suspending device vcsa2
+Suspending device vcs2
+Suspending device vcsa5
+Suspending device vcs5
+Suspending device vcsa3
+Suspending device vcs3
+Suspending device vcs4
+Suspending device vcsa7
+Suspending device vcs7
+Suspending device audio
+Suspending device dsp
+Suspending device adsp
+Suspending device mixer
+Suspending device vcsa1
+Suspending device vcs1
+Suspending device event6
+Suspending device event5
+Suspending device event4
+Suspending device event3
+Suspending device event2
+Suspending device event1
+Suspending device event0
+Suspending device ssb0:2
+Suspending device ssb0:1
+Suspending device ssb0:0
+Suspending device usbdev3.1_ep81
+Suspending device 3-0:1.0
+Suspending device usbdev3.1_ep00
+Suspending device usb3
+Suspending device usbdev2.1_ep81
+Suspending device 2-0:1.0
+Suspending device usbdev2.1_ep00
+Suspending device usb2
+Suspending device usbdev1.1_ep81
+Suspending device 1-0:1.0
+Suspending device usbdev1.1_ep00
+Suspending device usb1
+hub 1-0:1.0: hub_suspend
+usb usb1: bus suspend
+ehci_hcd 0000:00:02.2: suspend root hub
+Suspending device controlC0
+Suspending device 0-0:AD1981B
+Suspending device pcmC0D0c
+Suspending device pcmC0D0p
+Suspending device pcmC0D1c
+Suspending device pcmC0D2p
+Suspending device card0
+Suspending device mouse1
+Suspending device input6
+Suspending device mouse0
+Suspending device input5
+Suspending device timer
+Suspending device input4
+Suspending device serio1
+Suspending device psaux
+Suspending device serio0
+Suspending device mice
+Suspending device i8042
+Suspending device pcmcia_socket1
+Suspending device pcmcia_socket0
+Suspending device 1:0:0:0
+Suspending device target1:0:0
+Suspending device 0:0:0:0
+sd 0:0:0:0: [sda] Synchronizing SCSI cache
+sd 0:0:0:0: [sda] Stopping disk
+Suspending device target0:0:0
+Suspending device host1
+Suspending device host0
+Suspending device eth0
+Suspending device hpet
+Suspending device rtc
+Suspending device tty63
+Suspending device tty62
+Suspending device tty61
+Suspending device tty60
+Suspending device tty59
+Suspending device tty58
+Suspending device tty57
+Suspending device tty56
+Suspending device tty55
+Suspending device tty54
+Suspending device tty53
+Suspending device tty52
+Suspending device tty51
+Suspending device tty50
+Suspending device tty49
+Suspending device tty48
+Suspending device tty47
+Suspending device tty46
+Suspending device tty45
+Suspending device tty44
+Suspending device tty43
+Suspending device tty42
+Suspending device tty41
+Suspending device tty40
+Suspending device tty39
+Suspending device tty38
+Suspending device tty37
+Suspending device tty36
+Suspending device tty35
+Suspending device tty34
+Suspending device tty33
+Suspending device tty32
+Suspending device tty31
+Suspending device tty30
+Suspending device tty29
+Suspending device tty28
+Suspending device tty27
+Suspending device tty26
+Suspending device tty25
+Suspending device tty24
+Suspending device tty23
+Suspending device tty22
+Suspending device tty21
+Suspending device tty20
+Suspending device tty19
+Suspending device tty18
+Suspending device tty17
+Suspending device tty16
+Suspending device tty15
+Suspending device tty14
+Suspending device tty13
+Suspending device tty12
+Suspending device tty11
+Suspending device tty10
+Suspending device tty9
+Suspending device tty8
+Suspending device tty7
+Suspending device tty6
+Suspending device tty5
+Suspending device tty4
+Suspending device tty3
+Suspending device tty2
+Suspending device tty1
+Suspending device vcsa
+Suspending device vcs
+Suspending device tty0
+Suspending device ptmx
+Suspending device console
+Suspending device tty
+Suspending device input3
+Suspending device acpi_video2
+Suspending device acpi_video1
+Suspending device acpi_video0
+Suspending device input2
+Suspending device input1
+Suspending device input0
+Suspending device BAT1
+Suspending device ACAD
+Suspending device snapshot
+Suspending device pcspkr
+Suspending device cpu0
+Suspending device msr0
+Suspending device mcelog
+Suspending device lo
+Suspending device kmsg
+Suspending device urandom
+Suspending device random
+Suspending device full
+Suspending device zero
+Suspending device port
+Suspending device null
+Suspending device kmem
+Suspending device mem
+Suspending device agpgart
+Suspending device 00:0b
+Suspending device 00:0a
+Suspending device 00:09
+Suspending device 00:08
+Suspending device 00:07
+Suspending device 00:06
+Suspending device 00:05
+Suspending device 00:04
+Suspending device 00:03
+Suspending device 00:02
+Suspending device 00:01
+Suspending device 00:00
+Suspending device pnp0
+Suspending device 0000:01:00.0
+Suspending device 0000:02:04.2
+Suspending device 0000:02:04.1
+Suspending device 0000:02:04.0
+Suspending device 0000:02:02.0
+ACPI: PCI interrupt for device 0000:02:02.0 disabled
+Suspending device 0000:02:01.0
+Suspending device 0000:02:00.0
+Suspending device 0000:00:18.3
+Suspending device 0000:00:18.2
+Suspending device 0000:00:18.1
+Suspending device 0000:00:18.0
+Suspending device 0000:00:0b.0
+Suspending device 0000:00:0a.0
+Suspending device 0000:00:08.0
+Suspending device 0000:00:06.1
+Suspending device 0000:00:06.0
+codec_write 0: semaphore is not ready for register 0x26
+codec_write 0: semaphore is not ready for register 0x26
+ACPI: PCI interrupt for device 0000:00:06.0 disabled
+Suspending device 0000:00:02.2
+ACPI: PCI interrupt for device 0000:00:02.2 disabled
+ehci_hcd 0000:00:02.2: --> PCI D3/wakeup
+Suspending device 0000:00:02.1
+ACPI: PCI interrupt for device 0000:00:02.1 disabled
+ohci_hcd 0000:00:02.1: --> PCI D3/wakeup
+Suspending device 0000:00:02.0
+ACPI: PCI interrupt for device 0000:00:02.0 disabled
+ohci_hcd 0000:00:02.0: --> PCI D3/wakeup
+Suspending device 0000:00:01.1
+Suspending device 0000:00:01.0
+Suspending device 0000:00:00.0
+Suspending device pci0000:00
+Suspending device LNXTHERM:01
+Suspending device LNXTHERM:00
+Suspending device PNP0C0F:0d
+Suspending device PNP0C0F:0c
+Suspending device PNP0C0F:0b
+Suspending device PNP0C0F:0a
+Suspending device PNP0C0F:09
+Suspending device PNP0C0F:08
+Suspending device PNP0C0F:07
+Suspending device PNP0C0F:06
+Suspending device PNP0C0F:05
+Suspending device PNP0C0F:04
+Suspending device PNP0C0F:03
+Suspending device PNP0C0F:02
+Suspending device PNP0C0F:01
+Suspending device PNP0C0F:00
+Suspending device device:1b
+Suspending device device:1a
+Suspending device device:19
+Suspending device LNXVIDEO:00
+Suspending device device:18
+Suspending device device:17
+Suspending device device:16
+Suspending device PNP0401:00
+Suspending device PNP0700:00
+Suspending device PNP0A05:00
+Suspending device PNP0F13:00
+Suspending device PNP0303:00
+Suspending device PNP0C04:00
+Suspending device PNP0B00:00
+Suspending device PNP0800:00
+Suspending device PNP0200:00
+Suspending device PNP0100:00
+Suspending device PNP0000:00
+Suspending device PNP0C02:01
+Suspending device PNP0C0A:00
+Suspending device PNP0C09:00
+Suspending device PNP0C01:00
+Suspending device PNP0C02:00
+Suspending device ACPI0003:00
+Suspending device device:15
+Suspending device device:14
+Suspending device device:13
+Suspending device device:12
+Suspending device device:11
+Suspending device device:10
+Suspending device device:0f
+Suspending device device:0e
+Suspending device device:0d
+Suspending device device:0c
+Suspending device device:0b
+Suspending device device:0a
+Suspending device device:09
+Suspending device device:08
+Suspending device device:07
+Suspending device device:06
+Suspending device device:05
+Suspending device device:04
+Suspending device device:03
+Suspending device device:02
+Suspending device device:01
+Suspending device PNP0A03:00
+Suspending device PNP0C0D:00
+Suspending device PNP0C0C:00
+Suspending device pnp0c14:00
+Suspending device device:00
+Suspending device ACPI0007:00
+Suspending device LNXPWRBN:00
+Suspending device LNXSYSTM:00
+Suspending device id
+Suspending device vtcon0
+Suspending device platform
+Disabling non-boot CPUs ...
+ hwsleep-0318 [00] enter_sleep_state     : Entering sleep state [S3]
+Back to C!
+WARNING: at arch/x86_64/kernel/smp.c:427 smp_call_function_single()
+
+Call Trace:
+ [<ffffffff8021ddf7>] smp_call_function_single+0xc7/0xd0
+ [<ffffffff80215ff7>] sc_freq_event+0x87/0x90
+ [<ffffffff8053d491>] notifier_call_chain+0x51/0x70
+ [<ffffffff8025b5fd>] __srcu_notifier_call_chain+0x5d/0x90
+ [<ffffffff80499789>] cpufreq_resume+0x109/0x110
+ [<ffffffff804478e3>] __sysdev_resume+0x33/0x50
+ [<ffffffff80447f78>] sysdev_resume+0x58/0x90
+ [<ffffffff8044d739>] device_power_up+0x9/0x20
+ [<ffffffff8026f0ed>] suspend_devices_and_enter+0xed/0x100
+ [<ffffffff8026f298>] enter_state+0x198/0x1d0
+ [<ffffffff8026f38a>] state_store+0xba/0xf0
+ [<ffffffff802fed1e>] sysfs_write_file+0xfe/0x160
+ [<ffffffff802b1e88>] vfs_write+0xc8/0x180
+ [<ffffffff802b2593>] sys_write+0x53/0x90
+ [<ffffffff8020c39e>] system_call+0x7e/0x83
+
+INFO: lockdep is turned off.
+agpgart: Setting up Nforce3 AGP.
+ohci_hcd 0000:00:02.0: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUS0] -> GSI 20 (level, low) -=
+> IRQ 20
+PCI: Setting latency timer of device 0000:00:02.0 to 64
+PM: Writing back config space on device 0000:00:02.0 at offset 1 (was b0000=
+7, writing b00006)
+ohci_hcd 0000:00:02.1: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUS1] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:02.1 to 64
+PM: Writing back config space on device 0000:00:02.1 at offset 1 (was b0000=
+7, writing b00006)
+ehci_hcd 0000:00:02.2: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.2[C] -> Link [LUS2] -> GSI 21 (level, low) -=
+> IRQ 21
+PCI: Setting latency timer of device 0000:00:02.2 to 64
+PM: Writing back config space on device 0000:00:06.0 at offset 1 (was b0000=
+7, writing b00003)
+ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LACI] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:06.0 to 64
+PM: Writing back config space on device 0000:00:08.0 at offset b (was c8010=
+de, writing c80f0de)
+PCI: Setting latency timer of device 0000:00:08.0 to 64
+PM: Writing back config space on device 0000:00:0a.0 at offset 9 (was fff0,=
+ writing 57f05000)
+PM: Writing back config space on device 0000:00:0a.0 at offset 6 (was 80020=
+200, writing 800a0200)
+PCI: Setting latency timer of device 0000:00:0a.0 to 64
+PM: Writing back config space on device 0000:00:0b.0 at offset 7 (was 22000=
+f0, writing 222000f0)
+PM: Writing back config space on device 0000:02:00.0 at offset f (was 40201=
+00, writing 402010b)
+PM: Writing back config space on device 0000:02:00.0 at offset 5 (was 0, wr=
+iting e0100000)
+PM: Writing back config space on device 0000:02:00.0 at offset 4 (was 0, wr=
+iting e0108000)
+PM: Writing back config space on device 0000:02:00.0 at offset 3 (was 0, wr=
+iting 4010)
+PM: Writing back config space on device 0000:02:00.0 at offset 1 (was 21000=
+00, writing 2100116)
+PM: Writing back config space on device 0000:02:01.0 at offset 5 (was 0, wr=
+iting e0108800)
+PM: Writing back config space on device 0000:02:01.0 at offset 4 (was 1, wr=
+iting 7001)
+PM: Writing back config space on device 0000:02:01.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:02:01.0 at offset 1 (was 29000=
+00, writing 2900107)
+eth0: link up, 100Mbps, full-duplex, lpa 0xC1E1
+PCI: Enabling device 0000:02:02.0 (0000 -> 0002)
+ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNK3] -> GSI 17 (level, low) -=
+> IRQ 17
+PM: Writing back config space on device 0000:02:02.0 at offset f (was 100, =
+writing 10b)
+PM: Writing back config space on device 0000:02:02.0 at offset 4 (was 0, wr=
+iting e0104000)
+PM: Writing back config space on device 0000:02:02.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:02:02.0 at offset 1 (was 2, wr=
+iting 106)
+PM: Writing back config space on device 0000:02:04.0 at offset f (was 34001=
+ff, writing 5c0010b)
+PM: Writing back config space on device 0000:02:04.0 at offset e (was 0, wr=
+iting 34fc)
+PM: Writing back config space on device 0000:02:04.0 at offset d (was 0, wr=
+iting 3400)
+PM: Writing back config space on device 0000:02:04.0 at offset c (was 0, wr=
+iting 30fc)
+PM: Writing back config space on device 0000:02:04.0 at offset b (was 0, wr=
+iting 3000)
+PM: Writing back config space on device 0000:02:04.0 at offset a (was 0, wr=
+iting e07ff000)
+PM: Writing back config space on device 0000:02:04.0 at offset 9 (was 0, wr=
+iting e0400000)
+PM: Writing back config space on device 0000:02:04.0 at offset 8 (was 0, wr=
+iting 53fff000)
+PM: Writing back config space on device 0000:02:04.0 at offset 7 (was 0, wr=
+iting 50000000)
+PM: Writing back config space on device 0000:02:04.0 at offset 6 (was 40000=
+000, writing b0060302)
+PM: Writing back config space on device 0000:02:04.0 at offset 3 (was 82400=
+8, writing 82a810)
+PM: Writing back config space on device 0000:02:04.0 at offset 1 (was 21001=
+07, writing 2100007)
+PM: Writing back config space on device 0000:02:04.1 at offset f (was 34002=
+ff, writing 5c0020a)
+PM: Writing back config space on device 0000:02:04.1 at offset e (was 0, wr=
+iting 3cfc)
+PM: Writing back config space on device 0000:02:04.1 at offset d (was 0, wr=
+iting 3c00)
+PM: Writing back config space on device 0000:02:04.1 at offset c (was 0, wr=
+iting 38fc)
+PM: Writing back config space on device 0000:02:04.1 at offset b (was 0, wr=
+iting 3800)
+PM: Writing back config space on device 0000:02:04.1 at offset a (was 0, wr=
+iting e0fff000)
+PM: Writing back config space on device 0000:02:04.1 at offset 9 (was 0, wr=
+iting e0c00000)
+PM: Writing back config space on device 0000:02:04.1 at offset 8 (was 0, wr=
+iting 57fff000)
+PM: Writing back config space on device 0000:02:04.1 at offset 7 (was e1000=
+000, writing 54000000)
+PM: Writing back config space on device 0000:02:04.1 at offset 6 (was 40000=
+000, writing b00a0702)
+PM: Writing back config space on device 0000:02:04.1 at offset 3 (was 82400=
+8, writing 82a810)
+PM: Writing back config space on device 0000:02:04.1 at offset 1 (was 21001=
+03, writing 2100007)
+ata1: ACPI get timing mode failed (AE 0x1001)
+ata1.00: configured for UDMA/33
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors (100030 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't suppor=
+t DPO or FUA
+PM: Writing back config space on device 0000:02:04.2 at offset 4 (was 1, wr=
+iting 7401)
+PM: Writing back config space on device 0000:02:04.2 at offset 3 (was 0, wr=
+iting 4010)
+PM: Writing back config space on device 0000:02:04.2 at offset 1 (was 21000=
+00, writing 2100107)
+PM: Writing back config space on device 0000:01:00.0 at offset f (was 10501=
+00, writing 105010b)
+PM: Writing back config space on device 0000:01:00.0 at offset 6 (was 8, wr=
+iting f8000008)
+PM: Writing back config space on device 0000:01:00.0 at offset 5 (was 8, wr=
+iting f0000008)
+PM: Writing back config space on device 0000:01:00.0 at offset 4 (was 0, wr=
+iting e2000000)
+PM: Writing back config space on device 0000:01:00.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:01:00.0 at offset 1 (was 2b000=
+00, writing 2b00007)
+pnp: Failed to activate device 00:08.
+pnp: Failed to activate device 00:09.
+sd 0:0:0:0: [sda] Starting disk
+ata2: ACPI get timing mode failed (AE 0x1001)
+ata2.00: configured for MWDMA2
+usb usb1: usb resume
+ehci_hcd 0000:00:02.2: resume root hub
+hub 1-0:1.0: hub_resume
+usb usb2: usb resume
+ohci_hcd 0000:00:02.0: resume root hub
+hub 2-0:1.0: hub_resume
+usb usb3: usb resume
+ohci_hcd 0000:00:02.1: resume root hub
+hub 3-0:1.0: hub_resume
+usb 1-1: usb resume
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 1-1: finish resume
+PM: Finishing wakeup.
+Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0000
+hub 2-0:1.0: state 7 ports 3 chg 0000 evt 0000
+hub 3-0:1.0: state 7 ports 3 chg 0000 evt 0000
+done.
+ohci_hcd 0000:00:02.0: auto-stop root hub
+vbetool[54404]: segfault at 000000000000548f rip 0000000000425ba7 rsp 00007=
+fffe53dbbb0 error 4
+ohci_hcd 0000:00:02.1: auto-stop root hub
+hub 2-0:1.0: hub_suspend
+usb usb2: bus auto-suspend
+ohci_hcd 0000:00:02.0: suspend root hub
+hub 3-0:1.0: hub_suspend
+usb usb3: bus auto-suspend
+ohci_hcd 0000:00:02.1: suspend root hub
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+vbetool[56692]: segfault at 00000000000080a0 rip 0000000000425b1b rsp 00007=
+fff85079820 error 4
+Syncing filesystems ... done.
+PM: Preparing system for mem sleep
+Freezing user space processes ... (elapsed 0.01 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+PM: Entering mem sleep
+Suspending console(s)
+Suspending device 2:0:0:0
+Suspending device target2:0:0
+Suspending device host2
+Suspending device usbdev1.2_ep82
+Suspending device usbdev1.2_ep01
+Suspending device 1-1:1.0
+Suspending device usbdev1.2_ep00
+Suspending device 1-1
+usb 1-1: usb suspend
+Suspending device vcsa6
+Suspending device vcs6
+Suspending device vcsa4
+Suspending device vcsa2
+Suspending device vcs2
+Suspending device vcsa5
+Suspending device vcs5
+Suspending device vcsa3
+Suspending device vcs3
+Suspending device vcs4
+Suspending device vcsa7
+Suspending device vcs7
+Suspending device audio
+Suspending device dsp
+Suspending device adsp
+Suspending device mixer
+Suspending device vcsa1
+Suspending device vcs1
+Suspending device event6
+Suspending device event5
+Suspending device event4
+Suspending device event3
+Suspending device event2
+Suspending device event1
+Suspending device event0
+Suspending device ssb0:2
+Suspending device ssb0:1
+Suspending device ssb0:0
+Suspending device usbdev3.1_ep81
+Suspending device 3-0:1.0
+Suspending device usbdev3.1_ep00
+Suspending device usb3
+Suspending device usbdev2.1_ep81
+Suspending device 2-0:1.0
+Suspending device usbdev2.1_ep00
+Suspending device usb2
+Suspending device usbdev1.1_ep81
+Suspending device 1-0:1.0
+Suspending device usbdev1.1_ep00
+Suspending device usb1
+hub 1-0:1.0: hub_suspend
+usb usb1: bus suspend
+ehci_hcd 0000:00:02.2: suspend root hub
+Suspending device controlC0
+Suspending device 0-0:AD1981B
+Suspending device pcmC0D0c
+Suspending device pcmC0D0p
+Suspending device pcmC0D1c
+Suspending device pcmC0D2p
+Suspending device card0
+Suspending device mouse1
+Suspending device input6
+Suspending device mouse0
+Suspending device input5
+Suspending device timer
+Suspending device input4
+Suspending device serio1
+Suspending device psaux
+Suspending device serio0
+Suspending device mice
+Suspending device i8042
+Suspending device pcmcia_socket1
+Suspending device pcmcia_socket0
+Suspending device 1:0:0:0
+Suspending device target1:0:0
+Suspending device 0:0:0:0
+sd 0:0:0:0: [sda] Synchronizing SCSI cache
+sd 0:0:0:0: [sda] Stopping disk
+Suspending device target0:0:0
+Suspending device host1
+Suspending device host0
+Suspending device eth0
+Suspending device hpet
+Suspending device rtc
+Suspending device tty63
+Suspending device tty62
+Suspending device tty61
+Suspending device tty60
+Suspending device tty59
+Suspending device tty58
+Suspending device tty57
+Suspending device tty56
+Suspending device tty55
+Suspending device tty54
+Suspending device tty53
+Suspending device tty52
+Suspending device tty51
+Suspending device tty50
+Suspending device tty49
+Suspending device tty48
+Suspending device tty47
+Suspending device tty46
+Suspending device tty45
+Suspending device tty44
+Suspending device tty43
+Suspending device tty42
+Suspending device tty41
+Suspending device tty40
+Suspending device tty39
+Suspending device tty38
+Suspending device tty37
+Suspending device tty36
+Suspending device tty35
+Suspending device tty34
+Suspending device tty33
+Suspending device tty32
+Suspending device tty31
+Suspending device tty30
+Suspending device tty29
+Suspending device tty28
+Suspending device tty27
+Suspending device tty26
+Suspending device tty25
+Suspending device tty24
+Suspending device tty23
+Suspending device tty22
+Suspending device tty21
+Suspending device tty20
+Suspending device tty19
+Suspending device tty18
+Suspending device tty17
+Suspending device tty16
+Suspending device tty15
+Suspending device tty14
+Suspending device tty13
+Suspending device tty12
+Suspending device tty11
+Suspending device tty10
+Suspending device tty9
+Suspending device tty8
+Suspending device tty7
+Suspending device tty6
+Suspending device tty5
+Suspending device tty4
+Suspending device tty3
+Suspending device tty2
+Suspending device tty1
+Suspending device vcsa
+Suspending device vcs
+Suspending device tty0
+Suspending device ptmx
+Suspending device console
+Suspending device tty
+Suspending device input3
+Suspending device acpi_video2
+Suspending device acpi_video1
+Suspending device acpi_video0
+Suspending device input2
+Suspending device input1
+Suspending device input0
+Suspending device BAT1
+Suspending device ACAD
+Suspending device snapshot
+Suspending device pcspkr
+Suspending device cpu0
+Suspending device msr0
+Suspending device mcelog
+Suspending device lo
+Suspending device kmsg
+Suspending device urandom
+Suspending device random
+Suspending device full
+Suspending device zero
+Suspending device port
+Suspending device null
+Suspending device kmem
+Suspending device mem
+Suspending device agpgart
+Suspending device 00:0b
+Suspending device 00:0a
+Suspending device 00:09
+Suspending device 00:08
+Suspending device 00:07
+Suspending device 00:06
+Suspending device 00:05
+Suspending device 00:04
+Suspending device 00:03
+Suspending device 00:02
+Suspending device 00:01
+Suspending device 00:00
+Suspending device pnp0
+Suspending device 0000:01:00.0
+Suspending device 0000:02:04.2
+Suspending device 0000:02:04.1
+Suspending device 0000:02:04.0
+Suspending device 0000:02:02.0
+ACPI: PCI interrupt for device 0000:02:02.0 disabled
+Suspending device 0000:02:01.0
+Suspending device 0000:02:00.0
+Suspending device 0000:00:18.3
+Suspending device 0000:00:18.2
+Suspending device 0000:00:18.1
+Suspending device 0000:00:18.0
+Suspending device 0000:00:0b.0
+Suspending device 0000:00:0a.0
+Suspending device 0000:00:08.0
+Suspending device 0000:00:06.1
+Suspending device 0000:00:06.0
+codec_write 0: semaphore is not ready for register 0x26
+codec_write 0: semaphore is not ready for register 0x26
+ACPI: PCI interrupt for device 0000:00:06.0 disabled
+Suspending device 0000:00:02.2
+ACPI: PCI interrupt for device 0000:00:02.2 disabled
+ehci_hcd 0000:00:02.2: --> PCI D3/wakeup
+Suspending device 0000:00:02.1
+ACPI: PCI interrupt for device 0000:00:02.1 disabled
+ohci_hcd 0000:00:02.1: --> PCI D3/wakeup
+Suspending device 0000:00:02.0
+ACPI: PCI interrupt for device 0000:00:02.0 disabled
+ohci_hcd 0000:00:02.0: --> PCI D3/wakeup
+Suspending device 0000:00:01.1
+Suspending device 0000:00:01.0
+Suspending device 0000:00:00.0
+Suspending device pci0000:00
+Suspending device LNXTHERM:01
+Suspending device LNXTHERM:00
+Suspending device PNP0C0F:0d
+Suspending device PNP0C0F:0c
+Suspending device PNP0C0F:0b
+Suspending device PNP0C0F:0a
+Suspending device PNP0C0F:09
+Suspending device PNP0C0F:08
+Suspending device PNP0C0F:07
+Suspending device PNP0C0F:06
+Suspending device PNP0C0F:05
+Suspending device PNP0C0F:04
+Suspending device PNP0C0F:03
+Suspending device PNP0C0F:02
+Suspending device PNP0C0F:01
+Suspending device PNP0C0F:00
+Suspending device device:1b
+Suspending device device:1a
+Suspending device device:19
+Suspending device LNXVIDEO:00
+Suspending device device:18
+Suspending device device:17
+Suspending device device:16
+Suspending device PNP0401:00
+Suspending device PNP0700:00
+Suspending device PNP0A05:00
+Suspending device PNP0F13:00
+Suspending device PNP0303:00
+Suspending device PNP0C04:00
+Suspending device PNP0B00:00
+Suspending device PNP0800:00
+Suspending device PNP0200:00
+Suspending device PNP0100:00
+Suspending device PNP0000:00
+Suspending device PNP0C02:01
+Suspending device PNP0C0A:00
+Suspending device PNP0C09:00
+Suspending device PNP0C01:00
+Suspending device PNP0C02:00
+Suspending device ACPI0003:00
+Suspending device device:15
+Suspending device device:14
+Suspending device device:13
+Suspending device device:12
+Suspending device device:11
+Suspending device device:10
+Suspending device device:0f
+Suspending device device:0e
+Suspending device device:0d
+Suspending device device:0c
+Suspending device device:0b
+Suspending device device:0a
+Suspending device device:09
+Suspending device device:08
+Suspending device device:07
+Suspending device device:06
+Suspending device device:05
+Suspending device device:04
+Suspending device device:03
+Suspending device device:02
+Suspending device device:01
+Suspending device PNP0A03:00
+Suspending device PNP0C0D:00
+Suspending device PNP0C0C:00
+Suspending device pnp0c14:00
+Suspending device device:00
+Suspending device ACPI0007:00
+Suspending device LNXPWRBN:00
+Suspending device LNXSYSTM:00
+Suspending device id
+Suspending device vtcon0
+Suspending device platform
+Disabling non-boot CPUs ...
+ hwsleep-0318 [00] enter_sleep_state     : Entering sleep state [S3]
+Back to C!
+WARNING: at arch/x86_64/kernel/smp.c:427 smp_call_function_single()
+
+Call Trace:
+ [<ffffffff8021ddf7>] smp_call_function_single+0xc7/0xd0
+ [<ffffffff80215ff7>] sc_freq_event+0x87/0x90
+ [<ffffffff8053d491>] notifier_call_chain+0x51/0x70
+ [<ffffffff8025b5fd>] __srcu_notifier_call_chain+0x5d/0x90
+ [<ffffffff80499789>] cpufreq_resume+0x109/0x110
+ [<ffffffff804478e3>] __sysdev_resume+0x33/0x50
+ [<ffffffff80447f78>] sysdev_resume+0x58/0x90
+ [<ffffffff8044d739>] device_power_up+0x9/0x20
+ [<ffffffff8026f0ed>] suspend_devices_and_enter+0xed/0x100
+ [<ffffffff8026f298>] enter_state+0x198/0x1d0
+ [<ffffffff8026f38a>] state_store+0xba/0xf0
+ [<ffffffff802fed1e>] sysfs_write_file+0xfe/0x160
+ [<ffffffff802b1e88>] vfs_write+0xc8/0x180
+ [<ffffffff802b2593>] sys_write+0x53/0x90
+ [<ffffffff8020c39e>] system_call+0x7e/0x83
+
+INFO: lockdep is turned off.
+agpgart: Setting up Nforce3 AGP.
+ohci_hcd 0000:00:02.0: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUS0] -> GSI 20 (level, low) -=
+> IRQ 20
+PCI: Setting latency timer of device 0000:00:02.0 to 64
+PM: Writing back config space on device 0000:00:02.0 at offset 1 (was b0000=
+7, writing b00006)
+ohci_hcd 0000:00:02.1: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUS1] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:02.1 to 64
+PM: Writing back config space on device 0000:00:02.1 at offset 1 (was b0000=
+7, writing b00006)
+ehci_hcd 0000:00:02.2: PCI D0, from previous PCI D3
+ACPI: PCI Interrupt 0000:00:02.2[C] -> Link [LUS2] -> GSI 21 (level, low) -=
+> IRQ 21
+PCI: Setting latency timer of device 0000:00:02.2 to 64
+PM: Writing back config space on device 0000:00:06.0 at offset 1 (was b0000=
+7, writing b00003)
+ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LACI] -> GSI 22 (level, low) -=
+> IRQ 22
+PCI: Setting latency timer of device 0000:00:06.0 to 64
+PCI: Setting latency timer of device 0000:00:08.0 to 64
+PM: Writing back config space on device 0000:00:0a.0 at offset 9 (was fff0,=
+ writing 57f05000)
+PM: Writing back config space on device 0000:00:0a.0 at offset 6 (was 80020=
+200, writing 800a0200)
+PCI: Setting latency timer of device 0000:00:0a.0 to 64
+PM: Writing back config space on device 0000:00:0b.0 at offset 7 (was 22000=
+f0, writing 222000f0)
+PM: Writing back config space on device 0000:02:00.0 at offset f (was 40201=
+00, writing 402010b)
+PM: Writing back config space on device 0000:02:00.0 at offset 5 (was 0, wr=
+iting e0100000)
+PM: Writing back config space on device 0000:02:00.0 at offset 4 (was 0, wr=
+iting e0108000)
+PM: Writing back config space on device 0000:02:00.0 at offset 3 (was 0, wr=
+iting 4010)
+PM: Writing back config space on device 0000:02:00.0 at offset 1 (was 21000=
+00, writing 2100116)
+PM: Writing back config space on device 0000:02:01.0 at offset 5 (was 0, wr=
+iting e0108800)
+PM: Writing back config space on device 0000:02:01.0 at offset 4 (was 1, wr=
+iting 7001)
+PM: Writing back config space on device 0000:02:01.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:02:01.0 at offset 1 (was 29000=
+00, writing 2900107)
+eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+PCI: Enabling device 0000:02:02.0 (0000 -> 0002)
+ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNK3] -> GSI 17 (level, low) -=
+> IRQ 17
+PM: Writing back config space on device 0000:02:02.0 at offset f (was 100, =
+writing 10b)
+PM: Writing back config space on device 0000:02:02.0 at offset 4 (was 0, wr=
+iting e0104000)
+PM: Writing back config space on device 0000:02:02.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:02:02.0 at offset 1 (was 2, wr=
+iting 106)
+PM: Writing back config space on device 0000:02:04.0 at offset f (was 34001=
+ff, writing 5c0010b)
+PM: Writing back config space on device 0000:02:04.0 at offset e (was 0, wr=
+iting 34fc)
+PM: Writing back config space on device 0000:02:04.0 at offset d (was 0, wr=
+iting 3400)
+PM: Writing back config space on device 0000:02:04.0 at offset c (was 0, wr=
+iting 30fc)
+PM: Writing back config space on device 0000:02:04.0 at offset b (was 0, wr=
+iting 3000)
+PM: Writing back config space on device 0000:02:04.0 at offset a (was 0, wr=
+iting e07ff000)
+PM: Writing back config space on device 0000:02:04.0 at offset 9 (was 0, wr=
+iting e0400000)
+PM: Writing back config space on device 0000:02:04.0 at offset 8 (was 0, wr=
+iting 53fff000)
+PM: Writing back config space on device 0000:02:04.0 at offset 7 (was 0, wr=
+iting 50000000)
+PM: Writing back config space on device 0000:02:04.0 at offset 6 (was 40000=
+000, writing b0060302)
+PM: Writing back config space on device 0000:02:04.0 at offset 3 (was 82400=
+8, writing 82a810)
+PM: Writing back config space on device 0000:02:04.0 at offset 1 (was 21001=
+07, writing 2100007)
+PM: Writing back config space on device 0000:02:04.1 at offset f (was 34002=
+ff, writing 5c0020a)
+PM: Writing back config space on device 0000:02:04.1 at offset e (was 0, wr=
+iting 3cfc)
+PM: Writing back config space on device 0000:02:04.1 at offset d (was 0, wr=
+iting 3c00)
+PM: Writing back config space on device 0000:02:04.1 at offset c (was 0, wr=
+iting 38fc)
+PM: Writing back config space on device 0000:02:04.1 at offset b (was 0, wr=
+iting 3800)
+PM: Writing back config space on device 0000:02:04.1 at offset a (was 0, wr=
+iting e0fff000)
+PM: Writing back config space on device 0000:02:04.1 at offset 9 (was 0, wr=
+iting e0c00000)
+PM: Writing back config space on device 0000:02:04.1 at offset 8 (was 0, wr=
+iting 57fff000)
+PM: Writing back config space on device 0000:02:04.1 at offset 7 (was e1000=
+000, writing 54000000)
+PM: Writing back config space on device 0000:02:04.1 at offset 6 (was 40000=
+000, writing b00a0702)
+PM: Writing back config space on device 0000:02:04.1 at offset 3 (was 82400=
+8, writing 82a810)
+PM: Writing back config space on device 0000:02:04.1 at offset 1 (was 21001=
+03, writing 2100007)
+PM: Writing back config space on device 0000:02:04.2 at offset 4 (was 1, wr=
+iting 7401)
+PM: Writing back config space on device 0000:02:04.2 at offset 3 (was 0, wr=
+iting 4010)
+PM: Writing back config space on device 0000:02:04.2 at offset 1 (was 21000=
+00, writing 2100107)
+PM: Writing back config space on device 0000:01:00.0 at offset f (was 10501=
+00, writing 105010b)
+PM: Writing back config space on device 0000:01:00.0 at offset 6 (was 8, wr=
+iting f8000008)
+PM: Writing back config space on device 0000:01:00.0 at offset 5 (was 8, wr=
+iting f0000008)
+PM: Writing back config space on device 0000:01:00.0 at offset 4 (was 0, wr=
+iting e2000000)
+PM: Writing back config space on device 0000:01:00.0 at offset 3 (was 0, wr=
+iting 4000)
+PM: Writing back config space on device 0000:01:00.0 at offset 1 (was 2b000=
+00, writing 2b00007)
+pnp: Failed to activate device 00:08.
+pnp: Failed to activate device 00:09.
+sd 0:0:0:0: [sda] Starting disk
+ata2: ACPI get timing mode failed (AE 0x1001)
+ata2.00: configured for MWDMA2
+ata1: ACPI get timing mode failed (AE 0x1001)
+ata1.00: configured for UDMA/33
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors (100030 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't suppor=
+t DPO or FUA
+usb usb1: usb resume
+ehci_hcd 0000:00:02.2: resume root hub
+hub 1-0:1.0: hub_resume
+usb usb2: usb resume
+ohci_hcd 0000:00:02.0: resume root hub
+hub 2-0:1.0: hub_resume
+usb usb3: usb resume
+ohci_hcd 0000:00:02.1: resume root hub
+hub 3-0:1.0: hub_resume
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001803 POWER sig=3Dj CSC CON=
+NECT
+hub 1-0:1.0: port 1 status 0001.0501 after resume, 0
+usb 1-1: can't resume, status -19
+hub 1-0:1.0: logical disconnect on port 1
+PM: Finishing wakeup.
+Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 6 chg 0002 evt 0000
+hub 1-0:1.0: port 1, status 0501, change 0000, 480 Mb/s
+usb 1-1: USB disconnect, address 2
+usb 1-1: unregistering device
+usb 1-1: usb_disable_device nuking all URBs
+usb 1-1: unregistering interface 1-1:1.0
+Buffer I/O error on device sdb1, logical block 5573
+lost page write due to I/O error on sdb1
+Buffer I/O error on device sdb1, logical block 5574
+lost page write due to I/O error on sdb1
+REISERFS: abort (device sdb1): Journal write error in flush_commit_list
+REISERFS: Aborting journal for filesystem on sdb1
+done.
+usb 1-1:1.0: uevent
+usb 1-1:1.0: uevent
+usb 1-1: uevent
+ehci_hcd 0000:00:02.2: port 1 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 1-1: new high speed USB device using ehci_hcd and address 3
+ehci_hcd 0000:00:02.2: port 1 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 1 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 1-1: default language 0x0409
+usb 1-1: uevent
+usb 1-1: usb_probe_device
+usb 1-1: configuration #1 chosen from 1 choice
+usb 1-1: adding 1-1:1.0 (config #1, interface 0)
+usb 1-1:1.0: uevent
+usb 1-1:1.0: uevent
+hub 1-1:1.0: usb_probe_interface
+hub 1-1:1.0: usb_probe_interface - got id
+hub 1-1:1.0: USB hub found
+hub 1-1:1.0: 4 ports detected
+hub 1-1:1.0: standalone hub
+hub 1-1:1.0: ganged power switching
+hub 1-1:1.0: global over-current protection
+hub 1-1:1.0: Single TT
+hub 1-1:1.0: TT requires at most 32 FS bit times (2664 ns)
+hub 1-1:1.0: Port indicators are supported
+hub 1-1:1.0: power on to power good time: 100ms
+hub 1-1:1.0: local power source is good
+hub 1-1:1.0: no over-current condition exists
+hub 1-1:1.0: enabling power on all ports
+usb 1-1: link qh256-0001/ffff81000515b140 start 255 [1/0 us]
+drivers/usb/core/inode.c: creating file '003'
+usb 1-1: new device found, idVendor=3D05e3, idProduct=3D0608
+usb 1-1: new device strings: Mfr=3D0, Product=3D1, SerialNumber=3D0
+usb 1-1: Product: USB2.0 Hub
+hub 2-0:1.0: state 7 ports 3 chg 0000 evt 0000
+hub 3-0:1.0: state 7 ports 3 chg 0000 evt 0000
+hub 1-1:1.0: state 7 ports 4 chg 0000 evt 0000
+hub 1-1:1.0: port 1, status 0101, change 0001, 12 Mb/s
+ohci_hcd 0000:00:02.0: auto-stop root hub
+ohci_hcd 0000:00:02.1: auto-stop root hub
+hub 1-1:1.0: debounce: port 1: total 100ms stable 100ms status 0x101
+usb 1-1.1: new full speed USB device using ehci_hcd and address 4
+hub 1-1:1.0: port 1 not reset yet, waiting 10ms
+usb 1-1.1: ep0 maxpacket =3D 8
+usb 1-1.1: default language 0x0409
+usb 1-1.1: uevent
+usb 1-1.1: usb_probe_device
+usb 1-1.1: configuration #1 chosen from 1 choice
+usb 1-1.1: adding 1-1.1:1.0 (config #1, interface 0)
+usb 1-1.1:1.0: uevent
+usb 1-1.1:1.0: uevent
+hub 1-1.1:1.0: usb_probe_interface
+hub 1-1.1:1.0: usb_probe_interface - got id
+hub 1-1.1:1.0: USB hub found
+hub 1-1.1:1.0: 2 ports detected
+hub 1-1.1:1.0: compound device; port removable status: FF
+hub 1-1.1:1.0: ganged power switching
+hub 1-1.1:1.0: no over-current protection
+hub 1-1.1:1.0: power on to power good time: 100ms
+hub 1-1.1:1.0: hub controller current requirement: 100mA
+hub 1-1.1:1.0: 100mA bus power budget for each child
+hub 1-1.1:1.0: enabling power on all ports
+usb 1-1.1: link qh128-0e01/ffff81000515b280 start 127 [1/2 us]
+drivers/usb/core/inode.c: creating file '004'
+usb 1-1.1: new device found, idVendor=3D0451, idProduct=3D2036
+usb 1-1.1: new device strings: Mfr=3D0, Product=3D1, SerialNumber=3D0
+usb 1-1.1: Product: General Purpose USB Hub
+hub 1-1:1.0: port 3, status 0101, change 0001, 12 Mb/s
+vbetool[56819]: segfault at 000000000000548f rip 0000000000425ba7 rsp 00007=
+fffdbd82550 error 4
+hub 1-1:1.0: debounce: port 3: total 100ms stable 100ms status 0x101
+usb 1-1.3: new high speed USB device using ehci_hcd and address 5
+hub 1-1:1.0: port 3 not reset yet, waiting 10ms
+usb 1-1.3: default language 0x0409
+usb 1-1.3: uevent
+usb 1-1.3: usb_probe_device
+usb 1-1.3: configuration #1 chosen from 1 choice
+usb 1-1.3: adding 1-1.3:1.0 (config #1, interface 0)
+usb 1-1.3:1.0: uevent
+usb 1-1.3:1.0: uevent
+libusual 1-1.3:1.0: usb_probe_interface
+libusual 1-1.3:1.0: usb_probe_interface - got id
+usb-storage 1-1.3:1.0: usb_probe_interface
+usb-storage 1-1.3:1.0: usb_probe_interface - got id
+scsi3 : SCSI emulation for USB Mass Storage devices
+scsi 2:0:0:0: rejecting I/O to dead device
+Buffer I/O error on device sdb1, logical block 5576
+lost page write due to I/O error on sdb1
+Buffer I/O error on device sdb1, logical block 5577
+lost page write due to I/O error on sdb1
+drivers/usb/core/inode.c: creating file '005'
+usb 1-1.3: new device found, idVendor=3D0781, idProduct=3Db4b5
+usb 1-1.3: new device strings: Mfr=3D3, Product=3D4, SerialNumber=3D5
+usb 1-1.3: Product: ImageMate 14 in 1 Reader/Writer=20
+usb 1-1.3: Manufacturer: SanDisk=20
+usb 1-1.3: SerialNumber: 0304237855
+usb-storage: device found at 5
+usb-storage: waiting for device to settle before scanning
+hub 1-1:1.0: port 4, status 0101, change 0001, 12 Mb/s
+hub 1-1:1.0: debounce: port 4: total 100ms stable 100ms status 0x101
+usb 1-1.4: new full speed USB device using ehci_hcd and address 6
+usb 1-1.4: ep0 maxpacket =3D 8
+usb 1-1.4: default language 0x0409
+usb 1-1.4: uevent
+usb 1-1.4: usb_probe_device
+usb 1-1.4: configuration #1 chosen from 1 choice
+usb 1-1.4: adding 1-1.4:1.0 (config #1, interface 0)
+usb 1-1.4:1.0: uevent
+usb 1-1.4:1.0: uevent
+hub 1-1.4:1.0: usb_probe_interface
+hub 1-1.4:1.0: usb_probe_interface - got id
+hub 1-1.4:1.0: USB hub found
+hub 1-1.4:1.0: 3 ports detected
+hub 1-1.4:1.0: compound device; port removable status: FFF
+hub 1-1.4:1.0: ganged power switching
+hub 1-1.4:1.0: global over-current protection
+hub 1-1.4:1.0: power on to power good time: 100ms
+hub 1-1.4:1.0: local power source is good
+hub 1-1.4:1.0: no over-current condition exists
+hub 1-1.4:1.0: enabling power on all ports
+usb 1-1.4: link qh128-0e01/ffff81000515b460 start 127 [1/2 us]
+drivers/usb/core/inode.c: creating file '006'
+usb 1-1.4: new device found, idVendor=3D045e, idProduct=3D0707
+usb 1-1.4: new device strings: Mfr=3D1, Product=3D2, SerialNumber=3D0
+usb 1-1.4: Product: Microsoft USB Hub
+usb 1-1.4: Manufacturer: Microsoft
+hub 1-1:1.0: state 7 ports 4 chg 0000 evt 0010
+hub 1-1.1:1.0: state 7 ports 2 chg 0000 evt 0002
+hub 1-1.1:1.0: port 1, status 0301, change 0001, 1.5 Mb/s
+hub 1-1.1:1.0: debounce: port 1: total 100ms stable 100ms status 0x301
+usb 1-1.1.1: new low speed USB device using ehci_hcd and address 7
+usb 1-1.1.1: skipped 1 descriptor after interface
+usb 1-1.1.1: skipped 1 descriptor after interface
+usb 1-1.1.1: default language 0x0409
+usb 1-1.1.1: uevent
+usb 1-1.1.1: usb_probe_device
+usb 1-1.1.1: configuration #1 chosen from 1 choice
+usb 1-1.1.1: adding 1-1.1.1:1.0 (config #1, interface 0)
+usb 1-1.1.1:1.0: uevent
+usb 1-1.1.1:1.0: uevent
+usb 1-1.1.1: adding 1-1.1.1:1.1 (config #1, interface 1)
+usb 1-1.1.1:1.1: uevent
+usb 1-1.1.1:1.1: uevent
+drivers/usb/core/inode.c: creating file '007'
+usb 1-1.1.1: new device found, idVendor=3D046d, idProduct=3Dc704
+usb 1-1.1.1: new device strings: Mfr=3D1, Product=3D2, SerialNumber=3D3
+usb 1-1.1.1: Product: USB Receiver
+usb 1-1.1.1: Manufacturer: Logitech
+usb 1-1.1.1: SerialNumber: 04E5EF
+hub 1-1.1:1.0: 302mA power budget left
+hub 1-1.4:1.0: state 7 ports 3 chg 0000 evt 0008
+hub 1-1.4:1.0: port 3, status 0101, change 0001, 12 Mb/s
+hub 1-1.4:1.0: debounce: port 3: total 100ms stable 100ms status 0x101
+usb 1-1.4.3: new full speed USB device using ehci_hcd and address 8
+hub 1-1.4:1.0: port 3 not reset yet, waiting 10ms
+usb 1-1.4.3: ep0 maxpacket =3D 8
+usb 1-1.4.3: skipped 1 descriptor after interface
+usb 1-1.4.3: default language 0x0409
+usb 1-1.4.3: uevent
+usb 1-1.4.3: usb_probe_device
+usb 1-1.4.3: configuration #1 chosen from 1 choice
+usb 1-1.4.3: adding 1-1.4.3:1.0 (config #1, interface 0)
+usb 1-1.4.3:1.0: uevent
+usb 1-1.4.3:1.0: uevent
+drivers/usb/core/inode.c: creating file '008'
+usb 1-1.4.3: new device found, idVendor=3D045e, idProduct=3D0714
+usb 1-1.4.3: new device strings: Mfr=3D1, Product=3D2, SerialNumber=3D3
+usb 1-1.4.3: Product: Microsoft? Wireless Laser Mouse 8000
+usb 1-1.4.3: Manufacturer: Microsoft
+usb 1-1.4.3: SerialNumber: 00125A5F14F3
+hub 1-1.1:1.0: state 7 ports 2 chg 0000 evt 0002
+hub 1-1.4:1.0: state 7 ports 3 chg 0000 evt 0008
+usbhid 1-1.1.1:1.0: usb_probe_interface
+usbhid 1-1.1.1:1.0: usb_probe_interface - got id
+input: Logitech USB Receiver as /devices/pci0000:00/0000:00:02.2/usb1/1-1/1=
+-1.1/1-1.1.1/1-1.1.1:1.0/input/input7
+usb 1-1.1.1: link qh8-0e01/ffff81000515b640 start 7 [1/2 us]
+input: USB HID v1.10 Keyboard [Logitech USB Receiver] on usb-0000:00:02.2-1=
+.1.1
+usbhid 1-1.1.1:1.1: usb_probe_interface
+usbhid 1-1.1.1:1.1: usb_probe_interface - got id
+input: Logitech USB Receiver as /devices/pci0000:00/0000:00:02.2/usb1/1-1/1=
+-1.1/1-1.1.1/1-1.1.1:1.1/input/input8
+usb 1-1.1.1: link qh8-1c02/ffff81000515b6e0 start 7 [1/2 us]
+input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:02.2-1.1.=
+1
+usbhid 1-1.4.3:1.0: usb_probe_interface
+usbhid 1-1.4.3:1.0: usb_probe_interface - got id
+input: Microsoft Microsoft? Wireless Laser Mouse 8000 as /devices/pci0000:0=
+0/0000:00:02.2/usb1/1-1/1-1.4/1-1.4.3/1-1.4.3:1.0/input/input9
+input: USB HID v1.11 Mouse [Microsoft Microsoft? Wireless Laser Mouse 8000]=
+ on usb-0000:00:02.2-1.4.3
+usbcore: registered new interface driver usbhid
+drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+hub 2-0:1.0: hub_suspend
+usb usb2: bus auto-suspend
+ohci_hcd 0000:00:02.0: suspend root hub
+hub 3-0:1.0: hub_suspend
+usb usb3: bus auto-suspend
+ohci_hcd 0000:00:02.1: suspend root hub
+usb 1-1.4.3: link qh4-3804/ffff81000515b780 start 3 [1/2 us]
+usb 1-1.4.3: unlink qh4-3804/ffff81000515b780 start 3 [1/2 us]
+ehci_hcd 0000:00:02.2: reused qh ffff81000515b780 schedule
+usb 1-1.4.3: link qh4-3804/ffff81000515b780 start 3 [1/2 us]
+usb 1-1.4.3: unlink qh4-3804/ffff81000515b780 start 3 [1/2 us]
+ehci_hcd 0000:00:02.2: reused qh ffff81000515b780 schedule
+usb 1-1.4.3: link qh4-3804/ffff81000515b780 start 3 [1/2 us]
+usb-storage: device scan complete
+scsi 3:0:0:0: Direct-Access     Generic  STORAGE DEVICE   9339 PQ: 0 ANSI: =
+0
+scsi 3:0:0:1: Direct-Access     Generic  STORAGE DEVICE   9339 PQ: 0 ANSI: =
+0
+scsi 3:0:0:2: Direct-Access     Generic  STORAGE DEVICE   9339 PQ: 0 ANSI: =
+0
+scsi 3:0:0:3: Direct-Access     Generic  STORAGE DEVICE   9339 PQ: 0 ANSI: =
+0
+sd 3:0:0:0: [sdb] 8018640 512-byte hardware sectors (4106 MB)
+sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+sd 3:0:0:0: [sdb] 8018640 512-byte hardware sectors (4106 MB)
+sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 3:0:0:0: [sdb] Attached SCSI removable disk
+sd 3:0:0:0: Attached scsi generic sg2 type 0
+sd 3:0:0:1: [sdc] Attached SCSI removable disk
+sd 3:0:0:1: Attached scsi generic sg3 type 0
+sd 3:0:0:2: [sdd] Attached SCSI removable disk
+sd 3:0:0:2: Attached scsi generic sg4 type 0
+sd 3:0:0:3: [sde] Attached SCSI removable disk
+sd 3:0:0:3: Attached scsi generic sg5 type 0
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+netconsole: local port 6665
+netconsole: local IP 0.0.0.0
+netconsole: interface eth0
+netconsole: remote port 6666
+netconsole: remote IP 192.168.100.113
+netconsole: remote ethernet address 00:0a:e6:a7:29:60
+netconsole: local IP 192.168.100.240
+console [netcon0] enabled
+netconsole: network logging started
+eth0: no IPv6 routers present
+end_request: I/O error, dev sr0, sector 112
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+Hangcheck: hangcheck value past margin!
+
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-k7Q2jzq8vDRQ/GdXH0MO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHBmexG8fHaOLTWwgRAh0sAJ99uxOfHGg84vfV3NydR/8ef8gM/QCggnKR
+sat1PEZegCfjAFHy7aqr+7Q=
+=ZNMq
+-----END PGP SIGNATURE-----
+
+--=-k7Q2jzq8vDRQ/GdXH0MO--
+
