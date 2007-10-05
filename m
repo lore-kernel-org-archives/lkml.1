@@ -1,91 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbXJEFtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbXJEFuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbXJEFtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 01:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJEFtl
+	id S1752978AbXJEFuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 01:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbXJEFtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 01:49:41 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:50113 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbXJEFtl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 01:49:41 -0400
-Date: Fri, 5 Oct 2007 11:19:52 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
-       Bernhard Walle <bwalle@suse.de>, Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
-Message-ID: <20071005054952.GC4893@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <4704D0CA.4080001@ah.jp.nec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4704D0CA.4080001@ah.jp.nec.com>
-User-Agent: Mutt/1.5.11
+	Fri, 5 Oct 2007 01:49:55 -0400
+Received: from smtpoutm.mac.com ([17.148.16.77]:64932 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758586AbXJEFtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 01:49:53 -0400
+In-Reply-To: <m1zlyymaoy.fsf@ebiederm.dsl.xmission.com>
+References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <4703126D.70703@tmr.com> <alpine.LFD.0.999.0710022050560.3579@woody.linux-foundation.org> <m17im2pc7x.fsf@ebiederm.dsl.xmission.com> <15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com> <m1zlyymaoy.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A508A802-AB11-4DFF-9CA8-498897CE5D03@mac.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Date: Fri, 5 Oct 2007 01:48:51 -0400
+To: ebiederm@xmission.com (Eric W. Biederman)
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 08:38:50PM +0900, Takenori Nagano wrote:
-> This patch implements new notifier function to panic_notifier_list. We can
-> change the list of order by debugfs.
-> 
-> Thanks,
-> 
-> ---
-> 
-> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
-> 
-> ---
-> diff -uprN linux-2.6.23-rc9.orig/arch/alpha/kernel/setup.c
-> linux-2.6.23-rc9/arch/alpha/kernel/setup.c
-> --- linux-2.6.23-rc9.orig/arch/alpha/kernel/setup.c	2007-10-02
-> 12:24:52.000000000 +0900
-> +++ linux-2.6.23-rc9/arch/alpha/kernel/setup.c	2007-10-04 09:49:34.440000000 +0900
-> @@ -45,14 +45,22 @@
->  #include <asm/io.h>
->  #include <linux/log2.h>
-> 
-> -extern struct atomic_notifier_head panic_notifier_list;
-> +extern struct tunable_notifier_head panic_notifier_list;
->  static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
-> -static struct notifier_block alpha_panic_block = {
-> +static struct notifier_block alpha_panic_block_base = {
->  	alpha_panic_event,
->          NULL,
->          INT_MAX /* try to do it first */
->  };
-> 
-> +static struct tunable_notifier_block alpha_panic_block = {
-> +	&alpha_panic_block_base,
-> +	NULL,
-> +	NULL,
-> +	NULL,
-> +	NULL
-> +};
-> +
->  #include <asm/uaccess.h>
->  #include <asm/pgtable.h>
->  #include <asm/system.h>
-> @@ -522,8 +530,8 @@ setup_arch(char **cmdline_p)
->  	}
-> 
->  	/* Register a call for panic conditions. */
-> -	atomic_notifier_chain_register(&panic_notifier_list,
-> -			&alpha_panic_block);
-> +	tunable_notifier_chain_register(&panic_notifier_list,
-> +			&alpha_panic_block, "alpha_panic", NULL);
-> 
+On Oct 05, 2007, at 00:45:17, Eric W. Biederman wrote:
+> Kyle Moffett <mrmacman_g4@mac.com> writes:
+>
+>> On Oct 04, 2007, at 21:44:02, Eric W. Biederman wrote:
+>>> SElinux is not all encompassing or it is generally  
+>>> incomprehensible I don't know which.  Or someone long ago would  
+>>> have said a better  way to implement containers was with a  
+>>> selinux ruleset, here is a  selinux ruleset that does that.   
+>>> Although it is completely possible  to implement all of the  
+>>> isolation with the existing LSM hooks as  Serge showed.
+>>
+>> The difference between SELinux and containers is that SELinux (and  
+>> LSM as a whole) returns -EPERM to operations outside the scope of  
+>> the  subject, whereas containers return -ENOENT (because it's not  
+>> even in  the same namespace).
+>
+> Yes.  However if you look at what the first implementations were.   
+> Especially something like linux-vserver.  All they provided was  
+> isolation.  So perhaps you would not see every process ps but they  
+> all had unique pid values.
+>
+> I'm pretty certain Serge at least prototyped a simplified version  
+> of that using the LSM hooks.  Is there something I'm not remember  
+> in those hooks that allows hiding of information like processes?
+>
+> Yes. Currently with containers we are taking that one step farther  
+> as that solves a wider set of problems.
 
-I think it might be good idea to somehow create provisions for another a
-help string. This help string will inform admin that what a registered
-user does? Ideally this should be visible in /sys/kernel/debug/<user module>/description file.
+IMHO, containers have a subtly different purpose from LSM even though  
+both are about information hiding.  Basically a container is  
+information hiding primarily for administrative reasons; either as a  
+convenience to help prevent errors or as a way of describing  
+administrative boundaries.  For example, even in an environment where  
+all sysadmins are trusted employees, a few head-honcho sysadmins  
+would get root container access, and all others would get access to  
+specific containers as a way of preventing "oops" errors.  Basically  
+a container is about "full access inside this box and no access  
+outside".
 
-This kind of description can help admin to decide the priority among various
-registered users withoug having to look at the source code.
+By contrast, LSM is more strictly about providing *limited* access to  
+resources.  For an accounting business all client records would  
+grouped and associated together, however those which have passed this  
+year's review are read-only except by specific staff and others may  
+have information restricted to some subset of the employees.
 
-Thanks
-Vivek
+So containers are exclusive subsets of "the system" while LSM should  
+be about non-exclusive information restriction.
+
+
+>>> We also have in the kernel another parallel security mechanism  
+>>> (for what is generally a different class of operations) that has  
+>>> been  quite successful, and different groups get along quite  
+>>> well, and  ordinary mortals can understand it.   The linux  
+>>> firewalling code.
+>>
+>> Well, I wouldn't go so far as the "ordinary mortals can understand  
+>> it" part; it's still pretty high on the obtuse-o-meter.
+>
+> True.  Probably a more accurate statement is:`unix command line  
+> power users can and do handle it after reading the docs.  That's  
+> not quite ordinary mortals but it feels like it some days.  It  
+> might all be perception...
+
+I have seen more *wrong* iptables firewalls than I've seen correct  
+ones.  Securing TCP/IP traffic properly requires either a lot of  
+training/experience or a good out-of-the-box system like Shorewall  
+which structures the necessary restrictions for you based on an  
+abstract description of the desired functionality.  For instance what  
+percentage of admins do you think could correctly set up their  
+netfilter firewalls to log christmas-tree packets, smurfs, etc  
+without the help of some external tool?  Hell, I don't trust myself  
+to reliably do it without a lot of reading of docs and testing, and  
+I've been doing netfilter firewalls for a while.
+
+The bottom line is that with iptables it is *CRITICAL* to have a good  
+set of interface tools to take the users' "My system is set up  
+like..." description in some form and turn it into the necessary set  
+of efficient security rules.  The *exact* same issue applies to  
+SELinux, with 2 major additional problems:
+
+1)  Half the tools are still somewhat beta-ish and under heavy  
+development.  Furthermore the semi-official reference policy is  
+nowhere near comprehensive and pretty ugly to read (go back to the  
+point about the tools being beta-ish).
+
+2)  If you break your system description or translation tools then  
+instead of just your network dying your entire *system* dies.
+
+
+>>> The linux firewalling codes has hooks all throughout the  
+>>> networking stack, just like the LSM has hooks all throughout the  
+>>> rest of linux  kernel.  There is a difference however.  The linux  
+>>> firewalling code in addition to hooks has tables behind those  
+>>> hooks that it  consults. There is generic code to walk those  
+>>> tables and consult with different kernel modules to decide if we  
+>>> should drop a packet.  Each of those kernel modules provides a  
+>>> different capability that can be used to generate a firewall.
+>>
+>> This is almost *EXACTLY* what SELinux provides as an LSM module.   
+>> The one difference is that with SELinux some compromises and  
+>> restrictions  have been made so that (theoretically) the resulting  
+>> policy can be  exhaustively analyzed to *prove* what it allows and  
+>> disallows.  It  may be that SELinux should be split into 2 parts,  
+>> one that provides  the underlying table-matching and the other  
+>> that uses it to provide  the provability guarantees.  Here's a   
+>> direct comparison:
+>>
+>> netfilter:
+>>   (A) Each packet has src, dst, port, etc that can be matched
+>>   (B) Table of rules applied sequentially (MATCH => ACTION)
+>>   (C) Rules may alter the properties of packets as they are routed/
+>> bridged/etc
+>>
+>> selinux:
+>>   (A) Each object has user, role, and type that can be matched
+>>   (B) Table of rules searched by object parameters (MATCH => allow/
+>> auditallow/transition)
+>>   (C) Rules may alter the properties of objects through transition  
+>> rules.
+>
+> Ok.  There is something here.
+>
+> However in a generic setup, at least role would be an extended  
+> match criteria provided by the selinux module.  It would not be a  
+> core attribute.  It would need to depend on some extra  
+> functionality being compiled in.
+
+Now see I think *THAT* is where Casey should be going with his SMACK  
+code.  Don't add another LSM, start looking at SELinux and figuring  
+out what parts he does not need and how they can be parameterized out  
+at build time for smaller systems.
+
+On the other hand, the "user" and "role" fields in SELinux are  
+already fairly flexible.  The one constant is that user=>role and  
+role=>type must both be allowed for a label to be valid.  Other than  
+that, the constraints specify what must be true for a transition to  
+be allowed.  For example the standard strict reference policy  
+includes this bit:
+
+constrain process transition (
+	(u1 == u2) or
+	(t1 == can_change_process_identity and t2 == process_user_target) or
+	(t1 == cron_source_domain and (t2 == cron_job_domain or u2 ==  
+system_u)) or
+	(t1 == can_system_change and u2 == system_u) or
+	(t1 == process_uncond_exempt)
+);
+
+Basically all constraints on a particular access vector must be  
+satisfied for that to be allowed (in addition to other things).  For  
+the above example, a process running exec() may only change its user  
+if one of the following:
+
+  * It's a login-like program and is starting a user entrypoint
+  * It's a cron-like program and is starting a user or system cronjob
+  * It's a process allowed to start system processes (admin runs  
+initscripts)
+  * It's unconditionally exempt
+
+By creating types and assigning meaningful attributes to those types  
+you may restrict the changing of the "user" and "role" however you  
+would like, including not at all.
+
+Really SELinux is just a fairly elaborate security state-machine.   
+Each process on the system is in a given "state", defined by its  
+label, and "state transitions" are only allowed based on the rules  
+defined in the database.  Since there are 4 extremely common security  
+models that people like to combine there are 4 fields in each SELinux  
+label:
+   (A)  User: User A may not poke user B's processes/data, even if  
+they happen to be running in the same UNIX UID
+   (B)  Role: Users may only perform operations for the role they are  
+currently logged in as
+   (C)  Type-enforcement: An apache process may only read files that  
+it needs to operate correctly
+   (D)  Multi-level:  Top-secret data can't magically become  
+unclassified
+
+Perhaps the thing to do would be to make it possible to compile out  
+the portions which people don't want.  That would certainly satisfy  
+Casey, he would build only the "Type-enforcement" portion or only the  
+"Multi-level" portion and be able to do exactly the same things he  
+does now with a bit finer granularity of operations.  By defining the  
+lists of operations he cares about for "r" (read), "w" (write),  
+"x" (exec), "a" (append), and requires-capabilities, you can just  
+give those permissions directly in a simplified SELinux-type policy.
+
+
+>>> I'm not yet annoyed enough to go implement an iptables like  
+>>> interface to the LSM enhancing it with more generic mechanism to  
+>>> make the problem simpler, but I'm getting there.  Perhaps next  
+>>> time  I'm bored.
+>>
+>> I think a fair amount of what we need is already done in SELinux,  
+>> and efforts would be better spent in figuring out what seems too  
+>> complicated in SELinux and making it simpler.  Probably a fair  
+>> amount  of that just means better tools.
+>
+> How about thinking of it another way.
+>
+> Perform the split up you talked about above and move the table  
+> matching into the LSM hooks.
+>
+> Use something like the iptables action and match to module mapping  
+> code so we can have multiple modules compiled in and useable at the  
+> same time with the LSM hooks.
+>
+> I think it is firmly established that selling SElinux to everyone  
+> is politically untenable.  However enhancing the LSM (even if it is  
+> mostly selinux code movement down a layer) I think can be sold.
+>
+> If I could run Serge's isolation code and selinux rules at the same  
+> time that would be interesting.
+>
+> My impression is that selinux is one monolithic blob that doesn't  
+> allow me to incrementally add matching or action features that I  
+> find interesting.
+
+Well the major problem here is the performance one.  As anybody who  
+has tried to do a thousand-linear-rule IPtables set will quickly tell  
+you, it makes performance go all to hell.  Good iptables frontends  
+like shorewall build little subchains to keep the fast-path as  
+efficient as possible but regardless the search is a linear rule- 
+traversal (IE: O(N) where N is the number of rules you had to test).   
+In order to get good enough performance out of SELinux they had to  
+*start* with an O(log(N) rule traversal which means that execution- 
+order-style rules are impossible, so you *MUST* limit the fields and  
+prevent any overlap between rules.  For example, in SELinux nobody  
+writes "deny" rules because the interpretation-order is undefined.   
+Instead you only write "allow" rules for the things you actually want  
+to allow.  The one exception is "neverallow" rules which are verified  
+at compile time as sanity checks and never actually loaded in the  
+kernel.
+
+Cheers,
+Kyle Moffett
+
