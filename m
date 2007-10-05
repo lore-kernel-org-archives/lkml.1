@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762469AbXJESdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763184AbXJESev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762469AbXJESdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 14:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXJESdL
+	id S1763184AbXJESev (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 14:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXJESen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 14:33:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46253 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbXJESdK (ORCPT
+	Fri, 5 Oct 2007 14:34:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39875 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752232AbXJESem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 14:33:10 -0400
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       wfg@mail.ustc.edu.cn, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1191606600.6715.94.camel@heimdal.trondhjem.org>
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
-	 <20071004145640.18ced770.akpm@linux-foundation.org>
-	 <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
-	 <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
-	 <E1Ida56-0002Zz-00@dorka.pomaz.szeredi.hu>
-	 <20071004164801.d8478727.akpm@linux-foundation.org>
-	 <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu>
-	 <20071004174851.b34a3220.akpm@linux-foundation.org>
-	 <1191572520.22357.42.camel@twins>
-	 <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu>
-	 <1191577623.22357.69.camel@twins>
-	 <E1IdkOf-0002tK-00@dorka.pomaz.szeredi.hu>
-	 <1191581854.22357.85.camel@twins>
-	 <1191606600.6715.94.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Fri, 05 Oct 2007 20:32:19 +0200
-Message-Id: <1191609139.6210.4.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Fri, 5 Oct 2007 14:34:42 -0400
+Message-ID: <47068398.9070304@zytor.com>
+Date: Fri, 05 Oct 2007 11:34:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: video resume stuff
+References: <20071004130513.GA16076@elf.ucw.cz> <470511A9.4060705@zytor.com> <20071005073238.GA19065@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0710051648440.25413@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0710051648440.25413@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2007-10-05 at 13:50 -0400, Trond Myklebust wrote:
-> On Fri, 2007-10-05 at 12:57 +0200, Peter Zijlstra wrote:
-> > In this patch I totally ignored unstable, but I'm not sure that's the
-> > proper thing to do, I'd need to figure out what happens to an unstable
-> > page when passed into pageout() - or if its passed to pageout at all.
-> > 
-> > If unstable pages would be passed to pageout(), and it would properly
-> > convert them to writeback and clean them, then there is nothing wrong.
+Jiri Kosina wrote:
+> On Fri, 5 Oct 2007, Pavel Machek wrote:
 > 
-> Why would we want to do that? That would be a hell of a lot of work
-> (locking pages, setting flags, unlocking pages, ...) for absolutely no
-> reason.
+>>> I suggest we tackle this *after* the x86 merge.
+>> Well, we still have the regression on jikos' strange system, and I would 
+>> like to understand what is going on there.
 > 
-> Unstable writes are writes which have been sent to the server, but which
-> haven't been written to disk on the server. A single RPC command is then
-> sent (COMMIT) which basically tells the server to call fsync(). After
-> that is successful, we can free up the pages, but we do that with no
-> extra manipulation of the pages themselves: no page locks, just removal
-> from the NFS private radix tree, and freeing up of the NFS private
-> structures.
+> Sorry for this taking too long. Finally I had the time to play with this 
+> again, so here goes the current summary. I have a system here, that:
 > 
-> We only need to touch the pages again in the unlikely case that the
-> COMMIT fails because the server has rebooted. In this case we have to
-> resend the writes, and so the pages are marked as dirty, so we can go
-> through the whole writepages() rigmarole again...
+> - with 1d67953f2bda8876045c24ae58841f27d9bb7572 (just before the setup 
+>   code rewrite), resumes nicely in VGA console 
+>   (acpi_sleep=s3_bios,s3_mode kernel parameter is needed), everything 
+>   works
 > 
-> So, no. I don't see sending pages through pageout() as being at all
-> helpful.
+> - with c39736823232bc3ca113c8228fa852c09fba300e (just after the setup code 
+>   rewrite), VGA text console is garbled after resume - looks like the 
+>   video RAM contains some strange data (patterns from BIOS post can be 
+>   recognized, there are some various-colored stripes across the screen, 
+>   etc). The machine also seems to be frozen (no keyboard LEDs working, 
+>   etc).
+> 
+> - with 2.6.23-rc9, the video doesn't come up at all, I can't even see the 
+>   garbled picture any more - the display stays blank, the LED diod is 
+>   yellow (i.e. looks like completely no signal from VGA card). On the 
+>   other hand, the machine seems to work otherwise
+> 
 
-Well, the thing is, we throttle pageout in throttle_vm_writeout(). As it
-stand we can deadlock there because it just waits for the numbers to
-drop, and unstable pages don't automagically dissapear. Only
-write_inodes() - normally called from balance_dirty_pages() will call
-COMMIT.
+Jiri, what particular video mode are you running in?  In other words, 
+what is your vga= parameter set to?  In fact, what does your entire 
+kernel command line look like?
 
-So my thought was that calling pageout() on an unstable page would do
-the COMMIT - we're low on memory, otherwise we would not be paging, so
-getting rid of unstable pages seems to make sense to me.
+Also, if you could extract the information requested in:
 
+http://marc.info/?i=46FD802D.2030804@zytor.com
 
+... that would really help.
 
+	-hpa
+
+(who notices we really need to export boot_params to userspace for sanity)
