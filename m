@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXJEJPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbXJEJTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbXJEJPX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 05:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXJEJPL
+	id S1760565AbXJEJTj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 05:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXJEJTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 05:15:11 -0400
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:6817 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754114AbXJEJPJ (ORCPT
+	Fri, 5 Oct 2007 05:19:30 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:38849 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755434AbXJEJT3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 05:15:09 -0400
-User-Agent: Microsoft-Entourage/11.3.6.070618
-Date: Fri, 05 Oct 2007 10:15:03 +0100
-Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-From: Keir Fraser <keir@xensource.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickens <hugh@veritas.com>,
-       David Rientjes <rientjes@google.com>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-ID: <C32BBF27.166CA%keir@xensource.com>
-Thread-Topic: race with page_referenced_one->ptep_test_and_clear_young and
- pagetable setup/pulldown
-Thread-Index: AcgHMDY/dRMC13MjEdyzowAX8io7RQ==
-In-Reply-To: <4705FE5C.4060807@goop.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 5 Oct 2007 05:19:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YHcJP5ui944jwgGjQrBcRFSha4fJkBAeR655iln6YmmHXjORwfU1Ha2NO8QYUrOHBgecIe49gGoe2AhyMeOLJi3oecrVWBVaSgAcuerpoHRkUmjbuRJYRYPGfWV8g/0R9OWs8bU1QaDs6HFyydxs01I+VpKu2WdKyi3oIIC4Dx0=
+Message-ID: <84144f020710050219k2460631cjfd556d6eae645887@mail.gmail.com>
+Date: Fri, 5 Oct 2007 12:19:28 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: SLUB performance regression vs SLAB
+Cc: "David Chinner" <dgc@sgi.com>, "David Miller" <davem@davemloft.net>,
+       cebbert@redhat.com, willy@linux.intel.com, clameter@sgi.com,
+       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com
+In-Reply-To: <20071005064853.GI5711@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <470554D9.2050505@redhat.com>
+	 <20071004.141113.08322956.davem@davemloft.net>
+	 <47055F84.109@redhat.com>
+	 <20071004.150718.95506800.davem@davemloft.net>
+	 <20071004222356.GH23367404@sgi.com> <20071005064853.GI5711@kernel.dk>
+X-Google-Sender-Auth: fda9d7c1f2c49342
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07 10:05, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+Hi,
 
-> Andi says:
->> Do I misread that patch or does it really walk the complete address
->> space and try to take all possible locks? Isn't that very slow?
->>   
-> 
-> That's pretty much what it has to do.  Pinning/unpinning walks the whole
-> pagetable anyway, so it shouldn't be much more expensive.  And they're
-> relatively rare operations (fork, exec, exit).
+On 10/5/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> I'd like to second Davids emails here, this is a serious problem. Having
+> a reproducible test case lowers the barrier for getting the problem
+> fixed by orders of magnitude. It's the difference between the problem
+> getting fixed in a day or two and it potentially lingering for months,
+> because email ping-pong takes forever and "the test team has moved on to
+> other tests, we'll let you know the results of test foo in 3 weeks time
+> when we have a new slot on the box" just removing any developer
+> motivation to work on the issue.
 
-It is a shame to do 3x walks per pin or unpin, rather than 1x, though.
+What I don't understand is that why don't the people who _have_ access
+to the test case fix the problem? Unlike slab, slub is not a pile of
+crap that only Christoph can hack on...
 
-One way to improve this, possibly, is to pin the pte tables individually as
-you go, rather than doing one big pin/unpin just at the root pgd. Then you
-can lock/unlock the pte's as you go. I'd suggest that as a possible post
-2.6.23 improvement, however. Jan's patch has actually had some testing.
-
- -- Keir
-
+                                   Pekka
