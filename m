@@ -1,363 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761484AbXJELu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXJELz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761484AbXJELu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJELuv
+	id S1761560AbXJELz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXJELzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:50:51 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35176 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbXJELuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:50:50 -0400
-Date: Fri, 5 Oct 2007 13:50:48 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [code] Unlimited partitions, a try
-Message-ID: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr>
+	Fri, 5 Oct 2007 07:55:16 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:57914 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751940AbXJELzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 07:55:14 -0400
+Message-ID: <391585312.05654@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 5 Oct 2007 19:55:08 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: David Chinner <dgc@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Ken Chen <kenchen@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>
+Subject: Re: [PATCH 5/5] writeback: introduce writeback_control.more_io to
+	indicate more io
+Message-ID: <20071005115508.GA9998@mail.ustc.edu.cn>
+References: <20071002084143.110486039@mail.ustc.edu.cn> <20071002090254.987182999@mail.ustc.edu.cn> <20071002214736.GJ995458@sgi.com> <20071003013439.GA6501@mail.ustc.edu.cn> <20071003024119.GL23367404@sgi.com> <20071004022133.GA6244@mail.ustc.edu.cn> <20071004050344.GF23367404@sgi.com> <20071005033652.GA6448@mail.ustc.edu.cn> <20071005074103.GM23367404@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071005074103.GM23367404@sgi.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 05, 2007 at 05:41:03PM +1000, David Chinner wrote:
+> On Fri, Oct 05, 2007 at 11:36:52AM +0800, Fengguang Wu wrote:
+> > On Thu, Oct 04, 2007 at 03:03:44PM +1000, David Chinner wrote:
+> > > On Thu, Oct 04, 2007 at 10:21:33AM +0800, Fengguang Wu wrote:
 
-15 partitions (at least for sd_mod devices) are too few.
+> > if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {    /* all-written or blockade... */
+> >         if (wbc.encountered_congestion || wbc.more_io) /* blockade! */
+> >                 congestion_wait(WRITE, HZ/10);
+> >         else                                           /* all-written! */
+> >                 break;
+> > }
+> 
+> >From this, if we have more_io on one superblock and we skip pages on a
+> different superblock, the combination of the two will causes us to stop
+> writeback for a while. Is this the right thing to do?
 
-So I tried the following: after scanning the disk (sda), when we know
-the number of partitions P on a disk, create a new block device
-/dev/gd0 that is a copy of sda (in terms of disk->queue, etc.). This
-is done using alloc_disk(P).
+No, the two cases will occur at the same time to a super_block.
+See below.
 
-However, read() on gd0 will just return 0. It takes a `blockdev --rereadpt
-/dev/gd0` before the disk is accessible. And if I add a call to
-rescan inside gpdisk_new() it oopses (probably rightfully so). I do not 
-know all the block layer magic, so expect some horrible code.
+> > We can also read the whole background_writeout() logic as
+> > 
+> > while (!done) {
+> >         /* sync _all_ sync-able data */
+> >         congestion_wait(100ms);
+> > }
+> 
+> To me it reads as:
+> 
+> 	while (!done) {
+> 		/* sync all data or until one inode skips */
+> 		congestion_wait(up to 100ms);
+> 	}
+> 
+> and it ignores that we might have more superblocks with dirty data
+> on them that we haven't flushed because we skipped pages on
+> an inode on a different block device.
 
-Ideas, hints, anything is welcome.
+AFAIK, generic_sync_sb_inodes() will simply skip the inode in trouble
+and _continue_ to sync other inodes:
 
----
- block/Makefile        |    1 
- block/genhd.c         |    5 +
- block/gpdisk.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/sd.c     |    1 
- fs/partitions/check.c |   19 ++++++
- include/linux/genhd.h |   16 +++++
- include/scsi/sd.h     |    3 +
- 7 files changed, 182 insertions(+), 2 deletions(-)
+                if (wbc->pages_skipped != pages_skipped) {
+                        /*
+                         * writeback is not making progress due to locked
+                         * buffers.  Skip this inode for now.
+                         */
+                        redirty_tail(inode);
+                }
 
-Index: linux-2.6.23/block/Makefile
-===================================================================
---- linux-2.6.23.orig/block/Makefile
-+++ linux-2.6.23/block/Makefile
-@@ -3,6 +3,7 @@
- #
+Note that there's no "break" here.
+
+> > Sure, the queues should be filled as fast as possible.
+> > How fast can we fill the queue? Let's measure it:
+> > 
+> > //generated by the patch below
+> > 
+> > [  871.430700] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 54289 global 29911 0 0 wc _M tw -12 sk 0
+> > [  871.444718] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 53253 global 28857 0 0 wc _M tw -12 sk 0
+> > [  871.458764] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 52217 global 27834 0 0 wc _M tw -12 sk 0
+> > [  871.472797] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 51181 global 26780 0 0 wc _M tw -12 sk 0
+> > [  871.486825] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 50145 global 25757 0 0 wc _M tw -12 sk 0
+> > [  871.500857] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 49109 global 24734 0 0 wc _M tw -12 sk 0
+> > [  871.514864] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 48073 global 23680 0 0 wc _M tw -12 sk 0
+> > [  871.528889] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 47037 global 22657 0 0 wc _M tw -12 sk 0
+> > [  871.542894] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 46001 global 21603 0 0 wc _M tw -12 sk 0
+> > [  871.556927] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 44965 global 20580 0 0 wc _M tw -12 sk 0
+> > [  871.570961] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 43929 global 19557 0 0 wc _M tw -12 sk 0
+> > [  871.584992] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 42893 global 18503 0 0 wc _M tw -12 sk 0
+> > [  871.599005] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 41857 global 17480 0 0 wc _M tw -12 sk 0
+> > [  871.613027] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 40821 global 16426 0 0 wc _M tw -12 sk 0
+> > [  871.628626] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 39785 global 15403 961 0 wc _M tw -12 sk 0
+> > [  871.644439] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 38749 global 14380 1550 0 wc _M tw -12 sk 0
+> > [  871.660267] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 37713 global 13326 2573 0 wc _M tw -12 sk 0
+> > [  871.676236] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 36677 global 12303 3224 0 wc _M tw -12 sk 0
+> > [  871.692021] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 35641 global 11280 4154 0 wc _M tw -12 sk 0
+> > [  871.707824] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 34605 global 10226 4929 0 wc _M tw -12 sk 0
+> > [  871.723638] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 33569 global 9203 5735 0 wc _M tw -12 sk 0
+> > [  871.739708] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 32533 global 8149 6603 0 wc _M tw -12 sk 0
+> > [  871.756407] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 31497 global 7126 7409 0 wc _M tw -12 sk 0
+> > [  871.772165] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 30461 global 6103 8246 0 wc _M tw -12 sk 0
+> > [  871.788035] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 29425 global 5049 9052 0 wc _M tw -12 sk 0
+> > [  871.803896] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 28389 global 4026 9982 0 wc _M tw -12 sk 0
+> > [  871.820427] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 27353 global 2972 10757 0 wc _M tw -12 sk 0
+> > [  871.836728] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 26317 global 1949 11656 0 wc _M tw -12 sk 0
+> > [  871.853286] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 25281 global 895 12431 0 wc _M tw -12 sk 0
+> > [  871.868762] mm/page-writeback.c 668 wb_kupdate: pdflush(202) 24245 global 58 13051 0 wc __ tw 168 sk 0
+> > 
+> > It's an Intel Core 2 2.93GHz CPU and a SATA disk.
+> > The trace shows that
+> > - there's no congestion_wait() called in wb_kupdate()
+> > - it takes wb_kupdate() ~15ms to sync every 4MB 
+> 
+> But it takes a modern SATA disk ~40-50ms to write 4MB (80-100MB/s).
+> IOWs, what you've timed above is a burst workload, not a steady
+> state behaviour. And it actually shows that the elevator queues
+> are growing in constrast to your goal of preventing them from
+> growing.
+
+My goal really? ;-)
  
- obj-$(CONFIG_BLOCK) := elevator.o ll_rw_blk.o ioctl.o genhd.o scsi_ioctl.o
-+obj-${CONFIG_BLOCK} += gpdisk.o
+> In more detail, the first half of the trace indicates no pages under
+> writeback, that tends to imply that all I/O is complete by the
+> time wb_kupdate is woken - it's been sucked into the drive
+> cache as fast as possible.
+
+Right.
  
- obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
- obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
-Index: linux-2.6.23/block/genhd.c
-===================================================================
---- linux-2.6.23.orig/block/genhd.c
-+++ linux-2.6.23/block/genhd.c
-@@ -744,6 +744,9 @@ struct gendisk *alloc_disk_node(int mino
- 		rand_initialize_disk(disk);
- 		INIT_WORK(&disk->async_notify,
- 			media_change_notify_thread);
-+		atomic_set(&disk->gpdisk_enabled, false);
-+		disk->gpdisk         = NULL;
-+		disk->gpdisk_parent  = NULL;
- 	}
- 	return disk;
- }
-@@ -793,6 +796,8 @@ EXPORT_SYMBOL(set_device_ro);
- void set_disk_ro(struct gendisk *disk, int flag)
- {
- 	int i;
-+	if (gpdisk_online(disk))
-+		set_disk_ro(disk->gpdisk, flag);
- 	disk->policy = flag;
- 	for (i = 0; i < disk->minors - 1; i++)
- 		if (disk->part[i]) disk->part[i]->policy = flag;
-Index: linux-2.6.23/block/gpdisk.c
-===================================================================
---- /dev/null
-+++ linux-2.6.23/block/gpdisk.c
-@@ -0,0 +1,139 @@
-+#include <linux/genhd.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/idr.h>
-+#define MINOR_IS_ALLOCATED ((void *)0xB4C4)
-+
-+static unsigned int gpdisk_major = 0;
-+module_param(gpdisk_major, uint, S_IRUGO);
-+
-+static LIST_HEAD(gpdisk_regions);
-+static DEFINE_SPINLOCK(gpdisk_region_lock);
-+static DEFINE_SPINLOCK(gpdisk_id_lock);
-+static DEFINE_IDR(gpdisk_id_idr);
-+
-+static unsigned int gpdisk_first_minor = 0;
-+
-+static int gpdisk_get_region(unsigned int size)
-+{
-+	/* still to be done */
-+	unsigned int old;
-+
-+	old = gpdisk_first_minor;
-+	gpdisk_first_minor += size;
-+	return old;
-+}
-+
-+static void gpdisk_put_region(unsigned int start, unsigned int n)
-+{
-+	/* same */
-+}
-+
-+static int gpdisk_get_diskid(void)
-+{
-+	int new_id, ret;
-+
-+ again:
-+	ret = idr_pre_get(&gpdisk_id_idr, GFP_KERNEL);
-+	if (ret == 0)
-+		return -ENOMEM;
-+
-+	spin_lock(&gpdisk_id_lock);
-+	ret = idr_get_new(&gpdisk_id_idr, MINOR_IS_ALLOCATED, &new_id);
-+	if (ret == -EAGAIN) {
-+		spin_unlock(&gpdisk_id_lock);
-+		cond_resched();
-+		goto again;
-+	}
-+	if (ret != 0)
-+		goto out;
-+
-+	ret = new_id;
-+ out:
-+	spin_unlock(&gpdisk_id_lock);
-+	return ret;
-+}
-+
-+static void gpdisk_put_diskid(unsigned int id)
-+{
-+	idr_remove(&gpdisk_id_idr, id);
-+}
-+
-+void gpdisk_new(struct gendisk *disk, unsigned int minors)
-+{
-+	struct block_device *bdev;
-+	struct gendisk *gpdisk;
-+	int disk_id, minor_start;
-+
-+	gpdisk = alloc_disk(minors);
-+	if (gpdisk == NULL)
-+		return;
-+
-+	disk_id = gpdisk_get_diskid();
-+	if (disk_id < 0)
-+		goto out;
-+
-+	minor_start = gpdisk_get_region(minors);
-+	if (minor_start < 0)
-+		goto out2;
-+
-+	disk->gpdisk          = gpdisk;
-+	disk->gpdisk_id       = disk_id;
-+
-+	sprintf(gpdisk->disk_name, "gd%u", disk_id);
-+	gpdisk->gpdisk_parent = disk;
-+	gpdisk->major         = gpdisk_major;
-+	gpdisk->first_minor   = minor_start;
-+	gpdisk->minors        = minors;
-+	gpdisk->fops          = disk->fops;
-+
-+	/* safe? */
-+	gpdisk->private_data  = disk->private_data;
-+	gpdisk->queue         = disk->queue;
-+	gpdisk->driverfs_dev  = disk->driverfs_dev;
-+	gpdisk->flags         = disk->flags;
-+
-+	add_disk(gpdisk);
-+	return;
-+
-+ out2:
-+	gpdisk_put_diskid(disk_id);
-+ out:
-+	put_disk(gpdisk);
-+	return;
-+}
-+
-+void gpdisk_release(struct gendisk *disk)
-+{
-+	gpdisk_put_region(disk->gpdisk->first_minor, disk->gpdisk->minors);
-+	gpdisk_put_diskid(disk->gpdisk_id);
-+}
-+
-+static int __init gpdisk_init(void)
-+{
-+	int i;
-+
-+	i = register_blkdev(gpdisk_major, "gpdisk");
-+	if (gpdisk_major == 0) {
-+		/* dynamic major */
-+		if (i == 0)
-+			return -ENODEV;
-+		gpdisk_major = i;
-+	} else {
-+		/* fixed major */
-+		if (i != 0)
-+			return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit gpdisk_exit(void)
-+{
-+	unregister_blkdev(gpdisk_major, "gpdisk");
-+}
-+
-+module_init(gpdisk_init);
-+module_exit(gpdisk_exit);
-Index: linux-2.6.23/drivers/scsi/sd.c
-===================================================================
---- linux-2.6.23.orig/drivers/scsi/sd.c
-+++ linux-2.6.23/drivers/scsi/sd.c
-@@ -1610,6 +1610,7 @@ static int sd_probe(struct device *dev)
- 	gd = alloc_disk(16);
- 	if (!gd)
- 		goto out_free;
-+	atomic_set(&gd->gpdisk_enabled, true);
+> About half way through we start to see windup of the the number of
+> pages under writeback of about 800-900 pages per printk.  That's
+> 1024 pages minus 1 or 2 512k I/Os. This implies that the disk cache
+> is now full and the disk has reached saturation. I/O is now
+> being queued in the elevator. The last trace has 13051 pages under
+> writeback, which at 128 pages per I/O is ~100 queued 512k I/Os.
+> 
+> The default queue depth with cfq is 128 requests, and IIRC it
+> congests at 7/8s full, or 112 requests. IOWs, you file that you
+> wrote was about 10MB short of what is needed to see congestion on
+> your test rig.
+
+Exactly.
+
+wfg ~% cat /sys/block/sda/queue/nr_requests   
+128
+wfg ~% cat /sys/block/sda/queue/max_sectors_kb
+512
  
- 	if (!idr_pre_get(&sd_index_idr, GFP_KERNEL))
- 		goto out_put;
-Index: linux-2.6.23/fs/partitions/check.c
-===================================================================
---- linux-2.6.23.orig/fs/partitions/check.c
-+++ linux-2.6.23/fs/partitions/check.c
-@@ -168,7 +168,7 @@ check_partition(struct gendisk *hd, stru
- 	if (isdigit(state->name[strlen(state->name)-1]))
- 		sprintf(state->name, "p");
- 
--	state->limit = hd->minors;
-+	state->limit = MAX_PART;
- 	i = res = err = 0;
- 	while (!res && check_part[i]) {
- 		memset(&state->parts, 0, sizeof(state->parts));
-@@ -528,6 +528,7 @@ exit:
- int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- {
- 	struct parsed_partitions *state;
-+	unsigned int max;
- 	int p, res;
- 
- 	if (bdev->bd_part_count)
-@@ -536,6 +537,11 @@ int rescan_partitions(struct gendisk *di
- 	if (res)
- 		return res;
- 	bdev->bd_invalidated = 0;
-+	if (gpdisk_online(disk)) {
-+		gpdisk_release(disk);
-+		del_gendisk(disk->gpdisk);
-+		disk->gpdisk = NULL;
-+	}
- 	for (p = 1; p < disk->minors; p++)
- 		delete_partition(disk, p);
- 	if (disk->fops->revalidate_disk)
-@@ -544,7 +550,8 @@ int rescan_partitions(struct gendisk *di
- 		return 0;
- 	if (IS_ERR(state))	/* I/O error reading the partition table */
- 		return -EIO;
--	for (p = 1; p < state->limit; p++) {
-+	max = min(disk->minors, state->next);
-+	for (p = 1; p < max; p++) {
- 		sector_t size = state->parts[p].size;
- 		sector_t from = state->parts[p].from;
- 		if (!size)
-@@ -560,6 +567,8 @@ int rescan_partitions(struct gendisk *di
- #endif
- 	}
- 	kfree(state);
-+	if (atomic_read(&disk->gpdisk_enabled) > 0)
-+		gpdisk_new(disk, state->next);
- 	return 0;
- }
- 
-@@ -588,6 +597,12 @@ void del_gendisk(struct gendisk *disk)
- {
- 	int p;
- 
-+	if (gpdisk_online(disk)) {
-+		gpdisk_release(disk);
-+		del_gendisk(disk->gpdisk);
-+		disk->gpdisk = NULL;
-+	}
-+
- 	/* invalidate stuff */
- 	for (p = disk->minors - 1; p > 0; p--) {
- 		invalidate_partition(disk, p);
-Index: linux-2.6.23/include/linux/genhd.h
-===================================================================
---- linux-2.6.23.orig/include/linux/genhd.h
-+++ linux-2.6.23/include/linux/genhd.h
-@@ -67,6 +67,7 @@ struct partition {
- #include <linux/string.h>
- #include <linux/fs.h>
- #include <linux/workqueue.h>
-+#include <asm/atomic.h>
- 
- struct partition {
- 	unsigned char boot_ind;		/* 0x80 - active */
-@@ -141,6 +142,10 @@ struct gendisk {
- 	struct disk_stats dkstats;
- #endif
- 	struct work_struct async_notify;
-+
-+	struct gendisk *gpdisk, *gpdisk_parent;
-+	unsigned int gpdisk_id;
-+	atomic_t gpdisk_enabled;
- };
- 
- /* Structure for sysfs attributes on block devices */
-@@ -255,11 +260,22 @@ static inline sector_t get_capacity(stru
- {
- 	return disk->capacity;
- }
-+
-+static inline bool gpdisk_online(const struct gendisk *disk)
-+{
-+	return atomic_read(&disk->gpdisk_enabled) > 0 && disk->gpdisk != NULL;
-+}
-+
- static inline void set_capacity(struct gendisk *disk, sector_t size)
- {
- 	disk->capacity = size;
-+	if (gpdisk_online(disk))
-+		disk->gpdisk->capacity = size;
- }
- 
-+extern void gpdisk_new(struct gendisk *, unsigned int);
-+extern void gpdisk_release(struct gendisk *);
-+
- #endif  /*  __KERNEL__  */
- 
- #ifdef CONFIG_SOLARIS_X86_PARTITION
-Index: linux-2.6.23/include/scsi/sd.h
-===================================================================
---- linux-2.6.23.orig/include/scsi/sd.h
-+++ linux-2.6.23/include/scsi/sd.h
-@@ -62,6 +62,9 @@ static void sd_print_sense_hdr(struct sc
- static void sd_print_result(struct scsi_disk *, int);
- 
- #define sd_printk(prefix, sdsk, fmt, a...)				\
-+	gpdisk_online((sdsk)->disk) ?					\
-+	sdev_printk(prefix, (sdsk)->device, "[%s] " fmt,		\
-+		    (sdsk)->disk->gpdisk->disk_name, ##a) :		\
-         (sdsk)->disk ?							\
- 	sdev_printk(prefix, (sdsk)->device, "[%s] " fmt,		\
- 		    (sdsk)->disk->disk_name, ##a) :			\
+More exactly, I was writing a huge file. It produces
+balance_dirty_pages, background_writeout, and at last wb_kupdate. The
+trace messages are collected after the copy completes, when
+wb_kupdate() starts to sync the remaining (< background_thresh) data.
+
+> So the trace shows we slept on neither congestion or more_io
+> and it points towards congestion being the thing will typically
+> block us on large file I/O. Before drawing any conclusions on
+> whether wbc.more_io is needed or not, do you have any way of
+> producing skipped pages when more_io is set?
+
+No(and not that easy). (pages_skipped && more_io) events are rare indeed.
+
+> > However, wb_kupdate() is syncing the data a bit slow(4*1000/15=266MB/s),
+> > could it be because of a lot of cond_resched()?
+> 
+> You are using ext3? That would be my guess based simply on the write
+> rate - ext3 has long been stuck at about that speed for buffered
+> writes even on much faster block devices.  If I'm right, try using
+> XFS and see how much differently it behaves. I bet you hit
+> congestion much sooner than you expect. ;)
+
+Yes, I was running ext3.  It seems that XFS is about the same speed:
+
+[ 1427.278454] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 37974 global 16727 0 0 wc _M tw -4 sk 0
+[ 1427.293653] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 36946 global 15704 0 0 wc _M tw -3 sk 0
+[ 1427.308891] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 35919 global 14650 0 0 wc _M tw -13 sk 0
+[ 1427.322462] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 34882 global 13937 0 0 wc _M tw 300 sk 0
+[ 1427.338194] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 34158 global 12914 0 0 wc _M tw -9 sk 0
+[ 1427.353473] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 33125 global 11860 0 0 wc _M tw -12 sk 0
+[ 1427.362984] mm/page-writeback.c 668 wb_kupdate: pdflush(5606) 32089 global 11860 0 0 wc _M tw 1018 sk 0
+
+That's 14ms per 4MB.  Maybe it's a VFS issue.
+
