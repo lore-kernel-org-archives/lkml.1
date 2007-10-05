@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXJEL4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbXJEL4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbXJEL4F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 07:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXJELzy
+	id S1762036AbXJEL4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 07:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXJEL4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 07:55:54 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37732 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbXJELzx (ORCPT
+	Fri, 5 Oct 2007 07:56:38 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52455 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbXJEL4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 07:55:53 -0400
-Date: Fri, 5 Oct 2007 13:55:52 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       adaplas@gmail.com
-Subject: [PATCH] vc bell config
-Message-ID: <Pine.LNX.4.64.0710051347000.13406@fbirervta.pbzchgretzou.qr>
+	Fri, 5 Oct 2007 07:56:37 -0400
+Date: Fri, 5 Oct 2007 05:56:34 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Chinner <dgc@sgi.com>, David Miller <davem@davemloft.net>,
+       cebbert@redhat.com, willy@linux.intel.com, clameter@sgi.com,
+       nickpiggin@yahoo.com.au, hch@lst.de, mel@skynet.ie,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com
+Subject: Re: SLUB performance regression vs SLAB
+Message-ID: <20071005115634.GV12049@parisc-linux.org>
+References: <470554D9.2050505@redhat.com> <20071004.141113.08322956.davem@davemloft.net> <47055F84.109@redhat.com> <20071004.150718.95506800.davem@davemloft.net> <20071004222356.GH23367404@sgi.com> <20071005064853.GI5711@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071005064853.GI5711@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 05, 2007 at 08:48:53AM +0200, Jens Axboe wrote:
+> I'd like to second Davids emails here, this is a serious problem. Having
+> a reproducible test case lowers the barrier for getting the problem
+> fixed by orders of magnitude. It's the difference between the problem
+> getting fixed in a day or two and it potentially lingering for months,
+> because email ping-pong takes forever and "the test team has moved on to
+> other tests, we'll let you know the results of test foo in 3 weeks time
+> when we have a new slot on the box" just removing any developer
+> motivation to work on the issue.
 
-It is already possible to deactivate the vc bell on a per-tty basis,
-by using echo -en "\e[11;0]", but this is reset on reset(1).
+I vaguely remembered something called orasim, so I went looking for it.
+I found http://oss.oracle.com/~wcoekaer/orasim/ which is dated from
+2004, and I found http://oss.oracle.com/projects/orasimjobfiles/ which
+seems to be a stillborn project.  Is there anything else I should know
+about orasim?  ;-)
 
-This adds a sysfs parameter to globally control the vc bell, as well
-as sysfs parameters for default pitch and duration.
-
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
----
- drivers/char/vt.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.23/drivers/char/vt.c
-===================================================================
---- linux-2.6.23.orig/drivers/char/vt.c
-+++ linux-2.6.23/drivers/char/vt.c
-@@ -134,8 +134,12 @@ const struct consw *conswitchp;
- /*
-  * Here is the default bell parameters: 750HZ, 1/8th of a second
-  */
--#define DEFAULT_BELL_PITCH	750
--#define DEFAULT_BELL_DURATION	(HZ/8)
-+static unsigned int default_bell_pitch = 750;
-+static unsigned int default_bell_duration = HZ / 8;
-+static unsigned int vc_bell_enabled = true;
-+module_param_named(bell_pitch, default_bell_pitch, uint, S_IRUGO | S_IWUSR);
-+module_param_named(bell_duration, default_bell_duration, uint, S_IRUGO | S_IWUSR);
-+module_param_named(bell_enabled, vc_bell_enabled, uint, S_IRUGO | S_IWUSR);
- 
- struct vc vc_cons [MAX_NR_CONSOLES];
- 
-@@ -1401,14 +1405,14 @@ static void setterm_command(struct vc_da
- 			if (vc->vc_npar >= 1)
- 				vc->vc_bell_pitch = vc->vc_par[1];
- 			else
--				vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
-+				vc->vc_bell_pitch = default_bell_pitch;
- 			break;
- 		case 11: /* set bell duration in msec */
- 			if (vc->vc_npar >= 1)
- 				vc->vc_bell_duration = (vc->vc_par[1] < 2000) ?
- 					vc->vc_par[1] * HZ / 1000 : 0;
- 			else
--				vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-+				vc->vc_bell_duration = default_bell_duration;
- 			break;
- 		case 12: /* bring specified console to the front */
- 			if (vc->vc_par[1] >= 1 && vc_cons_allocated(vc->vc_par[1] - 1))
-@@ -1554,8 +1558,8 @@ static void reset_terminal(struct vc_dat
- 	vc->vc_tab_stop[3]	=
- 	vc->vc_tab_stop[4]	= 0x01010101;
- 
--	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
--	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-+	vc->vc_bell_pitch = default_bell_pitch;
-+	vc->vc_bell_duration = default_bell_duration;
- 
- 	gotoxy(vc, 0, 0);
- 	save_cur(vc);
-@@ -1574,7 +1578,7 @@ static void do_con_trol(struct tty_struc
- 	case 0:
- 		return;
- 	case 7:
--		if (vc->vc_bell_duration)
-+		if (vc_bell_enabled && vc->vc_bell_duration)
- 			kd_mksound(vc->vc_bell_pitch, vc->vc_bell_duration);
- 		return;
- 	case 8:
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
