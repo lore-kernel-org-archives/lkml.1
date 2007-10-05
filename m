@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbXJESBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbXJESNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762803AbXJESBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 14:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXJESBe
+	id S1760762AbXJESNo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 14:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbXJESNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 14:01:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58393 "EHLO mx1.redhat.com"
+	Fri, 5 Oct 2007 14:13:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57674 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757636AbXJESBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 14:01:33 -0400
-Date: Fri, 5 Oct 2007 14:00:37 -0400
+	id S1750811AbXJESNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 14:13:35 -0400
+Date: Fri, 5 Oct 2007 14:12:22 -0400
 From: Jeff Layton <jlayton@redhat.com>
 To: Valdis.Kletnieks@vt.edu
 Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
@@ -19,7 +19,7 @@ Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
  client git tree...
-Message-Id: <20071005140037.1309a8d3.jlayton@redhat.com>
+Message-Id: <20071005141222.5afbb6b9.jlayton@redhat.com>
 In-Reply-To: <30494.1191605410@turing-police.cc.vt.edu>
 References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
 	<20071004085206.0a8e37b5@poseidon.drzeus.cx>
@@ -34,7 +34,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 05 Oct 2007 13:30:10 -0400
 Valdis.Kletnieks@vt.edu wrote:
->
+
+> On Thu, 04 Oct 2007 10:00:50 EDT, Trond Myklebust said:
+> 
+> > How about a boot/module parameter to turn it on or off?
+> > 
+> > I don't see any point in having a sysctl for something like this: either
+> > you have legacy applications or you don't. It is not something that you
+> > switch off as you go off to lunch.
+> 
 > How does Joe Sysadmin tell if he has an affected legacy app or not?
 > 
 > (The obvious "try it and see what breaks" is a non-starter for many places,
@@ -45,15 +53,12 @@ Valdis.Kletnieks@vt.edu wrote:
 > are very 64-bit unclean....)
 > 
 
-In addition to Trond's suggestion, you might be able to use "nm" or
-something like it and see if there are references to non-LFS (f)stat
-calls in your binaries. For instance, if you see references to stat()
-(and not stat64()), then the app is probably not built with 64-bit file
-offsets.
+Note that "try it and see what breaks" isn't reliable either. If glibc
+gets back a 64 bit inode number that just happens to fit in the 32-bit
+field, then everything will work. You don't actually get an EOVERFLOW
+until st_ino overflows the field, and that may not happen often enough
+for testing this way to detect it...
 
-This is probably not as reliable as Trond's method, but it might be
-less invasive and reasonable for a first pass when looking for these
-sorts of apps...
 
 -- 
 Jeff Layton <jlayton@redhat.com>
