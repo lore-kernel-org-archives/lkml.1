@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbXJEFqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbXJEFtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756929AbXJEFqL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 01:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbXJEFp6
+	id S1756423AbXJEFtu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 01:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJEFtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 01:45:58 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:47555 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbXJEFp5 (ORCPT
+	Fri, 5 Oct 2007 01:49:41 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50113 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbXJEFtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 01:45:57 -0400
-Message-ID: <4705CEEA.6060100@ah.jp.nec.com>
-Date: Fri, 05 Oct 2007 14:43:06 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-CC: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+	Fri, 5 Oct 2007 01:49:41 -0400
+Date: Fri, 5 Oct 2007 11:19:52 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
        k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
        Bernhard Walle <bwalle@suse.de>, Keith Owens <kaos@ocs.com.au>,
        Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 0/2] add new notifier function
-References: <4704D09D.6080503@ah.jp.nec.com> <20071005043354.GA4893@in.ibm.com>
-In-Reply-To: <20071005043354.GA4893@in.ibm.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
+Message-ID: <20071005054952.GC4893@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <4704D0CA.4080001@ah.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4704D0CA.4080001@ah.jp.nec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Oct 04, 2007 at 08:38:05PM +0900, Takenori Nagano wrote:
->
-> In summary, right now co-existence of kdb with kdump seems to be your pain
-> point. I would prefer that kdb just puts a break point on panic() and we move
-> on. If there are more candidates down the line and these can't be easily
-> executed in second kernel then we can re-visit this notification list
-> mechanism.
-
-Hi Vivek,
-
-Thank you for your comment. :-)
-
-I don't mind kdb and kdump problem now. Because my patches are not merged into
-mainline kernel yet. If they are merged, I think how we can resolve about RAS
-tools problem.
-
->> # ls
->> ipmi_msghandler  ipmi_wdog
->> # cat ipmi_msghandler/priority
->> 200
->> # cat ipmi_wdog/priority
->> 150
->> #
->> Kernel panic - not syncing: panic
->> ipmi_msghandler : notifier calls panic_event().
->> ipmi_watchdog : notifier calls wdog_panic_handler().
->>
->> .....(reboot)
->>
+On Thu, Oct 04, 2007 at 08:38:50PM +0900, Takenori Nagano wrote:
+> This patch implements new notifier function to panic_notifier_list. We can
+> change the list of order by debugfs.
 > 
-> We also need to implement a file which can give a consolidated view. All
-> the registered members and their priority.
+> Thanks,
+> 
+> ---
+> 
+> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
+> 
+> ---
+> diff -uprN linux-2.6.23-rc9.orig/arch/alpha/kernel/setup.c
+> linux-2.6.23-rc9/arch/alpha/kernel/setup.c
+> --- linux-2.6.23-rc9.orig/arch/alpha/kernel/setup.c	2007-10-02
+> 12:24:52.000000000 +0900
+> +++ linux-2.6.23-rc9/arch/alpha/kernel/setup.c	2007-10-04 09:49:34.440000000 +0900
+> @@ -45,14 +45,22 @@
+>  #include <asm/io.h>
+>  #include <linux/log2.h>
+> 
+> -extern struct atomic_notifier_head panic_notifier_list;
+> +extern struct tunable_notifier_head panic_notifier_list;
+>  static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
+> -static struct notifier_block alpha_panic_block = {
+> +static struct notifier_block alpha_panic_block_base = {
+>  	alpha_panic_event,
+>          NULL,
+>          INT_MAX /* try to do it first */
+>  };
+> 
+> +static struct tunable_notifier_block alpha_panic_block = {
+> +	&alpha_panic_block_base,
+> +	NULL,
+> +	NULL,
+> +	NULL,
+> +	NULL
+> +};
+> +
+>  #include <asm/uaccess.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/system.h>
+> @@ -522,8 +530,8 @@ setup_arch(char **cmdline_p)
+>  	}
+> 
+>  	/* Register a call for panic conditions. */
+> -	atomic_notifier_chain_register(&panic_notifier_list,
+> -			&alpha_panic_block);
+> +	tunable_notifier_chain_register(&panic_notifier_list,
+> +			&alpha_panic_block, "alpha_panic", NULL);
+> 
 
-I tried to implement it, but its impact is large. And we can get all priority
-values using "ls" and "cat */priority". I'll implement it if user strongly
-expects it.
+I think it might be good idea to somehow create provisions for another a
+help string. This help string will inform admin that what a registered
+user does? Ideally this should be visible in /sys/kernel/debug/<user module>/description file.
 
-ex)
-# cd panic_notifier_list
-# ls
-ipmi_msghandler  ipmi_wdog
-# cat */priority
-200
-150
-#
+This kind of description can help admin to decide the priority among various
+registered users withoug having to look at the source code.
 
-Thanks,
-
-Takenori Nagano <t-nagano@ah.jp.nec.com>
+Thanks
+Vivek
