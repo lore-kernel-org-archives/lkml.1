@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXJEB7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762401AbXJECI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbXJEB7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Oct 2007 21:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759201AbXJEB7e
+	id S1762401AbXJECI6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Oct 2007 22:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbXJECIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Oct 2007 21:59:34 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38975
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760072AbXJEB7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Oct 2007 21:59:33 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC][PATCH] New message-logging API (kprint)
-Date: Thu, 4 Oct 2007 20:59:25 -0500
-User-Agent: KMail/1.9.6
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Michael Holzheu <holzheu@linux.vnet.ibm.com>,
-       Joe Perches <joe@perches.com>,
-       Dick Streefland <dick.streefland@altium.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Jesse Barnes <jesse.barnes@intel.com>, Arnd Bergmann <arnd@arndb.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Emil Medve <Emilian.Medve@freescale.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "linux@horizon.com" <linux@horizon.com>,
-       Miguel Ojeda <maxextreme@gmail.com>
-References: <1191528247.13580.11.camel@grianne> <20071004131703.25046db9.randy.dunlap@oracle.com>
-In-Reply-To: <20071004131703.25046db9.randy.dunlap@oracle.com>
+	Thu, 4 Oct 2007 22:08:49 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4454 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759201AbXJECIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Oct 2007 22:08:49 -0400
+Date: Fri, 5 Oct 2007 04:08:45 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Shlomi Fish <shlomif-lkml@freehackers.org>
+cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 2.6.23-rc4] qconf ("make xconfig") Search Dialog Enhancement
+ (rev8)
+In-Reply-To: <200709201350.43553.shlomif-lkml@freehackers.org>
+Message-ID: <Pine.LNX.4.64.0710050359021.1817@scrub.home>
+References: <200709132252.20719.shlomif@freehackers.org>
+ <Pine.LNX.4.64.0709160043430.1817@scrub.home> <200709201350.43553.shlomif-lkml@freehackers.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710042059.25721.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 October 2007 3:17:03 pm Randy Dunlap wrote:
-> On Thu, 04 Oct 2007 22:04:07 +0200 Vegard Nossum wrote:
-> > Description: This patch largely implements the kprint API as previously
-> > posted to the LKML and described in Documentation/kprint.txt (see patch).
+Hi,
+
+On Thu, 20 Sep 2007, Shlomi Fish wrote:
+
+> Which specific problems do you see with the coding style of the patch? Can you 
+> comment on it?
+
+Mostly whitespace around any braces, please keep it close to the other 
+source.
+
+> > I would also prefer to move more of the search functionality into the
+> > generic code, so it can be used by other front ends as well, otherwise a
+> > lot of this had to be duplicated.
+> 
+> That would be a good idea, but I cannot use Qt there, which makes my job 
+> harder.
+
+Where is the problem with implementing it in C? Just try to keep it a 
+simple at first.
+
+> > I think a filter function makes it maybe a bit to flexible, if a front
+> > end wants to do some weird filtering, it can still access the symbol
+> > data base directly. 
+> 
+> A filter function would still be convenient in this context, as the symbol 
+> data base API may change, and the filter function has a little logic in it.
+
+This API is not really fixed at the moment, so it's not really a problem.
+
+> > So what I have in mind is something like this: 
 > >
-> > The main purpose of this change is provide a unified logging API to the
-> > kernel and at the same time make it easy to add extensions, now and
-> > later.
+> > struct symbol **sym_generic_search(const char *pattern, unsigned int
+> > flags);
 > >
-> > My changes and additions are as follows:
->
-> $ diffstat -p1 -w70 kprint.patch
-...
->  40 files changed, 1660 insertions(+), 72 deletions(-)
+> > This means the back end provides a basic search facility for the most
+> > common search operations. The flags would specify what to search (e.g.
+> > symbol name, help text, prompts) and how to do it.
+> 
+> I suggest we don't call it sym_generic_search, as generic implies it is a 
+> generic filter. We can call it "sym_string_search" or whatever. Then, I 
+> suggest we have separate arguments for every parameter (i.e: search type, 
+> case sensitivity, what to search, etc.).
 
-I started this thread by posting an idea I had for shrinking the kernel by 
-allowing more code to be configured out.  The API change was exactly one new 
-parameter, with a direct 1->1 mapping from the old API to the new one, which 
-was trivial to convert and which the compiler would catch if you missed one.
+I don't care much about the name, but please keep it as a simple flag, 
+which is a lot easier to extend.
 
-The result of the discussion is a patch adding 1600 lines to the kernel, 
-without removing anything.
+bye, Roman
 
-Last I checked, the current prink() worked just fine.  Why is this _not_ the 
-dreaded "infrastructure in search of a use"?  What exactly can we _not_ do 
-with the current code?  What does this allow us to remove and simplify?
-
-I'm confused about what people are trying to accomplish here...
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
