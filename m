@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXJEMGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXJEMMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbXJEMGQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 08:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbXJEMF7
+	id S1760191AbXJEMMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 08:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbXJEMMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 08:05:59 -0400
-Received: from THUNK.ORG ([69.25.196.29]:40628 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbXJEMF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 08:05:58 -0400
-Date: Fri, 5 Oct 2007 08:05:29 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Howells <dhowells@redhat.com>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 13/32] IGET: Stop EXT2 from using iget() and read_inode() [try #2]
-Message-ID: <20071005120529.GA28985@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Howells <dhowells@redhat.com>, hch@infradead.org,
-	viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk> <20071004155708.2814.8998.stgit@warthog.procyon.org.uk>
+	Fri, 5 Oct 2007 08:12:48 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55831 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbXJEMMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 08:12:47 -0400
+Message-ID: <47062A03.1000603@aitel.hist.no>
+Date: Fri, 05 Oct 2007 14:11:47 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071004155708.2814.8998.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Andi Kleen <andi@firstfloor.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: x86-64 sporadic hang in  2.6.23rc7 and 2.6.22
+References: <46F8273B.8030904@aitel.hist.no> <1190669351.4035.254.camel@chaos>	<46FE5C98.1030507@aitel.hist.no> <p734phb96cb.fsf@bingen.suse.de>
+In-Reply-To: <p734phb96cb.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 04, 2007 at 04:57:08PM +0100, David Howells wrote:
-> Stop the EXT2 filesystem from using iget() and read_inode().  Replace
-> ext2_read_inode() with ext2_iget(), and call that instead of iget().
-> ext2_iget() then uses iget_locked() directly and returns a proper error code
-> instead of an inode in the event of an error.
-> 
-> ext2_fill_super() returns any error incurred when getting the root inode
-> instead of EINVAL.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Andi Kleen wrote:
+> Helge Hafting <helge.hafting@aitel.hist.no> writes:
+>   
+>> shrink_dcache_memory
+>>     
+>
+> That usually means random memory corruption from somewhere -- dcache
+> tends to use a lot of memory and when it is corrupted anywhere these 
+> functions tend to crash while walking the lists. 
+>
+> Unfortunately memory corruption is hard to track down because
+> the messenger is usually not the one to blame.
+>
+> Perhaps enable slab debugging and see if it turns
+> something up. Could be also broken hardware. Does an older kernel
+> run stable? If yes and if it can be reproduced bisecting would
+> be good.
+>   
+I attempted bisecting - and failed. The problem is that
+2.6.23rc7 seems very unstable, but 2.6.22rc4 is much better
+but not perfect. 2.6.22rc4 only crashed once - it can compile for
+hours and swap lots and keep running. But it died at least once.
 
-Acked-by: "Theodore Ts'o" <tytso@mit.edu>
+I'll try running recent kernels with more debugging instead.
+I think I used SLUB instead of SLAB - either way I can switch
+that over to see if it changes things.
 
-							- Ted
+Helge Hafting
+
