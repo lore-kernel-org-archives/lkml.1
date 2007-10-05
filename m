@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbXJEVKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764261AbXJEVNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764235AbXJEVKm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 17:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763041AbXJEVKe
+	id S1764261AbXJEVNS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 17:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763107AbXJEVNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 17:10:34 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:39830 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761765AbXJEVKd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 17:10:33 -0400
-Message-ID: <4706A842.9030507@freescale.com>
-Date: Fri, 05 Oct 2007 16:10:26 -0500
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Fri, 5 Oct 2007 17:13:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49568 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763040AbXJEVNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 17:13:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: regression: fireware causes oops during system
+Date: Fri, 5 Oct 2007 23:28:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Ben Collins <ben.collins@ubuntu.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
+References: <20070911190043.GA1577@elf.ucw.cz> <200709162216.02448.rjw@sisk.pl> <20071005070817.GA8821@elf.ucw.cz>
+In-Reply-To: <20071005070817.GA8821@elf.ucw.cz>
 MIME-Version: 1.0
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
-References: <4706822D.4070509@freescale.com> <Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr> <470691EB.7020209@freescale.com> <AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>
-In-Reply-To: <AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710052328.14423.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Altaparmakov wrote:
-
->> ---LSB-- ---2SB-- ---3SB-- ---MSB-- [bytes] LITTLE_ENDIAN
->> L234567M L234567M L234567M L234567M  [bits] LITTLE_ENDIAN_BITFIELD
+On Friday, 5 October 2007 09:08, Pavel Machek wrote:
+> Hi!
 > 
-> No it is not.  That makes no sense. 
-
-Why not?  I honestly don't know what x86 does, but I would think that if I 
-write a 32-bit value to a memory location, that when I examine that memory 
-location, all 32 bits will be in order.
-
-> The whole point of little endian is 
-> that you store LSB, then 2SB, then 3SB, then MSB and then when the CPU 
-
-You're talking about byte endian.  I'm talking about bit endian -- the order 
-of bits within a byte.  Software cannot know what the bit endian is, but 
-external devices that have memory-mapped registers can know.
-
-> reads this as a 32-bit word it rotates them all around so that in the 
-> CPU register you have:
+> > > This commit is certainly OK, as it should merely preserve status quo.
+> > > Also note that Pavel wrote in his initial post that the problem became
+> > > apparent way after -rc1.  Full quote:
+> > > 
+> > > | I noticed empty suspend stopped working around 2.6.23-rc4, and it is
+> > > | still present in 2.6.23-rc6. To reproduce
+> > > |
+> > > | swapoff -a
+> > > | echo disk > /sys/power/state
+> > > | echo disk > /sys/power/state
+> > > |
+> > > | Unsetting
+> > > |
+> > > | CONFIG_IEEE1394=y
+> > > |
+> > > | solves the problem.
+> > 
+> > Yes.
+> > 
+> > I thought that there might be a later change that exposed a bug in it.
+> > 
+> > Hm.  Pavel, can you do
+> > 
+> > # echo test > /sys/power/disk
+> > # echo disk > /sys/power/state
+> > 
+> > and see what happens?
 > 
-> MSB_3SB_2SB_LSB
-> M765432L_M765432L_M765432L_M765432L
+> root@amd:~# echo test  > /sys/power/disk
+> root@amd:~# echo disk > /sys/power/state
+> root@amd:~# echo disk > /sys/power/state
 > 
-> That is what little endian means and that is how shift operations can 
-> work fine on the CPU.
+> Produces nothing interesting... I also did few hibernation/resume
+> cycles, and everything seems to work ok. But when I do swapoff then
+> try to hibernate, it fails on second try. Weird.
 
-The CPU shift operation, yes.  I'm talking about shift operations on external 
-memory-mapped devices.
+Weird indeed, but it means that there's some history that causes things to
+break on the second attempt.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+To summarize, after running swapoff the suspending of devices during the second
+attempt to hibernate fails (100% of the time) unless CONFIG_IEEE1394 is unset?
+
+What happens for CONFIG_IEEE1394=m?
+
+Greetings,
+Rafael
