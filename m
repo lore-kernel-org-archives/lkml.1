@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXJEGWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbXJEGXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXJEGWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 02:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXJEGWa
+	id S1760030AbXJEGXI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 02:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXJEGWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 02:22:30 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41021 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbXJEGW3 (ORCPT
+	Fri, 5 Oct 2007 02:22:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58663 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbXJEGWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 02:22:29 -0400
-Message-ID: <4705D77E.5000703@ah.jp.nec.com>
-Date: Fri, 05 Oct 2007 15:19:42 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 5 Oct 2007 02:22:53 -0400
+Date: Thu, 4 Oct 2007 23:23:02 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
+	model
+Message-ID: <20071005062302.GB16914@kroah.com>
+References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-CC: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
-       Bernhard Walle <bwalle@suse.de>, Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
-References: <4704D0CA.4080001@ah.jp.nec.com> <20071005054952.GC4893@in.ibm.com>
-In-Reply-To: <20071005054952.GC4893@in.ibm.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Oct 04, 2007 at 08:38:50PM +0900, Takenori Nagano wrote:
->
->> @@ -522,8 +530,8 @@ setup_arch(char **cmdline_p)
->>  	}
->>
->>  	/* Register a call for panic conditions. */
->> -	atomic_notifier_chain_register(&panic_notifier_list,
->> -			&alpha_panic_block);
->> +	tunable_notifier_chain_register(&panic_notifier_list,
->> +			&alpha_panic_block, "alpha_panic", NULL);
->>
+On Thu, Sep 27, 2007 at 01:25:48PM -0600, Eric W. Biederman wrote:
 > 
-> I think it might be good idea to somehow create provisions for another a
-> help string. This help string will inform admin that what a registered
-> user does? Ideally this should be visible in /sys/kernel/debug/<user module>/description file.
+> I still need to look at the code in detail but I have some concerns
+> I want to inject into this conversation of future sysfs architecture.
+> 
+> - If we want to carefully limit sysfs from going to wild code review
+>   is clearly not enough.  We need some technological measures to
+>   assist us.  As the experience with sysctl has shown.
 
-Hi Vivek,
+I totally agree.  You should see the ways that people have tried to
+circumvent the current kobject/sysfs code over the past years.  It's so
+scary it's not even funny...
 
-We can make description file with tunable_notifier_chain_register 4th argument.
-If developer sets 4th argument, tunable_notifier_chain_register makes
-/sys/kernel/debug/<name>/description file. Admin can get information from the
-description file.
+> - The network namespace work scheduled to be merged in 2.6.24 is 
+>   currently has a dependency in Kconfig that is "&& !SYSFS"
+>   because sysfs is currently very much a moving target.
+> 
+>   Does it look like we can resolve Tejun's work for 2.6.24?
+>   If not does it make sense to push my patches that allow
+>   multiple mounts of sysfs for 2.6.24?  So I can allow
+>   network namespaces in the presence of sysfs.
+> 
+>   Outside of sysfs and the device model I'm only talk maybe 30 lines
+>   of code...    So I could easily merge that patch later in the
+>   merge window after the other pieces have gone in.
 
-+/**
-+ *	tunable_notifier_chain_register - Add notifier to an tunable notifier chain
-+ *	@nh: Pointer to head of the tunable notifier chain
-+ *	@n: New entry in notifier chain
-+ *	@name: Pointer to the name of the new notifier entry
-+ *	@desc: Pointer to the description of new entry
-+ *
-+ *	Adds a notifier to an tunable notifier chain and makes control dir.
-+ *
-+ *	Returns zero on success or %-ENODEV on failure.
-+ */
+I would be interested in seeing what your patches look like.  I don't
+think that we should take any more sysfs changes for 2.6.24 as we do
+have a lot of them right now, and I don't think that Tejun and I agree
+on the future direction of the outstanding ones just yet.
 
-Thanks,
+But I don't think that your multiple-mount patches could make it into
+.24, unless .23 is still weeks away.
 
-Takenori Nagano <t-nagano@ah.jp.nec.com>
+> - Farther down the road we have the device namespace.
+>   The bounding requirements are:
+>   - We want to restrict which set of devices a subset of process
+>     can access.
+
+That's reasonable.
+
+>   - When we migrate an application we want to preserve the device
+>     numbers of all devices that show up in the new location.
+>     So filesystems whose block devices reside on a SAN, ramdisks,
+>     ttys, etc.
+>     Other devices that really are different we can handle with
+>     hotplug remove and add events, during the migration.
+> 
+>   So while there is lower hanging fruit the requirements for a
+>   device namespace are becoming clear, and don't look like something
+>   we will ultimately be able to dodge.
+> 
+>   For sysfs the implication is that we will need to filter the
+>   hotplug events based upon the device namespace of the recipient, and
+>   we will need to restrict the set of devices that show up in sysfs
+>   based on who mounts it (as the prototype patches with the network
+>   namespace are doing).
+
+That is going to be interesting to see how you come up with a way to do
+hat.
+
+>   Also fun is that the dev file implementation needs to be able to
+>   report different major:minor numbers based on which mount of
+>   sysfs we are dealing with.
+
+Um, no, that's not going to happen.  /dev/sda will _always_ have the
+same major:minor number, as defined by the LSB spec.  You can not break
+that at all.  So while you might not want to show all mounts
+/sys/devices/block/sda/ the ones that you do, will all have the LSB
+defined major:minor number assigned to it.
+
+thanks,
+
+greg k-h
