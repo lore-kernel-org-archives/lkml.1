@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbXJESNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761739AbXJESPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760762AbXJESNo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 14:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbXJESNg
+	id S1761739AbXJESPv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 14:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXJESPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 14:13:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57674 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbXJESNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 14:13:35 -0400
-Date: Fri, 5 Oct 2007 14:12:22 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Peter Staubach <staubach@redhat.com>, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Pierre Ossman <drzeus-list@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [NFS] What's slated for inclusion in 2.6.24-rc1 from the NFS
- client git tree...
-Message-Id: <20071005141222.5afbb6b9.jlayton@redhat.com>
-In-Reply-To: <30494.1191605410@turing-police.cc.vt.edu>
-References: <1191454876.6726.32.camel@heimdal.trondhjem.org>
-	<20071004085206.0a8e37b5@poseidon.drzeus.cx>
-	<1191506450.6685.17.camel@heimdal.trondhjem.org>
-	<30494.1191605410@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Oct 2007 14:15:42 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:2454 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbXJESPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 14:15:41 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Oct 2007 14:15:40 EDT
+Message-ID: <47067DB9.80200@roarinelk.homelinux.net>
+Date: Fri, 05 Oct 2007 20:08:57 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+User-Agent: Thunderbird/1.0 Mnenhy/0.7
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Oct 2007 13:30:10 -0400
-Valdis.Kletnieks@vt.edu wrote:
+Hello,
 
-> On Thu, 04 Oct 2007 10:00:50 EDT, Trond Myklebust said:
-> 
-> > How about a boot/module parameter to turn it on or off?
-> > 
-> > I don't see any point in having a sysctl for something like this: either
-> > you have legacy applications or you don't. It is not something that you
-> > switch off as you go off to lunch.
-> 
-> How does Joe Sysadmin tell if he has an affected legacy app or not?
-> 
-> (The obvious "try it and see what breaks" is a non-starter for many places,
-> because you too easily end up in a loop of "enable it, find 4-5 show stoppers,
-> turn it off, fix them, lather rinse repease".  Been there, done that, got
-> the tshirt - a project I got dragged into involves a large storage array that
-> appears to insist on exporting 64-bit stuff, and a large farm of clients that
-> are very 64-bit unclean....)
-> 
+Latest git, insert a CF card into cardbus slot gives:
 
-Note that "try it and see what breaks" isn't reliable either. If glibc
-gets back a 64 bit inode number that just happens to fit in the 32-bit
-field, then everything will work. You don't actually get an EOVERFLOW
-until st_ino overflows the field, and that may not happen often enough
-for testing this way to detect it...
+pccard: PCMCIA card inserted into slot 0
+cs: memory probe 0x0c0000-0x0fffff: excluding 0xc0000-0xcffff 0xe0000-0xfffff
+cs: memory probe 0x60000000-0x60ffffff: clean.
+cs: memory probe 0xa0000000-0xa0ffffff: clean.
+cs: memory probe 0xdea00000-0xdeafffff: excluding 0xdea00000-0xdeafffff
+cs: memory probe 0xff600000-0xff6fffff: excluding 0xff600000-0xff60ffff 0xff6a0000-0xff6dffff 0xff6f0000-0xff6fffff
+pcmcia: registering new device pcmcia0.0
+irq 9: nobody cared (try booting with the "irqpoll" option)
+  [<c01041f2>] show_trace_log_lvl+0x1a/0x2f
+  [<c01042ed>] show_trace+0x12/0x14
+  [<c0104ea0>] dump_stack+0x15/0x17
+  [<c0133b48>] __report_bad_irq+0x39/0x79
+  [<c0133d80>] note_interrupt+0x1f8/0x234
+  [<c0134527>] handle_level_irq+0x8e/0xd1
+  [<c0105a6d>] do_IRQ+0x92/0xad
+  [<c0103f57>] common_interrupt+0x23/0x28
+  [<c0134513>] handle_level_irq+0x7a/0xd1
+  [<c0105a5e>] do_IRQ+0x83/0xad
+  =======================
+handlers:
+[<c02a8a38>] (acpi_irq+0x0/0x18)
+[<c03268e0>] (yenta_interrupt+0x0/0xb7)
+[<c032b1d7>] (usb_hcd_irq+0x0/0x51)
+[<c032b1d7>] (usb_hcd_irq+0x0/0x51)
+[<c032b1d7>] (usb_hcd_irq+0x0/0x51)
+[<c037c08c>] (snd_intel8x0_interrupt+0x0/0x1e8)
+[<c02eeaff>] (e1000_intr+0x0/0xeb)
+Disabling IRQ #9
+scsi2 : pata_pcmcia
+ata3: PATA max PIO0 cmd 0x0001d100 ctl 0x0001d10e bmdma 0x00000000 irq 9
+ata3.00: qc timeout (cmd 0x91)
+ata3.00: failed to IDENTIFY (INIT_DEV_PARAMS failed, err_mask=0x4)
+
+However, if I rename pata_pcmcia.ko so that udev cannot autoload it, insert the
+card and manually load pata_pcmcia.ko it works:
+
+pccard: PCMCIA card inserted into slot 0
+cs: memory probe 0x0c0000-0x0fffff: excluding 0xc0000-0xcffff 0xe0000-0xfffff
+cs: memory probe 0x60000000-0x60ffffff: clean.
+cs: memory probe 0xa0000000-0xa0ffffff: clean.
+cs: memory probe 0xdea00000-0xdeafffff: excluding 0xdea00000-0xdeafffff
+cs: memory probe 0xff600000-0xff6fffff: excluding 0xff600000-0xff60ffff 0xff6a0000-0xff6dffff 0xff6f0000-0xff6fffff
+pcmcia: registering new device pcmcia0.0
+
+# insmod pata_pcmcia.ko
+
+scsi2 : pata_pcmcia
+ata3: PATA max PIO0 cmd 0x0001d100 ctl 0x0001d10e bmdma 0x00000000 irq 9
+ata3.00: CFA: , verB2.10, max PIO2
+ata3.00: 507904 sectors, multi 0: LBA
+ata3.00: configured for PIO0
+scsi 2:0:0:0: Direct-Access     ATA                       verB PQ: 0 ANSI: 5
+sd 2:0:0:0: [sdb] 507904 512-byte hardware sectors (260 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sdb] 507904 512-byte hardware sectors (260 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+  sdb: sdb1
+sd 2:0:0:0: [sdb] Attached SCSI removable disk
+sd 2:0:0:0: Attached scsi generic sg2 type 0
 
 
--- 
-Jeff Layton <jlayton@redhat.com>
+System is a Vaio with ICH4 and TI PCI7420 Cardbus bridge.
+If you need more info, please don't hesitate to ask.
+
+Thank you,
+	Manuel Lauss
