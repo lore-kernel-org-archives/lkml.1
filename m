@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762969AbXJENVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbXJENXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762969AbXJENVb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 09:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXJENVU
+	id S1762927AbXJENXz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 09:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXJENXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 09:21:20 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48011 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762415AbXJENVT (ORCPT
+	Fri, 5 Oct 2007 09:23:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37048 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756847AbXJENXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 09:21:19 -0400
-Date: Fri, 5 Oct 2007 18:51:14 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
-       a.p.zijlstra@chello.nl, bunk@kernel.org, oleg@tv-sign.ru
-Subject: Re: [PATCH RFC 6/9] RCU priority boosting for preemptible RCU
-Message-ID: <20071005132114.GA28755@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183901.GF3819@linux.vnet.ibm.com> <20071005114657.GA17788@in.ibm.com> <Pine.LNX.4.58.0710050822330.20859@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0710050822330.20859@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Fri, 5 Oct 2007 09:23:47 -0400
+Subject: Re: [PATCH] Replace __attribute_pure__ with __pure
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>, aubrey.li@analog.com,
+       bernd.schmidt@analog.com, bryan.wu@analog.com, grace.pan@analog.com,
+       marc.hoffman@analog.com, michael.hennerich@analog.com,
+       michael.frysinger@analog.com, jerry.zeng@analog.com,
+       jie.zhang@analog.com, robin.getz@analog.com, roy.huang@analog.com,
+       sonic.zhang@analog.com, vivi.li@analog.com, yi.li@analog.com,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071005131309.GA445@linux-mips.org>
+References: <20071005131309.GA445@linux-mips.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 05 Oct 2007 10:23:23 -0300
+Message-Id: <1191590603.4864.163.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 08:24:21AM -0400, Steven Rostedt wrote:
+
+Em Sex, 2007-10-05 às 14:13 +0100, Ralf Baechle escreveu:
+> To be consistent with the use of attributes in the rest of the kernel
+> replace all use of __attribute_pure__ with __pure and delete the
+> definition of __attribute_pure__.
 > 
-> 
-> 
-> On Fri, 5 Oct 2007, Gautham R Shenoy wrote:
-> 
-> > On Mon, Sep 10, 2007 at 11:39:01AM -0700, Paul E. McKenney wrote:
-> >
-> > [snip]
-> >
-> > > +
-> > > +/*
-> > > + * Return the list from which to boost target tasks.
-> > > + * May only be invoked by the booster task, so guaranteed to
-> > > + * already be initialized.  Use rcu_boost_dat element least recently
-> > > + * the destination for task blocking in RCU read-side critical sections.
-> > > + */
-> > > +static inline struct rcu_boost_dat *rcu_rbd_boosting(int cpu)
-> > > +{
-> > > +	int idx = (rcu_boost_idx + 1) & (RCU_BOOST_ELEMENTS - 1);
-> >
-> > Why is this masking required? When we increment
-> > the rcu_boost_idx in rcu_booster, we do perform a modulo operation
-> > to ensure that it wraps around RCU_BOOST_ELEMENTS.
-> 
-> Because we are not masking rcu_boost_idx, we are masking
->  (rcu_boost_idx + 1) which may extend the bounderies of
-> RCU_BOOST_ELEMENTS.
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-Thanks! 
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+ 
+Cheers,
+Mauro
 
-But I'm still trying to understand why the (increment + masking)
-is required at all.
-
-The thread(producer) that requires boosting is added to the element
-with index rcu_boost_idx.
-
-The booster thread(consumer) increments the rcu_boost_idx to 
-(rcu_boost_idx + 1) % RCU_BOOST_ELEMENTS, before it fetches the least
-recently used rcu_boot_dat elements and boost the eligible tasks queued
-in that element.
-
-So, can't we just return per_cpu(rcu_boost_dat, cpu)[rcu_boost_idx] from
-rcu_rbd_boosting(cpu) ? Isn't that already the least recently used
-element?
-
-> 
-> -- Steve
-
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
