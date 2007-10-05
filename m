@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXJEHcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbXJEHdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbXJEHcr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 03:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXJEHcj
+	id S1759373AbXJEHdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 03:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbXJEHdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 03:32:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50274 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbXJEHcj (ORCPT
+	Fri, 5 Oct 2007 03:33:04 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:64053 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755553AbXJEHdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 03:32:39 -0400
-Date: Fri, 5 Oct 2007 09:32:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, jikos@jikos.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: video resume stuff
-Message-ID: <20071005073238.GA19065@atrey.karlin.mff.cuni.cz>
-References: <20071004130513.GA16076@elf.ucw.cz> <470511A9.4060705@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <470511A9.4060705@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 5 Oct 2007 03:33:01 -0400
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, wfg@mail.ustc.edu.cn,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu>
+	 <20071004145640.18ced770.akpm@linux-foundation.org>
+	 <E1IdZLg-0002Wr-00@dorka.pomaz.szeredi.hu>
+	 <20071004160941.e0c0c7e5.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Cu2uxn8Sr4XKkNK4aPLz"
+Date: Fri, 05 Oct 2007 09:32:57 +0200
+Message-Id: <1191569577.22357.22.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> >I'm thinking about how to clean up video resume/how to get it to work
-> >for non-VESA video modes (jikos' case).
-> >
-> >I guess the cleanest solution would be to just call set_mode from
-> >wakeup.S.... but that is not as easy as I imagined, because bootup
-> >code seems to be compiled separately.
-> >
-> >Is there some easy way to retain bootup code in memory, so that wakeup
-> >can use it? Or is there some easy solution I'm missing?
-> 
-> No, not really.  The setup code is not even part of the kernel binary 
-> proper, and may not even have been run under certain circumstances.
-> 
-> The "easy" solution is to link it in again, which seems to be what 
-> you're doing.  Now, currently the boot code is compiled after vmlinux is 
-> complete, so some of the build ordering would have to be changed and/or 
-> some of the code rearranged.
+--=-Cu2uxn8Sr4XKkNK4aPLz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I guess major change is to rename conflicting symbols, so that it is
-possible to link it twice. That would mean boot_memset() instead of
-memset() etc... Is that acceptable?
+On Thu, 2007-10-04 at 16:09 -0700, Andrew Morton wrote:
+> On Fri, 05 Oct 2007 00:39:16 +0200
+> Miklos Szeredi <miklos@szeredi.hu> wrote:
+>=20
+> > > throttle_vm_writeout() should be a per-zone thing, I guess.  Perhaps =
+fixing
+> > > that would fix your deadlock.  That's doubtful, but I don't know anyt=
+hing
+> > > about your deadlock so I cannot say.
+> >=20
+> > No, doing the throttling per-zone won't in itself fix the deadlock.
+> >=20
+> > Here's a deadlock example:
+> >=20
+> > Total memory =3D 32M
+> > /proc/sys/vm/dirty_ratio =3D 10
+> > dirty_threshold =3D 3M
+> > ratelimit_pages =3D 1M
+> >=20
+> > Some program dirties 4M (dirty_threshold + ratelimit_pages) of mmap on
+> > a fuse fs.  Page balancing is called which turns all these into
+> > writeback pages.
+> >=20
+> > Then userspace filesystem gets a write request, and tries to allocate
+> > memory needed to complete the writeout.
+> >=20
+> > That will possibly trigger direct reclaim, and throttle_vm_writeout()
+> > will be called.  That will block until nr_writeback goes below 3.3M
+> > (dirty_threshold + 10%).  But since all 4M of writeback is from the
+> > fuse fs, that will never happen.
+> >=20
+> > Does that explain it better?
+> >=20
+>=20
+> yup, thanks.
+>=20
+> This is a somewhat general problem: a userspace process is in the IO path=
+.=20
+> Userspace block drivers, for example - pretty much anything which involve=
+s
+> kernel->userspace upcalls for storage applications.
+>=20
+> I solved it once in the past by marking the userspace process as
+> PF_MEMALLOC and I beleive that others have implemented the same hack.
+>=20
+> I suspect that what we need is a general solution, and that the solution
+> will involve explicitly telling the kernel that this process is one which
+> actually cleans memory and needs special treatment.
+>=20
+> Because I bet there will be other corner-cases where such a process needs
+> kernel help, and there might be optimisation opportunities as well.
+>=20
+> Problem is, any such mark-me-as-special syscall would need to be
+> privileged, and FUSE servers presently don't require special perms (do
+> they?)
 
-> I suggest we tackle this *after* the x86 merge.
+I think just adding nr_cpus * ratelimit_pages to the dirth_thresh in
+throttle_vm_writeout() will also solve the problem
 
-Well, we still have the regression on jikos' strange system, and I
-would like to understand what is going on there.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--=-Cu2uxn8Sr4XKkNK4aPLz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHBeipXA2jU0ANEf4RApgvAJ92EWsfzvf/eQErQHbIn/qWFEvCqQCbB1Q7
+fLPQqJlxYwETFscV2+9DFwg=
+=7VY/
+-----END PGP SIGNATURE-----
+
+--=-Cu2uxn8Sr4XKkNK4aPLz--
+
