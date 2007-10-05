@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbXJETzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbXJET5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbXJETzl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 15:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbXJETzW
+	id S932205AbXJET5I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 15:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762273AbXJET4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 15:55:22 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56810 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757959AbXJETzT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 15:55:19 -0400
-Date: Fri, 5 Oct 2007 21:55:18 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Cute feature: colored printk output
-In-Reply-To: <20071005194326.GD4000@csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.64.0710052144580.13406@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr>
- <20071005191940.GA4003@csclub.uwaterloo.ca>
- <Pine.LNX.4.64.0710052120270.13406@fbirervta.pbzchgretzou.qr>
- <20071005192404.GB4003@csclub.uwaterloo.ca>
- <Pine.LNX.4.64.0710052126271.13406@fbirervta.pbzchgretzou.qr>
- <20071005194326.GD4000@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 5 Oct 2007 15:56:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47058 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761872AbXJET4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 15:56:51 -0400
+Date: Fri, 5 Oct 2007 15:56:34 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>, David Rientjes <rientjes@google.com>,
+       Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Keir Fraser <keir@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: race with page_referenced_one->ptep_test_and_clear_young and
+ pagetable setup/pulldown
+Message-ID: <20071005155634.7d677970@cuia.boston.redhat.com>
+In-Reply-To: <47069315.8030802@goop.org>
+References: <470596C4.8060804@goop.org>
+	<Pine.LNX.4.64.0710051146300.25518@blonde.wat.veritas.com>
+	<20071005145828.17ba9c69@cuia.boston.redhat.com>
+	<47069315.8030802@goop.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 05 Oct 2007 12:40:05 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-On Oct 5 2007 15:43, Lennart Sorensen wrote:
->On Fri, Oct 05, 2007 at 09:32:11PM +0200, Jan Engelhardt wrote:
->> Ah you seem to be a proponent of http://www.blackgoogle.com/
->> then :-)  Unfortunately, it seems like Xft uses Grayscale AA
->> (http://antigrain.com/research/font_rasterization/index.html)
->> so black background make the font look thinner.
->
->I was mainly thinking someone with a server with a screen showing their
->console might like to not make too much heat in the server room.
+> Well, isn't the correct fix to make Xen take all the pagetable locks
+> while pinning/unpinning?  Adding exception handling to
+> test_and_clear_bit would solve this particular race, but are there
+> others (either now or potentially)?  Seems fragile.
 
-"Ha, ok, I see where you're going with this one."
+You're right, holding the pagetable lock(s) across pinning/unpinning
+operations would avoid the problem too.
 
-This patch is perfectly suited to reduce heat at home and in the server
-room, especially during kernel development and debugging, but the
-average kernel usage already pays off. Just add vt.printk_color=0x08
-and all your kernel messages and oopses will be printed using low-power
-electrons. Extremely useful on SGI Altix 4700, which does print a lot
-(number of CPU cores), or SunFire X4500 (number of disks). Even if not
-using one of these systems, CKO can contribute to the lower power usage
-of PetaBox™ [http://www.archive.org/web/petabox.php]... ;-)
+While we do not care about the accessed bit, there are similar operations
+going on with the dirty bit - which is a lot more important :)
+
+-- 
+All Rights Reversed
