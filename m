@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXJEFCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXJEFIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbXJEFCh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 01:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbXJEFC2
+	id S1753983AbXJEFIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 01:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbXJEFIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 01:02:28 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61959 "EHLO
+	Fri, 5 Oct 2007 01:08:37 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:64309 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbXJEFC1 (ORCPT
+	with ESMTP id S1750811AbXJEFIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 01:02:27 -0400
-Message-ID: <4705C4BF.6060308@ah.jp.nec.com>
-Date: Fri, 05 Oct 2007 13:59:43 +0900
+	Fri, 5 Oct 2007 01:08:36 -0400
+Message-ID: <4705C63E.7020408@ah.jp.nec.com>
+Date: Fri, 05 Oct 2007 14:06:06 +0900
 From: Takenori Nagano <t-nagano@ah.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -21,41 +21,41 @@ CC: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com,
        kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
        Keith Owens <kaos@ocs.com.au>,
        Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
-References: <4704D0CA.4080001@ah.jp.nec.com> <20071004090711.456b6338.randy.dunlap@oracle.com>
-In-Reply-To: <20071004090711.456b6338.randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/2] add tunable_notifier function
+References: <4704D0BA.4090507@ah.jp.nec.com> <20071004091157.c35f3513.randy.dunlap@oracle.com>
+In-Reply-To: <20071004091157.c35f3513.randy.dunlap@oracle.com>
 Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Randy Dunlap wrote:
-> On Thu, 04 Oct 2007 20:38:50 +0900 Takenori Nagano wrote:
+> On Thu, 04 Oct 2007 20:38:34 +0900 Takenori Nagano wrote:
+>> diff -uprN linux-2.6.23-rc9.orig/kernel/sys.c linux-2.6.23-rc9/kernel/sys.c
+>> --- linux-2.6.23-rc9.orig/kernel/sys.c	2007-10-02 12:24:52.000000000 +0900
+>> +++ linux-2.6.23-rc9/kernel/sys.c	2007-10-03 14:48:15.160000000 +0900
+>> @@ -38,6 +38,7 @@
+>>  #include <linux/syscalls.h>
+>>  #include <linux/kprobes.h>
+>>  #include <linux/user_namespace.h>
+>> +#include <linux/debugfs.h>
+>>
+>>  #include <asm/uaccess.h>
+>>  #include <asm/io.h>
+>> @@ -393,6 +394,234 @@ int blocking_notifier_call_chain(struct
 > 
->> This patch implements new notifier function to panic_notifier_list. We can
->> change the list of order by debugfs.
->>
->> Thanks,
->>
->> ---
->>
->> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
->>
->> ---
->>   * Returns seconds, approximately.  We don't need nanosecond
->>   * resolution, and we don't need to waste time with a big divide when
->> @@ -193,5 +201,6 @@ __init void spawn_softlockup_task(void)
->>  	cpu_callback(&cpu_nfb, CPU_ONLINE, cpu);
->>  	register_cpu_notifier(&cpu_nfb);
->>
->> -	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
->> +	tunable_notifier_chain_register(&panic_notifier_list, &panic_block,
->> +						"softlookup", NULL);
->>  }
+>> +/**
+>> + *	tunable_notifier_chain_register - Add notifier to an tunable notifier chain
+>> + *	@nh: Pointer to head of the tunable notifier chain
+>> + *	@n: New entry in notifier chain
+>> + *	@name: Pointer to the name of this notifier chain
 > 
->                                                 "softlockup"
+> Is @name the name of a notifier chain or of the new notifier entry?
 
 Hi Randy,
 
-Thank you for reviewing. :)
-I'll fix next version.
+@name: Pointer to the name of the new notifier entry.
+
+I'll change the explanation.
+
+Thanks,
