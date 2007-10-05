@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763480AbXJEPno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbXJEPob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763480AbXJEPno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 11:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbXJEPnb
+	id S1763475AbXJEPob (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 11:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbXJEPoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 11:43:31 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:62077 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760395AbXJEPna (ORCPT
+	Fri, 5 Oct 2007 11:44:22 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:36243
+	"EHLO ghaskins-t60p.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755739AbXJEPoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 11:43:30 -0400
-Date: Fri, 5 Oct 2007 16:43:17 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Guennadi Liakhovetski <lg@denx.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: tmpfs disabled in .config but in /proc/filesystems
-In-Reply-To: <Pine.LNX.4.60.0710051637200.10392@poirot.grange>
-Message-ID: <Pine.LNX.4.64.0710051637380.16909@blonde.wat.veritas.com>
-References: <Pine.LNX.4.60.0710051637200.10392@poirot.grange>
+	Fri, 5 Oct 2007 11:44:21 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial console
+To: mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ghaskins@novell.com
+Date: Fri, 05 Oct 2007 11:42:04 -0400
+Message-ID: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Oct 2007, Guennadi Liakhovetski wrote:
-> Am I running crazy here (some 2.6.23-rc6-ish)?
-> 
-> $ zcat /proc/config.gz | grep TMPFS
-> # CONFIG_TMPFS is not set
-> $ grep tmpfs /proc/filesystems
-> nodev   tmpfs
+This series may help debugging certain circumstances where the serial
+console is unreponsive (e.g. RT51+ spinner, or scheduler problem).  It changes
+the serial8250 driver to use IRQF_NODELAY so that interrupts execute in irq
+context instead of a kthread.
 
-tmpfs (mm/shmem.c) is used by the kernel to support shared memory
-of various kinds even when CONFIG_TMPFS is not set.  But only when
-CONFIG_TMPFS=y can users mount a tmpfs as a fully capable filesystem.
-Confusing, yes: sorry for putting the fear of craziness upon you.
+It works pretty well on this end, though it is admitted not fully baked.  For
+instance, a few paths in sysrq can still call into non-raw spinlocks
+(sched_debug_show, for instance) which will cause subsequent errors.  Also,
+if you use KDB, be sure to convert the kdb_printf_lock to raw as well.  I may
+send a KDB related patch seperately.
 
-Hugh
+I am sending this out now in case it is helpful to someone.
+
+Regards,
+-Greg   
