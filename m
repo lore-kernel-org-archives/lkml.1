@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbXJEXPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764589AbXJEXR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763707AbXJEXPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 19:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXJEXPb
+	id S1764589AbXJEXR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 19:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXJEXRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 19:15:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57053 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751537AbXJEXP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 19:15:29 -0400
-Date: Fri, 5 Oct 2007 16:15:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org, hpa@zytor.com,
-       menage@google.com
-Subject: Re: [PATCH] Use task_pid_nr() instead of pid_nr(task_pid())
-Message-Id: <20071005161521.cae8c531.akpm@linux-foundation.org>
-In-Reply-To: <4703A67E.1070209@openvz.org>
-References: <4703A67E.1070209@openvz.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Oct 2007 19:17:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44677 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751537AbXJEXRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 19:17:20 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Timur Tabi <timur@freescale.com>
+Cc: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com>
+	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>
+	<470691EB.7020209@freescale.com>
+	<AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>
+	<4706A842.9030507@freescale.com> <jer6k9mesf.fsf@sykes.suse.de>
+	<4706AD62.6030705@freescale.com>
+X-Yow: JAPAN is a WONDERFUL planet -- I wonder if we'll ever reach
+ their level of COMPARATIVE SHOPPING...
+Date: Sat, 06 Oct 2007 01:17:18 +0200
+In-Reply-To: <4706AD62.6030705@freescale.com> (Timur Tabi's message of "Fri\,
+	05 Oct 2007 16\:32\:18 -0500")
+Message-ID: <jeir5lm9s1.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Oct 2007 18:26:06 +0400
-Pavel Emelyanov <xemul@openvz.org> wrote:
+Timur Tabi <timur@freescale.com> writes:
 
-> There are two places that do so - the cgroups subsystem 
-> and the autofs code.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/fs/autofs/root.c b/fs/autofs/root.c
-> index 592f640..5efff3c 100644
-> --- a/fs/autofs/root.c
-> +++ b/fs/autofs/root.c
-> @@ -214,7 +214,7 @@ static struct dentry *autofs_root_lookup
->  
->  	oz_mode = autofs_oz_mode(sbi);
->  	DPRINTK(("autofs_lookup: pid = %u, pgrp = %u, catatonic = %d, "
-> -				"oz_mode = %d\n", pid_nr(task_pid(current)),
-> +				"oz_mode = %d\n", task_pid_nr(current),
->  				task_pgrp_nr(current), sbi->catatonic,
->  				oz_mode));
->  
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 1e8aa53..8720881 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -1762,7 +1762,7 @@ static int pid_array_load(pid_t *pidarra
->  	while ((tsk = cgroup_iter_next(cont, &it))) {
->  		if (unlikely(n == npids))
->  			break;
-> -		pidarray[n++] = pid_nr(task_pid(tsk));
-> +		pidarray[n++] = task_pid_nr(tsk);
->  	}
->  	cgroup_iter_end(cont, &it);
->  	return n;
+> Andreas Schwab wrote:
+>> Timur Tabi <timur@freescale.com> writes:
+>>
+>>> The CPU shift operation, yes.  I'm talking about shift operations on
+>>> external memory-mapped devices.
+>>
+>> That is a property of how the device is wired to the bus.  The cpu will
+>> always put a value of 128 on the bus such that D7 = 1 and D0-D6 = 0.
+>
+> Yes, but is D7 on the left or on the right?
 
-And more will appear over time unless we remove pid_nr() altogether.
+On the bus there is no left or right.  There is only D7 and D0.
 
-Can we do that?
+> that there's no macro that will tell how the lines from the CPU to
+> external memory are mapped.
+
+This is always the same.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
