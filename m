@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763521AbXJFPK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbXJFPMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763521AbXJFPK6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 11:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760302AbXJFPKj
+	id S1763359AbXJFPMX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 11:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759460AbXJFPMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 11:10:39 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47013 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760134AbXJFPKi (ORCPT
+	Sat, 6 Oct 2007 11:12:15 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:43255 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759415AbXJFPMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 11:10:38 -0400
-Date: Sat, 6 Oct 2007 16:10:26 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: ohyama_sec@ariel-networks.com
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]dose it make get_swap_page(mm/swapfiles.c) good performance
- ?, kernel<2.6.22.9>.
-In-Reply-To: <20071006000403.DF6E2378020@ns.ariel-networks.com>
-Message-ID: <Pine.LNX.4.64.0710061547350.4924@blonde.wat.veritas.com>
-References: <20071006000403.DF6E2378020@ns.ariel-networks.com>
+	Sat, 6 Oct 2007 11:12:13 -0400
+Date: Sat, 6 Oct 2007 17:26:14 +0200
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: "Elyse M. Grasso" <emgrasso@data-raptors.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net,
+       Andreas Herrmann <aherrman@arcor.de>
+Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
+Message-ID: <20071006152614.GC22435@flower.upol.cz>
+References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org> <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710050408550.1819@scrub.home>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Oct 2007, ohyama_sec@ariel-networks.com wrote:
-> -hiroyasu ohyama
+On Fri, Oct 05, 2007 at 04:35:41AM +0200, Roman Zippel wrote:
+> Hi,
 > 
-> I wonder what corrected attached source makes good performance of 
-> getting page slot cluster from page area discripter which is written 
-> "si" in the source codes.
-> Because I think head of swap_list_t discripter doesn't suggest index of 
-> swap area which is same priority that swap_list.next but one which is 
-> the highest priority in the priority's list.
-> the si->swap_map which have high priority may be chosen by 
-> get_swap_page(), so that page slot of low priority's swap area may have 
-> more blank cluster than one of hich priority's swap area.
-> Then, I think substitute "swap_list.head" for "next" is privent them 
-> from finding cluster of page slot when "swap_info[next].prio"'s priority 
-> is different swap_list.next.
+> On Mon, 1 Oct 2007, Oleg Verych wrote:
+> 
+> > Today's kconfig was proposed and accepted in a very unpleasant
+> > circumstances, has very poor design, development and no working
+> > alternative (for 5+ years now).
+> 
+> If you want to make such statements, you have to offer a little more than 
+> the hot air you're producing right now...
+...
 
-Thanks for making the suggestion.  I think you are right in what you
-say, but that nevertheless we should not make the change you suggest.
+> If you want to improve the design, you're more than welcome. I'm the first 
+> one to admit that there's still lots of room for improvement, but if you 
+> want to claim this can only be done via a rewrite, then you have to be 
+> a lot more specific what's wrong the current design and why it's 
+> unfixable.
+> Quite some thought has been put into this design and if you were a little 
+> more specific, I could actually tell you why it is this way and maybe how 
+> to improve it incrementally instead of trying to reinvent everything.
 
-The idea behind the swap priorities is that we use partitions or
-swapfiles with high priorities before going to use those with lower
-priorities.  That could be useful, for example, if the high priority
-swap partitions are on fast disks, and the lower priority partitions
-on slower disks, ones we'd really prefer to avoid using normally.
-
-With your change, yes, once get_swap_page() fails to find a slot in
-the last area at a particular priority, it will proceed to the next
-lower priority: you're right that it'll probably find a swap cluster
-there much more easily than by going back to the top priority as it
-does; but that would then go against the priorities - get_swap_page()
-itself would be quicker, but swap I/O would be slower (if those
-priorities are indeed according to the speed of the disks).
-
-To get the get_swap_page() speedup you want, simply add
-more swap partitions or swapfiles at the _same_ priority.
-
-Hugh
-
-> *** mm/swapfile_bck.c   2007-10-04 12:09:37.000000000 +0900
-> --- mm/swapfile.c       2007-10-04 12:31:34.000000000 +0900
-> ***************
-> *** 186,193 ****
->        for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
->                si = swap_info + type;
->                next = si->next;
-> !               if (next < 0 ||
-> !                   (!wrapped && si->prio != swap_info[next].prio)) {
->                        next = swap_list.head;
->                        wrapped++;
->                }
-> --- 186,192 ----
->        for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
->                si = swap_info + type;
->                next = si->next;
-> !               if (next < 0) {
->                        next = swap_list.head;
->                        wrapped++;
->                }
+Thanks. I will be specific, after i will finish, what i already have,
+to make air a bit less hot. Of course everything will be back
+compatible, so nothing to worry about (the rewrite).
+____
