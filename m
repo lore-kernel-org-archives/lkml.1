@@ -1,92 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbXJFFmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbXJFFyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbXJFFmq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 01:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXJFFmi
+	id S1755383AbXJFFyE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 01:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXJFFxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 01:42:38 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:57832 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbXJFFmh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 01:42:37 -0400
-Date: Sat, 6 Oct 2007 01:42:34 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       airlied@linux.ie, arashi@sacredchao.net
-Subject: Revert "intel_agp: fix stolen mem range on G33"
-Message-ID: <20071006054234.GC14767@fattire.cabal.ca>
-References: <4706D4B1.6050101@sacredchao.net> <20071006044221.GA14767@fattire.cabal.ca> <20071006053410.GB14767@fattire.cabal.ca>
+	Sat, 6 Oct 2007 01:53:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56878 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbXJFFxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 01:53:53 -0400
+Date: Sat, 6 Oct 2007 07:53:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Jackson <pj@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nickpiggin@yahoo.com.au,
+       randy.dunlap@oracle.com, menage@google.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
+Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag fixes
+Message-ID: <20071006055324.GC23397@elte.hu>
+References: <20071003114401.32194.73464.sendpatchset@jackhammer.engr.sgi.com> <20071005161305.af27f452.akpm@linux-foundation.org> <20071005163918.46d40fed.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071006053410.GB14767@fattire.cabal.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071005163918.46d40fed.pj@sgi.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit f443675affe3f16dd428e46f0f7fd3f4d703eeab, which
-breaks horribly if you aren't running an unreleased xf86-video-intel
-driver out of git.
 
-Conflicts:
+* Paul Jackson <pj@sgi.com> wrote:
 
-	drivers/char/agp/intel-agp.c
+> Yup - so far as I can tell, you didn't pick up the base patch that 
+> this current patch fixes.  So, no, I wouldn't expect this patch to 
+> make any sense.
+> 
+> As I stated in this current patch in the diffstat section after the 
+> '---' marker, this current patch applies to the base patch of Subject:
+> 
+>   [PATCH] cpuset and sched domains: sched_load_balance flag
+> 
+> You probably didn't pick up that base patch because Nick and I are 
+> still haggling over it.  Well ... we've agreed, but I can't get the 
+> scheduler to work as I thought Nick wanted, and I'm still waiting to 
+> hear from Nick again.
 
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
----
+please resend the base patch to Andrew (or better yet, a combo patch 
+that Andrew can apply and which just does it all).
 
- drivers/char/agp/intel-agp.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+We've agreed on the external API and that is what matters for now. The 
+internal interfacing between the scheduler and cpusets can/could be 
+improved later on - and your original patch is reasonable to begin with. 
+So lets just move on and do this.
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index a5d0e95..141ca17 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -506,11 +506,6 @@ static void intel_i830_init_gtt_entries(void)
- 			break;
- 		}
- 	} else {
--		/* G33's GTT stolen memory is separate from gfx data
--		 * stolen memory.
--		 */
--		if (IS_G33)
--			size = 0;
- 		switch (gmch_ctrl & I855_GMCH_GMS_MASK) {
- 		case I855_GMCH_GMS_STOLEN_1M:
- 			gtt_entries = MB(1) - KB(size);
--- 
-1.5.3.3
-
-On Sat, Oct 06, 2007 at 01:34:10AM -0400, Kyle McMartin wrote:
-> On Sat, Oct 06, 2007 at 12:42:21AM -0400, Kyle McMartin wrote:
-> > commit f443675affe3f16dd428e46f0f7fd3f4d703eeab
-> >     intel_agp: fix stolen mem range on G33
-> >     G33 GTT stolen memory is below graphics data stolen memory and be seperate,
-> >     so don't subtract it in stolen mem counting.
-> >     
-> 
-> Found it, without this corresponding change to xf86-video-intel, this
-> breaks utterly:
-> 
-> commit 2a8592f2ebcba86b1127aa889155d58a3dc186ca
-> Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-> Date:   Wed Sep 5 14:52:56 2007 +0800
-> 
->     Fix G33 GTT stolen mem range
->     
->     G33 GTT table lives in seperate stolen mem with
->     graphics data stolen mem.
-> 
-> I think this should be reverted for 2.6.23, it certainly doesn't seem to have
-> been appropriate for 2.6.23-rc6.
-> 
-> Cheers,
-> 	Kyle M.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+	Ingo
