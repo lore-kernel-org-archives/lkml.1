@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763010AbXJFRht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763274AbXJFRno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763010AbXJFRht (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 13:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbXJFRhk
+	id S1763274AbXJFRno (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 13:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbXJFRnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 13:37:40 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:44247 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbXJFRhj (ORCPT
+	Sat, 6 Oct 2007 13:43:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:17564 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756750AbXJFRnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 13:37:39 -0400
-Date: Sat, 6 Oct 2007 19:51:45 +0200
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>
-Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
-Message-ID: <20071006175145.GD22435@flower.upol.cz>
-References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org> <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home> <20071006152614.GC22435@flower.upol.cz> <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org>
+	Sat, 6 Oct 2007 13:43:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bKNlb/YD2H5f6kKJfUf33OwrBbGT4JxUR8SpoOhNTGzXaW3/dPo6EBC8f4SgVzUFCgVSTle6VWUr7+3lHnssfZ8WkfK57cls5r1zVskebrQM5uqrr5/LzVNgpzqITgIsyM9o9ELecKlAn1Ah8D5iVfvlXy/qrsL7/4wc4maE4ps=
+Message-ID: <86802c440710061043u6e51cd7q468346bd06b08657@mail.gmail.com>
+Date: Sat, 6 Oct 2007 10:43:30 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeff Garzik" <jgarzik@pobox.com>
+Subject: Re: MSI interrupts and disable_irq
+Cc: "Ayaz Abdulla" <aabdulla@nvidia.com>,
+       "Manfred Spraul" <manfred@colorfullife.com>,
+       nedev <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <46FDBCB4.9090802@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 09:03:00AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 6 Oct 2007, Oleg Verych wrote:
-> > 
-> > Thanks. I will be specific, after i will finish, what i already have,
-> > to make air a bit less hot. Of course everything will be back
-> > compatible, so nothing to worry about (the rewrite).
-> 
-> Qutie frankly, this kind of "I'll tell you more when I'm done" is not 
-> generally a very working approach. 
-> 
-> If it's all backwards-compatible with the current Kconfig format, I guess 
-> it's not too bad, but historically speaking, the people who went off on 
-> their own and redesigned something from scratch have not been successful 
-> (and the CML2 thing is a good example of that).
+On 9/28/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+> Ayaz Abdulla wrote:
+> > I am trying to track down a forcedeth driver issue described by bug 9047
+> > in bugzilla (2.6.23-rc7-git1 forcedeth w/ MCP55 oops under heavy load).
+> > I added a patch to synchronize the timer handlers so that one handler
+> > doesn't accidently enable the IRQ while another timer handler is running
+> > (see attachment 'Add timer lock' in bug report) and for other processing
+> > protection.
+> >
+> > However, the system still had an Oops. So I added a lock around the
+> > nv_rx_process_optimized() and the Oops has not happened (see attachment
+> > 'New patch for locking' in bug report). This would imply a
+> > synchronization issue. However, the only callers of that function are
+> > the IRQ handler and the timer handlers (in non-NAPI case). The timer
+> > handlers  use disable_irq so that the IRQ handler does not contend with
+> > them. It looks as if disable_irq is not working properly.
+> >
+> > This issue repros only with MSI interrupt and not legacy INTx
+> > interrupts. Any ideas?
+>
+> (added linux-kernel to CC, since I think it's more of a general kernel
+> issue)
+>
+I wonder if the race is between soft_timer for nv_do_nic_poll from
+different CPUs
 
-Spent whole September on LKML archive (grave) digging, actually. So,
-please, get me right.
-
-If i have finally made statement like that (rewrite with new design),
-that basically means, i'll try to bring something, that probably will be
-better, not emotionally (CML2 :), but technically (kbuild-2.5's 100%
-slowdown of some important functionality :).
-
-> Incremental improvements actually tend to do better than "redesign".  
-
-I'm not going to call (and thus targeting) that thing "kbuild-2.7" or
-"kconfig-ng", "CML3000" or anything like that.
-
-If my proposal will fit, i.e. configuring and building something
-(anything) becomes more easy, more flexible, etc., then any project can
-try and adopt it actually. And this will be a measure of quality.
-
-> That's largely true outside of computer science too..
-
-Will see. If i will fail, who will care; i will not. Somebody spend years
-of doing that, what was rejected. More than 5 years of current
-kbuild/kconfig "development calmness". So...
-
-Maintenance and acceptance of the m4/make/perl/C/ncurses community of my
-mainly `TERM=linux ; sed && sh' approach is more important for me.
-
-Thanks, Linus.
-____
+YH
