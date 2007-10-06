@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765410AbXJFVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765581AbXJFVl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765410AbXJFVeR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 17:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbXJFVeF
+	id S1765581AbXJFVl3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 17:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXJFVlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 17:34:05 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10773 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbXJFVeD (ORCPT
+	Sat, 6 Oct 2007 17:41:21 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:45856 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753787AbXJFVlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 17:34:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=jzfdaW2LNanuNqillSM7rFUqV9iVChhp2ke7+hH+VRNaj+lRQlCDnAqlVORJG823w
-	NNbeMowDycg3uUd9vjGog==
-Message-ID: <6599ad830710061434t5fe36b1ai9e99f1c11f8753b6@mail.gmail.com>
-Date: Sat, 6 Oct 2007 14:34:00 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] cpusets - decrustify cpuset mask update code
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071006094749.17518.88048.sendpatchset@jackhammer.engr.sgi.com>
+	Sat, 6 Oct 2007 17:41:21 -0400
+Date: Sat, 6 Oct 2007 23:55:27 +0200
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: About summary in the subject (Re: [PATCH 0/2] Colored kernel output (run2))
+Message-ID: <20071006215527.GI22435@flower.upol.cz>
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <Pine.LNX.4.64.0710062300200.30354@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071006094749.17518.88048.sendpatchset@jackhammer.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710062300200.30354@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/6/07, Paul Jackson <pj@sgi.com> wrote:
-> From: Paul Jackson <pj@sgi.com>
->
-> Decrustify the kernel/cpuset.c 'cpus' and 'mems' updating code.
->
-> Other than subtle improvements in the consistency of identifying
-> white space at the beginning and end of passed in masks, this
-> doesn't make any visible difference in behaviour.  But it's
-> one or two hundred kernel text bytes smaller, and easier to
-> understand.
->
-> Signed-off-by: Paul Jackson <pj@sgi.com>
+On Sat, Oct 06, 2007 at 11:03:38PM +0200, Jan Engelhardt wrote:
+> 
+> On Oct 6 2007 23:03, Oleg Verych wrote:
+> >> 
+> >> (btw., i corrected the subject line to remove the 'NAK'. Why do you 
+> >> think you can 'NAK' a patch in this field?)
+> >
+> >I added comment (like this), so anyone can skip reading body, if headers
+> >are "Oleg Verych && NAK". In case if `NAK' have a magic meaning in the
+> >LKML, like control characters in the tty, i'm sorry.
+> >
+> >But how to express opinion quickly and easily?
+> 
+> You can't. I think that people will usually be interested _why_ you
+> voted for or against something
 
-Reviewed-by: Paul Menage <menage@google.com>
+Do you really think so? Yes, there are possibly LKML bots, that will
+read all messages in every thread. But i doubt they are humans.
 
-Looks fine to me.
+I also think, that kill-files and kill-names are common tools of the LKML
+readers. Thus, if someone sees my name with something like NAK in the
+subject, then nothing to worry about: next, please. I just amazed how
+inefficiently Subject, To, Cc headers are used. Everybody hurry through
+huge mail backlogs with subjects in thread all like one.
 
-Paul
+Summary and keywords headers are not used, so why not to make
+greping/selecting interesting/useful messages more efficient (and not
+only for those who is in Cc list)?
+
+Every mail/news reader displays To and Subject, so latter is last hope of
+increasing of efficiency, even in small threads.
+
+> (given the number of vote-submitters does not go through the roof).
+> That clearly won't fit into the subject,
+
+Sorry, i cannot see, what you are trying to say here. To place all
+acks-by to subject? No, just to get summary in one particular reply.
+
+> and even if RFC822 allowed it, it's only displayed like 40 chars wide.
+> The submitter (me in this case) will even look at *all* mails, so as to
+> (1) address the NAKs and (2) address the hidden feature requests in
+> ACKs.  :-)
+____
