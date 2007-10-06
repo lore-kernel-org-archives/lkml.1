@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbXJFTSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXJFT11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765113AbXJFTSs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 15:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbXJFTSm
+	id S1764999AbXJFT11 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 15:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXJFT1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 15:18:42 -0400
-Received: from 1wt.eu ([62.212.114.60]:2800 "EHLO 1wt.eu"
+	Sat, 6 Oct 2007 15:27:19 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41025 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbXJFTSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 15:18:41 -0400
-Date: Sat, 6 Oct 2007 21:18:37 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Oliver Pinter <oliver.pntr@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Security leak in kernel
-Message-ID: <20071006191837.GR10199@1wt.eu>
-References: <6101e8c40710061058v32488b36m43073d946519aa98@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6101e8c40710061058v32488b36m43073d946519aa98@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S1751537AbXJFT1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 15:27:19 -0400
+Message-ID: <4707E327.4020607@tmr.com>
+Date: Sat, 06 Oct 2007 15:33:59 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [code] Unlimited partitions, a try
+References: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr>	<4706B6A8.2060800@zytor.com> <20071006002919.0b32c8b9@the-village.bc.nu> <4706C8BD.7080906@zytor.com>
+In-Reply-To: <4706C8BD.7080906@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 07:58:52PM +0200, Oliver Pinter wrote:
-> Hi All!
+H. Peter Anvin wrote:
+> Alan Cox wrote:
+>> On Fri, 05 Oct 2007 15:11:52 -0700
+>> "H. Peter Anvin" <hpa@zytor.com> wrote:
+>>
+>>> Jan Engelhardt wrote:
+>>>> 15 partitions (at least for sd_mod devices) are too few.
+>>> Now when we have 20-bit minors, can't we simply recycle some of the 
+>>> higher bits for additional partitions, across the board?  63 
+>>> partitions seem to have been sufficient; at least I haven't heard 
+>>> anyone complain about that for 15 years.
+>>
+>> This was proposed ages ago. Al Viro vetoed sparse minors and it has been
+>> stuck this way ever since. If you have > 15 partitions use device mapper
+>> for it. I'd prefer it fixed but its arguable that device mapper is the
+>> right way to punt all our partitioning to userspace
 > 
-> this: http://www.milw0rm.com/exploits/4460http://www.milw0rm.com/exploits/4460
+> Sure.  However, that takes having that bit of userspace in even the most 
+> trivial configurations, and not just on bootup, but continuously.
 > 
-> exploit is fixed in kernel or not? this find I now..
+I'm not sure that configurations requiring more than 15 partitions are 
+properly described as "trivial." Which is not to disagree with your 
+point about required user tools, but most systems needing such tools 
+will be large and complex enough that a userspace solution will be 
+acceptable.
 
-Yes it's fixed by commit 176df2457 on 2007/09/21. It was CVE-2007-4573.
 
-Regards,
-Willy
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
