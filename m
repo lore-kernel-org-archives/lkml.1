@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXJFIHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXJFIYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbXJFIHj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 04:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbXJFIHZ
+	id S1760652AbXJFIYy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 04:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXJFIYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 04:07:25 -0400
-Received: from mpd.laptop.org ([18.85.46.35]:36353 "EHLO bender.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752288AbXJFIHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 04:07:23 -0400
-X-Greylist: delayed 3593 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Oct 2007 04:07:22 EDT
-From: Bernardo Innocenti <bernie@codewiz.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Richard Smith <richard@laptop.org>, Andres Salomon <dilinger@laptop.org>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Francesco Sacchi <batt@develer.com>,
-       Bernardo Innocenti <bernie@codewiz.org>
-Subject: [PATCH] ftdi_sio: fix FT232RL support for TIOCMGET
-Date: Sat,  6 Oct 2007 03:07:25 -0400
-Message-Id: <1191654445-17135-1-git-send-email-bernie@codewiz.org>
-X-Mailer: git-send-email 1.5.3.4.206.g58ba4
+	Sat, 6 Oct 2007 04:24:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53123 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751940AbXJFIYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 04:24:44 -0400
+Date: Sat, 6 Oct 2007 01:24:37 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071006012437.c0fd3a8a.pj@sgi.com>
+In-Reply-To: <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	<20071003105817.7adf6516.pj@sgi.com>
+	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	<20071003131632.fed4b848.pj@sgi.com>
+	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Francesco Sacchi <batt@develer.com>
+Paul Menage wrote:
+> What was wrong with my suggestion from a couple of emails back? Adding
+> the following in cpuset_attach():
+> 
+> struct cgroup_iter it;
+> struct task_struct *p;
+> cgroup_iter_start(cs->css.cgroup, &it);
+> while ((p = cgroup_iter_next(cs->css.cgroup, &it)))
+>        set_cpus_allowed(p, cs->cpus_allowed);
+> cgroup_iter_end(cs->css.cgroup, &it);
 
-Reading serial port status lines was broken on the FT232RL since when it
-has been detected as a separate chip (2.6.22+).  Previously, it would work
-because it was just handled as an FT232BM.
+This isn't working for me.
 
-Additionally, we were also forgetting to remove the dev_attr_latency_timer
-sysfs file in the FT232RL case.
+The key kernel routine for updating a tasks cpus_allowed
+cannot be called while holding a spinlock.
 
-Note by Bernardo Innocenti: the ftdi_sio maintainer appears to have stepped
-down, so I'm sending this to Greg Kroah-Hartman as the generic USB serial
-maintainer.  Please, let me know if this is not appropriate.
+But the above loop holds a spinlock, css_set_lock, between
+the cgroup_iter_start and the cgroup_iter_end.
 
-Signed-Off-By: Francesco Sacchi <batt@develer.com>
-Signed-Off-By: Bernardo Innocenti <bernie@codewiz.org>
+I end up generating complaints of:
+	BUG: scheduling while atomic
+when I invoke the set_cpus_allowed() above.
 
----
- drivers/usb/serial/ftdi_sio.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Should css_set_lock be a mutex?  Locking changes like that
+can be risky.
 
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 2d04585..940b0c4 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -892,7 +892,7 @@ static __u32 get_ftdi_divisor(struct usb_serial_port * port)
- 		break;
- 	case FT232BM: /* FT232BM chip */
- 	case FT2232C: /* FT2232C chip */
--	case FT232RL:
-+	case FT232RL: /* FT232RL chip */
- 		if (baud <= 3000000) {
- 			div_value = ftdi_232bm_baud_to_divisor(baud);
- 		} else {
-@@ -1169,7 +1169,9 @@ static void remove_sysfs_attrs(struct usb_serial_port *port)
- 	/* XXX see create_sysfs_attrs */
- 	if (priv->chip_type != SIO) {
- 		device_remove_file(&port->dev, &dev_attr_event_char);
--		if (priv->chip_type == FT232BM || priv->chip_type == FT2232C) {
-+		if (priv->chip_type == FT232BM ||
-+		    priv->chip_type == FT2232C ||
-+		    priv->chip_type == FT232RL) {
- 			device_remove_file(&port->dev, &dev_attr_latency_timer);
- 		}
- 	}
-@@ -2102,6 +2104,7 @@ static int ftdi_tiocmget (struct usb_serial_port *port, struct file *file)
- 	case FT8U232AM:
- 	case FT232BM:
- 	case FT2232C:
-+	case FT232RL:
- 		/* the 8U232AM returns a two byte value (the sio is a 1 byte value) - in the same
- 		   format as the data returned from the in point */
- 		if ((ret = usb_control_msg(port->serial->dev,
+Or perhaps there should be another callback, called only by
+attach() requests back to the same group.  Likely cpusets would
+be the only subsystem interested in plugging that callback.
+
+That, or my original patch, which calls the attach routine
+even if re-attaching to the current cgroup ...
+
 -- 
-1.5.2.3
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
