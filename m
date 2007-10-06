@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763521AbXJFRzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXJFR5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763521AbXJFRzj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 13:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbXJFRzb
+	id S1763695AbXJFR5m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 13:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXJFR5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 13:55:31 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:44363 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760693AbXJFRz3 (ORCPT
+	Sat, 6 Oct 2007 13:57:34 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:18560 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760933AbXJFR5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 13:55:29 -0400
-To: Jan Engelhardt <jengelh@computergmbh.de>, Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Cute feature: colored printk output
-In-Reply-To: <20071006110835.GA24463@elte.hu>
-References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr> <20071006110835.GA24463@elte.hu>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Sat, 6 Oct 2007 20:09:31 +0200
-Message-Id: <E1IeE5j-0005a6-10@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sat, 6 Oct 2007 13:57:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=X4Jp11sfCBfl+ZiNx6aMInKi3Jv6WY62mOBV5TkI7v6X2DzIfryzvJrkq95j25Mw0
+	XAAnf2grKkPVo/jHKBh/g==
+Date: Sat, 6 Oct 2007 10:54:35 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
+       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+In-Reply-To: <20071006012437.c0fd3a8a.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com> <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com> <20071003105817.7adf6516.pj@sgi.com> <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> <20071003131632.fed4b848.pj@sgi.com>
+ <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com> <20071006012437.c0fd3a8a.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sat, 6 Oct 2007 13:08:35 +0200
+On Sat, 6 Oct 2007, Paul Jackson wrote:
 
-> * Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
->> Colored kernel message output
->> 
->> Let's work more on Linux's cuteness! 
->> [http://lkml.org/lkml/2007/10/4/431] The following patch makes it 
->> possible to give kernel messages a selectable color
+> This isn't working for me.
+> 
+> The key kernel routine for updating a tasks cpus_allowed
+> cannot be called while holding a spinlock.
+> 
+> But the above loop holds a spinlock, css_set_lock, between
+> the cgroup_iter_start and the cgroup_iter_end.
+> 
+> I end up generating complaints of:
+> 	BUG: scheduling while atomic
+> when I invoke the set_cpus_allowed() above.
+> 
+> Should css_set_lock be a mutex?  Locking changes like that
+> can be risky.
+> 
 
-Only boot time selectable? Then write so, please.
+It would probably be better to just save references to the tasks.
 
->> which helps to distinguish it from other noise, such as boot messages.
->> NetBSD has it, OpenBSD has it, FreeBSD to some extent, so I think
->> Linux should too.
+	struct cgroup_iter it;
+	struct task_struct *p, **tasks;
+	int i = 0;
 
-This approach in GIGO-like, IMHO. Ugliness of (default) boot process
-messaging itself can and must be solved in the userspace. I don't know if
-anybody read sub-thread about size reduction by moving static printk
-string to userspace "message codes" (there were one more person than me,
-but still).
+	cgroup_iter_start(cs->css.cgroup, &it);
+	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+		get_task_struct(p);
+		tasks[i++] = p;
+	}
+	cgroup_iter_end(cs->css.cgroup, &it);
 
-The main problem, is the very narrow perspective of such "kernel"
-functionality:
+	while (--i >= 0) {
+		set_cpus_allowed(tasks[i], cs->cpus_allowed);
+		put_task_struct(tasks[i]);
+	}
 
-> feature request: would be interesting to have a color table (defined in 
-> the .config) dependent on message loglevel. That way KERN_CRIT messages 
-> could be red, KERN_INFO ones white, etc.
->
-> 	Ingo
+The getting and putting of the tasks will prevent them from exiting or 
+being deallocated prematurely.  But this is also a critical section that 
+will need to be protected by some mutex so it doesn't race with other 
+set_cpus_allowed().
 
-See? In the userspace one can make anything freely, try do it in the
-Linux kernel. With userspace {codes, messages} -> messages tool, any
-console printing frontend is possible. Of course, when kernel OOPes
-before or in early userspace, where nothing other than photo viva is
-possible, nobody should care about "Linux's cuteness!"
-
->> Inspired by cko (http://freshmeat.net/p/cko/), but independently
->> written, later contributed forth and back.
->> 
->> Already posted at: http://lkml.org/lkml/2007/4/1/162
->> 
->> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
->
-> looks really good to me!
->
-> Reviewed-by: Ingo Molnar <mingo@elte.hu>
->
-> small nit:
->
-> +       vc->vc_color = printk_color;
-> +       update_attr(vc);
->
-> that should be in a set_vc_color() function and the new code should do:
->
-> +	set_vc_color(vc, vc->vc_color);
->
-> (and same at the other places that call update_attr() as well)
-
-Is it possible to have a macro for this, which will be
-`do { } while(0)' in case of "NO, thanks" configuration?
-
---
--o--=O`C
- #oo'L O
-<___=E M
+		David
