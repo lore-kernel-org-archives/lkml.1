@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764395AbXJFQEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXJFQ0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764395AbXJFQEE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 12:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760302AbXJFQDy
+	id S1764250AbXJFQ0v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 12:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbXJFQ0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 12:03:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38283 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760238AbXJFQDx (ORCPT
+	Sat, 6 Oct 2007 12:26:42 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:25169 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbXJFQ0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 12:03:53 -0400
-Date: Sat, 6 Oct 2007 09:03:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Roman Zippel <zippel@linux-m68k.org>,
-       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>
-Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if
- !CONFIG_SYSCTL)
-In-Reply-To: <20071006152614.GC22435@flower.upol.cz>
-Message-ID: <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org>
-References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
- <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com>
- <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home>
- <20071006152614.GC22435@flower.upol.cz>
+	Sat, 6 Oct 2007 12:26:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Sh7kJCvVEdpUf+LMBC/V2xmHluCYY5I+JQRlfwTqkOva5NJx2aWg09BCUMCauMslGoO4i5yrQ8/J0CAXFh1LgEb7if7YS6SfNyDLHbmfuq4U9Gzx1YxdH/SJJBtJ+1CurfGTZQVCcprkP4fZDYbKNj0nBPlNPmDsJJHVgxJrCR4=
+Message-ID: <3d0408630710060926g7c2bad34je881b01a0cfecf72@mail.gmail.com>
+Date: Sun, 7 Oct 2007 00:26:37 +0800
+From: "Yan Zheng" <yanzheng@21cn.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]AIO: fix cleanup in io_submit_one(...)
+In-Reply-To: <3d0408630710060924l348462e4k67d462f5e85079a6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d0408630710060924l348462e4k67d462f5e85079a6@mail.gmail.com>
+X-Google-Sender-Auth: 55412c356e8549d5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+When IOCB_FLAG_RESFD flag is set and iocb->aio_resfd is incorrect,
+statement 'goto out_put_req' is executed. At label 'out_put_req',
+aio_put_req(..) is called, which requires 'req->ki_filp' set.
 
-On Sat, 6 Oct 2007, Oleg Verych wrote:
-> 
-> Thanks. I will be specific, after i will finish, what i already have,
-> to make air a bit less hot. Of course everything will be back
-> compatible, so nothing to worry about (the rewrite).
+Regards
 
-Qutie frankly, this kind of "I'll tell you more when I'm done" is not 
-generally a very working approach. 
+Signed-off-by: Yan Zheng<yanzheng@21cn.com>
+----
+diff -ur linux-2.6.23-rc9/fs/aio.c linux/fs/aio.c
+--- linux-2.6.23-rc9/fs/aio.c   2007-07-09 07:32:17.000000000 +0800
++++ linux/fs/aio.c      2007-10-07 00:05:10.000000000 +0800
+@@ -1562,6 +1562,7 @@
+                fput(file);
+                return -EAGAIN;
+        }
++       req->ki_filp = file;
+        if (iocb->aio_flags & IOCB_FLAG_RESFD) {
+                /*
+                 * If the IOCB_FLAG_RESFD flag of aio_flags is set, get an
+@@ -1576,7 +1577,6 @@
+                }
+        }
 
-If it's all backwards-compatible with the current Kconfig format, I guess 
-it's not too bad, but historically speaking, the people who went off on 
-their own and redesigned something from scratch have not been successful 
-(and the CML2 thing is a good example of that).
-
-Incremental improvements actually tend to do better than "redesign".  
-That's largely true outside of computer science too..
-
-		Linus
+-       req->ki_filp = file;
+        ret = put_user(req->ki_key, &user_iocb->aio_key);
+        if (unlikely(ret)) {
+                dprintk("EFAULT: aio_key\n");
