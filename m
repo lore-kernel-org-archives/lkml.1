@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXJFGB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbXJFGKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbXJFGB4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 02:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbXJFGBr
+	id S1756898AbXJFGKf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 02:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbXJFGK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 02:01:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35738 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751342AbXJFGBq (ORCPT
+	Sat, 6 Oct 2007 02:10:27 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:24547 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbXJFGK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 02:01:46 -0400
-Date: Fri, 5 Oct 2007 23:01:41 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       randy.dunlap@oracle.com, menage@google.com,
-       linux-kernel@vger.kernel.org, dino@in.ibm.com, cpw@sgi.com
-Subject: Re: [PATCH] cpuset and sched domains: sched_load_balance flag fixes
-Message-Id: <20071005230141.63a1f6c3.pj@sgi.com>
-In-Reply-To: <20071006055324.GC23397@elte.hu>
-References: <20071003114401.32194.73464.sendpatchset@jackhammer.engr.sgi.com>
-	<20071005161305.af27f452.akpm@linux-foundation.org>
-	<20071005163918.46d40fed.pj@sgi.com>
-	<20071006055324.GC23397@elte.hu>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 6 Oct 2007 02:10:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Xng+FJk4DILSxG9Ez0nAILYAV99DuTJ9Jyu1IqIsHhNRRRE3YKbWaPKGV1RBwpoxeJYso0WVZwsPfugCylIMnTDwtJglfv4CUl1JhLMFKSugbTffQqoJg7He8BCmQSssVft+1gv4WvchHZ2s+ZWXLUS9+L+HehxUPCTYYWGHnJM=
+Message-ID: <19f34abd0710052310r2043f69ew70fe8b5f9ef0493c@mail.gmail.com>
+Date: Sat, 6 Oct 2007 08:10:26 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [RFC][PATCH] New message-logging API (kprint)
+Cc: "Miguel Ojeda" <maxextreme@gmail.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>,
+       "Dick Streefland" <dick.streefland@altium.nl>,
+       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Emil Medve" <Emilian.Medve@freescale.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "linux@horizon.com" <linux@horizon.com>
+In-Reply-To: <200710051126.50816.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1191528247.13580.11.camel@grianne>
+	 <200710042059.25721.rob@landley.net>
+	 <653402b90710050001k29ed8e3by1ccc4a0ede818b9f@mail.gmail.com>
+	 <200710051126.50816.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo wrote:
-> please resend the base patch to Andrew (or better yet, a combo patch 
-> that Andrew can apply and which just does it all).
+On 10/5/07, Rob Landley <rob@landley.net> wrote:
+> The original idea (selectively compile out printk() instances based on log
+> level to conserve space) is explicitly not addressed by this patch, and in
+> fact this patch might actually make it harder to implement (by complicating
+> the code).
 
-I'm reluctant to right now, because I will be off the air
-for three days, starting in one more day, and don't like
-firing off stuff just before I vanish.
+This is wrong. The patch provides log-level-based filtering at compile
+time, effectively making the kernel smaller.
 
-Though I'm aware that time is short for 2.6.24 ... not
-sure how best to handle this.
+> *shrug*  That doesn't mean my objections are important to anyone else, just
+> that I don't personally see any reason to be enthusiastic about this patch.
 
-My plan had been to send Andrew something on Wednesday
-next week (five days from now), either what we have now,
-or with the improved cpuset-to-sched API, if Nick and I
-can work through that (well, if Nick can figure out what
-I broke, while I'm offline.)
+I agree; you are right about the other things, Maybe I can try to fit
+some of these things into printk itself (thanks for the tip, Alan),
+and we'll see how far we can get.
 
-Andrew or Ingo - you got any better plan?
+Thanks.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Vegard
