@@ -1,79 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbXJFAkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764755AbXJFAmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764709AbXJFAkk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 20:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXJFAkd
+	id S1764755AbXJFAmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 20:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbXJFAmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 20:40:33 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:52757 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1758544AbXJFAkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 20:40:32 -0400
-Message-ID: <391631232.21419@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Sat, 6 Oct 2007 08:40:28 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-Message-ID: <20071006004028.GA7121@mail.ustc.edu.cn>
-References: <20071004164801.d8478727.akpm@linux-foundation.org> <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu> <20071004174851.b34a3220.akpm@linux-foundation.org> <1191572520.22357.42.camel@twins> <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu> <1191577623.22357.69.camel@twins> <E1IdkOf-0002tK-00@dorka.pomaz.szeredi.hu> <1191581854.22357.85.camel@twins> <1191606600.6715.94.camel@heimdal.trondhjem.org> <1191609139.6210.4.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191609139.6210.4.camel@lappy>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 5 Oct 2007 20:42:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44190 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753115AbXJFAl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 20:41:59 -0400
+Date: Fri, 5 Oct 2007 17:34:05 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Miguel Ojeda" <maxextreme@gmail.com>
+Cc: "Rob Landley" <rob@landley.net>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>,
+       "Dick Streefland" <dick.streefland@altium.nl>,
+       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Emil Medve" <Emilian.Medve@freescale.com>,
+       "linux@horizon.com" <linux@horizon.com>
+Subject: Re: [RFC][PATCH] New message-logging API (kprint)
+Message-ID: <20071005173405.7a28bc73@freepuppy.rosehill>
+In-Reply-To: <653402b90710051601x347924d3j34b5ec740c39e81c@mail.gmail.com>
+References: <1191528247.13580.11.camel@grianne>
+	<200710042059.25721.rob@landley.net>
+	<653402b90710050001k29ed8e3by1ccc4a0ede818b9f@mail.gmail.com>
+	<200710051126.50816.rob@landley.net>
+	<653402b90710051601x347924d3j34b5ec740c39e81c@mail.gmail.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 08:32:19PM +0200, Peter Zijlstra wrote:
+On Sat, 6 Oct 2007 01:01:10 +0200
+"Miguel Ojeda" <maxextreme@gmail.com> wrote:
+
+> On 10/5/07, Rob Landley <rob@landley.net> wrote:
+> > On Friday 05 October 2007 2:01:08 am Miguel Ojeda wrote:
+> > >
+> > > I think we all are trying to give ideas to improve the current logging API.
+> > >
+> > > If something works, it's great; but it doesn't mean that it can't be
+> > > improved, right?
+> >
+> > I'm all for improving the kernel, but my definition of "improved" does not
+> > include every possible change.  I balance "smaller and simpler" with "more
+> > features".  Complexity is a cost, we should get something in return.
+> >
+> > Making the same functionality simpler makes it "cheaper" from a development
+> > standpoint.  Smaller and simpler means less overhead, less to understand,
+> > less to go wrong.  It's also attractive to me personally, because I am a Bear
+> > of Very Little Brain and between the dozen or so projects I try to follow, I
+> > have trouble fitting all the details in my head when they're tricky or they
+> > change ever time I look at them.  (Especially when I get distracted from one
+> > of those projects for 3-6 months and come back to find it changed.)
 > 
-> On Fri, 2007-10-05 at 13:50 -0400, Trond Myklebust wrote:
-> > On Fri, 2007-10-05 at 12:57 +0200, Peter Zijlstra wrote:
-> > > In this patch I totally ignored unstable, but I'm not sure that's the
-> > > proper thing to do, I'd need to figure out what happens to an unstable
-> > > page when passed into pageout() - or if its passed to pageout at all.
-> > > 
-> > > If unstable pages would be passed to pageout(), and it would properly
-> > > convert them to writeback and clean them, then there is nothing wrong.
-> > 
-> > Why would we want to do that? That would be a hell of a lot of work
-> > (locking pages, setting flags, unlocking pages, ...) for absolutely no
-> > reason.
-> > 
-> > Unstable writes are writes which have been sent to the server, but which
-> > haven't been written to disk on the server. A single RPC command is then
-> > sent (COMMIT) which basically tells the server to call fsync(). After
-> > that is successful, we can free up the pages, but we do that with no
-> > extra manipulation of the pages themselves: no page locks, just removal
-> > from the NFS private radix tree, and freeing up of the NFS private
-> > structures.
-> > 
-> > We only need to touch the pages again in the unlikely case that the
-> > COMMIT fails because the server has rebooted. In this case we have to
-> > resend the writes, and so the pages are marked as dirty, so we can go
-> > through the whole writepages() rigmarole again...
-> > 
-> > So, no. I don't see sending pages through pageout() as being at all
-> > helpful.
+> I fully agree. However, I just gave away some ideas that I believe
+> they can make printk() easier and more understandable than it is right
+> now (for example, standardizing kprint_[registered,detected,...]
+> messages is something that I think it can simplify everyday use of
+> messages, both to people who has to code it, review/search the code
+> and people that reads the kernel output).
 > 
-> Well, the thing is, we throttle pageout in throttle_vm_writeout(). As it
-> stand we can deadlock there because it just waits for the numbers to
-> drop, and unstable pages don't automagically dissapear. Only
-> write_inodes() - normally called from balance_dirty_pages() will call
-> COMMIT.
+> >
+> > I recognize constantly having to learn new things as part of the cost of
+> > living, and making things more complicated happens as you add features.  But
+> > when somebody reinvents the wheel it's really nice to have clearly spelled
+> > out the advantages of the new wheel vs the old one.  It's nice for there to
+> > _be_ clear advantages, offsetting the increased complexity cost.
+> 
+> I got your point, and I agree. However, I also see the possibilities
+> that a change of the logging API can bring: If someday it gets
+> improved, maybe such day should be improved as far as possible. This
+> kind of stuff that affect so many things are not going to change for
+> long periods of time, as you said.
+> 
+> Still, I know some kind of changes can be really complex and maybe are
+> unproductive. I think the point is to get a middle point between new
+> complexity vs. new features.
 
-I wonder whether
-        if (!bdi_nr_writeback)
-                break;
-or something like that could avoid the deadlock?
 
-> So my thought was that calling pageout() on an unstable page would do
-> the COMMIT - we're low on memory, otherwise we would not be paging, so
-> getting rid of unstable pages seems to make sense to me.
+The beauty of printk is it's current simplicity.  And even with that developers
+get it wrong.  The changes seem like added complexity with little real gain.
 
-I guess "many unstable pages" would be better if we are taking this way.
+Plus none of the changes address the issue of getting better information.
+The kernel is already so noisy that most distributions boot with the quiet
+flag to shut it up. So less messages is probably better!
 
+> >
+> > In this case, upon asking, the only potential advantage here seems to be "now
+> > we can translate dmesg output into Chinese more easily", which is something
+> 
+> Well, other improvements suggested are not just about internationalization.
+> 
+> > you could already do in userspace already via regular expressions in a
+> > translating dmesg, and which has the primary effect of making the resulting
+> > dmesg useless to report to lkml without really improving the amount of sense
+> > it makes to nontechnical end users (who really aren't the target of the
+> > english dmesg output, either).  The "linux developer who can't read english"
+> > niche is inherently somewhat problematic, as has been discussed here before.
+> >
+> 
+> I didn't talk about internationalization (in fact, I think it is going
+> to be pretty complex to get it right and, worse, to get it up-to-date
+> in each release without error in translations)
+> 
+> > The cost of this patch is making the kernel bigger, the in-kernel printk api
+> > more complicated, and the userspace dmesg noticeably more complex just to
+> > implement the same functionality against the new API.  Documenting the
+> > changes is nice, but doesn't reduce this increase in complexity.
+> >
+> > The original idea (selectively compile out printk() instances based on log
+> > level to conserve space) is explicitly not addressed by this patch, and in
+> > fact this patch might actually make it harder to implement (by complicating
+> > the code).
+> >
+> > *shrug*  That doesn't mean my objections are important to anyone else, just
+> > that I don't personally see any reason to be enthusiastic about this patch.
+> 
+> Take a look to other suggested changes, maybe you like some of them
+> and you will have found a reason to be enthusiastic :)
+> 
+> >
+> > Rob
+> 
+
+
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
