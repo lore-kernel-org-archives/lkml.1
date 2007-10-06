@@ -1,126 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765340AbXJFVKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbXJFVLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765340AbXJFVKM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 17:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764151AbXJFVJ6
+	id S1765563AbXJFVLj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 17:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764696AbXJFVLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 17:09:58 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:6346 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764290AbXJFVJ5 (ORCPT
+	Sat, 6 Oct 2007 17:11:32 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:45675 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764670AbXJFVLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 17:09:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=yovzuK8SufZg18gEu7ai+tJ+xwIncBQeKMcMRDpx3vq96/CdRzaX4Xb0+RJuaX9kT
-	RcDVtIBEK8QPcTliTdsYg==
-Message-ID: <6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
-Date: Sat, 6 Oct 2007 14:09:52 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
-Cc: "David Rientjes" <rientjes@google.com>, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-In-Reply-To: <20071006125904.a26ed99f.pj@sgi.com>
+	Sat, 6 Oct 2007 17:11:32 -0400
+Date: Sat, 6 Oct 2007 23:25:38 +0200
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] Colored kernel output (run3)
+Message-ID: <20071006212538.GH22435@flower.upol.cz>
+References: <Pine.LNX.4.64.0710062147370.20637@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0710062209530.20637@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	 <20071003105817.7adf6516.pj@sgi.com>
-	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
-	 <20071003131632.fed4b848.pj@sgi.com>
-	 <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
-	 <20071006012437.c0fd3a8a.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-	 <20071006125904.a26ed99f.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710062209530.20637@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/6/07, Paul Jackson <pj@sgi.com> wrote:
-> David wrote:
-> > It would probably be better to just save references to the tasks.
-> >
-> >       struct cgroup_iter it;
-> >       struct task_struct *p, **tasks;
-> >       int i = 0;
-> >
-> >       cgroup_iter_start(cs->css.cgroup, &it);
-> >       while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
-> >               get_task_struct(p);
-> >               tasks[i++] = p;
-> >       }
-> >       cgroup_iter_end(cs->css.cgroup, &it);
->
-> Hmmm ... guess I'd have to loop over the cgroup twice, once to count
-> them (the 'count' field is not claimed to be accurate) and then again,
-> after I've kmalloc'd the tasks[] array, filling in the tasks[] array.
->
-> On a big cgroup on a big system, this could easily be thousands of
-> iteration loops.
+Thanks for dealing with my acidness in the first patch :)
 
-But if userspace has to do it, the effect will be far more expensive.
+But what about this one?
 
->
-> If I need to close the window all the way, completely solving the race
-> condition, then I have the code in kernel/cpuset.c:update_nodemask(),
-> which builds an mmarray[] using two loops and some retries if newly
-> forked tasks are showing up too rapidly at the same time.  The first of
-> the two loops is hidden in the cgroup_task_count() call.
+On Sat, Oct 06, 2007 at 10:10:01PM +0200, Jan Engelhardt wrote:
+> 
+> Colored kernel message output (2/2)
+> 
+> By popular request, this patch adds per-loglevel coloring.
+> The user may set values using vt.printk_color= or by modifying
+> the sysfs file in the running system.
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+> 
+> ---
+>  arch/x86_64/kernel/early_printk.c |   11 +++++++----
+>  drivers/char/Kconfig              |    4 +++-
+>  drivers/char/vt.c                 |   32 ++++++++++++++++++++++++--------
+>  drivers/net/netconsole.c          |    3 ++-
+>  drivers/serial/8250.c             |    3 ++-
+>  drivers/serial/8250_early.c       |    3 ++-
+>  include/linux/console.h           |    2 +-
+>  kernel/printk.c                   |   12 +++++++-----
+>  8 files changed, 48 insertions(+), 22 deletions(-)
 
-In general, the loop inside cgroup_task_count() will only have a
-single iteration. (It's iterating across the shared css_set objects,
-not across member tasks.
+Making this amount changes and not thinking about more intelligent
+coding of the functionality?
 
-What's wrong with:
+> Index: linux-2.6.23/arch/x86_64/kernel/early_printk.c
+> ===================================================================
+> --- linux-2.6.23.orig/arch/x86_64/kernel/early_printk.c
+> +++ linux-2.6.23/arch/x86_64/kernel/early_printk.c
+> @@ -20,7 +20,8 @@
+>  static int max_ypos = 25, max_xpos = 80;
+>  static int current_ypos = 25, current_xpos = 0;
+>  
+> -static void early_vga_write(struct console *con, const char *str, unsigned n)
+> +static void early_vga_write(struct console *con, const char *str, unsigned n,
+> +                            unsigned int loglevel)
+>  {
 
-  allocate a page of task_struct pointers
-again:
-  need_repeat = false;
-  cgroup_iter_start();
-  while (cgroup_iter_next()) {
-    if (p->cpus_allowed != new_cpumask) {
-      store p;
-      if (page is full) {
-        need_repeat = true;
-        break;
-      }
-    }
-  }
-  for each saved task p {
-    set_cpus_allowed(p, new_cpumask);
-    release p;
-  }
-  if (need_repeat)
-    goto again;
+I mean, *write() have nothing to do with loglevels. If they do
+(suddenly), then why not to use a char in the *str to make it possible? I
+might be wrong, but there are already macros before format strings in
+printk().
 
-Advantages:
+And this is not `loglevel' thing any more. It's attributes, which can be
+used by many other drivers/file systems/schedulers/ what ever, if
+developers, like Ingo, will extend printk() output to be more nice in
+subsystems they develop.
 
-- no vmalloc needed
-- just one iteration in the case where a cgroup has fewer than 512 members
-- additional iterations only need to deal with tasks that don't have
-the right cpu mask
-- automatically handles fork races
-
-
-Another option would be to have a cpuset fork callback that forces
-p->cpus_allowed to its cpuset's cpus_allowed if another thread is in
-the middle of update_cpumask(). Then you don't need to worry about
-fork races at all, since all new threads will get the right cpumask.
-
-> Or, if there is a good reason that must remain a spinlock, then the
-> smallest amount of new code, and the easiest code to write, would
-> perhaps be adding another cgroup callback, called only by cgroup attach
-> () requests back to the same group.  Then code that wants to do
-> something odd, such as cpusets, for what seems like a no-op, can do so.
-
-I'd much rather not perpetuate that broken API requirement. The fact
-that cpusets wants this odd behaviour is based on a nasty hack.
-
-Paul
+So, maybe they can be extended, and functionality implemented in the
+function bodies (which will be `do { } while (0)' if config is NO), but
+*NOT* by passing additional argument to the functions.
+___
