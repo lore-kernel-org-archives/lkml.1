@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763274AbXJFRno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763521AbXJFRzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763274AbXJFRno (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 13:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbXJFRnc
+	id S1763521AbXJFRzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 13:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbXJFRzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 13:43:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:17564 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756750AbXJFRnb (ORCPT
+	Sat, 6 Oct 2007 13:55:31 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:44363 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760693AbXJFRz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 13:43:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bKNlb/YD2H5f6kKJfUf33OwrBbGT4JxUR8SpoOhNTGzXaW3/dPo6EBC8f4SgVzUFCgVSTle6VWUr7+3lHnssfZ8WkfK57cls5r1zVskebrQM5uqrr5/LzVNgpzqITgIsyM9o9ELecKlAn1Ah8D5iVfvlXy/qrsL7/4wc4maE4ps=
-Message-ID: <86802c440710061043u6e51cd7q468346bd06b08657@mail.gmail.com>
-Date: Sat, 6 Oct 2007 10:43:30 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: MSI interrupts and disable_irq
-Cc: "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       "Manfred Spraul" <manfred@colorfullife.com>,
-       nedev <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <46FDBCB4.9090802@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
+	Sat, 6 Oct 2007 13:55:29 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Cute feature: colored printk output
+In-Reply-To: <20071006110835.GA24463@elte.hu>
+References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr> <20071006110835.GA24463@elte.hu>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Sat, 6 Oct 2007 20:09:31 +0200
+Message-Id: <E1IeE5j-0005a6-10@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/28/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Ayaz Abdulla wrote:
-> > I am trying to track down a forcedeth driver issue described by bug 9047
-> > in bugzilla (2.6.23-rc7-git1 forcedeth w/ MCP55 oops under heavy load).
-> > I added a patch to synchronize the timer handlers so that one handler
-> > doesn't accidently enable the IRQ while another timer handler is running
-> > (see attachment 'Add timer lock' in bug report) and for other processing
-> > protection.
-> >
-> > However, the system still had an Oops. So I added a lock around the
-> > nv_rx_process_optimized() and the Oops has not happened (see attachment
-> > 'New patch for locking' in bug report). This would imply a
-> > synchronization issue. However, the only callers of that function are
-> > the IRQ handler and the timer handlers (in non-NAPI case). The timer
-> > handlers  use disable_irq so that the IRQ handler does not contend with
-> > them. It looks as if disable_irq is not working properly.
-> >
-> > This issue repros only with MSI interrupt and not legacy INTx
-> > interrupts. Any ideas?
->
-> (added linux-kernel to CC, since I think it's more of a general kernel
-> issue)
->
-I wonder if the race is between soft_timer for nv_do_nic_poll from
-different CPUs
+* Sat, 6 Oct 2007 13:08:35 +0200
 
-YH
+> * Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+>> Colored kernel message output
+>> 
+>> Let's work more on Linux's cuteness! 
+>> [http://lkml.org/lkml/2007/10/4/431] The following patch makes it 
+>> possible to give kernel messages a selectable color
+
+Only boot time selectable? Then write so, please.
+
+>> which helps to distinguish it from other noise, such as boot messages.
+>> NetBSD has it, OpenBSD has it, FreeBSD to some extent, so I think
+>> Linux should too.
+
+This approach in GIGO-like, IMHO. Ugliness of (default) boot process
+messaging itself can and must be solved in the userspace. I don't know if
+anybody read sub-thread about size reduction by moving static printk
+string to userspace "message codes" (there were one more person than me,
+but still).
+
+The main problem, is the very narrow perspective of such "kernel"
+functionality:
+
+> feature request: would be interesting to have a color table (defined in 
+> the .config) dependent on message loglevel. That way KERN_CRIT messages 
+> could be red, KERN_INFO ones white, etc.
+>
+> 	Ingo
+
+See? In the userspace one can make anything freely, try do it in the
+Linux kernel. With userspace {codes, messages} -> messages tool, any
+console printing frontend is possible. Of course, when kernel OOPes
+before or in early userspace, where nothing other than photo viva is
+possible, nobody should care about "Linux's cuteness!"
+
+>> Inspired by cko (http://freshmeat.net/p/cko/), but independently
+>> written, later contributed forth and back.
+>> 
+>> Already posted at: http://lkml.org/lkml/2007/4/1/162
+>> 
+>> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+>
+> looks really good to me!
+>
+> Reviewed-by: Ingo Molnar <mingo@elte.hu>
+>
+> small nit:
+>
+> +       vc->vc_color = printk_color;
+> +       update_attr(vc);
+>
+> that should be in a set_vc_color() function and the new code should do:
+>
+> +	set_vc_color(vc, vc->vc_color);
+>
+> (and same at the other places that call update_attr() as well)
+
+Is it possible to have a macro for this, which will be
+`do { } while(0)' in case of "NO, thanks" configuration?
+
+--
+-o--=O`C
+ #oo'L O
+<___=E M
