@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXJFT11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbXJFTky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbXJFT11 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 15:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXJFT1T
+	id S1764958AbXJFTky (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 15:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXJFTkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 15:27:19 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41025 "EHLO gaimboi.tmr.com"
+	Sat, 6 Oct 2007 15:40:46 -0400
+Received: from home.keithp.com ([63.227.221.253]:1616 "EHLO keithp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbXJFT1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 15:27:19 -0400
-Message-ID: <4707E327.4020607@tmr.com>
-Date: Sat, 06 Oct 2007 15:33:59 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [code] Unlimited partitions, a try
-References: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr>	<4706B6A8.2060800@zytor.com> <20071006002919.0b32c8b9@the-village.bc.nu> <4706C8BD.7080906@zytor.com>
-In-Reply-To: <4706C8BD.7080906@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1762576AbXJFTkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 15:40:45 -0400
+X-Greylist: delayed 593 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Oct 2007 15:40:45 EDT
+Subject: Re: Revert "intel_agp: fix stolen mem range on G33"
+From: Keith Packard <keithp@keithp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: keithp@keithp.com, Jiri Slaby <jirislaby@gmail.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       arashi@sacredchao.net
+In-Reply-To: <alpine.LFD.0.999.0710060858420.23684@woody.linux-foundation.org>
+References: <4706D4B1.6050101@sacredchao.net>
+	 <20071006044221.GA14767@fattire.cabal.ca>
+	 <20071006053410.GB14767@fattire.cabal.ca>
+	 <20071006054234.GC14767@fattire.cabal.ca> <47076651.8020801@gmail.com>
+	 <alpine.LFD.0.999.0710060858420.23684@woody.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TyAZvOfvP497A1imj5Jz"
+Date: Sat, 06 Oct 2007 12:29:46 -0700
+Message-Id: <1191698986.5444.45.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Alan Cox wrote:
->> On Fri, 05 Oct 2007 15:11:52 -0700
->> "H. Peter Anvin" <hpa@zytor.com> wrote:
->>
->>> Jan Engelhardt wrote:
->>>> 15 partitions (at least for sd_mod devices) are too few.
->>> Now when we have 20-bit minors, can't we simply recycle some of the 
->>> higher bits for additional partitions, across the board?  63 
->>> partitions seem to have been sufficient; at least I haven't heard 
->>> anyone complain about that for 15 years.
->>
->> This was proposed ages ago. Al Viro vetoed sparse minors and it has been
->> stuck this way ever since. If you have > 15 partitions use device mapper
->> for it. I'd prefer it fixed but its arguable that device mapper is the
->> right way to punt all our partitioning to userspace
-> 
-> Sure.  However, that takes having that bit of userspace in even the most 
-> trivial configurations, and not just on bootup, but continuously.
-> 
-I'm not sure that configurations requiring more than 15 partitions are 
-properly described as "trivial." Which is not to disagree with your 
-point about required user tools, but most systems needing such tools 
-will be large and complex enough that a userspace solution will be 
-acceptable.
+
+--=-TyAZvOfvP497A1imj5Jz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+On Sat, 2007-10-06 at 08:59 -0700, Linus Torvalds wrote:
+
+> We do have a rule about "no regressions", so I think we'll have to do the=
+=20
+> revert, but it would be nice to hear what the consequences for the revert=
+=20
+> is for the affected hardware and new X.org..
+
+No regressions is more important than making new X.org bits work. I'll
+make sure that any future fixes for this are tested against older X
+versions before having them sent along.
+
+--=20
+keith.packard@intel.com
+
+--=-TyAZvOfvP497A1imj5Jz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHB+IqQp8BWwlsTdMRAjc1AJ9JQR/Y11233N59c8bUXFdmzboTNgCdEO9b
+TDvhwDhm+S3CXOW6yEQLxt4=
+=Ws9E
+-----END PGP SIGNATURE-----
+
+--=-TyAZvOfvP497A1imj5Jz--
+
