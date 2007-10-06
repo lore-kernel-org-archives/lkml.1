@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765581AbXJFVl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXJFVmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765581AbXJFVl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 17:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXJFVlV
+	id S1765675AbXJFVmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 17:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXJFVmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 17:41:21 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:45856 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbXJFVlV (ORCPT
+	Sat, 6 Oct 2007 17:42:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49911 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755316AbXJFVmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 17:41:21 -0400
-Date: Sat, 6 Oct 2007 23:55:27 +0200
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: About summary in the subject (Re: [PATCH 0/2] Colored kernel output (run2))
-Message-ID: <20071006215527.GI22435@flower.upol.cz>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <Pine.LNX.4.64.0710062300200.30354@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710062300200.30354@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sat, 6 Oct 2007 17:42:06 -0400
+Date: Sat, 6 Oct 2007 14:41:57 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: rientjes@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071006144157.a2243305.pj@sgi.com>
+In-Reply-To: <6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	<20071003105817.7adf6516.pj@sgi.com>
+	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	<20071003131632.fed4b848.pj@sgi.com>
+	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+	<20071006012437.c0fd3a8a.pj@sgi.com>
+	<alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
+	<20071006125904.a26ed99f.pj@sgi.com>
+	<6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 11:03:38PM +0200, Jan Engelhardt wrote:
+Paul M wrote:
+>
+> What's wrong with:
 > 
-> On Oct 6 2007 23:03, Oleg Verych wrote:
-> >> 
-> >> (btw., i corrected the subject line to remove the 'NAK'. Why do you 
-> >> think you can 'NAK' a patch in this field?)
-> >
-> >I added comment (like this), so anyone can skip reading body, if headers
-> >are "Oleg Verych && NAK". In case if `NAK' have a magic meaning in the
-> >LKML, like control characters in the tty, i'm sorry.
-> >
-> >But how to express opinion quickly and easily?
-> 
-> You can't. I think that people will usually be interested _why_ you
-> voted for or against something
+>   allocate a page of task_struct pointers
+> again:
+>   need_repeat = false;
+>   cgroup_iter_start();
+>   while (cgroup_iter_next()) {
+>     if (p->cpus_allowed != new_cpumask) {
+>       store p;
+>       if (page is full) {
+>         need_repeat = true;
+>         break;
+>       }
+>     }
+>   }
+>   for each saved task p {
+>     set_cpus_allowed(p, new_cpumask);
+>     release p;
+>   }
+>   if (need_repeat)
+>     goto again;
 
-Do you really think so? Yes, there are possibly LKML bots, that will
-read all messages in every thread. But i doubt they are humans.
+That might work ... nice idea there, comparing the two masks, so one
+only needs to store the ones not yet fixed.  Uunfortunately, I need to
+put this aside until I return in four days, from a short trip.
 
-I also think, that kill-files and kill-names are common tools of the LKML
-readers. Thus, if someone sees my name with something like NAK in the
-subject, then nothing to worry about: next, please. I just amazed how
-inefficiently Subject, To, Cc headers are used. Everybody hurry through
-huge mail backlogs with subjects in thread all like one.
+Given that cgroups is targeted for 2.6.24, and that cpusets is broken
+without this, I'll have to do something soon.  But this, or some such,
+should work, soon enough.
 
-Summary and keywords headers are not used, so why not to make
-greping/selecting interesting/useful messages more efficient (and not
-only for those who is in Cc list)?
+Thanks.
 
-Every mail/news reader displays To and Subject, so latter is last hope of
-increasing of efficiency, even in small threads.
+> I'd much rather not perpetuate that broken API requirement. The fact
+> that cpusets wants this odd behaviour is based on a nasty hack.
 
-> (given the number of vote-submitters does not go through the roof).
-> That clearly won't fit into the subject,
+Well ... yeah ... it's a bit of an ugly child.  But I'm its daddy.
+The kid looks fine in my eyes. <grin>
 
-Sorry, i cannot see, what you are trying to say here. To place all
-acks-by to subject? No, just to get summary in one particular reply.
-
-> and even if RFC822 allowed it, it's only displayed like 40 chars wide.
-> The submitter (me in this case) will even look at *all* mails, so as to
-> (1) address the NAKs and (2) address the hidden feature requests in
-> ACKs.  :-)
-____
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
