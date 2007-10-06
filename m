@@ -1,120 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbXJFIly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbXJFIr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbXJFIly (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 04:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXJFIlq
+	id S1760618AbXJFIr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 04:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbXJFIru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 04:41:46 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:36134 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbXJFIlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 04:41:44 -0400
-X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Oct 2007 04:41:44 EDT
-Message-ID: <4707491B.6060001@ums.usu.ru>
-Date: Sat, 06 Oct 2007 14:36:43 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
+	Sat, 6 Oct 2007 04:47:50 -0400
+Received: from smtp118.plus.mail.mud.yahoo.com ([209.191.106.149]:47615 "HELO
+	smtp118.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752880AbXJFIrt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 04:47:49 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Oct 2007 04:47:49 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=Ryxv9OnKcDQ33vIqFEGkKGr0+ksCGqP0/ktFtr1pbjp0n9/qkc1S9yphBFUnnhWL6xA/MJjh+WNu90CCpCVJS7Wq43tEiF8OHRVNUFvgQ93Pgt1bka7IeORFfpc8nVJf7yHLLJQdDILOdB8VhsEcDLzKwz4P+zIjVDWkO7OFAR4=  ;
+X-YMail-OSG: jzBoeI8VM1lHo3EgaX2G7JwLieqacQ1KwMb6CnTSsvs8HbZM4b3gRCkhSYArKinLXlp752JktQ--
+Date: Sat, 6 Oct 2007 10:37:35 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       muli@il.ibm.com, satyam@infradead.org, amitkale@netxen.com,
+       achim_leubner@adaptec.com
+Subject: Re: [PATCH 1/1] unify DMA_..BIT_MASK definitions: v3.1
+Message-ID: <20071006083734.GB8930@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070918194647.GA23800@gollum.tnic> <20071005124705.6584e2f9.akpm@linux-foundation.org> <4706A20A.5060603@goop.org> <20071005140050.655b7727.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christophe Varoqui <christophe.varoqui@free.fr>
-Subject: Re: [code] Unlimited partitions, a try
-References: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr>	<4706B6A8.2060800@zytor.com> <20071006002919.0b32c8b9@the-village.bc.nu>
-In-Reply-To: <20071006002919.0b32c8b9@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071005140050.655b7727.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> This was proposed ages ago. Al Viro vetoed sparse minors and it has been
-> stuck this way ever since. If you have > 15 partitions use device mapper
-> for it. I'd prefer it fixed but its arguable that device mapper is the
-> right way to punt all our partitioning to userspace.
->   
+On Fri, Oct 05, 2007 at 02:00:50PM -0700, Andrew Morton wrote:
+> On Fri, 05 Oct 2007 13:43:54 -0700
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 
+> > Andrew Morton wrote:
+> > > From: Andrew Morton <akpm@linux-foundation.org>
+> > >
+> > > Now that we have DMA_BIT_MASK(), these macros are pointless.
+> > >   
+> > 
+> > Except, unfortunately, DMA_64BIT_MASK.  I guess we could special case
+> > it, assuming this works in all the contexts the macro is used in (ie,
+> > compile-time constant?):
+> > 
+> > #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
+> > 
+> 
+> doh.  Thanks.
+> 
+> --- a/include/linux/dma-mapping.h~stop-using-dma_xxbit_mask-fix
+> +++ a/include/linux/dma-mapping.h
+> @@ -13,7 +13,7 @@ enum dma_data_direction {
+>  	DMA_NONE = 3,
+>  };
+>  
+> -#define DMA_BIT_MASK(n)	((1ULL<<(n))-1)
+> +#define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
+>  
+>  /*
+>   * NOTE: do not use the below macros in new code and do not add new definitions
+> @@ -21,7 +21,7 @@ enum dma_data_direction {
+>   *
+>   * Instead, just open-code DMA_BIT_MASK(n) within your driver
+>   */
+> -#define DMA_64BIT_MASK	(~0ULL)
+> +#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
+>  #define DMA_48BIT_MASK	DMA_BIT_MASK(48)
+>  #define DMA_47BIT_MASK	DMA_BIT_MASK(47)
+>  #define DMA_40BIT_MASK	DMA_BIT_MASK(40)
+>
 
-Then please fix support for extended partitions in kpartx (part of 
-multipath-tools). Debian has an incomplete patch that does the right 
-thing on activation, but not on deactivation of partitions, and has an 
-obvious off-by-one in the "kpartx -l /dev/sda" output.
+Hi and sorry for the late reply. IMHO, this solution is the most concise and still
+clear enough a macro to understand what it does after a quick scan (unlike
+uglies like IO_COND() in lib/iomap.c¹, :)) And, as a next step, we probably
+should do
 
-Signed-off-by: Hannes Reinecke <hare@suse.de>
-Edited by Alexander E. Patrakov to fix incorrect output of "kpartx -l"
-Signed-off-by: Alexander E. Patrakov <patrakov@ums.usu.ru>
+perl -pi -e 's/DMA_(..)BIT_MASK/DMA_BIT_MASK($1)/g' *
 
---- a/kpartx/kpartx.c
-+++ b/kpartx/kpartx.c
-@@ -387,10 +387,10 @@ main(int argc, char **argv){
- 					slices[j].minor = m++;
- 
- 					start = slices[j].start - slices[k].start;
--					printf("%s%s%d : 0 %lu /dev/dm-%d %lu\n",
-+					printf("%s%s%d : 0 %lu %s%s%d %lu\n",
- 					       mapname, delim, j+1,
- 					       (unsigned long) slices[j].size,
--					       slices[k].minor, start);
-+					       mapname, delim, k+1, start);
- 					c--;
- 				}
- 				/* Terminate loop if nothing more to resolve */
-@@ -431,7 +431,7 @@ main(int argc, char **argv){
- 			break;
- 
- 		case ADD:
--			for (j=0, c = 0; j<n; j++) {
-+			for (j = 0, c = 0; j < n; j++) {
- 				if (slices[j].size == 0)
- 					continue;
- 
-@@ -477,6 +477,7 @@ main(int argc, char **argv){
- 			d = c;
- 			while (c) {
- 				for (j = 0; j < n; j++) {
-+					unsigned long start;
- 					int k = slices[j].container - 1;
- 
- 					if (slices[j].size == 0)
-@@ -487,7 +488,7 @@ main(int argc, char **argv){
- 						continue;
- 
- 					/* Skip all simple slices */
--					if (k < 0)
-+					if (slices[j].container == 0)
- 						continue;
- 
- 					/* Check container slice */
-@@ -502,10 +503,11 @@ main(int argc, char **argv){
- 					}
- 					strip_slash(partname);
- 
-+					start = slices[j].start - slices[k].start;
- 					if (safe_sprintf(params, "%d:%d %lu",
- 							 slices[k].major,
- 							 slices[k].minor,
--							 (unsigned long)slices[j].start)) {
-+							 start)) {
- 						fprintf(stderr, "params too small\n");
- 						exit(1);
- 					}
-@@ -524,9 +526,12 @@ main(int argc, char **argv){
- 						&slices[j].minor);
- 
- 					if (verbose)
--						printf("add map %s : 0 %lu %s %s\n",
--						       partname, slices[j].size,
--						       DM_TARGET, params);
-+						printf("add map %s (%d:%d): 0 %lu %s\n",
-+						       partname, 
-+						       slices[j].major,
-+						       slices[j].minor,
-+						       slices[j].size,
-+						       params);
- 					c--;
- 				}
- 				/* Terminate loop */
+after removing the #define DMA_..BIT_MASK defines in /include/linux/dma-mapping.h
+and the other two headers in the original patch after the x86 merge.
+Current git (9f34073b4e54ad58541e0e2b4a87f4f6c1460e21) contains about 394
+instances of usage of those macros, including the #definitions.
 
 
+¹ this is not a flame!
 -- 
-Alexander E. Patrakov
+Regards/Gruß,
+    Boris.
