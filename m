@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXJFLOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763302AbXJFLR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762906AbXJFLOH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 07:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXJFLN4
+	id S1763302AbXJFLR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 07:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbXJFLRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 07:13:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43583 "EHLO mx3.mail.elte.hu"
+	Sat, 6 Oct 2007 07:17:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44040 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753524AbXJFLNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 07:13:55 -0400
-Date: Sat, 6 Oct 2007 13:13:43 +0200
+	id S1753524AbXJFLRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 07:17:50 -0400
+Date: Sat, 6 Oct 2007 13:17:23 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 0/3 checkpatch updates, new checkfiles script
-Message-ID: <20071006111343.GA29484@elte.hu>
-References: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
+To: Paul Jackson <pj@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, Dinakar Guniguntala <dino@in.ibm.com>,
+       Cliff Wickman <cpw@sgi.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH v2] cpuset sched_load_balance flag
+Message-ID: <20071006111723.GA32649@elte.hu>
+References: <20071006094747.17518.44098.sendpatchset@jackhammer.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11916033681196-git-send-email-ezk@cs.sunysb.edu>
+In-Reply-To: <20071006094747.17518.44098.sendpatchset@jackhammer.engr.sgi.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,16 +36,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Erez Zadok <ezk@cs.sunysb.edu> wrote:
+* Paul Jackson <pj@sgi.com> wrote:
 
-> So, I ran the above script and it found nearly 1.5 million reported 
-> warnings/errors, with drivers being the largest abuser, not 
-> surprisingly. [...]
+> From: Paul Jackson <pj@sgi.com>
+> 
+> Add a new per-cpuset flag called 'sched_load_balance'.
+[...]
 
-have you tried that with the latest version too:
+> See further the Documentation and comments in the code itself.
+> 
+> Signed-off-by: Paul Jackson <pj@sgi.com>
 
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-next
-
-it outputs far fewer false positives.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
