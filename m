@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765423AbXJFUwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764380AbXJFUyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765423AbXJFUwy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 16:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764245AbXJFUws
+	id S1764380AbXJFUyM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 16:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764409AbXJFUx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 16:52:48 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:3166 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763620AbXJFUwr (ORCPT
+	Sat, 6 Oct 2007 16:53:58 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3023 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764416AbXJFUx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 16:52:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=rHubTYdOtFoX7TuM7zqGT+gIV7+q81C6Sd/cVNuyZ7eUecsI/XsrmPDCvwUsvWgFPFmNCUIzSBAa57ew1/P9THNPkUM2tm6X51dAt39a64LOPUvnNn0UduHIvOEm1a/bC7nSmefs46fwNLVdr1BuMsubOn5SHppjY2TB3jxNUCU=
-Date: Sat, 6 Oct 2007 22:52:38 +0200
-To: linux-kernel@vger.kernel.org
-Subject: Re: [Oops] on 2.6.23-rc9 sysRq Show Tasks (t)
-Message-ID: <20071006205238.GA4969@Ahmed>
-References: <20071006201405.GA2530@Ahmed>
+	Sat, 6 Oct 2007 16:53:57 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=c4y55e+dj185qkjMdyCMev9eqsrNUZna6X+RzTRfVkq3HpFY9kGIha1vFZJxK9WOy
+	LmnB82w4vV3/s1wfnttQg==
+Message-ID: <6599ad830710061353k4f596b51qce83b6a7d27e73bc@mail.gmail.com>
+Date: Sat, 6 Oct 2007 13:53:53 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       serue@us.ibm.com, clg@fr.ibm.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, rientjes@google.com, svaidy@linux.vnet.ibm.com,
+       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
+In-Reply-To: <20071006012437.c0fd3a8a.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071006201405.GA2530@Ahmed>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	 <20071003105817.7adf6516.pj@sgi.com>
+	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	 <20071003131632.fed4b848.pj@sgi.com>
+	 <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+	 <20071006012437.c0fd3a8a.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 10:14:05PM +0200, ahmed wrote:
-> Hi all,
-> 
-> Pressing sysRq+T always produce an Oops for every running system task (94 
-> Oopses, that's a record ;)).
-> The bug is 100% reproducable. Should I begin bisecting/investigating the 
-> issue or it's a known problem ?
+On 10/6/07, Paul Jackson <pj@sgi.com> wrote:
 >
+> This isn't working for me.
+>
+> The key kernel routine for updating a tasks cpus_allowed
+> cannot be called while holding a spinlock.
+>
+> But the above loop holds a spinlock, css_set_lock, between
+> the cgroup_iter_start and the cgroup_iter_end.
+>
+> I end up generating complaints of:
+>         BUG: scheduling while atomic
+> when I invoke the set_cpus_allowed() above.
+>
+> Should css_set_lock be a mutex?  Locking changes like that
+> can be risky.
 
-Shame, This is not an Oops at all. Really sorry.
+css_set_lock is an rwlock currently; I'd rather not turn it into an rw
+mutex since there are places that it gets taken where we can't afford
+to sleep.
 
-/me wondering about my look now posting a normal message as an Ooops a day 
-before the stable release :(.
+>
+> Or perhaps there should be another callback, called only by
+> attach() requests back to the same group.  Likely cpusets would
+> be the only subsystem interested in plugging that callback.
+>
+> That, or my original patch, which calls the attach routine
+> even if re-attaching to the current cgroup ...
 
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+I'd prefer David's solution of grabbing references to tasks during the
+iteration and then doing set_cpus_allowed outside the tasklist_lock.
+
+Paul
