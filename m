@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764404AbXJFAhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbXJFAkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764404AbXJFAhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Oct 2007 20:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXJFAhN
+	id S1764709AbXJFAkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Oct 2007 20:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXJFAkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Oct 2007 20:37:13 -0400
-Received: from ns.ariel-networks.com ([124.39.57.10]:43758 "EHLO
-	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbXJFAhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Oct 2007 20:37:12 -0400
-X-Greylist: delayed 1987 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Oct 2007 20:37:11 EDT
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]dose it make get_swap_page(mm/swapfiles.c) good performance ?, kernel<2.6.22.9>.
-Message-Id: <20071006000403.DF6E2378020@ns.ariel-networks.com>
-Date: Sat,  6 Oct 2007 09:04:03 +0900 (JST)
-From: ohyama_sec@ariel-networks.com
+	Fri, 5 Oct 2007 20:40:33 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:52757 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1758544AbXJFAkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Oct 2007 20:40:32 -0400
+Message-ID: <391631232.21419@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sat, 6 Oct 2007 08:40:28 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-ID: <20071006004028.GA7121@mail.ustc.edu.cn>
+References: <20071004164801.d8478727.akpm@linux-foundation.org> <E1Idanu-0002c1-00@dorka.pomaz.szeredi.hu> <20071004174851.b34a3220.akpm@linux-foundation.org> <1191572520.22357.42.camel@twins> <E1IdjOa-0002qg-00@dorka.pomaz.szeredi.hu> <1191577623.22357.69.camel@twins> <E1IdkOf-0002tK-00@dorka.pomaz.szeredi.hu> <1191581854.22357.85.camel@twins> <1191606600.6715.94.camel@heimdal.trondhjem.org> <1191609139.6210.4.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191609139.6210.4.camel@lappy>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--hiroyasu ohyama
+On Fri, Oct 05, 2007 at 08:32:19PM +0200, Peter Zijlstra wrote:
+> 
+> On Fri, 2007-10-05 at 13:50 -0400, Trond Myklebust wrote:
+> > On Fri, 2007-10-05 at 12:57 +0200, Peter Zijlstra wrote:
+> > > In this patch I totally ignored unstable, but I'm not sure that's the
+> > > proper thing to do, I'd need to figure out what happens to an unstable
+> > > page when passed into pageout() - or if its passed to pageout at all.
+> > > 
+> > > If unstable pages would be passed to pageout(), and it would properly
+> > > convert them to writeback and clean them, then there is nothing wrong.
+> > 
+> > Why would we want to do that? That would be a hell of a lot of work
+> > (locking pages, setting flags, unlocking pages, ...) for absolutely no
+> > reason.
+> > 
+> > Unstable writes are writes which have been sent to the server, but which
+> > haven't been written to disk on the server. A single RPC command is then
+> > sent (COMMIT) which basically tells the server to call fsync(). After
+> > that is successful, we can free up the pages, but we do that with no
+> > extra manipulation of the pages themselves: no page locks, just removal
+> > from the NFS private radix tree, and freeing up of the NFS private
+> > structures.
+> > 
+> > We only need to touch the pages again in the unlikely case that the
+> > COMMIT fails because the server has rebooted. In this case we have to
+> > resend the writes, and so the pages are marked as dirty, so we can go
+> > through the whole writepages() rigmarole again...
+> > 
+> > So, no. I don't see sending pages through pageout() as being at all
+> > helpful.
+> 
+> Well, the thing is, we throttle pageout in throttle_vm_writeout(). As it
+> stand we can deadlock there because it just waits for the numbers to
+> drop, and unstable pages don't automagically dissapear. Only
+> write_inodes() - normally called from balance_dirty_pages() will call
+> COMMIT.
 
-I wonder what corrected attached source makes good performance of 
-getting page slot cluster from page area discripter which is written 
-"si" in the source codes.
-Because I think head of swap_list_t discripter doesn't suggest index of 
-swap area which is same priority that swap_list.next but one which is 
-the highest priority in the priority's list.
-the si->swap_map which have high priority may be chosen by 
-get_swap_page(), so that page slot of low priority's swap area may have 
-more blank cluster than one of hich priority's swap area.
-Then, I think substitute "swap_list.head" for "next" is privent them 
-from finding cluster of page slot when "swap_info[next].prio"'s priority 
-is different swap_list.next.
+I wonder whether
+        if (!bdi_nr_writeback)
+                break;
+or something like that could avoid the deadlock?
 
----
+> So my thought was that calling pageout() on an unstable page would do
+> the COMMIT - we're low on memory, otherwise we would not be paging, so
+> getting rid of unstable pages seems to make sense to me.
 
-*** mm/swapfile_bck.c   2007-10-04 12:09:37.000000000 +0900
---- mm/swapfile.c       2007-10-04 12:31:34.000000000 +0900
-***************
-*** 186,193 ****
-       for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
-               si = swap_info + type;
-               next = si->next;
-!               if (next < 0 ||
-!                   (!wrapped && si->prio != swap_info[next].prio)) {
-                       next = swap_list.head;
-                       wrapped++;
-               }
---- 186,192 ----
-       for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
-               si = swap_info + type;
-               next = si->next;
-!               if (next < 0) {
-                       next = swap_list.head;
-                       wrapped++;
-               }
-
-
+I guess "many unstable pages" would be better if we are taking this way.
 
