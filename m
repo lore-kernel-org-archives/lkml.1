@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbXJFIEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763941AbXJFIE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbXJFIEa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 04:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJFIEN
+	id S1763941AbXJFIE5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 04:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759181AbXJFIEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 04:04:13 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33020 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751656AbXJFIEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 04:04:10 -0400
-Date: Sat, 6 Oct 2007 10:05:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: [PATCH] kbuild: move Kai Germaschewski to CREDITS
-Message-ID: <20071006080540.GA4798@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 6 Oct 2007 04:04:33 -0400
+Received: from smtp112.plus.mail.mud.yahoo.com ([68.142.206.245]:25751 "HELO
+	smtp112.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758361AbXJFIEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 04:04:30 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Oct 2007 04:04:30 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=oGxXbCo9X0YxPfTUamrwY3MnxudW7zCbjGLTdsKYHr7v2DTQIMSZnBP1ou6upDPbyxzqQEQTBIffZOl7BouqLd4+LyMYogzy/k5Tnmsa+hRZRXm8H9EdSHatHPEYEGD2axQR2OY4S+eH9ZOegfCs8A1BjE3p6/+aV2Jkkz5iB5Q=  ;
+X-YMail-OSG: omeNE9UVM1nSbK1mhlgf46cBcSUqoKBqg6vvfnA1OUOYAoD.zZWkkJi_qcRCXXHQfIHxSLB3qg--
+Date: Sat, 6 Oct 2007 09:54:15 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       muli@il.ibm.com, satyam@infradead.org, amitkale@netxen.com,
+       achim_leubner@adaptec.com
+Subject: Re: [PATCH 1/1] unify DMA_..BIT_MASK definitions: v3.1
+Message-ID: <20071006075415.GA8930@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070918194647.GA23800@gollum.tnic> <20071005124705.6584e2f9.akpm@linux-foundation.org> <4706A20A.5060603@goop.org> <20071005140050.655b7727.akpm@linux-foundation.org> <Pine.LNX.4.64.0710051701530.12079@localhost.localdomain> <4706AB5D.4060602@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4706AB5D.4060602@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have just pushed following patch to kbuild.git.
+On Fri, Oct 05, 2007 at 02:23:41PM -0700, Jeremy Fitzhardinge wrote:
+> Robert P. J. Day wrote:
+> > or you could take advantage of the macros in kernel.h and write that
+> > as:
+> >
+> > +#define DMA_BIT_MASK(n)      (((n) == 64) ? ULLONG_MAX : ((1ULL<<(n))-1))
+> >   
+> 
+> But that's a more indirect way of expressing "I want all 1's".
+... and ULLONG_MAX _is_ (~0ULL).
 
-And with this mail I want to give Kai all the thanks
-he deserves for his major kbuild work during the 2.5
-kernel series.
-He left us a reliable and working kbuild to continue
-to use and hack on.
-
-THANKS!
-
-	Sam
-
-Subject: [PATCH] kbuild: move Kai Germaschewski to CREDITS
-
-Kai is not active in kernel development these
-days so give him credit for his major kbuild
-contribution and ISDN work.
-
-Acked-by: Kai Germaschewski <kai@germaschewski.name>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- CREDITS     |    6 ++++++
- MAINTAINERS |    4 ----
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/CREDITS b/CREDITS
-index 832436e..a305f0b 100644
---- a/CREDITS
-+++ b/CREDITS
-@@ -1149,6 +1149,12 @@ S: 600 North Bell Avenue, Suite 160
- S: Carnegie, Pennsylvania 15106-4304
- S: USA
- 
-+N: Kai Germaschewski
-+E: kai@germaschewski.name
-+D: Major kbuild rework during the 2.5 cycle
-+D: ISDN Maintainer
-+S: USA
-+
- N: Philip Gladstone
- E: philip@gladstonefamily.net
- D: Kernel / timekeeping stuff
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9c54a5e..d09102b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2110,8 +2110,6 @@ S:	Maintained
- ISDN SUBSYSTEM
- P:	Karsten Keil
- M:	kkeil@suse.de
--P:	Kai Germaschewski
--M:	kai.germaschewski@gmx.de
- L:	isdn4linux@listserv.isdn4linux.de
- W:	http://www.isdn4linux.de
- T:	git kernel.org:/pub/scm/linux/kernel/kkeil/isdn-2.6.git
-@@ -2180,8 +2178,6 @@ L:	autofs@linux.kernel.org
- S:	Maintained
- 
- KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
--P:	Kai Germaschewski
--M:	kai@germaschewski.name
- P:	Sam Ravnborg
- M:	sam@ravnborg.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
 -- 
-1.5.2.4
-
+Regards/Gruﬂ,
+    Boris.
