@@ -1,52 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765059AbXJFTK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765129AbXJFTNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765059AbXJFTK0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 15:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764123AbXJFTKM
+	id S1765129AbXJFTNt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 15:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764245AbXJFTNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 15:10:12 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41011 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763867AbXJFTKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 15:10:10 -0400
-Message-ID: <4707DE96.4090400@tmr.com>
-Date: Sat, 06 Oct 2007 15:14:30 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 6 Oct 2007 15:13:43 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54668 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764238AbXJFTNm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 15:13:42 -0400
+Date: Sat, 6 Oct 2007 21:13:40 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Dave Jones <davej@redhat.com>, Oleg Verych <olecom@flower.upol.cz>,
+       Ingo Molnar <mingo@elte.hu>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: [PATCH 1/2] Colored kernel output (run2)
+In-Reply-To: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0710062108130.5969@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serge@hallyn.com>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
- Control Kernel
-References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <4703126D.70703@tmr.com> <alpine.LFD.0.999.0710022050560.3579@woody.linux-foundation.org> <m17im2pc7x.fsf@ebiederm.dsl.xmission.com> <15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com>
-In-Reply-To: <15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Oct 04, 2007, at 21:44:02, Eric W. Biederman wrote:
->> What we want from the LSM is the ability to say -EPERM when we can 
->> clearly articulate that we want to disallow something.
-> 
-> This sort of depends on perspective; typically with security 
-> infrastructure you actually want "... the ability to return success when 
-> we can clearly articulate that we want to *ALLOW* something".  File 
-> permissions work this way; we don't have a list of forbidden users 
-> attached to each file, we have an owner, a group, and a mode 
-> representing positive permissions.  With that said in certain high-risk 
-> environments you need something even stronger that cannot be changed by 
-> the "owner" of the file, if we don't entirely trust them,
-> 
-Other than ACLs, of course, which do allow blacklisting individual users.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Colored kernel message output (1/2)
+
+This patch makes it possible to give kernel messages a selectable
+color. It can be chosen at compile time, overridden at boot time,
+and changed at run time.
+
+There is no way to disable this option. It would only add ugly
+ifdefs, and the default color is the one that vt.c used for all the
+past years anyway, so apart from the config option, nothing changes
+for the conservative user.
+
+References: http://lkml.org/lkml/2007/4/1/162
+	http://lkml.org/lkml/2007/10/5/199
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+---
+ drivers/char/Kconfig |   33 +++++++++++++++++++++++++++++++++
+ drivers/char/vt.c    |   17 +++++++++++++++++
+ 2 files changed, 50 insertions(+)
+
+Index: linux-2.6.23/drivers/char/Kconfig
+===================================================================
+--- linux-2.6.23.orig/drivers/char/Kconfig
++++ linux-2.6.23/drivers/char/Kconfig
+@@ -58,6 +58,39 @@ config VT_CONSOLE
+ 
+ 	  If unsure, say Y.
+ 
++config VT_PRINTK_COLOR
++	hex "Colored kernel message output"
++	range 0x00 0xFF
++	depends on VT_CONSOLE
++	default 0x07
++	---help---
++	This option defines with which color kernel messages will be
++	printed to the console.
++
++	The value you need to enter here is the value is composed
++	(OR-ed) of a foreground and a background color.
++
++	Foreground:
++	0x00 = black,   0x08 = dark gray,
++	0x01 = red,     0x09 = light red,
++	0x02 = green,   0x0A = light green,
++	0x03 = brown,   0x0B = yellow,
++	0x04 = blue,    0x0C = light blue,
++	0x05 = magenta, 0x0D = light magenta,
++	0x06 = cyan,    0x0E = light cyan,
++	0x07 = gray,    0x0F = white,
++
++	(Foreground colors 0x08 to 0x0F do not work when a VGA
++	console font with 512 glyphs is used.)
++
++	Background:
++	0x00 = black,   0x40 = blue,
++	0x10 = red,     0x50 = magenta,
++	0x20 = green,   0x60 = cyan,
++	0x30 = brown,   0x70 = gray,
++
++	For example, 0x1F would yield white on red.
++
+ config HW_CONSOLE
+ 	bool
+ 	depends on VT && !S390 && !UML
+Index: linux-2.6.23/drivers/char/vt.c
+===================================================================
+--- linux-2.6.23.orig/drivers/char/vt.c
++++ linux-2.6.23/drivers/char/vt.c
+@@ -73,6 +73,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/moduleparam.h>
+ #include <linux/types.h>
+ #include <linux/sched.h>
+ #include <linux/tty.h>
+@@ -2344,6 +2345,17 @@ struct tty_driver *console_driver;
+ 
+ #ifdef CONFIG_VT_CONSOLE
+ 
++static unsigned int printk_color __read_mostly = CONFIG_VT_PRINTK_COLOR;
++module_param(printk_color, uint, S_IRUGO | S_IWUSR);
++
++static inline void vc_set_color(struct vc_data *vc, unsigned char color)
++{
++	vc->vc_color = color_table[color & 0xF] |
++	               (color_table[(color >> 4) & 0x7] << 4) |
++	               (color & 0x80);
++	update_attr(vc);
++}
++
+ /*
+  *	Console on virtual terminal
+  *
+@@ -2384,12 +2396,14 @@ static void vt_console_print(struct cons
+ 		hide_cursor(vc);
+ 
+ 	start = (ushort *)vc->vc_pos;
++	vc_set_color(vc, printk_color);
+ 
+ 	/* Contrived structure to try to emulate original need_wrap behaviour
+ 	 * Problems caused when we have need_wrap set on '\n' character */
+ 	while (count--) {
+ 		c = *b++;
+ 		if (c == 10 || c == 13 || c == 8 || vc->vc_need_wrap) {
++			vc_set_color(vc, vc->vc_def_color);
+ 			if (cnt > 0) {
+ 				if (CON_IS_VISIBLE(vc))
+ 					vc->vc_sw->con_putcs(vc, start, cnt, vc->vc_y, vc->vc_x);
+@@ -2402,6 +2416,7 @@ static void vt_console_print(struct cons
+ 				bs(vc);
+ 				start = (ushort *)vc->vc_pos;
+ 				myx = vc->vc_x;
++				vc_set_color(vc, printk_color);
+ 				continue;
+ 			}
+ 			if (c != 13)
+@@ -2409,6 +2424,7 @@ static void vt_console_print(struct cons
+ 			cr(vc);
+ 			start = (ushort *)vc->vc_pos;
+ 			myx = vc->vc_x;
++			vc_set_color(vc, printk_color);
+ 			if (c == 10 || c == 13)
+ 				continue;
+ 		}
+@@ -2430,6 +2446,7 @@ static void vt_console_print(struct cons
+ 			vc->vc_need_wrap = 1;
+ 		}
+ 	}
++	vc_set_color(vc, vc->vc_def_color);
+ 	set_cursor(vc);
+ 
+ quit:
