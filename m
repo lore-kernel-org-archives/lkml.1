@@ -1,79 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXJFR5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbXJFR7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbXJFR5m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 13:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXJFR5e
+	id S1763251AbXJFR7E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 13:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761241AbXJFR6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 13:57:34 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:18560 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760933AbXJFR5d (ORCPT
+	Sat, 6 Oct 2007 13:58:55 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:62563 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757966AbXJFR6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 13:57:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=X4Jp11sfCBfl+ZiNx6aMInKi3Jv6WY62mOBV5TkI7v6X2DzIfryzvJrkq95j25Mw0
-	XAAnf2grKkPVo/jHKBh/g==
-Date: Sat, 6 Oct 2007 10:54:35 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-In-Reply-To: <20071006012437.c0fd3a8a.pj@sgi.com>
-Message-ID: <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com> <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com> <20071003105817.7adf6516.pj@sgi.com> <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> <20071003131632.fed4b848.pj@sgi.com>
- <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com> <20071006012437.c0fd3a8a.pj@sgi.com>
+	Sat, 6 Oct 2007 13:58:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=XlUbVWNz0tvWirbFRXfcBokDnWSLhUY+D9uu6j63Bm98N/U49qr1xJWJk4K/GuoaIZVX9U9GfV3MFHxMgt1wLhkGyBS55pCOb6V4LUGFrOSbk+OzMLeCkG+IFldy7P0kL1+nLfEE4kM3jSEUPobufpAfmO2qFZ9GzvjuHs232Rg=
+Message-ID: <6101e8c40710061058v32488b36m43073d946519aa98@mail.gmail.com>
+Date: Sat, 6 Oct 2007 19:58:52 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Security leak in kernel
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Oct 2007, Paul Jackson wrote:
+Hi All!
 
-> This isn't working for me.
-> 
-> The key kernel routine for updating a tasks cpus_allowed
-> cannot be called while holding a spinlock.
-> 
-> But the above loop holds a spinlock, css_set_lock, between
-> the cgroup_iter_start and the cgroup_iter_end.
-> 
-> I end up generating complaints of:
-> 	BUG: scheduling while atomic
-> when I invoke the set_cpus_allowed() above.
-> 
-> Should css_set_lock be a mutex?  Locking changes like that
-> can be risky.
-> 
+this: http://www.milw0rm.com/exploits/4460http://www.milw0rm.com/exploits/4460
 
-It would probably be better to just save references to the tasks.
+exploit is fixed in kernel or not? this find I now..
 
-	struct cgroup_iter it;
-	struct task_struct *p, **tasks;
-	int i = 0;
-
-	cgroup_iter_start(cs->css.cgroup, &it);
-	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
-		get_task_struct(p);
-		tasks[i++] = p;
-	}
-	cgroup_iter_end(cs->css.cgroup, &it);
-
-	while (--i >= 0) {
-		set_cpus_allowed(tasks[i], cs->cpus_allowed);
-		put_task_struct(tasks[i]);
-	}
-
-The getting and putting of the tasks will prevent them from exiting or 
-being deallocated prematurely.  But this is also a critical section that 
-will need to be protected by some mutex so it doesn't race with other 
-set_cpus_allowed().
-
-		David
+-- 
+Thanks,
+Oliver
