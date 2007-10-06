@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762292AbXJFPKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763521AbXJFPK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762292AbXJFPKn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 11:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbXJFPKe
+	id S1763521AbXJFPK6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 11:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760302AbXJFPKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 11:10:34 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35971 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757393AbXJFPKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 11:10:34 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18usAJ1sr0uwDAzaqKdjh77jxKduTvKy1pafws+gM
-	Qtjngs56hDiJtB
-Date: Sat, 6 Oct 2007 17:10:52 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-cc: linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       i2c@lm-sensors.org
-Subject: Re: [i2c] Various problems on Axis 700 Lite VIA C7
-In-Reply-To: <Pine.LNX.4.60.0710052257140.10392@poirot.grange>
-Message-ID: <Pine.LNX.4.60.0710061706450.7276@poirot.grange>
-References: <Pine.LNX.4.44L0.0710051021230.4446-100000@iolanthe.rowland.org>
- <Pine.LNX.4.60.0710052215510.10392@poirot.grange> <4706A2F7.8050508@msgid.tls.msk.ru>
- <Pine.LNX.4.60.0710052257140.10392@poirot.grange>
+	Sat, 6 Oct 2007 11:10:39 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47013 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760134AbXJFPKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 11:10:38 -0400
+Date: Sat, 6 Oct 2007 16:10:26 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: ohyama_sec@ariel-networks.com
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]dose it make get_swap_page(mm/swapfiles.c) good performance
+ ?, kernel<2.6.22.9>.
+In-Reply-To: <20071006000403.DF6E2378020@ns.ariel-networks.com>
+Message-ID: <Pine.LNX.4.64.0710061547350.4924@blonde.wat.veritas.com>
+References: <20071006000403.DF6E2378020@ns.ariel-networks.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Oct 2007, Guennadi Liakhovetski wrote:
-
-> On Sat, 6 Oct 2007, Michael Tokarev wrote:
+On Sat, 6 Oct 2007, ohyama_sec@ariel-networks.com wrote:
+> -hiroyasu ohyama
 > 
-> [snip]
-> > That to say - it may be some miscompilations, but may be some probs with
-> > hardware itself.  If you can, try to reproduce the same on another board
-> > (I just tried to boot 2.6.23-rc5 on this machine, compiled for PIII CPU
-> > using gcc-4.1.2 (no other version installed, sorry) - no issues so far).
-> 
-> Hm, well, I could only compile a i686 kernel and Intel chipset with 
-> "otherwise the same" config with these two compiler options to test... 
-> Maybe some time. No, I do not have another C7 system.
+> I wonder what corrected attached source makes good performance of 
+> getting page slot cluster from page area discripter which is written 
+> "si" in the source codes.
+> Because I think head of swap_list_t discripter doesn't suggest index of 
+> swap area which is same priority that swap_list.next but one which is 
+> the highest priority in the priority's list.
+> the si->swap_map which have high priority may be chosen by 
+> get_swap_page(), so that page slot of low priority's swap area may have 
+> more blank cluster than one of hich priority's swap area.
+> Then, I think substitute "swap_list.head" for "next" is privent them 
+> from finding cluster of page slot when "swap_info[next].prio"'s priority 
+> is different swap_list.next.
 
-No, doesn't work. I forgot that on that PC I can only boot with 
-"acpi=noirq", so, the whole ACPI IRQ-mapping code is not used. Otherwise, 
-I did build such a kernel for that PC - noticed no problem. So, either the 
-only two "miscompiled" places were i2c-viapro and acpi irq routing, or 
-indeed it only triggers problems on C7...
+Thanks for making the suggestion.  I think you are right in what you
+say, but that nevertheless we should not make the change you suggest.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+The idea behind the swap priorities is that we use partitions or
+swapfiles with high priorities before going to use those with lower
+priorities.  That could be useful, for example, if the high priority
+swap partitions are on fast disks, and the lower priority partitions
+on slower disks, ones we'd really prefer to avoid using normally.
+
+With your change, yes, once get_swap_page() fails to find a slot in
+the last area at a particular priority, it will proceed to the next
+lower priority: you're right that it'll probably find a swap cluster
+there much more easily than by going back to the top priority as it
+does; but that would then go against the priorities - get_swap_page()
+itself would be quicker, but swap I/O would be slower (if those
+priorities are indeed according to the speed of the disks).
+
+To get the get_swap_page() speedup you want, simply add
+more swap partitions or swapfiles at the _same_ priority.
+
+Hugh
+
+> *** mm/swapfile_bck.c   2007-10-04 12:09:37.000000000 +0900
+> --- mm/swapfile.c       2007-10-04 12:31:34.000000000 +0900
+> ***************
+> *** 186,193 ****
+>        for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
+>                si = swap_info + type;
+>                next = si->next;
+> !               if (next < 0 ||
+> !                   (!wrapped && si->prio != swap_info[next].prio)) {
+>                        next = swap_list.head;
+>                        wrapped++;
+>                }
+> --- 186,192 ----
+>        for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
+>                si = swap_info + type;
+>                next = si->next;
+> !               if (next < 0) {
+>                        next = swap_list.head;
+>                        wrapped++;
+>                }
