@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764935AbXJFSz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXJFS56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764935AbXJFSz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 14:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763020AbXJFSzO
+	id S1765003AbXJFS56 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 14:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762883AbXJFS5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 14:55:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50545 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760961AbXJFSzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 14:55:13 -0400
-Date: Sat, 6 Oct 2007 19:55:09 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, hch@lst.de, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [patch 1/9] compat_ioctl: move common block ioctls to compat_blkdev_ioctl
-Message-ID: <20071006185509.GA30411@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Arnd Bergmann <arnd@arndb.de>, Jens Axboe <jens.axboe@oracle.com>,
-	linux-kernel@vger.kernel.org, davem@davemloft.net, hch@lst.de,
-	Al Viro <viro@ftp.linux.org.uk>
-References: <20071006181902.141862534@arndb.de> <20071006182342.566716634@arndb.de>
+	Sat, 6 Oct 2007 14:57:52 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43041 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762657AbXJFS5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 14:57:51 -0400
+Date: Sat, 6 Oct 2007 20:59:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net,
+       Andreas Herrmann <aherrman@arcor.de>
+Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
+Message-ID: <20071006185920.GA8005@uranus.ravnborg.org>
+References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org> <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home> <20071006152614.GC22435@flower.upol.cz> <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org> <20071006175145.GD22435@flower.upol.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071006182342.566716634@arndb.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20071006175145.GD22435@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 08:19:03PM +0200, Arnd Bergmann wrote:
-> +static int compat_put_ushort(unsigned long arg, unsigned short val)
-> +{
-> +	return put_user(val, (unsigned short __user *)compat_ptr(arg));
-> +}
-> +
-> +static int compat_put_int(unsigned long arg, int val)
-> +{
-> +	return put_user(val, (compat_int_t __user *)compat_ptr(arg));
-> +}
-> +
-> +static int compat_put_long(unsigned long arg, long val)
-> +{
-> +	return put_user(val, (compat_long_t __user *)compat_ptr(arg));
-> +}
-> +
-> +static int compat_put_ulong(unsigned long arg, compat_ulong_t val)
-> +{
-> +	return put_user(val, (compat_ulong_t __user *)compat_ptr(arg));
-> +}
-> +
-> +static int compat_put_u64(unsigned long arg, u64 val)
-> +{
-> +	return put_user(val, (compat_u64 __user *)compat_ptr(arg));
-> +}
+> Maintenance and acceptance of the m4/make/perl/C/ncurses community of my
+> mainly `TERM=linux ; sed && sh' approach is more important for me.
 
-These should probably be in compat.h
+There is noone having trouble with ncurses dependency today.
+And perl is not yet mandatory for a kernel build expect
+for a few architectures.
+m4 is not used by the kernel - to my best knowledge.
 
+	Sam
