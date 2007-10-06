@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXJFS56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765059AbXJFTK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765003AbXJFS56 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 14:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762883AbXJFS5w
+	id S1765059AbXJFTK0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 15:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764123AbXJFTKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 14:57:52 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43041 "EHLO pasmtpA.tele.dk"
+	Sat, 6 Oct 2007 15:10:12 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41011 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762657AbXJFS5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 14:57:51 -0400
-Date: Sat, 6 Oct 2007 20:59:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>
-Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
-Message-ID: <20071006185920.GA8005@uranus.ravnborg.org>
-References: <20070918080537.GA14882@devil> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org> <200709281005.34001.nickpiggin@yahoo.com.au> <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home> <20071006152614.GC22435@flower.upol.cz> <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org> <20071006175145.GD22435@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071006175145.GD22435@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+	id S1763867AbXJFTKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 15:10:10 -0400
+Message-ID: <4707DE96.4090400@tmr.com>
+Date: Sat, 06 Oct 2007 15:14:30 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
+ Control Kernel
+References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <Xine.LNX.4.64.0710010146100.13671@us.intercode.com.au> <alpine.LFD.0.999.0710010803280.3579@woody.linux-foundation.org> <1191253239.7672.76.camel@moss-spartans.epoch.ncsc.mil> <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org> <4702B1D5.5050502@tmr.com> <alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org> <4703126D.70703@tmr.com> <alpine.LFD.0.999.0710022050560.3579@woody.linux-foundation.org> <m17im2pc7x.fsf@ebiederm.dsl.xmission.com> <15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com>
+In-Reply-To: <15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Maintenance and acceptance of the m4/make/perl/C/ncurses community of my
-> mainly `TERM=linux ; sed && sh' approach is more important for me.
+Kyle Moffett wrote:
+> On Oct 04, 2007, at 21:44:02, Eric W. Biederman wrote:
+>> What we want from the LSM is the ability to say -EPERM when we can 
+>> clearly articulate that we want to disallow something.
+> 
+> This sort of depends on perspective; typically with security 
+> infrastructure you actually want "... the ability to return success when 
+> we can clearly articulate that we want to *ALLOW* something".  File 
+> permissions work this way; we don't have a list of forbidden users 
+> attached to each file, we have an owner, a group, and a mode 
+> representing positive permissions.  With that said in certain high-risk 
+> environments you need something even stronger that cannot be changed by 
+> the "owner" of the file, if we don't entirely trust them,
+> 
+Other than ACLs, of course, which do allow blacklisting individual users.
 
-There is noone having trouble with ncurses dependency today.
-And perl is not yet mandatory for a kernel build expect
-for a few architectures.
-m4 is not used by the kernel - to my best knowledge.
-
-	Sam
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
