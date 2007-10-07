@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbXJGOiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbXJGOj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbXJGOiw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 10:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXJGOip
+	id S1754590AbXJGOj0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 10:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXJGOjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 10:38:45 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:63160 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbXJGOio (ORCPT
+	Sun, 7 Oct 2007 10:39:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:62538 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXJGOjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 10:38:44 -0400
+	Sun, 7 Oct 2007 10:39:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=EmqOCYd9yBAUQQXPGB7lUagb35tPbeNUmCuMJU9TvTUSZjiKCfwBBSdLrZJ1RGQyJHNzGmhATdHsIphMOheBc49OHNPdvAqiRZGoT+U/bDxDAYM2Es47gsFTSic7Jfw3Dtf6NPZYg4mno3J2IDlplLMIVALRGh0nlW2jUytNm50=
-Subject: Re: Sleeping in RCU list traversal
-From: Jun WANG <junwang1234@gmail.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200710072226.EJF51558.LFVHJOStFOOFMQ@I-love.SAKURA.ne.jp>
-References: <1191784307.3618.8.camel@localhost.localdomain>
-	 <200710072226.EJF51558.LFVHJOStFOOFMQ@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Organization: HITSZ
-Date: Mon, 08 Oct 2007 06:37:20 +0800
-Message-Id: <1191796640.3045.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FnxEbVVSVE+oTpMrWdFj0PlXS/03Cabre2h33K/07lBd01M2OdFPEnAbALVih1IekJxmIaVwSGo3aQCq/gU8UxcHnFS/KUNJW4F33ClreYd0SyZL9z7goOtwnul8YNbyslYR9EecPG1DgoJ9B1ZnT8G9YAnlWPHr/SGj1rC/c0o=
+Message-ID: <64bb37e0710070739s67805d72x6d675cb2af2e8b24@mail.gmail.com>
+Date: Sun, 7 Oct 2007 16:39:15 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Tejun Heo" <htejun@gmail.com>, "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <64bb37e0710070144m6bc2c844oc96ef715b53b9819@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
+	 <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
+	 <64bb37e0710011100t2cd81a32g501435b98f783ba9@mail.gmail.com>
+	 <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>
+	 <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com>
+	 <20071003163804.GR19691@waste.org>
+	 <64bb37e0710032232o71225bf6k8a0d493687eb80bd@mail.gmail.com>
+	 <20071004170536.GY19691@waste.org>
+	 <64bb37e0710042306s6c629163gde7bc5c93973153e@mail.gmail.com>
+	 <64bb37e0710070144m6bc2c844oc96ef715b53b9819@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Adding Jens Axboe, the author of what looks like the probable cause]
+On 10/7/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> My sil24_fill_sg now looks like this:
+> static inline void sil24_fill_sg(struct ata_queued_cmd *qc,
+>                                  struct sil24_sge *sge)
+> {
+>         struct scatterlist *sg;
+>
+>         ata_for_each_sg(sg, qc) {
+>                 sge->addr = cpu_to_le64(sg_dma_address(sg));
+>                 sge->cnt = cpu_to_le32(sg_dma_len(sg));
+>                 if (ata_sg_is_last(sg, qc))
+>                         sge->flags = cpu_to_le32(SGE_TRM);
+>                 else
+>                         sge->flags = 0;
+>                 DPRINTK("flags,addr,cnt = 0x%x, 0x%X, 0x%X\n", sge->flags,
+>                         sge->addr, sge->cnt);
+>                 sge++;
+>         }
+> }
+>
+> Suspicious is, that *all* output from this DPRINTK shows flags as 0x0,
+> so the last sg is never terminated (SGE_TRM is 1<<31)?
+> But if that is the cause, how is this working at all? Or am I doing
+> something stupid?
 
-> Hello.
-> 
-> Thank you for pointing out.
-> 
-> Jun WANG wrote:
-> > >rcu_read_lock();
-> > >list_for_each_rcu(p, ...) {
-> > >   ptr = list_entry(p, struct ..., list);
-> > >   /* Grab a reference to "ptr". */
-> > >   rcu_read_unlock();
-> > >   my_task_that_may_sleep(ptr);
-> > >   rcu_read_lock();
-> > >   /* Drop a reference to "ptr". */
-> > > }
-> > > rcu_read_unlock();
->>>Regarding my case, memory region pointed by "ptr" never be removed.
->>>Do I need to grab a reference to "ptr" ?
-> > 
-> > In Document/RCU/whatisRCU.txt
-> > Note that the value returned by rcu_dereference() is valid
-> > 	only within the enclosing RCU read-side critical section.
-> Excuse me, but I think "p" is used only between rcu_read_lock() and rcu_read_unlock().
-> Is it illegal to use "ptr" after rcu_read_unlock() if "ptr" is obtained before rcu_read_unlock() ?
-> 
-> Regards.
-> 
-I'm sorry,I think I got your idea, if you do not need ptr in
-my_task_that_may_sleep(), why you need to grab a reference to "ptr". If
-your my_task_that_may_sleep() needs ptr, and according to the 
->"memory region pointed by "ptr" never be removed." you say,
-it is ok to use "ptr" after rcu_read_ulock(). The basic idea behind RCU
-is to split updates into "removal" and "reclamation" phases. If you
-memory region pointed by "ptr" will not "reclamation" in sleep, it is ok
+Looking closer at
+http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=commitdiff;h=ec6fdded4d76aa54aa57341e5dfdd61c507b1dcd
+the change to libata.h seems bogus :
 
-Regards.
+in ata_qc_first_sg:
+old                                new
+return qc->__sg                    return qc->__sg
+qc->__sg - qc->__sg == 0           qc->n_iter=0
+-> sg - qc->__sg corresponds to qc->n_iter
 
+in ata_qc_next_sg:
+sg++;                              sg_next(sg); qc->n_iter++;
+sg - qc->__sg < qc->n_elem         qc->n_iter < qc->nelem
+-> sg - qc->__sg corresponds to qc->n_iter
+
+but in ata_sg_is_last:
+(sg - qc->__sg) +1 == qc->n_elem   qc->n_iter == qc->n_elem
+if sg - qc->__sg corresponds to qc->n_iter then shoudn't it be
+qc->n_iter+1 == qc->n_elem?
+
+That missing +1 would explain, why the SGE_TRM never gets set.
+
+And it would fit the symptoms, that the boot would fail at random. If
+the "correct" garbage was in place to where the sglist runs off it
+hangs the drive.
+And that would even fit the two different errors that I only got one time each:
+* a completely illegal access (PCI master abort while fetching SGT)
+* wrong alignment of the SGT (SGT no on qword boundary)
+At that that times the garbage seemed to point invalid addresses.
+
+But I'm still not understanding, how the kernel could only fail
+sometimes at bootup, but after that working without any visible
+errors? Is the sil-chip rather intelligent about detecting corrupted
+sglists and silently ignoring them?
+
+Torsten
