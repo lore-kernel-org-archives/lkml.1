@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXJGUEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXJGUF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXJGUEx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 16:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbXJGUEq
+	id S1756869AbXJGUF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 16:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXJGUFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 16:04:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60718 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755680AbXJGUEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 16:04:45 -0400
-Date: Sun, 7 Oct 2007 22:04:44 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:'
- usage"
-In-Reply-To: <47093AFB.8000805@keyaccess.nl>
-Message-ID: <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr>
- <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu>
- <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu>
- <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu>
- <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu>
- <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr>
- <47093AFB.8000805@keyaccess.nl>
+	Sun, 7 Oct 2007 16:05:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54878 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755914AbXJGUFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 16:05:10 -0400
+Message-ID: <47093BEC.2010000@garzik.org>
+Date: Sun, 07 Oct 2007 16:05:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: netdev@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/5] forcedeth: several proposed updates for testing
+References: <20071006151250.GA17020@havoc.gtf.org>	 <4708F194.7080303@garzik.org> <86802c440710071239x28c41db2hca6dd7c5bb3c411c@mail.gmail.com>
+In-Reply-To: <86802c440710071239x28c41db2hca6dd7c5bb3c411c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> On 10/7/07, Jeff Garzik <jeff@garzik.org> wrote:
+>> Jeff Garzik wrote:
+>>> The 'fe-lock' branch of
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git fe-lock
+>> OK, I've successfully tested patches 1-5 on an AMD64 system with
+>>
+>> 00:0a.0 Bridge: nVidia Corporation CK804 Ethernet Controller (rev a3)
+> 
+> need to test that with mcp55 based, that will use MSI.
 
-On Oct 7 2007 22:00, Rene Herman wrote:
-> On 10/07/2007 09:56 PM, Jan Engelhardt wrote:
->
->> Some is good, as long as it is not excessive. While I could imagine that
->> Knoppix will abuse the feature and use vt.printk_color=9,9,9,9,11,10,12, this
->> is not what serious people would do.
->> 
->> [1] http://tinyurl.com/yr9zgq
->> [2] http://tinyurl.com/234ba3
->
-> Given this discussion, I find it really appropriate that you are posting
-> _graphics_ of your text screens :-)
+I would love to see an MSI-X test too (might have to turn on throughput 
+mode).
 
-I can give you a VCSA file (as produced by /dev/vcsa1) if you like,
-complete with VCSA reader.
+	Jeff
+
+
+
