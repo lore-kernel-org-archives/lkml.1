@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbXJGNda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbXJGNf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbXJGNda (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 09:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXJGNdT
+	id S1754178AbXJGNf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 09:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXJGNfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 09:33:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44038 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752347AbXJGNdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 09:33:18 -0400
-Message-ID: <4708E016.9020300@garzik.org>
-Date: Sun, 07 Oct 2007 09:33:10 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 7 Oct 2007 09:35:21 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:15542 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbXJGNfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 09:35:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MlKhZ7OD2ZGMk+M7zp5KzFEaF9w4Af7RZGKTKwuZramT7Jds4ZpG4kRSoD8LZZ8pqhm8Gk9FpCLYjmeGHdYecAelaBBpMQ0eRhrzhH9D/0ZErEiwOMOPj9uQmgLg25nljCmpGRSgp4V4D0TrituhOSrNQ6KQxko70UxOZ93xjhg=
+Message-ID: <1985e0f60710070635l7016bad1t9c4d4cb1a966534f@mail.gmail.com>
+Date: Sun, 7 Oct 2007 19:05:17 +0530
+From: "Jaswinder Singh" <jaswinderlinuxrt@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: 2.6.23-rc9-rt2
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <1191536413.5210.19.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: netdev <netdev@vger.kernel.org>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, den@openvz.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [NET] IPv6 oops bisected
-References: <4708D677.1030601@garzik.org>
-In-Reply-To: <4708D677.1030601@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <1191536413.5210.19.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> The commit
-> 
-> commit 5f5dace1ce001b24fb8286e09ffd3c4d2b547e09
-> Author: Denis V. Lunev <den@openvz.org>
-> Date:   Thu Sep 27 12:41:26 2007 -0700
-> 
->     [NET]: Various dst_ifdown routines to catch refcounting bugs
-> 
-> causes a 100% reproducible oops in net-2.6.24.git, in ip6_route_add().
-> 
-> Platform: x86-64 Fedora 7
-> 
-> Config and lspci attached.
+Hello Steve,
 
-And indeed, reverting this commit with 'patch -R' makes things work again.
+Do you have any plans to support nested or reentrant Interrupt Handling schemes.
 
-	Jeff
+Thank you,
 
+Jaswinder SIngh.
 
-
+On 10/5/07, Steven Rostedt <rostedt@goodmis.org> wrote:
+> We are pleased to announce the 2.6.23-rc9-rt2 tree, which can be
+> downloaded from the new location:
+>
+>  http://www.kernel.org/pub/linux/kernel/projects/rt/
+>
+> Changes since 2.6.23-rc9-rt1
+>
+>   - x86_64 disable IST for debug (Andi Kleen)
+>
+>   - Better handling of dynticks going bad in RCU (Steven Rostedt)
+>
+>   - Preempt RCU boosting (Steven Rostedt based on Paul E. McKenney's
+>     stuff)
+>
+> Again, this still holds experimental code. But I've been running it on a
+> few boxes already (and even the box I'm writing this on).
+>
+> to build a 2.6.23-rc9-rt2 tree, the following patches should be applied:
+>
+>   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.tar.bz2
+>   http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.23-rc9.bz2
+>   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23-rc9-rt2.bz2
+>
+> The broken out patches are also available.
+>
+> -- Steve
+>
+>
+>
+>
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
