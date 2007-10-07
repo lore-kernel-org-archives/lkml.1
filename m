@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbXJGTdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXJGThG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbXJGTdh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXJGTdT
+	id S1756103AbXJGThG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbXJGTgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:33:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46972 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754344AbXJGTdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 15:33:17 -0400
-Date: Sun, 7 Oct 2007 21:32:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, btrace <linux-btrace@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux Kernel Markers - performance characterization with large
-	IO load on large-ish system
-Message-ID: <20071007193256.GA18558@elte.hu>
-References: <46F92219.9020406@hp.com> <20070925171349.GA6057@Krystal> <46FA7A86.6090804@hp.com>
+	Sun, 7 Oct 2007 15:36:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:15322 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbXJGTgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 15:36:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fbakBPqXtGUCf0VWj7GjUa+5jUW073G8xrZFnGLxLkA/R2rS+WzLZSY5FTWoYYnNSIEV61MiaQ+FRMSqV6Pp6x7P91z2vOC0sRc/JOfcnTuRjhNYFkfaGIa3dvuJpCB6+sgTL03znFrt+VOViM4tSheozphAU2BC6BDowsZE/r8=
+Message-ID: <86802c440710071236h137a5331i78f795d7a04c69e@mail.gmail.com>
+Date: Sun, 7 Oct 2007 12:36:50 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH 2/5] forcedeth: interrupt handling cleanup
+Cc: netdev@vger.kernel.org, "Ayaz Abdulla" <aabdulla@nvidia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <4708C5BD.8090402@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46FA7A86.6090804@hp.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20071006151250.GA17020@havoc.gtf.org>
+	 <20071006151400.GB17488@havoc.gtf.org>
+	 <86802c440710062143x3bb801c3obb91292208073588@mail.gmail.com>
+	 <4708C5BD.8090402@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/7/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Yinghai Lu wrote:
+> > On 10/6/07, Jeff Garzik <jeff@garzik.org> wrote:
+> >> commit a606d2a111cdf948da5d69eb1de5526c5c2dafef
+> >> Author: Jeff Garzik <jeff@garzik.org>
+> >> Date:   Fri Oct 5 22:56:05 2007 -0400
+> >>
+> >>     [netdrvr] forcedeth: interrupt handling cleanup
+> >>
+> >>     * nv_nic_irq_optimized() and nv_nic_irq_other() were complete duplicates
+> >>       of nv_nic_irq(), with the exception of one function call.  Consolidate
+> >>       all three into a single interrupt handler, deleting a lot of redundant
+> >>       code.
+> >>
+> >>     * greatly simplify irq handler locking.
+> >>
+> >>       Prior to this change, the irq handler(s) would acquire and release
+> >>       np->lock for each action (RX, TX, other events).
+> >>
+> >>       For the common case -- RX or TX work -- the lock is always acquired,
+> >>       making all successive acquire/release combinations largely redundant.
+> >>
+> >>       Acquire the lock at the beginning of the irq handler, and release it at
+> >>       the end of the irq handler.  This is simple, easy, and obvious.
+> >>
+> >>     * remove irq handler work loop.
+> >>
+> >>       All interesting events emanating from the irq handler either have
+> >>       their own work loops, or they poke a timer into action.
+> >>
+> >>       Therefore, delete the pointless master interrupt handler work loop.
+> >>
+> >>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> >>
+> Do you have ideas/suggestions for a different method?
 
-* Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
+in the e1000 driver, it has seperate handler for msi and ioapic.
 
->  o  All kernels start off with Linux 2.6.23-rc6 + 2.6.23-rc6-mm1
-> 
->  o  '- bt cfg' or '+ bt cfg' means a kernel without or with blktrace 
-> configured respectively.
-> 
->  o  '- markers' or '+ markers' means a kernel without or with the 
-> 11-patch marker series respectively.
-> 
-> 38 runs without blk traces being captured (dropped hi/lo value from 40 runs)
-> 
-> Kernel Options       Min val    Avg val    Max val    Std Dev
-> ------------------  ---------  ---------  ---------  ---------
-> - markers - bt cfg  15.349127  16.169459  16.372980   0.184417
-> + markers - bt cfg  15.280382  16.202398  16.409257   0.191861
-> 
-> - markers + bt cfg  14.464366  14.754347  16.052306   0.463665
-> + markers + bt cfg  14.421765  14.644406  15.690871   0.233885
+but in forcedeth, the nv_nic_irq_optimized keep check msi_flags...,
+with num of msi interrupt number, that could cause cpu loading get a
+little bit high..., even the network performance is ok.
 
-actually, the pure marker overhead seems to be a regression:
-
-> - markers - bt cfg  15.349127  16.169459  16.372980   0.184417
-> + markers - bt cfg  15.280382  16.202398  16.409257   0.191861
-
-why isnt the marker near zero-cost as it should be? (as long as they are 
-enabled but are not in actual use) 2% increase is _ALOT_. That's the 
-whole point of good probes: they do not slow down the normal kernel.
-
-_Worst case_ it should be at most a few instructions overhead but that 
-does not explain the ~2% wall-clock time regression you measured here.
-
-So there's something wrong going on - either markers have unacceptably 
-high cost, or the measurement is not valid.
-
-	Ingo
+YH
