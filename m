@@ -1,71 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbXJGMk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXJGMtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbXJGMk6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 08:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXJGMku
+	id S1753958AbXJGMtU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 08:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbXJGMtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 08:40:50 -0400
-Received: from amnesiac.heapspace.net ([195.54.228.42]:3664 "EHLO
-	amnesiac.heapspace.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbXJGMkt (ORCPT
+	Sun, 7 Oct 2007 08:49:12 -0400
+Received: from mi1.bluebottle.com ([206.188.25.14]:46581 "EHLO
+	mi1.bluebottle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbXJGMtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 08:40:49 -0400
-X-Greylist: delayed 1423 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Oct 2007 08:40:48 EDT
-Date: Sun, 7 Oct 2007 15:17:05 +0300
-From: Daniel Stone <daniel@fooishbar.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, arashi@sacredchao.net
-Subject: Re: Revert "intel_agp: fix stolen mem range on G33"
-Message-ID: <20071007121705.GA6098@fooishbar.org>
-Mail-Followup-To: Daniel Stone <daniel@fooishbar.org>,
-	Jiri Slaby <jirislaby@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>,
-	airlied@linux.ie, dri-devel@lists.sourceforge.net,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, arashi@sacredchao.net
-References: <4706D4B1.6050101@sacredchao.net> <20071006044221.GA14767@fattire.cabal.ca> <20071006053410.GB14767@fattire.cabal.ca> <20071006054234.GC14767@fattire.cabal.ca> <47076651.8020801@gmail.com>
+	Sun, 7 Oct 2007 08:49:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=mail; d=bluebottle.com; c=nofws; q=dns;
+	h=received:date:from:user-agent:mime-version:to:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-trusted-delivery;
+	b=Z3s16Jeu3m1i8IbQQrTyfRYgfxYY+NOjoccER/eXrmy/yNexyWHjmo6wej/QCjdaC
+	DtTsNxgR/fOE6+nVVIMzRols4upEj0uJ2YN8bCHsNPPG5m47RkIAov5HP6XT3nr
+Message-Id: <200710071249.l97CnAYC021425@mi1.bluebottle.com>
+Date: Sun, 07 Oct 2007 22:49:00 +1000
+From: Gilles Gigan <gilles.gigan@bluebottle.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
-Content-Disposition: inline
-In-Reply-To: <47076651.8020801@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Gilles Gigan <gilles.gigan@bluebottle.com>,
+       LKML <linux-kernel@vger.kernel.org>, wim@iguana.be
+Subject: Re: [PATCH] watchdog: add Nano 7240 driver
+References: <200710061539.l96FddWs002059@mi1.bluebottle.com> <20071007070832.GA13090@pazke.donpac.ru>
+In-Reply-To: <20071007070832.GA13090@pazke.donpac.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Trusted-Delivery: <784a1fc09949be59104531d067085b38>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrey Panin wrote:
+>> +#ifdef CONFIG_WATCHDOG_NOWAYOUT
+>> +#define NOWAYOUT			1
+>> +#else
+>> +#define NOWAYOUT			0
+>> +#endif
+>> +static int nowayout = NOWAYOUT;
+> 
+> You don't need this #ifdef crap. Just use WATCHDOG_NOWAYOUT instead.
 
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+done
 
-On Sat, Oct 06, 2007 at 12:41:21PM +0200, Jiri Slaby wrote:
-> On 10/06/2007 07:42 AM, Kyle McMartin wrote:
-> > This reverts commit f443675affe3f16dd428e46f0f7fd3f4d703eeab, which
-> > breaks horribly if you aren't running an unreleased xf86-video-intel
-> > driver out of git.
->=20
-> I guess, this will break my graphics, no?
-> http://lkml.org/lkml/2007/9/20/447
 
-You need to upgrade Mesa.
+>> +	if ((_IOC_DIR(cmd) & _IOC_READ) &&
+>> +	    (!access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd))))
+>> +		return -EFAULT;
+>> +	if ((_IOC_DIR(cmd) & _IOC_WRITE) &&
+>> +	    (!access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd))))
+>> +		return -EFAULT;
+> 
+> Is this really needed ?
 
-Cheers,
-Daniel
+removed
 
---SLDf9lqlvOQaIe6s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Signed-off-by: Gilles Gigan <gilles.gigan@bluebottle.com>
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+diff -uprN -X linux-2.6.23-rc9/Documentation/dontdiff 
+linux-2.6.23-rc9/drivers/char/watchdog/Kconfig 
+linux-2.6.23-rc9-dirty/drivers/char/watchdog/Kconfig
+--- linux-2.6.23-rc9/drivers/char/watchdog/Kconfig	2007-10-06 01:43:44.000000000 +1000
++++ linux-2.6.23-rc9-dirty/drivers/char/watchdog/Kconfig	2007-10-06 14:49:03.000000000 +1000
+@@ -455,6 +455,19 @@ config SBC8360_WDT
 
-iD8DBQFHCM5BUVYB1rKAgJQRAnMzAJwNl2xfOgEs+/yaB4ERmngqexVuYgCcDQ7T
-2qNdsqrMW5GWT1mWksfsCcY=
-=RrE9
------END PGP SIGNATURE-----
+  	  Most people will say N.
 
---SLDf9lqlvOQaIe6s--
++config SBC7240_WDT
++	tristate "SBC Nano 7240 Watchdog Timer"
++	depends on X86_32
++	---help---
++	  This is the driver for the hardware watchdog found on the IEI
++	  single board computers EPIC Nano 7240 (and likely others). This
++	  watchdog simply watches your kernel to make sure it doesn't freeze,
++	  and if it does, it reboots your computer after a certain amount of
++	  time.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called sbc7240_wdt.
++
+  config CPU5_WDT
+  	tristate "SMA CPU5 Watchdog"
+  	depends on X86
+diff -uprN -X linux-2.6.23-rc9/Documentation/dontdiff 
+linux-2.6.23-rc9/drivers/char/watchdog/Makefile 
+linux-2.6.23-rc9-dirty/drivers/char/watchdog/Makefile
+--- linux-2.6.23-rc9/drivers/char/watchdog/Makefile	2007-10-06 01:43:44.000000000 +1000
++++ linux-2.6.23-rc9-dirty/drivers/char/watchdog/Makefile	2007-10-06 14:49:03.000000000 +1000
+@@ -71,6 +71,7 @@ obj-$(CONFIG_SCx200_WDT) += scx200_wdt.o
+  obj-$(CONFIG_PC87413_WDT) += pc87413_wdt.o
+  obj-$(CONFIG_60XX_WDT) += sbc60xxwdt.o
+  obj-$(CONFIG_SBC8360_WDT) += sbc8360.o
++obj-$(CONFIG_SBC7240_WDT) += sbc7240.o
+  obj-$(CONFIG_CPU5_WDT) += cpu5wdt.o
+  obj-$(CONFIG_SMSC37B787_WDT) += smsc37b787_wdt.o
+  obj-$(CONFIG_W83627HF_WDT) += w83627hf_wdt.o
+diff -uprN -X linux-2.6.23-rc9/Documentation/dontdiff 
+linux-2.6.23-rc9/drivers/char/watchdog/sbc7240_wdt.c 
+linux-2.6.23-rc9-dirty/drivers/char/watchdog/sbc7240_wdt.c
+--- linux-2.6.23-rc9/drivers/char/watchdog/sbc7240_wdt.c	1970-01-01 10:00:00.000000000 +1000
++++ linux-2.6.23-rc9-dirty/drivers/char/watchdog/sbc7240_wdt.c	2007-10-07 
+21:06:35.000000000 +1000
+@@ -0,0 +1,299 @@
++/*
++ *	NANO7240 SBC Watchdog device driver
++ *
++ *	Based on w83877f.c by Scott Jennings,
++ *
++ *	This program is free software; you can redistribute it and/or modify
++ *	it under the terms of the GNU General Public License version 2 as
++ *	published by the Free Software Foundation;
++ *
++ *	Software distributed under the License is distributed on an "AS IS"
++ *	basis, WITHOUT WARRANTY OF ANY KIND, either express or
++ *	implied. See the License for the specific language governing
++ *	rights and limitations under the License.
++ *
++ *	(c) Copyright 2007  Gilles GIGAN <gilles.gigan@jcu.edu.au>
++ *
++ *      10/01- 2007   [Initial revision]
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/jiffies.h>
++#include <linux/miscdevice.h>
++#include <linux/watchdog.h>
++#include <linux/fs.h>
++#include <linux/ioport.h>
++#include <linux/notifier.h>
++#include <linux/reboot.h>
++#include <linux/init.h>
++#include <asm/io.h>
++#include <asm/uaccess.h>
++#include <asm/system.h>
++#include <asm/atomic.h>
++
++#define PREFIX "sbc7240_wdt: "
++
++#define ENABLE_SBC7240_PORT 		0x443
++#define DISABLE_SBC7240_PORT 		0x043
++#define SET_TIMEOUT_SBC7240_PORT 	ENABLE_SBC7240_PORT
++#define WDT_MAGIC_CHAR			'V'
++
++#define WATCHDOG_TIMEOUT 		30	/* 30 sec default timeout */
++#define WATCHDOG_MAX_TIMEOUT 		255
++static int timeout = WATCHDOG_TIMEOUT;	/* in seconds */
++module_param(timeout, int, 0);
++MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. (1<=timeout<="
++		 __MODULE_STRING(WATCHDOG_MAX_TIMEOUT) ", default="
++		 __MODULE_STRING(WATCHDOG_TIMEOUT) ")");
++
++static int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout, "Disable watchdog when closing device file");
++
++#define OPEN_STATUS_BIT			0
++#define ENABLED_STATUS_BIT		1
++static unsigned long wdt_status;
++
++/*
++ * Utility routines
++ */
++
++static void wdt_disable(void)
++{
++	/* disable the watchdog */
++	if (test_and_clear_bit(ENABLED_STATUS_BIT, &wdt_status)) {
++		inb_p(DISABLE_SBC7240_PORT);
++		printk(KERN_INFO PREFIX "Watchdog timer is now disabled.\n");
++	}
++}
++
++static void wdt_enable(void)
++{
++	/* enable the watchdog */
++	if (!test_and_set_bit(ENABLED_STATUS_BIT, &wdt_status)) {
++		inb_p(ENABLE_SBC7240_PORT);
++		printk(KERN_INFO PREFIX "Watchdog timer is now enabled.\n");
++	}
++}
++
++static int wdt_set_timeout(int t)
++{
++	if (t < 1 || t > WATCHDOG_MAX_TIMEOUT) {
++		printk(KERN_ERR PREFIX "timeout value must be 1<=x<=%d\n",
++		       WATCHDOG_MAX_TIMEOUT);
++		return -1;
++	}
++	/* set the timeout */
++	outb_p((unsigned)t, ENABLE_SBC7240_PORT);
++	printk(KERN_INFO PREFIX "timeout set to %d seconds\n", t);
++	return 0;
++}
++
++/* Whack the dog */
++static inline void wdt_keepalive(void)
++{
++	if (test_bit(ENABLED_STATUS_BIT, &wdt_status))
++		inb_p(ENABLE_SBC7240_PORT);
++}
++
++/*
++ * /dev/watchdog handling
++ */
++static ssize_t fop_write(struct file *file, const char __user * buf,
++			 size_t count, loff_t * ppos)
++{
++	size_t i;
++	char c;
++	int got_magic_char = 0;
++
++	/* is there a magic char ? */
++	for (i = 0; i != count; i++) {
++		if (get_user(c, buf + i))
++			return -EFAULT;
++		if (c == WDT_MAGIC_CHAR) {
++			got_magic_char = 1;
++			break;
++		}
++	}
++
++	if (got_magic_char)
++		wdt_disable();
++	else
++		wdt_keepalive();
++
++	return count;
++}
++
++static int fop_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(OPEN_STATUS_BIT, &wdt_status))
++		return -EBUSY;
++
++	return nonseekable_open(inode, file);
++}
++
++static int fop_close(struct inode *inode, struct file *file)
++{
++	if (!nowayout)
++		wdt_disable();
++
++	clear_bit(OPEN_STATUS_BIT, &wdt_status);
++	return 0;
++}
++
++static int fop_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
++		     unsigned long arg)
++{
++	static struct watchdog_info ident = {
++		.options =
++		    WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE,
++		.firmware_version = 1,
++		.identity = "SBC7240",
++	};
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		return copy_to_user((void __user *)arg,
++				    &ident, sizeof(ident)) ? -EFAULT : 0;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, (int __user *)arg);
++	case WDIOC_KEEPALIVE:
++		wdt_keepalive();
++		return 0;
++	case WDIOC_SETOPTIONS:{
++			int retval = -EINVAL;
++
++			if (arg & WDIOS_DISABLECARD) {
++				wdt_disable();
++				retval = 0;
++			}
++
++			if (arg & WDIOS_ENABLECARD) {
++				wdt_enable();
++				retval = 0;
++			}
++
++			return retval;
++		}
++	case WDIOC_SETTIMEOUT:{
++			int new_timeout;
++
++			if (get_user(new_timeout, (int __user *)arg))
++				return -EFAULT;
++
++			if (wdt_set_timeout(new_timeout))
++				return -EINVAL;
++
++			timeout = new_timeout;
++			return 0;
++		}
++	case WDIOC_GETTIMEOUT:
++		return put_user(timeout, (int __user *)arg);
++	default:
++		return -ENOTTY;
++	}
++}
++
++static const struct file_operations wdt_fops = {
++	.owner = THIS_MODULE,
++	.llseek = no_llseek,
++	.write = fop_write,
++	.open = fop_open,
++	.release = fop_close,
++	.ioctl = fop_ioctl,
++};
++
++static struct miscdevice wdt_miscdev = {
++	.minor = WATCHDOG_MINOR,
++	.name = "watchdog",
++	.fops = &wdt_fops,
++};
++
++/*
++ *	Notifier for system down
++ */
++
++static int wdt_notify_sys(struct notifier_block *this, unsigned long code,
++			  void *unused)
++{
++	if (code == SYS_DOWN || code == SYS_HALT)
++		wdt_disable();
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block wdt_notifier = {
++	.notifier_call = wdt_notify_sys,
++};
++
++static void __exit sbc7240_wdt_unload(void)
++{
++	printk(KERN_INFO PREFIX "Removing watchdog\n");
++	misc_deregister(&wdt_miscdev);
++
++	unregister_reboot_notifier(&wdt_notifier);
++	release_region(ENABLE_SBC7240_PORT, 1);
++}
++
++static int __init sbc7240_wdt_init(void)
++{
++	int rc = -EBUSY;
++
++	if (!request_region(ENABLE_SBC7240_PORT, 1, "SBC7240 WDT")) {
++		printk(KERN_ERR PREFIX "I/O address 0x%04x already in use\n",
++		       ENABLE_SBC7240_PORT);
++		rc = -EIO;
++		goto err_out;
++	}
++
++	/* The IO port 0x043 used to disable the watchdog
++	 * * is already claimed by the system timer, so we
++	 * cant request_region() it ...*/
++
++	rc = misc_register(&wdt_miscdev);
++	if (rc) {
++		printk(KERN_ERR PREFIX
++		       "cannot register miscdev on minor=%d (err=%d)\n",
++		       wdt_miscdev.minor, rc);
++		goto err_out_region1;
++	}
++
++	rc = register_reboot_notifier(&wdt_notifier);
++	if (rc) {
++		printk(KERN_ERR PREFIX
++		       "cannot register reboot notifier (err=%d)\n", rc);
++		goto err_out_miscdev;
++	}
++
++	if (timeout < 1 || timeout > WATCHDOG_MAX_TIMEOUT) {
++		timeout = WATCHDOG_TIMEOUT;
++		printk(KERN_INFO PREFIX
++		       "timeout value must be 1<=x<=%d, using %d\n",
++		       WATCHDOG_MAX_TIMEOUT, timeout);
++	}
++	wdt_set_timeout(timeout);
++
++	printk(KERN_INFO PREFIX
++	       "Watchdog driver for SBC7240 initialised (nowayout=%d)\n",
++	       nowayout);
++
++	return 0;
++
++      err_out_miscdev:
++	misc_deregister(&wdt_miscdev);
++      err_out_region1:
++	release_region(ENABLE_SBC7240_PORT, 1);
++      err_out:
++	return rc;
++}
++
++module_init(sbc7240_wdt_init);
++module_exit(sbc7240_wdt_unload);
++
++MODULE_AUTHOR("Gilles Gigan");
++MODULE_DESCRIPTION
++    ("Watchdog device driver for single board computer EPIC Nano 7240 from iEi");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+
+----------------------------------------------------------------------
+Find out how you can get spam free email.
+http://www.bluebottle.com/tag/3
+
