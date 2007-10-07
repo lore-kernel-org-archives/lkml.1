@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbXJGTd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbXJGTdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbXJGTd0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXJGTdS
+	id S1756009AbXJGTdh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXJGTdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:33:18 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:53447 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801AbXJGTdR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 15:33:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46972 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754344AbXJGTdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Oct 2007 15:33:17 -0400
-Date: Sun, 7 Oct 2007 21:47:25 +0200
-To: Willy Tarreau <w@1wt.eu>
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:' usage"
-Message-ID: <20071007194725.GS22435@flower.upol.cz>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu>
+Date: Sun, 7 Oct 2007 21:32:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, btrace <linux-btrace@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Linux Kernel Markers - performance characterization with large
+	IO load on large-ish system
+Message-ID: <20071007193256.GA18558@elte.hu>
+References: <46F92219.9020406@hp.com> <20070925171349.GA6057@Krystal> <46FA7A86.6090804@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071007191309.GS10199@1wt.eu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+In-Reply-To: <46FA7A86.6090804@hp.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 07, 2007 at 09:13:09PM +0200, Willy Tarreau wrote:
-> On Sun, Oct 07, 2007 at 08:47:52PM +0200, Rene Herman wrote:
-> > On 10/07/2007 06:12 PM, Ingo Molnar wrote:
-> > 
-> > >* Oleg Verych <olecom@flower.upol.cz> wrote:
-> > 
-> > >>Coloring isn't useful. If it was, it would be implemented ~16 years
-> > >>ago.
-> > >
-> > >Congratulations, this is the most stupid argument i've ever read on 
-> > >lkml.
-[]
-> I would say that while I'm not particularly fond of flashy colors
-> everywhere, I think that being able to use colors to indicate particular
-> actions in progress or conditions can be a good thing. RAID errors,
-> devices disabled due to command-line parameters, and general anomalies
-> which can cause a hang or panic a few line laters are worth coloring.
 
-That *is* the coloring, i'm talking about.
+* Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
 
-> And I don't believe in userland's help here, because for that type of
-> messages, the indication should be returned immediately.
+>  o  All kernels start off with Linux 2.6.23-rc6 + 2.6.23-rc6-mm1
+> 
+>  o  '- bt cfg' or '+ bt cfg' means a kernel without or with blktrace 
+> configured respectively.
+> 
+>  o  '- markers' or '+ markers' means a kernel without or with the 
+> 11-patch marker series respectively.
+> 
+> 38 runs without blk traces being captured (dropped hi/lo value from 40 runs)
+> 
+> Kernel Options       Min val    Avg val    Max val    Std Dev
+> ------------------  ---------  ---------  ---------  ---------
+> - markers - bt cfg  15.349127  16.169459  16.372980   0.184417
+> + markers - bt cfg  15.280382  16.202398  16.409257   0.191861
+> 
+> - markers + bt cfg  14.464366  14.754347  16.052306   0.463665
+> + markers + bt cfg  14.421765  14.644406  15.690871   0.233885
 
-In the very buggy cases, i think, everything just hang. Otherwise
-initramfs stuff can deal with it.
+actually, the pure marker overhead seems to be a regression:
 
-> For instance, anyone who has experienced read errors on and IDE disk
-> knows that it can literally take hours/days to boot, after displaying
-> thousands of messages. Here, having the ability to see that no IRQ was
-> assigned or something like this could help.
+> - markers - bt cfg  15.349127  16.169459  16.372980   0.184417
+> + markers - bt cfg  15.280382  16.202398  16.409257   0.191861
 
-As i'm pretty much in all that text(tty)-mode stuff anyway, maybe after
-some time i will propose something klibc/tty based. Mainly a bit of user
-interface: split scrolling regions for errors and notifications; flexible
-color schemas (keyword highlighting); keyboard events. Of course it will
-work in such IDE cases, only if driver is a module.
-____
+why isnt the marker near zero-cost as it should be? (as long as they are 
+enabled but are not in actual use) 2% increase is _ALOT_. That's the 
+whole point of good probes: they do not slow down the normal kernel.
+
+_Worst case_ it should be at most a few instructions overhead but that 
+does not explain the ~2% wall-clock time regression you measured here.
+
+So there's something wrong going on - either markers have unacceptably 
+high cost, or the measurement is not valid.
+
+	Ingo
