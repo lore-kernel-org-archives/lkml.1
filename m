@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbXJGLlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbXJGMCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbXJGLlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 07:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXJGLk5
+	id S1753762AbXJGMCa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 08:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXJGMCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 07:40:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42097 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbXJGLk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 07:40:56 -0400
-Message-ID: <4708C5BD.8090402@garzik.org>
-Date: Sun, 07 Oct 2007 07:40:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 7 Oct 2007 08:02:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44582 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXJGMCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 08:02:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 7 Oct 2007 14:02:07 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] last minute FireWire update
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.e4d177adf50f4c94@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: netdev@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] forcedeth: interrupt handling cleanup
-References: <20071006151250.GA17020@havoc.gtf.org>	 <20071006151400.GB17488@havoc.gtf.org> <86802c440710062143x3bb801c3obb91292208073588@mail.gmail.com>
-In-Reply-To: <86802c440710062143x3bb801c3obb91292208073588@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On 10/6/07, Jeff Garzik <jeff@garzik.org> wrote:
->> commit a606d2a111cdf948da5d69eb1de5526c5c2dafef
->> Author: Jeff Garzik <jeff@garzik.org>
->> Date:   Fri Oct 5 22:56:05 2007 -0400
->>
->>     [netdrvr] forcedeth: interrupt handling cleanup
->>
->>     * nv_nic_irq_optimized() and nv_nic_irq_other() were complete duplicates
->>       of nv_nic_irq(), with the exception of one function call.  Consolidate
->>       all three into a single interrupt handler, deleting a lot of redundant
->>       code.
->>
->>     * greatly simplify irq handler locking.
->>
->>       Prior to this change, the irq handler(s) would acquire and release
->>       np->lock for each action (RX, TX, other events).
->>
->>       For the common case -- RX or TX work -- the lock is always acquired,
->>       making all successive acquire/release combinations largely redundant.
->>
->>       Acquire the lock at the beginning of the irq handler, and release it at
->>       the end of the irq handler.  This is simple, easy, and obvious.
->>
->>     * remove irq handler work loop.
->>
->>       All interesting events emanating from the irq handler either have
->>       their own work loops, or they poke a timer into action.
->>
->>       Therefore, delete the pointless master interrupt handler work loop.
->>
->>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->>
->>  drivers/net/forcedeth.c |  325 +++++++++++-------------------------------------
->>  1 file changed, 77 insertions(+), 248 deletions(-)
->>
-> any chance to create three verion irq handlers for ioapic, msi, msi-x...?
-> 
-> MACRO or inline function?
+Linus, please pull from the for-linus branch at
 
-MSI-X already has its own separate interrupt handlers.  MSI and INTx 
-call the same interrupt handling code, like the unmodified driver goes. 
-  Creating an MSI-specific irq handler would not save very much AFAICS, 
-but I might be missing something.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-Do you have ideas/suggestions for a different method?
+to receive the following simple but hopefully effective update.
 
-	Jeff
+ drivers/firewire/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+commit a1134dd48d59e532b801659163539bf01cae7673
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sun Oct 7 12:31:22 2007 +0200
 
+    firewire: point to migration document
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/firewire/Kconfig b/drivers/firewire/Kconfig
+index d011a76..fe9e768 100644
+--- a/drivers/firewire/Kconfig
++++ b/drivers/firewire/Kconfig
+@@ -11,7 +11,8 @@ config FIREWIRE
+ 	  This is the "Juju" FireWire stack, a new alternative implementation
+ 	  designed for robustness and simplicity.  You can build either this
+ 	  stack, or the classic stack (the ieee1394 driver, ohci1394 etc.)
+-	  or both.
++	  or both.  Please read http://wiki.linux1394.org/JujuMigration before
++	  you enable the new stack.
+ 
+ 	  To compile this driver as a module, say M here: the module will be
+ 	  called firewire-core.  It functionally replaces ieee1394, raw1394,
+
+-- 
+Stefan Richter
+-=====-=-=== =-=- --===
+http://arcgraph.de/sr/
 
