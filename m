@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXJGQTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbXJGQXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbXJGQTo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 12:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbXJGQTg
+	id S1754823AbXJGQXk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 12:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbXJGQXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 12:19:36 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58807 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754729AbXJGQTe (ORCPT
+	Sun, 7 Oct 2007 12:23:32 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:43345 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbXJGQXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 12:19:34 -0400
-Date: Sun, 7 Oct 2007 17:23:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Valdis.Kletnieks@vt.edu, Oleg Verych <olecom@flower.upol.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: NAK nettiquete (was Re: "Re: [PATCH 0/2] Colored kernel output
- (run2)"
-Message-ID: <20071007172306.1ca662fd@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0710071722010.16301@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr>
-	<20071006195105.GE22435@flower.upol.cz>
-	<20071006194820.GA30579@elte.hu>
-	<20071006210349.GG22435@flower.upol.cz>
-	<20071007060706.GA18768@elte.hu>
-	<20071007111035.GO22435@flower.upol.cz>
-	<2614.1191766530@turing-police.cc.vt.edu>
-	<20071007161222.1b758f2f@the-village.bc.nu>
-	<Pine.LNX.4.64.0710071722010.16301@fbirervta.pbzchgretzou.qr>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 7 Oct 2007 12:23:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=po6KJnK2GaDtyQ9EcVvv2SXJNDWWQjmHHJcRVbjVQk97H4JhGF7R3s3v02cCD73/r5ZpoxaoYutXqr4wAqTjDgLVJSoc20rynOE6z/aSyh7GLSGweGJqsuQOUGEWHVs/EUTJmHnUNtwu1BKQTN13vOXQTBvf+TmPLNQ7gNDlFA8=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH for 2.6.23] Driver core: fix regression with SYSFS_DEPRECTATED
+Date: Sun, 7 Oct 2007 12:22:21 -0400
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710071222.22218.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >- If you want to do "pretty" boot up you do it in X or frame buffer
-> >(which is going to get easier and easier with the X shift to kernel side
-> >video support)
-> 
-> fb is slow. Feels like a 9600bps serial line.
+Subject: Driver core: fix SYSF_DEPRECATED breakage for nested classdevs
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-So fix your fb. There is enough information to cover 2D scrolling for
-most modern cards now.
+We should only reparent to a class former class devices that
+form the base of class hierarchy. Nested devices should still
+grow from their real parents.
 
-> Let everyone have his own fun.
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Tested-by: Anssi Hannula <anssi.hannula@gmail.com>
+---
 
-The point isn't to put everyones "fun" into the kernel, or by now it
-would have become a steaming heap.
+Linus,
 
+Please consider applying this patch before releasing 2.6.23. It fixes
+a regression in UDEV/HAL caused by conversion of input devices from
+class devices to regular devices.
+
+Thanks,
+
+Dmitry
+
+Index: linux/drivers/base/core.c
+===================================================================
+--- linux.orig/drivers/base/core.c
++++ linux/drivers/base/core.c
+@@ -586,9 +586,13 @@ void device_initialize(struct device *de
+ static struct kobject * get_device_parent(struct device *dev,
+ 					  struct device *parent)
+ {
+-	/* Set the parent to the class, not the parent device */
+-	/* this keeps sysfs from having a symlink to make old udevs happy */
+-	if (dev->class)
++	/*
++	 * Set the parent to the class, not the parent device
++	 * for topmost devices in class hierarchy.
++	 * This keeps sysfs from having a symlink to make old
++	 * udevs happy
++	 */
++	if (dev->class && (!parent || parent->class != dev->class))
+ 		return &dev->class->subsys.kobj;
+ 	else if (parent)
+ 		return &parent->kobj;
+
+\\
