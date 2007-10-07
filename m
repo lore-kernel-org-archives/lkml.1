@@ -1,124 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbXJGTsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbXJGTzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbXJGTsR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbXJGTsF
+	id S1755999AbXJGTzF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXJGTyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:48:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55000 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754388AbXJGTsE convert rfc822-to-8bit (ORCPT
+	Sun, 7 Oct 2007 15:54:55 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:56089 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbXJGTyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 15:48:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.23-rc9-git5: Known regressions from 2.6.22
-Date: Sun, 7 Oct 2007 22:02:34 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Sun, 7 Oct 2007 15:54:54 -0400
+Message-ID: <47093942.3090104@keyaccess.nl>
+Date: Sun, 07 Oct 2007 21:53:38 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710072202.34621.rjw@sisk.pl>
+To: Willy Tarreau <w@1wt.eu>
+CC: Ingo Molnar <mingo@elte.hu>, Oleg Verych <olecom@flower.upol.cz>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:'
+ usage"
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu>
+In-Reply-To: <20071007191309.GS10199@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message contains a list of some known regressions from 2.6.22 for which
-there are no fixes in the mainline that I know of.  If any of them have been fixed
-already, please let me know.
+On 10/07/2007 09:13 PM, Willy Tarreau wrote:
 
-If you know of any other unresolved regressions from 2.6.22, please let me know
-either and I'll add them to the list.
+> On Sun, Oct 07, 2007 at 08:47:52PM +0200, Rene Herman wrote:
 
+>> But well, there actually have been worse arguments given that VGA console 
+>> is getting less and less important. I recently did a perusal of alternative 
+>> distributions and didn't find a single one that didn't default to having a 
+>> splash screen hide the kernel during boot (and if I'm not mistaken, only 
+>> one of them provided me with the option during installation to not boot 
+>> into X immediately afterwards).
+> 
+> I don't recall having seen any splash screen on Slackware.
 
-Subject:	zd1211 device is no longer configured
-Submitter:	Oliver Neukum <oliver@neukum.org>
-References:	http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
-		http://bugzilla.kernel.org/show_bug.cgi?id=8972
-Caused-By:	Daniel Drake <dsd@gentoo.org>
-		commit 74553aedd46b3a2cae986f909cf2a3f99369decc
+Indeed, but that's the distribution I use and considered switching away 
+from. Just my luck eh? :-\
 
+> There are two distinct populations :
+>   - those who are afraid of boot messages and prefer "splash" screens.
+>     Those people are most common users, grown in non-IT environments. They
+>     are happy to see a big logo on their BIOS to hide important boot errors,
+>     and they are the ones who would never have imagined that pressing Escape
+>     during the boot of windows 3.1/95 provided them with the full text
+>     messages. Basically, they want to ensure they will never have to worry
+>     about things they don't understand.
 
-Subject:	Oops while modprobing phy fixed module
-Submitter:	Gabriel C <nix.or.die@googlemail.com>
-References:	http://lkml.org/lkml/2007/7/14/63
-		http://bugzilla.kernel.org/show_bug.cgi?id=9060
-Handled-By:	Satyam Sharma <satyam.sharma@gmail.com>
-		Vitaly Bordug <vitb@kernel.crashing.org>
-		Tejun Heo <htejun@gmail.com>
-Patch:		http://lkml.org/lkml/2007/7/18/506
+Nor want to understand, often.
 
+>   - those who are troubleshooting their system in the early stages (kernel,
+>     filesystems, network, services, ...). These ones *need* boot messages.
+>     And there, depending on the hardware, sometimes the FB is better because
+>     it shows larger lines, sometimes it's worse because the scrollback is
+>     limited by too low memory.
+> 
+> I personally fit in the second category. And I'm sure most people on this
+> list do.
 
-Subject:	ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-Submitter:	Danny ter Haar <dth@dth.net>
-References:	http://lkml.org/lkml/2007/7/27/298
-		http://lkml.org/lkml/2007/7/29/371
-		http://bugzilla.kernel.org/show_bug.cgi?id=9061
-Handled-By:	Len Brown <lenb@kernel.org>
+As do I ofcourse. An operating system kernel development list might provide 
+for a fairly non-average balanced population of "am / am not interested in 
+the inner workings of computers". Given that most everyone these days uses a 
+computer, it's still a really small percentage though -- and as evidenced by 
+the bootsplash thing, even of Linux users (and I've in fact heard real-life 
+people say they disliked the noisy Linux bootup due to "all those errors").
 
+> I would be miserably sad if I couldn't get my boot messages anymore. It
+> already irritates me a lot to loose the ones displayed before switching
+> to frame-buffer when a hang happens just afterwards...
 
-Subject:	empty suspend stopped working around 2.6.23-rc4
-Submitter:	Pavel Machek <pavel@ucw.cz>
-References:	http://lkml.org/lkml/2007/9/11/326
-		http://bugzilla.kernel.org/show_bug.cgi?id=9075
+Oh quite. I use VGA console myself. But not being able to get to the bootup 
+messages anymore even for people who do care is not the issue. It's about 
+finding it a bit hard to get excited about colourization when the "obvious" 
+way forward is so much more graphically oriented.
 
+As also commented in another reply just now, ways forward also tend to have 
+their problems but this kind of "innovation" takes me back to the time when 
+our favorite bulletins board adopted ANSI colours. Today, that seems just a 
+tad pathetic...
 
-Subject:	umount triggers a warning in jfs and takes almost a minute
-Submitter:	Oliver Neukum <oliver@neukum.org>
-References:	http://lkml.org/lkml/2007/9/4/73
-		http://bugzilla.kernel.org/show_bug.cgi?id=9076
-Handled-By:	Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Patch:		http://bugzilla.kernel.org/attachment.cgi?id=13023&action=view
+Again, it might not hurt any either, but sheesh.
 
-
-Subject:	NETDEV WATCHDOG: eth0: transmit timed out
-Submitter:	Karl Meyer <adhocrocker@gmail.com>
-References:	http://lkml.org/lkml/2007/8/13/737
-		http://bugzilla.kernel.org/show_bug.cgi?id=9079
-Handled-By:	Francois Romieu <romieu@fr.zoreil.com>
-
-
-Subject:	Weird network problems with 2.6.23-rc2
-Submitter:	Shish <shish@shishnet.org>
-References:	http://lkml.org/lkml/2007/8/11/40
-		http://bugzilla.kernel.org/show_bug.cgi?id=9080
-
-
-Subject:	powersaving degradation, (time spend in C0 goes up after a while)
-Submitter:	Christian Leber <christian@leber.de>
-References:	http://lkml.org/lkml/2007/9/2/142
-		http://lkml.org/lkml/2007/9/2/207
-		http://bugzilla.kernel.org/show_bug.cgi?id=9081
-
-
-Subject:	kernel oops when unplugging usb mouse, sometimes hardlock when moving mouse
-Submitter:	o. meijer <meijer.o@gmail.com>
-References:	http://bugzilla.kernel.org/show_bug.cgi?id=9111
-Handled-By:	Dmitry Torokhov <dtor@insightbb.com>
-
-
-Subject:	2.6.23-rcX SG_GET_SCSI_ID regression?
-Submitter:	Joerg Platte <lists@naasa.net>
-References:	http://lkml.org/lkml/2007/10/3/101
-		http://bugzilla.kernel.org/show_bug.cgi?id=9123
-
-
-For details, please follow the links given in references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-I'm the owner of some of these entries, so if you want me to reassign them to
-someone else, please let me know.
-
-There also is a Bugzilla entry used for tracking the regressions from 2.6.22,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9056
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
-
-Greetings,
-Rafael
+Rene.
