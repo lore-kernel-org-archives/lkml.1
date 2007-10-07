@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbXJGRJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbXJGRWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbXJGRJD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 13:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXJGRIy
+	id S1755069AbXJGRWP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 13:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXJGRWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 13:08:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55299 "EHLO mx2.mail.elte.hu"
+	Sun, 7 Oct 2007 13:22:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:46469 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751983AbXJGRIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 13:08:53 -0400
-Date: Sun, 7 Oct 2007 19:08:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [PATCH 1/2] Colored kernel output (run3)
-Message-ID: <20071007170845.GD32139@elte.hu>
-References: <Pine.LNX.4.64.0710062147370.20637@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0710062209390.20637@fbirervta.pbzchgretzou.qr> <20071007163824.GA30063@elte.hu> <20071007164452.GA30429@elte.hu> <Pine.LNX.4.64.0710071849240.16301@fbirervta.pbzchgretzou.qr> <20071007165953.GB32139@elte.hu> <Pine.LNX.4.64.0710071902410.16301@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710071902410.16301@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0121]
+	id S1752724AbXJGRV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 13:21:59 -0400
+In-Reply-To: <20071007095853.13a8755d@laptopd505.fenrus.org>
+References: <47087D45.2010904@goop.org> <20071007095853.13a8755d@laptopd505.fenrus.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C2543D65-1241-47E6-8C06-BF6E4F73E19A@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: lockdep: how to tell it multiple pte locks is OK?
+Date: Sun, 7 Oct 2007 10:17:47 -0700
+To: Arjan van de Ven <arjan@infradead.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Oct 7, 2007, at 9:58 AM, Arjan van de Ven wrote:
 
-> 
-> On Oct 7 2007 18:59, Ingo Molnar wrote:
-> >> >  vmlinux:
-> >> >     text    data     bss     dec     hex filename
-> >> >  7732358 1157269  401408 9291035  8dc51b vmlinux.before
-> >> >  7732374 1157269  401408 9291051  8dc52b vmlinux.after
-> >> >
-> >> >16 bytes, or 0.0002% of the total text size. So there's in essence no 
-> >> >text overhead to talk about. So the text overhead argument is a red 
-> >> >herring.
-> >> 
-> >> 16 bytes, huh? Can't be. That would be like, perhaps 5, x86 instructions.
-> >
-> >yes, it's that low, and it's with the feature disabled.
-> 
-> Ah, with CONFIG_CKO=n, right. But where does that 16 byte increase
-> come from, when vt.o itself remains constant in size?
+> On Sat, 06 Oct 2007 23:31:33 -0700
+>
+>> I'm presume I'm the first person to try holding multiple pte locks at
+>> once, so there's no existing locking order for these locks.  I'm
+>> always traversing and locking the pagetable in virtual address order
+>> (and this seems like a sane-enough rule for anyone else who wants to
+>> hold multiple pte locks).
+>
+> I'm not sure that's a valid assumption in light of things like sharing
+> pagetables between processes etc etc..
+> (granted, that one is out of tree right now but I still hope it'll go
+> in some day:)
 
-comes from printk.o:
+Well, yes, but that will take some thought about how split pte locks  
+will work anyway (or more specifically, fork will probably just end  
+up reusing the pte pages and avoid the need to do any cross-pagetable  
+pte locking anyway, though I guess that will be deferred to COW  
+handling).
 
-   text    data     bss     dec     hex filename
-   6068     231   17636   23935    5d7f kernel/printk.o
-   6075     231   17636   23942    5d86 kernel/printk.o
+So are you saying I should pass up the opportunity to optimise a  
+relatively hot path (fork/exec/exit) because it will need some  
+further thought if/when shared ptes get implemented?  Doesn't seem  
+like a good tradeoff...
 
-the effect of the extra parameter. But that is not worth #ifdef-ing for. 
-For all practical purposes there's no overhead.
-
-	Ingo
+	J
