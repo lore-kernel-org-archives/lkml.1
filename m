@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbXJGXo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXJGXzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbXJGXo7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 19:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbXJGXow
+	id S1757345AbXJGXzQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 19:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXJGXzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 19:44:52 -0400
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:57897 "EHLO
-	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756053AbXJGXov (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 19:44:51 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 2.6.23-rc9 and a heads-up for the 2.6.24 series..
-Date: Mon, 8 Oct 2007 00:44:49 +0100
-User-Agent: KMail/1.9.7
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.0.999.0710012029400.3579@woody.linux-foundation.org> <20071005061106.GA27798@uranus.ravnborg.org> <alpine.LRH.0.999.0710051026200.10191@www.tglx.de>
-In-Reply-To: <alpine.LRH.0.999.0710051026200.10191@www.tglx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Oct 2007 19:55:04 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35643 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750840AbXJGXzB (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 19:55:01 -0400
+Date: Mon, 8 Oct 2007 09:54:33 +1000
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-ID: <20071007235433.GW995458@sgi.com>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <1191501626.22357.14.camel@twins> <E1IdQJn-0002Cv-00@dorka.pomaz.szeredi.hu> <1191504186.22357.20.camel@twins> <E1IdR58-0002Fq-00@dorka.pomaz.szeredi.hu> <1191516427.5574.7.camel@lappy> <20071004104650.d158121f.akpm@linux-foundation.org> <20071005123028.GA10372@mail.ustc.edu.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710080044.49883.alistair@devzero.co.uk>
+In-Reply-To: <20071005123028.GA10372@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 October 2007 09:32:40 you wrote:
-> On Fri, 5 Oct 2007, Sam Ravnborg wrote:
-> > > > cp: cannot stat `arch/x86_64/boot/bzImage': No such file or directory
-> > > >
-> > > > Obviously, this file has moved to arch/x86/boot, but it seems like
-> > > > possibly unnecessary breakage. I've been copying bzImage for years
-> > > > from arch/x86_64/boot, and I'm sure there's a handful of scripts
-> > > > (other than Debian's kernel-image) doing this too.
-> > > >
-> > > > For now, I hacked the tool[1]. Maybe, if we care, a symlink could be
-> > > > set up between arch/x86/boot and arch/$ARCH/boot ? Or would papering
-> > > > over this be more trouble than it's worth?
-> > >
-> > > yeah, a symlink is the right solution i think. Our first-step goal is
-> > > to make the switchover seamless for all practical purposes, and a
-> > > compatibility symlink in arch/i386/boot/ will not hurt. (we shouldnt
-> > > worry about the really old zImage target though)
-> >
-> > But when can we then get rid of it?
-> > This is a simple question about when we take the noise..
-> > And right now people know we are shifting to x86 - so it makes
-> > sense to let the dependent userspace tools take the pain now and not
-> > later.
-> >
-> > Starting to fill up a build kernel with symlinks for compatibility with
-> > random progarms seems to be the wrong approach.
-> >
-> > 	Sam - that dislike especially the asm symlink
->
-> Sam,
->
-> I completely agree with you, but we want to keep the migration noise
-> as low as possible. Adding the symlink right now along with an entry
-> into features-removal.txt (6 month grace period) allows a smoother
-> transition. The distro folks should better get their gear together
-> until then.
+On Fri, Oct 05, 2007 at 08:30:28PM +0800, Fengguang Wu wrote:
+> The improvement could be:
+> - kswapd is now explicitly preferred to do the writeout;
 
-I'll certainly file a bug report with the Debian BTS, but the fix will 
-probably involve something as abortive as my original patch.
+Careful. kswapd is much less efficient at writeout than pdflush
+because it does not do low->high offset writeback per address space.
+It just flushes the pages in LRU order and that turns writeback into
+a non-sequential mess. I/O sizes decrease substantially and
+throughput falls through the floor.
 
-How did the PPC merge handle this? I can't see any similar hacks in 
-kernel-image for these architectures.
+So if you want kswapd to take over all the writeback, it needs to do
+writeback in the same manner as the background flushes. i.e.  by
+grabbing page->mapping and flushing that in sequential order rather
+than just the page on the end of the LRU....
 
--- 
+I documented the effect of kswapd taking over writeback in this
+paper (section 5.3):
+
+http://oss.sgi.com/projects/xfs/papers/ols2006/ols-2006-paper.pdf
+
 Cheers,
-Alistair.
 
-137/1 Warrender Park Road, Edinburgh, UK.
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
