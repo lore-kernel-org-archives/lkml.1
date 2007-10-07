@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXJGUHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbXJGUKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbXJGUHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 16:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXJGUHm
+	id S1756933AbXJGUKu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 16:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXJGUKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 16:07:42 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:43103 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756913AbXJGUHl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 16:07:41 -0400
-Message-ID: <47093C40.20908@keyaccess.nl>
-Date: Sun, 07 Oct 2007 22:06:24 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 7 Oct 2007 16:10:43 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:35342 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755406AbXJGUKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 16:10:42 -0400
+Date: Mon, 8 Oct 2007 05:10:24 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxsh-dev@sourceforge.net
+Subject: Re: [PATCH] Fix SH4 DMAC API
+Message-ID: <20071007201024.GB17760@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <lkmladrian@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxsh-dev@sourceforge.net
+References: <8b67d60710060652ha54d28bj30bdc9eec514857f@mail.gmail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:'
- usage"
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu> <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr> <47093AFB.8000805@keyaccess.nl> <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8b67d60710060652ha54d28bj30bdc9eec514857f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/2007 10:04 PM, Jan Engelhardt wrote:
-
-> On Oct 7 2007 22:00, Rene Herman wrote:
->> On 10/07/2007 09:56 PM, Jan Engelhardt wrote:
->>
->>> Some is good, as long as it is not excessive. While I could imagine that
->>> Knoppix will abuse the feature and use vt.printk_color=9,9,9,9,11,10,12, this
->>> is not what serious people would do.
->>>
->>> [1] http://tinyurl.com/yr9zgq
->>> [2] http://tinyurl.com/234ba3
->> Given this discussion, I find it really appropriate that you are posting
->> _graphics_ of your text screens :-)
+On Sat, Oct 06, 2007 at 02:52:43PM +0100, Adrian McMenamin wrote:
+> This patch fixes the DMA cascade by masking the correct bits.
 > 
-> I can give you a VCSA file (as produced by /dev/vcsa1) if you like,
-> complete with VCSA reader.
-
-No, the PNGs will do thanks, it was obviuously a bit of a cheap shot. Still, 
-it _is_ somewhat of a comment on what's expected these days.
-
-Rene
-
+> Tested and working with Dreamcast PVR2 DMA. With this patch applied
+> the existing mainline code in arch/sh/drivers/dma/dma-sh.c works,
+> whereas before I was patching that to get round this problem.
+> 
+> Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> 
+Applied, thanks.
