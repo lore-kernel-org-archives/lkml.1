@@ -1,75 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbXJGEnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbXJGEvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752445AbXJGEnj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 00:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXJGEna
+	id S1752673AbXJGEvm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 00:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbXJGEve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 00:43:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:32301 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbXJGEn2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 00:43:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kGbsN/PEyDo+VZdMQJtpMaaLAs7x+L9qnEg7ZuEey63+rOfvY26jfFL5JXRf7Rl74vqT9325dwlRJ9UtfCiIdf+YsAh7dTM+HttIgiFNvAE92nol9/JFWDw/7E8uq0lbFh3Fk/S+U6VKtyOAkoJFIHw0EYMz9Q+wsRCbG3ndbWI=
-Message-ID: <86802c440710062143x3bb801c3obb91292208073588@mail.gmail.com>
-Date: Sat, 6 Oct 2007 21:43:27 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH 2/5] forcedeth: interrupt handling cleanup
-Cc: netdev@vger.kernel.org, "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20071006151400.GB17488@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Oct 2007 00:51:34 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:39104 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbXJGEvd (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 00:51:33 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc8-mm[12] - the amazing disappearing MSI IRQ
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1191732692_10413P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071006151250.GA17020@havoc.gtf.org>
-	 <20071006151400.GB17488@havoc.gtf.org>
+Date: Sun, 07 Oct 2007 00:51:32 -0400
+Message-ID: <23735.1191732692@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/6/07, Jeff Garzik <jeff@garzik.org> wrote:
->
-> commit a606d2a111cdf948da5d69eb1de5526c5c2dafef
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Fri Oct 5 22:56:05 2007 -0400
->
->     [netdrvr] forcedeth: interrupt handling cleanup
->
->     * nv_nic_irq_optimized() and nv_nic_irq_other() were complete duplicates
->       of nv_nic_irq(), with the exception of one function call.  Consolidate
->       all three into a single interrupt handler, deleting a lot of redundant
->       code.
->
->     * greatly simplify irq handler locking.
->
->       Prior to this change, the irq handler(s) would acquire and release
->       np->lock for each action (RX, TX, other events).
->
->       For the common case -- RX or TX work -- the lock is always acquired,
->       making all successive acquire/release combinations largely redundant.
->
->       Acquire the lock at the beginning of the irq handler, and release it at
->       the end of the irq handler.  This is simple, easy, and obvious.
->
->     * remove irq handler work loop.
->
->       All interesting events emanating from the irq handler either have
->       their own work loops, or they poke a timer into action.
->
->       Therefore, delete the pointless master interrupt handler work loop.
->
->     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->
->  drivers/net/forcedeth.c |  325 +++++++++++-------------------------------------
->  1 file changed, 77 insertions(+), 248 deletions(-)
->
-any chance to create three verion irq handlers for ioapic, msi, msi-x...?
+--==_Exmh_1191732692_10413P
+Content-Type: text/plain; charset=us-ascii
 
-MACRO or inline function?
+Dell Latitude D820, T7200 processor, x86_64 kernel.  The MSI IRQs for
+HDA-Intel evaporate fairly consistently some time after boot.  On a few
+occasions, the MSI IRQ for the ethernet interface also has dropped.
 
-YH
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
+09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5752 Gigabit Ethernet PCI Express (rev 02)
+
+A while after boot I have this in /proc/interrupts:
+
+Sat Oct  6 22:25:19 EDT 2007
+           CPU0       CPU1       
+  0:     222717          0   IO-APIC-edge      timer
+  1:          9       1783   IO-APIC-edge      i8042
+  8:          0          0   IO-APIC-edge      rtc
+  9:          2          0   IO-APIC-fasteoi   acpi
+ 12:         86          0   IO-APIC-edge      i8042
+ 14:       5490      30700   IO-APIC-edge      libata
+ 15:         36          0   IO-APIC-edge      libata
+ 16:       2657          0   IO-APIC-fasteoi   nvidia
+ 19:          9          0   IO-APIC-fasteoi   ohci1394, yenta
+ 20:        125       6393   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+ 21:         90          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 22:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 23:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
+312:        149      19249   PCI-MSI-edge      eth0
+313:         92          0   PCI-MSI-edge      iwl3945
+314:       5375          0   PCI-MSI-edge      HDA Intel
+NMI:          0          0   Non-maskable interrupts
+LOC:      63560     180342   Local interrupts
+RES:      60295      49751   Rescheduling interrupts
+CAL:        342       2070   function call interrupts
+TLB:       2173       1804   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+
+Ethernet, wireless, and sound card all have MSI interrupts attached.
+Then after a while, this pops in dmesg:
+
+[ 2086.388000] ALSA sound/pci/hda/hda_intel.c:563: hda_intel: No response from codec, disabling MSI: last cmd=0x012f1c00
+[ 2087.389000] ALSA sound/pci/hda/hda_intel.c:576: hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x012f1c00
+
+(The exact time has varied anywhere from 123 seconds after boot to 10,502 secs).
+
+And now /proc/interrupts looks like:
+
+Sat Oct  6 23:26:59 EDT 2007
+           CPU0       CPU1       
+  0:    2438973          0   IO-APIC-edge      timer
+  1:          9      10061   IO-APIC-edge      i8042
+  8:          0          0   IO-APIC-edge      rtc
+  9:          2          0   IO-APIC-fasteoi   acpi
+ 12:         86          0   IO-APIC-edge      i8042
+ 14:       5490      87784   IO-APIC-edge      libata
+ 15:         36          0   IO-APIC-edge      libata
+ 16:      30831          0   IO-APIC-fasteoi   nvidia
+ 19:          9          0   IO-APIC-fasteoi   ohci1394, yenta
+ 20:        125      55664   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+ 21:         91      13292   IO-APIC-fasteoi   uhci_hcd:usb3, HDA Intel
+ 22:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 23:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
+312:        149     101422   PCI-MSI-edge      eth0
+313:       2378          0   PCI-MSI-edge      iwl3945
+314:      15643          0      none-edge    
+NMI:          0          0   Non-maskable interrupts
+LOC:     395385    1640119   Local interrupts
+RES:     675388     582673   Rescheduling interrupts
+CAL:        429       2195   function call interrupts
+TLB:       5776       4119   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+
+Sound card has moved to IRQ 21, and 314 is left hanging in the breeze.
+
+I've also seen the eth0 MSI IRQ evaporate, leaving *two* 'none-edge' IRQs,
+but I can't replicate it at the moment, as it seems to happen pseudo-randomly.
+
+
+
+--==_Exmh_1191732692_10413P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHCGXUcC3lWbTT17ARAsn9AKCwgjNczg5D5jZcDfCfFwip1Ul5nACcCHHI
+nL0HidCn3tKKNU1zOIzfA6M=
+=73SI
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1191732692_10413P--
