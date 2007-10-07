@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbXJGGHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbXJGGPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbXJGGHb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 02:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbXJGGHX
+	id S1752781AbXJGGPB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 02:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXJGGOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 02:07:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42318 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbXJGGHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 02:07:22 -0400
-Date: Sun, 7 Oct 2007 08:07:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 0/2] Colored kernel output (run2)
-Message-ID: <20071007060706.GA18768@elte.hu>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz>
+	Sun, 7 Oct 2007 02:14:53 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:29831 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbXJGGOw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 02:14:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=mMi6QSKeoZICiLGEakhdS6pUaMUVHZPrzh653gFDBhnZb99ne+lfu1Hp9E7cMAzSE
+	J+RVyYv7uaXKv2HUQl0pA==
+Date: Sat, 6 Oct 2007 23:13:10 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: menage@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+In-Reply-To: <20071006125904.a26ed99f.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710062235260.11526@chino.kir.corp.google.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com> <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com> <20071003105817.7adf6516.pj@sgi.com> <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> <20071003131632.fed4b848.pj@sgi.com>
+ <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com> <20071006012437.c0fd3a8a.pj@sgi.com> <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com> <20071006125904.a26ed99f.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071006210349.GG22435@flower.upol.cz>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0031]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 6 Oct 2007, Paul Jackson wrote:
 
-* Oleg Verych <olecom@flower.upol.cz> wrote:
-
-> > > * completely useless, if properly implemented in userspace (with 
-> > >   much reacher functionality).
+> > 	struct cgroup_iter it;
+> > 	struct task_struct *p, **tasks;
+> > 	int i = 0;
 > > 
-> > that's hogwash. No user-space runs during early bootup. (and yes i 
-> > want a color code at glance if something hangs in early bootup) 
-> > Nothing will color-code crashes, etc., etc. Control of the _kernel_ 
-> > console by user-space is complete nonsense.
+> > 	cgroup_iter_start(cs->css.cgroup, &it);
+> > 	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+> > 		get_task_struct(p);
+> > 		tasks[i++] = p;
+> > 	}
+> > 	cgroup_iter_end(cs->css.cgroup, &it);
 > 
-> If it is so important for major kernel developer like you, Ingo, then 
-> why there's no scrollback at first place? Why nothing like that was 
-> not implemented up until now?
-
-even if it were true (which it isnt), that is not an argument against 
-including a useful change that exists now and that people are interested 
-in. (and yes, i have implemented kernel console improvements in the past 
-and vga scrollback support was in fact amongst one of my first ever 
-Linux kernel hacks so your comment is doubly wrong.)
-
-> My first ever Linux hack was changing default console output color. I 
-> think it was seven years ago. I though, it was not serious, if nobody 
-> did that already (in the 2.2.14).
+> Hmmm ... guess I'd have to loop over the cgroup twice, once to count
+> them (the 'count' field is not claimed to be accurate) and then again,
+> after I've kmalloc'd the tasks[] array, filling in the tasks[] array.
 > 
-> Please, don't mix important stuff here. I know, what kernel console 
-> is.
 
-your arguments are not an answer to my technical points, which i'll 
-repeat here:
+Use the struct task_struct **tasks above.  Any call here should only be 
+about 300 bytes into the stack so, with 8K stacks on x86_64, you should be 
+able to store pointers to a little under 1,000 tasks before corrupting it.
 
-| | [...] No user-space runs during early bootup. (and yes i want a 
-| | color code at glance if something hangs in early bootup) Nothing 
-| | will color-code crashes, etc., etc. Control of the _kernel_ console 
-| | by user-space is complete nonsense.
+Or, if you think there's going to be more than 1,000 tasks in this cgroup, 
+just do an arbitrary number of them and then reuse your stack before 
+calling set_cpus_allowed() and put_task_struct() on all tasks you've 
+collected so far; then finally call cgroup_iter_end() when you're done 
+with all of them.  Use the task_struct usage counter as your locking so 
+that tasks don't prematurely exit or deallocate before you migrate them.
 
-today's console code development goes in exactly the opposite direction: 
-we are including (formerly-) user-space console functionality in the 
-kernel so that we can for example print oopses even if we are in X mode.
+Keep in mind that simply iterating over the tasks and using 
+set_cpus_allowed() isn't good enough not only because you're holding a 
+spinlock but also because the task can exit during the call, unless you're 
+using some sort of cgroups locking I'm not aware of that prevents that.  
+My solution prevents that with {get,put}_task_struct().
 
-> > this is nice and robust functionality that i personally welcome. The 
-> > default is not changed in any way.
-> > 
-> > (btw., i corrected the subject line to remove the 'NAK'. Why do you 
-> > think you can 'NAK' a patch in this field?)
-> 
-> I added comment (like this), so anyone can skip reading body, if 
-> headers are "Oleg Verych && NAK". In case if `NAK' have a magic 
-> meaning in the LKML, like control characters in the tty, i'm sorry.
+The current update_cpu_domains(), or -mm's equivalent of it with this 
+patchset, cannot call lock_cpu_hotplug() with callback_mutex held, so 
+it'll need to be unlocked after all the tasks have been put.  If you're 
+preempted here before update_cpu_domains(), attach_task() will take care 
+of the cpus_allowed reassignment.
 
-yes, a 'NAK' has a particular meaning on lkml.
-
-> But how to express opinion quickly and easily?
-
-by writing a quick email expressing your opinion and waiting to see the 
-discussion play out itself ...
-
-but it is very rude to 'NAK' a patch and it should only be done 
-carefully.
-
-	Ingo
+		David
