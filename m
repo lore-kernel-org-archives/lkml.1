@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbXJGNrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXJGODO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbXJGNrr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 09:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXJGNrg
+	id S1753958AbXJGODO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 10:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXJGOC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 09:47:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:62723 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbXJGNrf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 09:47:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=NACy+U41blz2jmyMHpzAziwaY1Yhh85N1J1TtbtDGVFiF3nGF3EsqAnRHoGqQvwYr0O1eOvPvidmZrt11gxSuYqX+hx84L4ONqWATQRzDvqai82CO4kYbPgW+plEcNCLQQVnB6Qs0ziVGkbNJvkwexLngcDS4BVJeHurVEgcOoM=
-Message-ID: <4708E3CF.4000401@gmail.com>
-Date: Sun, 07 Oct 2007 17:49:03 +0400
-From: "Denis V. Lunev" <dlunev@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev <netdev@vger.kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, den@openvz.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [NET] IPv6 oops bisected
-References: <4708D677.1030601@garzik.org> <4708E016.9020300@garzik.org>
-In-Reply-To: <4708E016.9020300@garzik.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Oct 2007 10:02:59 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:39164 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbXJGOC7 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 10:02:59 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Time-based RFC 4122 UUID generator
+In-Reply-To: Your message of "Sun, 07 Oct 2007 12:08:10 +0200."
+             <200710071208.11030.deller@gmx.de>
+From: Valdis.Kletnieks@vt.edu
+References: <200710061553.37311.deller@gmx.de> <20668.1191728530@turing-police.cc.vt.edu>
+            <200710071208.11030.deller@gmx.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1191765776_10413P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 07 Oct 2007 10:02:56 -0400
+Message-ID: <2018.1191765776@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Jeff Garzik wrote:
->> The commit
->>
->> commit 5f5dace1ce001b24fb8286e09ffd3c4d2b547e09
->> Author: Denis V. Lunev <den@openvz.org>
->> Date:   Thu Sep 27 12:41:26 2007 -0700
->>
->>     [NET]: Various dst_ifdown routines to catch refcounting bugs
->>
->> causes a 100% reproducible oops in net-2.6.24.git, in ip6_route_add().
->>
->> Platform: x86-64 Fedora 7
->>
->> Config and lspci attached.
-> 
-> And indeed, reverting this commit with 'patch -R' makes things work again.
-> 
->     Jeff
+--==_Exmh_1191765776_10413P
+Content-Type: text/plain; charset=us-ascii
 
-Can you me command to execute to reproduce the problem? and oops if
-possible.
+On Sun, 07 Oct 2007 12:08:10 +0200, you said:
 
-Regards,
-	Den
+> Thanks that you ask! 
+> I really should have mentioned it in my initial posting.
+> 
+> Yes, this change was intentional, as it in fact fixes a possible bug in the original code.
+> Section 4.1.6 in RFC 4122 states regarding the "NodeID":
+> :  For systems with no IEEE address, a randomly or pseudo-randomly
+> :  generated value may be used; see Section 4.5.  The multicast bit must
+> :  be set in such addresses, in order that they will never conflict with
+> :  addresses obtained from network cards. 
+> 
+> So up to now it was just pure ("random") luck if this bit was set or not.
+
+Sounds like a valid bugfix then - but it should probably be sent upstream
+separately, with it's own changelog (what I quoted above should be fine)...
+
+Remember - one patch, one logical change, so your patch should be split up
+(among other things, that way the bugfix can proceed even if the new-function
+part gets hung up in review).....
+
+Other than splitting it up, I have no further comments on either part.. Enjoy...
+
+--==_Exmh_1191765776_10413P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHCOcQcC3lWbTT17ARAlPkAKDuGvbOuqi5HU4Tlaeb4nEamjG4mQCeNXH+
+5/GyopvmiWlYgrNiGoTFVgg=
+=FAFY
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1191765776_10413P--
