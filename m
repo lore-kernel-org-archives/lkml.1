@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbXJGGPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbXJGGcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbXJGGPk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 02:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbXJGGPb
+	id S1753001AbXJGGcE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 02:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXJGGby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 02:15:31 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:29905 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbXJGGPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 02:15:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=h1g9N9OC+oKwoM1Ua6UGWRksO5dGhA9stuXJD2UTEZlL880CkYmuJlkojGaCPVul4
-	WLJusxZdjq7XM8eO+deQA==
-Date: Sat, 6 Oct 2007 23:15:14 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Menage <menage@google.com>
-cc: Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-In-Reply-To: <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
-Message-ID: <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>  <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>  <20071003105817.7adf6516.pj@sgi.com>  <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> 
- <20071003131632.fed4b848.pj@sgi.com>  <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>  <20071006012437.c0fd3a8a.pj@sgi.com>  <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
- <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
+	Sun, 7 Oct 2007 02:31:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:37289 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbXJGGbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 02:31:53 -0400
+Message-ID: <47087D45.2010904@goop.org>
+Date: Sat, 06 Oct 2007 23:31:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: lockdep: how to tell it multiple pte locks is OK?
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Oct 2007, Paul Menage wrote:
+I'm writing some code which is doing some batch processing on pte pages,
+and so wants to hold multiple pte locks at once.  This seems OK, but
+lockdep is giving me the warning:
 
-> > The getting and putting of the tasks will prevent them from exiting or
-> > being deallocated prematurely.  But this is also a critical section that
-> > will need to be protected by some mutex so it doesn't race with other
-> > set_cpus_allowed().
-> 
-> Is that necessary? If some other process calls set_cpus_allowed()
-> concurrently with a cpuset cpus update, it's not clear that there's
-> any defined serialization semantics that have to be achieved, as long
-> as the end result is that the task's cpus_allowed are within the
-> cpuset's cpus_allowed.
-> 
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.23-rc9-paravirt #1673
+---------------------------------------------
+init/1 is trying to acquire lock:
+ (__pte_lockptr(new)){--..}, at: [<c0102d85>] lock_pte+0x10/0x15
 
-It can race with sched_setaffinity().  It has to give up tasklist_lock as 
-well to call set_cpus_allowed() and can race
+but task is already holding lock:
+ (__pte_lockptr(new)){--..}, at: [<c0102d85>] lock_pte+0x10/0x15
 
-	cpus_allowed = cpuset_cpus_allowed(p);
-	cpus_and(new_mask, new_mask, cpus_allowed);
-	retval = set_cpus_allowed(p, new_mask);
+other info that might help us debug this:
+4 locks held by init/1:
+ #0:  (&mm->mmap_sem){----}, at: [<c012999e>] copy_process+0xab4/0x12bf
+ #1:  (&mm->mmap_sem/1){--..}, at: [<c01299ae>] copy_process+0xac4/0x12bf
+ #2:  (&mm->page_table_lock){--..}, at: [<c010334a>] xen_dup_mmap+0x11/0x24
+ #3:  (__pte_lockptr(new)){--..}, at: [<c0102d85>] lock_pte+0x10/0x15
 
-and allow a task to have a cpu outside of the cpuset's new cpus_allowed if 
-you've taken it away between cpuset_cpus_allowed() and set_cpus_allowed().
+stack backtrace:
+ [<c0109282>] show_trace_log_lvl+0x1a/0x2f
+ [<c0109d18>] show_trace+0x12/0x14
+ [<c0109d30>] dump_stack+0x16/0x18
+ [<c0147bd0>] __lock_acquire+0x195/0xc5f
+ [<c0148722>] lock_acquire+0x88/0xac
+ [<c035c2a3>] _spin_lock+0x35/0x42
+ [<c0102d85>] lock_pte+0x10/0x15
+ [<c010347d>] pin_page+0x67/0x17e
+ [<c0102d23>] pgd_walk+0x168/0x1ba
+ [<c0103283>] xen_pgd_pin+0x42/0xf8
+ [<c0103352>] xen_dup_mmap+0x19/0x24
+ [<c0129b63>] copy_process+0xc79/0x12bf
+ [<c012a419>] do_fork+0x99/0x1bf
+ [<c0106216>] sys_clone+0x33/0x39
+ [<c010814e>] syscall_call+0x7/0xb
+ =======================
 
-		David
+
+I presume this is because I'm holding multiple pte locks (class
+"__pte_lockptr(new)").  Is there some way I can tell lockdep this is OK?
+
+I'm presume I'm the first person to try holding multiple pte locks at
+once, so there's no existing locking order for these locks.  I'm always
+traversing and locking the pagetable in virtual address order (and this
+seems like a sane-enough rule for anyone else who wants to hold multiple
+pte locks).
+
+Thanks,
+    J
