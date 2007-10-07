@@ -1,131 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbXJGKGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbXJGKI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbXJGKGQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 06:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXJGKGC
+	id S1753977AbXJGKI6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 06:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbXJGKIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 06:06:02 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:15830 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbXJGKF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 06:05:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=S6ovPtEtPUzDnscxmYhfKBqAoyGnfGo/oRivUlzuqC8ZnPePmscWasIf7FJ9owpxjRbtFsyX2ijhXfMhVt3HEtrORJuFkvvltU5Nvkee7uIbtQS3ZtEA7zB5Y6kCPu6Y2mq3OKNBJ+p0ynAfGTV+QJmfFLLIftDnzYkDXnr2fF4=
-Message-ID: <4708AF7C.5050604@gmail.com>
-Date: Sun, 07 Oct 2007 12:05:48 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 7 Oct 2007 06:08:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47561 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751042AbXJGKIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 06:08:49 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX19+mLB7Gj1+yIjTutTmuz+01gmevihy6eLe0b0YzN
+	ZHY1BYKutgf7Vp
+From: Helge Deller <deller@gmx.de>
+To: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Time-based RFC 4122 UUID generator
+Date: Sun, 7 Oct 2007 12:08:10 +0200
+User-Agent: KMail/1.9.7
+References: <200710061553.37311.deller@gmx.de> <20668.1191728530@turing-police.cc.vt.edu>
+In-Reply-To: <20668.1191728530@turing-police.cc.vt.edu>
+X-Face: &[jmHH-Dw>Aj):"[/t-VasJu+(5eP`/LEckV7V"JV,!nBy[6(/?#8M>x`5xzg/7:FkM.l@=?utf-8?q?=0A=0913?=<&9'nfV3"OkD~P)@j{P2=(uB7J(){:CcrM2jZeA+IBq?FUTp3c8Y{t+k<95mZf~[v"=?utf-8?q?=27=3A=0A=09t?="f6wKtHUPFB&/]Z5^?9~IQs=16R;Pg"NS9JD=DK!ft&4b@=?utf-8?q?S=7E=26q/MfI3=3BqWqlg7Q1=3D=3DjS4=0A=099V5OJkm=24WQ=5Bdc=5E=5FY?=
+ =?utf-8?q?=27=5DDvibvMjizUZ=5D+=27Jd4UnM?=><yrT}Rw(
 MIME-Version: 1.0
-To: Keith Packard <keithp@keithp.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       arashi@sacredchao.net
-Subject: Re: Revert "intel_agp: fix stolen mem range on G33"
-References: <4706D4B1.6050101@sacredchao.net>	 <20071006044221.GA14767@fattire.cabal.ca>	 <20071006053410.GB14767@fattire.cabal.ca>	 <20071006054234.GC14767@fattire.cabal.ca> <47076651.8020801@gmail.com>	 <alpine.LFD.0.999.0710060858420.23684@woody.linux-foundation.org> <1191698986.5444.45.camel@koto.keithp.com>
-In-Reply-To: <1191698986.5444.45.camel@koto.keithp.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Disposition: inline
+Message-Id: <200710071208.11030.deller@gmx.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06/2007 09:29 PM, Keith Packard wrote:
-> On Sat, 2007-10-06 at 08:59 -0700, Linus Torvalds wrote:
+Hello Valdis,
+
+On Sunday 07 October 2007, Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 06 Oct 2007 15:53:37 +0200, Helge Deller said:
+> > --- a/drivers/char/random.c
+> > +++ b/drivers/char/random.c
+> > @@ -1157,6 +1158,8 @@ void generate_random_uuid(unsigned char uuid_out[16])
+> >  	uuid_out[6] = (uuid_out[6] & 0x0F) | 0x40;
+> >  	/* Set the UUID variant to DCE */
+> >  	uuid_out[8] = (uuid_out[8] & 0x3F) | 0x80;
+> > +	/* Set multicast bit to avoid conflicts with NIC MAC addresses */
+> > +	uuid_out[10] |= 0x80;
+> >  }
 > 
->> We do have a rule about "no regressions", so I think we'll have to do the 
->> revert, but it would be nice to hear what the consequences for the revert 
->> is for the affected hardware and new X.org..
+> 
+> Erm, was it *intended* that you also changed the behavior of generate_random_uuid()?
 
-Agree with the first part. Here comes the X log diff:
---- orig        2007-10-07 11:57:50.000000000 +0200
-+++ agp 2007-10-07 11:56:07.000000000 +0200
-@@ -3,7 +3,7 @@
- Release Date: 19 April 2007
- X Protocol Version 11, Revision 0, Release 1.3
- Build Operating System: Fedora Core 7 Red Hat, Inc.
--Current Operating System: Linux bellona 2.6.23-rc8-mm2_64 #58 SMP Fri Sep 28
-08:52:12 CEST 2007 x86_64
-+Current Operating System: Linux bellona 2.6.23-rc8-mm2_64 #59 SMP Sun Oct 7
-11:43:55 CEST 2007 x86_64
- Build Date: 11 June 2007
- Build ID: xorg-x11-server 1.3.0.0-9.fc7
-        Before reporting problems, check http://wiki.x.org
-@@ -12,7 +12,7 @@
- Markers: (--) probed, (**) from config file, (==) default setting,
-        (++) from command line, (!!) notice, (II) informational,
-        (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
--(==) Log file: "/var/log/Xorg.0.log", Time: Sun Oct  7 11:57:20 2007
-+(==) Log file: "/var/log/Xorg.0.log", Time: Sun Oct  7 11:54:36 2007
- (==) Using config file: "/etc/X11/xorg.conf"
- (==) ServerLayout "Default Layout"
- (**) |-->Screen "Screen0" (0)
-@@ -34,7 +34,8 @@
- (**) Option "BlankTime" "8"
- (**) Option "StandbyTime" "10"
- (**) Extension "Composite" is enabled
--(II) Open ACPI successful (/var/run/acpid.socket)
-+(WW) Open ACPI failed (/var/run/acpid.socket) (No such file or directory)
-+(II) No APM support in BIOS or kernel
- (II) Loader magic: 0x7be760
- (II) Module ABI versions:
-        X.Org ANSI C Emulation: 0.3
-@@ -760,18 +761,18 @@
- (II) intel(0): 0x08000000-0x09ffffff: textures (32768 kB)
- (II) intel(0): 0x10000000:            end of aperture
- drmOpenDevice: node name is /dev/dri/card0
--drmOpenDevice: open result is 10, (OK)
-+drmOpenDevice: open result is 9, (OK)
- drmOpenDevice: node name is /dev/dri/card0
--drmOpenDevice: open result is 10, (OK)
-+drmOpenDevice: open result is 9, (OK)
- drmOpenByBusid: Searching for BusID pci:0000:00:02.0
- drmOpenDevice: node name is /dev/dri/card0
--drmOpenDevice: open result is 10, (OK)
--drmOpenByBusid: drmOpenMinor returns 10
-+drmOpenDevice: open result is 9, (OK)
-+drmOpenByBusid: drmOpenMinor returns 9
- drmOpenByBusid: drmGetBusid reports pci:0000:00:02.0
- (II) intel(0): [drm] DRM interface version 1.3
- (II) intel(0): [drm] created "i915" driver at busid "pci:0000:00:02.0"
- (II) intel(0): [drm] added 8192 byte SAREA at 0x2efff000
--(II) intel(0): [drm] mapped SAREA 0x2efff000 to 0x7f794b3bb000
-+(II) intel(0): [drm] mapped SAREA 0x2efff000 to 0x7fd637f76000
- (II) intel(0): [drm] framebuffer handle = 0xd4000000
- (II) intel(0): [drm] added 1 reserved context for kernel
- (II) intel(0): [drm] Registers = 0xffa80000
-@@ -838,11 +839,11 @@
- (II) Initializing built-in extension DAMAGE
- (II) Initializing built-in extension XEVIE
- drmOpenDevice: node name is /dev/dri/card0
--drmOpenDevice: open result is 11, (OK)
-+drmOpenDevice: open result is 10, (OK)
- drmOpenByBusid: Searching for BusID pci:0000:00:02.0
- drmOpenDevice: node name is /dev/dri/card0
--drmOpenDevice: open result is 11, (OK)
--drmOpenByBusid: drmOpenMinor returns 11
-+drmOpenDevice: open result is 10, (OK)
-+drmOpenByBusid: drmOpenMinor returns 10
- drmOpenByBusid: drmGetBusid reports pci:0000:00:02.0
- (WW) AIGLX: 3D driver claims to not support visual 0x23
- (WW) AIGLX: 3D driver claims to not support visual 0x24
-@@ -906,7 +907,7 @@
- (II) <default pointer>: ps2EnableDataReporting: succeeded
- (II) Mouse0-usb-0000:00:1d.0-1.2/input0: Off
- (II) intel(0): [drm] removed 1 reserved context for kernel
--(II) intel(0): [drm] unmapping 8192 bytes of SAREA 0x2efff000 at 0x7f794b3bb000
-+(II) intel(0): [drm] unmapping 8192 bytes of SAREA 0x2efff000 at 0x7fd637f76000
- (EE) intel(0): I830 Vblank Pipe Setup Failed 0
- (EE) intel(0): I830 Vblank Pipe Setup Failed 0
- (EE) intel(0): I830 Vblank Pipe Setup Failed 0
+Thanks that you ask! 
+I really should have mentioned it in my initial posting.
 
+Yes, this change was intentional, as it in fact fixes a possible bug in the original code.
+Section 4.1.6 in RFC 4122 states regarding the "NodeID":
+:  For systems with no IEEE address, a randomly or pseudo-randomly
+:  generated value may be used; see Section 4.5.  The multicast bit must
+:  be set in such addresses, in order that they will never conflict with
+:  addresses obtained from network cards. 
 
-And it seems to work, so I think no regression here.
+So up to now it was just pure ("random") luck if this bit was set or not.
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+While at it...
+My patch addressed another small non-critical glitch in the current implementation as well.
+An "strace cat /proc/sys/kernel/random/uuid" shows:
+: ....
+: open("/proc/sys/kernel/random/uuid", O_RDONLY|O_LARGEFILE) = 3
+: fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+: read(3, "378244d0-9b27-4f92-8b3a-386ed526"..., 1024) = 37
+: write(1, "378244d0-9b27-4f92-8b3a-386ed526"..., 37378244d0-9b27-4f92-8b3a-386ed52692a8) = 37
+: read(3, "", 1024)                       = 0
+: close(3)                                = 0
+: ...
+The first read() returns the newly generated random uuid.
+The second read() just returns zero, but the current implementation then already created a new uuid which wasn't used at all.
+Although this is not critical, it was nevertheless leaking unnecessarily entropy from the pool.
+For the case of the new time-based UUIDs it was worse. It unnecessary incremented the clock_seq number.
+This issue is addressed by this part of my patch (esp.: "*ppos > 0"):
+@@ -1191,13 +1317,13 @@ static int proc_do_uuid(ctl_table *table, int write, struct file *filp,
+        ctl_table fake_table;
+        unsigned char buf[64], tmp_uuid[16], *uuid;
+ 
+-       uuid = table->data;
+-       if (!uuid) {
+-               uuid = tmp_uuid;
+-               uuid[8] = 0;
++       /* random/time UUIDs need to be read completely at once */
++       if (table->ctl_name != RANDOM_BOOT_ID && *ppos > 0) {
++               *lenp = 0;
++               return 0;
+        }
+
+Helge
