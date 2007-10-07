@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbXJGQ4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXJGQ7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbXJGQ4r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 12:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXJGQ4i
+	id S1755387AbXJGQ7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 12:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXJGQ7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 12:56:38 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64514 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754579AbXJGQ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 12:56:37 -0400
-To: junwang1234@gmail.com, a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: Sleeping in RCU list traversal
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <1191784307.3618.8.camel@localhost.localdomain>
-	<200710072226.EJF51558.LFVHJOStFOOFMQ@I-love.SAKURA.ne.jp>
-	<1191796640.3045.25.camel@localhost.localdomain>
-In-Reply-To: <1191796640.3045.25.camel@localhost.localdomain>
-Message-Id: <200710080156.IFB56934.tHMLFFJSFOVOOQ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 8 Oct 2007 01:56:30 +0900
+	Sun, 7 Oct 2007 12:59:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42661 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbXJGQ7p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 12:59:45 -0400
+Date: Sun, 7 Oct 2007 09:58:53 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: lockdep: how to tell it multiple pte locks is OK?
+Message-ID: <20071007095853.13a8755d@laptopd505.fenrus.org>
+In-Reply-To: <47087D45.2010904@goop.org>
+References: <47087D45.2010904@goop.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, 06 Oct 2007 23:31:33 -0700
 
-Jun WANG wrote:
-> I'm sorry,I think I got your idea, if you do not need ptr in
-> my_task_that_may_sleep(), why you need to grab a reference to "ptr". If
-> your my_task_that_may_sleep() needs ptr, and according to the 
-> "memory region pointed by "ptr" never be removed." you say,
-> it is ok to use "ptr" after rcu_read_ulock(). The basic idea behind RCU
-> is to split updates into "removal" and "reclamation" phases. If you
-> memory region pointed by "ptr" will not "reclamation" in sleep, it is ok
-I need "ptr" in my_task_that_may_sleep(), but regarding my case,
-memory region pointed by "ptr" will never be kfree()ed.
+> I'm presume I'm the first person to try holding multiple pte locks at
+> once, so there's no existing locking order for these locks.  I'm
+> always traversing and locking the pagetable in virtual address order
+> (and this seems like a sane-enough rule for anyone else who wants to
+> hold multiple pte locks).
 
-So, I don't need to grab a reference to "ptr"
-because memory region pointed by "ptr" will never be kfree()ed.
-And it is legal to use "ptr" after rcu_read_unlock()
-because memory region pointed by "ptr" will never be kfree()ed.
-
-Thank you.
-
+I'm not sure that's a valid assumption in light of things like sharing
+pagetables between processes etc etc..
+(granted, that one is out of tree right now but I still hope it'll go
+in some day:)
