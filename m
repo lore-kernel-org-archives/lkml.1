@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbXJGQXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbXJGQbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbXJGQXk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 12:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbXJGQXc
+	id S1754753AbXJGQbY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 12:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbXJGQbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 12:23:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:43345 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753550AbXJGQXb (ORCPT
+	Sun, 7 Oct 2007 12:31:16 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57441 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751790AbXJGQbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 12:23:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=po6KJnK2GaDtyQ9EcVvv2SXJNDWWQjmHHJcRVbjVQk97H4JhGF7R3s3v02cCD73/r5ZpoxaoYutXqr4wAqTjDgLVJSoc20rynOE6z/aSyh7GLSGweGJqsuQOUGEWHVs/EUTJmHnUNtwu1BKQTN13vOXQTBvf+TmPLNQ7gNDlFA8=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH for 2.6.23] Driver core: fix regression with SYSFS_DEPRECTATED
-Date: Sun, 7 Oct 2007 12:22:21 -0400
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Greg KH <greg@kroah.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
+	Sun, 7 Oct 2007 12:31:15 -0400
+Date: Sun, 7 Oct 2007 18:31:42 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.54
+Message-ID: <20071007163142.GC16424@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200710071222.22218.dmitry.torokhov@gmail.com>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Driver core: fix SYSF_DEPRECATED breakage for nested classdevs
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-We should only reparent to a class former class devices that
-form the base of class hierarchy. Nested devices should still
-grow from their real parents.
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-Tested-by: Anssi Hannula <anssi.hannula@gmail.com>
----
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-Linus,
 
-Please consider applying this patch before releasing 2.6.23. It fixes
-a regression in UDEV/HAL caused by conversion of input devices from
-class devices to regular devices.
+Changes since 2.6.16.53:
 
-Thanks,
+Adrian Bunk (2):
+      Linux 2.6.16.54-rc1
+      Linux 2.6.16.54
 
-Dmitry
+Alexander Shmelev (1):
+      [SPARC32]: Fix bug in sparc optimized memset.
 
-Index: linux/drivers/base/core.c
-===================================================================
---- linux.orig/drivers/base/core.c
-+++ linux/drivers/base/core.c
-@@ -586,9 +586,13 @@ void device_initialize(struct device *de
- static struct kobject * get_device_parent(struct device *dev,
- 					  struct device *parent)
- {
--	/* Set the parent to the class, not the parent device */
--	/* this keeps sysfs from having a symlink to make old udevs happy */
--	if (dev->class)
-+	/*
-+	 * Set the parent to the class, not the parent device
-+	 * for topmost devices in class hierarchy.
-+	 * This keeps sysfs from having a symlink to make old
-+	 * udevs happy
-+	 */
-+	if (dev->class && (!parent || parent->class != dev->class))
- 		return &dev->class->subsys.kobj;
- 	else if (parent)
- 		return &parent->kobj;
+David S. Miller (1):
+      [MATH-EMU]: Fix underflow exception reporting.
 
-\\
+Ilpo Järvinen (1):
+      TCP: Fix TCP handling of SACK in bidirectional flows
+
+James Bottomley (1):
+      [MCA] fix bus matching
+
+Konstantin Sharlaimov (2):
+      [PPP]: Fix osize too small errors when decoding mppe.
+      [PPP]: Fix output buffer size in ppp_decompress_frame().
+
+Mark Fortescue (1):
+      [SPARC32]: Fix rounding errors in ndelay/udelay implementation.
+
+Neil Brown (16):
+      md: Add '4' to the list of levels for which bitmaps are supported
+      md: Don't clear bits in bitmap when writing to one device fails during recovery
+      md/bitmap: fix online removal of file-backed bitmaps
+      md/bitmap: cleaner separation of page attribute handlers in md/bitmap
+      md/bitmap: use set_bit etc for bitmap page attributes
+      md/bitmap: remove unnecessary page reference manipulations from md/bitmap code
+      md/bitmap: remove dead code from md/bitmap
+      md/bitmap: tidy up i_writecount handling in md/bitmap
+      md: Allow re-add to work on array without bitmaps
+      md: fix resync speed calculation for restarted resyncs
+      md: fix a plug/unplug race in raid5
+      md: fix some small races in bitmap plugging in raid5
+      md: allow SET_BITMAP_FILE to work on 64bit kernel with 32bit userspace
+      md: assorted md and raid1 one-liners
+      md: fix a few problems with the interface (sysfs and ioctl) to md
+      md: avoid possible BUG_ON in md bitmap handling
+
+
+ Makefile                          |    2 
+ arch/sparc/kernel/entry.S         |   14 ++-
+ arch/sparc/lib/memset.S           |    2 
+ drivers/mca/mca-bus.c             |    2 
+ drivers/md/bitmap.c               |  126 +++++++++++++-----------------
+ drivers/md/md.c                   |  107 +++++++++++++++----------
+ drivers/md/raid1.c                |   20 ++++
+ drivers/md/raid5.c                |   46 +++++++---
+ drivers/net/ppp_generic.c         |   15 +++
+ include/asm-sparc/sfp-machine.h   |    6 +
+ include/asm-sparc64/sfp-machine.h |    2 
+ include/linux/compat_ioctl.h      |    2 
+ include/linux/raid/bitmap.h       |    3 
+ include/linux/raid/md_k.h         |    3 
+ include/math-emu/op-common.h      |    5 -
+ include/math-emu/soft-fp.h        |    7 +
+ net/ipv4/tcp_input.c              |    5 -
+ 17 files changed, 226 insertions(+), 141 deletions(-)
+
+
+
