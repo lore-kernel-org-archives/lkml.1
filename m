@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbXJGMCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbXJGMk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbXJGMCa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 08:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXJGMCX
+	id S1753547AbXJGMk6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 08:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXJGMku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 08:02:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44582 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbXJGMCW (ORCPT
+	Sun, 7 Oct 2007 08:40:50 -0400
+Received: from amnesiac.heapspace.net ([195.54.228.42]:3664 "EHLO
+	amnesiac.heapspace.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbXJGMkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 08:02:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 7 Oct 2007 14:02:07 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] last minute FireWire update
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.e4d177adf50f4c94@s5r6.in-berlin.de>
+	Sun, 7 Oct 2007 08:40:49 -0400
+X-Greylist: delayed 1423 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Oct 2007 08:40:48 EDT
+Date: Sun, 7 Oct 2007 15:17:05 +0300
+From: Daniel Stone <daniel@fooishbar.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, arashi@sacredchao.net
+Subject: Re: Revert "intel_agp: fix stolen mem range on G33"
+Message-ID: <20071007121705.GA6098@fooishbar.org>
+Mail-Followup-To: Daniel Stone <daniel@fooishbar.org>,
+	Jiri Slaby <jirislaby@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>,
+	airlied@linux.ie, dri-devel@lists.sourceforge.net,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, arashi@sacredchao.net
+References: <4706D4B1.6050101@sacredchao.net> <20071006044221.GA14767@fattire.cabal.ca> <20071006053410.GB14767@fattire.cabal.ca> <20071006054234.GC14767@fattire.cabal.ca> <47076651.8020801@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
+Content-Disposition: inline
+In-Reply-To: <47076651.8020801@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+--SLDf9lqlvOQaIe6s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-to receive the following simple but hopefully effective update.
+On Sat, Oct 06, 2007 at 12:41:21PM +0200, Jiri Slaby wrote:
+> On 10/06/2007 07:42 AM, Kyle McMartin wrote:
+> > This reverts commit f443675affe3f16dd428e46f0f7fd3f4d703eeab, which
+> > breaks horribly if you aren't running an unreleased xf86-video-intel
+> > driver out of git.
+>=20
+> I guess, this will break my graphics, no?
+> http://lkml.org/lkml/2007/9/20/447
 
- drivers/firewire/Kconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+You need to upgrade Mesa.
 
-commit a1134dd48d59e532b801659163539bf01cae7673
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Sun Oct 7 12:31:22 2007 +0200
+Cheers,
+Daniel
 
-    firewire: point to migration document
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+--SLDf9lqlvOQaIe6s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-diff --git a/drivers/firewire/Kconfig b/drivers/firewire/Kconfig
-index d011a76..fe9e768 100644
---- a/drivers/firewire/Kconfig
-+++ b/drivers/firewire/Kconfig
-@@ -11,7 +11,8 @@ config FIREWIRE
- 	  This is the "Juju" FireWire stack, a new alternative implementation
- 	  designed for robustness and simplicity.  You can build either this
- 	  stack, or the classic stack (the ieee1394 driver, ohci1394 etc.)
--	  or both.
-+	  or both.  Please read http://wiki.linux1394.org/JujuMigration before
-+	  you enable the new stack.
- 
- 	  To compile this driver as a module, say M here: the module will be
- 	  called firewire-core.  It functionally replaces ieee1394, raw1394,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Stefan Richter
--=====-=-=== =-=- --===
-http://arcgraph.de/sr/
+iD8DBQFHCM5BUVYB1rKAgJQRAnMzAJwNl2xfOgEs+/yaB4ERmngqexVuYgCcDQ7T
+2qNdsqrMW5GWT1mWksfsCcY=
+=RrE9
+-----END PGP SIGNATURE-----
 
+--SLDf9lqlvOQaIe6s--
