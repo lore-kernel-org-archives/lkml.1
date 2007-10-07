@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbXJGUHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXJGUHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbXJGUHi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 16:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXJGUH3
+	id S1757084AbXJGUHv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 16:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXJGUHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 16:07:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43283 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755754AbXJGUH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 16:07:28 -0400
-Message-ID: <47093C7A.1030203@garzik.org>
-Date: Sun, 07 Oct 2007 16:07:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 7 Oct 2007 16:07:42 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:43103 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756913AbXJGUHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 16:07:41 -0400
+Message-ID: <47093C40.20908@keyaccess.nl>
+Date: Sun, 07 Oct 2007 22:06:24 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: netdev@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] forcedeth: interrupt handling cleanup
-References: <20071006151250.GA17020@havoc.gtf.org>	 <20071006151400.GB17488@havoc.gtf.org>	 <86802c440710062143x3bb801c3obb91292208073588@mail.gmail.com>	 <4708C5BD.8090402@garzik.org> <86802c440710071236h137a5331i78f795d7a04c69e@mail.gmail.com>
-In-Reply-To: <86802c440710071236h137a5331i78f795d7a04c69e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:'
+ usage"
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu> <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr> <47093AFB.8000805@keyaccess.nl> <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On 10/7/07, Jeff Garzik <jeff@garzik.org> wrote:
->> Yinghai Lu wrote:
->>> On 10/6/07, Jeff Garzik <jeff@garzik.org> wrote:
->>>> commit a606d2a111cdf948da5d69eb1de5526c5c2dafef
->>>> Author: Jeff Garzik <jeff@garzik.org>
->>>> Date:   Fri Oct 5 22:56:05 2007 -0400
->>>>
->>>>     [netdrvr] forcedeth: interrupt handling cleanup
->>>>
->>>>     * nv_nic_irq_optimized() and nv_nic_irq_other() were complete duplicates
->>>>       of nv_nic_irq(), with the exception of one function call.  Consolidate
->>>>       all three into a single interrupt handler, deleting a lot of redundant
->>>>       code.
->>>>
->>>>     * greatly simplify irq handler locking.
->>>>
->>>>       Prior to this change, the irq handler(s) would acquire and release
->>>>       np->lock for each action (RX, TX, other events).
->>>>
->>>>       For the common case -- RX or TX work -- the lock is always acquired,
->>>>       making all successive acquire/release combinations largely redundant.
->>>>
->>>>       Acquire the lock at the beginning of the irq handler, and release it at
->>>>       the end of the irq handler.  This is simple, easy, and obvious.
->>>>
->>>>     * remove irq handler work loop.
->>>>
->>>>       All interesting events emanating from the irq handler either have
->>>>       their own work loops, or they poke a timer into action.
->>>>
->>>>       Therefore, delete the pointless master interrupt handler work loop.
->>>>
->>>>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->>>>
->> Do you have ideas/suggestions for a different method?
+On 10/07/2007 10:04 PM, Jan Engelhardt wrote:
+
+> On Oct 7 2007 22:00, Rene Herman wrote:
+>> On 10/07/2007 09:56 PM, Jan Engelhardt wrote:
+>>
+>>> Some is good, as long as it is not excessive. While I could imagine that
+>>> Knoppix will abuse the feature and use vt.printk_color=9,9,9,9,11,10,12, this
+>>> is not what serious people would do.
+>>>
+>>> [1] http://tinyurl.com/yr9zgq
+>>> [2] http://tinyurl.com/234ba3
+>> Given this discussion, I find it really appropriate that you are posting
+>> _graphics_ of your text screens :-)
 > 
-> in the e1000 driver, it has seperate handler for msi and ioapic.
-> 
-> but in forcedeth, the nv_nic_irq_optimized keep check msi_flags...,
-> with num of msi interrupt number, that could cause cpu loading get a
-> little bit high..., even the network performance is ok.
+> I can give you a VCSA file (as produced by /dev/vcsa1) if you like,
+> complete with VCSA reader.
 
-With all the activity in the interrupt handler, a few in-cache branches 
-are definitely going to be lost in the noise.
+No, the PNGs will do thanks, it was obviuously a bit of a cheap shot. Still, 
+it _is_ somewhat of a comment on what's expected these days.
 
-Separating the interrupt handlers between MSI and non-MSI tends to be of 
-more benefit when the separation is accompanied by more efficient 
-locking in the MSI interrupt handler, or a different mode of interrupt 
-clear, or some other attribute.
-
-Though CPU usage would be a good thing to measure, with these patches.
-
-	Jeff
-
-
-
+Rene
 
