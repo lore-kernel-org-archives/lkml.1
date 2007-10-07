@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXJGQyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbXJGQz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbXJGQyg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 12:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXJGQy1
+	id S1755440AbXJGQz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 12:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXJGQzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 12:54:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35631 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752198AbXJGQy0 (ORCPT
+	Sun, 7 Oct 2007 12:55:47 -0400
+Received: from ev1s-75-125-39-150.ev1servers.net ([75.125.39.150]:38768 "EHLO
+	colorfullife.mysite.adiungo.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752228AbXJGQzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 12:54:26 -0400
-Date: Sun, 7 Oct 2007 18:54:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [PATCH 1/2] Colored kernel output (run3)
-In-Reply-To: <20071007164452.GA30429@elte.hu>
-Message-ID: <Pine.LNX.4.64.0710071849240.16301@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710062147370.20637@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0710062209390.20637@fbirervta.pbzchgretzou.qr>
- <20071007163824.GA30063@elte.hu> <20071007164452.GA30429@elte.hu>
+	Sun, 7 Oct 2007 12:55:46 -0400
+Message-ID: <47090F55.3020800@colorfullife.com>
+Date: Sun, 07 Oct 2007 18:54:45 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MSI interrupts and disable_irq
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com> <86802c440710061043u6e51cd7q468346bd06b08657@mail.gmail.com> <4707CCF1.8080909@pobox.com>
+In-Reply-To: <4707CCF1.8080909@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+>
+> Interested parties should try the forcedeth patches I just posted :)
+>
+The patches look good, but I would still prefer to understand why the 
+current implementation causes crashes before rewriting everything.
 
-On Oct 7 2007 18:44, Ingo Molnar wrote:
->> This patch makes it possible to give kernel messages a selectable 
->> color. It can be chosen at compile time, overridden at boot time, and 
->> changed at run time.
->
->here's some (good) text footprint data:
->
->with the feature disabled (which is the default), the text size 
->difference with patch #1:
->
->  vmlinux:
->     text    data     bss     dec     hex filename
->  7732358 1157269  401408 9291035  8dc51b vmlinux.before
->  7732358 1157269  401408 9291035  8dc51b vmlinux.after
->
+I've just noticed that netpoll_send_skb() calls ->hard_start_xmit() and 
+->poll() within local_irq_save().
+Thus it seems that  spin_lock_irqsave() must be used in the poll() and 
+hard_start_xmit() callbacks, at least in nics that support 
+POLL_CONTROLLER :-(
 
-I already posted the numbers. But it seems like the archives
-like lkml.org or marc.info did not archive them (but i've cc'ed plenty
-so you did not miss it.). See below.
+--
+    Manfred
 
->i.e. no overhead. Text size difference with patch #2:
->
->  vmlinux:
->     text    data     bss     dec     hex filename
->  7732358 1157269  401408 9291035  8dc51b vmlinux.before
->  7732374 1157269  401408 9291051  8dc52b vmlinux.after
->
->16 bytes, or 0.0002% of the total text size. So there's in essence no 
->text overhead to talk about. So the text overhead argument is a red 
->herring.
-
-16 bytes, huh? Can't be. That would be like, perhaps 5, x86 instructions.
-
-||Date: Sat, 6 Oct 2007 22:09:13 +0200 (CEST)
-||Subject: [PATCH 0/2] Colored kernel output (run3)
-||
-||ok, so to make Oleg happy, here is run3 with a bool config option.
-||
-||i386>>
-|| 48679  vt.o w/o anything
-|| 48679  vt.o w/patch1
-|| 49117  vt.o w/patch1        + CONFIG_VT_CKO=y
-|| 49198  vt.o w/patch1+patch2 + CONFIG_VT_CKO=y
-||--------
-||   519  total cost of CKO
-||
-||x86_64>>
-|| 71892  vt.o w/patch1+patch2
-|| 72787  vt.o w/patch1+patch2 + CONFIG_VT_CKO=y
-||--------
-||   895
