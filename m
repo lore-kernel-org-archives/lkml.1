@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbXJGAUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbXJGAnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbXJGAUl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Oct 2007 20:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXJGAUc
+	id S1752723AbXJGAnu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Oct 2007 20:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXJGAnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Oct 2007 20:20:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:56964 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbXJGAUb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Oct 2007 20:20:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] net/core: split dev_ifsioc() according to locking
-Date: Sun, 7 Oct 2007 02:17:08 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20071006204212.GA32177@havoc.gtf.org>
-In-Reply-To: <20071006204212.GA32177@havoc.gtf.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 6 Oct 2007 20:43:43 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41180 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbXJGAnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Oct 2007 20:43:42 -0400
+Message-ID: <47082D3D.5090101@tmr.com>
+Date: Sat, 06 Oct 2007 20:50:05 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710070217.09073.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/i02q2zUvadDc0zIwHlxk6pwLqBqU6yL69TCz
- 051EWFq3ErXhHDRjYENPce6ePraXyPbOSG+iIwqkTjhHwmGgvR
- 99F2qwze4xKSBJgvFHzqw==
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Cute feature: colored printk output
+References: <Pine.LNX.4.64.0710052111340.13406@fbirervta.pbzchgretzou.qr> <4707E7C9.8010501@tmr.com> <Pine.LNX.4.64.0710062158190.20637@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710062158190.20637@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 06 October 2007, Jeff Garzik wrote:
+Jan Engelhardt wrote:
+> On Oct 6 2007 15:53, Bill Davidsen wrote:
+>> Jan Engelhardt wrote:
+>>> Colored kernel message output
+>>>
+>>> Let's work more on Linux's cuteness! [http://lkml.org/lkml/2007/10/4/431]
+>>> The following patch makes it possible to give kernel messages a
+>>> selectable color which helps to distinguish it from other noise,
+>>> such as boot messages. NetBSD has it, OpenBSD has it, FreeBSD to some
+>>> extent, so I think Linux should too.
+>>>
+>>> Inspired by cko (http://freshmeat.net/p/cko/), but independently
+>>> written, later contributed forth and back.
+>>>
+>> I like it, although having a boot option would be nice (I have a friend with
+>> color perception issues).
 > 
-> This always bugged me:  dev_ioctl() called dev_ifsioc() either inside
-> read_lock(dev_base_lock) or rtnl_lock(), depending on the ioctl being
-> executed.
+> sysfs attributes can be set at boot time (and not only that).
+> Here, try the "davej's salad" configuration :-)
 > 
-> This change moves the ioctls executed inside dev_base_lock to a new
-> function, dev_ifsioc_locked().  Now the locking context is completely
-> clear to the reader.
+> 	vt.default_red=0,192,128,170,0,170
+> 	vt.default_grn=0,0,170,128,64,0
+> 	vt.default_blu=0,0,0,0,128,128
+> 	vt.printk_color=1,1,1,1,5,3,2
 > 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>> I start my root xterm in white on blue for identification, so color coding
+>> sounds like a great idea to me.
+> 
+> This has nothing to do with xterms, this is "VGA color console" only.
+> xterm config is in /usr/share/X11/app-defaults/XTerm-color.
 
-Great idea!
+Try reparsing that... I said I use color coding in root xterm, so I am 
+generally in favor of the color coding concept to make important 
+messages obvious. Is that clearer?
 
-I've been experimenting with a new compat_dev_ioctl() function along
-the lines of what I just posted for the blkdev ioctls. For that, it
-would be perfect to streamline dev_ioctl further:
 
-* move the dev_load() and locking into dev_ifsioc{,_locked}
-* move the copy_to_user step to a single place at the end of dev_ioctl
-
-After that, we could have very simple dev_ioctl and compat_dev_ioctl
-functions calling the same dev_ifsioc{,_locked} functions.
-
-	Arnd <><
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
