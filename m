@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbXJGTHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbXJGTOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbXJGTHq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbXJGTHi
+	id S1755410AbXJGTOL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbXJGTN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:07:38 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49664 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbXJGTHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 15:07:38 -0400
-Date: Sun, 7 Oct 2007 15:05:47 -0400
-Message-Id: <200710071905.l97J5l6r018154@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Ingo Molnar <mingo@elte.hu>, apw@shadowen.org
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 0/3 checkpatch updates, new checkfiles script 
-In-reply-to: Your message of "Sat, 06 Oct 2007 13:13:43 +0200."
-             <20071006111343.GA29484@elte.hu> 
-X-MailKey: Erez_Zadok
+	Sun, 7 Oct 2007 15:13:58 -0400
+Received: from 1wt.eu ([62.212.114.60]:2815 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752117AbXJGTN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 15:13:57 -0400
+Date: Sun, 7 Oct 2007 21:13:09 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Verych <olecom@flower.upol.cz>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:' usage"
+Message-ID: <20071007191309.GS10199@1wt.eu>
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <470929D8.80003@keyaccess.nl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20071006111343.GA29484@elte.hu>, Ingo Molnar writes:
+On Sun, Oct 07, 2007 at 08:47:52PM +0200, Rene Herman wrote:
+> On 10/07/2007 06:12 PM, Ingo Molnar wrote:
 > 
-> * Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> >* Oleg Verych <olecom@flower.upol.cz> wrote:
 > 
-> > So, I ran the above script and it found nearly 1.5 million reported 
-> > warnings/errors, with drivers being the largest abuser, not 
-> > surprisingly. [...]
+> >>Coloring isn't useful. If it was, it would be implemented ~16 years
+> >>ago.
+> >
+> >Congratulations, this is the most stupid argument i've ever read on 
+> >lkml.
 > 
-> have you tried that with the latest version too:
+> "Ay. World is finished. Everyone can go home and watch Friends reruns now."
 > 
->   http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-next
-> 
-> it outputs far fewer false positives.
-> 
-> 	Ingo
+> But well, there actually have been worse arguments given that VGA console 
+> is getting less and less important. I recently did a perusal of alternative 
+> distributions and didn't find a single one that didn't default to having a 
+> splash screen hide the kernel during boot (and if I'm not mistaken, only 
+> one of them provided me with the option during installation to not boot 
+> into X immediately afterwards).
 
-Andy, Ingo,
+I don't recall having seen any splash screen on Slackware. And fortunately,
+the mainstream distros still provide the option to boot in text mode.
 
-I tried the new checkpatch.pl on 2.6.23-rc9:
+> Sure, that in itself needn't necesarily be of concern to anyone who, err, 
+> is not concerned but any such colouring feature appearing when there's only 
+> a smathering of people left that still cares about the VGA console in the 
+> first place really isn't all _that_ far out as an argument...
 
-$ ./scripts/checkpatch.pl -q --file --emacs fs/namei.c
+There are two distinct populations :
+  - those who are afraid of boot messages and prefer "splash" screens.
+    Those people are most common users, grown in non-IT environments. They
+    are happy to see a big logo on their BIOS to hide important boot errors,
+    and they are the ones who would never have imagined that pressing Escape
+    during the boot of windows 3.1/95 provided them with the full text
+    messages. Basically, they want to ensure they will never have to worry
+    about things they don't understand.
 
-and got many perl warnings such as:
+  - those who are troubleshooting their system in the early stages (kernel,
+    filesystems, network, services, ...). These ones *need* boot messages.
+    And there, depending on the hardware, sometimes the FB is better because
+    it shows larger lines, sometimes it's worse because the scrollback is
+    limited by too low memory.
 
-Use of uninitialized value in concatenation (.) or string at ./scripts/checkpatch.pl line 455.
+I personally fit in the second category. And I'm sure most people on this
+list do. I would be miserably sad if I couldn't get my boot messages
+anymore. It already irritates me a lot to loose the ones displayed before
+switching to frame-buffer when a hang happens just afterwards...
 
-followed by the usual verbose error message instead of one-per-line as I
-assume the --emacs option is supposed to produce:
+I would say that while I'm not particularly fond of flashy colors
+everywhere, I think that being able to use colors to indicate particular
+actions in progress or conditions can be a good thing. RAID errors,
+devices disabled due to command-line parameters, and general anomalies
+which can cause a hang or panic a few line laters are worth coloring.
+And I don't believe in userland's help here, because for that type of
+messages, the indication should be returned immediately. For instance,
+anyone who has experienced read errors on and IDE disk knows that it
+can literally take hours/days to boot, after displaying thousands of
+messages. Here, having the ability to see that no IRQ was assigned or
+something like this could help.
 
-:2823: WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-#2823: FILE: namei.c:2820:
-+EXPORT_SYMBOL(vfs_mkdir);
+Regards,
+Willy
 
-BTW, calling the option --emacs is a bit too restrictive.  Emacs didn't
-invent the format of "filename:linenumeber:message".  C compilers had it
-before.  Even "grep -n *" had it before.  That's why I think calling it a
-"terse output" option may be more accurate.
-
-The following small patch to checkpath.pl-next seems to fix the perl
-warnings, but it still outputs the long error messages along with the
-shorter one-liners.
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index bdc493e..bbc4825 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -85,7 +85,7 @@ for my $filename (@ARGV) {
- 		push(@rawlines, $_);
- 	}
- 	close(FILE);
--	if (!process($ARGV, @rawlines)) {
-+	if (!process($filename, @rawlines)) {
- 		$exit = 1;
- 	}
- 	@rawlines = ();
-@@ -452,7 +452,7 @@ sub process {
- 
- 		my $rawline = $line;
- 
--		$prefix = "$ARGV:$linenr: " if ($emacs);
-+		$prefix = "$filename:$linenr: " if ($emacs);
- 
- #extract the filename as it passes
- 		if ($line=~/^\+\+\+\s+(\S+)/) {
-
-Cheers,
-Erez.
