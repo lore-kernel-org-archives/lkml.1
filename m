@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbXJGTUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbXJGT2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbXJGTUj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbXJGTU3
+	id S1755351AbXJGT2y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXJGT2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:20:29 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50340 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbXJGTU2 (ORCPT
+	Sun, 7 Oct 2007 15:28:46 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:40993 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbXJGT2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 15:20:28 -0400
-Date: Sun, 7 Oct 2007 15:20:19 -0400
-Message-Id: <200710071920.l97JKJX5018871@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-Cc: "Ryan Finnie" <ryan@finnie.org>, Colin Watson <cjwatson@ubuntu.com>
-X-MailKey: Erez_Zadok
+	Sun, 7 Oct 2007 15:28:46 -0400
+Message-ID: <47093322.1030200@keyaccess.nl>
+Date: Sun, 07 Oct 2007 21:27:30 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Ingo Molnar <mingo@elte.hu>, Oleg Verych <olecom@flower.upol.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:'
+ usage"
+References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <Pine.LNX.4.64.0710072053300.16301@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710072053300.16301@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to vfs.txt, ->writepage() may return AOP_WRITEPAGE_ACTIVATE back
-to the VFS/VM.  Indeed some filesystems such as tmpfs can return
-AOP_WRITEPAGE_ACTIVATE; and stackable file systems (e.g., Unionfs) also
-return AOP_WRITEPAGE_ACTIVATE if the lower f/s returned it.
+On 10/07/2007 08:58 PM, Jan Engelhardt wrote:
 
-Anyway, some Ubuntu users of Unionfs reported that msync(2) sometimes
-returns AOP_WRITEPAGE_ACTIVATE (decimal 524288) back to userland.
-Therefore, some user programs fail, esp. if they're written such as this:
+> On Oct 7 2007 20:47, Rene Herman wrote:
 
-     err = msync(...);
-     if (err != 0)
-	// fail
+>>>> Coloring isn't useful. If it was, it would be implemented ~16 years
+>>>> ago.
+>>> Congratulations, this is the most stupid argument i've ever read on lkml.
+>> "Ay. World is finished. Everyone can go home and watch Friends reruns now."
+>>
+>> But well, there actually have been worse arguments given that VGA console is
+>> getting less and less important.
+>> [...]
+>> Sure, that in itself needn't necesarily be of concern to anyone who,
+>> err, is not concerned but any such colouring feature appearing when
+>> there's only a smathering of people left that still cares about the VGA
+>> console in the first place really isn't all _that_ far out as an
+>> argument...
+> 
+> In case you have not noticed, the coloring also applies to FB. As far as
+> I can oversee, it's only "missing" for serial and PROMs.
 
-They temporarily fixed the specific program in question (apt-get) to check
+Must say I did concentrate on VGA, but the [...] bit in the quote above was 
+about how everything I encountered put up a bootsplash hiding _everything_ 
+and about booting into X immediately, not about FB...
 
-     if (err < 0)
-	// fail
+I saw you remark on FB console in a reply to Alan just now and I quite agree 
+with you. The (current) FB console is slow and I'll add "dumb" myself. When 
+you have a 1280x1024 screen available, you get to do cool things like put up 
+nice little windows and exclamation mark icons on errors, not just pretend 
+you're really 132x50 (or whatever).
 
-Is this a bug indeed, or are user programs supposed to handle
-AOP_WRITEPAGE_ACTIVATE (I hope not the latter).  If it's a kernel bug, what
-should the kernel return: a zero, or an -errno (and which one)?
+Alan's sketched more generic markup/unification would be The Way Forward it 
+seems. Given that TWF is mostly defined as "That Which Is Not" (and how it 
+seems to have a tendency to defend that status vigorously) telling me/us to 
+shelve that objection for 10 years might be okay -- but generally I'm having 
+a fairly hard time getting excited about printk colourizing.
 
-Thanks,
-Erez.
+Rene.
+
