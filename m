@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbXJGT4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbXJGT6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbXJGT4c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 15:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbXJGT4V
+	id S1756280AbXJGT6X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 15:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXJGT6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 15:56:21 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63534 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756174AbXJGT4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 15:56:19 -0400
-To: a.p.zijlstra@chello.nl
-Cc: junwang1234@gmail.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: Sleeping in RCU list traversal
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <1191784307.3618.8.camel@localhost.localdomain>
-	<200710072226.EJF51558.LFVHJOStFOOFMQ@I-love.SAKURA.ne.jp>
-	<1191796640.3045.25.camel@localhost.localdomain>
-	<200710080156.IFB56934.tHMLFFJSFOVOOQ@I-love.SAKURA.ne.jp>
-	<1191781996.5587.3.camel@lappy>
-In-Reply-To: <1191781996.5587.3.camel@lappy>
-Message-Id: <200710080456.DFE30787.OJFtFHMLFSOQOV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 8 Oct 2007 04:56:12 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 7 Oct 2007 15:58:14 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35666 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755524AbXJGT6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 15:58:13 -0400
+Date: Sun, 7 Oct 2007 22:58:11 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Ryan Finnie <ryan@finnie.org>, Colin Watson <cjwatson@ubuntu.com>
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
+Message-ID: <Pine.LNX.4.64.0710072255280.688@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696229367-1159049550-1191787091=:688"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Peter Zijlstra wrote:
-> > So, I don't need to grab a reference to "ptr"
-> > because memory region pointed by "ptr" will never be kfree()ed.
-> > And it is legal to use "ptr" after rcu_read_unlock()
-> > because memory region pointed by "ptr" will never be kfree()ed.
-> 
-> Still think that is a very BAD (tm) idea. Esp since with the help of RCU
-> there is hardly any performance loss of not doing proper deletes.
-> 
-Elements I keep in RCU list are policy table for access control
-that are referred throughout the lifetime of the kernel.
-So, there is hardly any needs to delete these elements.
-Honestly speaking, I don't need to use RCU list at all.
-Just using a singly linked list that doesn't support deletion is enough.
-But James Morris advises me to use the existing API
-( http://lkml.org/lkml/2007/10/2/156 http://lkml.org/lkml/2007/10/3/124 ).
+---696229367-1159049550-1191787091=:688
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-Thank you.
+Hi Erez,
 
+On 10/7/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> Anyway, some Ubuntu users of Unionfs reported that msync(2) sometimes
+> returns AOP_WRITEPAGE_ACTIVATE (decimal 524288) back to userland.
+> Therefore, some user programs fail, esp. if they're written such as 
+> this:
+
+[snip]
+
+On 10/7/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> Is this a bug indeed, or are user programs supposed to handleÂ 
+> AOP_WRITEPAGE_ACTIVATE (I hope not the latter). If it's a kernel bug, 
+> what should the kernel return: a zero, or an -errno (and which one)?
+
+It's a kernel bug. AOP_WRITEPAGE_ACTIVATE is a hint to the VM to avoid 
+writeback of the page in the near future. I wonder if it's enough that we 
+change the return value to zero from 
+mm/page-writeback.c:write_cache_pages() in case we hit AOP_WRITEPAGE_ACTIVE...
+
+				Pekka 
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 63512a9..717f341 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -672,8 +672,10 @@ retry:
+ 
+ 			ret = (*writepage)(page, wbc, data);
+ 
+-			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
++			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+ 				unlock_page(page);
++				ret = 0;
++			}
+ 			if (ret || (--(wbc->nr_to_write) <= 0))
+ 				done = 1;
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+---696229367-1159049550-1191787091=:688--
