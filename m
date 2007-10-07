@@ -1,101 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXJGVBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbXJGVBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXJGVBX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 17:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXJGVAA
+	id S1757439AbXJGVBh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 17:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXJGVAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 17:00:00 -0400
-Received: from ns.suse.de ([195.135.220.2]:32801 "EHLO mx1.suse.de"
+	Sun, 7 Oct 2007 17:00:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34183 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbXJGU76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 16:59:58 -0400
+	id S1753151AbXJGU77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 16:59:59 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200710071059.126674000@suse.de>
 In-Reply-To: <200710071059.126674000@suse.de>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: [PATCH] [4/6] scheduler: Refactor normalize_rt_tasks
-Message-Id: <20071007205957.6DABB1474B@wotan.suse.de>
-Date: Sun,  7 Oct 2007 22:59:57 +0200 (CEST)
+Subject: [PATCH] [5/6] scheduler: Protect important kernel threads against normalize_rt
+Message-Id: <20071007205958.7D8C41474B@wotan.suse.de>
+Date: Sun,  7 Oct 2007 22:59:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Replace a particularly ugly ifdef with an inline and a new macro.
-Also split up the function to be easier readable.
+Not only the migration thread, but also softlockup and stop machine
+need to be protected against normalize_rt(). Instead of checking
+for them all I added a new process flag for this. 
+
+This was the last available bit in 32bit task->flags, sorry for that.
+
+This removes the is_migration_thread macro added in the last patch
+again because it is not needed anymore.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
+Index: linux-2.6-sched-devel/include/linux/sched.h
+===================================================================
+--- linux-2.6-sched-devel.orig/include/linux/sched.h
++++ linux-2.6-sched-devel/include/linux/sched.h
+@@ -1330,6 +1330,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_RT_PROTECTED 0x80000000	/* RT task protected from sysrq */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
 Index: linux-2.6-sched-devel/kernel/sched.c
 ===================================================================
 --- linux-2.6-sched-devel.orig/kernel/sched.c
 +++ linux-2.6-sched-devel/kernel/sched.c
-@@ -74,6 +74,12 @@ unsigned long long __attribute__((weak))
+@@ -74,12 +74,6 @@ unsigned long long __attribute__((weak))
  	return (unsigned long long)jiffies * (1000000000 / HZ);
  }
  
-+#ifdef CONFIG_SMP
-+#define is_migration_thread(p, rq) ((p) == (rq)->migration_thread)
-+#else
-+#define is_migration_thread(p, rq) 0
-+#endif
-+
+-#ifdef CONFIG_SMP
+-#define is_migration_thread(p, rq) ((p) == (rq)->migration_thread)
+-#else
+-#define is_migration_thread(p, rq) 0
+-#endif
+-
  /*
   * Convert user-nice values [ -20 ... 0 ... 19 ]
   * to static priority [ MAX_RT_PRIO..MAX_PRIO-1 ],
-@@ -6534,12 +6540,25 @@ EXPORT_SYMBOL(__might_sleep);
- #endif
- 
- #ifdef CONFIG_MAGIC_SYSRQ
-+static void normalize_task(struct rq *rq, struct task_struct *p)
-+{
-+	int on_rq;
-+	update_rq_clock(rq);
-+	on_rq = p->se.on_rq;
-+	if (on_rq)
-+		deactivate_task(rq, p, 0);
-+	__setscheduler(rq, p, SCHED_NORMAL, 0);
-+	if (on_rq) {
-+		activate_task(rq, p, 0);
-+		resched_task(rq->curr);
-+	}
-+}
-+
- void normalize_rt_tasks(void)
- {
- 	struct task_struct *g, *p;
- 	unsigned long flags;
- 	struct rq *rq;
--	int on_rq;
- 
- 	read_lock_irq(&tasklist_lock);
- 	do_each_thread(g, p) {
-@@ -6563,26 +6582,10 @@ void normalize_rt_tasks(void)
- 
+@@ -5305,6 +5299,7 @@ migration_call(struct notifier_block *nf
+ 		kthread_bind(p, cpu);
+ 		/* Must be high prio: stop_machine expects to yield to it. */
+ 		rq = task_rq_lock(p, &flags);
++		p->flags |= PF_RT_PROTECTED;
+ 		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
+ 		task_rq_unlock(rq, &flags);
+ 		cpu_rq(cpu)->migration_thread = p;
+@@ -6583,7 +6578,7 @@ void normalize_rt_tasks(void)
  		spin_lock_irqsave(&p->pi_lock, flags);
  		rq = __task_rq_lock(p);
--#ifdef CONFIG_SMP
--		/*
--		 * Do not touch the migration thread:
--		 */
--		if (p == rq->migration_thread)
--			goto out_unlock;
--#endif
  
--		update_rq_clock(rq);
--		on_rq = p->se.on_rq;
--		if (on_rq)
--			deactivate_task(rq, p, 0);
--		__setscheduler(rq, p, SCHED_NORMAL, 0);
--		if (on_rq) {
--			activate_task(rq, p, 0);
--			resched_task(rq->curr);
--		}
--#ifdef CONFIG_SMP
-- out_unlock:
--#endif
-+		if (!is_migration_thread(p, rq))
-+			normalize_task(rq, p);
-+
+-		if (!is_migration_thread(p, rq))
++		if (!(p->flags & PF_RT_PROTECTED))
+ 			normalize_task(rq, p);
+ 
  		__task_rq_unlock(rq);
- 		spin_unlock_irqrestore(&p->pi_lock, flags);
- 	} while_each_thread(g, p);
+Index: linux-2.6-sched-devel/kernel/softlockup.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/softlockup.c
++++ linux-2.6-sched-devel/kernel/softlockup.c
+@@ -116,6 +116,7 @@ static int watchdog(void * __bind_cpu)
+ {
+ 	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+ 
++	current->flags |= PF_RT_PROTECTED;
+ 	sched_setscheduler(current, SCHED_FIFO, &param);
+ 
+ 	/* initialize timestamp */
+Index: linux-2.6-sched-devel/kernel/stop_machine.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/stop_machine.c
++++ linux-2.6-sched-devel/kernel/stop_machine.c
+@@ -187,6 +187,7 @@ struct task_struct *__stop_machine_run(i
+ 	if (!IS_ERR(p)) {
+ 		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+ 
++		p->flags |= PF_RT_PROTECTED;
+ 		/* One high-prio thread per cpu.  We'll do this one. */
+ 		sched_setscheduler(p, SCHED_FIFO, &param);
+ 		kthread_bind(p, cpu);
