@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbXJGQz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbXJGQ4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbXJGQz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 12:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXJGQzr
+	id S1755435AbXJGQ4r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 12:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXJGQ4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 12:55:47 -0400
-Received: from ev1s-75-125-39-150.ev1servers.net ([75.125.39.150]:38768 "EHLO
-	colorfullife.mysite.adiungo.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752228AbXJGQzq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 12:55:46 -0400
-Message-ID: <47090F55.3020800@colorfullife.com>
-Date: Sun, 07 Oct 2007 18:54:45 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MSI interrupts and disable_irq
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com> <86802c440710061043u6e51cd7q468346bd06b08657@mail.gmail.com> <4707CCF1.8080909@pobox.com>
-In-Reply-To: <4707CCF1.8080909@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Oct 2007 12:56:38 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:64514 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754579AbXJGQ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 12:56:37 -0400
+To: junwang1234@gmail.com, a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: Sleeping in RCU list traversal
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <1191784307.3618.8.camel@localhost.localdomain>
+	<200710072226.EJF51558.LFVHJOStFOOFMQ@I-love.SAKURA.ne.jp>
+	<1191796640.3045.25.camel@localhost.localdomain>
+In-Reply-To: <1191796640.3045.25.camel@localhost.localdomain>
+Message-Id: <200710080156.IFB56934.tHMLFFJSFOVOOQ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Mon, 8 Oct 2007 01:56:30 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->
-> Interested parties should try the forcedeth patches I just posted :)
->
-The patches look good, but I would still prefer to understand why the 
-current implementation causes crashes before rewriting everything.
+Hello.
 
-I've just noticed that netpoll_send_skb() calls ->hard_start_xmit() and 
-->poll() within local_irq_save().
-Thus it seems that  spin_lock_irqsave() must be used in the poll() and 
-hard_start_xmit() callbacks, at least in nics that support 
-POLL_CONTROLLER :-(
+Jun WANG wrote:
+> I'm sorry,I think I got your idea, if you do not need ptr in
+> my_task_that_may_sleep(), why you need to grab a reference to "ptr". If
+> your my_task_that_may_sleep() needs ptr, and according to the 
+> "memory region pointed by "ptr" never be removed." you say,
+> it is ok to use "ptr" after rcu_read_ulock(). The basic idea behind RCU
+> is to split updates into "removal" and "reclamation" phases. If you
+> memory region pointed by "ptr" will not "reclamation" in sleep, it is ok
+I need "ptr" in my_task_that_may_sleep(), but regarding my case,
+memory region pointed by "ptr" will never be kfree()ed.
 
---
-    Manfred
+So, I don't need to grab a reference to "ptr"
+because memory region pointed by "ptr" will never be kfree()ed.
+And it is legal to use "ptr" after rcu_read_unlock()
+because memory region pointed by "ptr" will never be kfree()ed.
+
+Thank you.
 
