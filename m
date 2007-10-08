@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbXJHOln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXJHOsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbXJHOln (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 10:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXJHOlg
+	id S1753413AbXJHOsx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 10:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXJHOsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 10:41:36 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:55863 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751504AbXJHOle (ORCPT
+	Mon, 8 Oct 2007 10:48:45 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:52041 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbXJHOso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 10:41:34 -0400
-Date: Mon, 8 Oct 2007 10:41:02 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial
- console
-In-Reply-To: <1191853361.4281.5.camel@ghaskins-t60p.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710081037420.5290@gandalf.stny.rr.com>
-References: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net> 
- <alpine.LRH.0.999.0710051831000.10191@www.tglx.de> 
- <Pine.LNX.4.58.0710081005320.4846@gandalf.stny.rr.com>
- <1191853361.4281.5.camel@ghaskins-t60p.haskins.net>
+	Mon, 8 Oct 2007 10:48:44 -0400
+X-IronPort-AV: E=Sophos;i="4.21,243,1188802800"; 
+   d="scan'208";a="179691469"
+To: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Updated InfiniBand/RDMA merge plans for 2.6.24
+X-Message-Flag: Warning: May contain useful information
+References: <adaodfdkv59.fsf@cisco.com>
+	<200710080838.12778.jackm@dev.mellanox.co.il>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 08 Oct 2007 07:48:26 -0700
+In-Reply-To: <200710080838.12778.jackm@dev.mellanox.co.il> (Jack Morgenstein's message of "Mon, 8 Oct 2007 08:38:12 +0200")
+Message-ID: <adaabqtll1h.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Oct 2007 14:48:26.0398 (UTC) FILETIME=[4870D3E0:01C809BA]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > >  - XRC.  Given the length of the backlog above and the fact that a
+ > >    first draft of this code has not been posted yet, I don't see any
+ > >    way that we could have something this major ready in time.
+ > > 
+ > I posted the first draft patch set to the OpenFabrics list on September 18:
 
---
-On Mon, 8 Oct 2007, Gregory Haskins wrote:
->
-> Hi Steve,
->   What you describe is exactly what I did.  The IRQF_NODELAY handler
-> just minimally checks to see if the character is a sysrq related one (or
-> KDB, if you have the KDB patches applied).  If it is not, it puts the
-> character into a ring-buffer and wakes a (kthread-based) tasklet to do
-> the normal serial/tty rx path by processing the ring.
+Sorry, I didn't update that text.  But my backlog is still too big to
+get XRC into 2.6.24.
 
-Ah, that was in the second patch (I didn't look at that. My fault). I
-didn't see this description in the comments. But you are right, it is very
-close to what I did too. But before we add this to -rt, it will need to
-probably need to be tested quite a bit more. Especially since this is more
-to help us developers than to help end users.
-
-I would like to see something like this eventually make it into RT.  Just
-because there has been too many times that this would be useful. For now I
-just use the NMI watchdog and soft lockup detect. But those are very
-limiting.
-
->
-> Hope that helps to clarify.
-
-Yes, thanks!
-
--- Steve
-
+ - R.
