@@ -1,64 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbXJIAMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbXJIARc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbXJIAMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 20:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXJIAMp
+	id S1754047AbXJIARc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 20:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXJIARX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 20:12:45 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:42722 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbXJIAMo (ORCPT
+	Mon, 8 Oct 2007 20:17:23 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:23632 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752467AbXJIARU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 20:12:44 -0400
-Date: Mon, 8 Oct 2007 17:12:40 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alexis Bruemmer <alexisb@us.ibm.com>,
-       James Bottomley <james.bottomley@steeleye.com>
-Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
-	if the adapter lacks one
-Message-ID: <20071009001240.GA13922@plap3.qlogic.org>
-References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org> <20071008235009.GB16003@tree.beaverton.ibm.com>
+	Mon, 8 Oct 2007 20:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=injblHcKwjxS6QQ1uAzd6M3EmjjuFgOiiW7OuGP/HJBQft3OzUsxlTYd0kEaK4rV7Smi43QGsYUjKw1KcU1iB0DjalOqyvlVfN5gE7tU1Xb4AySKlB/BCpaNlP1ZargeY2GoT2XlA8frLCSTMDgYPrBeNrCdhqjCadMXDfeq/T8=  ;
+X-YMail-OSG: g2DiyL0VM1lQ7Kc0AinaZekMnC1MgLC0JDe_hzrylURN_DuM03o.Hsy4UO002bSACYy2lg1pCw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
+Date: Mon, 8 Oct 2007 17:45:38 +1000
+User-Agent: KMail/1.9.5
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, yanzheng@21cn.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ltp-list@lists.sourceforge.net
+References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com> <20071008102843.d20b56d7.randy.dunlap@oracle.com> <20071008105120.4e0e4a85.akpm@linux-foundation.org>
+In-Reply-To: <20071008105120.4e0e4a85.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071008235009.GB16003@tree.beaverton.ibm.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-OriginalArrivalTime: 09 Oct 2007 00:11:28.0936 (UTC) FILETIME=[F0670A80:01C80A08]
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_jAeCHpGYRU+cpXT"
+Message-Id: <200710081745.39254.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Oct 2007, Darrick J. Wong wrote:
+--Boundary-00=_jAeCHpGYRU+cpXT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Mon, Oct 08, 2007 at 03:48:32PM -0700, Andrew Vasquez wrote:
-> 
-> > So how about factoring that out to a transport-level interface.  How
-> > about something along the lines of the following patch, whereby the
-> > software driver upon detecting no valid WWPN, makes an upcall to each
-> > interface's 'request_wwn()'.  The data passed in from shost_gendev
-> > should be enough for some helper script to cull relevent device bits
-> > and perhaps offer some level of persistence...  Off base?
-> 
-> Hrm... jejb made a remark that it might be better to pass the
-> scsi_host's device into request_firmware() as your example does, so I'll
-> pitch in a patch to do likewise with libsas--the scsi_host knows the
-> actual device it's coming from, and userland can sort that all out later
-> anyway via DEVPATH.
-> 
-> I suppose one could also have multiple scsi_hosts per PCI device, which
-> means that my first patch would stumble horribly in more than a few
-> cases.
+On Tuesday 09 October 2007 03:51, Andrew Morton wrote:
+> On Mon, 8 Oct 2007 10:28:43 -0700
 
-This is done already in the FC case -- NPIV.  Though with that
-interface, the administrator is already responsible for assigning
-proper WWNN/WWPN during creation.
+> > I'll now add remap_file_pages soon.
+> > Maybe those other 2 tests aren't strong enough (?).
+> > Or maybe they don't return a non-0 exit status even when they fail...
+> > (I'll check.)
+>
+> Perhaps Yan Zheng can tell us what test was used to demonstrate this?
 
-> > Darrick, forgive the FC example, I don't do SAS...
-> 
-> That's ok, I don't do FC. :)  Looks mostly good to me...
+Was probably found by review. Otherwise, you could probably reproduce
+it by mmaping, say, drm device node, running remap_file_pages() on it
+to create a nonlinear mapping, and then finding that you get the wrong
+data.
 
---
-av
+> > > I'm surprise that LTP doesn't have any remap_file_pages() tests.
+> >
+> > quick grep didn't find any for me.
+>
+> Me either.  There are a few lying around the place which could be
+> integrated.
+>
+> It would be good if LTP were to have some remap_file_pages() tests
+> (please).  As we see here, it is something which we can easily break, and
+> leave broken for some time.
+
+Here is Ingo's old test, since cleaned up and fixed a bit by me....
+I'm sure he would distribute it GPL, but I've cc'ed him because I didn't
+find an explicit statement about that.
+
+
+--Boundary-00=_jAeCHpGYRU+cpXT
+Content-Type: text/x-csrc;
+  charset="iso-8859-1";
+  name="remap-file-pages.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="remap-file-pages.c"
+
+/*
+ * Copyright (C) Ingo Molnar, 2002
+ */
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <sys/times.h>
+#include <sys/wait.h>
+#include <sys/ioctl.h>
+#include <sys/syscall.h>
+#include <linux/unistd.h>
+
+#define PAGE_SIZE 4096
+#define PAGE_WORDS (PAGE_SIZE/sizeof(int))
+
+#define CACHE_PAGES 1024
+#define CACHE_SIZE (CACHE_PAGES*PAGE_SIZE)
+
+#define WINDOW_PAGES 16
+#define WINDOW_SIZE (WINDOW_PAGES*PAGE_SIZE)
+
+#define WINDOW_START 0x48000000
+
+static char cache_contents [CACHE_SIZE];
+
+static void test_nonlinear(int fd)
+{
+	char *data = NULL;
+	int i, j, repeat = 2;
+
+	for (i = 0; i < CACHE_PAGES; i++) {
+		int *page = (int *) (cache_contents + i*PAGE_SIZE);
+
+		for (j = 0; j < PAGE_WORDS; j++)
+			page[j] = i;
+	}
+
+	if (write(fd, cache_contents, CACHE_SIZE) != CACHE_SIZE)
+		perror("write"), exit(1);
+
+	data = mmap((void *)WINDOW_START,
+			WINDOW_SIZE,
+			PROT_READ|PROT_WRITE, 
+			MAP_FIXED | MAP_SHARED 
+			, fd, 0);
+
+	if (data == MAP_FAILED)
+		perror("mmap"), exit(1);
+
+again:
+	for (i = 0; i < WINDOW_PAGES; i += 2) {
+		char *page = data + i*PAGE_SIZE;
+
+		if (remap_file_pages(page, PAGE_SIZE * 2, 0,
+				(WINDOW_PAGES-i-2), 0) == -1)
+			perror("remap_file_pages"), exit(1);
+	}
+
+	for (i = 0; i < WINDOW_PAGES; i++) {
+		/*
+		 * Double-check the correctness of the mapping:
+		 */
+		if (i & 1) {
+			if (data[i*PAGE_SIZE] != WINDOW_PAGES-i) {
+				printf("hm, mapped incorrect data!\n");
+				exit(1);
+			}
+		} else {
+			if (data[i*PAGE_SIZE] != WINDOW_PAGES-i-2) {
+				printf("hm, mapped incorrect data!\n");
+				exit(1);
+			}
+		}
+	}
+
+	if (--repeat)
+		goto again;
+}
+
+int main(int argc, char **argv)
+{
+	int fd;
+
+	fd = open("/dev/shm/cache", O_RDWR|O_CREAT|O_TRUNC,S_IRWXU);
+	if (fd < 0)
+		perror("open"), exit(1);
+	test_nonlinear(fd);
+	if (close(fd) == -1)
+		perror("close"), exit(1);
+	printf("nonlinear shm file OK\n");
+
+	fd = open("/tmp/cache", O_RDWR|O_CREAT|O_TRUNC,S_IRWXU);
+	if (fd < 0)
+		perror("open"), exit(1);
+	test_nonlinear(fd);
+	if (close(fd) == -1)
+		perror("close"), exit(1);
+	printf("nonlinear /tmp/ file OK\n");
+
+	exit(0);
+}
+
+
+--Boundary-00=_jAeCHpGYRU+cpXT--
