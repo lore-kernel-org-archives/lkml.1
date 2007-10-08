@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbXJHTGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXJHTI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755726AbXJHTGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 15:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXJHTFw
+	id S1756856AbXJHTI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 15:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbXJHTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 15:05:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52958 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbXJHTFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 15:05:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <470A7F57.3070702@s5r6.in-berlin.de>
-Date: Mon, 08 Oct 2007 21:04:55 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Mon, 8 Oct 2007 15:08:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58926 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbXJHTIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 15:08:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bernd Schubert <bs@q-leap.de>
+Subject: Re: 2.6.23 regression: do_nanosleep will not return
+Date: Mon, 8 Oct 2007 21:23:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+References: <fed93g$eq4$1@sea.gmane.org> <20071008103252.5fe81529@bree.surriel.com> <200710081701.34368.bs@q-leap.de>
+In-Reply-To: <200710081701.34368.bs@q-leap.de>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org> <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr> <470A708D.4080905@goop.org> <20071008110614.dd671fc7.randy.dunlap@oracle.com> <470A7847.8070502@s5r6.in-berlin.de> <20071008185225.GK2902@fieldses.org>
-In-Reply-To: <20071008185225.GK2902@fieldses.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710082123.07349.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> And it'd be nice to have a tag for those sorts of
-> contributions, partly just as another way to ackowledge them.
+On Monday, 8 October 2007 17:01, Bernd Schubert wrote:
+> On Monday 08 October 2007 16:32:52 Rik van Riel wrote:
+> > On Mon, 08 Oct 2007 15:20:26 +0200
+> >
+> > Bernd Schubert <bs@q-leap.de> wrote:
+> > > Bernd Schubert wrote:
+> > > > we have a system here were e.g. "sleep 1" will never finish. This
+> > > > is an issue of 2.6.23, on all older kernel versions it did work
+> > > > fine.
+> > > >
+> > > > Seems to hang in do_nanosleep()
+> > >
+> > > Update: Enabling hpet in the bios and setting clocksource=hpet as
+> > > command line parameter will fix it, but still its not nice that
+> > > something that worked without a problem in 2.6.22 and below suddenly
+> > > doesn't work in 2.6.23.
+> >
+> > Which timer source is in use when the system hangs?
+> 
+> Well, not the systems hangs, only processes running nanosleep. Well, since the 
+> system is booted diskless, one of the very first commands is to 
+> run "/etc/init.d/portmap start", which has a sleep call in its script and so 
+> it will halt the boot process.
+> 
+> The problematic timer source is acpi_pm. Its also interesting that setting the 
+> timer source 
+> via /sys/devices/system/clocksource/clocksource0/current_clocksource won't 
+> fix that problem. Only the boot option clocksource={other than acpi_pm} does 
+> help.
 
-Yes, although the primary purpose of the various tags should be to
-document the quality assurance process, or how to call it.
+I've created a bugzilla entry for this regression at
 
-However, what belongs into the SCM changelog, and what can the list
-archives provide?
--- 
-Stefan Richter
--=====-=-=== =-=- -=---
-http://arcgraph.de/sr/
+http://bugzilla.kernel.org/show_bug.cgi?id=9134
+
+Please add a summary of your observations to it.
+
+Thanks,
+Rafael
