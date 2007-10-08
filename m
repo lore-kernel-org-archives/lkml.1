@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXJHMec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbXJHMes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbXJHMec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 08:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbXJHMdn
+	id S1755995AbXJHMes (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 08:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbXJHMeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 08:33:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58808 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754360AbXJHMdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 08:33:41 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] [5/6] scheduler: Protect important kernel threads against normalize_rt
-Date: Mon, 8 Oct 2007 14:33:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <200710071059.126674000@suse.de> <20071007205958.7D8C41474B@wotan.suse.de> <20071008115142.GE22199@elte.hu>
-In-Reply-To: <20071008115142.GE22199@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710081433.34845.ak@suse.de>
+	Mon, 8 Oct 2007 08:34:15 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:47075 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754304AbXJHMeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 08:34:14 -0400
+Message-id: <11237258561195029635@pripojeni.net>
+In-reply-to: <21044149499772302@pripojeni.net>
+Subject: [PATCH 2/3] V4L: zc0301, remove bad usage of ERESTARTSYS
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <luca.risolia@studio.unibo.it>
+Cc: <linux-usb-devel@lists.sourceforge.net>
+Cc: <mchehab@infradead.org>
+Cc: <video4linux-list@redhat.com>
+Date: Mon, 8 Oct 2007 08:34:14 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 October 2007 13:51:42 Ingo Molnar wrote:
-> 
-> * Andi Kleen <ak@suse.de> wrote:
-> 
-> > Not only the migration thread, but also softlockup and stop machine 
-> > need to be protected against normalize_rt(). Instead of checking for 
-> > them all I added a new process flag for this.
-> 
-> hm, i dont really like this. The migration thread is an absolute 
-> exception because it's needed for a correct scheduler. SysRq-N is like 
-> SysRq-U or SysRq-B - last-minute resort in case something Goes Foul. 
-> Results are not guaranteed.
+zc0301, remove bad usage of ERESTARTSYS
 
-softlockup is the same. Just think about it.
+down_read_trylock can't be interrupted and so ERESTARTSYS would reach
+userspace, which is not permitted. Change it to EAGAIN
 
-If you ever renormalize it and then run a fifo thread it will
-starve and then eventually kill the box.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-And starving CPU unplug is also equally bad.
+---
+commit 235cf594bc65128250632a642f3e9d7e4df4975e
+tree 0557746416827daeb4d829610fec2f0c9111a675
+parent db38c559d37219c32b179ae005ca7e489336ec94
+author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:15:47 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:15:47 +0200
 
--Andi
+ drivers/media/video/zc0301/zc0301_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/media/video/zc0301/zc0301_core.c b/drivers/media/video/zc0301/zc0301_core.c
+index 35138c5..08a93c3 100644
+--- a/drivers/media/video/zc0301/zc0301_core.c
++++ b/drivers/media/video/zc0301/zc0301_core.c
+@@ -655,7 +655,7 @@ static int zc0301_open(struct inode* inode, struct file* filp)
+ 	int err = 0;
+ 
+ 	if (!down_read_trylock(&zc0301_dev_lock))
+-		return -ERESTARTSYS;
++		return -EAGAIN;
+ 
+ 	cam = video_get_drvdata(video_devdata(filp));
+ 
