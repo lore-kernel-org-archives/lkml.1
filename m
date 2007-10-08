@@ -1,126 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbXJHWnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbXJHWsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbXJHWnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 18:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXJHWnM
+	id S1754101AbXJHWsp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 18:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbXJHWsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 18:43:12 -0400
-Received: from vena.lwn.net ([206.168.112.25]:35378 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751290AbXJHWnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 18:43:11 -0400
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Mon, 08 Oct 2007 19:37:07 +0200."
-             <20071008173706.GA12026@uranus.ravnborg.org> 
-Date: Mon, 08 Oct 2007 16:43:10 -0600
-Message-ID: <10940.1191883390@lwn.net>
+	Mon, 8 Oct 2007 18:48:37 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:29639 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbXJHWsf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 18:48:35 -0400
+Date: Mon, 8 Oct 2007 15:48:32 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
+	if the adapter lacks one
+Message-ID: <20071008224832.GB11993@plap3.qlogic.org>
+References: <20071008212553.GI16752@tree.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071008212553.GI16752@tree.beaverton.ibm.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-OriginalArrivalTime: 08 Oct 2007 22:47:20.0582 (UTC) FILETIME=[2F595A60:01C809FD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Mon, 08 Oct 2007, Darrick J. Wong wrote:
 
-> Or maybe we need something much less formal that explain the purpose of the
-> four tags we use:
+> If the aic94xx chip doesn't have a SAS address in the chip's flash memory,
+> use the request_firmware() interface to get one from userspace.  This
+> way, there's no debate as to who or how an address gets generated--it's
+> totally up to the administrator to provide it if the card doesn't have one.
 
-...or maybe a combination?  How does the following patch look as a way
-to describe how the tags are used and what Reviewed-by, in particular,
-means?
+So how about factoring that out to a transport-level interface.  How
+about something along the lines of the following patch, whereby the
+software driver upon detecting no valid WWPN, makes an upcall to each
+interface's 'request_wwn()'.  The data passed in from shost_gendev
+should be enough for some helper script to cull relevent device bits
+and perhaps offer some level of persistence...  Off base?
 
-Perhaps the DCO should move to this file as well?
+Darrick, forgive the FC example, I don't do SAS...
 
-jon
+--
+av
 
----
+--
 
-Add a document on patch tags.
-
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-
-diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-index 43e89b1..fa1518b 100644
---- a/Documentation/00-INDEX
-+++ b/Documentation/00-INDEX
-@@ -284,6 +284,8 @@ parport.txt
- 	- how to use the parallel-port driver.
- parport-lowlevel.txt
- 	- description and usage of the low level parallel port functions.
-+patch-tags
-+	- description of the tags which can be added to patches
- pci-error-recovery.txt
- 	- info on PCI error recovery.
- pci.txt
-diff --git a/Documentation/patch-tags b/Documentation/patch-tags
-new file mode 100644
-index 0000000..fb5f8e1
---- /dev/null
-+++ b/Documentation/patch-tags
-@@ -0,0 +1,66 @@
-+Patches headed for the mainline may contain a variety of tags documenting
-+who played a hand in (or was at least aware of) its progress.  All of these
-+tags have the form:
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 7a7cfe5..5e0d953 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -35,6 +35,7 @@
+ #include <linux/netlink.h>
+ #include <net/netlink.h>
+ #include <scsi/scsi_netlink_fc.h>
++#include <linux/firmware.h>
+ #include "scsi_priv.h"
+ #include "scsi_transport_fc_internal.h"
+ 
+@@ -3251,6 +3252,30 @@ fc_vport_sched_delete(struct work_struct *work)
+ 			vport->channel, stat);
+ }
+ 
++int
++fc_request_wwn(struct Scsi_Host *shost, u64 *wwn)
++{
++	const struct firmware *fw;
++	int stat;
 +
-+	Something-done-by: Full name <email@address>
++	stat = request_firmware(&fw, "fc_addr", &shost->shost_gendev);
++	if (stat)
++		return stat;
 +
-+These tags are:
++	if (fw->size < 16) {
++		stat = -EINVAL;
++		goto out;
++	}
 +
-+Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
-+		patch is, to the best of his or her knowledge, legally able
-+		to be merged into the mainline and distributed under the
-+		terms of the GNU General Public License, version 2.  See
-+		the Developer's Certificate of Origin, found in
-+		Documentation/SubmittingPatches, for the precise meaning of
-+		Signed-off-by.
++	stat = fc_parse_wwn(fw->data, wwn);
++	if (stat)
++		return stat;
 +
-+Acked-by:	The person named (who should be an active developer in the
-+		area addressed by the patch) is aware of the patch and has
-+		no objection to its inclusion.  An Acked-by tag does not
-+		imply any involvement in the development of the patch or
-+		that a detailed review was done.
++out:
++	release_firmware(fw);
++	return stat;
++}
++EXPORT_SYMBOL(fc_request_wwn);
+ 
+ /* Original Author:  Martin Hicks */
+ MODULE_AUTHOR("James Smart");
+diff --git a/include/scsi/scsi_transport_fc.h b/include/scsi/scsi_transport_fc.h
+index e466d88..e80c36c 100644
+--- a/include/scsi/scsi_transport_fc.h
++++ b/include/scsi/scsi_transport_fc.h
+@@ -734,4 +734,6 @@ void fc_host_post_vendor_event(struct Scsi_Host *shost, u32 event_number,
+ 	 */
+ int fc_vport_terminate(struct fc_vport *vport);
+ 
++int fc_request_wwn(struct Scsi_Host *, u64 *);
 +
-+Reviewed-by:	The patch has been reviewed and found acceptible according
-+		to the Reviewer's Statement as found at the bottom of this
-+		file.  A Reviewed-by tag is a statement of opinion that the
-+		patch is an appropriate modification of the kernel without
-+		any remaining serious technical issues.  Any interested
-+		reviewer (who has done the work) can offer a Reviewed-by
-+		tag for a patch.
-+
-+Cc:		The person named was given the opportunity to comment on
-+		the patch.  This is the only tag which might be added
-+		without an explicit action by the person it names.
-+
-+Tested-by:	The patch has been successfully tested (in some
-+		environment) by the person named.
-+
-+
-+----
-+
-+Reviewer's statement of oversight, v0.02
-+
-+By offering my Reviewed-by: tag, I state that:
-+
-+ (a) I have carried out a technical review of this patch to evaluate its
-+     appropriateness and readiness for inclusion into the mainline kernel. 
-+
-+ (b) Any problems, concerns, or questions relating to the patch have been
-+     communicated back to the submitter.  I am satisfied with how the
-+     submitter has responded to my comments.
-+
-+ (c) While there may (or may not) be things which could be improved with
-+     this submission, I believe that it is, at this time, (1) a worthwhile
-+     modification to the kernel, and (2) free of known issues which would
-+     argue against its inclusion.
-+
-+ (d) While I have reviewed the patch and believe it to be sound, I can not
-+     (unless explicitly stated elsewhere) make any warranties or guarantees
-+     that it will achieve its stated purpose or function properly in any
-+     given situation.
-+
-+ (e) I understand and agree that this project and the contribution are
-+     public and that a record of the contribution (including my Reviewed-by
-+     tag and any associated public communications) is maintained
-+     indefinitely and may be redistributed consistent with this project or
-+     the open source license(s) involved.
+ #endif /* SCSI_TRANSPORT_FC_H */
