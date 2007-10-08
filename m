@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbXJHR3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbXJHRbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbXJHR3b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbXJHR3T
+	id S1755881AbXJHRbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbXJHRbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:29:19 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30639 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755594AbXJHR3R (ORCPT
+	Mon, 8 Oct 2007 13:31:31 -0400
+Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:42829 "HELO
+	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753713AbXJHRb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:29:17 -0400
-Date: Mon, 8 Oct 2007 10:28:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Yan Zheng" <yanzheng@21cn.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-Message-Id: <20071008102843.d20b56d7.randy.dunlap@oracle.com>
-In-Reply-To: <20071008100456.dbe826d0.akpm@linux-foundation.org>
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-	<20071008100456.dbe826d0.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Mon, 8 Oct 2007 13:31:29 -0400
+X-YMail-OSG: pTIErZcVM1lKd.NTTAhX5Pnvnd3vDoQo0xp8GVnBmad8l4QmW7DG3CB5KoUiGJLtsL2dQCCIPA--
+X-RocketYMMF: rancidfat
+Date: Mon, 8 Oct 2007 10:31:26 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: "Serge E. Hallyn" <serge@hallyn.com>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serge@hallyn.com>
+In-Reply-To: <20071008161835.GB7106@vino.hallyn.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+Message-ID: <287140.92685.qm@web36611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007 10:04:56 -0700 Andrew Morton wrote:
 
-> On Mon, 8 Oct 2007 19:45:08 +0800 "Yan Zheng" <yanzheng@21cn.com> wrote:
+--- "Serge E. Hallyn" <serge@hallyn.com> wrote:
+
+> Quoting Casey Schaufler (casey@schaufler-ca.com):
+> > ...
+> > Good suggestion. In fact, that is exactly how I approached my
+> > first two attempts at the problem. What you get if you take that
+> > route is an imposing infrastructure that has virually nothing
+> > to do and that adds no value to the solution. Programming to the
+> > LSM interface, on the other hand, allowed me to drastically reduce
+> > the size and complexity of the implementation.
 > 
-> > Hi all
-> > 
-> > The test for VM_CAN_NONLINEAR always fails
-> > 
-> > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
-> > ----
-> > diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
-> > --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
-> > +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
-> > @@ -160,7 +160,7 @@
-> >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
-> >  		goto out;
-> > 
-> > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
-> > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
-> >  		goto out;
-> > 
-> >  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
+> (tongue-in-cheek)
 > 
-> Lovely.  From this we can deduce that nobody has run remap_file_pages() since
-> 2.6.23-rc1 and that nobody (including the developer who made that change) ran it
-> while that change was in -mm.
-
-I've run rmap-test with -M (use remap_file_pages) and
-remap-test from ext3-tools, but not remap_file_pages for some reason.
-
-I'll now add remap_file_pages soon.
-Maybe those other 2 tests aren't strong enough (?).
-Or maybe they don't return a non-0 exit status even when they fail...
-(I'll check.)
-
-
-> I'm surprise that LTP doesn't have any remap_file_pages() tests.
-
-quick grep didn't find any for me.
-
-> Have you runtime tested this change?
+> No no, everyone knows you don't build simpler things on top of more
+> complicated ones, you go the other way around.  So what he was
+> suggesting was that selinux be re-written on top of smack.
 > 
-> Thanks.
+> :)
+
+I'm not sure how seriously anyone ought to take what I'm about to
+outline. Please feel free to treat it with as much or as little
+reverence as you choose.
+
+How to implement SELinux starting from Smack.
+
+You'll need to break up the current rwxa accesses into a set
+that matches the current SELinux set. Assign each a letter and
+a "MAY_ACTION" #define.
+
+You'll need a mapping for domain transitions, something like:
+
+     subject-label program-label new-subject-label
+
+This will require bprm hooks that aren't there now.
+
+Additional hooks will need to be filled out as Smack does not
+add access control to things that aren't objects or actions that
+aren't accesses. Treat these as if they are accesses to objects
+and there shouldn't be too much trouble.
+
+Do something about the linear search for subject/object label pairs.
+With the larger label set searching will become an issue.
+
+Audit integration, too. The networking code will require some work
+for ipsec. The interfaces are pretty clean, Smack isn't using it
+because the CIPSO interface is simpler, not because there's any
+real problem with it.
+
+I wouldn't expect the whole thing to be more than a couple week's
+work for someone who really wanted to do it.
 
 
----
-~Randy
+Casey Schaufler
+casey@schaufler-ca.com
