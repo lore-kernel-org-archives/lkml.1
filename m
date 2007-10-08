@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXJHRja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXJHRpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbXJHRja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXJHRjW
+	id S1755448AbXJHRpg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbXJHRp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:39:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50402 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbXJHRjW (ORCPT
+	Mon, 8 Oct 2007 13:45:29 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45273 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752223AbXJHRp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:39:22 -0400
-Date: Mon, 8 Oct 2007 10:39:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, stable <stable@kernel.org>,
-       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH] lockdep: fix mismatched
-	lockdep_depth/curr_chain_hash
-Message-ID: <20071008173908.GA26121@kroah.com>
-References: <20071005034058.20275.21559.stgit@ghaskins-t60p.haskins.net> <1191576686.22357.64.camel@twins> <20071008172424.GA6692@kroah.com> <1191864970.5797.1.camel@lappy>
+	Mon, 8 Oct 2007 13:45:28 -0400
+Date: Mon, 8 Oct 2007 19:45:27 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+In-Reply-To: <20071008173706.GA12026@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
+References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191864970.5797.1.camel@lappy>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 07:36:10PM +0200, Peter Zijlstra wrote:
-> 
-> On Mon, 2007-10-08 at 10:24 -0700, Greg KH wrote:
-> > On Fri, Oct 05, 2007 at 11:31:26AM +0200, Peter Zijlstra wrote:
-> > > 
-> > > Stable team,
-> > > 
-> > > please consider this patch for the next 22-stable.
-> > 
-> > I don't see this patch in Linus's upstream tree.  We need it there to be
-> > able to accept it for -stable.  Or is this just a bugfix of other things
-> > that are already in his tree?
-> 
-> I send Linus a similar patch, haven??t seem him pick it up yet.
-> I??ll notify you when and if he picks it up.
 
-Great, that would be great for us -stable monkeys...
+On Oct 8 2007 19:37, Sam Ravnborg wrote:
+>snip...
+>
+>Or maybe we need something much less formal that explain the purpose of the
+>four tags we use:
 
-greg k-h
+At least formal try:
+
+>Signed-of-by:
+
+* Used by original submitter(s).
+* Also used by maintainers to track the patch's path
+  (ATM, does not imply "I have look at it in depth")
+
+>Acked-by:
+>Tested-by:
+
+* Used by random people to express their (dis)like/experience with the 
+patch.
+
+>Reviewed-by:
+
+* I am maintaner or an 'important' person and have had a
+  look at it in depth
+
+>Cc:
+
+* Used by original submitter to denote additional maintainers it goes to
+* Parties who should be Cced when an a posteriori question comes up
+
+
+My 2¥.
+Jan
