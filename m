@@ -1,112 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXJHQM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXJHQSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbXJHQM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 12:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXJHQMq
+	id S1755029AbXJHQSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 12:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXJHQSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 12:12:46 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:19323 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbXJHQMp (ORCPT
+	Mon, 8 Oct 2007 12:18:46 -0400
+Received: from smtp106.sbc.mail.re2.yahoo.com ([68.142.229.99]:27113 "HELO
+	smtp106.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751509AbXJHQSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 12:12:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=QgOHK02nfCE9kVIJ6srXkAC7XUILbhh4ZvbhWgMoowTHIyZ89erVQNxYKs4eHJOmHwyreX1ElJrlVy8g2ga8vqVY6BdXjLQ0jHspZSNNhe8i4e1uMITdHAj8mabEaIDLh6KiM3icjefEr/zqm/tKuZynyFsbJTFw3duL4lpF6hE=
-Date: Tue, 9 Oct 2007 00:12:40 +0800
-From: "peerchen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>
-Cc: "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-Subject: [PATCH] sata_nv: add the wildcard support for ahci legacy mode
-Message-ID: <200710090012317183997@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Oct 2007 12:18:44 -0400
+X-YMail-OSG: BiOLfxYVM1lHp3gH6mklVtjpC0I8Lvpd6GDfb2QCP0UA5rzaDJZWEacbWYdBOmVwYjzjiGHdTA--
+Date: Mon, 8 Oct 2007 11:18:35 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory
+	Access Control Kernel
+Message-ID: <20071008161835.GB7106@vino.hallyn.com>
+References: <A508A802-AB11-4DFF-9CA8-498897CE5D03@mac.com> <63003.78064.qm@web36613.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63003.78064.qm@web36613.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the wildcard support to sata_nv driver for those new ahci controllers being configured
-as IDE/RAID mode and also their DIDs haven't been added into ahci driver.
+Quoting Casey Schaufler (casey@schaufler-ca.com):
+> 
+> --- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+> 
+> > On Oct 05, 2007, at 00:45:17, Eric W. Biederman wrote:
+> > > Kyle Moffett <mrmacman_g4@mac.com> writes:
+> > >
+> > >> On Oct 04, 2007, at 21:44:02, Eric W. Biederman wrote:
+> > >>> SElinux is not all encompassing or it is generally  
+> > >>> incomprehensible I don't know which.  Or someone long ago would  
+> > >>> have said a better  way to implement containers was with a  
+> > >>> selinux ruleset, here is a  selinux ruleset that does that.   
+> > >>> Although it is completely possible  to implement all of the  
+> > >>> isolation with the existing LSM hooks as  Serge showed.
+> > >>
+> > >> The difference between SELinux and containers is that SELinux (and  
+> > >> LSM as a whole) returns -EPERM to operations outside the scope of  
+> > >> the  subject, whereas containers return -ENOENT (because it's not  
+> > >> even in  the same namespace).
+> > >
+> > > Yes.  However if you look at what the first implementations were.   
+> > > Especially something like linux-vserver.  All they provided was  
+> > > isolation.  So perhaps you would not see every process ps but they  
+> > > all had unique pid values.
+> > >
+> > > I'm pretty certain Serge at least prototyped a simplified version  
+> > > of that using the LSM hooks.  Is there something I'm not remember  
+> > > in those hooks that allows hiding of information like processes?
+> > >
+> > > Yes. Currently with containers we are taking that one step farther  
+> > > as that solves a wider set of problems.
+> > 
+> > IMHO, containers have a subtly different purpose from LSM even though  
+> > both are about information hiding.  Basically a container is  
+> > information hiding primarily for administrative reasons; either as a  
+> > convenience to help prevent errors or as a way of describing  
+> > administrative boundaries.  For example, even in an environment where  
+> > all sysadmins are trusted employees, a few head-honcho sysadmins  
+> > would get root container access, and all others would get access to  
+> > specific containers as a way of preventing "oops" errors.  Basically  
+> > a container is about "full access inside this box and no access  
+> > outside".
+> > 
+> > By contrast, LSM is more strictly about providing *limited* access to  
+> > resources.  For an accounting business all client records would  
+> > grouped and associated together, however those which have passed this  
+> > year's review are read-only except by specific staff and others may  
+> > have information restricted to some subset of the employees.
+> >
+> > So containers are exclusive subsets of "the system" while LSM should  
+> > be about non-exclusive information restriction.
+> 
+> Yes. Isolation is a much simpler problem than access control.
+> 
+> > >>> We also have in the kernel another parallel security mechanism  
+> > >>> (for what is generally a different class of operations) that has  
+> > >>> been  quite successful, and different groups get along quite  
+> > >>> well, and  ordinary mortals can understand it.   The linux  
+> > >>> firewalling code.
+> > >>
+> > >> Well, I wouldn't go so far as the "ordinary mortals can understand  
+> > >> it" part; it's still pretty high on the obtuse-o-meter.
+> > >
+> > > True.  Probably a more accurate statement is:`unix command line  
+> > > power users can and do handle it after reading the docs.  That's  
+> > > not quite ordinary mortals but it feels like it some days.  It  
+> > > might all be perception...
+> > 
+> > I have seen more *wrong* iptables firewalls than I've seen correct  
+> > ones.  Securing TCP/IP traffic properly requires either a lot of  
+> > training/experience or a good out-of-the-box system like Shorewall  
+> > which structures the necessary restrictions for you based on an  
+> > abstract description of the desired functionality.  For instance what  
+> > percentage of admins do you think could correctly set up their  
+> > netfilter firewalls to log christmas-tree packets, smurfs, etc  
+> > without the help of some external tool?  Hell, I don't trust myself  
+> > to reliably do it without a lot of reading of docs and testing, and  
+> > I've been doing netfilter firewalls for a while.
+> > 
+> > The bottom line is that with iptables it is *CRITICAL* to have a good  
+> > set of interface tools to take the users' "My system is set up  
+> > like..." description in some form and turn it into the necessary set  
+> > of efficient security rules.  The *exact* same issue applies to  
+> > SELinux, with 2 major additional problems:
+> > 
+> > 1)  Half the tools are still somewhat beta-ish and under heavy  
+> > development.  Furthermore the semi-official reference policy is  
+> > nowhere near comprehensive and pretty ugly to read (go back to the  
+> > point about the tools being beta-ish).
+> > 
+> > 2)  If you break your system description or translation tools then  
+> > instead of just your network dying your entire *system* dies.
+> > 
+> > 
+> > >>> The linux firewalling codes has hooks all throughout the  
+> > >>> networking stack, just like the LSM has hooks all throughout the  
+> > >>> rest of linux  kernel.  There is a difference however.  The linux  
+> > >>> firewalling code in addition to hooks has tables behind those  
+> > >>> hooks that it  consults. There is generic code to walk those  
+> > >>> tables and consult with different kernel modules to decide if we  
+> > >>> should drop a packet.  Each of those kernel modules provides a  
+> > >>> different capability that can be used to generate a firewall.
+> > >>
+> > >> This is almost *EXACTLY* what SELinux provides as an LSM module.   
+> > >> The one difference is that with SELinux some compromises and  
+> > >> restrictions  have been made so that (theoretically) the resulting  
+> > >> policy can be  exhaustively analyzed to *prove* what it allows and  
+> > >> disallows.  It  may be that SELinux should be split into 2 parts,  
+> > >> one that provides  the underlying table-matching and the other  
+> > >> that uses it to provide  the provability guarantees.  Here's a   
+> > >> direct comparison:
+> > >>
+> > >> netfilter:
+> > >>   (A) Each packet has src, dst, port, etc that can be matched
+> > >>   (B) Table of rules applied sequentially (MATCH => ACTION)
+> > >>   (C) Rules may alter the properties of packets as they are routed/
+> > >> bridged/etc
+> > >>
+> > >> selinux:
+> > >>   (A) Each object has user, role, and type that can be matched
+> > >>   (B) Table of rules searched by object parameters (MATCH => allow/
+> > >> auditallow/transition)
+> > >>   (C) Rules may alter the properties of objects through transition  
+> > >> rules.
+> > >
+> > > Ok.  There is something here.
+> > >
+> > > However in a generic setup, at least role would be an extended  
+> > > match criteria provided by the selinux module.  It would not be a  
+> > > core attribute.  It would need to depend on some extra  
+> > > functionality being compiled in.
+> > 
+> > Now see I think *THAT* is where Casey should be going with his SMACK  
+> > code.  Don't add another LSM, start looking at SELinux and figuring  
+> > out what parts he does not need and how they can be parameterized out  
+> > at build time for smaller systems.
+> 
+> Good suggestion. In fact, that is exactly how I approached my
+> first two attempts at the problem. What you get if you take that
+> route is an imposing infrastructure that has virually nothing
+> to do and that adds no value to the solution. Programming to the
+> LSM interface, on the other hand, allowed me to drastically reduce
+> the size and complexity of the implementation.
 
-The patch base on kernel 2.6.23-rc9
+(tongue-in-cheek)
 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
----
---- linux-2.6.23-rc9/drivers/ata/sata_nv.c.orig	2007-10-08 10:32:52.000000000 -0400
-+++ linux-2.6.23-rc9/drivers/ata/sata_nv.c	2007-10-08 10:33:04.000000000 -0400
-@@ -266,6 +266,7 @@ static void nv_adma_tf_read(struct ata_p
- enum nv_host_type
- {
- 	GENERIC,
-+	AHCI_LEG,
- 	NFORCE2,
- 	NFORCE3 = NFORCE2,	/* NF2 == NF3 as far as sata_nv is concerned */
- 	CK804,
-@@ -287,6 +288,12 @@ static const struct pci_device_id nv_pci
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3), GENERIC },
-+	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
-+		PCI_ANY_ID, PCI_ANY_ID,
-+		PCI_CLASS_STORAGE_RAID<<8, 0xffff00, AHCI_LEG },
-+	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
-+		PCI_ANY_ID, PCI_ANY_ID,
-+		PCI_CLASS_STORAGE_IDE<<8, 0xffff00, AHCI_LEG },
- 
- 	{ } /* terminate list */
- };
-@@ -365,6 +372,30 @@ static const struct ata_port_operations 
- 	.port_start		= ata_port_start,
- };
- 
-+static const struct ata_port_operations nv_ahci_leg_ops = {
-+	.port_disable		= ata_port_disable,
-+	.tf_load		= ata_tf_load,
-+	.tf_read		= ata_tf_read,
-+	.exec_command		= ata_exec_command,
-+	.check_status		= ata_check_status,
-+	.dev_select		= ata_std_dev_select,
-+	.bmdma_setup		= ata_bmdma_setup,
-+	.bmdma_start		= ata_bmdma_start,
-+	.bmdma_stop		= ata_bmdma_stop,
-+	.bmdma_status		= ata_bmdma_status,
-+	.qc_prep		= ata_qc_prep,
-+	.qc_issue		= ata_qc_issue_prot,
-+	.freeze			= ata_bmdma_freeze,
-+	.thaw			= ata_bmdma_thaw,
-+	.error_handler		= nv_error_handler,
-+	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
-+	.data_xfer		= ata_data_xfer,
-+	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
-+	.port_start		= ata_port_start,
-+};
-+
- static const struct ata_port_operations nv_nf2_ops = {
- 	.port_disable		= ata_port_disable,
- 	.tf_load		= ata_tf_load,
-@@ -463,6 +494,17 @@ static const struct ata_port_info nv_por
- 		.port_ops	= &nv_generic_ops,
- 		.irq_handler	= nv_generic_interrupt,
- 	},
-+	/* ahci legacy */
-+	{
-+		.sht		= &nv_sht,
-+		.flags		= ATA_FLAG_SATA | ATA_FLAG_SLAVE_POSS |
-+				  ATA_FLAG_HRST_TO_RESUME,
-+		.pio_mask	= NV_PIO_MASK,
-+		.mwdma_mask	= NV_MWDMA_MASK,
-+		.udma_mask	= NV_UDMA_MASK,
-+		.port_ops	= &nv_ahci_leg_ops,
-+		.irq_handler	= nv_generic_interrupt,
-+	},
- 	/* nforce2/3 */
- 	{
- 		.sht		= &nv_sht,
--
+No no, everyone knows you don't build simpler things on top of more
+complicated ones, you go the other way around.  So what he was
+suggesting was that selinux be re-written on top of smack.
 
+:)
+
+-serge
