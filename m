@@ -1,66 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbXJHAPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbXJHAeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbXJHAPQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 20:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXJHAPE
+	id S1757180AbXJHAeE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 20:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXJHAdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 20:15:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50437 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751478AbXJHAPD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 20:15:03 -0400
-Date: Mon, 8 Oct 2007 10:14:52 +1000
-From: David Chinner <dgc@sgi.com>
-To: Max Waterman <davidmaxwaterman+kernel@fastmail.co.uk>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS internal error
-Message-ID: <20071008001452.GX995458@sgi.com>
-References: <470831E6.4030704@fastmail.co.uk>
-Mime-Version: 1.0
+	Sun, 7 Oct 2007 20:33:55 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53597 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751504AbXJHAdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 20:33:53 -0400
+Message-ID: <391803633.20978@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 8 Oct 2007 08:33:49 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: David Chinner <dgc@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove throttle_vm_writeout()
+Message-ID: <20071008003349.GA5455@mail.ustc.edu.cn>
+References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <1191501626.22357.14.camel@twins> <E1IdQJn-0002Cv-00@dorka.pomaz.szeredi.hu> <1191504186.22357.20.camel@twins> <E1IdR58-0002Fq-00@dorka.pomaz.szeredi.hu> <1191516427.5574.7.camel@lappy> <20071004104650.d158121f.akpm@linux-foundation.org> <20071005123028.GA10372@mail.ustc.edu.cn> <20071007235433.GW995458@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <470831E6.4030704@fastmail.co.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071007235433.GW995458@sgi.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[please cc xfs@oss.sgi.com on XFS bug reports. thx.]
-
-On Sun, Oct 07, 2007 at 09:09:58AM +0800, Max Waterman wrote:
-> Hi,
+On Mon, Oct 08, 2007 at 09:54:33AM +1000, David Chinner wrote:
+> On Fri, Oct 05, 2007 at 08:30:28PM +0800, Fengguang Wu wrote:
+> > The improvement could be:
+> > - kswapd is now explicitly preferred to do the writeout;
 > 
-> I have just had an XFS error occur while deleting some directory
-> hierarchy. I hope this is the correct place to report it.
-
-.....
-> This is in syslog :
+> Careful. kswapd is much less efficient at writeout than pdflush
+> because it does not do low->high offset writeback per address space.
+> It just flushes the pages in LRU order and that turns writeback into
+> a non-sequential mess. I/O sizes decrease substantially and
+> throughput falls through the floor.
 > 
-> > Oct  6 23:40:33 jeeves kernel: xfs_da_do_buf: bno 16777216
-                                                  ^^^^^^^^^^^^^
-> > Oct  6 23:40:33 jeeves kernel: dir: inode 2095141277
-> > Oct  6 23:40:33 jeeves kernel: Filesystem "md2": XFS internal error xfs_da_do_buf(1) at line 1994 of file fs/xfs/xfs_da_btree.c.  Caller 0xffffffff889b2de4
+> So if you want kswapd to take over all the writeback, it needs to do
+> writeback in the same manner as the background flushes. i.e.  by
+> grabbing page->mapping and flushing that in sequential order rather
+> than just the page on the end of the LRU....
+> 
+> I documented the effect of kswapd taking over writeback in this
+> paper (section 5.3):
+> 
+> http://oss.sgi.com/projects/xfs/papers/ols2006/ols-2006-paper.pdf
 
-Did you ever run 2.6.17-2.6.17.6? If so, this implies:
+Ah, indeed. That means introducing a new "really congested" threshold
+for kswapd is *dangerous*. I realized this later on, and am now
+heading for another direction.
 
-http://oss.sgi.com/projects/xfs/faq.html#dir2
+The basic idea is to
+- rotate pdflush issued writeback pages for kswapd;
+- use the more precise zone_rotate_wait() to throttle kswapd.
 
-> I am fairly sure there is nothing I can do about this, but I thought it
-> prudent to mention it. Searching turned up some similar issues, but they
-> seem related to a previous kernel version and claimed to be fixed in
-> subsequent versions.
+The code is a quick hack and not tested yet.
+Early comments are more than welcome.
 
-Yes, but those previous corruptions get left on disk as a landmine
-for you to trip over some time later, even on a kernel that has the
-bug fixed.
+Fengguang
+---
+ include/linux/mmzone.h |    1 +
+ mm/filemap.c           |    5 ++++-
+ mm/page_alloc.c        |    1 +
+ mm/swap.c              |   13 +++++++++++++
+ mm/vmscan.c            |   12 ++++++++++--
+ 5 files changed, 29 insertions(+), 3 deletions(-)
 
-I suggest that you run xfs_check on the filesystem and if that
-shows up errors, run xfs_repair onteh filesystem to correct them.
+--- linux-2.6.23-rc8-mm2.orig/include/linux/mmzone.h
++++ linux-2.6.23-rc8-mm2/include/linux/mmzone.h
+@@ -316,6 +316,7 @@ struct zone {
+ 	wait_queue_head_t	* wait_table;
+ 	unsigned long		wait_table_hash_nr_entries;
+ 	unsigned long		wait_table_bits;
++	wait_queue_head_t	wait_rotate;
+ 
+ 	/*
+ 	 * Discontig memory support fields.
+--- linux-2.6.23-rc8-mm2.orig/mm/filemap.c
++++ linux-2.6.23-rc8-mm2/mm/filemap.c
+@@ -558,12 +558,15 @@ EXPORT_SYMBOL(unlock_page);
+  */
+ void end_page_writeback(struct page *page)
+ {
+-	if (!TestClearPageReclaim(page) || rotate_reclaimable_page(page)) {
++	int r = 1;
++	if (!TestClearPageReclaim(page) || (r = rotate_reclaimable_page(page))) {
+ 		if (!test_clear_page_writeback(page))
+ 			BUG();
+ 	}
+ 	smp_mb__after_clear_bit();
+ 	wake_up_page(page, PG_writeback);
++	if (!r)
++		wake_up(&page_zone(page)->wait_rotate);
+ }
+ EXPORT_SYMBOL(end_page_writeback);
+ 
+--- linux-2.6.23-rc8-mm2.orig/mm/page_alloc.c
++++ linux-2.6.23-rc8-mm2/mm/page_alloc.c
+@@ -3482,6 +3482,7 @@ static void __meminit free_area_init_cor
+ 		zone->prev_priority = DEF_PRIORITY;
+ 
+ 		zone_pcp_init(zone);
++		init_waitqueue_head(&zone->wait_rotate);
+ 		INIT_LIST_HEAD(&zone->active_list);
+ 		INIT_LIST_HEAD(&zone->inactive_list);
+ 		zone->nr_scan_active = 0;
+--- linux-2.6.23-rc8-mm2.orig/mm/vmscan.c
++++ linux-2.6.23-rc8-mm2/mm/vmscan.c
+@@ -50,6 +50,7 @@
+ struct scan_control {
+ 	/* Incremented by the number of inactive pages that were scanned */
+ 	unsigned long nr_scanned;
++	unsigned long nr_dirty_writeback;
+ 
+ 	/* This context's GFP mask */
+ 	gfp_t gfp_mask;
+@@ -558,8 +559,10 @@ static unsigned long shrink_page_list(st
+ 			case PAGE_ACTIVATE:
+ 				goto activate_locked;
+ 			case PAGE_SUCCESS:
+-				if (PageWriteback(page) || PageDirty(page))
++				if (PageWriteback(page) || PageDirty(page)) {
++					sc->nr_dirty_writeback++;
+ 					goto keep;
++				}
+ 				/*
+ 				 * A synchronous write - probably a ramdisk.  Go
+ 				 * ahead and try to reclaim the page.
+@@ -620,6 +623,10 @@ keep_locked:
+ keep:
+ 		list_add(&page->lru, &ret_pages);
+ 		VM_BUG_ON(PageLRU(page));
++		if (PageLocked(page) && PageWriteback(page)) {
++			SetPageReclaim(page);
++			sc->nr_dirty_writeback++;
++		}
+ 	}
+ 	list_splice(&ret_pages, page_list);
+ 	if (pagevec_count(&freed_pvec))
+@@ -1184,7 +1191,8 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	throttle_vm_writeout(sc->gfp_mask);
++	if (!nr_reclaimed && sc->nr_dirty_writeback)
++		zone_rotate_wait(zone, HZ/100);
+ 	return nr_reclaimed;
+ }
+ 
+--- linux-2.6.23-rc8-mm2.orig/mm/swap.c
++++ linux-2.6.23-rc8-mm2/mm/swap.c
+@@ -174,6 +174,19 @@ int rotate_reclaimable_page(struct page 
+ 	return 0;
+ }
+ 
++long zone_rotate_wait(struct zone* z, long timeout)
++{
++	long ret;
++	DEFINE_WAIT(wait);
++	wait_queue_head_t *wqh = &z->wait_rotate;
++
++	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
++	ret = io_schedule_timeout(timeout);
++	finish_wait(wqh, &wait);
++	return ret;
++}
++EXPORT_SYMBOL(zone_rotate_wait);
++
+ /*
+  * FIXME: speed this up?
+  */
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
