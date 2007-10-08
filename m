@@ -1,74 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbXJHQtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbXJHQyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbXJHQtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 12:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXJHQtX
+	id S1754095AbXJHQyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 12:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXJHQyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 12:49:23 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:31155 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbXJHQtX (ORCPT
+	Mon, 8 Oct 2007 12:54:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52052 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbXJHQyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 12:49:23 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH for testing] Re: Decreasing stime running confuses top
-Date: Mon, 8 Oct 2007 18:49:04 +0200
-User-Agent: KMail/1.9.7
-Cc: Chuck Ebbert <cebbert@redhat.com>, Luca Tettamanti <kronos.it@gmail.com>,
-       Willy Tarreau <w@1wt.eu>, LKML <linux-kernel@vger.kernel.org>,
-       Ilpo =?iso-8859-1?q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-References: <200710031433.34504.elendil@planet.nl> <200710042310.25223.borntraeger@de.ibm.com> <200710051749.33381.elendil@planet.nl>
-In-Reply-To: <200710051749.33381.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 8 Oct 2007 12:54:46 -0400
+Subject: [PATCH] mm: set_page_dirty_balance() vs ->page_mkwrite()
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Chinner <dgc@sgi.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, mark.fasheh@oracle.com,
+       hugh <hugh@veritas.com>, stable <stable@kernel.org>
+Content-Type: text/plain
+Date: Mon, 08 Oct 2007 18:54:37 +0200
+Message-Id: <1191862477.20745.22.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710081849.04380.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 5. Oktober 2007 schrieb Frans Pop:
-> On Thursday 04 October 2007, you wrote:
-> > Frans can you test this patch if this makes stime and utime monotic
-> > again?
-> >
-> > It basically reverts the rest of 
-> > b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa and should restore the 2.6.22
-> > behavior. The process time is used from tasks utime and stime instead of
-> > the scheduler clock. That means, in general after a long period of time,
-> > it is less accurate than the current time and behaves like 2.6.22.
-> >
-> > Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> 
-> Yes, this gives steady increases.
-> For kontact it also again shows updates only once every minute. I really 
-> wonder where all the other fluctuations for contact come from with the 
-> alternative code.
+It seems that with the recent usage of ->page_mkwrite() a little detail
+was overlooked.
 
-Please correct me, if I am wrong, but here is my guess:
+.22-rc1 merged OCFS2 usage of this hook
+.23-rc1 merged XFS usage
+.24-rc1 will most likely merge NFS usage
 
-I think that the new code gives actually better numbers for kontact. Kontact 
-is using the cpu for very short periods, right? The old code updates utime 
-and stime via sampling at each timer tick. If kontact is scheduled based on 
-the timer tick(lets say timeout and a low amount of other interrupts) it will 
-start shortly after a tick. If kontact now manages to return the cpu before 
-the next tick, the old code would not account anything for kontact.
-The new code instead, should be correct in terms of overall runtime as it 
-accounts the scheduled time in ns.
+Please consider this for .23 final and maybe even .22.x
 
-Why does it still shows numbers going backwards? I guess the sampled values 
-for stime and utime change in flight between task_utime and task_stime are 
-called. Lets say utime will be increased. Given the same sum_exec_runtime 
-that means that the result of task_stime() will get smaller at this point. 
+---
+Subject: mm: set_page_dirty_balance() vs ->page_mkwrite()
 
-So Chucks patch only deals with sum_exec_runtime changing.
+All the current page_mkwrite() implementations also set the page dirty. Which
+results in the set_page_dirty_balance() call to _not_ call balance, because the
+page is already found dirty.
 
-> 
-> It seems to me that this patch would be the best option for 2.6.23.
+This allows us to dirty a _lot_ of pages without ever hitting
+balance_dirty_pages().  Not good (tm).
 
-Ingo, do you have any opinion about how to proceed?
+Force a balance call if ->page_mkwrite() was successful.
 
-Christian
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/writeback.h |    2 +-
+ mm/memory.c               |    9 +++++++--
+ mm/page-writeback.c       |    4 ++--
+ 3 files changed, 10 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/include/linux/writeback.h
+===================================================================
+--- linux-2.6.orig/include/linux/writeback.h
++++ linux-2.6/include/linux/writeback.h
+@@ -137,7 +137,7 @@ int sync_page_range(struct inode *inode,
+ 			loff_t pos, loff_t count);
+ int sync_page_range_nolock(struct inode *inode, struct address_space *mapping,
+ 			   loff_t pos, loff_t count);
+-void set_page_dirty_balance(struct page *page);
++void set_page_dirty_balance(struct page *page, int page_mkwrite);
+ void writeback_set_ratelimit(void);
+ 
+ /* pdflush.c */
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -1559,6 +1559,7 @@ static int do_wp_page(struct mm_struct *
+ 	struct page *old_page, *new_page;
+ 	pte_t entry;
+ 	int reuse = 0, ret = 0;
++	int page_mkwrite = 0;
+ 	struct page *dirty_page = NULL;
+ 
+ 	old_page = vm_normal_page(vma, address, orig_pte);
+@@ -1607,6 +1608,8 @@ static int do_wp_page(struct mm_struct *
+ 			page_cache_release(old_page);
+ 			if (!pte_same(*page_table, orig_pte))
+ 				goto unlock;
++
++			page_mkwrite = 1;
+ 		}
+ 		dirty_page = old_page;
+ 		get_page(dirty_page);
+@@ -1691,7 +1694,7 @@ unlock:
+ 		 * do_no_page is protected similarly.
+ 		 */
+ 		wait_on_page_locked(dirty_page);
+-		set_page_dirty_balance(dirty_page);
++		set_page_dirty_balance(dirty_page, page_mkwrite);
+ 		put_page(dirty_page);
+ 	}
+ 	return ret;
+@@ -2238,6 +2241,7 @@ static int __do_fault(struct mm_struct *
+ 	struct page *dirty_page = NULL;
+ 	struct vm_fault vmf;
+ 	int ret;
++	int page_mkwrite = 0;
+ 
+ 	vmf.virtual_address = (void __user *)(address & PAGE_MASK);
+ 	vmf.pgoff = pgoff;
+@@ -2315,6 +2319,7 @@ static int __do_fault(struct mm_struct *
+ 					anon = 1; /* no anon but release vmf.page */
+ 					goto out;
+ 				}
++				page_mkwrite = 1;
+ 			}
+ 		}
+ 
+@@ -2375,7 +2380,7 @@ out_unlocked:
+ 	if (anon)
+ 		page_cache_release(vmf.page);
+ 	else if (dirty_page) {
+-		set_page_dirty_balance(dirty_page);
++		set_page_dirty_balance(dirty_page, page_mkwrite);
+ 		put_page(dirty_page);
+ 	}
+ 
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -460,9 +460,9 @@ static void balance_dirty_pages(struct a
+ 		pdflush_operation(background_writeout, 0);
+ }
+ 
+-void set_page_dirty_balance(struct page *page)
++void set_page_dirty_balance(struct page *page, int page_mkwrite)
+ {
+-	if (set_page_dirty(page)) {
++	if (set_page_dirty(page) || page_mkwrite) {
+ 		struct address_space *mapping = page_mapping(page);
+ 
+ 		if (mapping)
+
+
