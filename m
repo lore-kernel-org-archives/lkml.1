@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbXJHUjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXJHU7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbXJHUjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 16:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXJHUjF
+	id S1753373AbXJHU7D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 16:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXJHU6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 16:39:05 -0400
-Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:20860 "HELO
-	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752274AbXJHUjD (ORCPT
+	Mon, 8 Oct 2007 16:58:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36639 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbXJHU6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 16:39:03 -0400
-X-YMail-OSG: VhE80hwVM1n3TZsMUieLKJIuLxNAcmAwxVKKsu1rqC9_mIQBLJP_KNNTLMRSzKefaSeoF8gfYg--
-X-RocketYMMF: rancidfat
-Date: Mon, 8 Oct 2007 13:39:01 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+	Mon, 8 Oct 2007 16:58:52 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: casey@schaufler-ca.com
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Kyle Moffett <mrmacman_g4@mac.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
        James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@linux-foundation.org>,
        linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m1hcl11j31.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+References: <868078.46629.qm@web36612.mail.mud.yahoo.com>
+Date: Mon, 08 Oct 2007 14:57:27 -0600
+In-Reply-To: <868078.46629.qm@web36612.mail.mud.yahoo.com> (Casey Schaufler's
+	message of "Mon, 8 Oct 2007 13:25:58 -0700 (PDT)")
+Message-ID: <m18x6d1g08.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <384716.99898.qm@web36602.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
---- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+> --- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+>
+>> It really seems to me that the LSM as currently structured creates
+>> a large barrier to entry for people who have just this little thing
+>> they want to do that is not possible with any existing security
+>> module.
+>
+> I honestly think that the barrier has been more political
+> in nature than technical. I don't know how long you've been
+> watching, but no attempt to get an LSM upstream has escaped
+> exagerated cricism from certain factions. Only someone who wants
+> to get cut to metaphorical ribbons would submit a little LSM.
+> Maybe that will get better now. I sure hope so.
 
+Yes.  Me to.  I certainly agree about the political part.
 
-> My very practical question:  How do I run selinux in one container,
-> and SMACK in another?
+My only hope was to suggest something that my reduce what there is to
+get political about.
 
-How would you run PREEMPT_RT in one container, and PREEMPT_DESKTOP
-in another? How would you run SMP in one and UP in the other?
-One aspect that SELinux and Smack share is that they only really
-provide security if all processes involved are under their control,
-just like the preemption behavior.
-
-This is not necessarily true of all possible LSMs. In that case it may
-be practicle to have different behavior for different containers.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+Eric
