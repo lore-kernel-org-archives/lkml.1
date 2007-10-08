@@ -1,69 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXJHKwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbXJHLBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbXJHKwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 06:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbXJHKwM
+	id S1754658AbXJHLBh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 07:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXJHLBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 06:52:12 -0400
-Received: from mail.suse.de ([195.135.220.2]:55860 "EHLO mx1.suse.de"
+	Mon, 8 Oct 2007 07:01:30 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:9715 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbXJHKwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 06:52:11 -0400
-Date: Mon, 8 Oct 2007 12:52:09 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix data access out of array bounds
-Message-ID: <20071008105209.GA11453@pingi.kke.suse.de>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-Mime-Version: 1.0
+	id S1753290AbXJHLB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 07:01:29 -0400
+Message-ID: <470A0EF5.7030303@openvz.org>
+Date: Mon, 08 Oct 2007 15:05:25 +0400
+From: Kirill Korotaev <dev@openvz.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] virtualization of sysv msg queues is incomplete
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix against access random data bytes outside the
-dev->chanmap array. Thanks to Oliver Neukum for
-pointing me to this issue.
-Patch is against 2.6.23-rc9-git6
+Virtualization of sysv msg queues is incomplete:
+msg_hdrs and msg_bytes variables visible from userspace are global.
+Let's make them per-namespace.
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
+Signed-Off-By: Alexey Kuznetsov <alexey@openvz.org>
+Signed-Off-By: Kirill Korotaev <dev@openvz.org>
+
 ---
- drivers/isdn/i4l/isdn_common.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ include/linux/ipc.h |    2 ++
+ ipc/msg.c           |   21 ++++++++++-----------
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
-index ec5f404..4910bca 100644
---- a/drivers/isdn/i4l/isdn_common.c
-+++ b/drivers/isdn/i4l/isdn_common.c
-@@ -1135,7 +1135,7 @@ isdn_read(struct file *file, char __user *buf, size_t count, loff_t * off)
- 			if (count > dev->drv[drvidx]->stavail)
- 				count = dev->drv[drvidx]->stavail;
- 			len = dev->drv[drvidx]->interface->readstat(buf, count,
--						drvidx, isdn_minor2chan(minor));
-+				drvidx, isdn_minor2chan(minor - ISDN_MINOR_CTRL));
- 			if (len < 0) {
- 				retval = len;
- 				goto out;
-@@ -1207,7 +1207,8 @@ isdn_write(struct file *file, const char __user *buf, size_t count, loff_t * off
- 		 */
- 		if (dev->drv[drvidx]->interface->writecmd)
- 			retval = dev->drv[drvidx]->interface->
--				writecmd(buf, count, drvidx, isdn_minor2chan(minor));
-+				writecmd(buf, count, drvidx,
-+				isdn_minor2chan(minor - ISDN_MINOR_CTRL));
- 		else
- 			retval = count;
- 		goto out;
+--- ./include/linux/ipc.h.ve1012	2007-10-08 14:35:40.000000000 +0400
++++ ./include/linux/ipc.h	2007-10-08 14:40:31.000000000 +0400
+@@ -111,6 +111,8 @@ struct ipc_namespace {
+ 	int		msg_ctlmax;
+ 	int		msg_ctlmnb;
+ 	int		msg_ctlmni;
++	atomic_t	msg_bytes;
++	atomic_t	msg_hdrs;
+ 
+ 	size_t		shm_ctlmax;
+ 	size_t		shm_ctlall;
+--- ./ipc/msg.c.ve1012	2007-10-08 14:35:40.000000000 +0400
++++ ./ipc/msg.c	2007-10-08 14:41:41.000000000 +0400
+@@ -66,9 +66,6 @@ struct msg_sender {
+ #define SEARCH_NOTEQUAL		3
+ #define SEARCH_LESSEQUAL	4
+ 
+-static atomic_t msg_bytes =	ATOMIC_INIT(0);
+-static atomic_t msg_hdrs =	ATOMIC_INIT(0);
+-
+ static struct ipc_ids init_msg_ids;
+ 
+ #define msg_ids(ns)	(*((ns)->ids[IPC_MSG_IDS]))
+@@ -89,6 +86,8 @@ static void __msg_init_ns(struct ipc_nam
+ 	ns->msg_ctlmax = MSGMAX;
+ 	ns->msg_ctlmnb = MSGMNB;
+ 	ns->msg_ctlmni = MSGMNI;
++	atomic_set(&ns->msg_bytes, 0);
++	atomic_set(&ns->msg_hdrs, 0);
+ 	ipc_init_ids(ids);
+ }
+ 
+@@ -277,10 +276,10 @@ static void freeque(struct ipc_namespace
+ 		struct msg_msg *msg = list_entry(tmp, struct msg_msg, m_list);
+ 
+ 		tmp = tmp->next;
+-		atomic_dec(&msg_hdrs);
++		atomic_dec(&ns->msg_hdrs);
+ 		free_msg(msg);
+ 	}
+-	atomic_sub(msq->q_cbytes, &msg_bytes);
++	atomic_sub(msq->q_cbytes, &ns->msg_bytes);
+ 	security_msg_queue_free(msq);
+ 	ipc_rcu_putref(msq);
+ }
+@@ -447,8 +446,8 @@ asmlinkage long sys_msgctl(int msqid, in
+ 		mutex_lock(&msg_ids(ns).mutex);
+ 		if (cmd == MSG_INFO) {
+ 			msginfo.msgpool = msg_ids(ns).in_use;
+-			msginfo.msgmap = atomic_read(&msg_hdrs);
+-			msginfo.msgtql = atomic_read(&msg_bytes);
++			msginfo.msgmap = atomic_read(&ns->msg_hdrs);
++			msginfo.msgtql = atomic_read(&ns->msg_bytes);
+ 		} else {
+ 			msginfo.msgmap = MSGMAP;
+ 			msginfo.msgpool = MSGPOOL;
+@@ -719,8 +718,8 @@ long do_msgsnd(int msqid, long mtype, vo
+ 		list_add_tail(&msg->m_list, &msq->q_messages);
+ 		msq->q_cbytes += msgsz;
+ 		msq->q_qnum++;
+-		atomic_add(msgsz, &msg_bytes);
+-		atomic_inc(&msg_hdrs);
++		atomic_add(msgsz, &ns->msg_bytes);
++		atomic_inc(&ns->msg_hdrs);
+ 	}
+ 
+ 	err = 0;
+@@ -824,8 +823,8 @@ long do_msgrcv(int msqid, long *pmtype, 
+ 			msq->q_rtime = get_seconds();
+ 			msq->q_lrpid = task_tgid_vnr(current);
+ 			msq->q_cbytes -= msg->m_ts;
+-			atomic_sub(msg->m_ts, &msg_bytes);
+-			atomic_dec(&msg_hdrs);
++			atomic_sub(msg->m_ts, &ns->msg_bytes);
++			atomic_dec(&ns->msg_hdrs);
+ 			ss_wakeup(&msq->q_senders, 0);
+ 			msg_unlock(msq);
+ 			break;
 
-
-
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
