@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbXJHMju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbXJHMkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbXJHMju (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 08:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXJHMjm
+	id S1756414AbXJHMkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 08:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXJHMkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 08:39:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51344 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754338AbXJHMjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 08:39:42 -0400
-Date: Mon, 8 Oct 2007 14:39:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [3/6] scheduler: Do devirtualization for sched_fair
-Message-ID: <20071008123933.GA4582@elte.hu>
-References: <200710071059.126674000@suse.de> <20071007205956.5C4E71474B@wotan.suse.de> <20071008114234.GC22199@elte.hu> <200710081432.24776.ak@suse.de>
+	Mon, 8 Oct 2007 08:40:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:45788 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754653AbXJHMkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 08:40:15 -0400
+Date: Mon, 8 Oct 2007 15:02:32 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sho@tnes.nec.co.jp, jack@suse.cz, clameter@sgi.com
+Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
+Message-ID: <20071008130232.GD8091@duck.suse.cz>
+References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com> <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain> <1191285346.11737.58.camel@localhost.localdomain> <20071004131207.65406a7b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710081432.24776.ak@suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0117]
+In-Reply-To: <20071004131207.65406a7b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <ak@suse.de> wrote:
-
-> > hm, i'm not convinced about this one. It increases the code size a 
-> > bit
+On Thu 04-10-07 13:12:07, Andrew Morton wrote:
+> On Mon, 01 Oct 2007 17:35:46 -0700
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> Tiny bit (<200 bytes) and the wait_for/sleep_on refactor patch in the 
-> series saves over 1K so I should have some room for code size 
-> increase. Overall it will be still considerable smaller.
-
-there's no forced dependency between those two patches :-) So for now 
-i've applied the one that saves text and skipped the one that bloats it.
-
-> > and it's a sched.c local hack. If then this should be done on a 
-> > generic infrastructure level - lots of other code (VFS, networking, 
-> > etc.) could benefit from it i suspect - and then should be 
-> > .configurable as well.
+> > ext2: Avoid rec_len overflow with 64KB block size
+> > 
+> > From: Jan Kara <jack@suse.cz>
+> > 
+> > With 64KB blocksize, a directory entry can have size 64KB which does not fit
+> > into 16 bits we have for entry lenght. So we store 0xffff instead and convert
+> > value when read from / written to disk.
 > 
-> Unfortunately not -- for this to work (especially for inlining) 
-> requires to
-> #include files implementing the sub calls. Except for the scheduler 
-> #that
-> is pretty uncommon unfortunately. Also the situation regarding which 
-> call target is the common one is typically much less clear than with 
-> sched_fair / other scheduling classes.
-
-some workloads would call sched_fair uncommon too. To me this seems like 
-a workaround for the lack of a particular hardware feature.
-
-> > Then the benefit might become measurable too.
+> This patch clashes in non-trivial ways with
+> ext2-convert-to-new-aops-fix.patch and perhaps other things which are
+> already queued for 2.6.24 inclusion, so I'll need to ask for an updated
+> patch, please.
 > 
-> It might have been measurable if the context switch was measurable at 
-> all. Unfortunately the lmbench3 lat_ctx test I tired fluctuated by 
-> itself over 50%. Ok I suppose it would be possible to instrument the 
-> kernel itself to measure cycles. Would that convince you?
+> Also, I'm planing on merging the ext2 reservations code into 2.6.24, so if
+> we're aiming for complete support of 64k blocksize in 2.6.24's ext2,
+> additional testing and checking will be needed.
+  OK, I'll fixup those rejects and send a new patch.
 
-dunno, it would depend on the numbers. But really, in most workloads we 
-do a lot more VFS indirect calls than scheduler indirect calls. So if 
-this was an issue i'd really suggest to attack it in a generic way.
-
-	Ingo
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
