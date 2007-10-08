@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbXJHHHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbXJHHHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbXJHHHJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 03:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbXJHHGz
+	id S1755202AbXJHHHi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 03:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXJHHH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 03:06:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58258
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752114AbXJHHGy convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 03:06:54 -0400
-Date: Mon, 08 Oct 2007 00:06:53 -0700 (PDT)
-Message-Id: <20071008.000653.51864134.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] net/core: split dev_ifsioc() according to locking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200710070217.09073.arnd@arndb.de>
-References: <20071006204212.GA32177@havoc.gtf.org>
-	<200710070217.09073.arnd@arndb.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Oct 2007 03:07:29 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:62155 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbXJHHH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 03:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=M3DQyVKvbFOmL4fbDjO+7D1yRLIsXkDygdvmyX6am+R0kTldtIrax8Wv1elaY21gsVLo7MP9+CoSoi9wxtTz2+kuAepnLcAtkA0/Sy/aDEg3k5okzW7JLvpSuAA0XK9PEG+zxmr/bsspidb9tCCeBkFNtjWm4K9LQ5lPPihYCZU=
+Date: Mon, 8 Oct 2007 15:02:53 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, gregkh@suse.de
+Subject: Re: [PATCH] param_sysfs_builtin memchr argument fix
+Message-ID: <20071008070253.GD2455@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20071008065009.GA2862@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071008065009.GA2862@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sun, 7 Oct 2007 02:17:08 +0200
+On Mon, Oct 08, 2007 at 02:50:10PM +0800, Dave Young wrote:
+>If memchr argument is longer than strlen(kp->name), there will be some
+>weird result. 
+>
+>Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+>
+>---
+>params.c |   10 ++++++++--
+>1 file changed, 8 insertions(+), 2 deletions(-)
 
-> On Saturday 06 October 2007, Jeff Garzik wrote:
-> > 
-> > This always bugged me:  dev_ioctl() called dev_ifsioc() either inside
-> > read_lock(dev_base_lock) or rtnl_lock(), depending on the ioctl being
-> > executed.
-> > 
-> > This change moves the ioctls executed inside dev_base_lock to a new
-> > function, dev_ifsioc_locked().  Now the locking context is completely
-> > clear to the reader.
-> > 
-> > Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+
+Hmm, you used diffstat without -p1?
+
+
+>
+>diff -upr linux/kernel/params.c linux.new/kernel/params.c
+>--- linux/kernel/params.c	2007-10-08 14:30:06.000000000 +0800
+>+++ linux.new/kernel/params.c	2007-10-08 14:31:22.000000000 +0800
+>@@ -592,15 +592,21 @@ static void __init param_sysfs_builtin(v
 > 
-> Great idea!
+> 	for (i=0; i < __stop___param - __start___param; i++) {
+> 		char *dot;
+>+		int kplen;
+> 
+> 		kp = &__start___param[i];
+>+		kplen = strlen(kp->name);
 
-I think so too, applied, thanks!
+strlen() returns a size_t value, which is unsigned. ;)
+
+> 
+> 		/* We do not handle args without periods. */
+>-		dot = memchr(kp->name, '.', MAX_KBUILD_MODNAME);
+>+		if (kplen > MAX_KBUILD_MODNAME) {
+>+			DEBUGP("kernel parameter %s is too long\n", kp->name);
+>+			continue;
+>+		}
+>+		dot = memchr(kp->name, '.', kplen);
+> 		if (!dot) {
+> 			DEBUGP("couldn't find period in %s\n", kp->name);
+> 			continue;
+>-		}
+>+		} 
+
+You add an extra whitespace in the end of the line.
+
+
+-- 
+I try to say goodbye and I choke.
+I try to walk away and I stumble.
+I play it off, but Iâ€™m dreaming of you.
+Though I try to hide it, itâ€™s clear that
+my world crumbles when you are not here.
