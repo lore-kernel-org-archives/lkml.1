@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbXJHAoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbXJHBAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758129AbXJHAoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 20:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXJHAoD
+	id S1758047AbXJHBAa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 21:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbXJHBAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 20:44:03 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:52978 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbXJHAoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 20:44:01 -0400
-Date: Mon, 8 Oct 2007 10:43:37 +1000
-From: Simon Horman <horms@verge.net.au>
-To: joe@perches.com
-Cc: wensong@linux-vs.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ja@ssi.bg,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [343/2many] MAINTAINERS - IPVS
-Message-ID: <20071008004333.GF2497@verge.net.au>
-References: <46bffb10.JY5EkYQg+QBB0ZZx%joe@perches.com>
+	Sun, 7 Oct 2007 21:00:22 -0400
+Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:23485 "EHLO
+	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752648AbXJHBAV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 21:00:21 -0400
+X-Greylist: delayed 1746 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Oct 2007 21:00:21 EDT
+Date: Mon, 8 Oct 2007 01:29:17 +0100
+From: Ken Moffat <ken@linuxfromscratch.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Oleg Verych <olecom@flower.upol.cz>,
+       Rene Herman <rene.herman@keyaccess.nl>, Willy Tarreau <w@1wt.eu>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
+       Helge Deller <deller@gmx.de>
+Subject: Re: syntax highlighting, emacs ([PATCH 0/2] Colored kernel output (run2))
+Message-ID: <20071008002917.GB28926@deepthought>
+References: <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu> <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr> <47093AFB.8000805@keyaccess.nl> <Pine.LNX.4.64.0710072203570.16301@fbirervta.pbzchgretzou.qr> <20071007205024.GT22435@flower.upol.cz> <Pine.LNX.4.64.0710072238050.16301@fbirervta.pbzchgretzou.qr> <20071007221829.GU22435@flower.upol.cz> <Pine.LNX.4.64.0710080005370.16301@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <46bffb10.JY5EkYQg+QBB0ZZx%joe@perches.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+In-Reply-To: <Pine.LNX.4.64.0710080005370.16301@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 11:32:48PM -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+On Mon, Oct 08, 2007 at 12:11:21AM +0200, Jan Engelhardt wrote:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index dbfdb75..a8fb231 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3300,6 +3300,8 @@ P:	Julian Anastasov
->  M:	ja@ssi.bg
->  L:	netdev@vger.kernel.org
->  S:	Maintained
-> +F:	Documentation/networking/ipvs-sysctl.txt
-> +F:	net/ipv4/ipvs
+> Actually, blue is perceived as one of the darkest colors by the human
+> eye. There is a reason that the RGB -> grayscale transformation uses
+> the following weighting: r=76 g=154 b=26.
 
-Should the following also be added:?
+ But, not every video card reproduces blue in the same way, let
+alone every monitor - somewhere I've got an old CRT monitor where
+blue text was mostly unreadable (_too_dark_).  For photo-editing,
+I now use xgamma to get adequately-consistent results on whichever of
+4 machines I'm using (one LCD monitor, with KVM switch) - the
+settings for the individual machines are very different.
 
-+F: include/net/ip_vs.h
+ And, of course, people have different colour vision (and unless we
+are labelled as colour-blind, we each regard our colour vision as
+"normal").  So, what is perfectly acceptable for you on specific
+hardware may be totally unusable for someone else.
 
->  
->  NFS CLIENT
->  P:	Trond Myklebust
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Ken
 -- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
-
+das eine Mal als Tragödie, das andere Mal als Farce
