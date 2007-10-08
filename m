@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXJHSxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbXJHSxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbXJHSxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXJHSxK
+	id S1757385AbXJHSxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbXJHSx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:53:10 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46547 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755236AbXJHSxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:53:08 -0400
-Date: Mon, 8 Oct 2007 13:53:04 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: casey@schaufler-ca.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serge@hallyn.com>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory
-	Access Control Kernel
-Message-ID: <20071008185304.GA17671@sergelap.austin.ibm.com>
-References: <54877.16343.qm@web36603.mail.mud.yahoo.com> <m1bqb978a8.fsf@ebiederm.dsl.xmission.com>
+	Mon, 8 Oct 2007 14:53:27 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52619 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754353AbXJHSxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 14:53:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <470A7C91.3010503@s5r6.in-berlin.de>
+Date: Mon, 08 Oct 2007 20:53:05 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1bqb978a8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: mgross@linux.intel.com
+CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: reviewer's statement of oversight
+References: <25555.1191864285@lwn.net> <20071008184029.GA31906@linux.intel.com>
+In-Reply-To: <20071008184029.GA31906@linux.intel.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Casey Schaufler <casey@schaufler-ca.com> writes:
+Mark Gross wrote:
+> On Mon, Oct 08, 2007 at 11:24:45AM -0600, Jonathan Corbet wrote:
+>>  (a) I have carried out a technical review of this patch to evaluate its
+>>      appropriateness and readiness for inclusion into the mainline kernel. 
+[...]
+>>  (c) While there may (or may not) be things which could be improved with
+>>      this submission, I believe that it is, at this time, (1) a
+>>      worthwhile addition to the kernel, and (2) free of serious known
+>>      issues which would argue against its inclusion.
 > 
-> > --- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
-> >
-> >
-> >> Likely.  Until we have a generalized LSM interface with 1000 config
-> >> options like netfilter I don't expect we will have grounds to talk
-> >> or agree to a common user space interface.  Although I could be
-> >> wrong.
-> >
-> > Gulp. I know that many of you are granularity advocates, but I
-> > have to say that security derived by tweeking 1000 knobs so that
-> > they are all just right seems a little far fetched to me. I see
-> > it as poopooing the 3rd and most important part of the reference
-> > monitor concept, "small enough to analyze". Sure, you can analyse
-> > the 1000 individual checks, but you'll never be able to describe
-> > the system behavior as a whole.
-> 
-> Agreed.  I wasn't thinking 1000 individual checks but 1000 different
-> capabilities, could be either checks or actions, basically fundamental
-> different capabilities.  Things like CIPSO, or the ability to store a
-> security label on a file.  I would not expect most security policies
-> to use most of them.  Neither do I expect Orange book security to
-> necessarily be what people want to achieve with the LSM.   But I
-> haven't looked at it enough detail to know how things should be
-> factored, in this case I was simply extrapolating from the iptables
-> experience where  we do have a very large number of options.
-> 
-> The real point being is that I would be surprised if we could come
-> to an agreement of a common user space API when we can't agree on how
-> to compile all of the security modules into the kernel and have them
-> play nice with each other. 
-> 
-> Assuming we can achieve security modules playing nice with each other
-> using a mechanism similar to iptables, then what needs to be evaluated
-> is the specific table configuration we are using on the system, not
-> the full general set of possibilities.  Further I expect that for the
-> truly security paranoid we want the option to disable further table
-> changes after the tables have been configured.
-> 
-> On another side personally I don't see where the idea comes from that
-> you can describe system behavior as a whole without analyzing the
-> entire kernel.  Has there been work on a sparse like tool that I'm
-> not aware of to ensure the we always perform the appropriate security
-> checks on the user/kernel interface boundary?
+> C-1 "worthwhile addition..." Probably shouldn't be part of this.  That's
+> what additional Signed off by ACK's provide.  I think reviewed by should
+> limit its scope to code correctness leaving the subjective "worthwhile"
+> statements are better expressed with other tags.
 
-Yup, see the top of http://www.research.ibm.com/vali/
-
-Pretty cool work that really should be continued.
-
--serge
+A patch which is not "worthwhile" is also not "appropriate".  Mere
+correctness in a mathematical sense is not enough as technical review
+criterion.
+-- 
+Stefan Richter
+-=====-=-=== =-=- -=---
+http://arcgraph.de/sr/
