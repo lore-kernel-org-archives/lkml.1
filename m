@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXJHU0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbXJHUeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbXJHU0Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 16:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXJHU0A
+	id S1753342AbXJHUeR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 16:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXJHUeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 16:26:00 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:38850 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751184AbXJHUZ7 (ORCPT
+	Mon, 8 Oct 2007 16:34:01 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49606 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751536AbXJHUeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 16:25:59 -0400
-X-YMail-OSG: nVcuBjcVM1mzAXYcg_ZWS.XVGuMqaZ9BfVRUnauY_XDn0FClNxaqQdhQfeWiw3kZWR4uwwmBnw--
-X-RocketYMMF: rancidfat
-Date: Mon, 8 Oct 2007 13:25:58 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m11wc5a5gp.fsf@ebiederm.dsl.xmission.com>
+	Mon, 8 Oct 2007 16:34:00 -0400
+Message-ID: <470A9422.4050400@zytor.com>
+Date: Mon, 08 Oct 2007 13:33:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <868078.46629.qm@web36612.mail.mud.yahoo.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org> <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> 
+>> Acked-by:
+>> Tested-by:
+> 
+> * Used by random people to express their (dis)like/experience with the 
+> patch.
+> 
+>> Reviewed-by:
+> 
+> * I am maintaner or an 'important' person and have had a
+>   look at it in depth
+> 
 
---- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+Uhm, no.  There is no reason an "unimportant" person couldn't review a 
+patch, and therefore perform a potentially highly valuable service to 
+the maintainer.
 
-> It really seems to me that the LSM as currently structured creates
-> a large barrier to entry for people who have just this little thing
-> they want to do that is not possible with any existing security
-> module.
+None of these are indicative of the authority of the person acking, 
+reviewing, testing, or nacking.  That's only as good as the trust in the 
+person signing.
 
-I honestly think that the barrier has been more political
-in nature than technical. I don't know how long you've been
-watching, but no attempt to get an LSM upstream has escaped
-exagerated cricism from certain factions. Only someone who wants
-to get cut to metaphorical ribbons would submit a little LSM.
-Maybe that will get better now. I sure hope so.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+	-hpa
