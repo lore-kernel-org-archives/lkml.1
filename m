@@ -1,39 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbXJHPsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbXJHQFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbXJHPsy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 11:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXJHPsr
+	id S1753130AbXJHQFw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 12:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbXJHQFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 11:48:47 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:36917 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbXJHPsq (ORCPT
+	Mon, 8 Oct 2007 12:05:42 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40952 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXJHQFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 11:48:46 -0400
-Date: Mon, 8 Oct 2007 11:47:53 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Magotari@gail.com
-Subject: Re: [uml-devel] [PATCH 1/3] UML - Fix stub address calculations
-Message-ID: <20071008154753.GA6495@c2.user-mode-linux.org>
-References: <20071001212306.GA10113@c2.user-mode-linux.org> <Pine.LNX.4.64.0710020841411.28398@anakin>
-Mime-Version: 1.0
+	Mon, 8 Oct 2007 12:05:41 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Denis V. Lunev" <den@sw.ru>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [NET] IPv6 oops bisected
+References: <20071008061942.GA842@gondor.apana.org.au>
+	<20071007.232302.78733656.davem@davemloft.net> <4709CF6F.60102@sw.ru>
+	<20071007.234606.111182047.davem@davemloft.net>
+	<4709D58F.2030802@sw.ru>
+Date: Mon, 08 Oct 2007 10:02:22 -0600
+In-Reply-To: <4709D58F.2030802@sw.ru> (Denis V. Lunev's message of "Mon, 08
+	Oct 2007 11:00:31 +0400")
+Message-ID: <m13awld27l.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710020841411.28398@anakin>
-User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 02, 2007 at 08:43:00AM +0200, Geert Uytterhoeven wrote:
-> Hmm, perhaps you can use _AC() (from <linux/const.h>) to defined the original
-> constants instead, so you don't need the #ifdefs?
+"Denis V. Lunev" <den@sw.ru> writes:
 
-Ah, neat.  Those are exactly what I need.
+> David Miller wrote:
+>> From: "Denis V. Lunev" <den@sw.ru>
+>> Date: Mon, 08 Oct 2007 10:34:23 +0400
+>> 
+>>> OK. I am installing Fedora 7 right now...
+>> 
+>> You don't need to install Fedora, just read the code! :-)
+>> 
+>> The bug is obvious and it's been explained thoroughly in this
+>> thread.
+>> 
+>> When 'dev' is NULL in ip6_route_add() we need to figure out what
+>> namespace and/or loopback device you want to use.
+>> 
+>> There is no reason to do an entire dist install to work on fixing this
+>> bug, yikes!
+>
+> I do understand the conditions when the bug happens. Its completely
+> clear :) Though I do not understand how to trigger it from command line
+> to test that the problem is resolved. Jeff was not kind enough to give
+> exact command line :(
+>
+> The unfortunate thing with this place is that original Eric's code is
+> also broken here. I was too optimistic working on the original patchset.
+> In other way, but broken :(
+>
+> So, I must stop and think...
 
-				Jeff
+Denis. My original patch was fine.  That patch trivially replaced
+loopback_dev with init_net.loopback_dev.   That only works for the
+initial network namespace.  But until you allow multiple instances of
+the network namespace into the ipv6 code the network namespace must
+be init_net.
 
--- 
-Work email - jdike at linux dot intel dot com
+I agree hard coded the init_net.loopback_dev is not where we want to
+end up but it does make a good intermediate step.  To allow simple and
+stupid intermediate steps is why my original patchset very carefully
+filtered every code path into the other layers of the network stack.
+
+At a quick skim through that portion of the code. When we fully convert
+it we want to add a network namespace parameter to struct fib6_config,
+populate struct fib6_config from the socket that user space is using
+to communicate with us.  Then in rt6_route_add and it's friends we
+will have the information we need.
+
+Further for the lower layers like ip6_fib.c struct flowi and struct
+nl_info will also contain a network namespace parameter.  Which I
+think is sufficient to get the network namespace information where
+we need it for ipv6 routing.
+
+So Denis do you think you could retry your original patch very
+carefully one subsystem at a time instead of all across the entire
+tree?
+
+Eric
