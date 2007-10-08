@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXJHVMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXJHVMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbXJHVMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 17:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbXJHVMM
+	id S1754887AbXJHVMj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 17:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXJHVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 17:12:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58347
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751399AbXJHVML (ORCPT
+	Mon, 8 Oct 2007 17:12:30 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47642 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752120AbXJHVM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 17:12:11 -0400
-Date: Mon, 08 Oct 2007 14:11:54 -0700 (PDT)
-Message-Id: <20071008.141154.107706003.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: hadi@cyberus.ca, peter.p.waskiewicz.jr@intel.com, krkumar2@in.ibm.com,
-       johnpol@2ka.mipt.ru, herbert@gondor.apana.org.au, kaber@trash.net,
-       shemminger@linux-foundation.org, jagana@us.ibm.com,
-       Robert.Olsson@data.slu.se, rick.jones2@hp.com, xma@us.ibm.com,
-       gaagaan@gmail.com, netdev@vger.kernel.org, rdreier@cisco.com,
-       mingo@elte.hu, mchan@broadcom.com, general@lists.openfabrics.org,
-       kumarkr@linux.ibm.com, tgraf@suug.ch, randy.dunlap@oracle.com,
-       sri@us.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: parallel networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <470A3D24.3050803@garzik.org>
-References: <20071007.215124.85709188.davem@davemloft.net>
-	<1191850490.4352.41.camel@localhost>
-	<470A3D24.3050803@garzik.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Oct 2007 17:12:29 -0400
+Date: Mon, 8 Oct 2007 23:12:56 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
+Message-ID: <20071008211255.GP16424@stusta.de>
+References: <20071008200255.GA16497@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071008200255.GA16497@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Mon, 08 Oct 2007 10:22:28 -0400
+On Mon, Oct 08, 2007 at 10:02:55PM +0200, Sam Ravnborg wrote:
+>...
+> The settings are stored in the build directory in a file
+> named "Kbuild.config" (should it be a .dot file?).
+>...
 
-> In terms of overall parallelization, both for TX as well as RX, my gut 
-> feeling is that we want to move towards an MSI-X, multi-core friendly 
-> model where packets are LIKELY to be sent and received by the same set 
-> of [cpus | cores | packages | nodes] that the [userland] processes 
-> dealing with the data.
+A .dot file sounds better.
 
-The problem is that the packet schedulers want global guarantees
-on packet ordering, not flow centric ones.
+And even if not, generated files should IMHO not share the Kbuild* 
+namespace with non-generated files.
 
-That is the issue Jamal is concerned about.
+Apart from this I like the patch.
 
-The more I think about it, the more inevitable it seems that we really
-might need multiple qdiscs, one for each TX queue, to pull this full
-parallelization off.
+> 	Sam
+>...
 
-But the semantics of that don't smell so nice either.  If the user
-attaches a new qdisc to "ethN", does it go to all the TX queues, or
-what?
+cu
+Adrian
 
-All of the traffic shaping technology deals with the device as a unary
-object.  It doesn't fit to multi-queue at all.
+BTW: I'm currently trying without success to understand why the
+     drivers/infiniband/{hw/amso1100,ulp/srp}/Kbuild files are not
+     named "Makefile".
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
