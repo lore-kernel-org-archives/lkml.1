@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbXJHRqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXJHRrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbXJHRqy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXJHRqq
+	id S1756257AbXJHRrf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJHRr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:46:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51760 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752507AbXJHRqp (ORCPT
+	Mon, 8 Oct 2007 13:47:27 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:35709 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbXJHRr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:46:45 -0400
-Date: Mon, 8 Oct 2007 10:46:45 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mingming Cao <cmm@us.ibm.com>
-cc: Christoph Hellwig <hch@infradead.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] jbd: JBD replace jbd_kmalloc with kmalloc
-In-Reply-To: <1191623899.3861.29.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0710081045180.26627@schroedinger.engr.sgi.com>
-References: <1191477059-5357-1-git-send-email-tytso@mit.edu> 
- <1191477059-5357-2-git-send-email-tytso@mit.edu>  <20071004065204.GA21481@infradead.org>
- <1191623899.3861.29.camel@localhost.localdomain>
+	Mon, 8 Oct 2007 13:47:26 -0400
+Date: Mon, 8 Oct 2007 12:47:23 -0500
+To: Komuro <komurojun@nifty.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplify yenta code
+Message-ID: <20071008174723.GB4350@austin.ibm.com>
+References: <20071006132601.f944f461.komurojun@nifty.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071006132601.f944f461.komurojun@nifty.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Oct 2007, Mingming Cao wrote:
+On Sat, Oct 06, 2007 at 01:26:01PM +0900, Komuro wrote:
+> Hello,
+> 
+> Unfortunately, your patch is wrong,
+> and does not results in the same run-time behaviour.
 
-> Index: linux-2.6.23-rc9/fs/jbd/transaction.c
-> ===================================================================
-> --- linux-2.6.23-rc9.orig/fs/jbd/transaction.c	2007-10-05 12:08:08.000000000 -0700
-> +++ linux-2.6.23-rc9/fs/jbd/transaction.c	2007-10-05 12:08:29.000000000 -0700
-> @@ -96,8 +96,8 @@ static int start_this_handle(journal_t *
->  
->  alloc_transaction:
->  	if (!journal->j_running_transaction) {
-> -		new_transaction = jbd_kmalloc(sizeof(*new_transaction),
-> -						GFP_NOFS);
-> +		new_transaction = kmalloc(sizeof(*new_transaction),
-> +						GFP_NOFS|__GFP_NOFAIL);
+Yes, I thought I'd withdrawn it, as a monday-morning error.
+If that wasn't clear .. NAK to my own patch.
 
-
-Why was a __GFP_NOFAIL added here? I do not see a use of jbd_rep_kmalloc?
-
-> -#define jbd_kmalloc(size, flags) \
-> -	__jbd_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
-
-journal_oom_retry is no longer used?
+--linas
