@@ -1,154 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXJHSoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXJHSpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXJHSoq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbXJHSoi
+	id S1757478AbXJHSpD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbXJHSov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:44:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41419 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbXJHSoh (ORCPT
+	Mon, 8 Oct 2007 14:44:51 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40291 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754353AbXJHSou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:44:37 -0400
-Date: Mon, 8 Oct 2007 11:06:44 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, tglx@linutronix.de,
-       Andi Kleen <ak@suse.de>
-Subject: [patch 12/12] i386: Use global flag to disable broken local apic
-	timer on AMD CPUs.
-Message-ID: <20071008180644.GM7627@kroah.com>
-References: <20071008180406.052382073@mini.kroah.org>
-MIME-Version: 1.0
+	Mon, 8 Oct 2007 14:44:50 -0400
+Date: Mon, 8 Oct 2007 11:45:23 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: -rt more realtime scheduling issues
+Message-ID: <20071008184523.GA29656@monkey.ibm.com>
+References: <20071006021548.GE4587@monkey.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i386-use-global-flag-to-disable-broken-local-apic-timer-on-amd-cpus.patch"
-In-Reply-To: <20071008180551.GA7627@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <20071006021548.GE4587@monkey.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@suse.de>
+On Fri, Oct 05, 2007 at 07:15:48PM -0700, Mike Kravetz wrote:
+> After applying the fix to try_to_wake_up() I was still seeing some large
+> latencies for realtime tasks.
 
-commit d3f7eae182b04997be19343a23f7009170f4f7a5 upstream
+I've been looking for places in the code where reschedule IPIs should
+be sent in the case of 'overload' to redistribute RealTime tasks based
+on priority.  However, an even more basic question to ask might be:  Are
+the use of reschedule IPIs reliable enough for this purpose.  In the
+code, there is the following comment:
 
-The Averatec 2370 and some other Turion laptop BIOS seems to program the
-ENABLE_C1E MSR inconsistently between cores. This confuses the lapic
-use heuristics because when C1E is enabled anywhere it seems to affect
-the complete chip.
+/*
+ * this function sends a 'reschedule' IPI to another CPU.
+ * it goes straight through and wastes no time serializing
+ * anything. Worst case is that we lose a reschedule ...
+ */
 
-Use a global flag instead of a per cpu flag to handle this.
-If any CPU has C1E enabled disabled lapic use.
+After a quick read of the code, it does appear that reschedule's can
+be lost if the the IPI is sent at just the right time in schedule
+processing.  Can someone confirm this is actually the case?
 
-Thanks to Cal Peake for debugging.
+The issue I see is that the 'rt_overload' mechanism depends on reschedule
+IPIs for RealTime scheduling semantics.  If this is not a reliable
+mechanism then this can lead to breakdowns in RealTime scheduling semantics.
 
-Cc: tglx@linutronix.de
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/i386/kernel/apic.c       |   10 ++++------
- arch/i386/kernel/cpu/amd.c    |    7 ++++++-
- include/asm-i386/apic.h       |    2 ++
- include/asm-i386/cpufeature.h |    2 +-
- 4 files changed, 13 insertions(+), 8 deletions(-)
-
---- a/arch/i386/kernel/apic.c
-+++ b/arch/i386/kernel/apic.c
-@@ -61,8 +61,9 @@ static int enable_local_apic __initdata 
- 
- /* Local APIC timer verification ok */
- static int local_apic_timer_verify_ok;
--/* Disable local APIC timer from the kernel commandline or via dmi quirk */
--static int local_apic_timer_disabled;
-+/* Disable local APIC timer from the kernel commandline or via dmi quirk
-+   or using CPU MSR check */
-+int local_apic_timer_disabled;
- /* Local APIC timer works in C2 */
- int local_apic_timer_c2_ok;
- EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
-@@ -367,12 +368,9 @@ void __init setup_boot_APIC_clock(void)
- 	long delta, deltapm;
- 	int pm_referenced = 0;
- 
--	if (boot_cpu_has(X86_FEATURE_LAPIC_TIMER_BROKEN))
--		local_apic_timer_disabled = 1;
--
- 	/*
- 	 * The local apic timer can be disabled via the kernel
--	 * commandline or from the test above. Register the lapic
-+	 * commandline or from the CPU detection code. Register the lapic
- 	 * timer as a dummy clock event source on SMP systems, so the
- 	 * broadcast mechanism is used. On UP systems simply ignore it.
- 	 */
---- a/arch/i386/kernel/cpu/amd.c
-+++ b/arch/i386/kernel/cpu/amd.c
-@@ -3,6 +3,7 @@
- #include <linux/mm.h>
- #include <asm/io.h>
- #include <asm/processor.h>
-+#include <asm/apic.h>
- 
- #include "cpu.h"
- 
-@@ -22,6 +23,7 @@
- extern void vide(void);
- __asm__(".align 4\nvide: ret");
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
- #define ENABLE_C1E_MASK         0x18000000
- #define CPUID_PROCESSOR_SIGNATURE       1
- #define CPUID_XFAM              0x0ff00000
-@@ -52,6 +54,7 @@ static __cpuinit int amd_apic_timer_brok
-         }
- 	return 0;
- }
-+#endif
- 
- int force_mwait __cpuinitdata;
- 
-@@ -275,8 +278,10 @@ static void __cpuinit init_amd(struct cp
- 	if (cpuid_eax(0x80000000) >= 0x80000006)
- 		num_cache_leaves = 3;
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
- 	if (amd_apic_timer_broken())
--		set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
-+		local_apic_timer_disabled = 1;
-+#endif
- 
- 	if (c->x86 == 0x10 && !force_mwait)
- 		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
---- a/include/asm-i386/apic.h
-+++ b/include/asm-i386/apic.h
-@@ -116,6 +116,8 @@ extern void enable_NMI_through_LVT0 (voi
- extern int timer_over_8254;
- extern int local_apic_timer_c2_ok;
- 
-+extern int local_apic_timer_disabled;
-+
- #else /* !CONFIG_X86_LOCAL_APIC */
- static inline void lapic_shutdown(void) { }
- 
---- a/include/asm-i386/cpufeature.h
-+++ b/include/asm-i386/cpufeature.h
-@@ -79,7 +79,7 @@
- #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
- #define X86_FEATURE_PEBS	(3*32+12)  /* Precise-Event Based Sampling */
- #define X86_FEATURE_BTS		(3*32+13)  /* Branch Trace Store */
--#define X86_FEATURE_LAPIC_TIMER_BROKEN (3*32+ 14) /* lapic timer broken in C1 */
-+/* 14 free */
- #define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+Are these accurate statements?  I'll start working on a reliable delivery
+mechanism for RealTime scheduling.  But, I just want to make sure that
+is really necessary.
 
 -- 
+Mike
