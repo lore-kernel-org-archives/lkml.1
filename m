@@ -1,192 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbXJHSIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbXJHSJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbXJHSIm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbXJHSID
+	id S1756784AbXJHSJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXJHSI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:08:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51683 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754268AbXJHSH6 (ORCPT
+	Mon, 8 Oct 2007 14:08:59 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48763 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbXJHSI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:07:58 -0400
-Date: Mon, 8 Oct 2007 11:06:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Krzysztof Oledzki <olel@ans.pl>, Greg KH <greg@kroah.com>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 02/12] sky2: reduce impact of watchdog timer
-Message-ID: <20071008180607.GC7627@kroah.com>
-References: <20071008180406.052382073@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sky2-hw-watchdog.patch"
-In-Reply-To: <20071008180551.GA7627@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Mon, 8 Oct 2007 14:08:58 -0400
+Date: Mon, 8 Oct 2007 11:06:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+Message-Id: <20071008110614.dd671fc7.randy.dunlap@oracle.com>
+In-Reply-To: <470A708D.4080905@goop.org>
+References: <25555.1191864285@lwn.net>
+	<20071008173706.GA12026@uranus.ravnborg.org>
+	<Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
+	<470A708D.4080905@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+On Mon, 08 Oct 2007 11:01:49 -0700 Jeremy Fitzhardinge wrote:
 
-This is the 2.6.22 version of a regression fix that is already
-in 2.6.23.  Change the watchdog timer form 10 per second all the time,
-to 1 per second and only if interface is up.
+> Jan Engelhardt wrote:
+> >> Acked-by:
+> >> Tested-by:
+> >>     
+> >
+> > * Used by random people to express their (dis)like/experience with the 
+> > patch.
+> >   
+> 
+> Tested-by is more valuable than acked-by, because its empirical. 
+> Acked-by generally means "I don't generally object to the idea of the
+> patch, but may not have read beyond the changelog".  Tested-by implies
+> "I did something that exercised the patch, and it didn't explode" -
+> that's on par with an actual review (ideally all patches would be both
+> tested and reviewed).
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+but Tested-by: doesn't have to involve any "actually looking at/reading
+the patch."  Right?
 
+IOW, the patch could be ugly as sin but it works...
+
+
+> >> Reviewed-by:
+> >>     
+> >
+> > * I am maintaner or an 'important' person and have had a
+> >   look at it in depth
+> >   
+> 
+> Hm.  We have a tension here:
+> 
+>     * there aren't enough reviewers
+>     * some reviews are more useful than others
+> 
+> While a review by a trustworthy person is invaluable, we don't want to
+> discourage people from reviewing.  A new reviewer's review may not be
+> terribly useful, but a meta-review may help improve it.  Or it could be
+> a great review.
+> 
+> I guess I'm proposing that we also need to expand the reviewer base, and
+> to do so we need some kind of reviewer-mentoring or metareview process. 
+> Of course that could just be an extra burden on the existing (small)
+> trusted reviewer base, but the hope is that over time the reviewer pool
+> size grows enough to make the effort worthwhile...
+> 
+> 
+> >> Cc:
+> >>     
+> >
+> > * Used by original submitter to denote additional maintainers it goes to
+> > * Parties who should be Cced when an a posteriori question comes up
+> >   
+> 
+> Well, any interested parties, really.  I use it for original bug
+> reporters, people who followed up on the report, people who have patches
+> in a nearby area, people who are known to be interested in the affected
+> subsystem, people who have reviewed previous versions of the patch, etc...
 
 ---
- drivers/net/sky2.c |   45 ++++++++++++++++++---------------------------
- drivers/net/sky2.h |    2 +-
- 2 files changed, 19 insertions(+), 28 deletions(-)
-
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -96,10 +96,6 @@ static int disable_msi = 0;
- module_param(disable_msi, int, 0);
- MODULE_PARM_DESC(disable_msi, "Disable Message Signaled Interrupt (MSI)");
- 
--static int idle_timeout = 100;
--module_param(idle_timeout, int, 0);
--MODULE_PARM_DESC(idle_timeout, "Watchdog timer for lost interrupts (ms)");
--
- static const struct pci_device_id sky2_id_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SYSKONNECT, 0x9000) }, /* SK-9Sxx */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SYSKONNECT, 0x9E00) }, /* SK-9Exx */
-@@ -1693,6 +1689,8 @@ static void sky2_link_up(struct sky2_por
- 
- 	netif_carrier_on(sky2->netdev);
- 
-+	mod_timer(&hw->watchdog_timer, jiffies + 1);
-+
- 	/* Turn on link LED */
- 	sky2_write8(hw, SK_REG(port, LNK_LED_REG),
- 		    LINKLED_ON | LINKLED_BLINK_OFF | LINKLED_LINKSYNC_OFF);
-@@ -2384,25 +2382,25 @@ static void sky2_le_error(struct sky2_hw
- 	sky2_write32(hw, Q_ADDR(q, Q_CSR), BMU_CLR_IRQ_CHK);
- }
- 
--/* If idle then force a fake soft NAPI poll once a second
-- * to work around cases where sharing an edge triggered interrupt.
-- */
--static inline void sky2_idle_start(struct sky2_hw *hw)
--{
--	if (idle_timeout > 0)
--		mod_timer(&hw->idle_timer,
--			  jiffies + msecs_to_jiffies(idle_timeout));
--}
--
--static void sky2_idle(unsigned long arg)
-+/* Force a fake soft NAPI poll to handle lost IRQ's */
-+static void sky2_watchdog(unsigned long arg)
- {
- 	struct sky2_hw *hw = (struct sky2_hw *) arg;
- 	struct net_device *dev = hw->dev[0];
-+	int i, active = 0;
- 
- 	if (__netif_rx_schedule_prep(dev))
- 		__netif_rx_schedule(dev);
- 
--	mod_timer(&hw->idle_timer, jiffies + msecs_to_jiffies(idle_timeout));
-+	for (i = 0; i < hw->ports; i++) {
-+		dev = hw->dev[i];
-+		if (!netif_running(dev))
-+			continue;
-+		++active;
-+	}
-+
-+	if (active)
-+		mod_timer(&hw->watchdog_timer, round_jiffies(jiffies + HZ));
- }
- 
- /* Hardware/software error handling */
-@@ -2692,8 +2690,6 @@ static void sky2_restart(struct work_str
- 
- 	dev_dbg(&hw->pdev->dev, "restarting\n");
- 
--	del_timer_sync(&hw->idle_timer);
--
- 	rtnl_lock();
- 	sky2_write32(hw, B0_IMSK, 0);
- 	sky2_read32(hw, B0_IMSK);
-@@ -2722,8 +2718,6 @@ static void sky2_restart(struct work_str
- 		}
- 	}
- 
--	sky2_idle_start(hw);
--
- 	rtnl_unlock();
- }
- 
-@@ -3713,11 +3707,9 @@ static int __devinit sky2_probe(struct p
- 			sky2_show_addr(dev1);
- 	}
- 
--	setup_timer(&hw->idle_timer, sky2_idle, (unsigned long) hw);
-+	setup_timer(&hw->watchdog_timer, sky2_watchdog, (unsigned long) hw);
- 	INIT_WORK(&hw->restart_work, sky2_restart);
- 
--	sky2_idle_start(hw);
--
- 	pci_set_drvdata(pdev, hw);
- 
- 	return 0;
-@@ -3752,7 +3744,7 @@ static void __devexit sky2_remove(struct
- 	if (!hw)
- 		return;
- 
--	del_timer_sync(&hw->idle_timer);
-+	del_timer_sync(&hw->watchdog_timer);
- 
- 	flush_scheduled_work();
- 
-@@ -3796,7 +3788,7 @@ static int sky2_suspend(struct pci_dev *
- 	if (!hw)
- 		return 0;
- 
--	del_timer_sync(&hw->idle_timer);
-+	del_timer_sync(&hw->watchdog_timer);
- 	netif_poll_disable(hw->dev[0]);
- 
- 	for (i = 0; i < hw->ports; i++) {
-@@ -3862,7 +3854,7 @@ static int sky2_resume(struct pci_dev *p
- 	}
- 
- 	netif_poll_enable(hw->dev[0]);
--	sky2_idle_start(hw);
-+
- 	return 0;
- out:
- 	dev_err(&pdev->dev, "resume failed (%d)\n", err);
-@@ -3879,7 +3871,6 @@ static void sky2_shutdown(struct pci_dev
- 	if (!hw)
- 		return;
- 
--	del_timer_sync(&hw->idle_timer);
- 	netif_poll_disable(hw->dev[0]);
- 
- 	for (i = 0; i < hw->ports; i++) {
---- a/drivers/net/sky2.h
-+++ b/drivers/net/sky2.h
-@@ -1921,7 +1921,7 @@ struct sky2_hw {
- 	u32		     st_idx;
- 	dma_addr_t   	     st_dma;
- 
--	struct timer_list    idle_timer;
-+	struct timer_list    watchdog_timer;
- 	struct work_struct   restart_work;
- 	int		     msi;
- 	wait_queue_head_t    msi_wait;
-
--- 
+~Randy
