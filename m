@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXJHVsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXJHVvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbXJHVsd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 17:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXJHVs0
+	id S1754818AbXJHVvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 17:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbXJHVvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 17:48:26 -0400
-Received: from www.tglx.de ([62.245.132.106]:48681 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773AbXJHVsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 17:48:25 -0400
-Date: Mon, 8 Oct 2007 23:48:12 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Bernd Schubert <bs@q-leap.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23 regression: do_nanosleep will not return
-In-Reply-To: <fed93g$eq4$1@sea.gmane.org>
-Message-ID: <alpine.LFD.0.9999.0710082337480.25146@localhost.localdomain>
-References: <fed93g$eq4$1@sea.gmane.org>
+	Mon, 8 Oct 2007 17:51:12 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:42334 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753462AbXJHVvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 17:51:11 -0400
+Message-ID: <470AA64E.2000807@crispincowan.com>
+Date: Mon, 08 Oct 2007 14:51:10 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Serge E. Hallyn" <serge@hallyn.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
+ Control Kernel
+References: <alpine.LFD.0.999.0710010854120.3579@woody.linux-foundation.org>	<4702B1D5.5050502@tmr.com>	<alpine.LFD.0.999.0710021410470.3579@woody.linux-foundation.org>	<4703126D.70703@tmr.com>	<alpine.LFD.0.999.0710022050560.3579@woody.linux-foundation.org>	<m17im2pc7x.fsf@ebiederm.dsl.xmission.com>	<15E46546-914A-4A1E-BB0B-642FDA17396B@mac.com>	<m1zlyymaoy.fsf@ebiederm.dsl.xmission.com>	<20071008160611.GA7106@vino.hallyn.com>	<m11wc5a5gp.fsf@ebiederm.dsl.xmission.com>	<20071008180038.GC7106@vino.hallyn.com> <m1hcl11j31.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcl11j31.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman wrote:
+> My very practical question:  How do I run selinux in one container,
+> and SMACK in another?
+>   
+In AppArmor, we plan to 'containerize' (not sure what to call it) policy
+so that you can have an AppArmor policy per container. This is not
+currently the case, it is just the direction we want to go. We think it
+would be very useful for virtual hosts to be able to have their own
+AppArmor policy, independent of what other hosts are doing.
 
-On Mon, 8 Oct 2007, Bernd Schubert wrote:
+The major step towards this goal so far is that AppArmor rules are now
+canonicalized to the name space.
 
-> Hi,
-> 
-> we have a system here were e.g. "sleep 1" will never finish. This is an 
-> issue of 2.6.23, on all older kernel versions it did work fine.
-> 
-> Seems to hang in do_nanosleep() 
-> 
-> [  153.775792] sleep         S 0000000000000000     0  5372   5341              
-> [  153.782385]  ffff81007f0a9ea8 0000000000000082 0000000000000000 0000000000008efc                                                                             
-> [  153.790635]  ffff81007f0a9e48 ffffffff802447b4 ffff81007f0c3080 0000000300000000                                                                             
-> [  153.798938]  ffff81007f0c39c8 ffff81007f0c37c0 000000004001d908 0000000000000000                                                                             
-> [  153.806991] Call Trace:                                                      
-> [  153.809937]  [<ffffffff8048e4cd>] do_nanosleep+0x42/0x75                     
-> [  153.815727]  [<0000000000000001>]                                            
-> [  153.819383]                                                                  
-> [  153.775792] sleep         S 0000000000000000     0  5372   5341              
-> 
-> 
-> [  330.669444] SysRq : Show Pending Timers                                      
-> [  330.673552] Timer List Version: v0.3                                         
-> [  330.677326] HRTIMER_MAX_CLOCK_BASES: 2                                       
-> [  330.681282] now at 255011372633 nsecs                                        
-> [  330.829981] active timers:                                                   
-> [  330.832859]  #0: <ffff81007f0e3de8>, hrtimer_wakeup, S:01                    
-> [  330.838805]  # expires at 260156346358 nsecs [in 5144973725 nsecs]           
-> 
-> [  337.046189] now at 261387685432 nsecs                                        
-> [  337.194966] active timers:                                                   
-> [  337.197834]  #0: <ffff81007f0e3de8>, hrtimer_wakeup, S:01                    
-> [  337.203793]  # expires at 260156346358 nsecs [in 18446744072478212542 nsecs] 
+However, I have never considered the idea of separate LSM modules per
+container. The idea doesn't really make sense to me. It is kind of like
+asking for private device drivers, or even a private kernel, per name
+space. If that's what you want, use virtualization like KVM, Xen, or VMware.
 
-timer already expired ---------^^^^^^^^^^^^
-(~1.2 seconds)
+Crispin
 
-hmm, signedness problem (only in the display) ---------^^^^^^^^^^^^^^^^^^^
-
-Can you please put a complete system description, your .config and a boot 
-log into bugzilla ?
-
-Thanks,
-
-	tglx
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+	       Itanium. Vista. GPLv3. Complexity at work
 
