@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbXJHL6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbXJHMD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbXJHL6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 07:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXJHL6J
+	id S1755356AbXJHMD1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 08:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXJHMDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 07:58:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54599 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753593AbXJHL6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 07:58:07 -0400
-Date: Mon, 8 Oct 2007 13:02:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Paul Hardwick <p.hardwick@option.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: nozomi: ERESTARTSYS to userspace?
-Message-ID: <20071008130220.78b265f2@the-village.bc.nu>
-In-Reply-To: <470A05DF.5080405@gmail.com>
-References: <470A05DF.5080405@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Oct 2007 08:03:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40034 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbXJHMDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 08:03:19 -0400
+Date: Mon, 8 Oct 2007 14:03:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/6] scheduler: Refactor common code of sleep_on /
+	wait_for_completion v2
+Message-ID: <20071008120306.GA28191@elte.hu>
+References: <200710071059.126674000@suse.de> <20071007205955.4D60E1474B@wotan.suse.de> <p731wc65zvw.fsf_-_@bingen.suse.de> <20071008113906.GB22199@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071008113906.GB22199@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->         if (unlikely(down_trylock(&port->tty_sem))) {
->                 /*
->                  * must test lock as tty layer wraps calls
->                  * to this function with BKL
->                  */
->                 dev_err(&dc->pdev->dev, "Would have deadlocked - "
->                         "return ERESTARTSYS\n");
->                 return -ERESTARTSYS;
->         }
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> The use of ERESTARTSYS seems bogus to me, no signal is pending and this flag
-> would reach userspace (that is not permitted), am I right?
+> > Andi Kleen <ak@suse.de> writes:
+> > 
+> > > These functions were largely cut'n'pasted. This moves
+> > 
+> > Here's a replacement patch fixing a minor problem:
+> > sleep_on_common wasn't marked __sched and ended up in the 
+> > wrong section; breaking the WCHAN backtracing.
+> 
+> thanks, applied.
 
-serial driver write methods are called from the ldisc not the tty so the
-code is in fact totally bogus.
+btw., this is a very nice cleanup, the .text savings are particularly 
+impressive:
 
-I suspect what is needed (other than to take the entire driver to bits
-and put it back together using serial_core) is 
+   text    data     bss     dec     hex filename
+  24545    2406      16   26967    6957 sched.o.before
+  23687    2406      16   26109    65fd sched.o.after
 
-	if (down_trylock(&port->tty_sem))
-		return 0;
+almost 1K of text shaven off! :)
 
-and the driver is then required to wake the write wait queue when that
-condition becomes false - or at least before/when it runs out of
-data (which currently it doesn't seem to for all cases).
-
-Lots of other breakage in it as well (termios function is totally bogus,
-tty_flip_queue_function is a no-op) etc etc
-
-Alan
+	Ingo
