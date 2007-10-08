@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbXJHTrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbXJHTv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbXJHTrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 15:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbXJHTrH
+	id S1753950AbXJHTv6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 15:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXJHTvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 15:47:07 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:57496 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752120AbXJHTrG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 15:47:06 -0400
-Date: Mon, 8 Oct 2007 21:47:04 +0200
-From: Wolfgang Erig <Wolfgang.Erig@gmx.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: regression in 2.6.23-rc8 - power off failed: solved
-Message-ID: <20071008194704.GA26337@erig.dyndns.org>
-Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
-	linux-kernel@vger.kernel.org
-References: <20070929005453.GA4475@erig.dyndns.org> <46FDC0EB.3070003@zytor.com> <20070929082233.GA3447@erig.dyndns.org> <46FE0D29.4090706@zytor.com> <20070929093553.GA4451@erig.dyndns.org> <20070929180721.GA8371@erig.dyndns.org> <46FED429.9050200@zytor.com>
+	Mon, 8 Oct 2007 15:51:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59084 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751503AbXJHTvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 15:51:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: 2.6.23-rc9-git5: Known regressions from 2.6.22
+Date: Mon, 8 Oct 2007 22:06:43 +0200
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+References: <200710072202.34621.rjw@sisk.pl> <E1IeqtA-0002Ys-UD@faramir.fjphome.nl>
+In-Reply-To: <E1IeqtA-0002Ys-UD@faramir.fjphome.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46FED429.9050200@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710082206.43965.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 11:48:40AM -0700, H. Peter Anvin wrote:
->
-> Does your .config file have CONFIG_APM=y?  Otherwise, that's your problem 
-> right there (since your old laptop doesn't appear to have ACPI.)
+On Monday, 8 October 2007 13:35, Frans Pop wrote:
+> > If you know of any other unresolved regressions from 2.6.22, please let me know
+> > either and I'll add them to the list.
+> 
+> Should this issue be added?
+> http://lkml.org/lkml/2007/10/3/123
 
-no CONFIG_APM and yes, this is my problem.
-A very hard way to figure this out,
-and too much noise. Sorry for this.
+Added: http://bugzilla.kernel.org/show_bug.cgi?id=9135
 
-It is not the first time, I had to change my .config to maintain a
-feature of the kernel after an upgrade. I think, you are aware of this
-an I have no suggestion for improvement. Now this old laptop is
-running perfectly again with the latest kernel.
-
-Thankyou for this,
-Wolfgang
+Thanks,
+Rafael
