@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXJHSpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXJHSta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbXJHSpD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbXJHSov
+	id S1756718AbXJHSta (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbXJHStX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:44:51 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40291 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754353AbXJHSou (ORCPT
+	Mon, 8 Oct 2007 14:49:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51534 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbXJHStW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:44:50 -0400
-Date: Mon, 8 Oct 2007 11:45:23 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -rt more realtime scheduling issues
-Message-ID: <20071008184523.GA29656@monkey.ibm.com>
-References: <20071006021548.GE4587@monkey.ibm.com>
-Mime-Version: 1.0
+	Mon, 8 Oct 2007 14:49:22 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: casey@schaufler-ca.com
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+References: <54877.16343.qm@web36603.mail.mud.yahoo.com>
+Date: Mon, 08 Oct 2007 12:47:43 -0600
+In-Reply-To: <54877.16343.qm@web36603.mail.mud.yahoo.com> (Casey Schaufler's
+	message of "Mon, 8 Oct 2007 10:50:40 -0700 (PDT)")
+Message-ID: <m1bqb978a8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071006021548.GE4587@monkey.ibm.com>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 07:15:48PM -0700, Mike Kravetz wrote:
-> After applying the fix to try_to_wake_up() I was still seeing some large
-> latencies for realtime tasks.
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
-I've been looking for places in the code where reschedule IPIs should
-be sent in the case of 'overload' to redistribute RealTime tasks based
-on priority.  However, an even more basic question to ask might be:  Are
-the use of reschedule IPIs reliable enough for this purpose.  In the
-code, there is the following comment:
+> --- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+>
+>
+>> Likely.  Until we have a generalized LSM interface with 1000 config
+>> options like netfilter I don't expect we will have grounds to talk
+>> or agree to a common user space interface.  Although I could be
+>> wrong.
+>
+> Gulp. I know that many of you are granularity advocates, but I
+> have to say that security derived by tweeking 1000 knobs so that
+> they are all just right seems a little far fetched to me. I see
+> it as poopooing the 3rd and most important part of the reference
+> monitor concept, "small enough to analyze". Sure, you can analyse
+> the 1000 individual checks, but you'll never be able to describe
+> the system behavior as a whole.
 
-/*
- * this function sends a 'reschedule' IPI to another CPU.
- * it goes straight through and wastes no time serializing
- * anything. Worst case is that we lose a reschedule ...
- */
+Agreed.  I wasn't thinking 1000 individual checks but 1000 different
+capabilities, could be either checks or actions, basically fundamental
+different capabilities.  Things like CIPSO, or the ability to store a
+security label on a file.  I would not expect most security policies
+to use most of them.  Neither do I expect Orange book security to
+necessarily be what people want to achieve with the LSM.   But I
+haven't looked at it enough detail to know how things should be
+factored, in this case I was simply extrapolating from the iptables
+experience where  we do have a very large number of options.
 
-After a quick read of the code, it does appear that reschedule's can
-be lost if the the IPI is sent at just the right time in schedule
-processing.  Can someone confirm this is actually the case?
+The real point being is that I would be surprised if we could come
+to an agreement of a common user space API when we can't agree on how
+to compile all of the security modules into the kernel and have them
+play nice with each other. 
 
-The issue I see is that the 'rt_overload' mechanism depends on reschedule
-IPIs for RealTime scheduling semantics.  If this is not a reliable
-mechanism then this can lead to breakdowns in RealTime scheduling semantics.
+Assuming we can achieve security modules playing nice with each other
+using a mechanism similar to iptables, then what needs to be evaluated
+is the specific table configuration we are using on the system, not
+the full general set of possibilities.  Further I expect that for the
+truly security paranoid we want the option to disable further table
+changes after the tables have been configured.
 
-Are these accurate statements?  I'll start working on a reliable delivery
-mechanism for RealTime scheduling.  But, I just want to make sure that
-is really necessary.
+On another side personally I don't see where the idea comes from that
+you can describe system behavior as a whole without analyzing the
+entire kernel.  Has there been work on a sparse like tool that I'm
+not aware of to ensure the we always perform the appropriate security
+checks on the user/kernel interface boundary?
 
--- 
-Mike
+Eric
