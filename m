@@ -1,202 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXJHOBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbXJHOLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbXJHOBs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 10:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbXJHOBi
+	id S1752928AbXJHOLa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 10:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXJHOLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 10:01:38 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:57204 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751725AbXJHOBg (ORCPT
+	Mon, 8 Oct 2007 10:11:22 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:58621 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbXJHOLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 10:01:36 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: use kernel event queue
-Date: Mon, 8 Oct 2007 16:01:33 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Anton Blanchard <anton@samba.org>
+	Mon, 8 Oct 2007 10:11:21 -0400
+Date: Mon, 8 Oct 2007 10:10:47 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial
+ console
+In-Reply-To: <alpine.LRH.0.999.0710051831000.10191@www.tglx.de>
+Message-ID: <Pine.LNX.4.58.0710081005320.4846@gandalf.stny.rr.com>
+References: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net>
+ <alpine.LRH.0.999.0710051831000.10191@www.tglx.de>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710081601.34067.ossthema@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eHEA recovery and DLPAR functions are called seldomly. The eHEA workqueues
-are replaced by the kernel event queue.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+--
+On Fri, 5 Oct 2007, Thomas Gleixner wrote:
 
----
-The patch has been built against upstream git
+> On Fri, 5 Oct 2007, Gregory Haskins wrote:
+> > This series may help debugging certain circumstances where the serial
+> > console is unreponsive (e.g. RT51+ spinner, or scheduler problem).  It changes
+> > the serial8250 driver to use IRQF_NODELAY so that interrupts execute in irq
+> > context instead of a kthread.
+> >
+> > It works pretty well on this end, though it is admitted not fully baked.  For
+> > instance, a few paths in sysrq can still call into non-raw spinlocks
+> > (sched_debug_show, for instance) which will cause subsequent errors.  Also,
+> > if you use KDB, be sure to convert the kdb_printf_lock to raw as well.  I may
+> > send a KDB related patch seperately.
+> >
+> > I am sending this out now in case it is helpful to someone.
+>
+> The simple non-patch solution is to up the priority of the serial
+> console irq to maximum. That's usually sufficient to catch runnaway tasks
+> etc. It does not interfere with the system in normal operation as long as
+> you do not hit keys in your minicom.
+>
+> I doubt that your patch has a chance to survive lockdep and anything which
+> is not a sysrq.
 
- drivers/net/ehea/ehea.h      |    3 +--
- drivers/net/ehea/ehea_main.c |   28 ++++++++--------------------
- drivers/net/ehea/ehea_qmr.c  |    3 +--
- 3 files changed, 10 insertions(+), 24 deletions(-)
+This issue has hit me enough times where I've played with a few other
+ideas. I just haven't had the time to finish them. The main problem is if
+the system locks up somewhere we have a lock held that keeps us from
+scheduling. Once that happens in -rt, we are as good as dead. Since you
+can't get much info out without a JTAG or some other mechanism.
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 3022089..ac21526 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0077"
-+#define DRV_VERSION	"EHEA_0078"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -391,7 +391,6 @@ struct ehea_adapter {
- 	struct ibmebus_dev *ebus_dev;
- 	struct ehea_port *port[EHEA_MAX_PORTS];
- 	struct ehea_eq *neq;       /* notification event queue */
--	struct workqueue_struct *ehea_wq;
- 	struct tasklet_struct neq_tasklet;
- 	struct ehea_mr mr;
- 	u32 pd;                    /* protection domain */
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 5bc0a15..2ba57e6 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -94,7 +94,6 @@ MODULE_PARM_DESC(use_lro, " Large Receive Offload, 1: enable, 0: disable, "
- static int port_name_cnt = 0;
- static LIST_HEAD(adapter_list);
- u64 ehea_driver_flags = 0;
--struct workqueue_struct *ehea_driver_wq;
- struct work_struct ehea_rereg_mr_task;
- 
- struct semaphore dlpar_mem_lock;
-@@ -421,7 +420,7 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
- 
- 	if (cqe->status & EHEA_CQE_STAT_FAT_ERR_MASK) {
- 		ehea_error("Critical receive error. Resetting port.");
--		queue_work(pr->port->adapter->ehea_wq, &pr->port->reset_task);
-+		schedule_work(&pr->port->reset_task);
- 		return 1;
- 	}
- 
-@@ -596,8 +595,7 @@ static struct ehea_cqe *ehea_proc_cqes(struct ehea_port_res *pr, int my_quota)
- 			ehea_error("Send Completion Error: Resetting port");
- 			if (netif_msg_tx_err(pr->port))
- 				ehea_dump(cqe, sizeof(*cqe), "Send CQE");
--			queue_work(pr->port->adapter->ehea_wq,
--				   &pr->port->reset_task);
-+			schedule_work(&pr->port->reset_task);
- 			break;
- 		}
- 
-@@ -716,7 +714,7 @@ static irqreturn_t ehea_qp_aff_irq_handler(int irq, void *param)
- 		eqe = ehea_poll_eq(port->qp_eq);
- 	}
- 
--	queue_work(port->adapter->ehea_wq, &port->reset_task);
-+	schedule_work(&port->reset_task);
- 
- 	return IRQ_HANDLED;
- }
-@@ -2395,7 +2393,7 @@ static int ehea_stop(struct net_device *dev)
- 	if (netif_msg_ifdown(port))
- 		ehea_info("disabling port %s", dev->name);
- 
--	flush_workqueue(port->adapter->ehea_wq);
-+	flush_scheduled_work();
- 	down(&port->port_lock);
- 	netif_stop_queue(dev);
- 	ret = ehea_down(dev);
-@@ -2710,7 +2708,7 @@ static void ehea_tx_watchdog(struct net_device *dev)
- 
- 	if (netif_carrier_ok(dev) &&
- 	    !test_bit(__EHEA_STOP_XFER, &ehea_driver_flags))
--		queue_work(port->adapter->ehea_wq, &port->reset_task);
-+		schedule_work(&port->reset_task);
- }
- 
- int ehea_sense_adapter_attr(struct ehea_adapter *adapter)
-@@ -3243,15 +3241,9 @@ static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
- 		goto out_kill_eq;
- 	}
- 
--	adapter->ehea_wq = create_workqueue("ehea_wq");
--	if (!adapter->ehea_wq) {
--		ret = -EIO;
--		goto out_free_irq;
--	}
--
- 	ret = ehea_create_device_sysfs(dev);
- 	if (ret)
--		goto out_kill_wq;
-+		goto out_free_irq;
- 
- 	ret = ehea_setup_ports(adapter);
- 	if (ret) {
-@@ -3265,9 +3257,6 @@ static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
- out_rem_dev_sysfs:
- 	ehea_remove_device_sysfs(dev);
- 
--out_kill_wq:
--	destroy_workqueue(adapter->ehea_wq);
--
- out_free_irq:
- 	ibmebus_free_irq(NULL, adapter->neq->attr.ist1, adapter);
- 
-@@ -3293,7 +3282,7 @@ static int __devexit ehea_remove(struct ibmebus_dev *dev)
- 
- 	ehea_remove_device_sysfs(dev);
- 
--	destroy_workqueue(adapter->ehea_wq);
-+	flush_scheduled_work();
- 
- 	ibmebus_free_irq(NULL, adapter->neq->attr.ist1, adapter);
- 	tasklet_kill(&adapter->neq_tasklet);
-@@ -3351,7 +3340,6 @@ int __init ehea_module_init(void)
- 	printk(KERN_INFO "IBM eHEA ethernet device driver (Release %s)\n",
- 	       DRV_VERSION);
- 
--	ehea_driver_wq = create_workqueue("ehea_driver_wq");
- 
- 	INIT_WORK(&ehea_rereg_mr_task, ehea_rereg_mrs);
- 	sema_init(&dlpar_mem_lock, 1);
-@@ -3385,7 +3373,7 @@ out:
- 
- static void __exit ehea_module_exit(void)
- {
--	destroy_workqueue(ehea_driver_wq);
-+	flush_scheduled_work();
- 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
- 	ibmebus_unregister_driver(&ehea_driver);
- 	ehea_destroy_busmap();
-diff --git a/drivers/net/ehea/ehea_qmr.c b/drivers/net/ehea/ehea_qmr.c
-index 329a252..83b7643 100644
---- a/drivers/net/ehea/ehea_qmr.c
-+++ b/drivers/net/ehea/ehea_qmr.c
-@@ -34,7 +34,6 @@
- 
- struct ehea_busmap ehea_bmap = { 0, 0, NULL };
- extern u64 ehea_driver_flags;
--extern struct workqueue_struct *ehea_driver_wq;
- extern struct work_struct ehea_rereg_mr_task;
- 
- 
-@@ -618,7 +617,7 @@ u64 ehea_map_vaddr(void *caddr)
- 
- 	if (unlikely(mapped_addr == -1))
- 		if (!test_and_set_bit(__EHEA_STOP_XFER, &ehea_driver_flags))
--			queue_work(ehea_driver_wq, &ehea_rereg_mr_task);
-+			schedule_work(&ehea_rereg_mr_task);
- 
- 	return mapped_addr;
- }
--- 
-1.5.2
+One thought I had was to create a small handler that could read the serial
+and place data into a buffer. This handler would be a IRQ_NODELAY, and it
+would wake up a serial thread to handle the data just like it would for
+normal serial output. But the serial thread would just read from the
+buffer instead of the serial itself.  In the case of a sysrq key coming
+in, the IRQ_NODELAY handler would handle it.
+
+Just a thought. Maybe someday I can get time to play more with this idea,
+or someone else can come up with one.  But to convert the entire handler
+into nodelay is a bit extreme.
+
+-- Steve
 
