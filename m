@@ -1,48 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbXJHOTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXJHOYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbXJHOTB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 10:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXJHOSt
+	id S1752801AbXJHOYW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 10:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXJHOYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 10:18:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58487 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbXJHOSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 10:18:48 -0400
-Date: Mon, 8 Oct 2007 07:17:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: irqbalance considered obsolete by powertop
-Message-ID: <20071008071740.4987b5f1@laptopd505.fenrus.org>
-In-Reply-To: <20071008072555.GA6316@elf.ucw.cz>
-References: <20071008072555.GA6316@elf.ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Oct 2007 10:24:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45549 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbXJHOYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 10:24:09 -0400
+Message-ID: <470A3D24.3050803@garzik.org>
+Date: Mon, 08 Oct 2007 10:22:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: hadi@cyberus.ca
+CC: David Miller <davem@davemloft.net>, peter.p.waskiewicz.jr@intel.com,
+       krkumar2@in.ibm.com, johnpol@2ka.mipt.ru, herbert@gondor.apana.org.au,
+       kaber@trash.net, shemminger@linux-foundation.org, jagana@us.ibm.com,
+       Robert.Olsson@data.slu.se, rick.jones2@hp.com, xma@us.ibm.com,
+       gaagaan@gmail.com, netdev@vger.kernel.org, rdreier@cisco.com,
+       Ingo Molnar <mingo@elte.hu>, mchan@broadcom.com,
+       general@lists.openfabrics.org, kumarkr@linux.ibm.com, tgraf@suug.ch,
+       randy.dunlap@oracle.com, sri@us.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: parallel networking (was Re: [PATCH 1/4] [NET_SCHED] explict hold
+ dev tx lock)
+References: <1190674298.4264.24.camel@localhost>	 <D5C1322C3E673F459512FB59E0DDC32903A51462@orsmsx414.amr.corp.intel.com>	 <1190677099.4264.37.camel@localhost>	 <20071007.215124.85709188.davem@davemloft.net> <1191850490.4352.41.camel@localhost>
+In-Reply-To: <1191850490.4352.41.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007 09:25:55 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
+jamal wrote:
+> On Sun, 2007-07-10 at 21:51 -0700, David Miller wrote:
+> 
+>> For these high performance 10Gbit cards it's a load balancing
+>> function, really, as all of the transmit queues go out to the same
+>> physical port so you could:
+>>
+>> 1) Load balance on CPU number.
+>> 2) Load balance on "flow"
+>> 3) Load balance on destination MAC
+>>
+>> etc. etc. etc.
+> 
+> The brain-block i am having is the parallelization aspect of it.
+> Whatever scheme it is - it needs to ensure the scheduler works as
+> expected. For example, if it was a strict prio scheduler i would expect
+> that whatever goes out is always high priority first and never ever
+> allow a low prio packet out at any time theres something high prio
+> needing to go out. If i have the two priorities running on two cpus,
+> then i cant guarantee that effect.
 
-> Hi!
-> 
-> Powertop tells me that irqbalance is obsolete/burns too much power,
-> while it is default Y and its help test does not provide any clues:
+Any chance the NIC hardware could provide that guarantee?
 
-it is obsoleted.. (by the userspace balancer)
-> 
-> Enable kernel irq balancing (IRQBALANCE) [Y/n/?] (NEW) ?
-> 
-> The default yes will allow the kernel to do irq load balancing.
-> Saying no will keep the kernel from doing irq load balancing.
-> 
-> ...should the help text be updated?
+8139cp, for example, has two TX DMA rings, with hardcoded 
+characteristics:  one is a high prio q, and one a low prio q.  The logic 
+is pretty simple:   empty the high prio q first (potentially starving 
+low prio q, in worst case).
 
-that and the feature should probably be put in feature-removal
+
+In terms of overall parallelization, both for TX as well as RX, my gut 
+feeling is that we want to move towards an MSI-X, multi-core friendly 
+model where packets are LIKELY to be sent and received by the same set 
+of [cpus | cores | packages | nodes] that the [userland] processes 
+dealing with the data.
+
+There are already some primitive NUMA bits in skbuff allocation, but 
+with modern MSI-X and RX/TX flow hashing we could do a whole lot more, 
+along the lines of better CPU scheduling decisions, directing flows to 
+clusters of cpus, and generally doing a better job of maximizing cache 
+efficiency in a modern multi-thread environment.
+
+IMO the current model where each NIC's TX completion and RX processes 
+are both locked to the same CPU is outmoded in a multi-core world with 
+modern NICs.  :)
+
+But I readily admit general ignorance about the kernel process 
+scheduling stuff, so my only idea about a starting point was to see how 
+far to go with the concept of "skb affinity" -- a mask in sk_buff that 
+is a hint about which cpu(s) on which the NIC should attempt to send and 
+receive packets.  When going through bonding or netfilter, it is trivial 
+to 'or' together affinity masks.  All the various layers of net stack 
+should attempt to honor the skb affinity, where feasible (requires 
+interaction with CFS scheduler?).
+
+Or maybe skb affinity is a dumb idea.  I wanted to get people thinking 
+on the bigger picture.  Parallelization starts at the user process.
+
+	Jeff
+
+
