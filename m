@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbXJHVjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbXJHVkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbXJHVjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 17:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXJHVjN
+	id S1754965AbXJHVkX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 17:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXJHVkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 17:39:13 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59421 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbXJHVjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 17:39:12 -0400
-Date: Mon, 8 Oct 2007 17:38:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-Message-ID: <20071008213852.GA31713@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>
-References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org> <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr> <470A9422.4050400@zytor.com>
+	Mon, 8 Oct 2007 17:40:03 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:59004 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbXJHVj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 17:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=hgSwabDwUJRaVP+KrDKLuVUe66+RGS3JA64oF/2I2SQtYA8h8cKK33BZrYD671APVtz64zo/VyGF2ygQDBebyFeAi7XrUBOJS4Ay3zxdRC+qImdu7r2Ui3lUk92ZaO/W9Qrbmih2G+7Lifxm5qXOqKdWEPo7Qi+HXULCSF17pZI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Bug #4580: hda: lost interrupt when resuming from S3 - Sony VGN-T1XP
+Date: Mon, 8 Oct 2007 23:44:45 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200710072217.07656.rjw@sisk.pl>
+In-Reply-To: <200710072217.07656.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <470A9422.4050400@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200710082344.45377.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 01:33:38PM -0700, H. Peter Anvin wrote:
-> Uhm, no.  There is no reason an "unimportant" person couldn't review a 
-> patch, and therefore perform a potentially highly valuable service to 
-> the maintainer.
+
+Hi,
+
+On Sunday 07 October 2007, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> None of these are indicative of the authority of the person acking, 
-> reviewing, testing, or nacking.  That's only as good as the trust in the 
-> person signing.
+> IDE/ATA wizzards are kindly requested to have a look at:
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=4580#c21
+> 
+> as I have no idea of what we can do about the "hard drive password vs suspend"
+> problem, if anything.
 
-I would tend to agree.  Right now I think the problem is that we are
-getting too little reviews, not enough.  And someone who reviews
-patches, even if unknown, could be building up expertise that
-eventually would make them a valued developer, even while they are
-doing us a service.   
+CONFIG_BLK_DEV_IDEACPI=y is not enough since IDE ACPI _GTF support is disabled
+by default.  To enable it "ide=acpigtf" kernel parameter should be used.
 
-The concern that I suspect some people have is what if this gets
-abused by people who don't really bother to do a full review of a
-patch before they ack it.  We could ask reviewers to include a URL to
-an LKML archive of their review, to make it easier to find a review of
-a patch so later on people can judge how effective they their review
-was.  Unfortunately, this would be an added burden for the regular
-reviewers, so I doubt this would be well accepted as a practice.  My
-suggestion is to not worry about this for now, and see how well it
-works out in practice.  If we start getting half a dozen or more
-Reviewed-by: where the patch is pretty clearly not getting adequately
-reviewed, or where someone is obviously abusing the system, and social
-pressures aren't working, we can try to figure out then how we want to
-address that problem then.  Let's not make the process too complicated
-unless we know it's necessary.  Premature complexity is almost as bad
-as premature optimization....
+Sometimes it may be also worth to try enabling usage of IDE ACPI methods on
+boot ("ide=acpionboot" kernel parameter) which is also disabled by default.
 
-					- Ted
+We probably should switch both options to be on by default if recent libata
+transition to ACPI on by default turns out to be successful.
+
+PS I've updated bug #4580 accordingly.
+
+Thanks,
+Bart
