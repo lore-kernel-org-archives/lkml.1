@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbXJHSJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbXJHSLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbXJHSJR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXJHSI7
+	id S1756622AbXJHSLT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbXJHSLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:08:59 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48763 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbXJHSI6 (ORCPT
+	Mon, 8 Oct 2007 14:11:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51776 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbXJHSLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:08:58 -0400
-Date: Mon, 8 Oct 2007 11:06:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-Message-Id: <20071008110614.dd671fc7.randy.dunlap@oracle.com>
-In-Reply-To: <470A708D.4080905@goop.org>
-References: <25555.1191864285@lwn.net>
-	<20071008173706.GA12026@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
-	<470A708D.4080905@goop.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 8 Oct 2007 14:11:02 -0400
+Date: Mon, 8 Oct 2007 11:06:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Krzysztof Oledzki <olel@ans.pl>, Greg KH <greg@kroah.com>
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       netdev@vger.kernel.org, Pierre-Yves Ritschard <pyr@spootnik.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: [patch 03/12] sky2: fix VLAN receive processing
+Message-ID: <20071008180611.GD7627@kroah.com>
+References: <20071008180406.052382073@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="sky2-vlan-len.patch"
+In-Reply-To: <20071008180551.GA7627@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Oct 2007 11:01:49 -0700 Jeremy Fitzhardinge wrote:
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-> Jan Engelhardt wrote:
-> >> Acked-by:
-> >> Tested-by:
-> >>     
-> >
-> > * Used by random people to express their (dis)like/experience with the 
-> > patch.
-> >   
-> 
-> Tested-by is more valuable than acked-by, because its empirical. 
-> Acked-by generally means "I don't generally object to the idea of the
-> patch, but may not have read beyond the changelog".  Tested-by implies
-> "I did something that exercised the patch, and it didn't explode" -
-> that's on par with an actual review (ideally all patches would be both
-> tested and reviewed).
+Already upstream.
 
-but Tested-by: doesn't have to involve any "actually looking at/reading
-the patch."  Right?
+The length check for truncated frames was not correctly handling
+the case where VLAN acceleration had already read the tag.
+Also, the Yukon EX has some features that use high bit of status
+as security tag.
 
-IOW, the patch could be ugly as sin but it works...
-
-
-> >> Reviewed-by:
-> >>     
-> >
-> > * I am maintaner or an 'important' person and have had a
-> >   look at it in depth
-> >   
-> 
-> Hm.  We have a tension here:
-> 
->     * there aren't enough reviewers
->     * some reviews are more useful than others
-> 
-> While a review by a trustworthy person is invaluable, we don't want to
-> discourage people from reviewing.  A new reviewer's review may not be
-> terribly useful, but a meta-review may help improve it.  Or it could be
-> a great review.
-> 
-> I guess I'm proposing that we also need to expand the reviewer base, and
-> to do so we need some kind of reviewer-mentoring or metareview process. 
-> Of course that could just be an extra burden on the existing (small)
-> trusted reviewer base, but the hope is that over time the reviewer pool
-> size grows enough to make the effort worthwhile...
-> 
-> 
-> >> Cc:
-> >>     
-> >
-> > * Used by original submitter to denote additional maintainers it goes to
-> > * Parties who should be Cced when an a posteriori question comes up
-> >   
-> 
-> Well, any interested parties, really.  I use it for original bug
-> reporters, people who followed up on the report, people who have patches
-> in a nearby area, people who are known to be interested in the affected
-> subsystem, people who have reviewed previous versions of the patch, etc...
+Signed-off-by: Pierre-Yves Ritschard <pyr@spootnik.org>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
-~Randy
+ drivers/net/sky2.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2049,6 +2049,7 @@ static struct sk_buff *sky2_receive(stru
+  	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct rx_ring_info *re = sky2->rx_ring + sky2->rx_next;
+ 	struct sk_buff *skb = NULL;
++	u16 count;
+ 
+ 	if (unlikely(netif_msg_rx_status(sky2)))
+ 		printk(KERN_DEBUG PFX "%s: rx slot %u status 0x%x len %d\n",
+@@ -2063,7 +2064,13 @@ static struct sk_buff *sky2_receive(stru
+ 	if (!(status & GMR_FS_RX_OK))
+ 		goto resubmit;
+ 
+-	if (status >> 16 != length)
++	count = (status & GMR_FS_LEN) >> 16;
++#ifdef SKY2_VLAN_TAG_USED
++	/* Account for vlan tag */
++	if (sky2->vlgrp && (status & GMR_FS_VLAN))
++		count -= VLAN_HLEN;
++#endif
++	if (count != length)
+ 		goto len_mismatch;
+ 
+ 	if (length < copybreak)
+
+-- 
