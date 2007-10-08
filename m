@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbXJHUgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbXJHUjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbXJHUgq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 16:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXJHUgi
+	id S1754133AbXJHUjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 16:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXJHUjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 16:36:38 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:51136 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbXJHUgh (ORCPT
+	Mon, 8 Oct 2007 16:39:05 -0400
+Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:20860 "HELO
+	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752274AbXJHUjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 16:36:37 -0400
-Date: Mon, 8 Oct 2007 22:50:48 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
-Message-ID: <20071008205048.GY22435@flower.upol.cz>
-References: <20071008200255.GA16497@uranus.ravnborg.org>
+	Mon, 8 Oct 2007 16:39:03 -0400
+X-YMail-OSG: VhE80hwVM1n3TZsMUieLKJIuLxNAcmAwxVKKsu1rqC9_mIQBLJP_KNNTLMRSzKefaSeoF8gfYg--
+X-RocketYMMF: rancidfat
+Date: Mon, 8 Oct 2007 13:39:01 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m1hcl11j31.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071008200255.GA16497@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <384716.99898.qm@web36602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 10:02:55PM +0200, Sam Ravnborg wrote:
-> One of the complaints that I continue to hear is that kbuild
-> is lacking a way to 'remember' the ARCH and CROSS_COMPILE
-> values originally used.
 
-Yea, finally.
-
-What about, that this is the first ever prompt, that must be shown and
-written to the .config?
-
-The zeroth one is an config entry of kernel version(s), .config can
-configure and thus build successfully.
+--- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
 
 
-This are among other ideas about kconfig/kbuild, you know nothing
-about yet.
+> My very practical question:  How do I run selinux in one container,
+> and SMACK in another?
 
-So, what do you think?
+How would you run PREEMPT_RT in one container, and PREEMPT_DESKTOP
+in another? How would you run SMP in one and UP in the other?
+One aspect that SELinux and Smack share is that they only really
+provide security if all processes involved are under their control,
+just like the preemption behavior.
 
-Also, i'd like to propose sequencing of config-enable-build-this-unit
-in config file(s), thus Makefile(s) (sometimes very small and stupid)
-will be not necessary. Additional link ordering can be supplied as
-meta-config information there. Shell scripting, very ugly in the view
-of make syntax, will be natural in config files. Extending build
-process to get hidden dependencies or right linking/other magic is
-part of particular configuration. Hm?
+This is not necessarily true of all possible LSMs. In that case it may
+be practicle to have different behavior for different containers.
 
-And i want to repeat this to the wall:
 
-make is stupid `test -nt` (non POSIX, but accepted my shells and GNU test
-feature). Making any kind of hashing to make dream of kbuild-2.5
-developers/fans -- more complete `up-to-date' heuristic possible, is just
-like `md5sum > $OBJDIR/heuristic.com`, which is config selectable (for
-those, who don't like a bit of slowdown).
---
--o--=O`C
- #oo'L O
-<___=E M
+Casey Schaufler
+casey@schaufler-ca.com
