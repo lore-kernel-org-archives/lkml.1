@@ -1,377 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXJHXFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbXJHXGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbXJHXFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXJHXFF
+	id S1753919AbXJHXGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXJHXGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:05:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26131 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbXJHXFC (ORCPT
+	Mon, 8 Oct 2007 19:06:09 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:52312 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbXJHXGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:05:02 -0400
-Message-ID: <470AB79A.5060007@schaufler-ca.com>
-Date: Mon, 08 Oct 2007 16:04:58 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org, paul.moore@hp.com
-Subject: [PATCH] [NetLabel] Introduce a new kernel configuration API for NetLabel
- - for Smack Version 5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Oct 2007 19:06:08 -0400
+To: Theodore Tso <tytso@mit.edu>, Jonathan Corbet <corbet@lwn.net>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+In-Reply-To: <20071008213852.GA31713@thunk.org>
+References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org> <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr> <470A9422.4050400@zytor.com> <20071008213852.GA31713@thunk.org>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Tue, 9 Oct 2007 01:20:17 +0200
+Message-Id: <E1If1tZ-0002h7-UU@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Moore <paul.moore@hp.com>
+* Mon, 8 Oct 2007 17:38:52 -0400
+>
+> On Mon, Oct 08, 2007 at 01:33:38PM -0700, H. Peter Anvin wrote:
+>> Uhm, no.  There is no reason an "unimportant" person couldn't review a 
+>> patch, and therefore perform a potentially highly valuable service to 
+>> the maintainer.
+>> 
+>> None of these are indicative of the authority of the person acking, 
+>> reviewing, testing, or nacking.  That's only as good as the trust in the 
+>> person signing.
+>
+> I would tend to agree.  Right now I think the problem is that we are
+> getting too little reviews, not enough.  And someone who reviews
+> patches, even if unknown, could be building up expertise that
+> eventually would make them a valued developer, even while they are
+> doing us a service.   
 
-Add a new set of configuration functions to the NetLabel/LSM API so that
-LSMs can perform their own configuration of the NetLabel subsystem without
-relying on assistance from userspace.
+Experience of convincing experienced patch author, that some things in
+the patch are wrong :)
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
----
+[]
+> We could ask reviewers to include a URL to an LKML archive of their
+> review, to make it easier to find a review of a patch so later on
+> people can judge how effective they their review was.
 
-This update fixes a memory leak on error conditions.
+I vote for more little summaries in the `Subject'(again). Long, boring
+threads with whole threading part of screen being empty due to same
+subjects isn't fun, when some of thousands of messages can have
+interesting stuff inside.
 
- include/net/netlabel.h             |   47 ++++++++--
- net/ipv4/cipso_ipv4.c              |    4 -
- net/netlabel/netlabel_cipso_v4.c   |    2 
- net/netlabel/netlabel_cipso_v4.h   |    3 +
- net/netlabel/netlabel_domainhash.h |    1 
- net/netlabel/netlabel_kapi.c       |  177 ++++++++++++++++++++++++++++++++++++
- 6 files changed, 225 insertions(+), 9 deletions(-)
+And it's easy not only for mailing list readers now, and for archive
+readers also; readers of the www search results (who ever that may be):
 
-diff --git a/include/net/netlabel.h b/include/net/netlabel.h
-index 2e5b2f6..facaf68 100644
---- a/include/net/netlabel.h
-+++ b/include/net/netlabel.h
-@@ -36,6 +36,8 @@
- #include <net/netlink.h>
- #include <asm/atomic.h>
- 
-+struct cipso_v4_doi;
-+
- /*
-  * NetLabel - A management interface for maintaining network packet label
-  *            mapping tables for explicit packet labling protocols.
-@@ -99,12 +101,6 @@ struct netlbl_audit {
- 	uid_t loginuid;
- };
- 
--/* Domain mapping definition struct */
--struct netlbl_dom_map;
--
--/* Domain mapping operations */
--int netlbl_domhsh_remove(const char *domain, struct netlbl_audit *audit_info);
--
- /* LSM security attributes */
- struct netlbl_lsm_cache {
- 	atomic_t refcount;
-@@ -285,6 +281,19 @@ static inline void netlbl_secattr_free(struct netlbl_lsm_secattr *secattr)
- 
- #ifdef CONFIG_NETLABEL
- /*
-+ * LSM configuration operations
-+ */
-+int netlbl_cfg_map_del(const char *domain, struct netlbl_audit *audit_info);
-+int netlbl_cfg_unlbl_add_map(const char *domain,
-+			     struct netlbl_audit *audit_info);
-+int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
-+			   struct netlbl_audit *audit_info);
-+int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
-+			       const char *domain,
-+			       struct netlbl_audit *audit_info);
-+int netlbl_cfg_cipsov4_del(u32 doi, struct netlbl_audit *audit_info);
-+
-+/*
-  * LSM security attribute operations
-  */
- int netlbl_secattr_catmap_walk(struct netlbl_lsm_secattr_catmap *catmap,
-@@ -318,6 +327,32 @@ void netlbl_cache_invalidate(void);
- int netlbl_cache_add(const struct sk_buff *skb,
- 		     const struct netlbl_lsm_secattr *secattr);
- #else
-+static inline int netlbl_cfg_map_del(const char *domain,
-+				     struct netlbl_audit *audit_info)
-+{
-+	return -ENOSYS;
-+}
-+static inline int netlbl_cfg_unlbl_add_map(const char *domain,
-+					   struct netlbl_audit *audit_info)
-+{
-+	return -ENOSYS;
-+}
-+static inline int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
-+					 struct netlbl_audit *audit_info)
-+{
-+	return -ENOSYS;
-+}
-+static inline int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
-+					     const char *domain,
-+					     struct netlbl_audit *audit_info)
-+{
-+	return -ENOSYS;
-+}
-+static inline int netlbl_cfg_cipsov4_del(u32 doi,
-+					 struct netlbl_audit *audit_info)
-+{
-+	return -ENOSYS;
-+}
- static inline int netlbl_secattr_catmap_walk(
- 	                              struct netlbl_lsm_secattr_catmap *catmap,
- 				      u32 offset)
-diff --git a/net/ipv4/cipso_ipv4.c b/net/ipv4/cipso_ipv4.c
-index ab56a05..714461c 100644
---- a/net/ipv4/cipso_ipv4.c
-+++ b/net/ipv4/cipso_ipv4.c
-@@ -557,8 +557,8 @@ int cipso_v4_doi_remove(u32 doi,
- 		spin_unlock(&cipso_v4_doi_list_lock);
- 		list_for_each_entry_rcu(dom_iter, &doi_def->dom_list, list)
- 			if (dom_iter->valid)
--				netlbl_domhsh_remove(dom_iter->domain,
--						     audit_info);
-+				netlbl_cfg_map_del(dom_iter->domain,
-+						   audit_info);
- 		cipso_v4_cache_invalidate();
- 		rcu_read_unlock();
- 
-diff --git a/net/netlabel/netlabel_cipso_v4.c b/net/netlabel/netlabel_cipso_v4.c
-index c060e3f..07f7fd4 100644
---- a/net/netlabel/netlabel_cipso_v4.c
-+++ b/net/netlabel/netlabel_cipso_v4.c
-@@ -89,7 +89,7 @@ static const struct nla_policy netlbl_cipsov4_genl_policy[NLBL_CIPSOV4_A_MAX + 1
-  * safely.
-  *
-  */
--static void netlbl_cipsov4_doi_free(struct rcu_head *entry)
-+void netlbl_cipsov4_doi_free(struct rcu_head *entry)
- {
- 	struct cipso_v4_doi *ptr;
- 
-diff --git a/net/netlabel/netlabel_cipso_v4.h b/net/netlabel/netlabel_cipso_v4.h
-index f03cf9b..220cb9d 100644
---- a/net/netlabel/netlabel_cipso_v4.h
-+++ b/net/netlabel/netlabel_cipso_v4.h
-@@ -163,4 +163,7 @@ enum {
- /* NetLabel protocol functions */
- int netlbl_cipsov4_genl_init(void);
- 
-+/* Free the memory associated with a CIPSOv4 DOI definition */
-+void netlbl_cipsov4_doi_free(struct rcu_head *entry);
-+
- #endif
-diff --git a/net/netlabel/netlabel_domainhash.h b/net/netlabel/netlabel_domainhash.h
-index 3689956..8220990 100644
---- a/net/netlabel/netlabel_domainhash.h
-+++ b/net/netlabel/netlabel_domainhash.h
-@@ -61,6 +61,7 @@ int netlbl_domhsh_add(struct netlbl_dom_map *entry,
- 		      struct netlbl_audit *audit_info);
- int netlbl_domhsh_add_default(struct netlbl_dom_map *entry,
- 			      struct netlbl_audit *audit_info);
-+int netlbl_domhsh_remove(const char *domain, struct netlbl_audit *audit_info);
- int netlbl_domhsh_remove_default(struct netlbl_audit *audit_info);
- struct netlbl_dom_map *netlbl_domhsh_getentry(const char *domain);
- int netlbl_domhsh_walk(u32 *skip_bkt,
-diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
-index 4f50949..2ba5ae8 100644
---- a/net/netlabel/netlabel_kapi.c
-+++ b/net/netlabel/netlabel_kapi.c
-@@ -30,6 +30,7 @@
- 
- #include <linux/init.h>
- #include <linux/types.h>
-+#include <linux/audit.h>
- #include <net/ip.h>
- #include <net/netlabel.h>
- #include <net/cipso_ipv4.h>
-@@ -37,10 +38,186 @@
- 
- #include "netlabel_domainhash.h"
- #include "netlabel_unlabeled.h"
-+#include "netlabel_cipso_v4.h"
- #include "netlabel_user.h"
- #include "netlabel_mgmt.h"
- 
- /*
-+ * Configuration Functions
-+ */
-+
-+/**
-+ * netlbl_cfg_map_del - Remove a NetLabel/LSM domain mapping
-+ * @domain: the domain mapping to remove
-+ * @audit_info: NetLabel audit information
-+ *
-+ * Description:
-+ * Removes a NetLabel/LSM domain mapping.  A @domain value of NULL causes the
-+ * default domain mapping to be removed.  Returns zero on success, negative
-+ * values on failure.
-+ *
-+ */
-+int netlbl_cfg_map_del(const char *domain, struct netlbl_audit *audit_info)
-+{
-+	return netlbl_domhsh_remove(domain, audit_info);
-+}
-+
-+/**
-+ * netlbl_cfg_unlbl_add_map - Add an unlabeled NetLabel/LSM domain mapping
-+ * @domain: the domain mapping to add
-+ * @audit_info: NetLabel audit information
-+ *
-+ * Description:
-+ * Adds a new unlabeled NetLabel/LSM domain mapping.  A @domain value of NULL
-+ * causes a new default domain mapping to be added.  Returns zero on success,
-+ * negative values on failure.
-+ *
-+ */
-+int netlbl_cfg_unlbl_add_map(const char *domain,
-+			     struct netlbl_audit *audit_info)
-+{
-+	int ret_val = -ENOMEM;
-+	struct netlbl_dom_map *entry;
-+
-+	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
-+	if (entry == NULL)
-+		goto cfg_unlbl_add_map_failure;
-+	if (domain != NULL) {
-+		entry->domain = kstrdup(domain, GFP_ATOMIC);
-+		if (entry->domain == NULL)
-+			goto cfg_unlbl_add_map_failure;
-+	}
-+	entry->type = NETLBL_NLTYPE_UNLABELED;
-+
-+	ret_val = netlbl_domhsh_add(entry, audit_info);
-+	if (ret_val != 0)
-+		goto cfg_unlbl_add_map_failure;
-+
-+	return 0;
-+
-+cfg_unlbl_add_map_failure:
-+	if (entry != NULL)
-+		kfree(entry->domain);
-+	kfree(entry);
-+	return ret_val;
-+}
-+
-+/**
-+ * netlbl_cfg_cipsov4_add - Add a new CIPSOv4 DOI definition
-+ * @doi_def: the DOI definition
-+ * @audit_info: NetLabel audit information
-+ *
-+ * Description:
-+ * Add a new CIPSOv4 DOI definition to the NetLabel subsystem.  Returns zero on
-+ * success, negative values on failure.
-+ *
-+ */
-+int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
-+			   struct netlbl_audit *audit_info)
-+{
-+	int ret_val;
-+	const char *type_str;
-+	struct audit_buffer *audit_buf;
-+
-+	ret_val = cipso_v4_doi_add(doi_def);
-+
-+	audit_buf = netlbl_audit_start_common(AUDIT_MAC_CIPSOV4_ADD,
-+					      audit_info);
-+	if (audit_buf != NULL) {
-+		switch (doi_def->type) {
-+		case CIPSO_V4_MAP_STD:
-+			type_str = "std";
-+			break;
-+		case CIPSO_V4_MAP_PASS:
-+			type_str = "pass";
-+			break;
-+		default:
-+			type_str = "(unknown)";
-+		}
-+		audit_log_format(audit_buf,
-+				 " cipso_doi=%u cipso_type=%s res=%u",
-+				 doi_def->doi,
-+				 type_str,
-+				 ret_val == 0 ? 1 : 0);
-+		audit_log_end(audit_buf);
-+	}
-+
-+	return ret_val;
-+}
-+
-+/**
-+ * netlbl_cfg_cipsov4_add_map - Add a new CIPSOv4 DOI definition and mapping
-+ * @doi_def: the DOI definition
-+ * @domain: the domain mapping to add
-+ * @audit_info: NetLabel audit information
-+ *
-+ * Description:
-+ * Add a new CIPSOv4 DOI definition and NetLabel/LSM domain mapping for this
-+ * new DOI definition to the NetLabel subsystem.  A @domain value of NULL adds
-+ * a new default domain mapping.  Returns zero on success, negative values on
-+ * failure.
-+ *
-+ */
-+int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
-+			       const char *domain,
-+			       struct netlbl_audit *audit_info)
-+{
-+	int ret_val = -ENOMEM;
-+	struct netlbl_dom_map *entry;
-+
-+	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
-+	if (entry == NULL)
-+		goto cfg_cipsov4_add_map_failure;
-+	if (domain != NULL) {
-+		entry->domain = kstrdup(domain, GFP_ATOMIC);
-+		if (entry->domain == NULL)
-+			goto cfg_cipsov4_add_map_failure;
-+	}
-+	entry->type = NETLBL_NLTYPE_CIPSOV4;
-+	entry->type_def.cipsov4 = doi_def;
-+
-+	/* Grab a RCU read lock here so nothing happens to the doi_def variable
-+	 * between adding it to the CIPSOv4 protocol engine and adding a
-+	 * domain mapping for it. */
-+
-+	rcu_read_lock();
-+	ret_val = netlbl_cfg_cipsov4_add(doi_def, audit_info);
-+	if (ret_val != 0)
-+		goto cfg_cipsov4_add_map_failure_unlock;
-+	ret_val = netlbl_domhsh_add(entry, audit_info);
-+	if (ret_val != 0)
-+		goto cfg_cipsov4_add_map_failure_remove_doi;
-+	rcu_read_unlock();
-+
-+	return 0;
-+
-+cfg_cipsov4_add_map_failure_remove_doi:
-+	cipso_v4_doi_remove(doi_def->doi, audit_info, netlbl_cipsov4_doi_free);
-+cfg_cipsov4_add_map_failure_unlock:
-+	rcu_read_unlock();
-+cfg_cipsov4_add_map_failure:
-+	if (entry != NULL)
-+		kfree(entry->domain);
-+	kfree(entry);
-+	return ret_val;
-+}
-+
-+/**
-+ * netlbl_cfg_cipsov4_del - Removean existing CIPSOv4 DOI definition
-+ * @doi: the CIPSO DOI value
-+ * @audit_info: NetLabel audit information
-+ *
-+ * Description:
-+ * Removes an existing CIPSOv4 DOI definition from the NetLabel subsystem.
-+ * Returns zero on success, negative values on failure.
-+ *
-+ */
-+int netlbl_cfg_cipsov4_del(u32 doi, struct netlbl_audit *audit_info)
-+{
-+	return cipso_v4_doi_remove(doi, audit_info, netlbl_cipsov4_doi_free);
-+}
-+
-+/*
-  * Security Attribute Functions
-  */
- 
+google.com/search?q=reviewed+crashkernel
 
+First hit on the review of the patch, i happened to make. And i just
+thought "hell, just string parsing, what can be more simply?", yet there
+was productive discussion and bug fixing. After i saw convincing
+statements about testing, i've placed review mark. Though i'm really
+"unimportant" random hacker.
+--
+-o--=O`C
+ #oo'L O
+<___=E M
