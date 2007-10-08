@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbXJHRgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXJHRja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbXJHRgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbXJHRgo
+	id S1755655AbXJHRja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXJHRjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:36:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56751 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755073AbXJHRgn (ORCPT
+	Mon, 8 Oct 2007 13:39:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50402 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953AbXJHRjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:36:43 -0400
-Date: Mon, 8 Oct 2007 10:36:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Rik van Riel <riel@redhat.com>, Andi Kleen <ak@suse.de>,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: Re: [13/18] x86_64: Allow fallback for the stack
-In-Reply-To: <200710071735.41386.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0710081032030.26382@schroedinger.engr.sgi.com>
-References: <20071004035935.042951211@sgi.com> <20071004153940.49bd5afc@bree.surriel.com>
- <Pine.LNX.4.64.0710041418100.12779@schroedinger.engr.sgi.com>
- <200710071735.41386.nickpiggin@yahoo.com.au>
+	Mon, 8 Oct 2007 13:39:22 -0400
+Date: Mon, 8 Oct 2007 10:39:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, stable <stable@kernel.org>,
+       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH] lockdep: fix mismatched
+	lockdep_depth/curr_chain_hash
+Message-ID: <20071008173908.GA26121@kroah.com>
+References: <20071005034058.20275.21559.stgit@ghaskins-t60p.haskins.net> <1191576686.22357.64.camel@twins> <20071008172424.GA6692@kroah.com> <1191864970.5797.1.camel@lappy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191864970.5797.1.camel@lappy>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Oct 2007, Nick Piggin wrote:
-
-> > The problem can become non-rare on special low memory machines doing wild
-> > swapping things though.
+On Mon, Oct 08, 2007 at 07:36:10PM +0200, Peter Zijlstra wrote:
 > 
-> But only your huge systems will be using huge stacks?
+> On Mon, 2007-10-08 at 10:24 -0700, Greg KH wrote:
+> > On Fri, Oct 05, 2007 at 11:31:26AM +0200, Peter Zijlstra wrote:
+> > > 
+> > > Stable team,
+> > > 
+> > > please consider this patch for the next 22-stable.
+> > 
+> > I don't see this patch in Linus's upstream tree.  We need it there to be
+> > able to accept it for -stable.  Or is this just a bugfix of other things
+> > that are already in his tree?
+> 
+> I send Linus a similar patch, haven??t seem him pick it up yet.
+> I??ll notify you when and if he picks it up.
 
-I have no idea who else would be using such a feature. Relaxing the tight 
-memory restrictions on stack use may allow placing larger structures on 
-the stack in general.
+Great, that would be great for us -stable monkeys...
 
-I have some concerns about the medium NUMA systems (a few dozen of nodes) 
-also running out of stack since more data is placed on the stack through 
-the policy layer and since we may end up with a couple of stacked 
-filesystems. Most of the current NUMA systems on x86_64 are basically 
-two nodes on one motherboard. The use of NUMA controls is likely 
-limited there and the complexity of the filesystems is also not high.
-
-
+greg k-h
