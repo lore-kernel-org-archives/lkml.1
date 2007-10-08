@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXJHXSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbXJHXUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbXJHXSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXJHXSp
+	id S1753729AbXJHXUi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXJHXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:18:45 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:22687 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751732AbXJHXSo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=p+WiApG0ha5ty6qAeNQuzafnf+8Eiozw9uaP4NcANQzBerPlDRFrckGDPoWrUWq8bU78fwlJIz89DzZZVCIV7gNTlulJhs/Aw8Q9Lm2BdLXeaM2/OroUupVs8t6hIwgFkoAIVbz0HyaaRlhFDpJyApm8T6FCLlsyfZNCe2pphPE=  ;
-X-YMail-OSG: HEf7Mc4VM1nevQtB1eNjZeUxAQCISif5hyY_6zcwFrB49K8r6dugEiih2l9rivpPjeOkxFlzHD3yBMjH_oF0JgsBNj319L4Nim9be1s2MoSaDvXBZY0-
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-Date: Mon, 8 Oct 2007 16:47:04 +1000
-User-Agent: KMail/1.9.5
-Cc: Yan Zheng <yanzheng@21cn.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com> <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
+	Mon, 8 Oct 2007 19:20:30 -0400
+Received: from mail.tmr.com ([64.65.253.246]:42369 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751694AbXJHXU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 19:20:29 -0400
+Message-ID: <470ABC34.3060002@tmr.com>
+Date: Mon, 08 Oct 2007 19:24:36 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Serge E. Hallyn" <serge@hallyn.com>
+CC: Casey Schaufler <casey@schaufler-ca.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory	Access
+ Control Kernel
+References: <A508A802-AB11-4DFF-9CA8-498897CE5D03@mac.com> <63003.78064.qm@web36613.mail.mud.yahoo.com> <20071008161835.GB7106@vino.hallyn.com>
+In-Reply-To: <20071008161835.GB7106@vino.hallyn.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710081647.04399.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 October 2007 23:37, Hugh Dickins wrote:
-> On Mon, 8 Oct 2007, Yan Zheng wrote:
-> > The test for VM_CAN_NONLINEAR always fails
+Serge E. Hallyn wrote:
+> (tongue-in-cheek)
 >
-> Good catch indeed.  Though I was puzzled how we do nonlinear at all,
-> until I realized it's "The test for not VM_CAN_NONLINEAR always fails".
->
-> It's not as serious as it appears, since code further down has been
-> added more recently to simulate nonlinear on non-RAM-backed filesystems,
-> instead of going the real nonlinear way; so most filesystems are now not
-> required to do what VM_CAN_NONLINEAR was put in to ensure they could do.
+> No no, everyone knows you don't build simpler things on top of more
+> complicated ones, you go the other way around.  So what he was
+> suggesting was that selinux be re-written on top of smack.
+>   
 
-Well, I think all filesystems can do VM_CAN_NONLINEAR anyway. Device
-drivers and "weird" things tend to have trouble...
+Having gone from proposing a simpler and easier to use security system 
+as an alternative to SELinux, you now propose to change the one working 
+security system we have. And yes, it's hard to use, but it works. Let's 
+keep this a patch, people who want adventure can have one, and people 
+who have gotten Linux accepted "if SELinux is enabled" will avoid one.
 
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-> I'm confused as to where that leaves us: is this actually a fix that
-> needs to go into 2.6.23?  or will it suddenly disable a system call
-> which has been silently working fine on various filesystems which did
-> not add VM_CAN_NONLINEAR?  could we just rip out VM_CAN_NONLINEAR?
-
-We probably should keep VM_CAN_NONLINEAR for the moment, I think.
-But now that we have the fallback path, we _could_ use that instead of
-failing. I doubt anybody will be using nonlinear mappings on anything but
-regular files for the time being, but as a trivial fix, I think this probably
-should go into 2.6.23.
-
-Thanks for spotting this problem
-Acked-by: Nick Piggin <npiggin@suse.de>
-
-> I hope Nick or Miklos is clearer on what the risks are.
->
-> (Apologies for all the "not"s and "non"s here, I'm embarrassed
-> after just criticizing Ingo's SCHED_NO_NO_OMIT_FRAME_POINTER!)
->
-> Hugh
->
-> > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
-> > ----
-> > diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
-> > --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
-> > +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
-> > @@ -160,7 +160,7 @@
-> >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
-> >  		goto out;
-> >
-> > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
-> > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
-> >  		goto out;
-> >
-> >  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
