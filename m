@@ -1,73 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbXJHXGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbXJHXGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbXJHXGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXJHXGJ
+	id S1754930AbXJHXGa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXJHXGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:06:09 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:52312 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbXJHXGI (ORCPT
+	Mon, 8 Oct 2007 19:06:13 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:27389 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbXJHXGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:06:08 -0400
-To: Theodore Tso <tytso@mit.edu>, Jonathan Corbet <corbet@lwn.net>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
+	Mon, 8 Oct 2007 19:06:12 -0400
+Date: Mon, 8 Oct 2007 16:06:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: corbet@lwn.net (Jonathan Corbet)
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
 Subject: Re: RFC: reviewer's statement of oversight
-In-Reply-To: <20071008213852.GA31713@thunk.org>
-References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org> <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr> <470A9422.4050400@zytor.com> <20071008213852.GA31713@thunk.org>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Tue, 9 Oct 2007 01:20:17 +0200
-Message-Id: <E1If1tZ-0002h7-UU@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+Message-Id: <20071008160603.52f9e343.randy.dunlap@oracle.com>
+In-Reply-To: <10940.1191883390@lwn.net>
+References: <20071008173706.GA12026@uranus.ravnborg.org>
+	<10940.1191883390@lwn.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mon, 8 Oct 2007 17:38:52 -0400
->
-> On Mon, Oct 08, 2007 at 01:33:38PM -0700, H. Peter Anvin wrote:
->> Uhm, no.  There is no reason an "unimportant" person couldn't review a 
->> patch, and therefore perform a potentially highly valuable service to 
->> the maintainer.
->> 
->> None of these are indicative of the authority of the person acking, 
->> reviewing, testing, or nacking.  That's only as good as the trust in the 
->> person signing.
->
-> I would tend to agree.  Right now I think the problem is that we are
-> getting too little reviews, not enough.  And someone who reviews
-> patches, even if unknown, could be building up expertise that
-> eventually would make them a valued developer, even while they are
-> doing us a service.   
+On Mon, 08 Oct 2007 16:43:10 -0600 Jonathan Corbet wrote:
 
-Experience of convincing experienced patch author, that some things in
-the patch are wrong :)
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > Or maybe we need something much less formal that explain the purpose of the
+> > four tags we use:
+> 
+> ...or maybe a combination?  How does the following patch look as a way
+> to describe how the tags are used and what Reviewed-by, in particular,
+> means?
+> 
+> Perhaps the DCO should move to this file as well?
+> 
+> jon
 
-[]
-> We could ask reviewers to include a URL to an LKML archive of their
-> review, to make it easier to find a review of a patch so later on
-> people can judge how effective they their review was.
+Just typos noted below...
 
-I vote for more little summaries in the `Subject'(again). Long, boring
-threads with whole threading part of screen being empty due to same
-subjects isn't fun, when some of thousands of messages can have
-interesting stuff inside.
+> ---
+> 
+> Add a document on patch tags.
+> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> 
+> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+> index 43e89b1..fa1518b 100644
+> --- a/Documentation/00-INDEX
+> +++ b/Documentation/00-INDEX
+> @@ -284,6 +284,8 @@ parport.txt
+>  	- how to use the parallel-port driver.
+>  parport-lowlevel.txt
+>  	- description and usage of the low level parallel port functions.
+> +patch-tags
+> +	- description of the tags which can be added to patches
+>  pci-error-recovery.txt
+>  	- info on PCI error recovery.
+>  pci.txt
+> diff --git a/Documentation/patch-tags b/Documentation/patch-tags
+> new file mode 100644
+> index 0000000..fb5f8e1
+> --- /dev/null
+> +++ b/Documentation/patch-tags
+> @@ -0,0 +1,66 @@
+> +Patches headed for the mainline may contain a variety of tags documenting
+> +who played a hand in (or was at least aware of) its progress.  All of these
+> +tags have the form:
+> +
+> +	Something-done-by: Full name <email@address>
+> +
+> +These tags are:
+> +
+> +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
+> +		patch is, to the best of his or her knowledge, legally able
+> +		to be merged into the mainline and distributed under the
+> +		terms of the GNU General Public License, version 2.  See
+> +		the Developer's Certificate of Origin, found in
+> +		Documentation/SubmittingPatches, for the precise meaning of
+> +		Signed-off-by.
+> +
+> +Acked-by:	The person named (who should be an active developer in the
+> +		area addressed by the patch) is aware of the patch and has
+> +		no objection to its inclusion.  An Acked-by tag does not
+> +		imply any involvement in the development of the patch or
+> +		that a detailed review was done.
+> +
+> +Reviewed-by:	The patch has been reviewed and found acceptible according
 
-And it's easy not only for mailing list readers now, and for archive
-readers also; readers of the www search results (who ever that may be):
+                                                      acceptable
 
-google.com/search?q=reviewed+crashkernel
+> +		to the Reviewer's Statement as found at the bottom of this
+> +		file.  A Reviewed-by tag is a statement of opinion that the
+> +		patch is an appropriate modification of the kernel without
+> +		any remaining serious technical issues.  Any interested
+> +		reviewer (who has done the work) can offer a Reviewed-by
+> +		tag for a patch.
+> +
+> +Cc:		The person named was given the opportunity to comment on
+> +		the patch.  This is the only tag which might be added
+> +		without an explicit action by the person it names.
+> +
+> +Tested-by:	The patch has been successfully tested (in some
+> +		environment) by the person named.
+> +
+> +
+> +----
+> +
+> +Reviewer's statement of oversight, v0.02
+> +
+> +By offering my Reviewed-by: tag, I state that:
+> +
+> + (a) I have carried out a technical review of this patch to evaluate its
+> +     appropriateness and readiness for inclusion into the mainline kernel. 
+> +
+> + (b) Any problems, concerns, or questions relating to the patch have been
+> +     communicated back to the submitter.  I am satisfied with how the
+> +     submitter has responded to my comments.
+> +
+> + (c) While there may (or may not) be things which could be improved with
+> +     this submission, I believe that it is, at this time, (1) a worthwhile
+> +     modification to the kernel, and (2) free of known issues which would
+> +     argue against its inclusion.
+> +
+> + (d) While I have reviewed the patch and believe it to be sound, I can not
 
-First hit on the review of the patch, i happened to make. And i just
-thought "hell, just string parsing, what can be more simply?", yet there
-was productive discussion and bug fixing. After i saw convincing
-statements about testing, i've placed review mark. Though i'm really
-"unimportant" random hacker.
---
--o--=O`C
- #oo'L O
-<___=E M
+                                                                     cannot
+
+> +     (unless explicitly stated elsewhere) make any warranties or guarantees
+> +     that it will achieve its stated purpose or function properly in any
+> +     given situation.
+> +
+> + (e) I understand and agree that this project and the contribution are
+> +     public and that a record of the contribution (including my Reviewed-by
+> +     tag and any associated public communications) is maintained
+> +     indefinitely and may be redistributed consistent with this project or
+> +     the open source license(s) involved.
+> -
+
+
+---
+~Randy
