@@ -1,130 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbXJHVZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXJHV0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbXJHVZa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 17:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXJHVZS
+	id S1754785AbXJHV0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 17:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXJHV0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 17:25:18 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37442 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbXJHVZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 17:25:16 -0400
-Date: Mon, 8 Oct 2007 14:25:54 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alexis Bruemmer <alexisb@us.ibm.com>
-Subject: [PATCH] aic94xx: Use request_firmware() to provide SAS address if
-	the adapter lacks one
-Message-ID: <20071008212553.GI16752@tree.beaverton.ibm.com>
+	Mon, 8 Oct 2007 17:26:13 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:56198 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXJHV0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 17:26:12 -0400
+X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Oct 2007 17:26:12 EDT
+Message-ID: <470A9F2E.2090104@cateee.net>
+Date: Mon, 08 Oct 2007 23:20:46 +0200
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
+References: <20071008200255.GA16497@uranus.ravnborg.org> <20071008211255.GP16424@stusta.de>
+In-Reply-To: <20071008211255.GP16424@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the aic94xx chip doesn't have a SAS address in the chip's flash memory,
-use the request_firmware() interface to get one from userspace.  This
-way, there's no debate as to who or how an address gets generated--it's
-totally up to the administrator to provide it if the card doesn't have one.
+Adrian Bunk wrote:
+> 
+> BTW: I'm currently trying without success to understand why the
+>      drivers/infiniband/{hw/amso1100,ulp/srp}/Kbuild files are not
+>      named "Makefile".
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+or the inverse ;-)  Why all Makefiles (but the top level one ) are not
+named Kbuild, considering that they are not valid (standalone) Makefile.
 
- drivers/scsi/aic94xx/aic94xx.h      |    1 -
- drivers/scsi/aic94xx/aic94xx_hwi.c  |   40 +++++++++++++++++++++++++----------
- drivers/scsi/aic94xx/aic94xx_init.c |    2 --
- 3 files changed, 29 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/scsi/aic94xx/aic94xx.h b/drivers/scsi/aic94xx/aic94xx.h
-index 32f513b..935d558 100644
---- a/drivers/scsi/aic94xx/aic94xx.h
-+++ b/drivers/scsi/aic94xx/aic94xx.h
-@@ -58,7 +58,6 @@
- 
- extern struct kmem_cache *asd_dma_token_cache;
- extern struct kmem_cache *asd_ascb_cache;
--extern char sas_addr_str[2*SAS_ADDR_SIZE + 1];
- 
- static inline void asd_stringify_sas_addr(char *p, const u8 *sas_addr)
- {
-diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.c b/drivers/scsi/aic94xx/aic94xx_hwi.c
-index 0cd7eed..82a12cc 100644
---- a/drivers/scsi/aic94xx/aic94xx_hwi.c
-+++ b/drivers/scsi/aic94xx/aic94xx_hwi.c
-@@ -27,6 +27,7 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-+#include <linux/firmware.h>
- 
- #include "aic94xx.h"
- #include "aic94xx_reg.h"
-@@ -38,16 +39,34 @@ u32 MBAR0_SWB_SIZE;
- 
- /* ---------- Initialization ---------- */
- 
--static void asd_get_user_sas_addr(struct asd_ha_struct *asd_ha)
-+#define SAS_STRING_ADDR_SIZE	16
-+static int asd_get_user_sas_addr(struct asd_ha_struct *asd_ha)
- {
--	extern char sas_addr_str[];
--	/* If the user has specified a WWN it overrides other settings
--	 */
--	if (sas_addr_str[0] != '\0')
--		asd_destringify_sas_addr(asd_ha->hw_prof.sas_addr,
--					 sas_addr_str);
--	else if (asd_ha->hw_prof.sas_addr[0] != 0)
--		asd_stringify_sas_addr(sas_addr_str, asd_ha->hw_prof.sas_addr);
-+	const struct firmware *fw;
-+	int res;
-+
-+	/* adapter came with a sas address */
-+	if (asd_ha->hw_prof.sas_addr[0])
-+		return 0;
-+
-+	ASD_DPRINTK("No address found for %s; asking for one...\n",
-+		    pci_name(asd_ha->pcidev));
-+
-+	/* else go ask userspace */
-+	res = request_firmware(&fw, "sas_addr", &asd_ha->pcidev->dev);
-+	if (res)
-+		return res;
-+
-+	if (fw->size < SAS_STRING_ADDR_SIZE) {
-+		res = -ENODEV;
-+		goto out;
-+	}
-+
-+	asd_destringify_sas_addr(asd_ha->hw_prof.sas_addr, fw->data);
-+
-+out:
-+	release_firmware(fw);
-+	return res;
- }
- 
- static void asd_propagate_sas_addr(struct asd_ha_struct *asd_ha)
-@@ -657,8 +676,7 @@ int asd_init_hw(struct asd_ha_struct *asd_ha)
- 
- 	asd_init_ctxmem(asd_ha);
- 
--	asd_get_user_sas_addr(asd_ha);
--	if (!asd_ha->hw_prof.sas_addr[0]) {
-+	if (asd_get_user_sas_addr(asd_ha)) {
- 		asd_printk("No SAS Address provided for %s\n",
- 			   pci_name(asd_ha->pcidev));
- 		err = -ENODEV;
-diff --git a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
-index b70d6e7..5c99f27 100644
---- a/drivers/scsi/aic94xx/aic94xx_init.c
-+++ b/drivers/scsi/aic94xx/aic94xx_init.c
-@@ -54,8 +54,6 @@ MODULE_PARM_DESC(collector, "\n"
- 	"\tThe aic94xx SAS LLDD supports both modes.\n"
- 	"\tDefault: 0 (Direct Mode).\n");
- 
--char sas_addr_str[2*SAS_ADDR_SIZE + 1] = "";
--
- static struct scsi_transport_template *aic94xx_transport_template;
- static int asd_scan_finished(struct Scsi_Host *, unsigned long);
- static void asd_scan_start(struct Scsi_Host *);
+ciao
+	cate
