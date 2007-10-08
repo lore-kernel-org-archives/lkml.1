@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbXJHDbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbXJHDrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbXJHDbj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 23:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXJHDbc
+	id S1755978AbXJHDrd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 23:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbXJHDr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 23:31:32 -0400
-Received: from 1wt.eu ([62.212.114.60]:2833 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300AbXJHDbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 23:31:31 -0400
-Date: Mon, 8 Oct 2007 05:29:27 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: "Re: [PATCH 0/2] Colored kernel output (run2)" + "`Subject:' usage"
-Message-ID: <20071008032927.GB28755@1wt.eu>
-References: <Pine.LNX.4.64.0710062005190.5969@fbirervta.pbzchgretzou.qr> <20071006195105.GE22435@flower.upol.cz> <20071006194820.GA30579@elte.hu> <20071006210349.GG22435@flower.upol.cz> <20071007060706.GA18768@elte.hu> <20071007111035.GO22435@flower.upol.cz> <20071007161255.GA22102@elte.hu> <470929D8.80003@keyaccess.nl> <20071007191309.GS10199@1wt.eu> <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 7 Oct 2007 23:47:26 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:10526 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbXJHDrZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 23:47:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tKiNMwOp0Q+BMZC6KPfiK5LR3QP2EKGbJxpatfKX6std580xkN81TE1rfh14/TeGK97aY0JjdTa+/0euiFEnhPrUwowahioiK/Ipkkx8hBQyRlrS8C8TA9t8t1D773GIuY5xkALCY67kUX6dl+6ZTgpoytwFKEEvVeoQDVME2vU=
+Message-ID: <29495f1d0710072047k2790d767t2da9f018d91e5b20@mail.gmail.com>
+Date: Sun, 7 Oct 2007 20:47:23 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+Cc: "Tony Breeds" <tony@bakeyournoodle.com>,
+       "Michael Ellerman" <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071005160322.GN4338@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710072123460.16301@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.11
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	 <20070924123531.GC30855@shadowen.org>
+	 <20071002232819.GN4338@austin.ibm.com>
+	 <20071003002646.GD9814@bakeyournoodle.com>
+	 <1191371416.8073.1.camel@concordia>
+	 <20071003011909.GG9814@bakeyournoodle.com>
+	 <29495f1d0710041701g4ed73441ie583058c78f95857@mail.gmail.com>
+	 <20071005160322.GN4338@austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 07, 2007 at 09:56:09PM +0200, Jan Engelhardt wrote:
-> 
-> On Oct 7 2007 21:13, Willy Tarreau wrote:
-> >There are two distinct populations :
-> >  - those [...]
-> >    who would never have imagined that pressing Escape
-> >    during the boot of windows 3.1/95 provided them with the full text
-> >    messages.
-> 
-> This is news to me. DOS always showed messages, and under Win95,
-> it was either F8 or removing logo.sys. I did troubleshoot it ;-)
-
-You remember that you could start them both from DOS by typing "win" ?
-If you hit ESC during the first seconds when the logo showed, you could
-get back to text mode to see the messages.
-
-> >  - those who are troubleshooting their system [...]
+On 10/5/07, Linas Vepstas <linas@austin.ibm.com> wrote:
+> On Thu, Oct 04, 2007 at 05:01:47PM -0700, Nish Aravamudan wrote:
+> > On 10/2/07, Tony Breeds <tony@bakeyournoodle.com> wrote:
+> > > On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
+> > >
+> > > > I realise it'll make the patch bigger, but this doesn't seem like a
+> > > > particularly good name for the variable anymore.
+> > >
+> > > Sure, what about?
+> > >
+> > > Clarify when RTAS logging is enabled.
+> > >
+> > > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 > >
-> >I personally fit in the second category.
+> > For what it's worth, on a different ppc64 box, this resolves a similar
+> > panic for me.
 > >
-> >I would say that while I'm not particularly fond of flashy colors
-> >everywhere
-> 
-> I have to agree so really. Just because there's a color option for 
-> everything does not mean one should use it.
-> 
-> In fact, I moved away[2] from the default Midnight Commander styling 
-> because it's just - as Dave calls it - salad colors[1].
+> > Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+>
+> For the reasons explained, I'd really like to nack Tony's patch.
 
-I found them "fun", it reminded me of the DOS-version of borland C, 15
-years ago :-)
+I see. Can you reply in this thread with the patch you mentioned in
+your other reply? (or point me to a copy of it)
 
-> Some is good, as long as it is not excessive. While I could imagine that 
-> Knoppix will abuse the feature and use vt.printk_color=9,9,9,9,11,10,12, 
-> this is not what serious people would do.
-
-One solution against this and which may satisfy people who are against
-this idea, would be to just manipulate the bold and reverse attributes
-for errors. On VGA consoles, this would translate into printing in
-white instead of grey, and it could also work on ANSI/vt100 terminals.
-
-After all, if the initial intention was to report errors in a more
-noticeable way, let's not let the user choose the colors and have
-them defined the hard way. It will prevent the salad colors from
-appearing.
-
-Willy
-
+Thanks,
+Nish
