@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXJHPQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbXJHPRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXJHPQx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 11:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXJHPQq
+	id S1755503AbXJHPRd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 11:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbXJHPRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 11:16:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50069 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbXJHPQp (ORCPT
+	Mon, 8 Oct 2007 11:17:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:19634 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbXJHPRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 11:16:45 -0400
-Subject: Re: 2.6.23 regression: do_nanosleep will not return
-From: Peter Zijlstra <peterz@infradead.org>
-To: Bernd Schubert <bs@q-leap.de>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200710081701.34368.bs@q-leap.de>
-References: <fed93g$eq4$1@sea.gmane.org> <fedaqr$njj$1@sea.gmane.org>
-	 <20071008103252.5fe81529@bree.surriel.com>
-	 <200710081701.34368.bs@q-leap.de>
-Content-Type: text/plain
-Date: Mon, 08 Oct 2007 17:16:32 +0200
-Message-Id: <1191856592.20745.16.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 8 Oct 2007 11:17:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=O3muUdm9lmG5fxiqKIUJIcnhhl9FBmAX8hB3SPoyaKsl7+aWBnJ+DnNRrUrWzW45BF65KKPjA0XsTqzU5lJhln39PrqTcqu75kkRnitW41ToHBO2LQOETjCwkDdPTUqC1hpyAb7YogJGFcd4IR83fA3pTwStOjC1jjet7js/l1g=
+Message-ID: <90bced5d0710080817m7bb2a471tf533db0c9294fffb@mail.gmail.com>
+Date: Mon, 8 Oct 2007 16:17:23 +0100
+From: "Thierry Brown" <thierrybingo@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Linux Kernel 2.6 CPU scheduler
+Cc: thierrybingo@googlemail.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-08 at 17:01 +0200, Bernd Schubert wrote:
-> On Monday 08 October 2007 16:32:52 Rik van Riel wrote:
-> > On Mon, 08 Oct 2007 15:20:26 +0200
-> >
-> > Bernd Schubert <bs@q-leap.de> wrote:
-> > > Bernd Schubert wrote:
-> > > > we have a system here were e.g. "sleep 1" will never finish. This
-> > > > is an issue of 2.6.23, on all older kernel versions it did work
-> > > > fine.
-> > > >
-> > > > Seems to hang in do_nanosleep()
-> > >
-> > > Update: Enabling hpet in the bios and setting clocksource=hpet as
-> > > command line parameter will fix it, but still its not nice that
-> > > something that worked without a problem in 2.6.22 and below suddenly
-> > > doesn't work in 2.6.23.
-> >
-> > Which timer source is in use when the system hangs?
-> 
-> Well, not the systems hangs, only processes running nanosleep. Well, since the 
-> system is booted diskless, one of the very first commands is to 
-> run "/etc/init.d/portmap start", which has a sleep call in its script and so 
-> it will halt the boot process.
-> 
-> The problematic timer source is acpi_pm. Its also interesting that setting the 
-> timer source 
-> via /sys/devices/system/clocksource/clocksource0/current_clocksource won't 
-> fix that problem. Only the boot option clocksource={other than acpi_pm} does 
-> help.
+Hi-
 
-Maybe Thomas knows.. 
+I wish to be personally CC'ed the answers/comments posted to the list
+in response to this post
 
+I am new to Linux. i was reading about CPU scheduling in general and
+that of Linux Kernel 2.6 in particular. I have three main questions:
+1- Assume that the upper [higher priority] queue is empty and that the
+lower queue contains a  thread Th2. The latter is assigned to the CPU
+for a Quantum period of, say 30 ms. after 10 ms from its execution, a
+new thread Th1 is admitted to the upper queue. as such Th2 is pre-
+empted. Th1 is having the CPU.
+
+
+At this context switch, will Th2 be switched to the expired array
+queue? i guess no. Then when Th2 is assigned  to the CPU again, will
+its assigned quantum reset to 30 ms, or instead to 30-10.
+
+
+2- i can't see the need of the expired array queue. according to what
+i have read, if any thread wants to use the cpu for a longer time than
+their assigned quantum, it will be stopped and put in one of the
+expired priority queues.
+
+
+Is there any reference which details how the new assigned priority
+queue is selected?
+What this expired array queue is needed?
+Why not assign the stopped thread to one of the active array queues
+obviously after thread priority recalculation?
+
+
+ By assigning a stopped thread Th to the expired queues array, we are
+sure that the threads at the bottom of the actives queues will be
+executed. however those threads could not be as important as Th which
+has to wait until the active queues are run first before getting their
+turn. probably , maintaining one array of active threads ONLY is
+better? Am i missing something regarding the role of expired queues
+array
+
+
+3-is there any book / website  which details the practical kernel
+algorithms supported with  code tracing or snippets
+
+
+thank you for your time  :)
