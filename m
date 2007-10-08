@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbXJHRut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbXJHRwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbXJHRut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbXJHRum
+	id S1756213AbXJHRwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbXJHRwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:50:42 -0400
-Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:42367 "HELO
-	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753472AbXJHRul (ORCPT
+	Mon, 8 Oct 2007 13:52:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45133 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751953AbXJHRwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:50:41 -0400
-X-YMail-OSG: LhzG_cYVM1lKURB1G0GvV3UrgYMvzaAtNg8tBYrdptpGbDGc.XmldEg8YAU7TGtI04iuZUa_mg--
-X-RocketYMMF: rancidfat
-Date: Mon, 8 Oct 2007 10:50:40 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Cc: casey@schaufler-ca.com, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serge@hallyn.com>
-In-Reply-To: <m1ir5liaoh.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	Mon, 8 Oct 2007 13:52:09 -0400
+Date: Mon, 8 Oct 2007 10:51:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: yanzheng@21cn.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       ltp-list@lists.sourceforge.net
+Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
+Message-Id: <20071008105120.4e0e4a85.akpm@linux-foundation.org>
+In-Reply-To: <20071008102843.d20b56d7.randy.dunlap@oracle.com>
+References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
+	<20071008100456.dbe826d0.akpm@linux-foundation.org>
+	<20071008102843.d20b56d7.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <54877.16343.qm@web36603.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 8 Oct 2007 10:28:43 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
---- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+> On Mon, 8 Oct 2007 10:04:56 -0700 Andrew Morton wrote:
+> 
+> > On Mon, 8 Oct 2007 19:45:08 +0800 "Yan Zheng" <yanzheng@21cn.com> wrote:
+> > 
+> > > Hi all
+> > > 
+> > > The test for VM_CAN_NONLINEAR always fails
+> > > 
+> > > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
+> > > ----
+> > > diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
+> > > --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
+> > > +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
+> > > @@ -160,7 +160,7 @@
+> > >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
+> > >  		goto out;
+> > > 
+> > > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
+> > > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+> > >  		goto out;
+> > > 
+> > >  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
+> > 
+> > Lovely.  From this we can deduce that nobody has run remap_file_pages() since
+> > 2.6.23-rc1 and that nobody (including the developer who made that change) ran it
+> > while that change was in -mm.
+> 
+> I've run rmap-test with -M (use remap_file_pages) and
+> remap-test from ext3-tools, but not remap_file_pages for some reason.
+> 
+> I'll now add remap_file_pages soon.
+> Maybe those other 2 tests aren't strong enough (?).
+> Or maybe they don't return a non-0 exit status even when they fail...
+> (I'll check.)
 
+Perhaps Yan Zheng can tell us what test was used to demonstrate this?
 
-> Likely.  Until we have a generalized LSM interface with 1000 config
-> options like netfilter I don't expect we will have grounds to talk
-> or agree to a common user space interface.  Although I could be
-> wrong.
+> 
+> > I'm surprise that LTP doesn't have any remap_file_pages() tests.
+> 
+> quick grep didn't find any for me.
 
-Gulp. I know that many of you are granularity advocates, but I
-have to say that security derived by tweeking 1000 knobs so that
-they are all just right seems a little far fetched to me. I see
-it as poopooing the 3rd and most important part of the reference
-monitor concept, "small enough to analyze". Sure, you can analyse
-the 1000 individual checks, but you'll never be able to describe
-the system behavior as a whole.
+Me either.  There are a few lying around the place which could be
+integrated.
 
+It would be good if LTP were to have some remap_file_pages() tests
+(please).  As we see here, it is something which we can easily break, and
+leave broken for some time.
 
-Casey Schaufler
-casey@schaufler-ca.com
