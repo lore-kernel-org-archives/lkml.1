@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbXJHL5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbXJHL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbXJHL5W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 07:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXJHL5O
+	id S1755612AbXJHL6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 07:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXJHL6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 07:57:14 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:41057 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbXJHL5N (ORCPT
+	Mon, 8 Oct 2007 07:58:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54599 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753593AbXJHL6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 07:57:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=EI1rgK6h0LIoLuwVmm5dVGRgEWd5BDzYYRulILqv9Vlx0pQkUzjgL2OxKJb2WP7lcKqKK8ZYbO5MuN16WqojOBIxb7k6bsIxI9HnPgfMwM6AsOTW9eDAwiWX0/PYTjAAfg3jdaMK7sZ2eHUqVQJAUxHdj/7aumY0ERTE/VVNtmw=
-Date: Mon, 8 Oct 2007 19:52:36 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Yan Zheng <yanzheng@21cn.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-Message-ID: <20071008115236.GB2460@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 8 Oct 2007 07:58:07 -0400
+Date: Mon, 8 Oct 2007 13:02:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Paul Hardwick <p.hardwick@option.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nozomi: ERESTARTSYS to userspace?
+Message-ID: <20071008130220.78b265f2@the-village.bc.nu>
+In-Reply-To: <470A05DF.5080405@gmail.com>
+References: <470A05DF.5080405@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 07:45:08PM +0800, Yan Zheng wrote:
->Hi all
->
->The test for VM_CAN_NONLINEAR always fails
->
->Signed-off-by: Yan Zheng<yanzheng@21cn.com>
->----
->diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
->--- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
->+++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
->@@ -160,7 +160,7 @@
-> 	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
-> 		goto out;
->
->-	if (!vma->vm_flags & VM_CAN_NONLINEAR)
->+	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+>         if (unlikely(down_trylock(&port->tty_sem))) {
+>                 /*
+>                  * must test lock as tty layer wraps calls
+>                  * to this function with BKL
+>                  */
+>                 dev_err(&dc->pdev->dev, "Would have deadlocked - "
+>                         "return ERESTARTSYS\n");
+>                 return -ERESTARTSYS;
+>         }
+> 
+> The use of ERESTARTSYS seems bogus to me, no signal is pending and this flag
+> would reach userspace (that is not permitted), am I right?
 
-Good catch!
+serial driver write methods are called from the ldisc not the tty so the
+code is in fact totally bogus.
 
-! operator has higher priority than & operator.
+I suspect what is needed (other than to take the entire driver to bits
+and put it back together using serial_core) is 
 
-Acked by me. ;-)
+	if (down_trylock(&port->tty_sem))
+		return 0;
 
+and the driver is then required to wake the write wait queue when that
+condition becomes false - or at least before/when it runs out of
+data (which currently it doesn't seem to for all cases).
 
-> 		goto out;
->
-> 	if (end <= start || start < vma->vm_start || end > vma->vm_end)
+Lots of other breakage in it as well (termios function is totally bogus,
+tty_flip_queue_function is a no-op) etc etc
 
-
+Alan
