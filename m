@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXJHR3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbXJHR3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbXJHR3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJHR3E
+	id S1753838AbXJHR3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbXJHR3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:29:04 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:29070 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752535AbXJHR3C (ORCPT
+	Mon, 8 Oct 2007 13:29:19 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30639 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755594AbXJHR3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:29:02 -0400
-Date: Mon, 8 Oct 2007 09:13:54 -0700
+	Mon, 8 Oct 2007 13:29:17 -0400
+Date: Mon, 8 Oct 2007 10:28:43 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, gregkh@suse.de
-Subject: Re: [PATCH] param_sysfs_builtin memchr argument fix
-Message-Id: <20071008091354.30598ee4.randy.dunlap@oracle.com>
-In-Reply-To: <20071008071730.GA2979@darkstar.te-china.tietoenator.com>
-References: <20071008071730.GA2979@darkstar.te-china.tietoenator.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Yan Zheng" <yanzheng@21cn.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
+Message-Id: <20071008102843.d20b56d7.randy.dunlap@oracle.com>
+In-Reply-To: <20071008100456.dbe826d0.akpm@linux-foundation.org>
+References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
+	<20071008100456.dbe826d0.akpm@linux-foundation.org>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,59 +32,49 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007 15:17:30 +0800 Dave Young wrote:
+On Mon, 8 Oct 2007 10:04:56 -0700 Andrew Morton wrote:
 
-> Hi,
-> Thanks for comment.
-> fixed.
+> On Mon, 8 Oct 2007 19:45:08 +0800 "Yan Zheng" <yanzheng@21cn.com> wrote:
 > 
-> Regards
-> dave
-> -----
+> > Hi all
+> > 
+> > The test for VM_CAN_NONLINEAR always fails
+> > 
+> > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
+> > ----
+> > diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
+> > --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
+> > +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
+> > @@ -160,7 +160,7 @@
+> >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
+> >  		goto out;
+> > 
+> > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
+> > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+> >  		goto out;
+> > 
+> >  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
 > 
-> If memchr argument is longer than strlen(kp->name), there will be some
-> weird result.
+> Lovely.  From this we can deduce that nobody has run remap_file_pages() since
+> 2.6.23-rc1 and that nobody (including the developer who made that change) ran it
+> while that change was in -mm.
 
-Just to clarify:  this was causing duplicate filenames in sysfs ?
+I've run rmap-test with -M (use remap_file_pages) and
+remap-test from ext3-tools, but not remap_file_pages for some reason.
+
+I'll now add remap_file_pages soon.
+Maybe those other 2 tests aren't strong enough (?).
+Or maybe they don't return a non-0 exit status even when they fail...
+(I'll check.)
 
 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> I'm surprise that LTP doesn't have any remap_file_pages() tests.
+
+quick grep didn't find any for me.
+
+> Have you runtime tested this change?
 > 
-> ---
-> kernel/params.c |    8 +++++++-
-> 1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff -upr linux/kernel/params.c linux.new/kernel/params.c
-> --- linux/kernel/params.c	2007-10-08 14:30:06.000000000 +0800
-> +++ linux.new/kernel/params.c	2007-10-08 15:13:04.000000000 +0800
-> @@ -592,11 +592,17 @@ static void __init param_sysfs_builtin(v
->  
->  	for (i=0; i < __stop___param - __start___param; i++) {
->  		char *dot;
-> +		size_t kplen;
->  
->  		kp = &__start___param[i];
-> +		kplen = strlen(kp->name);
->  
->  		/* We do not handle args without periods. */
-> -		dot = memchr(kp->name, '.', MAX_KBUILD_MODNAME);
-> +		if (kplen > MAX_KBUILD_MODNAME) {
-> +			DEBUGP("kernel parameter %s is too long\n", kp->name);
-
-how about
-	kernel parameter name %s is too long
-or
-	kernel parameter name is too long: %s
-
-(primary is addition of "name")
-
-> +			continue;
-> +		}
-> +		dot = memchr(kp->name, '.', kplen);
->  		if (!dot) {
->  			DEBUGP("couldn't find period in %s\n", kp->name);
->  			continue;
-> -
+> Thanks.
 
 
 ---
