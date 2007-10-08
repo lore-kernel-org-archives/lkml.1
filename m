@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXJHRpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbXJHRqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbXJHRpg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbXJHRp3
+	id S1756087AbXJHRqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXJHRqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:45:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45273 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbXJHRp2 (ORCPT
+	Mon, 8 Oct 2007 13:46:46 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51760 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752507AbXJHRqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:45:28 -0400
-Date: Mon, 8 Oct 2007 19:45:27 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Jonathan Corbet <corbet@lwn.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-In-Reply-To: <20071008173706.GA12026@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>
-References: <25555.1191864285@lwn.net> <20071008173706.GA12026@uranus.ravnborg.org>
+	Mon, 8 Oct 2007 13:46:45 -0400
+Date: Mon, 8 Oct 2007 10:46:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mingming Cao <cmm@us.ibm.com>
+cc: Christoph Hellwig <hch@infradead.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] jbd: JBD replace jbd_kmalloc with kmalloc
+In-Reply-To: <1191623899.3861.29.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0710081045180.26627@schroedinger.engr.sgi.com>
+References: <1191477059-5357-1-git-send-email-tytso@mit.edu> 
+ <1191477059-5357-2-git-send-email-tytso@mit.edu>  <20071004065204.GA21481@infradead.org>
+ <1191623899.3861.29.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 5 Oct 2007, Mingming Cao wrote:
 
-On Oct 8 2007 19:37, Sam Ravnborg wrote:
->snip...
->
->Or maybe we need something much less formal that explain the purpose of the
->four tags we use:
-
-At least formal try:
-
->Signed-of-by:
-
-* Used by original submitter(s).
-* Also used by maintainers to track the patch's path
-  (ATM, does not imply "I have look at it in depth")
-
->Acked-by:
->Tested-by:
-
-* Used by random people to express their (dis)like/experience with the 
-patch.
-
->Reviewed-by:
-
-* I am maintaner or an 'important' person and have had a
-  look at it in depth
-
->Cc:
-
-* Used by original submitter to denote additional maintainers it goes to
-* Parties who should be Cced when an a posteriori question comes up
+> Index: linux-2.6.23-rc9/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.23-rc9.orig/fs/jbd/transaction.c	2007-10-05 12:08:08.000000000 -0700
+> +++ linux-2.6.23-rc9/fs/jbd/transaction.c	2007-10-05 12:08:29.000000000 -0700
+> @@ -96,8 +96,8 @@ static int start_this_handle(journal_t *
+>  
+>  alloc_transaction:
+>  	if (!journal->j_running_transaction) {
+> -		new_transaction = jbd_kmalloc(sizeof(*new_transaction),
+> -						GFP_NOFS);
+> +		new_transaction = kmalloc(sizeof(*new_transaction),
+> +						GFP_NOFS|__GFP_NOFAIL);
 
 
-My 2¥.
-Jan
+Why was a __GFP_NOFAIL added here? I do not see a use of jbd_rep_kmalloc?
+
+> -#define jbd_kmalloc(size, flags) \
+> -	__jbd_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
+
+journal_oom_retry is no longer used?
