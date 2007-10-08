@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXJHSzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbXJHTFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbXJHSzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXJHSzd
+	id S1756453AbXJHTFc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 15:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXJHTFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:55:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32846 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753451AbXJHSzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:55:33 -0400
-Date: Mon, 8 Oct 2007 14:55:12 -0400
-From: James Bowes <jbowes@dangerouslyinc.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org
-Subject: [PATCH] Documentation: Fix typo in SubmitChecklist.
-Message-ID: <20071008185510.GA28549@crux.toronto.redhat.com>
-MIME-Version: 1.0
+	Mon, 8 Oct 2007 15:05:21 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50910 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbXJHTFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 15:05:20 -0400
+Date: Mon, 8 Oct 2007 20:05:15 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: mgross@linux.intel.com, Jonathan Corbet <corbet@lwn.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: RFC: reviewer's statement of oversight
+Message-ID: <20071008190515.GU8181@ftp.linux.org.uk>
+References: <25555.1191864285@lwn.net> <20071008184029.GA31906@linux.intel.com> <470A7C91.3010503@s5r6.in-berlin.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <470A7C91.3010503@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: James Bowes <jbowes@dangerouslyinc.com>
----
- Documentation/SubmitChecklist |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Mon, Oct 08, 2007 at 08:53:05PM +0200, Stefan Richter wrote:
+> Mark Gross wrote:
+> > On Mon, Oct 08, 2007 at 11:24:45AM -0600, Jonathan Corbet wrote:
+> >>  (a) I have carried out a technical review of this patch to evaluate its
+> >>      appropriateness and readiness for inclusion into the mainline kernel. 
+> [...]
+> >>  (c) While there may (or may not) be things which could be improved with
+> >>      this submission, I believe that it is, at this time, (1) a
+> >>      worthwhile addition to the kernel, and (2) free of serious known
+> >>      issues which would argue against its inclusion.
+> > 
+> > C-1 "worthwhile addition..." Probably shouldn't be part of this.  That's
+> > what additional Signed off by ACK's provide.  I think reviewed by should
+> > limit its scope to code correctness leaving the subjective "worthwhile"
+> > statements are better expressed with other tags.
+> 
+> A patch which is not "worthwhile" is also not "appropriate".  Mere
+> correctness in a mathematical sense is not enough as technical review
+> criterion.
 
-diff --git a/Documentation/SubmitChecklist b/Documentation/SubmitChecklist
-index 19e7f65..34e06d2 100644
---- a/Documentation/SubmitChecklist
-+++ b/Documentation/SubmitChecklist
-@@ -67,7 +67,7 @@ kernel patches.
- 20: Check that it all passes `make headers_check'.
- 
- 21: Has been checked with injection of at least slab and page-allocation
--    fauilures.  See Documentation/fault-injection/.
-+    failures.  See Documentation/fault-injection/.
- 
-     If the new code is substantial, addition of subsystem-specific fault
-     injection might be appropriate.
--- 
-1.5.3.4.1155.gfe96ee
-
+Yes, but there's also such thing as "worthwhile removal".
