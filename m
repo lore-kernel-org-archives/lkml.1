@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbXJHMD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbXJHMdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbXJHMD1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 08:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXJHMDT
+	id S1754878AbXJHMdr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 08:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbXJHMdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 08:03:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40034 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754035AbXJHMDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 08:03:19 -0400
-Date: Mon, 8 Oct 2007 14:03:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/6] scheduler: Refactor common code of sleep_on /
-	wait_for_completion v2
-Message-ID: <20071008120306.GA28191@elte.hu>
-References: <200710071059.126674000@suse.de> <20071007205955.4D60E1474B@wotan.suse.de> <p731wc65zvw.fsf_-_@bingen.suse.de> <20071008113906.GB22199@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071008113906.GB22199@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 8 Oct 2007 08:33:38 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:47062 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753870AbXJHMdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 08:33:37 -0400
+Message-id: <21044149499772302@pripojeni.net>
+Subject: [PATCH 1/3] V4L: w9968cf, remove bad usage of ERESTARTSYS
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <luca.risolia@studio.unibo.it>
+Cc: <mchehab@infradead.org>
+Cc: <video4linux-list@redhat.com>
+Date: Mon, 8 Oct 2007 08:33:37 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+w9968cf, remove bad usage of ERESTARTSYS
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+down_read_trylock can't be interrupted and so ERESTARTSYS would reach
+userspace, which is not permitted. Change it to EAGAIN
 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > Andi Kleen <ak@suse.de> writes:
-> > 
-> > > These functions were largely cut'n'pasted. This moves
-> > 
-> > Here's a replacement patch fixing a minor problem:
-> > sleep_on_common wasn't marked __sched and ended up in the 
-> > wrong section; breaking the WCHAN backtracing.
-> 
-> thanks, applied.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-btw., this is a very nice cleanup, the .text savings are particularly 
-impressive:
+---
+commit db38c559d37219c32b179ae005ca7e489336ec94
+tree f2d606165e6ef2daa6e1a2860f87521222eeecd2
+parent 6e42c2183befe136d85e6a8708ee4eabc543774b
+author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:14:03 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:14:03 +0200
 
-   text    data     bss     dec     hex filename
-  24545    2406      16   26967    6957 sched.o.before
-  23687    2406      16   26109    65fd sched.o.after
+ drivers/media/video/w9968cf.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-almost 1K of text shaven off! :)
-
-	Ingo
+diff --git a/drivers/media/video/w9968cf.c b/drivers/media/video/w9968cf.c
+index 77599f2..5a1b5f5 100644
+--- a/drivers/media/video/w9968cf.c
++++ b/drivers/media/video/w9968cf.c
+@@ -2679,7 +2679,7 @@ static int w9968cf_open(struct inode* inode, struct file* filp)
+ 
+ 	/* This the only safe way to prevent race conditions with disconnect */
+ 	if (!down_read_trylock(&w9968cf_disconnect))
+-		return -ERESTARTSYS;
++		return -EAGAIN;
+ 
+ 	cam = (struct w9968cf_device*)video_get_drvdata(video_devdata(filp));
+ 
