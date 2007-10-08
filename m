@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbXJHSla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbXJHSln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbXJHSla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbXJHSlE
+	id S1757550AbXJHSln (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbXJHSld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:41:04 -0400
-Received: from mga06.intel.com ([134.134.136.21]:35892 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756909AbXJHSlB (ORCPT
+	Mon, 8 Oct 2007 14:41:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33000 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757432AbXJHSlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:41:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,244,1188802800"; 
-   d="scan'208";a="242256332"
-Date: Mon, 8 Oct 2007 11:40:29 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-Message-ID: <20071008184029.GA31906@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <25555.1191864285@lwn.net>
+	Mon, 8 Oct 2007 14:41:31 -0400
+Date: Mon, 8 Oct 2007 11:06:40 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       James Morris <jmorris@localhost.localdomain>
+Subject: [patch 11/12] SELinux: clear parent death signal on SID transitions
+Message-ID: <20071008180640.GL7627@kroah.com>
+References: <20071008180406.052382073@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <25555.1191864285@lwn.net>
-User-Agent: Mutt/1.5.11
+Content-Disposition: inline; filename="selinux-clear-parent-death-signal-on-sid-transitions.patch"
+In-Reply-To: <20071008180551.GA7627@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 11:24:45AM -0600, Jonathan Corbet wrote:
-> Last month, at the kernel summit, there was discussion of putting a
-> Reviewed-by: tag onto patches to document the oversight they had
-> received on their way into the mainline.  That tag has made an
-> occasional appearance since then, but there has not yet been a
-> discussion of what it really means.  So it has not yet brought a whole
-> lot of value to the process.
-> 
-> As I was trying to sleep last night, it occurred to me that what we
-> might need is an equivalent of the DCO for the Reviewed-by tag.  To that
-> end, I dedicated a few minutes of my life to the following bit of text.
-> It's really just meant to be a starting point for the discussion.  Is
-> the following something close to what we understand Reviewed-by to mean? 
-> 
-> jon
-> 
-> 
-> Reviewer's statement of oversight v0.01
-> 
-> By offering my Reviewed-by: tag, I state that:
-> 
->  (a) I have carried out a technical review of this patch to evaluate its
->      appropriateness and readiness for inclusion into the mainline kernel. 
-> 
->  (b) Any problems, concerns, or questions relating to the patch have been
->      communicated back to the submitter.  I am satisfied with how the
->      submitter has responded to my comments.
-> 
->  (c) While there may (or may not) be things which could be improved with
->      this submission, I believe that it is, at this time, (1) a
->      worthwhile addition to the kernel, and (2) free of serious known
->      issues which would argue against its inclusion.
+From: Stephen Smalley <sds@tycho.nsa.gov>
 
-C-1 "worthwhile addition..." Probably shouldn't be part of this.  That's
-what additional Signed off by ACK's provide.  I think reviewed by should
-limit its scope to code correctness leaving the subjective "worthwhile"
-statements are better expressed with other tags.
+commit 4ac212ad4e8fafc22fa147fc255ff5fa5435cf33 upstream.
 
-> 
->  (d) While I have reviewed the patch and believe it to be sound, I can not
->      (unless explicitly stated elsewhere) make any warranties or guarantees
->      that it will achieve its stated purpose or function properly in any
->      given situation.
-> 
->  (e) I understand and agree that this project and the contribution are
->      public and that a record of the contribution (including my Reviewed-by
->      tag and any associated public communications) is maintained
->      indefinitely and may be redistributed consistent with this project or
->      the open source license(s) involved.
-> -
+Clear parent death signal on SID transitions to prevent unauthorized
+signaling between SIDs.
 
-I think this is a good thing to have, although recruiting reviews remains
-an open issue.
+Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+Acked-by: Eric Paris <eparis@parisplace.org>
+Signed-off-by: James Morris <jmorris@localhost.localdomain>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-I think it would be easier to recruit patch testers than reviewers
-should a Tested-by: tag be considered as well?
+---
+ security/selinux/hooks.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---mgross
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1906,6 +1906,9 @@ static void selinux_bprm_post_apply_cred
+ 		spin_unlock_irq(&current->sighand->siglock);
+ 	}
+ 
++	/* Always clear parent death signal on SID transitions. */
++	current->pdeath_signal = 0;
++
+ 	/* Check whether the new SID can inherit resource limits
+ 	   from the old SID.  If not, reset all soft limits to
+ 	   the lower of the current task's hard limit and the init
+
+-- 
