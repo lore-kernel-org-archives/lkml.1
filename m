@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbXJHXrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbXJHXtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbXJHXrA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbXJHXqx
+	id S1754769AbXJHXtr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJHXti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:46:53 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:57455 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbXJHXqw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:46:52 -0400
-Message-ID: <470AC166.20705@anagramm.de>
-Date: Tue, 09 Oct 2007 01:46:46 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 8 Oct 2007 19:49:38 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57887 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbXJHXtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 19:49:36 -0400
+Date: Mon, 8 Oct 2007 16:50:10 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
+	if the adapter lacks one
+Message-ID: <20071008235009.GB16003@tree.beaverton.ibm.com>
+References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: tglx@linutronix.de, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: sleepy linux 2.6.23-rc9
-References: <20071008220506.GE3484@elf.ucw.cz>
-In-Reply-To: <20071008220506.GE3484@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19iw9ZGNpjIdYW3efuFwYJUVOaFifyx27fTLvP
- hQueBvQvZUPIePsM9MQs1cV/gbRlO5TI5WzlaEdMYeghLfFm76
- +Cb6sxeViOIf45tfoylOw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071008224832.GB11993@plap3.qlogic.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek schrieb:
-> I played with powertop a bit, and found a fairly interesting failure
-> mode. If I boot init=/bin/bash vga=1, I get ~2 wakeups a second, nice.
-> 
-> When I boot init=/bin/bash vga=791 (vesa framebuffer), most wakeups
-> are caused by cursor painting (I should fix that some day, I
-> guess). But... the cursor blinking does not even work properly!
-> 
-> It blinks at normal speed, then (randomly) it blinks slowly, then gets
-> back to normal speed, then inserts longer delay.
+On Mon, Oct 08, 2007 at 03:48:32PM -0700, Andrew Vasquez wrote:
 
-Is the effect a beat that it has roughly the frequency of your Notebooks
-screen refresh rate (60Hz)? (in german: Schwebung)
+> So how about factoring that out to a transport-level interface.  How
+> about something along the lines of the following patch, whereby the
+> software driver upon detecting no valid WWPN, makes an upcall to each
+> interface's 'request_wwn()'.  The data passed in from shost_gendev
+> should be enough for some helper script to cull relevent device bits
+> and perhaps offer some level of persistence...  Off base?
 
-> The effect is so nice that I thought about youtube ;-). Thinkpad
-> x60.. question is, how to debug it? 
+Hrm... jejb made a remark that it might be better to pass the
+scsi_host's device into request_firmware() as your example does, so I'll
+pitch in a patch to do likewise with libsas--the scsi_host knows the
+actual device it's coming from, and userland can sort that all out later
+anyway via DEVPATH.
 
-No idea... check where the register of the HW cursor blink rate
-gets written? But as it seems to be so nice, please submit a patch
-which enables this for all platforms. ;-)
+I suppose one could also have multiple scsi_hosts per PCI device, which
+means that my first patch would stumble horribly in more than a few
+cases.
 
-Regards,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+> Darrick, forgive the FC example, I don't do SAS...
 
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+That's ok, I don't do FC. :)  Looks mostly good to me...
+
+--D
