@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbXJHWah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbXJHWcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753862AbXJHWah (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 18:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXJHWa2
+	id S1754356AbXJHWcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 18:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbXJHWcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 18:30:28 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:65236 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbXJHWa0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 18:30:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
-        b=aEq38K5LbQPOdkbnvjQrUcSHNpZt0uoIS9qH0KaDy9DaMusjFM+bjEwvrCSsr5hN2NJ7yNuwTOO7hVL2v0Q226Hndaj+mIpDLJLXqpv8MA1LGAyUyOnYI6mU+O8vXRqEyytkSerUtURnUDTpVGbPF5dXnD7TaVGBKhIlkaCNo+0=
-Subject: Re: parallel networking
-From: jamal <hadi@cyberus.ca>
-Reply-To: hadi@cyberus.ca
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, peter.p.waskiewicz.jr@intel.com, krkumar2@in.ibm.com,
-       johnpol@2ka.mipt.ru, herbert@gondor.apana.org.au, kaber@trash.net,
-       shemminger@linux-foundation.org, jagana@us.ibm.com,
-       Robert.Olsson@data.slu.se, rick.jones2@hp.com, xma@us.ibm.com,
-       gaagaan@gmail.com, netdev@vger.kernel.org, rdreier@cisco.com,
-       mingo@elte.hu, mchan@broadcom.com, general@lists.openfabrics.org,
-       kumarkr@linux.ibm.com, tgraf@suug.ch, randy.dunlap@oracle.com,
-       sri@us.ibm.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071008.141154.107706003.davem@davemloft.net>
-References: <20071007.215124.85709188.davem@davemloft.net>
-	 <1191850490.4352.41.camel@localhost> <470A3D24.3050803@garzik.org>
-	 <20071008.141154.107706003.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 08 Oct 2007 18:30:18 -0400
-Message-Id: <1191882618.4373.99.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Mon, 8 Oct 2007 18:32:05 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3077 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750934AbXJHWcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 18:32:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,244,1188802800"; 
+   d="scan'208";a="230991065"
+Message-ID: <470AAFD7.9060002@intel.com>
+Date: Mon, 08 Oct 2007 15:31:51 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: gigabit ethernet power consumption
+References: <20071008220720.GF3484@elf.ucw.cz>
+In-Reply-To: <20071008220720.GF3484@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Oct 2007 22:32:02.0387 (UTC) FILETIME=[0C0FEA30:01C809FB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-10 at 14:11 -0700, David Miller wrote:
-
-> The problem is that the packet schedulers want global guarantees
-> on packet ordering, not flow centric ones.
+Pavel Machek wrote:
+> Hi!
 > 
-> That is the issue Jamal is concerned about.
-
-indeed, thank you for giving it better wording. 
-
-> The more I think about it, the more inevitable it seems that we really
-> might need multiple qdiscs, one for each TX queue, to pull this full
-> parallelization off.
+> I've found that gbit vs. 100mbit power consumption difference is about
+> 1W -- pretty significant. (Maybe powertop should include it in the
+> tips section? :).
 > 
-> But the semantics of that don't smell so nice either.  If the user
-> attaches a new qdisc to "ethN", does it go to all the TX queues, or
-> what?
+> Energy Star people insist that machines should switch down to 100mbit
+> when network is idle, and I guess that makes a lot of sense -- you
+> save 1W locally and 1W on the router.
 > 
-> All of the traffic shaping technology deals with the device as a unary
-> object.  It doesn't fit to multi-queue at all.
+> Question is, how to implement it correctly? Daemon that would watch
+> data rates and switch speeds using mii-tool would be simple, but is
+> that enough?
 
-If you let only one CPU at a time access the "xmit path" you solve all
-the reordering. If you want to be more fine grained you make the
-serialization point as low as possible in the stack - perhaps in the
-driver.
-But I think even what we have today with only one cpu entering the
-dequeue/scheduler region, _for starters_, is not bad actually ;->  What
-i am finding (and i can tell you i have been trying hard;->) is that a
-sufficiently fast cpu doesnt sit in the dequeue area for "too long" (and
-batching reduces the time spent further). Very quickly there are no more
-packets for it to dequeue from the qdisc or the driver is stoped and it
-has to get out of there. If you dont have any interupt tied to a
-specific cpu then you can have many cpus enter and leave that region all
-the time. 
+you most certainly want to do this in userspace I think.
 
-cheers,
-jamal
+One of the biggest problems is that link negotiation can take a significant amount
+of time, well over several seconds (1 to 3 seconds typical) with gigabit, and
+having your ethernet connection go offline for 3 seconds may not be the desired
+effect for when you want to get more bandwidth in the first place.
 
+However, when a laptop is in battery mode, switching down from gigabit to 100mbit
+makes a lot more sense, so this is something I would recommend. This can be as
+easy as changing the advertisement mask of the interface and renegotiating the
+link. Userspace could handle that very easily.
+
+Auke
