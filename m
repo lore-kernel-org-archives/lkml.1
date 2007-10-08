@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXJHByu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbXJHB7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbXJHByu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 21:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbXJHBym
+	id S1757578AbXJHB7N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 21:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbXJHB66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 21:54:42 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49381 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752443AbXJHByl (ORCPT
+	Sun, 7 Oct 2007 21:58:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:62045 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753009AbXJHB64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 21:54:41 -0400
-X-Sasl-enc: NAP64ax3TnIMtBH8YLqdqis/5faDk6oGlHPHmSEVwPO/ 1191808476
-Message-ID: <47098DD4.4090207@fastmail.co.uk>
-Date: Mon, 08 Oct 2007 09:54:28 +0800
-From: Max Waterman <davidmaxwaterman+kernel@fastmail.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 7 Oct 2007 21:58:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=aUfFIjF1DB7tUdDNURZ952zYZR2BaTsggmAtPDA3PeX0IxOfX/AoIrq0Yeq8vc6ivqlgk3VWr/dENxslHsMNksTjhDdHRQgPYx0BkiF6dHvIh222lUl+ltHkjs9RrJKdinyfRH4VTZGUe/rsCsV5+kk43EhCXGI41IeWW52VFAA=
+Message-ID: <cfa94dc20710071858l71ba6115p716d24f1bbcce1c@mail.gmail.com>
+Date: Sun, 7 Oct 2007 18:58:54 -0700
+From: "Ryan Finnie" <ryan@finnie.org>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
+Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Colin Watson" <cjwatson@ubuntu.com>
+In-Reply-To: <Pine.LNX.4.64.0710072255280.688@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS internal error
-References: <470831E6.4030704@fastmail.co.uk> <20071008001452.GX995458@sgi.com>
-In-Reply-To: <20071008001452.GX995458@sgi.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0710072255280.688@sbz-30.cs.Helsinki.FI>
+X-Google-Sender-Auth: 8dddd981df5c9227
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
->> 1994 of file fs/xfs/xfs_da_btree.c.  Caller 0xffffffff889b2de4
->>     
+On 10/7/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> On 10/7/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> > Anyway, some Ubuntu users of Unionfs reported that msync(2) sometimes
+> > returns AOP_WRITEPAGE_ACTIVATE (decimal 524288) back to userland.
+> > Therefore, some user programs fail, esp. if they're written such as
+> > this:
 >
-> Did you ever run 2.6.17-2.6.17.6?
-I guess so, since I've been upgrading steadily since I installed FC6 
-some time ago.
->  If so, this implies:
->
-> http://oss.sgi.com/projects/xfs/faq.html#dir2
->   
-Ah. I did see that, but stopped reading when I read it was fixed in 
-later versions ... didn't get to the part where it still needed to be 
-repaired/etc.
+...
+> It's a kernel bug. AOP_WRITEPAGE_ACTIVATE is a hint to the VM to avoid
+> writeback of the page in the near future. I wonder if it's enough that we
+> change the return value to zero from
+> mm/page-writeback.c:write_cache_pages() in case we hit AOP_WRITEPAGE_ACTIVE...
 
->> I am fairly sure there is nothing I can do about this, but I thought it
->> prudent to mention it. Searching turned up some similar issues, but they
->> seem related to a previous kernel version and claimed to be fixed in
->> subsequent versions.
->>     
->
-> Yes, but those previous corruptions get left on disk as a landmine
-> for you to trip over some time later, even on a kernel that has the
-> bug fixed.
->   
-ah, ok.
-> I suggest that you run xfs_check on the filesystem and if that
-> shows up errors, run xfs_repair onteh filesystem to correct them.
->   
-It did, and I did, and another xfs_check produced no output.
+Doesn't appear to be enough.  I can't figure out why (since it appears
+write_cache_pages bubbles up directly to sys_msync), but with that
+patch applied, in my test case[1], msync returns -1 EIO.  However,
+with the exact same kernel without that patch applied, msync returns
+524288 (AOP_WRITEPAGE_ACTIVATE).  But as your patch specifically flips
+524288 to 0, I can't figure out how it eventually returns  -1 EIO.
 
-Do I need to do anything else to correct it? xfs_repair produced a whole 
-bunch of stuff that I don't understand...this is the bit that looks most 
-significant :
+Ryan
 
-> Phase 6 - check inode connectivity...
->         - resetting contents of realtime bitmap and summary inodes
->         - traversing filesystem ...
-> can't read freespace block 16777216 for directory inode 2095141277
-> rebuilding directory inode 2095141277
-> free block 16777216 for directory inode 2100841732 bad nused
-> rebuilding directory inode 2100841732
-> free block 16777216 for directory inode 2102199514 bad nused
-> rebuilding directory inode 2102199514
-> free block 16777216 for directory inode 2102200124 bad nused
-> rebuilding directory inode 2102200124
-> free block 16777216 for directory inode 2102905843 bad nused
-> rebuilding directory inode 2102905843
-> free block 16777216 for directory inode 3277510927 bad nused
-> rebuilding directory inode 3277510927
-> free block 16777216 for directory inode 3277524487 bad nused
-> rebuilding directory inode 3277524487
-> free block 16777216 for directory inode 3379886019 bad nused
-> rebuilding directory inode 3379886019
->         - traversal finished ...
->         - moving disconnected inodes to lost+found ...
-That last line looks suspicious...furthermore, when I mount the 
-filesystem, I don't see a 'lost+found' directory (which I've been used 
-to seeing on IRIX). Ah, perhaps the '...' with *nothing* after it means 
-it didn't do any moving. Am I right?
-
-Max.
+[1] "apt-get check" on a unionfs2 mount backed by tmpfs over cdrom,
+standard livecd setup
