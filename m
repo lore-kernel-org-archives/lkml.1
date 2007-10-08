@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXJHUUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXJHU0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbXJHUUk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 16:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXJHUUc
+	id S1753383AbXJHU0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 16:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXJHU0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 16:20:32 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43430 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbXJHUUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 16:20:32 -0400
-Date: Mon, 8 Oct 2007 22:22:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>
-Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
-Message-ID: <20071008202201.GA16647@uranus.ravnborg.org>
-References: <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home> <20071006152614.GC22435@flower.upol.cz> <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org> <20071006175145.GD22435@flower.upol.cz> <20071006185920.GA8005@uranus.ravnborg.org> <20071006204721.GF22435@flower.upol.cz> <20071006211048.GA8720@uranus.ravnborg.org> <20071006220759.GJ22435@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071006220759.GJ22435@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 8 Oct 2007 16:26:00 -0400
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:38850 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751184AbXJHUZ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 16:25:59 -0400
+X-YMail-OSG: nVcuBjcVM1mzAXYcg_ZWS.XVGuMqaZ9BfVRUnauY_XDn0FClNxaqQdhQfeWiw3kZWR4uwwmBnw--
+X-RocketYMMF: rancidfat
+Date: Mon, 8 Oct 2007 13:25:58 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m11wc5a5gp.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <868078.46629.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> And there's no working alternative to build/config
-> system. Thus, let me have my try OK? Thanks!
 
-I would prefer if you used your time to do small incrmental improvements
-to what we have today rather then rewriting from scratch.
+--- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
 
-But it's your decision and not mine.
+> It really seems to me that the LSM as currently structured creates
+> a large barrier to entry for people who have just this little thing
+> they want to do that is not possible with any existing security
+> module.
 
-	Sam
+I honestly think that the barrier has been more political
+in nature than technical. I don't know how long you've been
+watching, but no attempt to get an LSM upstream has escaped
+exagerated cricism from certain factions. Only someone who wants
+to get cut to metaphorical ribbons would submit a little LSM.
+Maybe that will get better now. I sure hope so.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
