@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXJHLp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXJHLvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbXJHLp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 07:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXJHLpN
+	id S1755111AbXJHLvy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 07:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbXJHLvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 07:45:13 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:65029 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753550AbXJHLpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 07:45:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=kEWnl5SFepYggOd786XiOT7KVfpd8QDo5YhT7s7q9GjojAIEARYxHPA3nO/D45aIol/r5dZZFUOg6GnZ8xZ+JDlASVMexl7mv4epkMAzTn6Q1nmel9v2tzEoh92MvqYz2eLLWSByJVImPJGhBRZ4k2iVT8Kzp15mzrPVKQexDYs=
-Message-ID: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-Date: Mon, 8 Oct 2007 19:45:08 +0800
-From: "Yan Zheng" <yanzheng@21cn.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
+	Mon, 8 Oct 2007 07:51:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34291 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbXJHLvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 07:51:46 -0400
+Date: Mon, 8 Oct 2007 13:51:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/6] scheduler: Protect important kernel threads
+	against normalize_rt
+Message-ID: <20071008115142.GE22199@elte.hu>
+References: <200710071059.126674000@suse.de> <20071007205958.7D8C41474B@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: e7b8addc444d238b
+In-Reply-To: <20071007205958.7D8C41474B@wotan.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
 
-The test for VM_CAN_NONLINEAR always fails
+* Andi Kleen <ak@suse.de> wrote:
 
-Signed-off-by: Yan Zheng<yanzheng@21cn.com>
-----
-diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
---- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
-+++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
-@@ -160,7 +160,7 @@
- 	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
- 		goto out;
+> Not only the migration thread, but also softlockup and stop machine 
+> need to be protected against normalize_rt(). Instead of checking for 
+> them all I added a new process flag for this.
 
--	if (!vma->vm_flags & VM_CAN_NONLINEAR)
-+	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
- 		goto out;
+hm, i dont really like this. The migration thread is an absolute 
+exception because it's needed for a correct scheduler. SysRq-N is like 
+SysRq-U or SysRq-B - last-minute resort in case something Goes Foul. 
+Results are not guaranteed.
 
- 	if (end <= start || start < vma->vm_start || end > vma->vm_end)
+	Ingo
