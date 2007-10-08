@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbXJHWub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbXJHXDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbXJHWub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 18:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbXJHWuW
+	id S1752994AbXJHXDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXJHXDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 18:50:22 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:30034 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbXJHWuV (ORCPT
+	Mon, 8 Oct 2007 19:03:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33455 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbXJHXDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 18:50:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=uneTD74F1kzYMdN0YaFILJSMUNDRMc/0zwIBV+VAaMQVqmiOS5dwBkd/Ie0aQBrWrko/kvwLCuDe+WCjQgmXYdCC8DKlLwCZjvdYt4HuR5rh+bMNMGsBA9sO5eL2AjR/RhtEatBiHJ8gjSbK39xRx5ulAJpVbTIQrQZmDSR906c=
-Message-ID: <3d0408630710081550k430f50c1nae5097776358f1a0@mail.gmail.com>
-Date: Tue, 9 Oct 2007 06:50:17 +0800
-From: "Yan Zheng" <yanzheng@21cn.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Miklos Szeredi" <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
+	Mon, 8 Oct 2007 19:03:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <470AB73A.9020503@s5r6.in-berlin.de>
+Date: Tue, 09 Oct 2007 01:03:22 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Jay Fenlason <fenlason@redhat.com>
+Subject: possible recursive locking detected... in __wake_up
+References: <b3998a500710080618t46eddf7ah7e64b3d297ff8218@mail.gmail.com> <20071008210029.GA19900@redhat.com>
+In-Reply-To: <20071008210029.GA19900@redhat.com>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-	 <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
-X-Google-Sender-Auth: 099984a27680e61d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/10/8, Hugh Dickins <hugh@veritas.com>:
-> On Mon, 8 Oct 2007, Yan Zheng wrote:
-> >
-> > The test for VM_CAN_NONLINEAR always fails
-> Good catch indeed.  Though I was puzzled how we do nonlinear at all,
-> until I realized it's "The test for not VM_CAN_NONLINEAR always fails".
-> It's not as serious as it appears, since code further down has been
-> added more recently to simulate nonlinear on non-RAM-backed filesystems,
-> instead of going the real nonlinear way; so most filesystems are now not
-> required to do what VM_CAN_NONLINEAR was put in to ensure they could do.
-> I'm confused as to where that leaves us: is this actually a fix that
-> needs to go into 2.6.23?  or will it suddenly disable a system call
-> which has been silently working fine on various filesystems which did
-> not add VM_CAN_NONLINEAR?  could we just rip out VM_CAN_NONLINEAR?
-> I hope Nick or Miklos is clearer on what the risks are.
-> (Apologies for all the "not"s and "non"s here, I'm embarrassed
-> after just criticizing Ingo's SCHED_NO_NO_OMIT_FRAME_POINTER!)
-> Hugh
+Hi list,
 
-Yes, I mean "The test for not VM_CAN_NONLINEAR always fails".  please
-forgive my poor English.
+how could this ever happen?
+
+>>   =============================================
+>>   [ INFO: possible recursive locking detected ]
+>>   2.6.23-0.222.rc9.git4.fc8 #1
+>>   ---------------------------------------------
+>>   X/2522 is trying to acquire lock:
+>>    (&q->lock){++..}, at: [<c042671c>] __wake_up+0x15/0x42
+>>
+>>   but task is already holding lock:
+>>    (&q->lock){++..}, at: [<c042671c>] __wake_up+0x15/0x42
+>>
+>>   other info that might help us debug this:
+>>   2 locks held by X/2522:
+>>    #0:  (&client->lock){.+..}, at: [<e0993f51>] queue_event+0x2b/0x68 [firewire_core]
+>>    #1:  (&q->lock){++..}, at: [<c042671c>] __wake_up+0x15/0x42
+>>
+>>   stack backtrace:
+>>    [<c0406463>] show_trace_log_lvl+0x1a/0x2f
+>>    [<c0406e4d>] show_trace+0x12/0x14
+>>    [<c0406e65>] dump_stack+0x16/0x18
+>>    [<c0449c56>] __lock_acquire+0x189/0xc67
+>>    [<c044abae>] lock_acquire+0x7b/0x9e
+>>    [<c0634712>] _spin_lock_irqsave+0x4a/0x77
+>>    [<c042671c>] __wake_up+0x15/0x42
+>>    [<c04aed7e>] ep_poll_safewake+0x86/0xa8
+>>    [<c04afa05>] ep_poll_callback+0x9f/0xaa
+>>    [<c042483e>] __wake_up_common+0x32/0x55
+>>    [<c0426738>] __wake_up+0x31/0x42
+>>    [<e0993f7d>] queue_event+0x57/0x68 [firewire_core]
+>>    [<e0994a5a>] handle_request+0xd8/0xe0 [firewire_core]
+>>    [<e099269a>] fw_core_handle_request+0x215/0x23c [firewire_core]
+>>    [<e0961c42>] handle_ar_packet+0xd7/0xeb [firewire_ohci]
+>>    [<e0962bac>] ar_context_tasklet+0xb6/0xc4 [firewire_ohci]
+>>    [<c0432b5b>] tasklet_action+0x68/0xd3
+>>    [<c0432a39>] __do_softirq+0x78/0xff
+>>    [<c04075d4>] do_softirq+0x74/0xf7
+>>    =======================
+(from https://bugzilla.redhat.com/show_bug.cgi?id=323411)
+
+We wake up the queue from a workqueue context (rarely) and from tasklet
+context (frequently).  However, since __wake_up disables local IRQs, it
+should be entirely impossible for __wake_up to take q->lock twice before
+releasing it.  What's the deal?
+-- 
+Stefan Richter
+-=====-=-=== =-=- -=--=
+http://arcgraph.de/sr/
