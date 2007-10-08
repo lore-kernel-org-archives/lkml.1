@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbXJHSOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXJHSRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbXJHSOZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 14:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbXJHSOQ
+	id S1756654AbXJHSRM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 14:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXJHSQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 14:14:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46081 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751375AbXJHSOO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 14:14:14 -0400
-Date: Mon, 8 Oct 2007 11:06:15 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Krzysztof Oledzki <olel@ans.pl>, Greg KH <greg@kroah.com>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 04/12] sky2: fix transmit state on resume
-Message-ID: <20071008180615.GE7627@kroah.com>
-References: <20071008180406.052382073@mini.kroah.org>
+	Mon, 8 Oct 2007 14:16:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:35625 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753573AbXJHSQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 14:16:58 -0400
+Message-ID: <470A73E9.4080504@goop.org>
+Date: Mon, 08 Oct 2007 11:16:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sky2-tx-sum-resume.patch"
-In-Reply-To: <20071008180551.GA7627@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+References: <25555.1191864285@lwn.net>	<20071008173706.GA12026@uranus.ravnborg.org>	<Pine.LNX.4.64.0710081939120.10239@fbirervta.pbzchgretzou.qr>	<470A708D.4080905@goop.org> <20071008110614.dd671fc7.randy.dunlap@oracle.com>
+In-Reply-To: <20071008110614.dd671fc7.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+Randy Dunlap wrote:
+> but Tested-by: doesn't have to involve any "actually looking at/reading
+> the patch."  Right?
+>
+> IOW, the patch could be ugly as sin but it works...
+>   
 
-Already upstream.
+Sure, absolutely.  I never said its a substitute for review.  An ugly
+working patch is useful, because its the raw material for a nice working
+patch.  A nice non-working patch can be framed and admired from a
+distance, but it isn't terribly useful.
 
-After resume, driver has reset the chip so the current state
-of transmit checksum offload state machine and DMA state machine
-will be undefined.
-
-The fix is to set the state so that first Tx will set MSS and offset
-values.
-
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/sky2.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -831,6 +831,20 @@ static inline struct sky2_tx_le *get_tx_
- 	return le;
- }
- 
-+static void tx_init(struct sky2_port *sky2)
-+{
-+	struct sky2_tx_le *le;
-+
-+	sky2->tx_prod = sky2->tx_cons = 0;
-+	sky2->tx_tcpsum = 0;
-+	sky2->tx_last_mss = 0;
-+
-+	le = get_tx_le(sky2);
-+	le->addr = 0;
-+	le->opcode = OP_ADDR64 | HW_OWNER;
-+	sky2->tx_addr64 = 0;
-+}
-+
- static inline struct tx_ring_info *tx_le_re(struct sky2_port *sky2,
- 					    struct sky2_tx_le *le)
- {
-@@ -1244,7 +1258,8 @@ static int sky2_up(struct net_device *de
- 				GFP_KERNEL);
- 	if (!sky2->tx_ring)
- 		goto err_out;
--	sky2->tx_prod = sky2->tx_cons = 0;
-+
-+	tx_init(sky2);
- 
- 	sky2->rx_le = pci_alloc_consistent(hw->pdev, RX_LE_BYTES,
- 					   &sky2->rx_le_map);
-
--- 
+    J
