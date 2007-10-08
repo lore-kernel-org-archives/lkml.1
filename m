@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbXJHUFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXJHUUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbXJHUFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 16:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbXJHUFY
+	id S1753276AbXJHUUk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 16:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXJHUUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 16:05:24 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44466 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbXJHUFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 16:05:23 -0400
-Date: Mon, 8 Oct 2007 14:37:59 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Yan Zheng <yanzheng@21cn.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-In-Reply-To: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Oct 2007 16:20:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43430 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbXJHUUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 16:20:32 -0400
+Date: Mon, 8 Oct 2007 22:22:01 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       "Elyse M. Grasso" <emgrasso@data-raptors.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net,
+       Andreas Herrmann <aherrman@arcor.de>
+Subject: Re: A bit of kconfig rewrite (Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL)
+Message-ID: <20071008202201.GA16647@uranus.ravnborg.org>
+References: <200709281112.52844.emgrasso@data-raptors.com> <E1IcFgK-0005oI-5p@flower> <Pine.LNX.4.64.0710050408550.1819@scrub.home> <20071006152614.GC22435@flower.upol.cz> <alpine.LFD.0.999.0710060900040.23684@woody.linux-foundation.org> <20071006175145.GD22435@flower.upol.cz> <20071006185920.GA8005@uranus.ravnborg.org> <20071006204721.GF22435@flower.upol.cz> <20071006211048.GA8720@uranus.ravnborg.org> <20071006220759.GJ22435@flower.upol.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071006220759.GJ22435@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007, Yan Zheng wrote:
 > 
-> The test for VM_CAN_NONLINEAR always fails
+> And there's no working alternative to build/config
+> system. Thus, let me have my try OK? Thanks!
 
-Good catch indeed.  Though I was puzzled how we do nonlinear at all,
-until I realized it's "The test for not VM_CAN_NONLINEAR always fails".
+I would prefer if you used your time to do small incrmental improvements
+to what we have today rather then rewriting from scratch.
 
-It's not as serious as it appears, since code further down has been
-added more recently to simulate nonlinear on non-RAM-backed filesystems,
-instead of going the real nonlinear way; so most filesystems are now not
-required to do what VM_CAN_NONLINEAR was put in to ensure they could do.
+But it's your decision and not mine.
 
-I'm confused as to where that leaves us: is this actually a fix that
-needs to go into 2.6.23?  or will it suddenly disable a system call
-which has been silently working fine on various filesystems which did
-not add VM_CAN_NONLINEAR?  could we just rip out VM_CAN_NONLINEAR?
-I hope Nick or Miklos is clearer on what the risks are.
-
-(Apologies for all the "not"s and "non"s here, I'm embarrassed
-after just criticizing Ingo's SCHED_NO_NO_OMIT_FRAME_POINTER!)
-
-Hugh
-
-> 
-> Signed-off-by: Yan Zheng<yanzheng@21cn.com>
-> ----
-> diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
-> --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
-> +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
-> @@ -160,7 +160,7 @@
->  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
->  		goto out;
-> 
-> -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
-> +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
->  		goto out;
-> 
->  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+	Sam
