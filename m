@@ -1,186 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbXJHXMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXJHXSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbXJHXMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbXJHXMq
+	id S1753989AbXJHXSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXJHXSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:12:46 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:44741 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbXJHXMo (ORCPT
+	Mon, 8 Oct 2007 19:18:45 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:22687 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751732AbXJHXSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:12:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=n7bxTdiQnKmwDywYvuucjrc+kAz3NWFW/lv3RIVUdVZjhcoI1wkVzC9tVyvL2zvenSHPHkqc9+OxU1bbBFg/YBvcKchFH14NHEXrf0xlBdKM8mmNs2NCBFVSoCSw2p+yZjpWpIsXhsbPAwul5FIRgt/GxPP7ecV42dGF+1IXVOk=
-Subject: Re: [PATCH 1/2] Colored kernel output (run3)
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Verych <olecom@flower.upol.cz>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0710062209390.20637@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710062147370.20637@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0710062209390.20637@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Tue, 09 Oct 2007 07:12:36 +0800
-Message-Id: <1191885157.5508.27.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 8 Oct 2007 19:18:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=p+WiApG0ha5ty6qAeNQuzafnf+8Eiozw9uaP4NcANQzBerPlDRFrckGDPoWrUWq8bU78fwlJIz89DzZZVCIV7gNTlulJhs/Aw8Q9Lm2BdLXeaM2/OroUupVs8t6hIwgFkoAIVbz0HyaaRlhFDpJyApm8T6FCLlsyfZNCe2pphPE=  ;
+X-YMail-OSG: HEf7Mc4VM1nevQtB1eNjZeUxAQCISif5hyY_6zcwFrB49K8r6dugEiih2l9rivpPjeOkxFlzHD3yBMjH_oF0JgsBNj319L4Nim9be1s2MoSaDvXBZY0-
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
+Date: Mon, 8 Oct 2007 16:47:04 +1000
+User-Agent: KMail/1.9.5
+Cc: Yan Zheng <yanzheng@21cn.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com> <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0710081418140.8640@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710081647.04399.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-06 at 22:09 +0200, Jan Engelhardt wrote: 
-> Colored kernel message output (1/2)
-> 
-> This patch makes it possible to give kernel messages a selectable
-> color. It can be chosen at compile time, overridden at boot time,
-> and changed at run time.
-> 
-> References: http://lkml.org/lkml/2007/4/1/162
-> 	http://lkml.org/lkml/2007/10/5/199
+On Monday 08 October 2007 23:37, Hugh Dickins wrote:
+> On Mon, 8 Oct 2007, Yan Zheng wrote:
+> > The test for VM_CAN_NONLINEAR always fails
+>
+> Good catch indeed.  Though I was puzzled how we do nonlinear at all,
+> until I realized it's "The test for not VM_CAN_NONLINEAR always fails".
+>
+> It's not as serious as it appears, since code further down has been
+> added more recently to simulate nonlinear on non-RAM-backed filesystems,
+> instead of going the real nonlinear way; so most filesystems are now not
+> required to do what VM_CAN_NONLINEAR was put in to ensure they could do.
 
-This is quite a long thread :-)
-
-> 
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-> 
-> ---
->  drivers/char/Kconfig |   42 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/char/vt.c    |   23 +++++++++++++++++++++++
->  2 files changed, 65 insertions(+)
-> 
-> Index: linux-2.6.23/drivers/char/Kconfig
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/char/Kconfig
-> +++ linux-2.6.23/drivers/char/Kconfig
-> @@ -58,6 +58,48 @@ config VT_CONSOLE
->  
->  	  If unsure, say Y.
->  
-> +config VT_CKO
-> +	bool "Colored kernel message output"
-> +	depends on VT_CONSOLE
-> +	---help---
-> +	This option enables kernel messages to be emitted in
-> +	colors other than the default.
-> +
-> +	If unsure, say N.
-> +
-> +config VT_PRINTK_COLOR
-> +	hex "Colored kernel message output"
-> +	range 0x00 0xFF
-> +	depends on VT_CKO
-> +	default 0x07
-> +	---help---
-> +	This option defines with which color kernel messages will be
-> +	printed to the console.
-> +
-> +	The value you need to enter here is the value is composed
-
-The more correct term for "The value" is probably "The attribute".
-
-> +	(OR-ed) of a foreground and a background color.
-> +
-> +	Foreground:
-> +	0x00 = black,   0x08 = dark gray,
-> +	0x01 = red,     0x09 = light red,
-> +	0x02 = green,   0x0A = light green,
-> +	0x03 = brown,   0x0B = yellow,
-> +	0x04 = blue,    0x0C = light blue,
-> +	0x05 = magenta, 0x0D = light magenta,
-> +	0x06 = cyan,    0x0E = light cyan,
-> +	0x07 = gray,    0x0F = white,
-> +
-> +	(Foreground colors 0x08 to 0x0F do not work when a VGA
-> +	console font with 512 glyphs is used.)
-
-You might have to include a warning that those values or attributes are 
-interpreted differently depending on the driver used, and the above is
-mostly true for 16-color console drivers only.
-
-For 2-colors (we still have quite a few of them) only bit 0 is true for
-color (0x00 and 0x01). The rest of the bits are interpreted as
-attributes:
-
-	0x02 - italic
-	0x04 - underline
-	0x08 - bold
-	0x80 - blink
-
-The italic, underline and bold attributes will show up in a 2-color
-framebuffer console. The blink attribute is ignored.
-
-With a 4-color fb console (4-level grayscale), those values are again
-interpreted differently.
-
-	0x00 - 0x00 : black
-	0x01 - 0x06 : white
-	0x07 - 0x08 : gray  
-	the rest    : intense white
-
-(If by mistake 0x0106 is used, it will produce a white on white display)
-
-With an 8-color console, only the first 8 values are considered.
-
-With a 16-color console, that is also not consistent:
-
-With vgacon, it supports 16-color foreground (fg), 8-color
-background (bg) at 256 chars. Becomes 8 fg and 8 bg with 512 chars.
-
-With fbcon, it supports 16 fg and 16 bg at 256, 16 fg and 8 bg at
-512 chars.
-
-And for drivers that have their own con_build_attr() hook, they will be
-interpreted differently again.
-
-> +
-> +	Background:
-> +	0x00 = black,   0x40 = blue,
-> +	0x10 = red,     0x50 = magenta,
-> +	0x20 = green,   0x60 = cyan,
-> +	0x30 = brown,   0x70 = gray,
-> +
-> +	For example, 0x1F would yield white on red.
-> +
-
-You may need to specify that the values here are the console default,
-ie, the default_blue|grn|red boot options are not filled up.
-
->  config HW_CONSOLE
->  	bool
->  	depends on VT && !S390 && !UML
-> Index: linux-2.6.23/drivers/char/vt.c
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/char/vt.c
-> +++ linux-2.6.23/drivers/char/vt.c
-> @@ -73,6 +73,7 @@
->   */
->  
->  #include <linux/module.h>
-> +#include <linux/moduleparam.h>
->  #include <linux/types.h>
->  #include <linux/sched.h>
->  #include <linux/tty.h>
-> @@ -2344,6 +2345,23 @@ struct tty_driver *console_driver;
->  
->  #ifdef CONFIG_VT_CONSOLE
->  
-> +static unsigned int printk_color __read_mostly = CONFIG_VT_PRINTK_COLOR;
-> +#ifdef CONFIG_VT_CKO
-> +module_param(printk_color, uint, S_IRUGO | S_IWUSR);
-> +
-> +static inline void vc_set_color(struct vc_data *vc, unsigned char color)
-> +{
-> +	vc->vc_color = color_table[color & 0xF] |
-> +	               (color_table[(color >> 4) & 0x7] << 4) |
-> +	               (color & 0x80);
-
-You may want to leave out the blink attribute (0x80) from this part.
-Otherwise setterm -blink on|off will produce the opposite effect. 
-
-Tony
+Well, I think all filesystems can do VM_CAN_NONLINEAR anyway. Device
+drivers and "weird" things tend to have trouble...
 
 
+> I'm confused as to where that leaves us: is this actually a fix that
+> needs to go into 2.6.23?  or will it suddenly disable a system call
+> which has been silently working fine on various filesystems which did
+> not add VM_CAN_NONLINEAR?  could we just rip out VM_CAN_NONLINEAR?
 
+We probably should keep VM_CAN_NONLINEAR for the moment, I think.
+But now that we have the fallback path, we _could_ use that instead of
+failing. I doubt anybody will be using nonlinear mappings on anything but
+regular files for the time being, but as a trivial fix, I think this probably
+should go into 2.6.23.
+
+Thanks for spotting this problem
+Acked-by: Nick Piggin <npiggin@suse.de>
+
+> I hope Nick or Miklos is clearer on what the risks are.
+>
+> (Apologies for all the "not"s and "non"s here, I'm embarrassed
+> after just criticizing Ingo's SCHED_NO_NO_OMIT_FRAME_POINTER!)
+>
+> Hugh
+>
+> > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
+> > ----
+> > diff -ur linux-2.6.23-rc9/mm/fremap.c linux/mm/fremap.c
+> > --- linux-2.6.23-rc9/mm/fremap.c	2007-10-07 15:03:33.000000000 +0800
+> > +++ linux/mm/fremap.c	2007-10-08 19:33:44.000000000 +0800
+> > @@ -160,7 +160,7 @@
+> >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
+> >  		goto out;
+> >
+> > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
+> > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+> >  		goto out;
+> >
+> >  	if (end <= start || start < vma->vm_start || end > vma->vm_end)
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> > in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
