@@ -1,143 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXJHMfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbXJHMfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbXJHMfR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 08:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXJHMez
+	id S1756107AbXJHMfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 08:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXJHMfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 08:34:55 -0400
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:47084 "EHLO
+	Mon, 8 Oct 2007 08:35:36 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:47093 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755677AbXJHMey (ORCPT
+	by vger.kernel.org with ESMTP id S1754541AbXJHMfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 08:34:54 -0400
-Message-id: <24841282012868130110@pripojeni.net>
-In-reply-to: <21044149499772302@pripojeni.net>
-Subject: [PATCH 3/3] V4L: cinergyT2, remove bad usage of ERESTARTSYS
+	Mon, 8 Oct 2007 08:35:34 -0400
+Message-id: <25821446172402381@pripojeni.net>
+Subject: [PATCH 1/1] V4L: rocket, switch sleep_on to completion
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Cc: <daniel@qanu.de>
-Cc: <holger@qanu.de>
-Cc: <mchehab@infradead.org>
-Cc: <video4linux-list@redhat.com>
-Date: Mon, 8 Oct 2007 08:34:54 -0400
+Cc: <alan@lxorguk.ukuu.org.uk>
+Date: Mon, 8 Oct 2007 08:35:34 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cinergyT2, remove bad usage of ERESTARTSYS
+rocket, switch sleep_on to completion
 
-test of cinergyt2->disconnect_pending doesn't ensure pending signal and so
-ERESTARTSYS would reach userspace, which is not permitted. Change it to
-EAGAIN
+- sleep_on is deprecated and racy, use completion instead
+- also check retval of interruptible function and return ERESTARTSYS
+  eventually
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit b227f5517ddd99f581a9d241c8ba9c50c50fbc3e
-tree f469eea4a298db2d4fe27313e48901d74211b2ca
-parent 235cf594bc65128250632a642f3e9d7e4df4975e
-author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:24:32 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:24:32 +0200
+commit 6e42c2183befe136d85e6a8708ee4eabc543774b
+tree 4a2b307dc66e1197b67afd6663e5dca7dee7f5e6
+parent 9936225b4a065eec6eccd9700a680cc840280fdb
+author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 13:28:51 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 13:28:51 +0200
 
- drivers/media/dvb/cinergyT2/cinergyT2.c |   38 ++++++++++++++++++++-----------
- 1 files changed, 25 insertions(+), 13 deletions(-)
+ drivers/char/rocket.c     |   12 ++++++++----
+ drivers/char/rocket_int.h |    7 +------
+ 2 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/media/dvb/cinergyT2/cinergyT2.c b/drivers/media/dvb/cinergyT2/cinergyT2.c
-index 154a7ce..a1f6ebd 100644
---- a/drivers/media/dvb/cinergyT2/cinergyT2.c
-+++ b/drivers/media/dvb/cinergyT2/cinergyT2.c
-@@ -345,7 +345,9 @@ static int cinergyt2_start_feed(struct dvb_demux_feed *dvbdmxfeed)
- 	struct dvb_demux *demux = dvbdmxfeed->demux;
- 	struct cinergyt2 *cinergyt2 = demux->priv;
+diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
+index 56cbba7..d790b08 100644
+--- a/drivers/char/rocket.c
++++ b/drivers/char/rocket.c
+@@ -84,6 +84,7 @@
+ #include <linux/mutex.h>
+ #include <linux/ioport.h>
+ #include <linux/delay.h>
++#include <linux/completion.h>
+ #include <linux/wait.h>
+ #include <linux/pci.h>
+ #include <asm/uaccess.h>
+@@ -650,7 +651,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
+ 	info->closing_wait = 3000;
+ 	info->close_delay = 50;
+ 	init_waitqueue_head(&info->open_wait);
+-	init_waitqueue_head(&info->close_wait);
++	init_completion(&info->close_wait);
+ 	info->flags &= ~ROCKET_MODE_MASK;
+ 	switch (pc104[board][line]) {
+ 	case 422:
+@@ -878,7 +879,8 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	if (tty_hung_up_p(filp))
+ 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
+ 	if (info->flags & ROCKET_CLOSING) {
+-		interruptible_sleep_on(&info->close_wait);
++		if (wait_for_completion_interruptible(&info->close_wait))
++			return -ERESTARTSYS;
+ 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
+ 	}
  
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
-+	if (cinergyt2->disconnect_pending)
-+		return -EAGAIN;
-+	if (mutex_lock_interruptible(&cinergyt2->sem))
- 		return -ERESTARTSYS;
+@@ -983,8 +985,10 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
+ 		return -ENOMEM;
  
- 	if (cinergyt2->streaming == 0)
-@@ -361,7 +363,9 @@ static int cinergyt2_stop_feed(struct dvb_demux_feed *dvbdmxfeed)
- 	struct dvb_demux *demux = dvbdmxfeed->demux;
- 	struct cinergyt2 *cinergyt2 = demux->priv;
+ 	if (info->flags & ROCKET_CLOSING) {
+-		interruptible_sleep_on(&info->close_wait);
++		retval = wait_for_completion_interruptible(&info->close_wait);
+ 		free_page(page);
++		if (retval)
++			return retval;
+ 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
+ 	}
  
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
-+	if (cinergyt2->disconnect_pending)
-+		return -EAGAIN;
-+	if (mutex_lock_interruptible(&cinergyt2->sem))
- 		return -ERESTARTSYS;
+@@ -1176,7 +1180,7 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
+ 	}
+ 	info->flags &= ~(ROCKET_INITIALIZED | ROCKET_CLOSING | ROCKET_NORMAL_ACTIVE);
+ 	tty->closing = 0;
+-	wake_up_interruptible(&info->close_wait);
++	complete_all(&info->close_wait);
+ 	atomic_dec(&rp_num_ports_open);
  
- 	if (--cinergyt2->streaming == 0)
-@@ -481,12 +485,14 @@ static int cinergyt2_open (struct inode *inode, struct file *file)
- {
- 	struct dvb_device *dvbdev = file->private_data;
- 	struct cinergyt2 *cinergyt2 = dvbdev->priv;
--	int err = -ERESTARTSYS;
-+	int err = -EAGAIN;
+ #ifdef ROCKET_DEBUG_OPEN
+diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
+index b4c53df..148e81c 100644
+--- a/drivers/char/rocket_int.h
++++ b/drivers/char/rocket_int.h
+@@ -1163,13 +1163,8 @@ struct r_port {
+ 	int read_status_mask;
+ 	int cps;
  
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
-+	if (cinergyt2->disconnect_pending)
-+		goto out;
-+	if ((err = mutex_lock_interruptible(&cinergyt2->wq_sem)))
- 		goto out;
- 
--	if (mutex_lock_interruptible(&cinergyt2->sem))
-+	if ((err = mutex_lock_interruptible(&cinergyt2->sem)))
- 		goto out_unlock1;
- 
- 	if ((err = dvb_generic_open(inode, file)))
-@@ -550,7 +556,9 @@ static unsigned int cinergyt2_poll (struct file *file, struct poll_table_struct
- 	struct cinergyt2 *cinergyt2 = dvbdev->priv;
- 	unsigned int mask = 0;
- 
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
-+	if (cinergyt2->disconnect_pending)
-+		return -EAGAIN;
-+	if (mutex_lock_interruptible(&cinergyt2->sem))
- 		return -ERESTARTSYS;
- 
- 	poll_wait(file, &cinergyt2->poll_wq, wait);
-@@ -625,7 +633,9 @@ static int cinergyt2_ioctl (struct inode *inode, struct file *file,
- 		if (copy_from_user(&p, (void  __user*) arg, sizeof(p)))
- 			return -EFAULT;
- 
--		if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
-+		if (cinergyt2->disconnect_pending)
-+			return -EAGAIN;
-+		if (mutex_lock_interruptible(&cinergyt2->sem))
- 			return -ERESTARTSYS;
- 
- 		param->cmd = CINERGYT2_EP1_SET_TUNER_PARAMETERS;
-@@ -996,7 +1006,9 @@ static int cinergyt2_suspend (struct usb_interface *intf, pm_message_t state)
- {
- 	struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
-+	if (cinergyt2->disconnect_pending)
-+		return -EAGAIN;
-+	if (mutex_lock_interruptible(&cinergyt2->wq_sem))
- 		return -ERESTARTSYS;
- 
- 	cinergyt2_suspend_rc(cinergyt2);
-@@ -1017,16 +1029,16 @@ static int cinergyt2_resume (struct usb_interface *intf)
- {
- 	struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 	struct dvbt_set_parameters_msg *param = &cinergyt2->param;
--	int err = -ERESTARTSYS;
-+	int err = -EAGAIN;
- 
--	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->wq_sem))
-+	if (cinergyt2->disconnect_pending)
-+		goto out;
-+	if ((err = mutex_lock_interruptible(&cinergyt2->wq_sem)))
- 		goto out;
- 
--	if (mutex_lock_interruptible(&cinergyt2->sem))
-+	if ((err = mutex_lock_interruptible(&cinergyt2->sem)))
- 		goto out_unlock1;
- 
--	err = 0;
--
- 	if (!cinergyt2->sleeping) {
- 		cinergyt2_sleep(cinergyt2, 0);
- 		cinergyt2_command(cinergyt2, (char *) param, sizeof(*param), NULL, 0);
+-#ifdef DECLARE_WAITQUEUE
+ 	wait_queue_head_t open_wait;
+-	wait_queue_head_t close_wait;
+-#else
+-	struct wait_queue *open_wait;
+-	struct wait_queue *close_wait;
+-#endif
++	struct completion *close_wait;
+ 	spinlock_t slock;
+ 	struct mutex write_mtx;
+ };
