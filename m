@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXJHGdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXJHGdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbXJHGdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 02:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXJHGdJ
+	id S1754554AbXJHGdd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 02:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXJHGdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 02:33:09 -0400
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:60701 "EHLO iris"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752452AbXJHGdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 02:33:08 -0400
-Message-ID: <4709CF6F.60102@sw.ru>
-Date: Mon, 08 Oct 2007 10:34:23 +0400
-From: "Denis V. Lunev" <den@sw.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Mon, 8 Oct 2007 02:33:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:12732 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753529AbXJHGdT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 02:33:19 -0400
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Organization: Mellanox
+To: general@lists.openfabrics.org
+Subject: Re: [ofa-general] Updated InfiniBand/RDMA merge plans for 2.6.24
+Date: Mon, 8 Oct 2007 08:38:12 +0200
+User-Agent: KMail/1.9.1
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+References: <adaodfdkv59.fsf@cisco.com>
+In-Reply-To: <adaodfdkv59.fsf@cisco.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: herbert@gondor.apana.org.au, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, den@openvz.org
-Subject: Re: [NET] IPv6 oops bisected
-References: <4708F387.1060602@garzik.org>	<20071007.231608.104667710.davem@davemloft.net>	<20071008061942.GA842@gondor.apana.org.au> <20071007.232302.78733656.davem@davemloft.net>
-In-Reply-To: <20071007.232302.78733656.davem@davemloft.net>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710080838.12778.jackm@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Mon, 8 Oct 2007 14:19:42 +0800
+On Saturday 06 October 2007 01:18, Roland Dreier wrote:
+>  - XRC.  Given the length of the backlog above and the fact that a
+>    first draft of this code has not been posted yet, I don't see any
+>    way that we could have something this major ready in time.
 > 
->> On Sun, Oct 07, 2007 at 11:16:08PM -0700, David Miller wrote:
->>> diff --git a/net/ipv6/route.c b/net/ipv6/route.c
->>> index a7db84c..7109ad6 100644
->>> --- a/net/ipv6/route.c
->>> +++ b/net/ipv6/route.c
->>> @@ -1188,7 +1188,7 @@ int ip6_route_add(struct fib6_config *cfg)
->>>  	if ((cfg->fc_flags & RTF_REJECT) ||
->>>  	    (dev && (dev->flags&IFF_LOOPBACK) && !(addr_type&IPV6_ADDR_LOOPBACK))) {
->>>  		/* hold loopback dev/idev if we haven't done so. */
->>> -		if (dev != dev->nd_net->loopback_dev) {
->>> +		if (!dev || (dev != dev->nd_net->loopback_dev)) {
->>>  			if (dev) {
->>>  				dev_put(dev);
->>>  				in6_dev_put(idev);
->> Unfortunately this'll still oops a few lines down when it tries
->> to assign dev->nd_net->loopabck_dev to dev.  The issue here is
->> which namespace are we in if dev is NULL.
-> 
-> Good catch.
-> 
-> I'm just going to revert my bogus fix and the original change
-> for now.  Denis can resubmit the original patch once this
-> is resolved.
+I posted the first draft patch set to the OpenFabrics list on September 18:
 
-OK. I am installing Fedora 7 right now...
+[ofa-general] [PATCH 0 of 5] XRC implementation patches (libibverbs, libmlx4, core, mlx4)   Jack Morgenstein
+[ofa-general] [PATCH 1 of 5] libibverbs: XRC implementation   Jack Morgenstein
+[ofa-general] [PATCH 2 of 5] libmlx4: XRC implementation   Jack Morgenstein
+[ofa-general] [PATCH 3 of 5] core: XRC implementation for fd = -1 when opening an xrc domain   Jack Morgenstein
+[ofa-general] [PATCH 4 of 5] core: XRC implementation -- add support for working with file descriptors   Jack Morgenstein
+[ofa-general] [PATCH 5 of 5] mlx4: XRC implementation   Jack Morgenstein
+
+The above patch set implements XRC for userspace verbs layer and below.
+The Kernel-space verbs implementation (1 more patch) is finished,
+but as yet untested.
+
+- Jack
