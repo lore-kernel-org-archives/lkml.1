@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbXJHOeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbXJHOln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbXJHOeg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 10:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXJHOe1
+	id S1754264AbXJHOln (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 10:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXJHOlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 10:34:27 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:22253 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752019AbXJHOe0 (ORCPT
+	Mon, 8 Oct 2007 10:41:36 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:55863 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbXJHOle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 10:34:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bmYNUMyhNhPU1xVOOrK1FAWYsuyZw8BnQLGIflCgJNJABLwbHZxC6rJu+4AJq9oSFzcrNj1nS+SAJ6FmLkRDuh+Yy0HtZwHZmpJB6+NdvF8RQwrmASILQ5hdTH1+80oBY622W3IlIrs6N1GGFBgUKkk2tBMNLU+meKxF8PEKlsA=
-Message-ID: <1985e0f60710080734y4897a8e1ke253b6d4273146ec@mail.gmail.com>
-Date: Mon, 8 Oct 2007 20:04:24 +0530
-From: "Jaswinder Singh" <jaswinderlinuxrt@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: 2.6.23-rc9-rt2
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <Pine.LNX.4.58.0710080951270.4846@gandalf.stny.rr.com>
+	Mon, 8 Oct 2007 10:41:34 -0400
+Date: Mon, 8 Oct 2007 10:41:02 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] [RFC] RT: Optionally allow IRQF_NODELAY on serial
+ console
+In-Reply-To: <1191853361.4281.5.camel@ghaskins-t60p.haskins.net>
+Message-ID: <Pine.LNX.4.58.0710081037420.5290@gandalf.stny.rr.com>
+References: <20071005153517.24349.62653.stgit@ghaskins-t60p.haskins.net> 
+ <alpine.LRH.0.999.0710051831000.10191@www.tglx.de> 
+ <Pine.LNX.4.58.0710081005320.4846@gandalf.stny.rr.com>
+ <1191853361.4281.5.camel@ghaskins-t60p.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1191536413.5210.19.camel@localhost.localdomain>
-	 <1985e0f60710070635l7016bad1t9c4d4cb1a966534f@mail.gmail.com>
-	 <Pine.LNX.4.58.0710080951270.4846@gandalf.stny.rr.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
 
-On 10/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
+--
+On Mon, 8 Oct 2007, Gregory Haskins wrote:
 >
-> --
-> On Sun, 7 Oct 2007, Jaswinder Singh wrote:
->
-> > Do you have any plans to support nested or reentrant Interrupt Handling schemes.
-> >
->
-> Hi Jaswinder,
->
-> Not sure what you mean by this, since interrupt handlers are run as
-> threads and are fully preemptible.
->
+> Hi Steve,
+>   What you describe is exactly what I did.  The IRQF_NODELAY handler
+> just minimally checks to see if the character is a sysrq related one (or
+> KDB, if you have the KDB patches applied).  If it is not, it puts the
+> character into a ring-buffer and wakes a (kthread-based) tasklet to do
+> the normal serial/tty rx path by processing the ring.
 
-I think by nested or reentrant interrupt handling technique you can
-further reduce latencies.
-what you think.
+Ah, that was in the second patch (I didn't look at that. My fault). I
+didn't see this description in the comments. But you are right, it is very
+close to what I did too. But before we add this to -rt, it will need to
+probably need to be tested quite a bit more. Especially since this is more
+to help us developers than to help end users.
 
-Can we can get guaranteed realtime throughput by using these realtime patch.
+I would like to see something like this eventually make it into RT.  Just
+because there has been too many times that this would be useful. For now I
+just use the NMI watchdog and soft lockup detect. But those are very
+limiting.
 
-Thank you,
+>
+> Hope that helps to clarify.
 
-Jaswinder SIngh.
+Yes, thanks!
+
+-- Steve
+
