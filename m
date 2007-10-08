@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbXJHEUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbXJHFM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752683AbXJHEUZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 00:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXJHEUL
+	id S1752894AbXJHFM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 01:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXJHFMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 00:20:11 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:29279 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbXJHEUJ (ORCPT
+	Mon, 8 Oct 2007 01:12:20 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50813 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbXJHFMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 00:20:09 -0400
-Message-ID: <47099628.2050108@gmail.com>
-Date: Sun, 07 Oct 2007 23:30:00 -0300
-From: Hernan G Solari <hgsolari@gmail.com>
-Reply-To: hgsolari@gmail.com
-Organization: Universidad de Buenos Aires
-User-Agent: Icedove 1.5.0.12 (X11/20070606)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: Serial ATA does not find partitions (Hitachi HD, new? ATI controller)
- where old SATA works
-References: <46FC4384.7080607@df.uba.ar> <46FCCD57.2020507@gmail.com> <47014740.5080002@df.uba.ar> <4701EA71.2000609@gmail.com> <470220FE.2090506@gmail.com> <47044C6C.5030905@gmail.com> <47083555.2060605@gmail.com> <470981EE.30103@gmail.com>
-In-Reply-To: <470981EE.30103@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 8 Oct 2007 01:12:19 -0400
+Date: Mon, 8 Oct 2007 06:12:18 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, hch@lst.de
+Subject: Re: [patch 0/9] compat_ioctl: introduce block/compat_ioctl.c
+Message-ID: <20071008051218.GS8181@ftp.linux.org.uk>
+References: <20071006181902.141862534@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071006181902.141862534@arndb.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 06, 2007 at 08:19:02PM +0200, Arnd Bergmann wrote:
+> This is my block ioctl series split up into managable chunks. I'm not
+> really sure about the last two of these, I'd prefer to get a second
+> opinion on those.
+> 
+> Please apply once your tests have gone though.
 
-> Hmmm... and the kernel freezes after this?  libata driver isn't
-> initialized yet.  I don't think libata has anything to do with here.
->
->   
-as I told you, the ATA problem was with the 2.6.22 version of the kernel
-and is not longer related to the freeze with kernel 2.6.23-rc8  I asked 
-whether you wanted to see the ATA problem in that kernel or the present 
-crash.
+BTW, one note: 0x1260 thing (
+       /* The mkswap binary hard codes it to Intel value :-((( */
+       case 0x1260:
+       case BLKGETSIZE:
+) is an ancient piece of BS.  It had appeared in 2.1.115-pre3 and AFAICS
+it's a misunderstanding.
 
-> Options: I can compile the 2.6.22 kernel to get the reported problem
->       or try to debug the problem in 2.6.22.8 or something else it
->        fits the kernel-team.
+What happens here:
+	* mkswap(8) used to hardcode BLKGETSIZE as 0x1260 (instead of
+_IO(0x12,0x60)).  If _IO is undefined, it still does.  Several old
+architectures (including i386) have the right value still equal to 0x1260
+due to the way their _IO() is defined.
+	* 0x1260 does *NOT* work on sparc32, exactly because its _IO()
+is different.  _IO(0x12,0x60) works.
+	* sparc64 for some insane reason (I suspect misreading the mkswap
+source) tries to support 0x1260 for 32bit tasks.  Note that binary that
+tries to pull that off will _not_ work on native sparc32.
 
-was my offer.
+As the matter of fact, all biarch targets old enough to have 32bit counterpart
+present prior to 1.3.45 (when BLKGETSIZE went _IO(0x12,60)) either have
+it still equal to 0x1260 on both 32bit and 64bit (i386/amd64) or have it
+_not_ equal to 0x1260 on either (ppc/ppc64 and sparc/sparc64).  In the latter
+case 0x1260 doesn't work on 32bit, so having it accepted from 32bit tasks
+on 64bit is insane.
 
-As you did not answer that point (you answered other points) I thought 
-it was useless to debug a problem that is not longer there. I still 
-thing that way.
-The booting is apparently allocating port services at the  point of 
-freezing but not too close of the disk driver, that much I  knew.
+IOW, that stuff is useless and always had been.  In the current form it's
+simply invalid C on e.g. amd64 - you get duplicate case there, which breaks
+the build.
 
-regards
-                Hernan
-
-
-
-
--- 
-Hernán Gustavo Solari, solari@df.uba.ar, http://www.df.uba.ar/~solari
-
-
+I'd simply kill that.
