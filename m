@@ -1,178 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbXJHAeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbXJHAkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbXJHAeE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Oct 2007 20:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXJHAdz
+	id S1758059AbXJHAkA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Oct 2007 20:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXJHAjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Oct 2007 20:33:55 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:53597 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751504AbXJHAdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Oct 2007 20:33:53 -0400
-Message-ID: <391803633.20978@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 8 Oct 2007 08:33:49 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: David Chinner <dgc@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove throttle_vm_writeout()
-Message-ID: <20071008003349.GA5455@mail.ustc.edu.cn>
-References: <E1IdPla-0002Bd-00@dorka.pomaz.szeredi.hu> <1191501626.22357.14.camel@twins> <E1IdQJn-0002Cv-00@dorka.pomaz.szeredi.hu> <1191504186.22357.20.camel@twins> <E1IdR58-0002Fq-00@dorka.pomaz.szeredi.hu> <1191516427.5574.7.camel@lappy> <20071004104650.d158121f.akpm@linux-foundation.org> <20071005123028.GA10372@mail.ustc.edu.cn> <20071007235433.GW995458@sgi.com>
+	Sun, 7 Oct 2007 20:39:54 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:60587 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbXJHAjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Oct 2007 20:39:53 -0400
+Date: Sun, 7 Oct 2007 17:39:52 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
+       Linux and Kernel Video <video4linux-list@redhat.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: .23-rc9, V4L, make randconfig build failure
+In-Reply-To: <20071006095635.GA2066@elte.hu>
+Message-ID: <Pine.LNX.4.58.0710071650310.2362@shell4.speakeasy.net>
+References: <20071006095635.GA2066@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071007235433.GW995458@sgi.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 09:54:33AM +1000, David Chinner wrote:
-> On Fri, Oct 05, 2007 at 08:30:28PM +0800, Fengguang Wu wrote:
-> > The improvement could be:
-> > - kswapd is now explicitly preferred to do the writeout;
-> 
-> Careful. kswapd is much less efficient at writeout than pdflush
-> because it does not do low->high offset writeback per address space.
-> It just flushes the pages in LRU order and that turns writeback into
-> a non-sequential mess. I/O sizes decrease substantially and
-> throughput falls through the floor.
-> 
-> So if you want kswapd to take over all the writeback, it needs to do
-> writeback in the same manner as the background flushes. i.e.  by
-> grabbing page->mapping and flushing that in sequential order rather
-> than just the page on the end of the LRU....
-> 
-> I documented the effect of kswapd taking over writeback in this
-> paper (section 5.3):
-> 
-> http://oss.sgi.com/projects/xfs/papers/ols2006/ols-2006-paper.pdf
+On Sat, 6 Oct 2007, Ingo Molnar wrote:
+> FYI, just found this V4L build failure in -rc9:
+>
+>  drivers/built-in.o: In function `saa7146_unregister_device':
+>  : undefined reference to `video_unregister_device'
+>  drivers/built-in.o: In function `saa7146_register_device':
+>  : undefined reference to `video_device_alloc'
+>  drivers/built-in.o: In function `saa7146_register_device':
+>  : undefined reference to `video_device_release'
+>  [ ... etc ... ]
+>
+> this is caused by the attached config:
+>
+>   CONFIG_VIDEO_BUF=m
+>   CONFIG_VIDEO_BUF_DVB=m
 
-Ah, indeed. That means introducing a new "really congested" threshold
-for kswapd is *dangerous*. I realized this later on, and am now
-heading for another direction.
+video_unregister_device, etc.  are from CONFIG_VIDEO_DEV, not
+COFIG_VIDEO_BUF.  VIDEO_SAA7146_VV does need VIDEO_BUF, but that's not
+what's causing the undefined references above.  I do not think
+VIDEO_BUF_DVB is needed by VIDEO_SAA7146 or VIDEO_SAA7146_VV, but some
+others drivers which use saa7146 do need it.
 
-The basic idea is to
-- rotate pdflush issued writeback pages for kswapd;
-- use the more precise zone_rotate_wait() to throttle kswapd.
+> combined with:
+>
+>   CONFIG_VIDEO_SAA7146=y
+>   CONFIG_VIDEO_SAA7146_VV=y
+>
+> so it seems like a drivers/video/Kconfig bug - this combination should
+> not be possible.
 
-The code is a quick hack and not tested yet.
-Early comments are more than welcome.
+The config has these two settings:
 
-Fengguang
----
- include/linux/mmzone.h |    1 +
- mm/filemap.c           |    5 ++++-
- mm/page_alloc.c        |    1 +
- mm/swap.c              |   13 +++++++++++++
- mm/vmscan.c            |   12 ++++++++++--
- 5 files changed, 29 insertions(+), 3 deletions(-)
+CONFIG_VIDEO_SAA7146_VV=y
+CONFIG_VIDEO_DEV=m
 
---- linux-2.6.23-rc8-mm2.orig/include/linux/mmzone.h
-+++ linux-2.6.23-rc8-mm2/include/linux/mmzone.h
-@@ -316,6 +316,7 @@ struct zone {
- 	wait_queue_head_t	* wait_table;
- 	unsigned long		wait_table_hash_nr_entries;
- 	unsigned long		wait_table_bits;
-+	wait_queue_head_t	wait_rotate;
- 
- 	/*
- 	 * Discontig memory support fields.
---- linux-2.6.23-rc8-mm2.orig/mm/filemap.c
-+++ linux-2.6.23-rc8-mm2/mm/filemap.c
-@@ -558,12 +558,15 @@ EXPORT_SYMBOL(unlock_page);
-  */
- void end_page_writeback(struct page *page)
- {
--	if (!TestClearPageReclaim(page) || rotate_reclaimable_page(page)) {
-+	int r = 1;
-+	if (!TestClearPageReclaim(page) || (r = rotate_reclaimable_page(page))) {
- 		if (!test_clear_page_writeback(page))
- 			BUG();
- 	}
- 	smp_mb__after_clear_bit();
- 	wake_up_page(page, PG_writeback);
-+	if (!r)
-+		wake_up(&page_zone(page)->wait_rotate);
- }
- EXPORT_SYMBOL(end_page_writeback);
- 
---- linux-2.6.23-rc8-mm2.orig/mm/page_alloc.c
-+++ linux-2.6.23-rc8-mm2/mm/page_alloc.c
-@@ -3482,6 +3482,7 @@ static void __meminit free_area_init_cor
- 		zone->prev_priority = DEF_PRIORITY;
- 
- 		zone_pcp_init(zone);
-+		init_waitqueue_head(&zone->wait_rotate);
- 		INIT_LIST_HEAD(&zone->active_list);
- 		INIT_LIST_HEAD(&zone->inactive_list);
- 		zone->nr_scan_active = 0;
---- linux-2.6.23-rc8-mm2.orig/mm/vmscan.c
-+++ linux-2.6.23-rc8-mm2/mm/vmscan.c
-@@ -50,6 +50,7 @@
- struct scan_control {
- 	/* Incremented by the number of inactive pages that were scanned */
- 	unsigned long nr_scanned;
-+	unsigned long nr_dirty_writeback;
- 
- 	/* This context's GFP mask */
- 	gfp_t gfp_mask;
-@@ -558,8 +559,10 @@ static unsigned long shrink_page_list(st
- 			case PAGE_ACTIVATE:
- 				goto activate_locked;
- 			case PAGE_SUCCESS:
--				if (PageWriteback(page) || PageDirty(page))
-+				if (PageWriteback(page) || PageDirty(page)) {
-+					sc->nr_dirty_writeback++;
- 					goto keep;
-+				}
- 				/*
- 				 * A synchronous write - probably a ramdisk.  Go
- 				 * ahead and try to reclaim the page.
-@@ -620,6 +623,10 @@ keep_locked:
- keep:
- 		list_add(&page->lru, &ret_pages);
- 		VM_BUG_ON(PageLRU(page));
-+		if (PageLocked(page) && PageWriteback(page)) {
-+			SetPageReclaim(page);
-+			sc->nr_dirty_writeback++;
-+		}
- 	}
- 	list_splice(&ret_pages, page_list);
- 	if (pagevec_count(&freed_pvec))
-@@ -1184,7 +1191,8 @@ static unsigned long shrink_zone(int pri
- 		}
- 	}
- 
--	throttle_vm_writeout(sc->gfp_mask);
-+	if (!nr_reclaimed && sc->nr_dirty_writeback)
-+		zone_rotate_wait(zone, HZ/100);
- 	return nr_reclaimed;
- }
- 
---- linux-2.6.23-rc8-mm2.orig/mm/swap.c
-+++ linux-2.6.23-rc8-mm2/mm/swap.c
-@@ -174,6 +174,19 @@ int rotate_reclaimable_page(struct page 
- 	return 0;
- }
- 
-+long zone_rotate_wait(struct zone* z, long timeout)
-+{
-+	long ret;
-+	DEFINE_WAIT(wait);
-+	wait_queue_head_t *wqh = &z->wait_rotate;
-+
-+	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
-+	ret = io_schedule_timeout(timeout);
-+	finish_wait(wqh, &wait);
-+	return ret;
-+}
-+EXPORT_SYMBOL(zone_rotate_wait);
-+
- /*
-  * FIXME: speed this up?
-  */
+VIDEO_SAA7146_VV _does_ depend on VIDEO_DEV.  The Kconfig file does not
+allow for this setting, yet your config has it.  The reason is because some
+other drivers select VIDEO_SAA7146_VV.
 
+I think the fundamental problem here is the way Kconfig handles "select"
+operations.  If one turns on an option that selects another, then the
+selected option will always be turned on, even if *its dependencies are not
+satisfied*.
+
+That is what has happened here.  Something has selected VIDEO_SAA7146_VV=y,
+when its dependency on VIDEO_DEV should not allow it.
+
+IMHO, the real solution here is that Kconfig should recursively follow
+select operations either up or down the stack.
+
+One way to do it, would be if FOO selects BAR, then FOO also selects
+everything that BAR depends on.
+
+Another way, would be that if FOO selects BAR, then FOO also depends on
+everything BAR depends on.
+
+It appears the way this is handled now, is to do the second method manually
+in the Kconfig file.  In this case, anything which selects VIDEO_SAA7146_VV
+needs to depend on VIDEO_DEV and anything else VIDEO_SAA7146_VV depends on.
+
+Now, most of the things that select VIDEO_SAA7146_VV try to do this, but it
+doesn't work because of another issue "tristate to bool promotion", which
+has caused problems before:  http://lkml.org/lkml/2007/6/23/244
+
+config DVB_AV7110
+	tristate
+	depends on VIDEO_V4L1
+	select VIDEO_SAA7146_VV
+
+config VIDEO_V4L1
+	bool
+	depends on VIDEO_DEV
+
+config VIDEO_DEV
+	tristate
+
+In this case AV7110 depends on V4L1, which depends on VIDEO_DEV.  So AV7110
+should recursively gain a dependency on VIDEO_DEV.  But because V4L1 is a
+bool, it's possible to set VIDEO_DEV=m and VIDEO_V4L1=y, which then allows
+DVB_AV7110=y.  So now we have DVB_AV7110=y and VIDEO_DEV=m, which shouldn't
+be allowed.
+
+I wonder if an easy solution to this, would be to allow bools to take the
+value of 1 aka 'm'?
