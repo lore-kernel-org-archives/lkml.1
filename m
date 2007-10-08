@@ -1,189 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbXJIARc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXJIATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbXJIARc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 20:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXJIARX
+	id S1754490AbXJIATn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 20:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbXJIATf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 20:17:23 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:23632 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752467AbXJIARU (ORCPT
+	Mon, 8 Oct 2007 20:19:35 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:44571 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752619AbXJIATf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 20:17:20 -0400
+	Mon, 8 Oct 2007 20:19:35 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=injblHcKwjxS6QQ1uAzd6M3EmjjuFgOiiW7OuGP/HJBQft3OzUsxlTYd0kEaK4rV7Smi43QGsYUjKw1KcU1iB0DjalOqyvlVfN5gE7tU1Xb4AySKlB/BCpaNlP1ZargeY2GoT2XlA8frLCSTMDgYPrBeNrCdhqjCadMXDfeq/T8=  ;
-X-YMail-OSG: g2DiyL0VM1lQ7Kc0AinaZekMnC1MgLC0JDe_hzrylURN_DuM03o.Hsy4UO002bSACYy2lg1pCw--
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=MPH79EZWB9PbbG7xvZ9qYAFqJzxNnRQtNOL9ZYIMRw0FRRw4EL82Z+PgGgEIP8UoCjpAfJt7DQ5oRZR/pBe2OZY1+UrVEgja0kSh5T/ViIM8aXCVzewuk1Ix2BgltZRP6b5I0m2KB35cR5r9NbRHXVjMbGHoao66XPHrUq0REns=  ;
+X-YMail-OSG: rcryQ5UVM1mviAkmno23G3X4hidPxJY5xkO_JlBZGd_7TkXaS9Z5eohuqzaEuobCbMCjjqSpSQ--
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH]fix VM_CAN_NONLINEAR check in sys_remap_file_pages
-Date: Mon, 8 Oct 2007 17:45:38 +1000
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH] mm: set_page_dirty_balance() vs ->page_mkwrite()
+Date: Mon, 8 Oct 2007 17:47:52 +1000
 User-Agent: KMail/1.9.5
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, yanzheng@21cn.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, ltp-list@lists.sourceforge.net
-References: <3d0408630710080445j4dea115emdfe29aac26814536@mail.gmail.com> <20071008102843.d20b56d7.randy.dunlap@oracle.com> <20071008105120.4e0e4a85.akpm@linux-foundation.org>
-In-Reply-To: <20071008105120.4e0e4a85.akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Howells <dhowells@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, mark.fasheh@oracle.com,
+       hugh <hugh@veritas.com>, stable <stable@kernel.org>
+References: <1191862477.20745.22.camel@twins> <200710081637.01122.nickpiggin@yahoo.com.au> <20071008233637.GF995458@sgi.com>
+In-Reply-To: <20071008233637.GF995458@sgi.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_jAeCHpGYRU+cpXT"
-Message-Id: <200710081745.39254.nickpiggin@yahoo.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
---Boundary-00=_jAeCHpGYRU+cpXT
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200710081747.52627.nickpiggin@yahoo.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 03:51, Andrew Morton wrote:
-> On Mon, 8 Oct 2007 10:28:43 -0700
+On Tuesday 09 October 2007 09:36, David Chinner wrote:
+> On Mon, Oct 08, 2007 at 04:37:00PM +1000, Nick Piggin wrote:
+> > On Tuesday 09 October 2007 02:54, Peter Zijlstra wrote:
 
-> > I'll now add remap_file_pages soon.
-> > Maybe those other 2 tests aren't strong enough (?).
-> > Or maybe they don't return a non-0 exit status even when they fail...
-> > (I'll check.)
->
-> Perhaps Yan Zheng can tell us what test was used to demonstrate this?
-
-Was probably found by review. Otherwise, you could probably reproduce
-it by mmaping, say, drm device node, running remap_file_pages() on it
-to create a nonlinear mapping, and then finding that you get the wrong
-data.
-
-> > > I'm surprise that LTP doesn't have any remap_file_pages() tests.
+> > > Force a balance call if ->page_mkwrite() was successful.
 > >
-> > quick grep didn't find any for me.
+> > Would it be better to just have the callers set_page_dirty_balance()?
 >
-> Me either.  There are a few lying around the place which could be
-> integrated.
+> block_page_mkwrite() is just using generic interfaces to do this,
+> same as pretty much any write() system call. The idea was to make it
+> as similar to the write() call path as possible...
 >
-> It would be good if LTP were to have some remap_file_pages() tests
-> (please).  As we see here, it is something which we can easily break, and
-> leave broken for some time.
+> However, unlike generic_file_buffered_write(), we are not calling
+> balance_dirty_pages_ratelimited(mapping) between
+> ->prepare/commit_write call pairs.  Perhaps this should be added to
+> block_page_mkwrite() after the page is unlocked....
 
-Here is Ingo's old test, since cleaned up and fixed a bit by me....
-I'm sure he would distribute it GPL, but I've cc'ed him because I didn't
-find an explicit statement about that.
-
-
---Boundary-00=_jAeCHpGYRU+cpXT
-Content-Type: text/x-csrc;
-  charset="iso-8859-1";
-  name="remap-file-pages.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="remap-file-pages.c"
-
-/*
- * Copyright (C) Ingo Molnar, 2002
- */
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <sys/times.h>
-#include <sys/wait.h>
-#include <sys/ioctl.h>
-#include <sys/syscall.h>
-#include <linux/unistd.h>
-
-#define PAGE_SIZE 4096
-#define PAGE_WORDS (PAGE_SIZE/sizeof(int))
-
-#define CACHE_PAGES 1024
-#define CACHE_SIZE (CACHE_PAGES*PAGE_SIZE)
-
-#define WINDOW_PAGES 16
-#define WINDOW_SIZE (WINDOW_PAGES*PAGE_SIZE)
-
-#define WINDOW_START 0x48000000
-
-static char cache_contents [CACHE_SIZE];
-
-static void test_nonlinear(int fd)
-{
-	char *data = NULL;
-	int i, j, repeat = 2;
-
-	for (i = 0; i < CACHE_PAGES; i++) {
-		int *page = (int *) (cache_contents + i*PAGE_SIZE);
-
-		for (j = 0; j < PAGE_WORDS; j++)
-			page[j] = i;
-	}
-
-	if (write(fd, cache_contents, CACHE_SIZE) != CACHE_SIZE)
-		perror("write"), exit(1);
-
-	data = mmap((void *)WINDOW_START,
-			WINDOW_SIZE,
-			PROT_READ|PROT_WRITE, 
-			MAP_FIXED | MAP_SHARED 
-			, fd, 0);
-
-	if (data == MAP_FAILED)
-		perror("mmap"), exit(1);
-
-again:
-	for (i = 0; i < WINDOW_PAGES; i += 2) {
-		char *page = data + i*PAGE_SIZE;
-
-		if (remap_file_pages(page, PAGE_SIZE * 2, 0,
-				(WINDOW_PAGES-i-2), 0) == -1)
-			perror("remap_file_pages"), exit(1);
-	}
-
-	for (i = 0; i < WINDOW_PAGES; i++) {
-		/*
-		 * Double-check the correctness of the mapping:
-		 */
-		if (i & 1) {
-			if (data[i*PAGE_SIZE] != WINDOW_PAGES-i) {
-				printf("hm, mapped incorrect data!\n");
-				exit(1);
-			}
-		} else {
-			if (data[i*PAGE_SIZE] != WINDOW_PAGES-i-2) {
-				printf("hm, mapped incorrect data!\n");
-				exit(1);
-			}
-		}
-	}
-
-	if (--repeat)
-		goto again;
-}
-
-int main(int argc, char **argv)
-{
-	int fd;
-
-	fd = open("/dev/shm/cache", O_RDWR|O_CREAT|O_TRUNC,S_IRWXU);
-	if (fd < 0)
-		perror("open"), exit(1);
-	test_nonlinear(fd);
-	if (close(fd) == -1)
-		perror("close"), exit(1);
-	printf("nonlinear shm file OK\n");
-
-	fd = open("/tmp/cache", O_RDWR|O_CREAT|O_TRUNC,S_IRWXU);
-	if (fd < 0)
-		perror("open"), exit(1);
-	test_nonlinear(fd);
-	if (close(fd) == -1)
-		perror("close"), exit(1);
-	printf("nonlinear /tmp/ file OK\n");
-
-	exit(0);
-}
-
-
---Boundary-00=_jAeCHpGYRU+cpXT--
+That sounds pretty sane, in terms of matching with
+generic_file_buffered_write.
