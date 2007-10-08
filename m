@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXJHTxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbXJHTyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbXJHTxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 15:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXJHTxg
+	id S1755385AbXJHTyk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 15:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXJHTyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 15:53:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59099 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbXJHTxf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 15:53:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc9-git5: Known regressions from 2.6.22
-Date: Mon, 8 Oct 2007 22:08:50 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200710072202.34621.rjw@sisk.pl>
-In-Reply-To: <200710072202.34621.rjw@sisk.pl>
+	Mon, 8 Oct 2007 15:54:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49931 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752751AbXJHTyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 15:54:32 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX1+jzYlhzQ+jeTt2LNh1x7/LOU3JKSe/+5UU1W8Lr2
+	Ph8SdFY8iS+GZK
+Message-ID: <470A8A4E.3020301@gmx.net>
+Date: Mon, 08 Oct 2007 21:51:42 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710082208.51432.rjw@sisk.pl>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.66 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 7 October 2007 22:02, Rafael J. Wysocki wrote:
-> This message contains a list of some known regressions from 2.6.22 for which
-> there are no fixes in the mainline that I know of.  If any of them have been fixed
-> already, please let me know.
-> 
-> If you know of any other unresolved regressions from 2.6.22, please let me know
-> either and I'll add them to the list.
+Gidday,
 
-Another regression added today:
+Some news: the list linux-man@vger.kernel.org has been created for the
+purpose of discussing Linux man page bugs, patches, and maintenance.  To
+subscribe, send a message to majordomo@vger.kernel.org, with the body:
 
-2.6.23 regression: do_nanosleep will not return
+    subscribe linux-man
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9134
-http://lkml.org/lkml/2007/10/8/59
+Back to the news as usual...
 
-Greetings,
-Rafafel
+I recently released man-pages-2.66.
+
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+
+Changes in this release that may be of interest to readers of this list are
+noted below.
+
+Cheers,
+
+Michael
+(man-pages maintenance is supported by Google, as a Google engineer 20%
+project.)
+
+==================== Changes in man-pages-2.66 ====================
+
+New pages
+---------
+
+fallocate.2
+    David Chinner, with some input from Amit Amora and mtk
+       Describes the fallocate() system call, new in 2.6.23.
+
+
+Changes to individual pages
+---------------------------
+
+close.2
+    Fredrik Noring
+        Add text cautioning about use of close() in
+        multithreaded programs.
+
+execve.2
+    Ollie Wild / mtk
+        Add text describing limit on total size of argv + envp,
+        and changes that occurred with 2.6.23.
+
+open.2
+    mtk, Acked by Ulrich Drepper
+        Added description of O_CLOEXEC (new in 2.6.23) + other
+        minor fixes for O_DIRECT.
+
+recv.2
+    mtk
+        Added description of MSG_CMSG_CLOEXEC (new in 2.6.23).
+
+sysctl.2
+    mtk
+        Strengthened the warning against using this system call
+        and note that it may disappear in a future kernel version.
+
+
