@@ -1,152 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbXJHXGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbXJHXJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbXJHXGa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 19:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXJHXGN
+	id S1754073AbXJHXJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 19:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXJHXJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 19:06:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27389 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbXJHXGM (ORCPT
+	Mon, 8 Oct 2007 19:09:15 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:47764 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbXJHXJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 19:06:12 -0400
-Date: Mon, 8 Oct 2007 16:06:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-Message-Id: <20071008160603.52f9e343.randy.dunlap@oracle.com>
-In-Reply-To: <10940.1191883390@lwn.net>
-References: <20071008173706.GA12026@uranus.ravnborg.org>
-	<10940.1191883390@lwn.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Oct 2007 19:09:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GeTlvTDVGmV48F0T8j9W37zbNeQlW1y3BZBY4nU7YqBKKkkBSoycTsxGJJf9uFKRKxVqCVwJ+uyLRduk8lWiCIkGg95BHqQy8uH7f246CwTbUJErYXsHQEJ6wJhAfOe8sg6jPJqL2bQfKoHr5tX1w1dHxrDdIrAB+ZOz3NosxA0=
+Message-ID: <2c0942db0710081609y139646c1lee0915688295e595@mail.gmail.com>
+Date: Mon, 8 Oct 2007 16:09:11 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch added to -mm tree
+Cc: akpm@osdl.org, yanzheng@21cn.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20071008184044.GA1875@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <200710081705.l98H5eoj009691@imap1.linux-foundation.org>
+	 <20071008184044.GA1875@martell.zuzino.mipt.ru>
+X-Google-Sender-Auth: 1186d6982df9a478
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Oct 2007 16:43:10 -0600 Jonathan Corbet wrote:
+On 10/8/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> On Mon, Oct 08, 2007 at 10:05:40AM -0700, akpm@linux-foundation.org wrote:
+> > --- a/mm/fremap.c~fix-vm_can_nonlinear-check-in-sys_remap_file_pages
+> > +++ a/mm/fremap.c
+> > @@ -160,7 +160,7 @@ asmlinkage long sys_remap_file_pages(uns
+> >       if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
+> >               goto out;
+> >
+> > -     if (!vma->vm_flags & VM_CAN_NONLINEAR)
+> > +     if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+>
+> Ick.
 
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > Or maybe we need something much less formal that explain the purpose of the
-> > four tags we use:
-> 
-> ...or maybe a combination?  How does the following patch look as a way
-> to describe how the tags are used and what Reviewed-by, in particular,
-> means?
-> 
-> Perhaps the DCO should move to this file as well?
-> 
-> jon
+Perhaps a good candidate for checkpatch.pl? (Andy cc:d.)
 
-Just typos noted below...
-
-> ---
-> 
-> Add a document on patch tags.
-> 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> 
-> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-> index 43e89b1..fa1518b 100644
-> --- a/Documentation/00-INDEX
-> +++ b/Documentation/00-INDEX
-> @@ -284,6 +284,8 @@ parport.txt
->  	- how to use the parallel-port driver.
->  parport-lowlevel.txt
->  	- description and usage of the low level parallel port functions.
-> +patch-tags
-> +	- description of the tags which can be added to patches
->  pci-error-recovery.txt
->  	- info on PCI error recovery.
->  pci.txt
-> diff --git a/Documentation/patch-tags b/Documentation/patch-tags
-> new file mode 100644
-> index 0000000..fb5f8e1
-> --- /dev/null
-> +++ b/Documentation/patch-tags
-> @@ -0,0 +1,66 @@
-> +Patches headed for the mainline may contain a variety of tags documenting
-> +who played a hand in (or was at least aware of) its progress.  All of these
-> +tags have the form:
-> +
-> +	Something-done-by: Full name <email@address>
-> +
-> +These tags are:
-> +
-> +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
-> +		patch is, to the best of his or her knowledge, legally able
-> +		to be merged into the mainline and distributed under the
-> +		terms of the GNU General Public License, version 2.  See
-> +		the Developer's Certificate of Origin, found in
-> +		Documentation/SubmittingPatches, for the precise meaning of
-> +		Signed-off-by.
-> +
-> +Acked-by:	The person named (who should be an active developer in the
-> +		area addressed by the patch) is aware of the patch and has
-> +		no objection to its inclusion.  An Acked-by tag does not
-> +		imply any involvement in the development of the patch or
-> +		that a detailed review was done.
-> +
-> +Reviewed-by:	The patch has been reviewed and found acceptible according
-
-                                                      acceptable
-
-> +		to the Reviewer's Statement as found at the bottom of this
-> +		file.  A Reviewed-by tag is a statement of opinion that the
-> +		patch is an appropriate modification of the kernel without
-> +		any remaining serious technical issues.  Any interested
-> +		reviewer (who has done the work) can offer a Reviewed-by
-> +		tag for a patch.
-> +
-> +Cc:		The person named was given the opportunity to comment on
-> +		the patch.  This is the only tag which might be added
-> +		without an explicit action by the person it names.
-> +
-> +Tested-by:	The patch has been successfully tested (in some
-> +		environment) by the person named.
-> +
-> +
-> +----
-> +
-> +Reviewer's statement of oversight, v0.02
-> +
-> +By offering my Reviewed-by: tag, I state that:
-> +
-> + (a) I have carried out a technical review of this patch to evaluate its
-> +     appropriateness and readiness for inclusion into the mainline kernel. 
-> +
-> + (b) Any problems, concerns, or questions relating to the patch have been
-> +     communicated back to the submitter.  I am satisfied with how the
-> +     submitter has responded to my comments.
-> +
-> + (c) While there may (or may not) be things which could be improved with
-> +     this submission, I believe that it is, at this time, (1) a worthwhile
-> +     modification to the kernel, and (2) free of known issues which would
-> +     argue against its inclusion.
-> +
-> + (d) While I have reviewed the patch and believe it to be sound, I can not
-
-                                                                     cannot
-
-> +     (unless explicitly stated elsewhere) make any warranties or guarantees
-> +     that it will achieve its stated purpose or function properly in any
-> +     given situation.
-> +
-> + (e) I understand and agree that this project and the contribution are
-> +     public and that a record of the contribution (including my Reviewed-by
-> +     tag and any associated public communications) is maintained
-> +     indefinitely and may be redistributed consistent with this project or
-> +     the open source license(s) involved.
-> -
-
-
----
-~Randy
+Ray
