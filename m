@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbXJHRXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbXJHRYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbXJHRXq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXJHRXi
+	id S1755243AbXJHRYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXJHRYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:23:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38211 "EHLO mx1.redhat.com"
+	Mon, 8 Oct 2007 13:24:46 -0400
+Received: from vena.lwn.net ([206.168.112.25]:48939 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752781AbXJHRXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:23:37 -0400
-Date: Mon, 8 Oct 2007 13:23:04 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Yan Zheng <yanzheng@21cn.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH]fix page release issue in filemap_fault
-Message-ID: <20071008132304.7382961d@bree.surriel.com>
-In-Reply-To: <1191863723.20745.26.camel@twins>
-References: <3d0408630710080828h7ad160dbxf6cbd8513c1ad3e8@mail.gmail.com>
-	<1191863723.20745.26.camel@twins>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752782AbXJHRYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 13:24:45 -0400
+To: linux-kernel@vger.kernel.org
+Subject: RFC: reviewer's statement of oversight
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Mon, 08 Oct 2007 11:24:45 -0600
+Message-ID: <25555.1191864285@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Oct 2007 19:15:23 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2007-10-08 at 23:28 +0800, Yan Zheng wrote:
-> > Hi all
-> > 
-> > find_lock_page increases page's usage count, we should decrease it
-> > before return VM_FAULT_SIGBUS
-> > 
-> > Signed-off-by: Yan Zheng<yanzheng@21cn.com>
-> 
-> Nice catch, .23 material?
+Last month, at the kernel summit, there was discussion of putting a
+Reviewed-by: tag onto patches to document the oversight they had
+received on their way into the mainline.  That tag has made an
+occasional appearance since then, but there has not yet been a
+discussion of what it really means.  So it has not yet brought a whole
+lot of value to the process.
 
-An obvious fix for a memory leak.  I think it should go in.
+As I was trying to sleep last night, it occurred to me that what we
+might need is an equivalent of the DCO for the Reviewed-by tag.  To that
+end, I dedicated a few minutes of my life to the following bit of text.
+It's really just meant to be a starting point for the discussion.  Is
+the following something close to what we understand Reviewed-by to mean? 
 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+jon
 
-Acked-by: Rik van Riel <riel@redhat.com>
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+Reviewer's statement of oversight v0.01
+
+By offering my Reviewed-by: tag, I state that:
+
+ (a) I have carried out a technical review of this patch to evaluate its
+     appropriateness and readiness for inclusion into the mainline kernel. 
+
+ (b) Any problems, concerns, or questions relating to the patch have been
+     communicated back to the submitter.  I am satisfied with how the
+     submitter has responded to my comments.
+
+ (c) While there may (or may not) be things which could be improved with
+     this submission, I believe that it is, at this time, (1) a
+     worthwhile addition to the kernel, and (2) free of serious known
+     issues which would argue against its inclusion.
+
+ (d) While I have reviewed the patch and believe it to be sound, I can not
+     (unless explicitly stated elsewhere) make any warranties or guarantees
+     that it will achieve its stated purpose or function properly in any
+     given situation.
+
+ (e) I understand and agree that this project and the contribution are
+     public and that a record of the contribution (including my Reviewed-by
+     tag and any associated public communications) is maintained
+     indefinitely and may be redistributed consistent with this project or
+     the open source license(s) involved.
