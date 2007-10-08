@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbXJHR2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXJHR3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbXJHR2P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 13:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJHR2C
+	id S1755540AbXJHR3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 13:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJHR3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 13:28:02 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48664 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbXJHR2A (ORCPT
+	Mon, 8 Oct 2007 13:29:04 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:29070 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbXJHR3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 13:28:00 -0400
-Date: Mon, 8 Oct 2007 10:24:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, stable <stable@kernel.org>,
-       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH] lockdep: fix mismatched
-	lockdep_depth/curr_chain_hash
-Message-ID: <20071008172424.GA6692@kroah.com>
-References: <20071005034058.20275.21559.stgit@ghaskins-t60p.haskins.net> <1191576686.22357.64.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191576686.22357.64.camel@twins>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 8 Oct 2007 13:29:02 -0400
+Date: Mon, 8 Oct 2007 09:13:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, gregkh@suse.de
+Subject: Re: [PATCH] param_sysfs_builtin memchr argument fix
+Message-Id: <20071008091354.30598ee4.randy.dunlap@oracle.com>
+In-Reply-To: <20071008071730.GA2979@darkstar.te-china.tietoenator.com>
+References: <20071008071730.GA2979@darkstar.te-china.tietoenator.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 11:31:26AM +0200, Peter Zijlstra wrote:
+On Mon, 8 Oct 2007 15:17:30 +0800 Dave Young wrote:
+
+> Hi,
+> Thanks for comment.
+> fixed.
 > 
-> Stable team,
+> Regards
+> dave
+> -----
 > 
-> please consider this patch for the next 22-stable.
+> If memchr argument is longer than strlen(kp->name), there will be some
+> weird result.
 
-I don't see this patch in Linus's upstream tree.  We need it there to be
-able to accept it for -stable.  Or is this just a bugfix of other things
-that are already in his tree?
-
-thanks,
-
-greg k-h
+Just to clarify:  this was causing duplicate filenames in sysfs ?
 
 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 > 
 > ---
-> Subject: lockdep: fix mismatched lockdep_depth/curr_chain_hash
-> From: Gregory Haskins <ghaskins@novell.com>
+> kernel/params.c |    8 +++++++-
+> 1 file changed, 7 insertions(+), 1 deletion(-)
 > 
-> It is possible for the current->curr_chain_key to become inconsistent with the
-> current index if the chain fails to validate.  The end result is that future
-> lock_acquire() operations may inadvertently fail to find a hit in the cache
-> resulting in a new node being added to the graph for every acquire.
-> 
-> [ peterz: this might explain some of the lockdep is so _slow_ complaints. ]
-> [ mingo: this does not impact the correctness of validation, but may slow
->   down future operations significantly, if the chain gets very long. ]
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/lockdep.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/lockdep.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/lockdep.c
-> +++ linux-2.6/kernel/lockdep.c
-> @@ -2166,7 +2166,6 @@ out_calc_hash:
->  	}
->  #endif
->  	chain_key = iterate_chain_key(chain_key, id);
-> -	curr->curr_chain_key = chain_key;
+> diff -upr linux/kernel/params.c linux.new/kernel/params.c
+> --- linux/kernel/params.c	2007-10-08 14:30:06.000000000 +0800
+> +++ linux.new/kernel/params.c	2007-10-08 15:13:04.000000000 +0800
+> @@ -592,11 +592,17 @@ static void __init param_sysfs_builtin(v
 >  
->  	/*
->  	 * Trylock needs to maintain the stack of held locks, but it
-> @@ -2215,6 +2214,7 @@ out_calc_hash:
->  		if (unlikely(!debug_locks))
->  			return 0;
+>  	for (i=0; i < __stop___param - __start___param; i++) {
+>  		char *dot;
+> +		size_t kplen;
 >  
-> +	curr->curr_chain_key = chain_key;
->  	curr->lockdep_depth++;
->  	check_chain_key(curr);
->  #ifdef CONFIG_DEBUG_LOCKDEP
-> 
-> 
-> _______________________________________________
-> stable mailing list
-> stable@linux.kernel.org
-> http://linux.kernel.org/mailman/listinfo/stable
+>  		kp = &__start___param[i];
+> +		kplen = strlen(kp->name);
+>  
+>  		/* We do not handle args without periods. */
+> -		dot = memchr(kp->name, '.', MAX_KBUILD_MODNAME);
+> +		if (kplen > MAX_KBUILD_MODNAME) {
+> +			DEBUGP("kernel parameter %s is too long\n", kp->name);
+
+how about
+	kernel parameter name %s is too long
+or
+	kernel parameter name is too long: %s
+
+(primary is addition of "name")
+
+> +			continue;
+> +		}
+> +		dot = memchr(kp->name, '.', kplen);
+>  		if (!dot) {
+>  			DEBUGP("couldn't find period in %s\n", kp->name);
+>  			continue;
+> -
+
+
+---
+~Randy
