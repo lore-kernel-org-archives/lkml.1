@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXJIVJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbXJIV11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbXJIVJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 17:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJIVJu
+	id S1755881AbXJIV11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 17:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXJIV1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 17:09:50 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40878 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751105AbXJIVJu (ORCPT
+	Tue, 9 Oct 2007 17:27:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41050
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754022AbXJIV1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 17:09:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=xrsRmpd0b9RauPfSksNcFxInZnmHFuzeRJNHEZ8XeU/Yui5rNuPHDll4zlfVPOlL04KcxE3DJ5NpEQKWn0uVrHFAhLjpHRrmOrV6FVPGZIuHE/uj+Pd37x3M2wCTabHEbRhp0vHQl5HEOBTpuqjqMg0weIjkyuA7OtfQ7Ky5yaQ=  ;
-X-YMail-OSG: CZArO28VM1n.PF.CMSf1e6iGwcNeMq09woorOJUU2DfA6unOk.mks7Ch1e1uLv.75q7gKZcltw--
-Date: Tue, 09 Oct 2007 14:09:55 -0700
-From: David Brownell <david-b@pacbell.net>
-To: davem@davemloft.net
-Subject: Re: OHCI root_port_reset() deadly loop...
-Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       greg@kroah.com
-References: <20071009043643.773CC23715F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20071008.214408.98397070.davem@davemloft.net>
- <20071009163827.E7DB310B535@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20071009.134116.63997473.davem@davemloft.net>
-In-Reply-To: <20071009.134116.63997473.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Oct 2007 17:27:19 -0400
+Date: Tue, 09 Oct 2007 14:27:19 -0700 (PDT)
+Message-Id: <20071009.142719.68041626.davem@davemloft.net>
+To: stern@rowland.harvard.edu
+Cc: greg@kroah.com, david-b@pacbell.net, linux-kernel@vger.kernel.org,
+       linux-usb-users@lists.sourceforge.net
+Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.44L0.0710091440130.4783-100000@iolanthe.rowland.org>
+References: <20071009173925.GA6062@kroah.com>
+	<Pine.LNX.4.44L0.0710091440130.4783-100000@iolanthe.rowland.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071009210955.01668236A37@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Even though I'm severly overloaded, you asked me for a patch, I gave
-> you one.
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Tue, 9 Oct 2007 14:42:34 -0400 (EDT)
 
-And I got some questions as I reviewed it.  That's far
-from un-heard-of.  One particular question related to
-one potential simplification ... which unfortunately
-couldn't check out.  Also not un-heard-of.
+> On Tue, 9 Oct 2007, Greg KH wrote:
+> 
+> > > Anyway, it certainly would be easy enough to make port resets mutually
+> > > exclusive with EHCI initialization.  That would work on any platform,
+> > > PCI or not.
+> > 
+> > That's a good idea, any thoughts as to how to do this?  I think I can
+> > find some Intel and Dell people who would be glad to test this out if
+> > you have a proposed patch.
+> 
+> Here is a proposed patch.  I haven't tried running it, but it compiles 
+> okay.
 
+Are we sure that this is the only event that causes the conflicts between
+the EHCI and it's companion virtual OHCI/UHCI host(s)?
 
->	And now you want to push it back at me because it isn't
-> clear to you yet that the code there right now is a huge problem.
+Is there a chip reset done to the EHCI controller early during device
+probe that could cause problems too?
 
-You're reading things into what I wrote which were not there.
-Calm down.
-
-- Dave
-
+I know it's grotty, but I definitely feel more comfortable with the
+fix involving making sure EHCI loads and fully probes first.
