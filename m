@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbXJIXZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXJIX3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbXJIXZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXJIXZK
+	id S1756638AbXJIX3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXJIX3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:25:10 -0400
-Received: from namei.org ([69.55.235.186]:44329 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752085AbXJIXZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:25:09 -0400
-Date: Wed, 10 Oct 2007 09:23:58 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: [PATCH 6/6] SELinux: kills warnings in Improve SELinux performance
- when AVC misses
-In-Reply-To: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
-Message-ID: <Xine.LNX.4.64.0710100923070.14862@us.intercode.com.au>
-References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
+	Tue, 9 Oct 2007 19:29:15 -0400
+Received: from mail.suse.de ([195.135.220.2]:36367 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751138AbXJIX3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:29:14 -0400
+Date: Tue, 9 Oct 2007 16:17:14 -0700
+From: Greg KH <gregkh@suse.de>
+To: Bernardo Innocenti <bernie@codewiz.org>
+Cc: Richard Smith <richard@laptop.org>, Andres Salomon <dilinger@laptop.org>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Francesco Sacchi <batt@develer.com>
+Subject: Re: [PATCH] ftdi_sio: fix FT232RL support for TIOCMGET
+Message-ID: <20071009231714.GG21852@suse.de>
+References: <1191654445-17135-1-git-send-email-bernie@codewiz.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191654445-17135-1-git-send-email-bernie@codewiz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KaiGai Kohei <kaigai@kaigai.gr.jp>
+On Sat, Oct 06, 2007 at 03:07:25AM -0400, Bernardo Innocenti wrote:
+> From: Francesco Sacchi <batt@develer.com>
+> 
+> Reading serial port status lines was broken on the FT232RL since when it
+> has been detected as a separate chip (2.6.22+).  Previously, it would work
+> because it was just handled as an FT232BM.
+> 
+> Additionally, we were also forgetting to remove the dev_attr_latency_timer
+> sysfs file in the FT232RL case.
+> 
+> Note by Bernardo Innocenti: the ftdi_sio maintainer appears to have stepped
+> down, so I'm sending this to Greg Kroah-Hartman as the generic USB serial
+> maintainer.  Please, let me know if this is not appropriate.
+> 
+> Signed-Off-By: Francesco Sacchi <batt@develer.com>
+> Signed-Off-By: Bernardo Innocenti <bernie@codewiz.org>
 
-This patch kills ugly warnings when the "Improve SELinux performance when 
-AVC misses" patch.
+This is already queued up for inclusion in the 2.6.24 kernel tree, so
+you don't have to resend it.
 
-Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
-Signed-off-by: James Morris <jmorris@namei.org>
----
- security/selinux/ss/ebitmap.c |   11 +++++------
- security/selinux/ss/ebitmap.h |    2 ++
- 2 files changed, 7 insertions(+), 6 deletions(-)
+thanks,
 
-diff --git a/security/selinux/ss/ebitmap.c b/security/selinux/ss/ebitmap.c
-index ae44c0c..c1a6b22 100644
---- a/security/selinux/ss/ebitmap.c
-+++ b/security/selinux/ss/ebitmap.c
-@@ -193,7 +193,7 @@ int ebitmap_netlbl_import(struct ebitmap *ebmap,
- 			e_sft = delta % EBITMAP_UNIT_SIZE;
- 			while (map) {
- 				e_iter->maps[e_idx++] |= map & (-1UL);
--				map >>= EBITMAP_UNIT_SIZE;
-+				map = EBITMAP_SHIFT_UNIT_SIZE(map);
- 			}
- 		}
- 		c_iter = c_iter->next;
-@@ -389,13 +389,13 @@ int ebitmap_read(struct ebitmap *e, void *fp)
- 
- 		if (startbit & (mapunit - 1)) {
- 			printk(KERN_ERR "security: ebitmap start bit (%d) is "
--			       "not a multiple of the map unit size (%Zd)\n",
-+			       "not a multiple of the map unit size (%u)\n",
- 			       startbit, mapunit);
- 			goto bad;
- 		}
- 		if (startbit > e->highbit - mapunit) {
- 			printk(KERN_ERR "security: ebitmap start bit (%d) is "
--			       "beyond the end of the bitmap (%Zd)\n",
-+			       "beyond the end of the bitmap (%u)\n",
- 			       startbit, (e->highbit - mapunit));
- 			goto bad;
- 		}
-@@ -433,9 +433,8 @@ int ebitmap_read(struct ebitmap *e, void *fp)
- 
- 		index = (startbit - n->startbit) / EBITMAP_UNIT_SIZE;
- 		while (map) {
--			n->maps[index] = map & (-1UL);
--			map = map >> EBITMAP_UNIT_SIZE;
--			index++;
-+			n->maps[index++] = map & (-1UL);
-+			map = EBITMAP_SHIFT_UNIT_SIZE(map);
- 		}
- 	}
- ok:
-diff --git a/security/selinux/ss/ebitmap.h b/security/selinux/ss/ebitmap.h
-index e38a327..f283b43 100644
---- a/security/selinux/ss/ebitmap.h
-+++ b/security/selinux/ss/ebitmap.h
-@@ -21,6 +21,8 @@
- #define EBITMAP_UNIT_SIZE	BITS_PER_LONG
- #define EBITMAP_SIZE		(EBITMAP_UNIT_NUMS * EBITMAP_UNIT_SIZE)
- #define EBITMAP_BIT		1ULL
-+#define EBITMAP_SHIFT_UNIT_SIZE(x)					\
-+	(((x) >> EBITMAP_UNIT_SIZE / 2) >> EBITMAP_UNIT_SIZE / 2)
- 
- struct ebitmap_node {
- 	struct ebitmap_node *next;
--- 
-1.5.2.4
-
+greg k-h
