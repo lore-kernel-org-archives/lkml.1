@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXJIXf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXJIXgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbXJIXf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXJIXfR
+	id S1755985AbXJIXgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXJIXgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:35:17 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10473 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbXJIXfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:35:15 -0400
-Date: Tue, 9 Oct 2007 16:28:12 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: James Morris <jmorris@namei.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of
- depends
-Message-Id: <20071009162812.00e80a0c.randy.dunlap@oracle.com>
-In-Reply-To: <Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au>
-References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
-	<Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 9 Oct 2007 19:36:39 -0400
+Received: from www.tglx.de ([62.245.132.106]:57592 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390AbXJIXgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:36:38 -0400
+Date: Wed, 10 Oct 2007 01:35:31 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Greg KH <greg@kroah.com>, Olof Johansson <olof@lixom.net>,
+       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
+ <20071009151702.GA19209@lixom.net> <20071009222003.GA21228@kroah.com>
+ <alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
+ <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Oct 2007 09:19:55 +1000 (EST) James Morris wrote:
-
-> From: Eric Paris <eparis@redhat.com>
+On Tue, 9 Oct 2007, Linus Torvalds wrote:
 > 
-> Changes the security/selinux/Kconfig to use select instead of depends
-> for most of the SELinux requirements.  This allows the SELinux option to
-> show up when people do a make config without already knowing they had to
-> enable audit and other non-obvious choices.  Added a depends on SECURITY
-> (which previously existed through SECURITY_NETWORK) so that SELinux
-> would not always show up, but would be easy and intuitive to find.
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
-> Signed-off-by: James Morris <jmorris@e.namei>
-> ---
->  security/selinux/Kconfig |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
+> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
+> > 
+> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
 > 
-> diff --git a/security/selinux/Kconfig b/security/selinux/Kconfig
-> index b32a459..40b97e6 100644
-> --- a/security/selinux/Kconfig
-> +++ b/security/selinux/Kconfig
-> @@ -1,6 +1,10 @@
->  config SECURITY_SELINUX
->  	bool "NSA SELinux Support"
-> -	depends on SECURITY_NETWORK && AUDIT && NET && INET
-> +	depends on SECURITY
-> +	select SECURITY_NETWORK
-> +	select AUDIT
-> +	select NET
-> +	select INET
->  	select NETWORK_SECMARK
->  	default n
->  	help
+> Well, the ppc oops seems to be a ppc bug regardless.
+> 
+> If CPU_HOTPLUG isn't defined, the thing does nothing. And if it is 
+> defined, I don't see why/how ppc can validly oops. So I think the first 
+> thing to do is to try to figure out why it oopses, not to disable it for 
+> ppc.
 
-I doth protest.  Enabling the entire NET subsystem thru a hidden
-select is awful.  Select should be used (sparingly) to enable
-library code only.  If someone wants NET enabled, they should
-enable it overtly, not covertly.
+Fair enough. OTOH for the affected PPC users it's a regression and that's 
+what I'm concerned of.
+
+	tglx
 
 
-> @@ -9,6 +13,7 @@ config SECURITY_SELINUX
->  	  You can obtain the policy compiler (checkpolicy), the utility for
->  	  labeling filesystems (setfiles), and an example policy configuration
->  	  from <http://www.nsa.gov/selinux/>.
-> +
->  	  If you are unsure how to answer this question, answer N.
->  
->  config SECURITY_SELINUX_BOOTPARAM
-
-
-
----
-~Randy
