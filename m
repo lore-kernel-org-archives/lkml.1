@@ -1,146 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbXJINJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbXJINYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795AbXJINJg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 09:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXJINJ2
+	id S1754126AbXJINYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 09:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXJINYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 09:09:28 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:48528 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbXJINJ1 (ORCPT
+	Tue, 9 Oct 2007 09:24:42 -0400
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:46490 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752659AbXJINYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 09:09:27 -0400
-Message-ID: <470B7D7E.5070901@wpkg.org>
-Date: Tue, 09 Oct 2007 15:09:18 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Tue, 9 Oct 2007 09:24:41 -0400
+X-YMail-OSG: EXHkFmUVM1lqvmWP7PK3UtgN4YdNd.rQKjGDgQtFq7yzLJtg7tRjJUW8s1H8FaghQnLWRAg666bETeHiEKzS3OBNaiPWghIEiI0.OnAEGpXY01uEITI-
+Date: Tue, 9 Oct 2007 08:24:37 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Pierre Peiffer <Pierre.Peiffer@bull.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IPC: cleanup some code and wrong comments about
+	semundo list managment
+Message-ID: <20071009132437.GA18312@vino.hallyn.com>
+References: <20071005164606.284341c9.Pierre.Peiffer@bull.net>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, nickpiggin@yahoo.com.au,
-       kernel@nn7.de
-Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071005164606.284341c9.Pierre.Peiffer@bull.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
-
->> Fixing recursive fault but reboot is needed!
+Quoting Pierre Peiffer (Pierre.Peiffer@bull.net):
+> From: Pierre Peiffer <pierre.peiffer@bull.net>
 > 
-> Hmmhh, so now I rebooted and again tried to
+> Some comments about sem_undo_list seem wrong.
+> About the comment above unlock_semundo:
+> "... If task2 now exits before task1 releases the lock (by calling
+> unlock_semundo()), then task1 will never call spin_unlock(). ..."
 > 
-> $ make
+> This is just wrong, I see no reason for which task1 will not call
+> spin_unlock... The rest of this comment is also wrong... Unless I
+> miss something (of course).
+
+I see, that was changed since commit
+00a5dfdb93f74e4d95fb0d83c890728e331f8810 in 2005  :)
+
+> Finally, (un)lock_semundo functions are useless, so remove them
+> for simplification. (this avoids an useless if statement)
+
+Looks correct.
+
+> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
 > 
-> the new kernel which again triggered this(?) BUG:
-
-I had a similar issue with 2.6.22.9, but as I had a proprietary nvidia 
-module loaded, I didn't report it. X was not enabled, though.
-
-At this moment, the machine was spawning quite a bit of bash / awk etc. 
-processes with large variables (50 MB or so), and used memory and CPU a lot.
-
-Normally, it's my desktop machine, and it's rarely on for more than ~12 
-hours, but this time, I left it on for a couple of days.
-
-After this happened, these bash / awk processes died. After I restarted 
-the script again, I lost ssh access to the machine, and I saw no more 
-entries in the syslog. The machine was pingable though, and had it's 
-network sockets still open (I could telnet to ssh port).
-I used SysRq to reboot the machine.
-
-
-
-Oct  3 10:14:09 tomek kernel: Eeek! page_mapcount(page) went negative! (-1)
-Oct  3 10:14:09 tomek kernel:   page pfn = 13aa
-Oct  3 10:14:10 tomek kernel:   page->flags = 40000400
-Oct  3 10:14:10 tomek kernel:   page->count = 1
-Oct  3 10:14:10 tomek kernel:   page->mapping = 00000000
-Oct  3 10:14:10 tomek kernel:   vma->vm_ops = 0x0
-Oct  3 10:14:10 tomek kernel: ------------[ cut here ]------------
-Oct  3 10:14:10 tomek syslogd: /dev/tty12: Interrupted system call
-Oct  3 10:14:10 tomek kernel: kernel BUG at mm/rmap.c:628!
-Oct  3 10:14:10 tomek kernel: invalid opcode: 0000 [#1]
-Oct  3 10:14:10 tomek kernel: PREEMPT
-Oct  3 10:14:10 tomek kernel: Modules linked in: nvidia(P) iptable_nat 
-nf_nat ipt_ULOG ipt_recent af_packet nf_conntrack_ipv4 xt_state 
-nf_conntrack nfnetli
-nk ipt_REJECT xt_tcpudp iptable_filter ip_tables snd_seq_dummy x_tables 
-snd_seq_oss snd_seq_midi_event snd_seq usblp loop dm_mod video thermal 
-sbs fan cont
-ainer dock battery ac floppy cpufreq_conservative cpufreq_powersave 
-processor snd_pcm_oss snd_mixer_oss snd_via82xx snd_ac97_codec ac97_bus 
-snd_pcm snd_tim
-er snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd 
-soundcore ehci_hcd i2c_viapro i2c_core via_rhine uhci_hcd tsdev evdev 
-usbcore via_agp agpg
-art 8139cp 8139too mii sg
-Oct  3 10:14:10 tomek kernel: CPU:    0
-Oct  3 10:14:10 tomek kernel: EIP:    0060:[<c015a434>]    Tainted: P 
-     VLI
-Oct  3 10:14:10 tomek kernel: EFLAGS: 00010246   (2.6.22.9-3 #1)
-Oct  3 10:14:10 tomek kernel: EIP is at page_remove_rmap+0xd7/0x105
-Oct  3 10:14:10 tomek kernel: eax: 00000000   ebx: c1027540   ecx: 
-e8a2e000   edx: 00000002
-Oct  3 10:14:10 tomek kernel: esi: c4226f20   edi: c3ab828c   ebp: 
-e8a2fea4   esp: e8a2fe94
-Oct  3 10:14:10 tomek kernel: ds: 007b   es: 007b   fs: 0000  gs: 0000 
-ss: 0068
-Oct  3 10:14:10 tomek kernel: Process bash (pid: 28682, ti=e8a2e000 
-task=db280000 task.ti=e8a2e000)
-Oct  3 10:14:10 tomek kernel: Stack: c0346d1d 00000000 c1027540 0b4a3000 
-e8a2ff00 c0154edc e8a2e000 28b98fff
-Oct  3 10:14:10 tomek kernel:        013aaa80 00000000 c4226f20 e8a2ff18 
-00000001 00000000 00000000 0b800000
-Oct  3 10:14:10 tomek kernel:        c21330b4 c21330b4 d896d780 c03f2200 
-00000000 ffffffff 28b99000 00000000
-Oct  3 10:14:10 tomek kernel: Call Trace:
-Oct  3 10:14:10 tomek kernel:  [<c0104d19>] show_trace_log_lvl+0x1a/0x2f
-Oct  3 10:14:10 tomek kernel:  [<c0104dc9>] show_stack_log_lvl+0x9b/0xa3
-Oct  3 10:14:10 tomek kernel:  [<c0104fa8>] show_registers+0x1d7/0x30c
-Oct  3 10:14:10 tomek kernel:  [<c01051db>] die+0xfe/0x1d6
-Oct  3 10:14:10 tomek kernel:  [<c02be0af>] do_trap+0x89/0xa2
-Oct  3 10:14:10 tomek kernel:  [<c0105605>] do_invalid_op+0x88/0x92
-Oct  3 10:14:10 tomek kernel:  [<c02bde8a>] error_code+0x6a/0x70
-Oct  3 10:14:10 tomek kernel:  [<c0154edc>] unmap_vmas+0x236/0x425
-Oct  3 10:14:10 tomek kernel:  [<c0157a49>] exit_mmap+0x68/0xf0
-Oct  3 10:14:10 tomek kernel:  [<c0117553>] mmput+0x1e/0x88
-Oct  3 10:14:10 tomek kernel:  [<c011aa52>] exit_mm+0xbb/0xc1
-Oct  3 10:14:10 tomek kernel:  [<c011be51>] do_exit+0x1f0/0x720
-Oct  3 10:14:12 tomek kernel:  [<c011c3ef>] sys_exit_group+0x0/0x11
-Oct  3 10:14:12 tomek kernel:  [<c011c3fe>] sys_exit_group+0xf/0x11
-Oct  3 10:14:12 tomek kernel:  [<c0103da2>] sysenter_past_esp+0x5f/0x99
-Oct  3 10:14:12 tomek kernel:  =======================
-Oct  3 10:14:12 tomek kernel: Code: c0 74 0d 8b 50 08 b8 4d 6d 34 c0 e8 
-ea 0f fe ff 8b 46 48 85 c0 74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 6c 6d 
-34 c0 e8 cf
-  0f fe ff <0f> 0b eb fe 8b 53 10 8b 03 83 e2 01 c1 e8 1e f7 da 83 c2 04 69
-Oct  3 10:14:12 tomek kernel: EIP: [<c015a434>] 
-page_remove_rmap+0xd7/0x105 SS:ESP 0068:e8a2fe94
-Oct  3 10:14:12 tomek kernel: Fixing recursive fault but reboot is needed!
-Oct  3 10:14:12 tomek kernel: BUG: scheduling while atomic: 
-bash/0x00000002/28682
-Oct  3 10:14:12 tomek kernel: INFO: lockdep is turned off.
-Oct  3 10:14:12 tomek kernel:  [<c0104d19>] show_trace_log_lvl+0x1a/0x2f
-Oct  3 10:14:12 tomek kernel:  [<c01057b1>] show_trace+0x12/0x14
-Oct  3 10:14:12 tomek kernel:  [<c0105837>] dump_stack+0x15/0x17
-Oct  3 10:14:12 tomek kernel:  [<c02baf0e>] __sched_text_start+0x6e/0x5d5
-Oct  3 10:14:12 tomek kernel:  [<c011bd52>] do_exit+0xf1/0x720
-Oct  3 10:14:12 tomek kernel:  [<c01052ab>] die+0x1ce/0x1d6
-Oct  3 10:14:12 tomek kernel:  [<c02be0af>] do_trap+0x89/0xa2
-Oct  3 10:14:12 tomek kernel:  [<c0105605>] do_invalid_op+0x88/0x92
-Oct  3 10:14:12 tomek kernel:  [<c02bde8a>] error_code+0x6a/0x70
-Oct  3 10:14:12 tomek kernel:  [<c0154edc>] unmap_vmas+0x236/0x425
-Oct  3 10:14:12 tomek kernel:  [<c0157a49>] exit_mmap+0x68/0xf0
-Oct  3 10:14:12 tomek kernel:  [<c0117553>] mmput+0x1e/0x88
-Oct  3 10:14:12 tomek kernel:  [<c011aa52>] exit_mm+0xbb/0xc1
-Oct  3 10:14:12 tomek kernel:  [<c011be51>] do_exit+0x1f0/0x720
-Oct  3 10:14:12 tomek kernel:  [<c011c3ef>] sys_exit_group+0x0/0x11
-Oct  3 10:14:12 tomek kernel:  [<c011c3fe>] sys_exit_group+0xf/0x11
-Oct  3 10:14:12 tomek kernel:  [<c0103da2>] sysenter_past_esp+0x5f/0x99
-Oct  3 10:14:12 tomek kernel:  =======================
-
-
-
--- 
-Tomasz Chmielewski
-http://blog.wpkg.org
+>  ipc/sem.c |   46 ++++++----------------------------------------
+>  1 files changed, 6 insertions(+), 40 deletions(-)
+> 
+> diff --git a/ipc/sem.c b/ipc/sem.c
+> index b676fef..5585817 100644
+> --- a/ipc/sem.c
+> +++ b/ipc/sem.c
+> @@ -957,36 +957,6 @@ asmlinkage long sys_semctl (int semid, int semnum, int cmd, union semun arg)
+>  	}
+>  }
+>  
+> -static inline void lock_semundo(void)
+> -{
+> -	struct sem_undo_list *undo_list;
+> -
+> -	undo_list = current->sysvsem.undo_list;
+> -	if (undo_list)
+> -		spin_lock(&undo_list->lock);
+> -}
+> -
+> -/* This code has an interaction with copy_semundo().
+> - * Consider; two tasks are sharing the undo_list. task1
+> - * acquires the undo_list lock in lock_semundo().  If task2 now
+> - * exits before task1 releases the lock (by calling
+> - * unlock_semundo()), then task1 will never call spin_unlock().
+> - * This leave the sem_undo_list in a locked state.  If task1 now creats task3
+> - * and once again shares the sem_undo_list, the sem_undo_list will still be
+> - * locked, and future SEM_UNDO operations will deadlock.  This case is
+> - * dealt with in copy_semundo() by having it reinitialize the spin lock when 
+> - * the refcnt goes from 1 to 2.
+> - */
+> -static inline void unlock_semundo(void)
+> -{
+> -	struct sem_undo_list *undo_list;
+> -
+> -	undo_list = current->sysvsem.undo_list;
+> -	if (undo_list)
+> -		spin_unlock(&undo_list->lock);
+> -}
+> -
+> -
+>  /* If the task doesn't already have a undo_list, then allocate one
+>   * here.  We guarantee there is only one thread using this undo list,
+>   * and current is THE ONE
+> @@ -1047,9 +1017,9 @@ static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
+>  	if (error)
+>  		return ERR_PTR(error);
+>  
+> -	lock_semundo();
+> +	spin_lock(&ulp->lock);
+>  	un = lookup_undo(ulp, semid);
+> -	unlock_semundo();
+> +	spin_unlock(&ulp->lock);
+>  	if (likely(un!=NULL))
+>  		goto out;
+>  
+> @@ -1077,10 +1047,10 @@ static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
+>  	new->semadj = (short *) &new[1];
+>  	new->semid = semid;
+>  
+> -	lock_semundo();
+> +	spin_lock(&ulp->lock);
+>  	un = lookup_undo(ulp, semid);
+>  	if (un) {
+> -		unlock_semundo();
+> +		spin_unlock(&ulp->lock);
+>  		kfree(new);
+>  		ipc_lock_by_ptr(&sma->sem_perm);
+>  		ipc_rcu_putref(sma);
+> @@ -1091,7 +1061,7 @@ static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
+>  	ipc_rcu_putref(sma);
+>  	if (sma->sem_perm.deleted) {
+>  		sem_unlock(sma);
+> -		unlock_semundo();
+> +		spin_unlock(&ulp->lock);
+>  		kfree(new);
+>  		un = ERR_PTR(-EIDRM);
+>  		goto out;
+> @@ -1102,7 +1072,7 @@ static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
+>  	sma->undo = new;
+>  	sem_unlock(sma);
+>  	un = new;
+> -	unlock_semundo();
+> +	spin_unlock(&ulp->lock);
+>  out:
+>  	return un;
+>  }
+> @@ -1279,10 +1249,6 @@ asmlinkage long sys_semop (int semid, struct sembuf __user *tsops, unsigned nsop
+>  
+>  /* If CLONE_SYSVSEM is set, establish sharing of SEM_UNDO state between
+>   * parent and child tasks.
+> - *
+> - * See the notes above unlock_semundo() regarding the spin_lock_init()
+> - * in this code.  Initialize the undo_list->lock here instead of get_undo_list()
+> - * because of the reasoning in the comment above unlock_semundo.
+>   */
+>  
+>  int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
+> 
+> 
+> Pierre Peiffer
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
