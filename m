@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbXJIR0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbXJIR2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbXJIR0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 13:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbXJIRZ7
+	id S1755553AbXJIR2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 13:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbXJIR2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 13:25:59 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:37903 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753080AbXJIRZ6 (ORCPT
+	Tue, 9 Oct 2007 13:28:06 -0400
+Received: from mail-dub.bigfish.com ([213.199.154.10]:41622 "EHLO
+	mail32-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751403AbXJIR2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 13:25:58 -0400
-X-IronPort-AV: E=Sophos;i="4.21,249,1188802800"; 
-   d="scan'208";a="22309484"
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+	Tue, 9 Oct 2007 13:28:05 -0400
+X-Greylist: delayed 1967 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Oct 2007 13:28:03 EDT
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+Date: Tue, 9 Oct 2007 18:54:07 +0200
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Christoph Egger" <Christoph.Egger@amd.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-X-Message-Flag: Warning: May contain useful information
-References: <31862.1191948560@lwn.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 09 Oct 2007 10:25:57 -0700
-In-Reply-To: <31862.1191948560@lwn.net> (Jonathan Corbet's message of "Tue, 09 Oct 2007 10:49:20 -0600")
-Message-ID: <adaodf8i4ii.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+Subject: Re: [PATCH 1/2] i386: mce cleanup part1: functional change
+Message-ID: <20071009165407.GD13205@amd.com>
+References: <11919341961890-git-send-email-joerg.roedel@amd.com>
+ <11919341961530-git-send-email-joerg.roedel@amd.com>
+ <E1IfHZg-0003dp-FA@flower> <20071009160605.GC13205@amd.com>
+ <20071009163230.GC22435@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Oct 2007 17:25:57.0643 (UTC) FILETIME=[743C1DB0:01C80A99]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+In-Reply-To: <20071009163230.GC22435@flower.upol.cz>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 09 Oct 2007 16:54:07.0852 (UTC)
+ FILETIME=[01E922C0:01C80A95]
+X-WSS-ID: 6B156DC51DW1312540-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > > + (b) Any problems, concerns, or questions relating to the patch have been
- > > > +     communicated back to the submitter.  I am satisfied with how the
- > > > +     submitter has responded to my comments.
- > > 
- > > This seems more detailed that necessary.  The process (communicated
- > > back / responded) is not really relevant.
- > 
- > Instead, it seems to me that the process is crucially important.
+On Tue, Oct 09, 2007 at 06:32:30PM +0200, Oleg Verych wrote:
+> On Tue, Oct 09, 2007 at 06:06:05PM +0200, Joerg Roedel wrote:
+> > > cpu_has() returns int,
+> > > but would it be better to have something like
+> > > 
+> > >   	if (!mce_disabled &&
+> > > 	    !(c->x86_capability & (X86_FEATURE_MCA | X86_FEATURE_MCE)) {
+> > > 		printk(KERN_INFO "CPU%i: No machine check support available\n",
+> > > 			smp_processor_id());
+> > 
+> > This looks complicated and is harder to read. Its exactly the purpose of the
+> > cpu_has() macro to avoid such constructs.
+> 
+> It is done via test_bit(), which is designed for IO access with all that
+> `const volatile' stuff, 2 x unnecessary, can't be optimized here (IMHO).
 
-I agree with you Jon.  In fact my first reaction to your initial post
-was that this section (b) was the most succinct distillation of the
-most important part of reviewing that I've seen.
+This code runs only on bootup and once per cpu. I think readable code
+is more important here than make it a few cycles faster.
 
- - R.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
