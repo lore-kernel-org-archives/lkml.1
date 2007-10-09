@@ -1,211 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbXJILPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbXJILWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbXJILPY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 07:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXJILOy
+	id S1753547AbXJILWN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 07:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXJILV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 07:14:54 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10399 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752128AbXJILOx (ORCPT
+	Tue, 9 Oct 2007 07:21:59 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:22791 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbXJILV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 07:14:53 -0400
-Subject: Re: [PATCH] lockdep: Avoid /proc/lockdep & lock_stat infinite
-	output
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Tim Pepper <lnxninja@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071009013011.GV8181@ftp.linux.org.uk>
-References: <20071009011551.GA3592@tpepper-t42p.dolavim.us>
-	 <20071009013011.GV8181@ftp.linux.org.uk>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3Hs2QzEOBrukxEdd9+gU"
-Date: Tue, 09 Oct 2007 13:14:49 +0200
-Message-Id: <1191928489.6848.4.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 9 Oct 2007 07:21:58 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ramdisk: fix zeroed ramdisk pages on memory pressure
+Date: Tue, 9 Oct 2007 13:21:46 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710091321.46891.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
---=-3Hs2QzEOBrukxEdd9+gU
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We have seen ramdisk based install systems, where some pages of mapped 
+libraries and programs were suddendly zeroed under memory pressure. This 
+should not happen, as the ramdisk avoids freeing its pages by keeping them 
+dirty all the time.
 
-On Tue, 2007-10-09 at 02:30 +0100, Al Viro wrote:
-> On Mon, Oct 08, 2007 at 06:15:51PM -0700, Tim Pepper wrote:
-> >=20
-> > When a read() requests an amount of data smaller than the amount of dat=
-a
-> > that the seq_file's foo_show() outputs, the output starts looping and
-> > outputs the "stuck" element's data infinitely.  There may be multiple
-> > sequential calls to foo_start(), foo_next()/foo_show(), and foo_stop()
-> > for a single open with sequential read of the file.  The _start() does =
-not
-> > have to start with the 0th element and _show() might be called multiple
-> > times in a row for the same element for a given open/read of the seq_fi=
-le.
-> > =20
-> >  static void *l_start(struct seq_file *m, loff_t *pos)
-> >  {
-> > -	struct lock_class *class =3D m->private;
-> > +	struct lock_class *class;
-> > +	loff_t i =3D 0;
-> > =20
-> > -	if (&class->lock_entry =3D=3D all_lock_classes.next)
-> > +	if (*pos =3D=3D 0)
-> >  		seq_printf(m, "all lock classes:\n");
->=20
-> Do not generate output outside of ->show() and you won't have these
-> problems.  That's where your infinite output crap comes from.
->=20
-> IOW, NAK - fix the underlying problem.
+It turns out that there is a case, where the VM makes a ramdisk page clean, 
+without telling the ramdisk driver.
+On memory pressure shrink_zone runs and it starts to run shrink_active_list. 
+There is a check for buffer_heads_over_limit, and if true, pagevec_strip is 
+called. pagevec_strip calls try_to_release_page. If the mapping has no 
+releasepage callback, try_to_free_buffers is called. try_to_free_buffers has 
+now a special logic for some file systems to make a dirty page clean, if all 
+buffers are clean. Thats what happened in our test case.
 
+The solution is to provide a noop-releasepage callback for the ramdisk driver.
+This avoids try_to_free_buffers for ramdisk pages. 
 
-FWIW I had to do Tim's bits too. Just moving all output from the start
-into the show method didn't fix it.
+To trigger the problem, you have to make buffer_heads_over_limit true, which
+means:
+- lower max_buffer_heads 
+or
+- have a system with lots of high memory
 
-Signed-off-by: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Andrew, if there are no objections - please apply. The patch applies against
+2.6.23-rc9.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+
 ---
- kernel/lockdep_proc.c |   69 +++++++++++++++++++++++----------------------=
------
- 1 file changed, 33 insertions(+), 36 deletions(-)
+ drivers/block/rd.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+)
 
-Index: linux-2.6/kernel/lockdep_proc.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/kernel/lockdep_proc.c
-+++ linux-2.6/kernel/lockdep_proc.c
-@@ -23,32 +23,25 @@
-=20
- #include "lockdep_internals.h"
-=20
--static void *l_next(struct seq_file *m, void *v, loff_t *pos)
-+static void *l_start(struct seq_file *m, loff_t *pos)
- {
--	struct lock_class *class =3D v;
--
--	(*pos)++;
--
--	if (class->lock_entry.next !=3D &all_lock_classes)
--		class =3D list_entry(class->lock_entry.next, struct lock_class,
--				  lock_entry);
--	else
--		class =3D NULL;
--	m->private =3D class;
-+	struct lock_class *class;
-+	int i =3D 0;
-=20
--	return class;
-+	list_for_each_entry(class, &all_lock_classes, lock_entry) {
-+		if (i++ =3D=3D *pos)
-+			return class;
-+	}
-+	return NULL;
- }
-=20
--static void *l_start(struct seq_file *m, loff_t *pos)
-+static void *l_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct lock_class *class =3D m->private;
--
--	if (&class->lock_entry =3D=3D all_lock_classes.next)
--		seq_printf(m, "all lock classes:\n");
--
--	return class;
-+	(*pos)++;
-+	return l_start(m, pos);
- }
-=20
-+
- static void l_stop(struct seq_file *m, void *v)
- {
- }
-@@ -101,10 +94,16 @@ static void print_name(struct seq_file *
- static int l_show(struct seq_file *m, void *v)
- {
- 	unsigned long nr_forward_deps, nr_backward_deps;
--	struct lock_class *class =3D m->private;
-+	struct lock_class *class =3D v;
- 	struct lock_list *entry;
- 	char c1, c2, c3, c4;
-=20
-+	if (WARN_ON(class =3D=3D NULL))
-+		return 0;
-+
-+	if (&class->lock_entry =3D=3D all_lock_classes.next)
-+		seq_printf(m, "all lock classes:\n");
-+
- 	seq_printf(m, "%p", class->key);
- #ifdef CONFIG_DEBUG_LOCKDEP
- 	seq_printf(m, " OPS:%8ld", class->ops);
-@@ -522,28 +521,19 @@ static void seq_header(struct seq_file *
- static void *ls_start(struct seq_file *m, loff_t *pos)
- {
- 	struct lock_stat_seq *data =3D m->private;
-+	struct lock_stat_data *iter;
-=20
--	if (data->iter =3D=3D data->stats)
--		seq_header(m);
--
--	if (data->iter =3D=3D data->iter_end)
--		data->iter =3D NULL;
-+	iter =3D data->iter + *pos;
-+	if (iter >=3D data->iter_end)
-+		iter =3D NULL;
-=20
--	return data->iter;
-+	return iter;
- }
-=20
- static void *ls_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct lock_stat_seq *data =3D m->private;
--
- 	(*pos)++;
--
--	data->iter =3D v;
--	data->iter++;
--	if (data->iter =3D=3D data->iter_end)
--		data->iter =3D NULL;
--
--	return data->iter;
-+	return ls_start(m, pos);
- }
-=20
- static void ls_stop(struct seq_file *m, void *v)
-@@ -553,8 +543,15 @@ static void ls_stop(struct seq_file *m,=20
- static int ls_show(struct seq_file *m, void *v)
- {
- 	struct lock_stat_seq *data =3D m->private;
-+	struct lock_stat_data *iter =3D v;
-+
-+	if (WARN_ON(iter =3D=3D NULL))
-+		return 0;
-+
-+	if (iter =3D=3D data->iter)
-+		seq_header(m);
-=20
--	seq_stats(m, data->iter);
-+	seq_stats(m, iter);
+Index: linux-2.6/drivers/block/rd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/rd.c
++++ linux-2.6/drivers/block/rd.c
+@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
  	return 0;
  }
-=20
-
-
---=-3Hs2QzEOBrukxEdd9+gU
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHC2KpXA2jU0ANEf4RAhswAKCA/FyWorav5yS7yCIH431QLXV3agCcD/sC
-S67HxHB56erI7asFl2PgLmY=
-=GiCk
------END PGP SIGNATURE-----
-
---=-3Hs2QzEOBrukxEdd9+gU--
-
+ 
++/*
++ * releasepage is called by pagevec_strip/try_to_release_page if
++ * buffers_heads_over_limit is true. Without a releasepage function
++ * try_to_free_buffers is called instead. That can unset the dirty
++ * bit of our ram disk pages, which will be eventually freed, even
++ * if the page is still in use.
++ */
++static int ramdisk_releasepage(struct page *page, gfp_t dummy)
++{
++	return 0;
++}
++
+ static const struct address_space_operations ramdisk_aops = {
+ 	.readpage	= ramdisk_readpage,
+ 	.prepare_write	= ramdisk_prepare_write,
+@@ -196,6 +208,7 @@ static const struct address_space_operat
+ 	.writepage	= ramdisk_writepage,
+ 	.set_page_dirty	= ramdisk_set_page_dirty,
+ 	.writepages	= ramdisk_writepages,
++	.releasepage	= ramdisk_releasepage,
+ };
+ 
+ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
