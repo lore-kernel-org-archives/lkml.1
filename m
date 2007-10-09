@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbXJIMbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXJIMky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbXJIMbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 08:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXJIMaw
+	id S1754085AbXJIMky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 08:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbXJIMkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 08:30:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33695 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751771AbXJIMav (ORCPT
+	Tue, 9 Oct 2007 08:40:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:56849 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbXJIMkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 08:30:51 -0400
-Date: Tue, 9 Oct 2007 13:35:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Escaping the arguments of kernel messages for sane
- user-space localisation
-Message-ID: <20071009133551.2aa672da@the-village.bc.nu>
-In-Reply-To: <1191928483.17405.15.camel@grianne>
-References: <1191872730.27240.29.camel@grianne>
-	<1191928483.17405.15.camel@grianne>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 08:40:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=cMJTBe7r0KHS+BCvmS2rdlcRWehZJ2WE3YRTmbi5RIY5MLLB8J8hgeaxg0LQs7MFAbxGXMoeKScRyal/EpRnRefrR9Q2ydtH+xZ0mfdrznFOo8b3QsQClrv/cq1iMteswpk3w2ERR59/KJZ82LlfMQ45JcjHzJk9XfOmC3+cOlI=
+Date: Tue, 9 Oct 2007 14:40:35 +0200
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Cc: aia21@cantab.net, linux-ntfs-dev@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NTFS error messages: replace static char pointers by static char arrays
+Message-ID: <20071009124035.GA4245@Ahmed>
+References: <470AA75E.7010508@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <470AA75E.7010508@gmail.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have now found what I think is another valid use. What I have done is
-> to make xprintf() emit the output directly to the kernel ring-buffer.
+On Tue, Oct 09, 2007 at 01:55:42AM +0400, Dmitri Vorobiev wrote:
+> Hi,
+> 
+> The patch below contains a small code clean-up for the NTFS driver: all
+> static char pointers to error message strings have been replaced by 
+> static char arrays.
+> 
 
-Thats nice.
+Hi Dmitri,
 
-> There is only one very small caveat (that I can see) to be mentioned:
-> You can still use multiple printk() calls to append new text to a
-> partial message, but you can NOT output several messages in a single
-> call. I think, however, that no sanely written code would do this
+Isn't the only difference between char *c = "msg" and char c[] = "msg" is 
+that the first is a non-const pointer to a const char array while the second 
+is a modifiable char array ?
 
-A quick search suggests otherwise (eg intel_rng)
+If so, what's the point of the patch ?
 
+Thanks,
 
-Alan
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
