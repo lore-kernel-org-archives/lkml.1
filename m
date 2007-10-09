@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXJIHf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbXJIHmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbXJIHf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 03:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXJIHfN
+	id S1754238AbXJIHmv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 03:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbXJIHmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 03:35:13 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48009
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752841AbXJIHfM (ORCPT
+	Tue, 9 Oct 2007 03:42:42 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61016 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752743AbXJIHml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 03:35:12 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: akpm@linux-foundation.org
-Subject: [PATCH] Add recommended section IDs to deviceiobook.tmpl
-Date: Tue, 9 Oct 2007 02:35:07 -0500
-User-Agent: KMail/1.9.6
-Cc: matthew@wil.cx, alan@redhat.com, linux-kernel@vger.kernel.org
+	Tue, 9 Oct 2007 03:42:41 -0400
+Message-ID: <470B3008.9040003@ah.jp.nec.com>
+Date: Tue, 09 Oct 2007 16:38:48 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
+Subject: Re: [PATCH 0/2] add new notifier function
+References: <4704D09D.6080503@ah.jp.nec.com> <m1641llnqa.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1641llnqa.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710090235.08063.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+Eric W. Biederman wrote:
+> Takenori Nagano <t-nagano@ah.jp.nec.com> writes:
+> 
+>> Hi,
+>>
+>> These patches add new notifier function and implement it to panic_notifier_list.
+>> We used the hardcoded notifier chain so far, but it was not flexible. New
+>> notifier is very flexible, because user can change a list of order by debugfs.
+> 
+> How is the lack of flexibility a problem?
+> Specifics please.
 
-Add recommended section ID tags to deviceiobook.tmpl
+Please read this again.
+http://www.gossamer-threads.com/lists/linux/kernel/797220?do=post_view_threaded#797220
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+Keith Owen said,
 
-Because otherwise the link #anchors in the html vary from build to build.
+> My stance is that _all_ the RAS tools (kdb, kgdb, nlkd, netdump, lkcd,
+> crash, kdump etc.) should be using a common interface that safely puts
+> the entire system in a stopped state and saves the state of each cpu.
+> Then each tool can do what it likes, instead of every RAS tool doing
+> its own thing and they all conflict with each other, which is why this
+> thread started.
+> 
+> It is not the kernel's job to decide which RAS tool runs first, second
+> etc., it is the user's decision to set that policy. Different sites
+> will want different orders, some will say "go straight to kdump", other
+> sites will want to invoke a debugger first. Sites must be able to
+> define that policy, but we hard code the policy into the kernel. 
 
- Documentation/DocBook/deviceiobook.tmpl |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+I agreed with him and I made new notifier function.
 
-diff -r a26a53ed1101 Documentation/DocBook/deviceiobook.tmpl
---- a/Documentation/DocBook/deviceiobook.tmpl	Sun Oct 07 16:42:22 2007 -0700
-+++ b/Documentation/DocBook/deviceiobook.tmpl	Tue Oct 09 02:32:12 2007 -0500
-@@ -85,7 +85,7 @@
- 
-   <chapter id="mmio">
-     <title>Memory Mapped IO</title>
--    <sect1>
-+    <sect1 id="getting_access_to_the_device">
-       <title>Getting Access to the Device</title>
-       <para>
- 	The most widely supported form of IO is memory mapped IO.
-@@ -114,7 +114,7 @@
-       </para>
-     </sect1>
- 
--    <sect1>
-+    <sect1 id="accessing_the_device">
-       <title>Accessing the device</title>
-       <para>
- 	The part of the interface most used by drivers is reading and
-@@ -272,9 +272,9 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
- 
-   </chapter>
- 
--  <chapter>
-+  <chapter id="port_space_accesses">
-     <title>Port Space Accesses</title>
--    <sect1>
-+    <sect1 id="port_space_explained">
-       <title>Port Space Explained</title>
- 
-       <para>
-@@ -291,7 +291,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
-       </para>
- 
-     </sect1>
--    <sect1>
-+    <sect1 id="accessing_port_space">
-       <title>Accessing Port Space</title>
-       <para>
- 	Accesses to this space are provided through a set of functions
+> 
+> My impression is that the purpose of this patchset is to build
+> infrastructure to sort out a conflict between kdb and the kexec code,
+> which it does not do, and it can not do if it does not own up to
+> it's real purpose.
 
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+My motivation does not change. But I don't think kdump have to use notifer.
+I want to resolve this adopting the way which satisfy all users.
+
+Thanks,
+
+Takenori Nagano <t-nagano@ah.jp.nec.com>
