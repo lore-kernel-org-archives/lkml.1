@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbXJIL0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbXJILao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbXJIL0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 07:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXJIL0F
+	id S1753877AbXJILao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 07:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbXJILag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 07:26:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43453 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752354AbXJIL0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 07:26:02 -0400
-X-Authenticated: #815327
-X-Provags-ID: V01U2FsdGVkX1+bFGhmx6ObtJ0Ht2oY2FZG+vmfJtcfNW48PlAWBM
-	xFVriZS3iwLecx
-Date: Tue, 9 Oct 2007 13:25:53 +0200
-From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange network related data corruption
-Message-ID: <20071009132553.439f7d8b@cp771133>
-In-Reply-To: <200710081401.32375.vda.linux@googlemail.com>
-References: <20071007184741.3b1951c1@highlander.home.lan>
-	<200710081401.32375.vda.linux@googlemail.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Bxr7O_Ggxy6x7ruvQkrFfHa";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+	Tue, 9 Oct 2007 07:30:36 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:38872 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbXJILag (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 07:30:36 -0400
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v4 1/3] i386/x86_64 boot: setup data
+In-Reply-To: <1191920123.9719.71.camel@caritas-dev.intel.com>
+References: <1191912010.9719.18.camel@caritas-dev.intel.com> <200710090125.27263.nickpiggin@yahoo.com.au> <1191918139.9719.47.camel@caritas-dev.intel.com> <200710090206.22383.nickpiggin@yahoo.com.au> <1191920123.9719.71.camel@caritas-dev.intel.com>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Tue, 9 Oct 2007 13:44:47 +0200
+Message-Id: <E1IfDW3-0001qA-9c@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Bxr7O_Ggxy6x7ruvQkrFfHa
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+* Tue, 09 Oct 2007 16:55:23 +0800
+>
+> On Tue, 2007-10-09 at 02:06 +1000, Nick Piggin wrote:
+>> On Tuesday 09 October 2007 18:22, Huang, Ying wrote:
+[]
+>> I'm just wondering whether you really need to access highmem in
+>> boot code...
+>
+> Because the zero page (boot_parameters) of i386 boot protocol has 4k
+> limitation, a linked list style boot parameter passing mechanism (struct
+> setup_data) is proposed by Peter Anvin. The linked list is provided by
+> bootloader, so it is possible to be in highmem region.
 
-On Mon, 8 Oct 2007 14:01:32 +0100
-Denys Vlasenko <vda.linux@googlemail.com> wrote:
+Can it be explained, why boot protocol and boot line must be expanded?
+This amount of code for what?
 
-> On Sunday 07 October 2007 17:47, Malte Schr=C3=B6der wrote:
-> > Hello,
-> > I am encountering some strange data corruption when transferring
-> > data from one of my PCs that I use as a file-server.
-> >=20
-> > on the server:
-> > FILE=3D<large file>; | cut -d" " -f1 | nc -lp5000 -q0; while nc
-> > -lp5000 -q0 < $FILE; do : ; done
->=20
-> $ cat z
-> FILE=3Dz; | cut -d" " -f1 | nc -lp5000 -q0; while nc -lp5000 -q0 < $FILE;=
- do : ; done
+ arch/i386/Kconfig            |    3 -
+ arch/i386/boot/header.S      |    8 +++
+ arch/i386/kernel/setup.c     |   92 +++++++++++++++++++++++++++++++++++++++++++
+ arch/x86_64/kernel/setup.c   |   37 +++++++++++++++++
+ include/asm-i386/bootparam.h |   15 +++++++
+ include/asm-i386/io.h        |    7 +++
+ include/linux/mm.h           |    2
+ mm/memory.c                  |   24 +++++++++++
+ 
 
-Sorry, there is a copy'n'paste error in my post, correct line would be:
-FILE=3Dz ; sha1sum $FILE | cut -d" " -f1 | nc -lp5000 -q0; while nc -lp5000=
- -q0 < $FILE; do : ;done
+If it is proposed for passing ACPI makeup language bugfixes by boot
+line for ACPI parser in the kernel, or "telling to kernel what to do
+via EFI" then it's kind of very nasty red flag.
 
->=20
-> $ sh z
-> z: line 1: syntax error near unexpected token `|'
-> z: line 1: `FILE=3Dz; | cut -d" " -f1 | nc -lp5000 -q0; while nc -lp5000 =
--q0 < $FILE; do : ; done'
->=20
-> > on the client:
-> > H=3D<server>; SUM=3D$(nc -q0 $H 5000);sleep 1s; while nc -q0 $H 5000 |
-> > sha1sum | (grep -v $SUM || echo -n .); do sleep 1s ;done
-> >=20
-> > (output looks somewhat like this:
-> > ..............6dd5fb1ce29d270acdfbb02d00921bf75d141773  -
-> > ...
-> > )
-> >=20
-> > I would expect the sha1sum to be the same in every pass (assuming the
-> > source file does not change). But every few passes (with no apparent
-> > pattern) there is a different sum returned. I first noticed this when
-> > transferring large files (backups) with with SMB and NFS(v3 and v4) but
-> > to rule that out I tried netcat in the way noted above.
->=20
-> Does it happen over loopback?
+I'd suggest to have initramfs image ready with all possible
+data/options/actions based on very small amount of possible boot line
+information.
 
-I just tried a few times and yes, it also happens on loopback, but
-much less frequently. Now I am really confused ...
+Any _right_ use-cases explained for dummies are appreciated.
 
->=20
-> tcpdump / tcpflow may help seeing whether there is some corruption
-> (TCP checksumming should have catched that, but worth looking into).
-> Basically, you wait for "wrong" checksum to appear, then
-> you stop script and look into tcpdump/tcpflow logs.
-> --
-> vda
->=20
-
---Sig_/Bxr7O_Ggxy6x7ruvQkrFfHa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHC2VG4q3E2oMjYtURAmqBAKC8V2bW6ko5Yr3C8EHhSgm4s9LrYwCfWTZV
-bzKtOhpZPzfS7V9PUXQ/fNk=
-=hJ65
------END PGP SIGNATURE-----
-
---Sig_/Bxr7O_Ggxy6x7ruvQkrFfHa--
+Thanks.
+--
+-o--=O`C
+ #oo'L O
+<___=E M
