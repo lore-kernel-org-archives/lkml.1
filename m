@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbXJIDEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXJIDHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbXJIDEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 23:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXJIDEm
+	id S1754684AbXJIDHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 23:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXJIDHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 23:04:42 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:50385 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbXJIDEm (ORCPT
+	Mon, 8 Oct 2007 23:07:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49410 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752311AbXJIDHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 23:04:42 -0400
-Date: Mon, 8 Oct 2007 23:04:12 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mike Kravetz <kravetz@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -rt more realtime scheduling issues
-Message-ID: <20071009030412.GB12915@goodmis.org>
-References: <20071006021548.GE4587@monkey.ibm.com> <20071008184523.GA29656@monkey.ibm.com>
+	Mon, 8 Oct 2007 23:07:33 -0400
+Date: Mon, 8 Oct 2007 20:10:49 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: david-b@pacbell.net, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: OHCI root_port_reset() deadly loop...
+Message-ID: <20071009031049.GD14127@kroah.com>
+References: <20071006.235358.104048815.davem@davemloft.net> <20071007073141.A88DD2393E2@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20071007.005156.85395415.davem@davemloft.net> <20071008.165420.42793456.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071008184523.GA29656@monkey.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071008.165420.42793456.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 11:45:23AM -0700, Mike Kravetz wrote:
-> On Fri, Oct 05, 2007 at 07:15:48PM -0700, Mike Kravetz wrote:
-> > After applying the fix to try_to_wake_up() I was still seeing some large
-> > latencies for realtime tasks.
+On Mon, Oct 08, 2007 at 04:54:20PM -0700, David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Sun, 07 Oct 2007 00:51:56 -0700 (PDT)
 > 
-> I've been looking for places in the code where reschedule IPIs should
-> be sent in the case of 'overload' to redistribute RealTime tasks based
-> on priority.  However, an even more basic question to ask might be:  Are
-> the use of reschedule IPIs reliable enough for this purpose.  In the
-> code, there is the following comment:
+> > From: David Brownell <david-b@pacbell.net>
+> > Date: Sun, 07 Oct 2007 00:31:41 -0700
+> > 
+> > > Are the other ports still behaving?  Is EHCI maybe trying to switch
+> > > ownership of that port?  Is maybe the (newish) autosuspend stuff
+> > > kicking in?
+> > 
+> > I wouldn't know, the machine hangs and doesn't get any further.
 > 
-> /*
->  * this function sends a 'reschedule' IPI to another CPU.
->  * it goes straight through and wastes no time serializing
->  * anything. Worst case is that we lose a reschedule ...
->  */
+> To add some more information here, I think the EHCI idea might
+> hold some water.
 > 
-> After a quick read of the code, it does appear that reschedule's can
-> be lost if the the IPI is sent at just the right time in schedule
-> processing.  Can someone confirm this is actually the case?
+> What I have here are two NEC OHCI USB interfaces and one NEC EHCI
+> USB interface on PCI.  Aparently they all go through a shared
+> USB hub, mapped like this:
 > 
-> The issue I see is that the 'rt_overload' mechanism depends on reschedule
-> IPIs for RealTime scheduling semantics.  If this is not a reliable
-> mechanism then this can lead to breakdowns in RealTime scheduling semantics.
+> HUB Port 1: OHCI #1, EHCI
+> HUB Port 2: OHCI #2, EHCI
+> HUB Port 3: OHCI #1, EHCI
+> HUB Port 4: OHCI #2, EHCI
+> HUB Port 5: OHCI #1, EHCI
 > 
-> Are these accurate statements?  I'll start working on a reliable delivery
-> mechanism for RealTime scheduling.  But, I just want to make sure that
-> is really necessary.
+> The OHCI ports go out to external USB connectors on the back panel of
+> the machine, whereas the EHCI is connected up to an internal USB
+> storage CDROM device and what appears to be another USB hub.
+> 
+> The problem seems to be very strongly tied to timing.  For example
+> simply adding "ignore_loglevel" to the kernel boot command line can
+> make the problem go away.
+> 
+> This got me thinking about your EHCI comment.
+> 
+> If these controllers are going through the same HUB, things might go
+> south if OHCI initialized first, then khubd et al. are asynchronously
+> accessing the segments behind OHCI at the same time that the EHCI
+> driver is initializing.  Perhaps, this is the kind of sequence of
+> events which makes one of the root ports reset in such a way that the
+> the reset bit never clears.
+> 
+> Given that this machine has 64 cpus, the likelyhood for such parallel
+> accesses is very likely :-)
+> 
+> Does this make any sense?
 
-For i386 I don't think so. Seems that the interrupt handler will set the
-current task to "need_resched" and on exit of the interrupt handler, the
-schedule should take place. I don't see the race (that doesn't mean
-there is one).
+Yes it does, I'm seeing reports from some hardware companies of the very
+same thing.  If you serialize and load the ehci driver first, and then
+the ohci driver, that should fix the problem.
 
-For x86_64 though, I don't think that we schedule. All the reschedule
-vector does is return with a comment:
+Does that also work for you?  Or are these drivers built into the
+kernel?
 
-/*
- * Reschedule call back. Nothing to do,
- * all the work is done automatically when
- * we return from the interrupt.
- */
-asmlinkage void smp_reschedule_interrupt(void)
-{
-        ack_APIC_irq();
-}
+thanks,
 
-I'm thinking that this was the case for i386 a while back, and we fixed
-it for RT.
-
-/me does a quick search...
-
-http://lkml.org/lkml/2005/5/13/174
-
-Yep!  This is a bug in x86_64. I'll fix this up tomorrow and send out a
-patch.
-
--- Steve
-
+greg k-h
