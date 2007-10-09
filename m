@@ -1,129 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbXJIDRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbXJIDeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbXJIDRm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 23:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXJIDRb
+	id S1754670AbXJIDeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 23:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbXJIDeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 23:17:31 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:49911 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbXJIDRa (ORCPT
+	Mon, 8 Oct 2007 23:34:09 -0400
+Received: from smtp115.sbc.mail.re3.yahoo.com ([66.196.96.88]:34817 "HELO
+	smtp115.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752773AbXJIDeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 23:17:30 -0400
-Date: Mon, 8 Oct 2007 20:17:24 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
-       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071009031724.GB26472@us.ibm.com>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie> <20071009011143.GC14670@us.ibm.com> <Pine.LNX.4.64.0710081854370.28455@schroedinger.engr.sgi.com>
+	Mon, 8 Oct 2007 23:34:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=YPeiPvcJYFgPBRcG7R/wTTKnLqxYAiyqz3EMNezj0Imlb+s8Gteq7WzcVnRptcLYM9xQ5lBgn0qK3VYcaQwMhmWCYi9RnHxzkcgxQeUM1n9h88hqDP9j6HUwLtSU9UUkrmR823Jwrloh00kn4ehsPkuKb8X9vGEIstRkqMXu9vw=  ;
+X-YMail-OSG: 5V2EYCgVM1mJZeAJEMJjmM8E.ro5IXs9ebK7JYKLGcV4Hg_EyCaHuecQJygdYF6QEz01j5POC9cESyhOBthSfBF7N2gRoe58QMyhETJ1pglYMr3KhOItWhZ7rIKF55kltVD.vOvgAFQJSA--
+Date: Mon, 08 Oct 2007 20:34:12 -0700
+From: David Brownell <david-b@pacbell.net>
+To: greg@kroah.com, davem@davemloft.net
+Subject: Re: OHCI root_port_reset() deadly loop...
+Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20071007.005156.85395415.davem@davemloft.net>
+ <20071008.165420.42793456.davem@davemloft.net>
+ <20071009031049.GD14127@kroah.com>
+ <20071008.201653.43030513.davem@davemloft.net>
+In-Reply-To: <20071008.201653.43030513.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710081854370.28455@schroedinger.engr.sgi.com>
-X-Operating-System: Linux 2.6.22.6 (x86_64)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071009033412.E37E323700C@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08.10.2007 [18:56:05 -0700], Christoph Lameter wrote:
-> On Mon, 8 Oct 2007, Nishanth Aravamudan wrote:
-> 
-> > >  struct page * fastcall
-> > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> > >  		struct zonelist *zonelist)
-> > >  {
-> > > +	/*
-> > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > > +	 * cost of allocating on the stack or the stack usage becomes
-> > > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > > +	 */
-> > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > > +		nodemask_t nodemask;
-> > > +
-> > > +		return __alloc_pages_internal(gfp_mask, order,
-> > > +				zonelist, nodemask_thisnode(&nodemask));
-> > > +	}
-> > > +
-> > >  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-> > >  }
-> > 
-> > <snip>
-> > 
-> > So alloc_pages_node() calls here and for THISNODE allocations, we go ask
-> > nodemask_thisnode() for a nodemask...
-> 
-> Hmmmm... nodemask_thisnode needs to be passed the zonelist.
-> 
-> > And nodemask_thisnode() always gives us a nodemask with only the node
-> > the current process is running on set, I think?
-> 
-> Right.
-> 
-> 
-> > That seems really wrong -- and would explain what Lee was seeing while
-> > using my patches for the hugetlb pool allocator to use THISNODE
-> > allocations. All the allocations would end up coming from whatever node
-> > the process happened to be running on. This obviously messes up hugetlb
-> > accounting, as I rely on THISNODE requests returning NULL if they go
-> > off-node.
-> > 
-> > I'm not sure how this would be fixed, as __alloc_pages() no longer has
-> > the nid to set in the mask.
-> > 
-> > Am I wrong in my analysis?
-> 
-> No you are right on target. The thisnode function must determine the
-> node from the first zone of the zonelist.
+> However, when both OHCI and EHCI are built as modules (or, similarly
+> I guess, OHCI is built-in and EHCI is modular) there appears to be
+> nothing in userspace which makes sure EHCI gets loaded first.
 
-It seems like I would zonelist_node_idx() for this, along the lines of:
+The old /etc/hotplug/usb.rc script made sure to load those modules
+in the correct order:  EHCI first.
 
-	static nodemask_t *nodemask_thisnode(nodemask_t *nodemask,
-		struct zonelist *zonelist)
-	{
-		int nid = zonelist_node_idx(zonelist);
-		/* Build a nodemask for just this node */
-		nodes_clear(*nodemask);
-		node_set(nid, *nodemask);
-
-		return nodemask;
-	}
-
-But I think I need to check that zonelist->_zonerefs->zone is !NULL, given this
-definition of zonelist_node_idx()
-
-	static inline int zonelist_node_idx(struct zoneref *zoneref)
-	{
-	#ifdef CONFIG_NUMA
-		/* zone_to_nid not available in this context */
-		return zoneref->zone->node;
-	#else
-		return 0;
-	#endif /* CONFIG_NUMA */
-	}
-
-and this comment in __alloc_pages_internal():
-
-	....
-	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
-
-	if (unlikely(!z->zone)) {
-		/*
-		 * Happens if we have an empty zonelist as a result of
-		 * GFP_THISNODE being used on a memoryless node
-		 */
-		return NULL;
-	}
-	...
-
-It seems like zoneref->zone may be NULL in zonelist_node_idx()? Maybe
-someone else should look into resolving this :)
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
