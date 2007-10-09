@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXJIX3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbXJIX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbXJIX3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXJIX3P
+	id S1754623AbXJIX3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756540AbXJIX3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:29:15 -0400
-Received: from mail.suse.de ([195.135.220.2]:36367 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbXJIX3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:29:14 -0400
-Date: Tue, 9 Oct 2007 16:17:14 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bernardo Innocenti <bernie@codewiz.org>
-Cc: Richard Smith <richard@laptop.org>, Andres Salomon <dilinger@laptop.org>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Francesco Sacchi <batt@develer.com>
-Subject: Re: [PATCH] ftdi_sio: fix FT232RL support for TIOCMGET
-Message-ID: <20071009231714.GG21852@suse.de>
-References: <1191654445-17135-1-git-send-email-bernie@codewiz.org>
+	Tue, 9 Oct 2007 19:29:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59775 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756477AbXJIX3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:29:20 -0400
+Date: Tue, 9 Oct 2007 16:28:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Tejun Heo <htejun@gmail.com>,
+       ebiederm@xmission.com, stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
+	model
+Message-ID: <20071009232804.GA22010@kroah.com>
+References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <20071005061812.GA16914@kroah.com> <4705EF30.8010002@gmail.com> <20071009112901.6d4fa19d@gondolin> <20071009222638.GD21228@kroah.com> <adar6k3g9iw.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1191654445-17135-1-git-send-email-bernie@codewiz.org>
+In-Reply-To: <adar6k3g9iw.fsf@cisco.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 06, 2007 at 03:07:25AM -0400, Bernardo Innocenti wrote:
-> From: Francesco Sacchi <batt@develer.com>
+On Tue, Oct 09, 2007 at 04:20:39PM -0700, Roland Dreier wrote:
+>  > > - relaying implementation details to userspace so that they cannot be
+>  > > easily changed. We would need to allow kobjects not showing up in sysfs
+>  > > and making symlinks a sysfs facility not relying on kobjects to help
+>  > > there.
+>  > 
+>  > Huh?  Why would you want a kobject to not show up in sysfs?
 > 
-> Reading serial port status lines was broken on the FT232RL since when it
-> has been detected as a separate chip (2.6.22+).  Previously, it would work
-> because it was just handled as an FT232BM.
-> 
-> Additionally, we were also forgetting to remove the dev_attr_latency_timer
-> sysfs file in the FT232RL case.
-> 
-> Note by Bernardo Innocenti: the ftdi_sio maintainer appears to have stepped
-> down, so I'm sending this to Greg Kroah-Hartman as the generic USB serial
-> maintainer.  Please, let me know if this is not appropriate.
-> 
-> Signed-Off-By: Francesco Sacchi <batt@develer.com>
-> Signed-Off-By: Bernardo Innocenti <bernie@codewiz.org>
+> I think the text you replied to explained it perfectly: becase you
+> don't want internal implementation details to be exposed the userspace
+> and become an unchangeable part of the kernel/userspace interface.
 
-This is already queued up for inclusion in the 2.6.24 kernel tree, so
-you don't have to resend it.
+But a kobject represents "something" in the kernel.  If it's there, then
+it shows up in sysfs.  But if it isn't, or it changes somehow, then it
+no longer is in sysfs, which is fine, and your userspace tools have to
+be able to handle that by virtue of the rules of how to use sysfs from
+userspace.
 
 thanks,
 
