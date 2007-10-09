@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbXJITAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbXJITDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbXJITAB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 15:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXJIS7x
+	id S1755858AbXJITDN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 15:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbXJITC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:59:53 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:46510 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751126AbXJIS7w (ORCPT
+	Tue, 9 Oct 2007 15:02:59 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:29117 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbXJITC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=TFHHZ7jA+IPldQqZb5jqk96GO9gKNxuBJ9tuy1z7Hp28ui0O0NjcXZbtvYAmcTiw+PRQlpIm8KeyIH+rF33OM9iOgMHyhB/z4MGVMnsmOEU2bxIA78RW85W1HIyRrt8nHVr7CX60Hp+BGvTZ/M4IL47FKgup0ZQBLZCkaUUCJBg=  ;
-X-YMail-OSG: 5EIwS5wVM1m.58RZ3_at0S5dELeYkgJY0dO4Z85plT1xhjvSDpstefXI1KINtHpg_oZ6FHuFPQ--
-Date: Tue, 09 Oct 2007 11:59:57 -0700
-From: David Brownell <david-b@pacbell.net>
-To: stern@rowland.harvard.edu, greg@kroah.com
-Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
-Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-References: <Pine.LNX.4.44L0.0710091440130.4783-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0710091440130.4783-100000@iolanthe.rowland.org>
+	Tue, 9 Oct 2007 15:02:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WOFWO411UiU+gL8IV40f43OALYwQjWnzTWgpYSoX7e+jNNkLnx2u21qHrmGWBtc1LCTyNMHshZAFYeOjtGdTliGHOlJB6Ibbx9wzCFE9y9DJ9+KhgRtvIO3xX0QT8CWokoRXiGm6xW3NCHKcW05pcKepRFO/dedycJX7vhJXoPI=
+Message-ID: <84144f020710091202u6b617b0ep81759d6a2696614b@mail.gmail.com>
+Date: Tue, 9 Oct 2007 22:02:57 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
+Cc: "Akinobu Mita" <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0710091149221.32730@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071009185957.94150236A37@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+References: <20071009161328.GA6470@APFDCB5C>
+	 <Pine.LNX.4.64.0710091144020.32162@schroedinger.engr.sgi.com>
+	 <84144f020710091148s6267a69aud18348af77f941b0@mail.gmail.com>
+	 <Pine.LNX.4.64.0710091149221.32730@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: 42a330f38c2d9811
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here is a proposed patch.  I haven't tried running it, but it compiles 
-> okay.
+Hi Christoph,
 
-Looks about right, too; thanks.  Minor comments:
+On 10/9/07, Christoph Lameter <clameter@sgi.com> wrote:
+> Our system come by default with the possibility of 1k cpus. However, a
+> small system may only have 8 cpus.
 
-> --- usb-2.6.orig/drivers/usb/core/hcd.h
-> +++ usb-2.6/drivers/usb/core/hcd.h
-> @@ -470,5 +472,9 @@ static inline void usbmon_urb_complete(s
->  		: (in_interrupt () ? "in_interrupt" : "can sleep"))
->  
->  
-> -#endif /* __KERNEL__ */
-> +/* Mutual exclusion for EHCI CF initialization.  This interferes with
-> + * port reset on some companion controllers.
-> + */
-> +extern struct rw_semaphore ehci_cf_port_reset_rwsem;
+Maybe I am reading the code wrong, but I don't why that matters as
+it's all statically allocated anyway (the per-cpu kmem_cache_cpu
+array). In any case, I certainly don't object to your proposal, just
+can't figure out why it matters.
 
-You have two copies of that comment; I'd drop this one, and add a
-better one around CF initialization.
-
-What I'd have here is a comment that this symbol is exported ONLY
-for use by the EHCI driver, trespassers will be violated, etc.
-
-
-> --- usb-2.6.orig/drivers/usb/host/ehci-hcd.c
-> +++ usb-2.6/drivers/usb/host/ehci-hcd.c
-> @@ -646,9 +646,11 @@ static int ehci_run (struct usb_hcd *hcd
->  	 * involved with the root hub.  (Except where one is integrated,
->  	 * and there's no companion controller unless maybe for USB OTG.)
->  	 */
-> +	down_write(&ehci_cf_port_reset_rwsem);
->  	hcd->state = HC_STATE_RUNNING;
->  	ehci_writel(ehci, FLAG_CF, &ehci->regs->configured_flag);
->  	ehci_readl(ehci, &ehci->regs->command);	/* unblock posted writes */
-> +	up_write(&ehci_cf_port_reset_rwsem);
-
-That deserves a comment about how CF and companion port resets
-don't mix well.
-
-... assuming this does check out as the problem, which I expect
-it will.
-
-- Dave
-
->  
->  	temp = HC_VERSION(ehci_readl(ehci, &ehci->caps->hc_capbase));
->  	ehci_info (ehci,
->
+                                   Pekka
