@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXJIGNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXJIGZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbXJIGNZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJIGNP
+	id S1754116AbXJIGZJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXJIGY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:13:15 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45676 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbXJIGNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:13:14 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <470B1BA9.7080509@s5r6.in-berlin.de>
-Date: Tue, 09 Oct 2007 08:11:53 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Scott Preece <sepreece@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+	Tue, 9 Oct 2007 02:24:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:42566 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751685AbXJIGY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:24:56 -0400
+Date: Tue, 9 Oct 2007 08:23:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Vasily Averin <vvs@sw.ru>
+cc: Jan Engelhardt <jengelh@computergmbh.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-References: <25555.1191864285@lwn.net> <20071008185225.GK2902@fieldses.org> <7b69d1470710081226w5b6682e6q56bfa2af5ae3f017@mail.gmail.com> <200710082216.28227.rjw@sisk.pl> <20071009020750.GB4504@goodmis.org>
-In-Reply-To: <20071009020750.GB4504@goodmis.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, devel@openvz.org
+Subject: Re: irq0 stops working
+In-Reply-To: <470B1BBF.3020203@sw.ru>
+Message-ID: <alpine.LFD.0.9999.0710090822350.25146@localhost.localdomain>
+References: <470B1119.8040207@sw.ru> <Pine.LNX.4.64.0710090733410.14524@fbirervta.pbzchgretzou.qr> <470B1BBF.3020203@sw.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> But for those that run test suites, they should be smart enough to put
-> in more documentation into the change log to state how it was tested.
+On Tue, 9 Oct 2007, Vasily Averin wrote:
 
-I disagree.  The SCM changelog should contain _what_ a patch does and if
-necessary _why_ it does so.  The rest (e.g. the sign-off tag to state
-that the licensing is alright, and any other tags) should have its
-meaning sufficiently defined outside the changelog.
+> Jan Engelhardt wrote:
+> > On Oct 9 2007 09:26, Vasily Averin wrote:
+> >> On one of our servers timer interrupts (i.e irq0) are stops working. As result
+> >> any kernel timers do not triggers and tasks waiting some signals from timers
+> >> hangs forever.
+> > 
+> > What kernel.. and tried CONFIG_NO_HZ=n?
+> 
+> Originally I've noticed this issue on RHEL5 kernels, but then I've reproduced it
+> on latest mainstream kernels, in my last attempt it was 2.6.23-rc7.
+> 
+> Thank you for for your tips about  CONFIG_NO_HZ=n, will try to to it.
 
-Remember what the SCM changelog is for, i.e. what we do with it after
-commit.
--- 
-Stefan Richter
--=====-=-=== =-=- -=--=
-http://arcgraph.de/sr/
+You run a 64 bit kernel, where this option is not available yet.
+
+	tglx
+
