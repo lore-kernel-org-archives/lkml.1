@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXJIGMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXJIGNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbXJIGMs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJIGMl
+	id S1755472AbXJIGNZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJIGNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:12:41 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:6276 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbXJIGMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:12:40 -0400
-Message-ID: <470B1BBF.3020203@sw.ru>
-Date: Tue, 09 Oct 2007 10:12:15 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Tue, 9 Oct 2007 02:13:15 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:45676 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbXJIGNO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:13:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <470B1BA9.7080509@s5r6.in-berlin.de>
+Date: Tue, 09 Oct 2007 08:11:53 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>, devel@openvz.org
-Subject: Re: irq0 stops working
-References: <470B1119.8040207@sw.ru> <Pine.LNX.4.64.0710090733410.14524@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710090733410.14524@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.2.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Scott Preece <sepreece@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+References: <25555.1191864285@lwn.net> <20071008185225.GK2902@fieldses.org> <7b69d1470710081226w5b6682e6q56bfa2af5ae3f017@mail.gmail.com> <200710082216.28227.rjw@sisk.pl> <20071009020750.GB4504@goodmis.org>
+In-Reply-To: <20071009020750.GB4504@goodmis.org>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Oct 9 2007 09:26, Vasily Averin wrote:
->> On one of our servers timer interrupts (i.e irq0) are stops working. As result
->> any kernel timers do not triggers and tasks waiting some signals from timers
->> hangs forever.
-> 
-> What kernel.. and tried CONFIG_NO_HZ=n?
+Steven Rostedt wrote:
+> But for those that run test suites, they should be smart enough to put
+> in more documentation into the change log to state how it was tested.
 
-Originally I've noticed this issue on RHEL5 kernels, but then I've reproduced it
-on latest mainstream kernels, in my last attempt it was 2.6.23-rc7.
+I disagree.  The SCM changelog should contain _what_ a patch does and if
+necessary _why_ it does so.  The rest (e.g. the sign-off tag to state
+that the licensing is alright, and any other tags) should have its
+meaning sufficiently defined outside the changelog.
 
-Thank you for for your tips about  CONFIG_NO_HZ=n, will try to to it.
-
-thank you,
-	Vasily Averin
-
-OpenVZ Linux Kernel Team
+Remember what the SCM changelog is for, i.e. what we do with it after
+commit.
+-- 
+Stefan Richter
+-=====-=-=== =-=- -=--=
+http://arcgraph.de/sr/
