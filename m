@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbXJIXt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbXJIXwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbXJIXt0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXJIXtS
+	id S1754454AbXJIXwI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXJIXv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:49:18 -0400
-Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:53203
-	"EHLO jankymail-a5.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751300AbXJIXtS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:49:18 -0400
-X-Greylist: delayed 34144 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Oct 2007 19:49:17 EDT
-Date: Tue, 9 Oct 2007 19:48:20 -0400
-From: Gustavo Chain <g@0xff.cl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Reserve N process to root
-Message-ID: <20071009194820.6c8d6e8d@0xff.cl>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 9 Oct 2007 19:51:56 -0400
+Received: from namei.org ([69.55.235.186]:45432 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751632AbXJIXv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:51:56 -0400
+Date: Wed, 10 Oct 2007 09:50:49 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of
+ depends
+In-Reply-To: <20071009162812.00e80a0c.randy.dunlap@oracle.com>
+Message-ID: <Xine.LNX.4.64.0710100937390.20449@us.intercode.com.au>
+References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
+ <Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au>
+ <20071009162812.00e80a0c.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think it's necessary to reserve some pids to the super user.
-5 must be sufficient.
+On Tue, 9 Oct 2007, Randy Dunlap wrote:
 
-Signed-off-by: Gustavo Chain <g@0xff.cl>
----
- kernel/fork.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+> I doth protest.  Enabling the entire NET subsystem thru a hidden
+> select is awful.  Select should be used (sparingly) to enable
+> library code only.  If someone wants NET enabled, they should
+> enable it overtly, not covertly.
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 33f12f4..db23cb3 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1367,11 +1367,17 @@ long do_fork(unsigned long clone_flags,
-              int __user *parent_tidptr,
-              int __user *child_tidptr)
- {
-+#define RESERVED_PIDS   5
-+
-        struct task_struct *p;
-        int trace = 0;
-        struct pid *pid = alloc_pid();
-        long nr;
+Ok, fair enough.
+
+I've dropped the patch and rebased the branch.  Please pull per:
+
+
+The following changes since commit bbf25010f1a6b761914430f5fca081ec8c7accd1:
+  Linus Torvalds (1):
+        Linux 2.6.23
+
+are available in the git repository at:
+
+ssh://master.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git for-linus
+
+Eric Paris (1):
+      SELinux: policy selectable handling of unknown classes and perms
+
+KaiGai Kohei (2):
+      SELinux: improve performance when AVC misses.
+      SELinux: kills warnings in Improve SELinux performance when AVC misses
+
+Yuichi Nakamura (2):
+      SELinux: tune avtab to reduce memory usage
+      SELinux: Improve read/write performance
+
+ fs/open.c                           |    4 +
+ include/linux/security.h            |   18 +++
+ security/dummy.c                    |    6 +
+ security/selinux/avc.c              |    5 +
+ security/selinux/hooks.c            |   53 +++++++-
+ security/selinux/include/avc.h      |    2 +
+ security/selinux/include/objsec.h   |    2 +
+ security/selinux/include/security.h |    2 +
+ security/selinux/selinuxfs.c        |   26 ++++
+ security/selinux/ss/avtab.c         |   91 ++++++++----
+ security/selinux/ss/avtab.h         |   16 ++-
+ security/selinux/ss/conditional.c   |    4 +
+ security/selinux/ss/ebitmap.c       |  282 +++++++++++++++++++---------------
+ security/selinux/ss/ebitmap.h       |   89 +++++++++---
+ security/selinux/ss/mls.c           |  156 +++++++++----------
+ security/selinux/ss/policydb.c      |   11 +-
+ security/selinux/ss/policydb.h      |    8 +
+ security/selinux/ss/services.c      |   91 +++++++++---
+ 18 files changed, 582 insertions(+), 284 deletions(-)
  
-+       if (!capable(CAP_SYS_ADMIN) && nr_threads >= max_threads
-- RESERVED_PIDS) {
-+               return -EAGAIN;
-+       }
-+
-        if (!pid)
-                return -EAGAIN;
-        nr = pid->nr;
+
+
 
 -- 
-Gustavo Chaín Dumit
+James Morris
+<jmorris@namei.org>
