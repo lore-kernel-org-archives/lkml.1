@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbXJIPE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbXJIPMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755594AbXJIPE2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXJIPEV
+	id S1755780AbXJIPMP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXJIPMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:04:21 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:47423 "EHLO mx2.netapp.com"
+	Tue, 9 Oct 2007 11:12:00 -0400
+Received: from lixom.net ([66.141.50.11]:52368 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbXJIPEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:04:20 -0400
-X-IronPort-AV: E=Sophos;i="4.21,249,1188802800"; 
-   d="scan'208";a="112251673"
-Subject: NLM: Fix a memory leak in nlmsvc_testlock
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Roel Kluin <12o3l@tiscali.nl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Tue, 09 Oct 2007 11:04:57 -0400
-Message-Id: <1191942297.8739.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-X-OriginalArrivalTime: 09 Oct 2007 15:04:07.0523 (UTC) FILETIME=[A3CEDB30:01C80A85]
+	id S1753282AbXJIPL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 11:11:59 -0400
+Date: Tue, 9 Oct 2007 10:17:02 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Mark Lord <mlord@pobox.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch 09/12] Fix SMP poweroff hangs
+Message-ID: <20071009151702.GA19209@lixom.net>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071008180633.GJ7627@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recent fix for a circular lock dependency unfortunately introduced a
-potential memory leak in the event where the call to nlmsvc_lookup_host
-fails for some reason.
+On Mon, Oct 08, 2007 at 11:06:33AM -0700, Greg KH wrote:
+> From: Mark Lord <lkml@rtr.ca>
+> 
+> commit 4047727e5ae33f9b8d2b7766d1994ea6e5ec2991 from upstream
+> 
+> We need to disable all CPUs other than the boot CPU (usually 0) before
+> attempting to power-off modern SMP machines.  This fixes the
+> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
+> new toybox.
 
-Thanks to Roel Kluin for spotting this.
+Paul Mackerras has reported crashes when rebooting some older ppc64
+systems due to this patch.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+See http://ozlabs.org/pipermail/linuxppc-dev/2007-October/043969.html.
 
- fs/lockd/svclock.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
-index d098c7a..d120ec3 100644
---- a/fs/lockd/svclock.c
-+++ b/fs/lockd/svclock.c
-@@ -485,8 +485,10 @@ nlmsvc_testlock(struct svc_rqst *rqstp, struct nlm_file *file,
- 			return nlm_granted;
- 		/* Create host handle for callback */
- 		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
--		if (host == NULL)
-+		if (host == NULL) {
-+			kfree(conf);
- 			return nlm_lck_denied_nolocks;
-+		}
- 		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
- 		if (block == NULL) {
- 			kfree(conf);
+-Olof
+
