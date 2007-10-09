@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbXJIW7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbXJIW7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbXJIW7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 18:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXJIW6l
+	id S1756992AbXJIW7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 18:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXJIW6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 18:58:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57636 "EHLO
+	Tue, 9 Oct 2007 18:58:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57641 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753661AbXJIW6j (ORCPT
+	with ESMTP id S1754299AbXJIW6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 18:58:39 -0400
-Date: Tue, 9 Oct 2007 15:51:39 -0700
+	Tue, 9 Oct 2007 18:58:41 -0400
+Date: Tue, 9 Oct 2007 15:53:06 -0700
 From: Greg KH <greg@kroah.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
@@ -19,67 +19,50 @@ Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
        Linux Containers <containers@lists.osdl.org>
 Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
 	model
-Message-ID: <20071009225139.GF21228@kroah.com>
-References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com> <20071005062302.GB16914@kroah.com> <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <20071009225306.GG21228@kroah.com>
+References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com> <20071005062302.GB16914@kroah.com> <m1myuxloiz.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1myuxloiz.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 06:12:41AM -0600, Eric W. Biederman wrote:
+On Fri, Oct 05, 2007 at 06:44:04AM -0600, Eric W. Biederman wrote:
 > Greg KH <greg@kroah.com> writes:
-> >
-> >>   Also fun is that the dev file implementation needs to be able to
-> >>   report different major:minor numbers based on which mount of
-> >>   sysfs we are dealing with.
-> >
-> > Um, no, that's not going to happen.  /dev/sda will _always_ have the
-> > same major:minor number, as defined by the LSB spec.  You can not break
-> > that at all.  So while you might not want to show all mounts
-> > /sys/devices/block/sda/ the ones that you do, will all have the LSB
-> > defined major:minor number assigned to it.
 > 
-> Hmm.  If that is in the LSB it must come from
-> Documentation/devices.txt
+> > I would be interested in seeing what your patches look like.
+> 
+> Sure. 
+> 
+> > I don't
+> > think that we should take any more sysfs changes for 2.6.24 as we do
+> > have a lot of them right now, and I don't think that Tejun and I agree
+> > on the future direction of the outstanding ones just yet.
+> 
+> Sounds reasonable.
+> 
+> > But I don't think that your multiple-mount patches could make it into
+> > .24, unless .23 is still weeks away.
+> 
+> Well I have posted them all earlier.  At this point I it makes most
+> sense to wait until after the big merge happen and every rebases on
+> top of that.  Then everyone will have network namespace support and
+> it is easier to look through all of the patches.  Especially since
+> it looks like the merge window will open any day now.
+> 
+> I will quickly recap the essence of what I am looking at:
+> On directories of interest I tag all of their directory
+> entries with which namespace they belong to.  On a mount
+> of sysfs I remember which namespace we were in when we
+> mounted sysfs.  The I filter readdir and lookup based upon
+> the namespace I captured at mount time.  I do my best
+> to generalize it so that the logic can work for different
+> namespaces.
 
-Yes, that is the requirement.
-
-> I'm not after changing the user visible major/minor assignments.
-
-Oh, I misunderstood what you wrote above then.
-
-> Let me see if a concrete example will help.  Suppose I have
-> have a SAN with two disks:  disk-1 and disk-2.  I have
-> two machines A and B.  On machine A I get the mapping:
-> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
-> a different probe order so I get the mapping: sda -> disk-2
-> sdb ->disk-1.
-
-Ok.
-
-> To be very clear by sda I mean the block device with major 8 and
-> minor 0, and by sdb I mean the block device with major 8 and minor
-> 16.
-
-Ok.
-
-> So I decide I want an environment on machine B that looks just
-> like the environment on machine A, so I can bring transfer over
-> a running program or whatever.  So I run around looking at UUID
-> labels and what not and I discover that the machine B knows disk-1 as
-> sdb and that machine A knows disk-1 as sda.  So I want to say:
-> /sys/devices/block/sdb show up in this other device namespace as
-> /sys/devices/block/sda.
-
-Ah, but if you do that then the "other" device namespace would have
-/sys/devices/block/sda/dev be 8:16, right?  And that is not valid as sda
-for that namespace must always map to the device with a 8:0 major:minor
-as per the LSB spec.
-
-So, no, that's not going to be allowed, sorry.
+Ok, I have no objection to that.  Let's wait for 2.6.24 to settle down
+:)
 
 thanks,
 
