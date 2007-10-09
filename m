@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbXJIRwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXJIR45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbXJIRwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 13:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbXJIRwA
+	id S1755221AbXJIR45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 13:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXJIR4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 13:52:00 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:41401 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752939AbXJIRv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 13:51:59 -0400
-Date: Tue, 9 Oct 2007 13:51:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sata_mv: correct S/G table limits
-Message-ID: <20071009175157.GA27633@havoc.gtf.org>
+	Tue, 9 Oct 2007 13:56:48 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:33346 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752445AbXJIR4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 13:56:47 -0400
+Message-ID: <470BC0D5.70305@freescale.com>
+Date: Tue, 09 Oct 2007 12:56:37 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com> <Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr> <470691EB.7020209@freescale.com> <AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk> <4706A842.9030507@freescale.com> <20071009174623.GC4003@csclub.uwaterloo.ca>
+In-Reply-To: <20071009174623.GC4003@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lennart Sorensen wrote:
 
-The recent mv_fill_sg() rewrite, to fix a data corruption problem
-related to IOMMU virtual merging, forgot to account for the
-potentially-increased size of the scatter/gather table after its run.
+>> You're talking about byte endian.  I'm talking about bit endian -- the 
+>> order of bits within a byte.  Software cannot know what the bit endian is, 
+>> but external devices that have memory-mapped registers can know.
+> 
+> The guy wiring up the hardware should connect the wires correctly.
 
-Additionally, the DMA boundary is reduced from 0xffffffff to 0xffff
-to more closely match the needs of mv_fill_sg().
+I'm sure they're correct, my problem is that how can my driver know what they are?
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/sata_mv.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+> Doesn't the bus usually have some definition of bit order which the
+> device would have to adhere to?  After all there must be address lines
+> somewhere.
 
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 1a82e22..cb7dec9 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -313,7 +313,10 @@ enum {
- #define IS_GEN_IIE(hpriv) ((hpriv)->hp_flags & MV_HP_GEN_IIE)
- 
- enum {
--	MV_DMA_BOUNDARY		= 0xffffffffU,
-+	/* DMA boundary 0xffff is required by the s/g splitting
-+	 * we need on /length/ in mv_fill-sg().
-+	 */
-+	MV_DMA_BOUNDARY		= 0xffffU,
- 
- 	/* mask of register bits containing lower 32 bits
- 	 * of EDMA request queue DMA address
-@@ -448,7 +451,7 @@ static struct scsi_host_template mv5_sht = {
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= MV_MAX_SG_CT,
-+	.sg_tablesize		= MV_MAX_SG_CT / 2,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= 1,
-@@ -466,7 +469,7 @@ static struct scsi_host_template mv6_sht = {
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= MV_MAX_SG_CT,
-+	.sg_tablesize		= MV_MAX_SG_CT / 2,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= 1,
+I was hoping that there would be some compile-time constant I could check that 
+would give me this information.
+
+> Does this perhaps offer anything useful?
+> http://www.linuxjournal.com/article/6788
+
+Yeah, I read that article some time ago when trying to diagnose the problem I 
+was seeing.  It does explain the point I'm trying to make.  We have a device 
+that's used on two product lines: one ARM-based, and one PowerPC.  The ARM is 
+little-endian, and the PowerPC is big-endian.  The device can support 
+little-endian or big-endian data, as long as the bit-order matches the byte-order.
+
+For now, I'm going to have to assume that they do match.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
