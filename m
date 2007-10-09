@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbXJIW7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbXJIW77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbXJIW7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 18:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXJIW6m
+	id S1757167AbXJIW77 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 18:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXJIW6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 18:58:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57641 "EHLO
+	Tue, 9 Oct 2007 18:58:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57654 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754299AbXJIW6l (ORCPT
+	with ESMTP id S1756199AbXJIW6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 18:58:41 -0400
-Date: Tue, 9 Oct 2007 15:53:06 -0700
+	Tue, 9 Oct 2007 18:58:47 -0400
+Date: Tue, 9 Oct 2007 15:20:03 -0700
 From: Greg KH <greg@kroah.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
-	model
-Message-ID: <20071009225306.GG21228@kroah.com>
-References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com> <20071005062302.GB16914@kroah.com> <m1myuxloiz.fsf@ebiederm.dsl.xmission.com>
+To: Olof Johansson <olof@lixom.net>
+Cc: Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+Message-ID: <20071009222003.GA21228@kroah.com>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com> <20071009151702.GA19209@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1myuxloiz.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <20071009151702.GA19209@lixom.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 06:44:04AM -0600, Eric W. Biederman wrote:
-> Greg KH <greg@kroah.com> writes:
+On Tue, Oct 09, 2007 at 10:17:02AM -0500, Olof Johansson wrote:
+> On Mon, Oct 08, 2007 at 11:06:33AM -0700, Greg KH wrote:
+> > From: Mark Lord <lkml@rtr.ca>
+> > 
+> > commit 4047727e5ae33f9b8d2b7766d1994ea6e5ec2991 from upstream
+> > 
+> > We need to disable all CPUs other than the boot CPU (usually 0) before
+> > attempting to power-off modern SMP machines.  This fixes the
+> > hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
+> > new toybox.
 > 
-> > I would be interested in seeing what your patches look like.
+> Paul Mackerras has reported crashes when rebooting some older ppc64
+> systems due to this patch.
 > 
-> Sure. 
-> 
-> > I don't
-> > think that we should take any more sysfs changes for 2.6.24 as we do
-> > have a lot of them right now, and I don't think that Tejun and I agree
-> > on the future direction of the outstanding ones just yet.
-> 
-> Sounds reasonable.
-> 
-> > But I don't think that your multiple-mount patches could make it into
-> > .24, unless .23 is still weeks away.
-> 
-> Well I have posted them all earlier.  At this point I it makes most
-> sense to wait until after the big merge happen and every rebases on
-> top of that.  Then everyone will have network namespace support and
-> it is easier to look through all of the patches.  Especially since
-> it looks like the merge window will open any day now.
-> 
-> I will quickly recap the essence of what I am looking at:
-> On directories of interest I tag all of their directory
-> entries with which namespace they belong to.  On a mount
-> of sysfs I remember which namespace we were in when we
-> mounted sysfs.  The I filter readdir and lookup based upon
-> the namespace I captured at mount time.  I do my best
-> to generalize it so that the logic can work for different
-> namespaces.
+> See http://ozlabs.org/pipermail/linuxppc-dev/2007-October/043969.html.
 
-Ok, I have no objection to that.  Let's wait for 2.6.24 to settle down
-:)
+Has anything been done in mainline to possibly fix this?
+
+If not, I think we'll leave it in, as it does solve a number of reported
+problems.
 
 thanks,
 
