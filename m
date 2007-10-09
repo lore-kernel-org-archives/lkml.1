@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbXJIP5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXJIQCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbXJIP5o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbXJIP5g
+	id S1756718AbXJIQCI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 12:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbXJIQB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:57:36 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45940 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754649AbXJIP5f (ORCPT
+	Tue, 9 Oct 2007 12:01:56 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35964 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754212AbXJIQBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:57:35 -0400
-Date: Tue, 9 Oct 2007 08:56:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Rob Landley <rob@landley.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       rdunlap@xenotime.net
-Subject: Re: [PATCH] Stop docproc segfaulting when SRCTREE isn't set.
-Message-Id: <20071009085636.3e19a55a.randy.dunlap@oracle.com>
-In-Reply-To: <200710090125.19089.rob@landley.net>
-References: <200710090125.19089.rob@landley.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 9 Oct 2007 12:01:55 -0400
+Date: Tue, 9 Oct 2007 12:01:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Miller <davem@davemloft.net>
+cc: Greg KH <greg@kroah.com>, David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB users list <linux-usb-users@lists.sourceforge.net>
+Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
+In-Reply-To: <20071008.201653.43030513.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.44L0.0710091156100.4783-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Oct 2007 01:25:18 -0500 Rob Landley wrote:
+On Mon, 8 Oct 2007, David Miller wrote:
 
-> From: Rob Landley <rob@landley.net>
+> As coicidence would have it I finally found a recipe for triggering
+> the issue, and it ties into what you're talking about here.
 > 
-> Prevent docproc from segfaulting when SRCTREE isn't set.
+> It happens only if I make sure OHCI gets loaded first and then EHCI
+> right afterwards.
 > 
-> Signed-off-by: Rob Landley <rob@landley.net>
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-but needs 2 coding style fixes... see near end, below.
-
-> ---
+> It seems that indeed it is important for EHCI to get loaded first,
+> and in-kernel this is ensured by the link ordering.
 > 
->  scripts/basic/docproc.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+> However, when both OHCI and EHCI are built as modules (or, similarly
+> I guess, OHCI is built-in and EHCI is modular) there appears to be
+> nothing in userspace which makes sure EHCI gets loaded first.
 > 
-> diff -r a26a53ed1101 scripts/basic/docproc.c
-> --- a/scripts/basic/docproc.c	Sun Oct 07 16:42:22 2007 -0700
-> +++ b/scripts/basic/docproc.c	Tue Oct 09 01:08:54 2007 -0500
-> @@ -64,12 +64,15 @@ FILELINE * entity_system;
->  #define FUNCTION      "-function"
->  #define NOFUNCTION    "-nofunction"
->  
-> +char *srctree;
-> +
->  void usage (void)
->  {
->  	fprintf(stderr, "Usage: docproc {doc|depend} file\n");
->  	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
->  	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
->  	fprintf(stderr, "depend: generate list of files referenced within file\n");
-> +	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
->  }
->  
->  /*
-> @@ -88,7 +91,7 @@ void exec_kernel_doc(char **svec)
->  			exit(1);
->  		case  0:
->  			memset(real_filename, 0, sizeof(real_filename));
-> -			strncat(real_filename, getenv("SRCTREE"), PATH_MAX);
-> +			strncat(real_filename, srctree, PATH_MAX);
->  			strncat(real_filename, KERNELDOCPATH KERNELDOC,
->  					PATH_MAX - strlen(real_filename));
->  			execvp(real_filename, svec);
-> @@ -168,7 +171,7 @@ void find_export_symbols(char * filename
->  	if (filename_exist(filename) == NULL) {
->  		char real_filename[PATH_MAX + 1];
->  		memset(real_filename, 0, sizeof(real_filename));
-> -		strncat(real_filename, getenv("SRCTREE"), PATH_MAX);
-> +		strncat(real_filename, srctree, PATH_MAX);
->  		strncat(real_filename, filename,
->  				PATH_MAX - strlen(real_filename));
->  		sym = add_new_file(filename);
-> @@ -335,6 +338,9 @@ int main(int argc, char *argv[])
->  int main(int argc, char *argv[])
->  {
->  	FILE * infile;
-> +
-> +	srctree = getenv("SRCTREE");
-> +	if (!srctree) srctree = getcwd(NULL,0);
+> When this triggers, in OHCI's root_port_reset(), the port status
+> register reads 0x111 in that inner-loop and the value never changes.
+> It stays like this forever.
 
-	if (!srctree)
-		srctree = getcwd(NULL, 0);
+I agree with Ben; the best way to solve this is in the kernel.  Even if 
+you did manage to make sure that modules were loaded in the right order 
+initially, that wouldn't help if somebody starts unloading and loading 
+modules by hand.
 
->  	if (argc != 3) {
->  		usage();
->  		exit(1);
-> 
-> -- 
+The underlying cause of the problem appears to be related to the fact
+that it is impossible in principle to detect a disconnect while a
+full/low-speed reset is in progress.  However the hardware shouldn't
+rely on this, and it should fail gracefully when an unexpected
+disconnect does occur.
 
+For example, what would the controller do if the user unplugged the USB 
+cable right in the middle of a reset?
 
----
-~Randy
+Anyway, it certainly would be easy enough to make port resets mutually
+exclusive with EHCI initialization.  That would work on any platform,
+PCI or not.
+
+Alan Stern
+
