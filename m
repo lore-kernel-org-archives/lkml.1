@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXJIXgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbXJIXln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbXJIXgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXJIXgj
+	id S1754474AbXJIXln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXJIXlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:36:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:57592 "EHLO www.tglx.de"
+	Tue, 9 Oct 2007 19:41:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60043 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbXJIXgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:36:38 -0400
-Date: Wed, 10 Oct 2007 01:35:31 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Greg KH <greg@kroah.com>, Olof Johansson <olof@lixom.net>,
-       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
-In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
-References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
- <20071009151702.GA19209@lixom.net> <20071009222003.GA21228@kroah.com>
- <alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
- <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+	id S1750790AbXJIXle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:41:34 -0400
+Date: Tue, 9 Oct 2007 19:41:25 -0400
+From: Dave Jones <davej@redhat.com>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
+Message-ID: <20071009234125.GB6879@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Mark Langsdorf <mark.langsdorf@amd.com>,
+	Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk,
+	linux-kernel@vger.kernel.org
+References: <200710091446.38432.mark.langsdorf@amd.com> <p73fy0k3ve8.fsf@bingen.suse.de> <200710091543.21350.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710091543.21350.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Oct 2007, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
-> > 
-> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
-> 
-> Well, the ppc oops seems to be a ppc bug regardless.
-> 
-> If CPU_HOTPLUG isn't defined, the thing does nothing. And if it is 
-> defined, I don't see why/how ppc can validly oops. So I think the first 
-> thing to do is to try to figure out why it oopses, not to disable it for 
-> ppc.
+On Tue, Oct 09, 2007 at 03:43:20PM -0500, Mark Langsdorf wrote:
+ > This patch should apply cleanly to the 2.6.23-rc8-mm2 kernel.  It changes 
+ > the powernow-k8 driver code that deals with 3rd generation Opteron, Phenom,
+ > and later processors to match the architectual pstate driver described
+ > in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18.  The
+ > initial implementation of the hardware pstate driver for PowerNow!
+ > used some processor-version specific features, and would not be
+ > maintainable in the long term as the processor features changed.
+ > This architectural driver should work on all future AMD processors.
+ 
+Has this been tested on older implementations of powernow yet?
+I'm happy to merge this and give it some time in -mm, before it
+goes to mainline, but if no-one is testing on those older
+opterons/turions etc then we're not going to know we regressed
+until its too late.   If it hasn't been tested yet, any chance
+you can scrounge some up at AMD and give it a spin just to be sure?
 
-Fair enough. OTOH for the affected PPC users it's a regression and that's 
-what I'm concerned of.
+Thanks,
 
-	tglx
+	Dave
 
-
+-- 
+http://www.codemonkey.org.uk
