@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXJIPOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXJIPQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbXJIPOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXJIPOH
+	id S1755928AbXJIPQp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXJIPQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:14:07 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49254 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752574AbXJIPOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:14:06 -0400
-Date: Tue, 9 Oct 2007 08:13:41 -0700
-From: Greg KH <gregkh@suse.de>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Roel Kluin <12o3l@tiscali.nl>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 08/12] NLM: Fix a circular lock dependency in lockd
-Message-ID: <20071009151341.GA5925@suse.de>
-References: <20071008180406.052382073@mini.kroah.org> <20071008180629.GI7627@kroah.com> <470A8C7D.70303@tiscali.nl> <1191942028.8739.3.camel@heimdal.trondhjem.org>
+	Tue, 9 Oct 2007 11:16:37 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:18348 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbXJIPQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 11:16:36 -0400
+X-IronPort-AV: E=Sophos;i="4.21,249,1188802800"; 
+   d="scan'208";a="22273610"
+To: Pradeep Satyanarayana <pradeeps@linux.vnet.ibm.com>
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Updated InfiniBand/RDMA merge plans for 2.6.24
+X-Message-Flag: Warning: May contain useful information
+References: <adaodfdkv59.fsf@cisco.com> <47083E38.2050005@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 09 Oct 2007 08:16:34 -0700
+In-Reply-To: <47083E38.2050005@linux.vnet.ibm.com> (Pradeep Satyanarayana's message of "Sat, 06 Oct 2007 19:02:32 -0700")
+Message-ID: <ada7ilwjp2l.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191942028.8739.3.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 Oct 2007 15:16:35.0330 (UTC) FILETIME=[61892620:01C80A87]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 11:00:28AM -0400, Trond Myklebust wrote:
-> 
-> On Mon, 2007-10-08 at 22:01 +0200, Roel Kluin wrote:
-> > Greg KH wrote:
-> > 
-> > @@ -477,10 +479,15 @@ nlmsvc_testlock(struct svc_rqst *rqstp, 
-> >  
-> >  	if (block == NULL) {
-> >  		struct file_lock *conf = kzalloc(sizeof(*conf), GFP_KERNEL);
-> > +		struct nlm_host	*host;
-> >  
-> >  		if (conf == NULL)
-> >  			return nlm_granted;
-> > -		block = nlmsvc_create_block(rqstp, file, lock, cookie);
-> > +		/* Create host handle for callback */
-> > +		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
-> > +		if (host == NULL)
-> > +			return nlm_lck_denied_nolocks;
-> > +		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
-> >  		if (block == NULL) {
-> >  			kfree(conf);
-> >  			return nlm_granted;
-> > 
-> > To be frankly I don't know what this is about, but shouldn't conf be freed if host == NULL?
-> 
-> Thanks for spotting this!
-> 
-> Greg, should I resend this patch, or would you prefer an incremental
-> fix?
+ > Roland, I submitted an updated patch incorporating some of Sean's comments within
+ > a day or two. Rest of comments pertained to restructuring the code and adding 
+ > some additional module parameters.
+ > 
+ > This would require more discussions since some of these had been already discussed
+ > previously. We had decided upon this code structure after a lot of discussions and
+ > incorporating these would be undoing some of that.
 
-An incremental one would be best.
+Can you give a link to your current final version of the patch?
 
-thanks,
+Sean, what's your opinion of where we stand?
 
-greg k-h
+Since module parameters create a userspace-visible interface that we
+are stuck with for a long time, we definitely have to get at least
+that much right before merging.
+
+ - R.
