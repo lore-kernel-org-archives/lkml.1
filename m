@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbXJIOxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbXJIO4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbXJIOxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 10:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJIOwx
+	id S1755687AbXJIO4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 10:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXJIO4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 10:52:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58419 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751495AbXJIOww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 10:52:52 -0400
-Date: Tue, 9 Oct 2007 07:52:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
-In-Reply-To: <200710090117.47610.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0710090750020.5039@woody.linux-foundation.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <200710030345.10026.nickpiggin@yahoo.com.au>
- <alpine.LFD.0.999.0710030813090.3579@woody.linux-foundation.org>
- <200710090117.47610.nickpiggin@yahoo.com.au>
+	Tue, 9 Oct 2007 10:56:11 -0400
+Received: from ns2.suse.de ([195.135.220.15]:46690 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753011AbXJIO4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 10:56:10 -0400
+To: Michael Stiller <ms@2scale.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: howto boost write(2) performance?
+References: <1191937817.3641.9.camel@blackberry>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 09 Oct 2007 16:56:09 +0200
+In-Reply-To: <1191937817.3641.9.camel@blackberry>
+Message-ID: <p73odf849rq.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 9 Oct 2007, Nick Piggin wrote:
+Michael Stiller <ms@2scale.net> writes:
 > 
-> I have done some tests which indicate a couple of very basic common tools
-> don't do much zero-page activity (ie. kbuild). And also combined with some
-> logical arguments to say that a "sane" app wouldn't be using zero_page much.
-> (basically -- if the app cares about memory or cache footprint and is using
-> many pages of zeroes, then it should have a more compressed representation
-> of zeroes anyway).
+> The write(2) performance is not good enough, the writer threads take to
+> much time, and i ask you for ideas, howto to boost the write
+> performance. 
 
-One of the things that zero-page has been used for is absolutely *huge* 
-(but sparse) arrays in Fortan programs.
+You could use an O_DIRECT write if the data is suitably aligned
+and your IO sizes are big enough (O_DIRECT is usually a loss
+on small IOs). It will also be synchronous, but if you do it 
+from a separate thread anyways that should be fine.
 
-At least in traditional fortran, it was very hard to do dynamic 
-allocations, so people would allocate the *maximum* array statically, and 
-then not necessarily use everything. I don't know if the pages ever even 
-got paged in, but this is the kind of usage which is *not* insane.
-
-		Linus
+-Andi
