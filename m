@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbXJIQia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbXJIQmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbXJIQia (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 12:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbXJIQiW
+	id S1756070AbXJIQmA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 12:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbXJIQlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 12:38:22 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:29214 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752574AbXJIQiW (ORCPT
+	Tue, 9 Oct 2007 12:41:50 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:22832 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbXJIQlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 12:38:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=1di/TjlUGAjaGR2JFA6GNOsRJ+5qK6g4rfHTo6XJ0wwsVwxEj1nooixcooV2XV8xICo9xf517rJxyGFqugJDomYlDVD5bFQMu/oDOsV5r+WeP4+qcQgPJhnqnGnR51iyhg2di1o6QVi2zEDrzr69iplLucf3hEgCQu3CyGEEkgs=  ;
-X-YMail-OSG: NXFcblMVM1mQ_Fgr0imVY5ImOIwaz4lrW.enBbl7hqKRFluJ2Ru_P02VTFmErMpHO7sn_lsI.g--
-Date: Tue, 09 Oct 2007 09:38:27 -0700
-From: David Brownell <david-b@pacbell.net>
-To: davem@davemloft.net
-Subject: Re: OHCI root_port_reset() deadly loop...
-Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       greg@kroah.com
-References: <20071007.005156.85395415.davem@davemloft.net>
- <20071008.165420.42793456.davem@davemloft.net>
- <20071009043643.773CC23715F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20071008.214408.98397070.davem@davemloft.net>
-In-Reply-To: <20071008.214408.98397070.davem@davemloft.net>
+	Tue, 9 Oct 2007 12:41:49 -0400
+Date: Tue, 9 Oct 2007 09:41:47 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: James Smart <James.Smart@Emulex.Com>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
+	if the adapter lacks one
+Message-ID: <20071009164147.GB19854@plap3.qlogic.org>
+References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org> <20071008235009.GB16003@tree.beaverton.ibm.com> <20071009001240.GA13922@plap3.qlogic.org> <470B9E50.2090205@emulex.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071009163827.E7DB310B535@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <470B9E50.2090205@emulex.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-OriginalArrivalTime: 09 Oct 2007 16:40:34.0540 (UTC) FILETIME=[1D2392C0:01C80A93]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > What values do you see for "portstat"?
->
-> 0x111
+On Tue, 09 Oct 2007, James Smart wrote:
 
-That's unfortunately useless ... PPS, PRS, CCS (meaning powered,
-resetting, connected).  In short, there is *no* indication from
-the OHCI hardware that a disconnect happened.
+>  Why do you prefer request_firmware() vs something over sysfs ?
+> 
+>  Does environments like the kdump kernel also have access to data needed
+>  by request_firmware() ?
 
+There's already much in the way of automation and infrastructure
+present in supporting the request_firwmare() interfaces (perhaps not
+the best of names) which can provide for a level of flexibility beyond
+a basic 'soft_port_name' interface.
+
+Though I don't see why both can't coexist cleanly -- I take it the use
+case you are considering is: software recognizes no valid WWPN
+available, query via request_firmware() fails, software halts
+initialization (rather than fail), and awaits the admin to poke
+'0x123456.. > /sys/.../fc_host/soft_port_name', causing a ping to the
+driver and continuation of initialization with requested portname?
