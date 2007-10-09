@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbXJJBOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJJBST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbXJJBOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 21:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbXJJBO1
+	id S1756894AbXJJBST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 21:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXJJBSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 21:14:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:47766 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756808AbXJJBOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 21:14:25 -0400
-Message-ID: <470C2745.2060505@goop.org>
-Date: Tue, 09 Oct 2007 18:13:41 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 9 Oct 2007 21:18:12 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:23932 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753578AbXJJBSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 21:18:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KraBVZXIhxKHwcVUPApitBj0W0y3BU2HlJHLTh/NLD7M2k09RKlO27wC2lZP2g2Sl2EohjGmiM6MbnkGqPYyW3zvG6ssqLwvH7U4yhCXXVWr94lphm4RWjVMfiAWk+NWFMUKgdH3ZltVLhCXtsKU0ejcny0uBiAS0V2edOHanco=  ;
+X-YMail-OSG: y0DjEq0VM1nJqC_ziDmR1d9hpseH6j63gscIDwcIDGzSz27Og3h2s_ofhRB2ecHTxOov8rrfwA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [13/18] x86_64: Allow fallback for the stack
+Date: Tue, 9 Oct 2007 18:46:22 +1000
+User-Agent: KMail/1.9.5
+Cc: Rik van Riel <riel@redhat.com>, Andi Kleen <ak@suse.de>,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, travis@sgi.com
+References: <20071004035935.042951211@sgi.com> <200710082255.05598.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710091138250.32162@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710091138250.32162@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: NetDev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: [PATCH 3/3] xen-netfront: remove dead code
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710091846.22796.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes some residual dead code left over from removing the
-"flip" receive mode.  This patch doesn't change the generated output
-at all, since gcc already realized it was dead.
+On Wednesday 10 October 2007 04:39, Christoph Lameter wrote:
+> On Mon, 8 Oct 2007, Nick Piggin wrote:
+> > The tight memory restrictions on stack usage do not come about because
+> > of the difficulty in increasing the stack size :) It is because we want
+> > to keep stack sizes small!
+> >
+> > Increasing the stack size 4K uses another 4MB of memory for every 1000
+> > threads you have, right?
+> >
+> > It would take a lot of good reason to move away from the general
+> > direction we've been taking over the past years that 4/8K stacks are a
+> > good idea for regular 32 and 64 bit builds in general.
+>
+> We already use 32k stacks on IA64. So the memory argument fail there.
 
-This resolves the "regression" reported by Adrian.
+I'm talking about generic code.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Adrian Bunk <bunk@stusta.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 
----
- drivers/net/xen-netfront.c |   37 ++-----------------------------------
- 1 file changed, 2 insertions(+), 35 deletions(-)
+> > > I have some concerns about the medium NUMA systems (a few dozen of
+> > > nodes) also running out of stack since more data is placed on the stack
+> > > through the policy layer and since we may end up with a couple of
+> > > stacked filesystems. Most of the current NUMA systems on x86_64 are
+> > > basically two nodes on one motherboard. The use of NUMA controls is
+> > > likely limited there and the complexity of the filesystems is also not
+> > > high.
+> >
+> > The solution has until now always been to fix the problems so they don't
+> > use so much stack. Maybe a bigger stack is OK for you for 1024+ CPU
+> > systems, but I don't think you'd be able to make that assumption for most
+> > normal systems.
+>
+> Yes that is why I made the stack size configurable.
 
-===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -209,11 +209,9 @@ static void xennet_alloc_rx_buffers(stru
- 	struct page *page;
- 	int i, batch_target, notify;
- 	RING_IDX req_prod = np->rx.req_prod_pvt;
--	struct xen_memory_reservation reservation;
- 	grant_ref_t ref;
- 	unsigned long pfn;
- 	void *vaddr;
--	int nr_flips;
- 	struct xen_netif_rx_request *req;
- 
- 	if (unlikely(!netif_carrier_ok(dev)))
-@@ -263,7 +261,7 @@ no_skb:
- 		np->rx_target = np->rx_max_target;
- 
-  refill:
--	for (nr_flips = i = 0; ; i++) {
-+	for (i = 0; ; i++) {
- 		skb = __skb_dequeue(&np->rx_batch);
- 		if (skb == NULL)
- 			break;
-@@ -292,38 +290,7 @@ no_skb:
- 		req->gref = ref;
- 	}
- 
--	if (nr_flips != 0) {
--		reservation.extent_start = np->rx_pfn_array;
--		reservation.nr_extents   = nr_flips;
--		reservation.extent_order = 0;
--		reservation.address_bits = 0;
--		reservation.domid        = DOMID_SELF;
--
--		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
--			/* After all PTEs have been zapped, flush the TLB. */
--			np->rx_mcl[i-1].args[MULTI_UVMFLAGS_INDEX] =
--				UVMF_TLB_FLUSH|UVMF_ALL;
--
--			/* Give away a batch of pages. */
--			np->rx_mcl[i].op = __HYPERVISOR_memory_op;
--			np->rx_mcl[i].args[0] = XENMEM_decrease_reservation;
--			np->rx_mcl[i].args[1] = (unsigned long)&reservation;
--
--			/* Zap PTEs and give away pages in one big
--			 * multicall. */
--			(void)HYPERVISOR_multicall(np->rx_mcl, i+1);
--
--			/* Check return status of HYPERVISOR_memory_op(). */
--			if (unlikely(np->rx_mcl[i].result != i))
--				panic("Unable to reduce memory reservation\n");
--		} else {
--			if (HYPERVISOR_memory_op(XENMEM_decrease_reservation,
--						 &reservation) != i)
--				panic("Unable to reduce memory reservation\n");
--		}
--	} else {
--		wmb();		/* barrier so backend seens requests */
--	}
-+	wmb();		/* barrier so backend seens requests */
- 
- 	/* Above is a suitable barrier to ensure backend will see requests. */
- 	np->rx.req_prod_pvt = req_prod + i;
-
+Fine. I just don't see why you need this fallback.
