@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXJIUuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXJIUv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbXJIUuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 16:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXJIUuO
+	id S1756258AbXJIUv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 16:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXJIUvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 16:50:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46186 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbXJIUuN (ORCPT
+	Tue, 9 Oct 2007 16:51:49 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:55093 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbXJIUvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 16:50:13 -0400
-Date: Tue, 9 Oct 2007 13:46:42 -0700
-From: Greg KH <greg@kroah.com>
-To: David Miller <davem@davemloft.net>
-Cc: david-b@pacbell.net, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: OHCI root_port_reset() deadly loop...
-Message-ID: <20071009204642.GA11575@kroah.com>
-References: <20071009043643.773CC23715F@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20071008.214408.98397070.davem@davemloft.net> <20071009163827.E7DB310B535@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20071009.134116.63997473.davem@davemloft.net>
+	Tue, 9 Oct 2007 16:51:46 -0400
+Date: Tue, 9 Oct 2007 16:50:47 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: mike kravetz <kravetz@us.ibm.com>
+cc: Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, pmorreale@novell.com,
+       sdietrich@novell.com
+Subject: Re: [RFC PATCH RT] push waiting rt tasks to cpus with lower prios.
+In-Reply-To: <20071009203936.GB23388@monkey.ibm.com>
+Message-ID: <Pine.LNX.4.58.0710091645110.25406@gandalf.stny.rr.com>
+References: <20071009142044.4941.65189.stgit@novell1.haskins.net>
+ <Pine.LNX.4.58.0710091054430.21404@gandalf.stny.rr.com>
+ <1191944024.4281.72.camel@ghaskins-t60p.haskins.net>
+ <1191952777.23198.8.camel@localhost.localdomain> <20071009203936.GB23388@monkey.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071009.134116.63997473.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 01:41:16PM -0700, David Miller wrote:
-> From: David Brownell <david-b@pacbell.net>
-> Date: Tue, 09 Oct 2007 09:38:27 -0700
-> 
-> > > > What values do you see for "portstat"?
-> > >
-> > > 0x111
-> > 
-> > That's unfortunately useless ... PPS, PRS, CCS (meaning powered,
-> > resetting, connected).  In short, there is *no* indication from
-> > the OHCI hardware that a disconnect happened.
-> 
-> But it's an excellent example of why my patch is mandatory.
 
-I agree.  David Brownell, unless you strongly object, I'll take David
-Miller's patch and add it to my tree.
+--
+On Tue, 9 Oct 2007, mike kravetz wrote:
 
-And if you do object, can you respond to the objection with a version of
-the patch that you would accept?  :)
+>
+> I did something like this a while ago for another scheduling project.
+> A couple 'possible' optimizations to think about are:
+> 1) Only scan the remote runqueues once and keep a local copy of the
+>    remote priorities for subsequent 'scans'.  Accessing the remote
+>    runqueus (CPU specific cache lines) can be expensive.
 
-thanks,
+You mean to keep the copy for the next two tries?
 
-greg k-h
+> 2) When verifying priorities, just perform spin_trylock() on the remote
+>    runqueue.  If you can immediately get it great.  If not, it implies
+>    someone else is messing with the runqueue and there is a good chance
+>    the data you pre-fetched (curr->Priority) is invalid.  In this case
+>    it might be faster to just 'move on' to the next candidate runqueue/CPU.
+>    i.e. The next highest priority that the new task can preempt.
+
+I was a bit scared of grabing the lock anyway, because that's another
+cache hit (write side). So only grabbing the lock when needed would save
+us from dirting the runqueue lock for each CPU.
+
+>
+> Of course, these 'optimizations' would change the algorithm.  Trying to
+> make any decision based on data that is changing is always a crap shoot. :)
+
+Yes indeed. The aim for now is to solve the latencies that you've been
+seeing. But really, there is still holes (small ones) that can cause a
+latency if a schedule happened "just right". Hopefully the final result of
+this work will close them too.
+
+-- Steve
+
