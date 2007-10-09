@@ -1,227 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbXJIPlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbXJIPl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672AbXJIPlI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbXJIPk5
+	id S1756776AbXJIPl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbXJIPlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:40:57 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50399 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754381AbXJIPkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:40:55 -0400
-Date: Tue, 9 Oct 2007 16:40:53 +0100
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071009154052.GC12632@skynet.ie>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie> <20071009011143.GC14670@us.ibm.com>
+	Tue, 9 Oct 2007 11:41:50 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54242 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbXJIPls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 11:41:48 -0400
+Date: Tue, 9 Oct 2007 17:41:46 +0200
+From: Jan Kara <jack@suse.cz>
+To: David Howells <dhowells@redhat.com>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 14/32] IGET: Stop EXT3 from using iget() and read_inode() [try #2]
+Message-ID: <20071009154146.GB21363@atrey.karlin.mff.cuni.cz>
+References: <20071004155602.2814.47731.stgit@warthog.procyon.org.uk> <20071004155713.2814.89605.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071009011143.GC14670@us.ibm.com>
+In-Reply-To: <20071004155713.2814.89605.stgit@warthog.procyon.org.uk>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, sorry for being so slow to respond. I was getting ill towards the end
-of last week and am worse now. Brain is in total mush as a result. Thanks
-Lee for finding this problem and thanks to Nish for investigating it properly.
+> Stop the EXT3 filesystem from using iget() and read_inode().  Replace
+> ext3_read_inode() with ext3_iget(), and call that instead of iget().
+> ext3_iget() then uses iget_locked() directly and returns a proper error code
+> instead of an inode in the event of an error.
+> 
+> ext3_fill_super() returns any error incurred when getting the root inode
+> instead of EINVAL.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+  Acked-by: Jan Kara <jack@suse.cz>
 
-Comments and candidate fix to one zonelist are below.
-
-On (08/10/07 18:11), Nishanth Aravamudan didst pronounce:
-> On 28.09.2007 [15:25:27 +0100], Mel Gorman wrote:
-> > 
-> > Two zonelists exist so that GFP_THISNODE allocations will be guaranteed
-> > to use memory only from a node local to the CPU. As we can now filter the
-> > zonelist based on a nodemask, we filter the standard node zonelist for zones
-> > on the local node when GFP_THISNODE is specified.
-> > 
-> > When GFP_THISNODE is used, a temporary nodemask is created with only the
-> > node local to the CPU set. This allows us to eliminate the second zonelist.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Acked-by: Christoph Lameter <clameter@sgi.com>
+> ---
 > 
-> <snip>
+>  fs/ext3/ialloc.c        |   58 ++++++++++++++++++++++++++++-------------------
+>  fs/ext3/inode.c         |   25 +++++++++++++++-----
+>  fs/ext3/namei.c         |   29 +++++++-----------------
+>  fs/ext3/resize.c        |    7 ++----
+>  fs/ext3/super.c         |   40 ++++++++++++++++++--------------
+>  include/linux/ext3_fs.h |    2 +-
+>  6 files changed, 89 insertions(+), 72 deletions(-)
 > 
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h
-> > --- linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h	2007-09-28 15:49:57.000000000 +0100
-> > +++ linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h	2007-09-28 15:55:03.000000000 +0100
+> diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
+> index e45dbd6..5724adb 100644
+> --- a/fs/ext3/ialloc.c
+> +++ b/fs/ext3/ialloc.c
+> @@ -645,14 +645,15 @@ struct inode *ext3_orphan_get(struct super_block *sb, unsigned long ino)
+>  	unsigned long max_ino = le32_to_cpu(EXT3_SB(sb)->s_es->s_inodes_count);
+>  	unsigned long block_group;
+>  	int bit;
+> -	struct buffer_head *bitmap_bh = NULL;
+> +	struct buffer_head *bitmap_bh;
+>  	struct inode *inode = NULL;
+> +	long err = -EIO;
+>  
+>  	/* Error cases - e2fsck has already cleaned up for us */
+>  	if (ino > max_ino) {
+>  		ext3_warning(sb, __FUNCTION__,
+>  			     "bad orphan ino %lu!  e2fsck was run?", ino);
+> -		goto out;
+> +		goto error;
+>  	}
+>  
+>  	block_group = (ino - 1) / EXT3_INODES_PER_GROUP(sb);
+> @@ -661,38 +662,49 @@ struct inode *ext3_orphan_get(struct super_block *sb, unsigned long ino)
+>  	if (!bitmap_bh) {
+>  		ext3_warning(sb, __FUNCTION__,
+>  			     "inode bitmap error for orphan %lu", ino);
+> -		goto out;
+> +		goto error;
+>  	}
+>  
+>  	/* Having the inode bit set should be a 100% indicator that this
+>  	 * is a valid orphan (no e2fsck run on fs).  Orphans also include
+>  	 * inodes that were being truncated, so we can't check i_nlink==0.
+>  	 */
+> -	if (!ext3_test_bit(bit, bitmap_bh->b_data) ||
+> -			!(inode = iget(sb, ino)) || is_bad_inode(inode) ||
+> -			NEXT_ORPHAN(inode) > max_ino) {
+> -		ext3_warning(sb, __FUNCTION__,
+> -			     "bad orphan inode %lu!  e2fsck was run?", ino);
+> -		printk(KERN_NOTICE "ext3_test_bit(bit=%d, block=%llu) = %d\n",
+> -		       bit, (unsigned long long)bitmap_bh->b_blocknr,
+> -		       ext3_test_bit(bit, bitmap_bh->b_data));
+> -		printk(KERN_NOTICE "inode=%p\n", inode);
+> -		if (inode) {
+> -			printk(KERN_NOTICE "is_bad_inode(inode)=%d\n",
+> -			       is_bad_inode(inode));
+> -			printk(KERN_NOTICE "NEXT_ORPHAN(inode)=%u\n",
+> -			       NEXT_ORPHAN(inode));
+> -			printk(KERN_NOTICE "max_ino=%lu\n", max_ino);
+> -		}
+> +	if (!ext3_test_bit(bit, bitmap_bh->b_data))
+> +		goto bad_orphan;
+> +
+> +	inode = ext3_iget(sb, ino);
+> +	if (IS_ERR(inode))
+> +		goto iget_failed;
+> +
+> +	if (NEXT_ORPHAN(inode) > max_ino)
+> +		goto bad_orphan;
+> +	brelse(bitmap_bh);
+> +	return inode;
+> +
+> +iget_failed:
+> +	err = PTR_ERR(inode);
+> +	inode = NULL;
+> +bad_orphan:
+> +	ext3_warning(sb, __FUNCTION__,
+> +		     "bad orphan inode %lu!  e2fsck was run?", ino);
+> +	printk(KERN_NOTICE "ext3_test_bit(bit=%d, block=%llu) = %d\n",
+> +	       bit, (unsigned long long)bitmap_bh->b_blocknr,
+> +	       ext3_test_bit(bit, bitmap_bh->b_data));
+> +	printk(KERN_NOTICE "inode=%p\n", inode);
+> +	if (inode) {
+> +		printk(KERN_NOTICE "is_bad_inode(inode)=%d\n",
+> +		       is_bad_inode(inode));
+> +		printk(KERN_NOTICE "NEXT_ORPHAN(inode)=%u\n",
+> +		       NEXT_ORPHAN(inode));
+> +		printk(KERN_NOTICE "max_ino=%lu\n", max_ino);
+>  		/* Avoid freeing blocks if we got a bad deleted inode */
+> -		if (inode && inode->i_nlink == 0)
+> +		if (inode->i_nlink == 0)
+>  			inode->i_blocks = 0;
+>  		iput(inode);
+> -		inode = NULL;
+>  	}
+> -out:
+>  	brelse(bitmap_bh);
+> -	return inode;
+> +error:
+> +	return ERR_PTR(err);
+>  }
+>  
+>  unsigned long ext3_count_free_inodes (struct super_block * sb)
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index de4e316..6c74622 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -2591,21 +2591,31 @@ void ext3_get_inode_flags(struct ext3_inode_info *ei)
+>  		ei->i_flags |= EXT3_DIRSYNC_FL;
+>  }
+>  
+> -void ext3_read_inode(struct inode * inode)
+> +struct inode *ext3_iget(struct super_block *sb, unsigned long ino)
+>  {
+>  	struct ext3_iloc iloc;
+>  	struct ext3_inode *raw_inode;
+> -	struct ext3_inode_info *ei = EXT3_I(inode);
+> +	struct ext3_inode_info *ei;
+>  	struct buffer_head *bh;
+> +	struct inode *inode;
+> +	long ret;
+>  	int block;
+>  
+> +	inode = iget_locked(sb, ino);
+> +	if (!inode)
+> +		return ERR_PTR(-ENOMEM);
+> +	if (!(inode->i_state & I_NEW))
+> +		return inode;
+> +
+> +	ei = EXT3_I(inode);
+>  #ifdef CONFIG_EXT3_FS_POSIX_ACL
+>  	ei->i_acl = EXT3_ACL_NOT_CACHED;
+>  	ei->i_default_acl = EXT3_ACL_NOT_CACHED;
+>  #endif
+>  	ei->i_block_alloc_info = NULL;
+>  
+> -	if (__ext3_get_inode_loc(inode, &iloc, 0))
+> +	ret = __ext3_get_inode_loc(inode, &iloc, 0);
+> +	if (ret < 0)
+>  		goto bad_inode;
+>  	bh = iloc.bh;
+>  	raw_inode = ext3_raw_inode(&iloc);
+> @@ -2636,6 +2646,7 @@ void ext3_read_inode(struct inode * inode)
+>  		    !(EXT3_SB(inode->i_sb)->s_mount_state & EXT3_ORPHAN_FS)) {
+>  			/* this inode is deleted */
+>  			brelse (bh);
+> +			ret = -ESTALE;
+>  			goto bad_inode;
+>  		}
+>  		/* The only unlinked inodes we let through here have
+> @@ -2679,6 +2690,7 @@ void ext3_read_inode(struct inode * inode)
+>  		if (EXT3_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
+>  		    EXT3_INODE_SIZE(inode->i_sb)) {
+>  			brelse (bh);
+> +			ret = -EIO;
+>  			goto bad_inode;
+>  		}
+>  		if (ei->i_extra_isize == 0) {
+> @@ -2720,11 +2732,12 @@ void ext3_read_inode(struct inode * inode)
+>  	}
+>  	brelse (iloc.bh);
+>  	ext3_set_inode_flags(inode);
+> -	return;
+> +	unlock_new_inode(inode);
+> +	return inode;
+>  
+>  bad_inode:
+> -	make_bad_inode(inode);
+> -	return;
+> +	iget_failed(inode);
+> +	return ERR_PTR(ret);
+>  }
+>  
+>  /*
+> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+> index c1fa190..6919a18 100644
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -1046,17 +1046,11 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+>  		if (!ext3_valid_inum(dir->i_sb, ino)) {
+>  			ext3_error(dir->i_sb, "ext3_lookup",
+>  				   "bad inode number: %lu", ino);
+> -			inode = NULL;
+> -		} else
+> -			inode = iget(dir->i_sb, ino);
+> -
+> -		if (!inode)
+> -			return ERR_PTR(-EACCES);
+> -
+> -		if (is_bad_inode(inode)) {
+> -			iput(inode);
+> -			return ERR_PTR(-ENOENT);
+> +			return ERR_PTR(-EIO);
+>  		}
+> +		inode = ext3_iget(dir->i_sb, ino);
+> +		if (IS_ERR(inode))
+> +			return ERR_CAST(inode);
+>  	}
+>  	return d_splice_alias(inode, dentry);
+>  }
+> @@ -1085,18 +1079,13 @@ struct dentry *ext3_get_parent(struct dentry *child)
+>  	if (!ext3_valid_inum(child->d_inode->i_sb, ino)) {
+>  		ext3_error(child->d_inode->i_sb, "ext3_get_parent",
+>  			   "bad inode number: %lu", ino);
+> -		inode = NULL;
+> -	} else
+> -		inode = iget(child->d_inode->i_sb, ino);
+> -
+> -	if (!inode)
+> -		return ERR_PTR(-EACCES);
+> -
+> -	if (is_bad_inode(inode)) {
+> -		iput(inode);
+> -		return ERR_PTR(-ENOENT);
+> +		return ERR_PTR(-EIO);
+>  	}
+>  
+> +	inode = ext3_iget(child->d_inode->i_sb, ino);
+> +	if (IS_ERR(inode))
+> +		return ERR_CAST(inode);
+> +
+>  	parent = d_alloc_anon(inode);
+>  	if (!parent) {
+>  		iput(inode);
+> diff --git a/fs/ext3/resize.c b/fs/ext3/resize.c
+> index 2c97e09..60b6530 100644
+> --- a/fs/ext3/resize.c
+> +++ b/fs/ext3/resize.c
+> @@ -748,12 +748,11 @@ int ext3_group_add(struct super_block *sb, struct ext3_new_group_data *input)
+>  				     "No reserved GDT blocks, can't resize");
+>  			return -EPERM;
+>  		}
+> -		inode = iget(sb, EXT3_RESIZE_INO);
+> -		if (!inode || is_bad_inode(inode)) {
+> +		inode = ext3_iget(sb, EXT3_RESIZE_INO);
+> +		if (IS_ERR(inode)) {
+>  			ext3_warning(sb, __FUNCTION__,
+>  				     "Error opening resize inode");
+> -			iput(inode);
+> -			return -ENOENT;
+> +			return PTR_ERR(inode);
+>  		}
+>  	}
+>  
+> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+> index 9537316..add683b 100644
+> --- a/fs/ext3/super.c
+> +++ b/fs/ext3/super.c
+> @@ -583,11 +583,10 @@ static struct dentry *ext3_get_dentry(struct super_block *sb, void *vobjp)
+>  	 * Currently we don't know the generation for parent directory, so
+>  	 * a generation of 0 means "accept any"
+>  	 */
+> -	inode = iget(sb, ino);
+> -	if (inode == NULL)
+> -		return ERR_PTR(-ENOMEM);
+> -	if (is_bad_inode(inode) ||
+> -	    (generation && inode->i_generation != generation)) {
+> +	inode = ext3_iget(sb, ino);
+> +	if (IS_ERR(inode))
+> +		return ERR_CAST(inode);
+> +	if (generation && inode->i_generation != generation) {
+>  		iput(inode);
+>  		return ERR_PTR(-ESTALE);
+>  	}
+> @@ -649,7 +648,6 @@ static struct quotactl_ops ext3_qctl_operations = {
+>  static const struct super_operations ext3_sops = {
+>  	.alloc_inode	= ext3_alloc_inode,
+>  	.destroy_inode	= ext3_destroy_inode,
+> -	.read_inode	= ext3_read_inode,
+>  	.write_inode	= ext3_write_inode,
+>  	.dirty_inode	= ext3_dirty_inode,
+>  	.delete_inode	= ext3_delete_inode,
+> @@ -1309,8 +1307,8 @@ static void ext3_orphan_cleanup (struct super_block * sb,
+>  	while (es->s_last_orphan) {
+>  		struct inode *inode;
+>  
+> -		if (!(inode =
+> -		      ext3_orphan_get(sb, le32_to_cpu(es->s_last_orphan)))) {
+> +		inode = ext3_orphan_get(sb, le32_to_cpu(es->s_last_orphan));
+> +		if (IS_ERR(inode)) {
+>  			es->s_last_orphan = 0;
+>  			break;
+>  		}
+> @@ -1415,6 +1413,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
+>  	int db_count;
+>  	int i;
+>  	int needs_recovery;
+> +	int ret = -EINVAL;
+>  	__le32 features;
+>  
+>  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+> @@ -1770,19 +1769,24 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
+>  	 * so we can safely mount the rest of the filesystem now.
+>  	 */
+>  
+> -	root = iget(sb, EXT3_ROOT_INO);
+> -	sb->s_root = d_alloc_root(root);
+> -	if (!sb->s_root) {
+> +	root = ext3_iget(sb, EXT3_ROOT_INO);
+> +	if (IS_ERR(root)) {
+>  		printk(KERN_ERR "EXT3-fs: get root inode failed\n");
+> -		iput(root);
+> +		ret = PTR_ERR(root);
+>  		goto failed_mount4;
+>  	}
+>  	if (!S_ISDIR(root->i_mode) || !root->i_blocks || !root->i_size) {
+> -		dput(sb->s_root);
+> -		sb->s_root = NULL;
+> +		iput(root);
+>  		printk(KERN_ERR "EXT3-fs: corrupt root inode, run e2fsck\n");
+>  		goto failed_mount4;
+>  	}
+> +	sb->s_root = d_alloc_root(root);
+> +	if (!sb->s_root) {
+> +		printk(KERN_ERR "EXT3-fs: get root dentry failed\n");
+> +		iput(root);
+> +		ret = -ENOMEM;
+> +		goto failed_mount4;
+> +	}
+>  
+>  	ext3_setup_super (sb, es, sb->s_flags & MS_RDONLY);
+>  	/*
+> @@ -1834,7 +1838,7 @@ out_fail:
+>  	sb->s_fs_info = NULL;
+>  	kfree(sbi);
+>  	lock_kernel();
+> -	return -EINVAL;
+> +	return ret;
+>  }
+>  
+>  /*
+> @@ -1870,8 +1874,8 @@ static journal_t *ext3_get_journal(struct super_block *sb,
+>  	 * things happen if we iget() an unused inode, as the subsequent
+>  	 * iput() will try to delete it. */
+>  
+> -	journal_inode = iget(sb, journal_inum);
+> -	if (!journal_inode) {
+> +	journal_inode = ext3_iget(sb, journal_inum);
+> +	if (IS_ERR(journal_inode)) {
+>  		printk(KERN_ERR "EXT3-fs: no journal found.\n");
+>  		return NULL;
+>  	}
+> @@ -1884,7 +1888,7 @@ static journal_t *ext3_get_journal(struct super_block *sb,
+>  
+>  	jbd_debug(2, "Journal inode found at %p: %Ld bytes\n",
+>  		  journal_inode, journal_inode->i_size);
+> -	if (is_bad_inode(journal_inode) || !S_ISREG(journal_inode->i_mode)) {
+> +	if (!S_ISREG(journal_inode->i_mode)) {
+>  		printk(KERN_ERR "EXT3-fs: invalid journal inode.\n");
+>  		iput(journal_inode);
+>  		return NULL;
+> diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+> index ece49a8..a5ccfea 100644
+> --- a/include/linux/ext3_fs.h
+> +++ b/include/linux/ext3_fs.h
+> @@ -813,7 +813,7 @@ int ext3_get_blocks_handle(handle_t *handle, struct inode *inode,
+>  	sector_t iblock, unsigned long maxblocks, struct buffer_head *bh_result,
+>  	int create, int extend_disksize);
+>  
+> -extern void ext3_read_inode (struct inode *);
+> +extern struct inode *ext3_iget (struct super_block *, unsigned long);
+>  extern int  ext3_write_inode (struct inode *, int);
+>  extern int  ext3_setattr (struct dentry *, struct iattr *);
+>  extern void ext3_delete_inode (struct inode *);
 > 
-> [Reordering the chunks to make my comments a little more logical]
-> 
-> <snip>
-> 
-> > -static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-> > +static inline struct zonelist *node_zonelist(int nid)
-> >  {
-> > -	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
-> > +	return &NODE_DATA(nid)->node_zonelist;
-> >  }
-> > 
-> >  #ifndef HAVE_ARCH_FREE_PAGE
-> > @@ -198,7 +186,7 @@ static inline struct page *alloc_pages_n
-> >  	if (nid < 0)
-> >  		nid = numa_node_id();
-> > 
-> > -	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-> > +	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
-> >  }
-> 
-> This is alloc_pages_node(), and converting the nid to a zonelist means
-> that lower levels (specifically __alloc_pages() here) are not aware of
-> nids, as far as I can tell.
-
-Yep, this is correct.
-
-> This isn't a change, I just want to make
-> sure I understand...
-> 
-> <snip>
-> 
-> >  struct page * fastcall
-> >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> >  		struct zonelist *zonelist)
-> >  {
-> > +	/*
-> > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > +	 * cost of allocating on the stack or the stack usage becomes
-> > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > +	 */
-> > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > +		nodemask_t nodemask;
-> > +
-> > +		return __alloc_pages_internal(gfp_mask, order,
-> > +				zonelist, nodemask_thisnode(&nodemask));
-> > +	}
-> > +
-> >  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-> >  }
-> 
-> <snip>
-> 
-> So alloc_pages_node() calls here and for THISNODE allocations, we go ask
-> nodemask_thisnode() for a nodemask...
-> 
-
-Also correct.
-
-> > +static nodemask_t *nodemask_thisnode(nodemask_t *nodemask)
-> > +{
-> > +	/* Build a nodemask for just this node */
-> > +	int nid = numa_node_id();
-> > +
-> > +	nodes_clear(*nodemask);
-> > +	node_set(nid, *nodemask);
-> > +
-> > +	return nodemask;
-> > +}
-> 
-> <snip>
-> 
-> And nodemask_thisnode() always gives us a nodemask with only the node
-> the current process is running on set, I think?
-> 
-
-Yes, I interpreted THISNODE to mean "this node I am running on". Callers
-seemed to expect this but the memoryless needs it to be "this node I am
-running on unless I specify a node in which case I mean that node.".
-
-> That seems really wrong -- and would explain what Lee was seeing while
-> using my patches for the hugetlb pool allocator to use THISNODE
-> allocations. All the allocations would end up coming from whatever node
-> the process happened to be running on. This obviously messes up hugetlb
-> accounting, as I rely on THISNODE requests returning NULL if they go
-> off-node.
-> 
-> I'm not sure how this would be fixed, as __alloc_pages() no longer has
-> the nid to set in the mask.
-> 
-> Am I wrong in my analysis?
-> 
-
-No, you seem to be right on the ball. Can you review the following patch
-please and determine if it fixes the problem in a satisfactory manner? I
-think it does and your tests seemed to give proper values with this patch
-applied but brain no worky work and a second opinion is needed.
-
-====
-Subject: Use specified node ID with GFP_THISNODE if available
-
-It had been assumed that __GFP_THISNODE meant allocating from the local
-node and only the local node. However, users of alloc_pages_node() may also
-specify GFP_THISNODE. In this case, only the specified node should be used.
-This patch will allocate pages only from the requested node when GFP_THISNODE
-is used with alloc_pages_node().
-
-[nacc@us.ibm.com: Detailed analysis of problem]
-Found-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
---- 
- include/linux/gfp.h |   10 ++++++++++
- mm/page_alloc.c     |    8 +++-----
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h linux-2.6.23-rc8-mm2-050_memoryless_fix/include/linux/gfp.h
---- linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h	2007-10-09 13:52:39.000000000 +0100
-+++ linux-2.6.23-rc8-mm2-050_memoryless_fix/include/linux/gfp.h	2007-10-09 14:17:06.000000000 +0100
-@@ -175,6 +175,7 @@ FASTCALL(__alloc_pages(gfp_t, unsigned i
- extern struct page *
- FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
- 				struct zonelist *, nodemask_t *nodemask));
-+extern nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask);
- 
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
-@@ -186,6 +187,15 @@ static inline struct page *alloc_pages_n
- 	if (nid < 0)
- 		nid = numa_node_id();
- 
-+	/* Use a temporary nodemask for __GFP_THISNODE allocations */
-+	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-+		nodemask_t nodemask;
-+
-+		return __alloc_pages_nodemask(gfp_mask, order,
-+				node_zonelist(nid),
-+				nodemask_thisnode(nid, &nodemask));
-+	}
-+
- 	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
- }
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-040_use_one_zonelist/mm/page_alloc.c linux-2.6.23-rc8-mm2-050_memoryless_fix/mm/page_alloc.c
---- linux-2.6.23-rc8-mm2-040_use_one_zonelist/mm/page_alloc.c	2007-10-09 13:52:39.000000000 +0100
-+++ linux-2.6.23-rc8-mm2-050_memoryless_fix/mm/page_alloc.c	2007-10-09 14:15:18.000000000 +0100
-@@ -1741,11 +1741,9 @@ got_pg:
- 	return page;
- }
- 
--static nodemask_t *nodemask_thisnode(nodemask_t *nodemask)
-+/* Creates a nodemask suitable for GFP_THISNODE allocations */
-+nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask)
- {
--	/* Build a nodemask for just this node */
--	int nid = numa_node_id();
--
- 	nodes_clear(*nodemask);
- 	node_set(nid, *nodemask);
- 
-@@ -1765,7 +1763,7 @@ __alloc_pages(gfp_t gfp_mask, unsigned i
- 		nodemask_t nodemask;
- 
- 		return __alloc_pages_internal(gfp_mask, order,
--				zonelist, nodemask_thisnode(&nodemask));
-+			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
- 	}
- 
- 	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
