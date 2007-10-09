@@ -1,247 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbXJISSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbXJISUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbXJISSS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXJISSH
+	id S1756224AbXJISUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXJISUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:18:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51085 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbXJISSF (ORCPT
+	Tue, 9 Oct 2007 14:20:31 -0400
+Received: from web52909.mail.re2.yahoo.com ([206.190.49.19]:36903 "HELO
+	web52909.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753327AbXJISUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:18:05 -0400
-Subject: Re: [RFC PATCH RT] push waiting rt tasks to cpus with lower prios.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, kravetz@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, pmorreale@novell.com,
-       sdietrich@novell.com
-In-Reply-To: <1191952777.23198.8.camel@localhost.localdomain>
-References: <20071009142044.4941.65189.stgit@novell1.haskins.net>
-	 <Pine.LNX.4.58.0710091054430.21404@gandalf.stny.rr.com>
-	 <1191944024.4281.72.camel@ghaskins-t60p.haskins.net>
-	 <1191952777.23198.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 09 Oct 2007 20:16:59 +0200
-Message-Id: <1191953819.5797.9.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 14:20:30 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Oct 2007 14:20:30 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Kc0jvks93vHE+G3lou05SBWGSel8oH67Zip84VAibS68yWyWqpRGm8JYnh8yxsx0Xy3Yx59DheFBZLtRIiHGhK81ynEJLVwHmYC33E4G8rZy9FcL7xwCeiz0gl4MJId9x2i0ZOMpc4gVbsgvJkjH2manYdK4GKQRmuroKlkije4=;
+X-YMail-OSG: oZUjdz8VM1kXVT6w8D4k_RkFN3BYvxPkXEfmr_Ir3W6xLJCk099h9ar5.e.HnYZ3Gp9_5wf.JvprpEocYMHgo4dqtcrB7BRD0Z_LOiu4Nm0rs8czM6uRF0Zwx5.uRD1TJP9ys7uYCCgJ1AO4lPBQxw--
+Date: Tue, 9 Oct 2007 19:13:48 +0100 (BST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: [BUG] The return of the sysfs oops
+To: htejun@gmail.com
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="0-782998648-1191953628=:60752"
+Content-Transfer-Encoding: 8bit
+Message-ID: <730342.60752.qm@web52909.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--0-782998648-1191953628=:60752
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Content-Id: 
+Content-Disposition: inline
 
-On Tue, 2007-10-09 at 13:59 -0400, Steven Rostedt wrote:
-> This has been complied tested (and no more ;-)
-> 
-> 
-> The idea here is when we find a situation that we just scheduled in an
-> RT task and we either pushed a lesser RT task away or more than one RT
-> task was scheduled on this CPU before scheduling occurred.
-> 
-> The answer that this patch does is to do a O(n) search of CPUs for the
-> CPU with the lowest prio task running. When that CPU is found the next
-> highest RT task is pushed to that CPU.
-> 
-> Some notes:
-> 
-> 1) no lock is taken while looking for the lowest priority CPU. When one
-> is found, only that CPU's lock is taken and after that a check is made
-> to see if it is still a candidate to push the RT task over. If not, we
-> try the search again, for a max of 3 tries.
-> 
-> 2) I only do this for the second highest RT task on the CPU queue. This
-> can be easily changed to do it for all RT tasks until no more can be
-> pushed off to other CPUs.
-> 
-> This is a simple approach right now, and is only being posted for
-> comments.  I'm sure more can be done to make this more efficient or just
-> simply better.
-> 
-> -- Steve
+Hi,
 
-Do we really want this PREEMPT_RT only?
+Do you remember that oops in sysfs a few versions ago? (Kernel bug 8198) Well, it's baaaack in
+2.6.22.9...
 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Index: linux-2.6.23-rc9-rt2/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.23-rc9-rt2.orig/kernel/sched.c
-> +++ linux-2.6.23-rc9-rt2/kernel/sched.c
-> @@ -304,6 +304,7 @@ struct rq {
->  #ifdef CONFIG_PREEMPT_RT
->  	unsigned long rt_nr_running;
->  	unsigned long rt_nr_uninterruptible;
-> +	int curr_prio;
->  #endif
->  
->  	unsigned long switch_timestamp;
-> @@ -1485,6 +1486,87 @@ next_in_queue:
->  static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
->  
->  /*
-> + * If the current CPU has more than one RT task, see if the non
-> + * running task can migrate over to a CPU that is running a task
-> + * of lesser priority.
-> + */
-> +static int push_rt_task(struct rq *this_rq)
-> +{
-> +	struct task_struct *next_task;
-> +	struct rq *lowest_rq = NULL;
-> +	int tries;
-> +	int cpu;
-> +	int dst_cpu = -1;
-> +	int ret = 0;
-> +
-> +	BUG_ON(!spin_is_locked(&this_rq->lock));
+Cheers,
+Chris
 
-	assert_spin_locked(&this_rq->lock);
 
-> +
-> +	next_task = rt_next_highest_task(this_rq);
-> +	if (!next_task)
-> +		return 0;
-> +
-> +	/* We might release this_rq lock */
-> +	get_task_struct(next_task);
 
-Can the rest of the code suffer this? (the caller that is)
+      _____________________________________________________
+Do not compromise. Get unlimited storage and first rate spam protection with Yahoo! Mail.
+http://uk.mail.yahoo.com
+--0-782998648-1191953628=:60752
+Content-Type: application/octet-stream; name="BUG-2.6.22.9"
+Content-Transfer-Encoding: base64
+Content-Description: 2998135213-BUG-2.6.22.9
+Content-Disposition: attachment; filename="BUG-2.6.22.9"
 
-> +	/* Only try this algorithm three times */
-> +	for (tries = 0; tries < 3; tries++) {
+QlVHOiB1bmFibGUgdG8gaGFuZGxlIGtlcm5lbCBwYWdpbmcgcmVxdWVzdCBh
+dCB2aXJ0dWFsIGFkZHJlc3MgNzA2NDZmZTUKIHByaW50aW5nIGVpcDoKYzAx
+M2M2MGQKKnBkZSA9IDAwMDAwMDAwCk9vcHM6IDAwMDIgWyMxXQpQUkVFTVBU
+IFNNUCAKTW9kdWxlcyBsaW5rZWQgaW46IHNuZF9ydGN0aW1lciBzbmRfc2Vx
+X21pZGkgcmFkZW9uIGRybSBwY3Nwa3IgY3B1ZnJlcV9vbmRlbWFuZCBwNF9j
+bG9ja21vZCBzcGVlZHN0ZXBfbGliIG5mc2QgZXhwb3J0ZnMgYXV0b2ZzNCBl
+ZXByb20gbmZzIGxvY2tkIHN1bnJwYyBhZl9wYWNrZXQgaXB2NiBiaW5mbXRf
+bWlzYyB2aWRlbzEzOTQgcmF3MTM5NCB0aGVybWFsIHByb2Nlc3NvciBjb250
+YWluZXIgYnV0dG9uIG52cmFtIHNuZF9lbXUxMGsxX3N5bnRoIHNuZF9lbXV4
+X3N5bnRoIHNuZF9zZXFfdmlybWlkaSBzbmRfc2VxX21pZGlfZW11bCBzbmRf
+ZW11MTBrMSBmaXJtd2FyZV9jbGFzcyBzbmRfYWM5N19jb2RlYyBhYzk3X2J1
+cyBzbmRfc2VxX2R1bW15IHNuZF91c2JfYXVkaW8gc25kX3NlcV9vc3Mgc25k
+X3NlcV9taWRpX2V2ZW50IHNuZF9zZXEgc25kX3BjbV9vc3Mgc25kX21peGVy
+X29zcyBzbmRfcGNtIHNuZF90aW1lciBzbmRfdXRpbF9tZW0gc25kX3BhZ2Vf
+YWxsb2Mgc25kX3VzYl9saWIgc25kX3Jhd21pZGkgc25kX3NlcV9kZXZpY2Ug
+c25kX2h3ZGVwIHNuZCBwd2MgZmlyZXdpcmVfb2hjaSBmaXJld2lyZV9jb3Jl
+IGNyY19pdHVfdCBvaGNpMTM5NCBjb21wYXRfaW9jdGwzMiBpZWVlMTM5NCB2
+aWRlb2RldiB2NGwyX2NvbW1vbiBpMmNfaTgwMSBpMmNfY29yZSB2NGwxX2Nv
+bXBhdCBwYXJwb3J0X3BjIHBhcnBvcnQgc291bmRjb3JlIHNlcmlvX3JhdyBw
+c21vdXNlIGU3eHh4X2VkYWMgZWRhY19tYyBlMTAwMCBzYXRhX3NpbCBzcl9t
+b2QgY2Ryb20gaW50ZWxfYWdwIGFncGdhcnQgc2cgcnRjIGRtX3NuYXBzaG90
+IGRtX3plcm8gZG1fbWlycm9yIGRtX21vZCBhdGFfcGlpeCBsaWJhdGEgc2Rf
+bW9kIHNjc2lfbW9kIGV4dDMgamJkIG1iY2FjaGUgZWhjaV9oY2Qgb2hjaV9o
+Y2QgdWhjaV9oY2QgdXNiY29yZQpDUFU6ICAgIDAKRUlQOiAgICAwMDYwOls8
+YzAxM2M2MGQ+XSAgICBOb3QgdGFpbnRlZCBWTEkKRUZMQUdTOiAwMDIxMDI0
+NiAgICgyLjYuMjIuOSAjMSkKRUlQIGlzIGF0IG1vZHVsZV9wdXQrMHgxOS8w
+eDUwCmVheDogMDAwMDAwMDAgICBlYng6IDcwNjQ2ZTY1ICAgZWN4OiAwMDAw
+MDAwMSAgIGVkeDogZWE1OWMwMDAKZXNpOiBlYjU4OWFjMCAgIGVkaTogZWQx
+ZmIyOTAgICBlYnA6IDcwNjQ2ZTY1ICAgZXNwOiBlYTU5Y2Y1NApkczogMDA3
+YiAgIGVzOiAwMDdiICAgZnM6IDAwZDggIGdzOiAwMDMzICBzczogMDA2OApQ
+cm9jZXNzIHVkZXZkIChwaWQ6IDY2NDMsIHRpPWVhNTljMDAwIHRhc2s9ZWNl
+Mjk0NDAgdGFzay50aT1lYTU5YzAwMCkKU3RhY2s6IGViNWI3ZGY0IGMwMTky
+MTcyIDAwMDAwMDEwIGVkMjFlM2MwIGViNWI3ZDgwIGVhNTA2OTkwIGMwMTVl
+YzMxIDAwMDAwMDAwIAogICAgICAgMDAwMDAwMDAgZjc5MWYxODAgZWQyMWUz
+YzAgZWM3OWRhODAgMDAwMDAwMDAgZWQyMWUzYzAgYzAxNWM4NGMgMDAwMDAw
+MDMgCiAgICAgICAwMDAwMDAwMyBlYzc5ZGE4MCBlYzc5ZGIwMCBjMDE1ZDg1
+MCAwMDAwMDAwMyAwMDAwMDAwNyAwMDAwMDAwMyBlYTU5YzAwMCAKQ2FsbCBU
+cmFjZToKIFs8YzAxOTIxNzI+XSBzeXNmc19yZWxlYXNlKzB4NTgvMHg4Ngog
+WzxjMDE1ZWMzMT5dIF9fZnB1dCsweDljLzB4MTQyCiBbPGMwMTVjODRjPl0g
+ZmlscF9jbG9zZSsweDUxLzB4NTgKIFs8YzAxNWQ4NTA+XSBzeXNfY2xvc2Ur
+MHg3MC8weGE3CiBbPGMwMTAzZTcyPl0gc3lzZW50ZXJfcGFzdF9lc3ArMHg1
+Zi8weDg1CiBbPGMwMjcwMDAwPl0gcmVzdF9pbml0KzB4NDAvMHg1MwogPT09
+PT09PT09PT09PT09PT09PT09PT0KQ29kZTogZjQgMDYgMDAgODkgZjggZTgg
+ZWMgZjMgMDYgMDAgODkgZDggNWYgNWIgNWUgNWYgNWQgYzMgNTMgODkgYzMg
+ODUgYzAgNzQgNDcgYjggMDEgMDAgMDAgMDAgZTggNzkgZjYgZmQgZmYgZTgg
+YWUgNGIgMDcgMDAgYzEgZTAgMDcgPGZmPiA4YyAxOCA4MCAwMSAwMCAwMCA4
+MyAzYiAwMiA3NSAwYiA4YiA4MyA4OCAwNSAwMCAwMCBlOCBmMiBlZiAKRUlQ
+OiBbPGMwMTNjNjBkPl0gbW9kdWxlX3B1dCsweDE5LzB4NTAgU1M6RVNQIDAw
+Njg6ZWE1OWNmNTQKbm90ZTogdWRldmRbNjY0M10gZXhpdGVkIHdpdGggcHJl
+ZW1wdF9jb3VudCAxCkJVRzogc2NoZWR1bGluZyB3aGlsZSBhdG9taWM6IHVk
+ZXZkLzB4MTAwMDAwMDEvNjY0MwogWzxjMDI3MDE5ZT5dIF9fc2NoZWRfdGV4
+dF9zdGFydCsweDU2LzB4N2ZjCiBbPGMwMTI0YjBhPl0gaXJxX2V4aXQrMHg1
+MC8weDcyCiBbPGMwMTA0ODgzPl0gY29tbW9uX2ludGVycnVwdCsweDIzLzB4
+MjgKIFs8YzAxMWJkMWM+XSBfX2NvbmRfcmVzY2hlZCsweDEyLzB4MmMKIFs8
+YzAyNzBmM2Q+XSBjb25kX3Jlc2NoZWQrMHgyNi8weDMxCiBbPGMwMTRjZmNl
+Pl0gdW5tYXBfdm1hcysweDNkOC8weDRlMQogWzxjMDE0ZmJjND5dIGV4aXRf
+bW1hcCsweDdiLzB4MTBjCiBbPGMwMTFlNWFmPl0gbW1wdXQrMHgzNy8weGFi
+CiBbPGMwMTIzMGYxPl0gZG9fZXhpdCsweDFlMS8weDcwNQogWzxjMDEwNTNi
+Zj5dIGRpZSsweDFlNC8weDIxMAogWzxjMDExODZkZD5dIGRvX3BhZ2VfZmF1
+bHQrMHg0NDMvMHg1MTYKIFs8YzAxMTgyOWE+XSBkb19wYWdlX2ZhdWx0KzB4
+MC8weDUxNgogWzxjMDI3Mjk1Mj5dIGVycm9yX2NvZGUrMHg3Mi8weDc4CiBb
+PGMwMTNjNjBkPl0gbW9kdWxlX3B1dCsweDE5LzB4NTAKIFs8YzAxOTIxNzI+
+XSBzeXNmc19yZWxlYXNlKzB4NTgvMHg4NgogWzxjMDE1ZWMzMT5dIF9fZnB1
+dCsweDljLzB4MTQyCiBbPGMwMTVjODRjPl0gZmlscF9jbG9zZSsweDUxLzB4
+NTgKIFs8YzAxNWQ4NTA+XSBzeXNfY2xvc2UrMHg3MC8weGE3CiBbPGMwMTAz
+ZTcyPl0gc3lzZW50ZXJfcGFzdF9lc3ArMHg1Zi8weDg1CiBbPGMwMjcwMDAw
+Pl0gcmVzdF9pbml0KzB4NDAvMHg1MwogPT09PT09PT09PT09PT09PT09PT09
+PT0KCg==
 
-magic numbers.. maybe a magic #define with a descriptive name?
-
-> +		/*
-> +		 * Scan each rq for the lowest prio.
-> +		 */
-> +		for_each_cpu_mask(cpu, next_task->cpus_allowed) {
-> +			struct rq *rq = &per_cpu(runqueues, cpu);
-> +
-> +			if (cpu == smp_processor_id())
-> +				continue;
-> +
-> +			/* no locking for now */
-> +			if (rq->curr_prio > next_task->prio &&
-> +			    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
-> +				dst_cpu = cpu;
-> +				lowest_rq = rq;
-> +			}
-> +		}
-> +
-> +		if (!lowest_rq)
-> +			break;
-> +
-> +		if (double_lock_balance(this_rq, lowest_rq)) {
-> +			/*
-> +			 * We had to unlock the run queue. In
-> +			 * the mean time, next_task could have
-> +			 * migrated already or had its affinity changed.
-> +			 */
-> +			if (unlikely(task_rq(next_task) != this_rq ||
-> +				     !cpu_isset(dst_cpu, next_task->cpus_allowed))) {
-> +				spin_unlock(&lowest_rq->lock);
-> +				break;
-> +			}
-> +		}
-> +
-> +		/* if the prio of this runqueue changed, try again */
-> +		if (lowest_rq->curr_prio <= next_task->prio) {
-> +			spin_unlock(&lowest_rq->lock);
-> +			continue;
-> +		}
-> +
-> +		deactivate_task(this_rq, next_task, 0);
-> +		set_task_cpu(next_task, dst_cpu);
-> +		activate_task(lowest_rq, next_task, 0);
-> +
-> +		set_tsk_need_resched(lowest_rq->curr);
-
-Use resched_task(), that will notify the remote cpu too.
-
-> +
-> +		spin_unlock(&lowest_rq->lock);
-> +		ret = 1;
-> +
-> +		break;
-> +	}
-> +
-> +	put_task_struct(next_task);
-> +
-> +	return ret;
-> +}
-> +
-> +/*
->   * Pull RT tasks from other CPUs in the RT-overload
->   * case. Interrupts are disabled, local rq is locked.
->   */
-> @@ -2207,7 +2289,8 @@ static inline void finish_task_switch(st
->  	 * If we pushed an RT task off the runqueue,
->  	 * then kick other CPUs, they might run it:
->  	 */
-> -	if (unlikely(rt_task(current) && rq->rt_nr_running > 1)) {
-> +	rq->curr_prio = current->prio;
-> +	if (unlikely(rt_task(current) && push_rt_task(rq))) {
->  		schedstat_inc(rq, rto_schedule);
->  		smp_send_reschedule_allbutself_cpumask(current->cpus_allowed);
-
-Which will allow you to remove this thing.
-
->  	}
-> Index: linux-2.6.23-rc9-rt2/kernel/sched_rt.c
-> ===================================================================
-> --- linux-2.6.23-rc9-rt2.orig/kernel/sched_rt.c
-> +++ linux-2.6.23-rc9-rt2/kernel/sched_rt.c
-> @@ -96,6 +96,48 @@ static struct task_struct *pick_next_tas
->  	return next;
->  }
->  
-> +#ifdef CONFIG_PREEMPT_RT
-> +static struct task_struct *rt_next_highest_task(struct rq *rq)
-> +{
-> +	struct rt_prio_array *array = &rq->rt.active;
-> +	struct task_struct *next;
-> +	struct list_head *queue;
-> +	int idx;
-> +
-> +	if (likely (rq->rt_nr_running < 2))
-> +		return NULL;
-> +
-> +	idx = sched_find_first_bit(array->bitmap);
-> +	if (idx >= MAX_RT_PRIO) {
-> +		WARN_ON(1); /* rt_nr__running is bad */
-> +		return NULL;
-> +	}
-> +
-> +	queue = array->queue + idx;
-> +	if (queue->next->next != queue) {
-> +		/* same prio task */
-> +		next = list_entry(queue->next->next, struct task_struct, run_list);
-> +		goto out;
-> +	}
-> +
-> +	/* slower, but more flexible */
-> +	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
-> +	if (idx >= MAX_RT_PRIO) {
-> +		WARN_ON(1); /* rt_nr_running was 2 and above! */
-> +		return NULL;
-> +	}
-> +
-> +	queue = array->queue + idx;
-> +	next = list_entry(queue->next, struct task_struct, run_list);
-> +
-> + out:
-> +	return next;
-> +	
-> +}
-> +#else  /* CONFIG_PREEMPT_RT */
-> +
-> +#endif /* CONFIG_PREEMPT_RT */
-> +
->  static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
->  {
->  	update_curr_rt(rq);
-> 
-> 
-
+--0-782998648-1191953628=:60752--
