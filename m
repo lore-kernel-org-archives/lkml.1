@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbXJIPB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbXJIPE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbXJIPB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJIPBQ
+	id S1755594AbXJIPE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXJIPEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:01:16 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:50413 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754674AbXJIPBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:01:15 -0400
-Date: Tue, 9 Oct 2007 11:00:46 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, kravetz@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, pmorreale@novell.com,
-       sdietrich@novell.com, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] RT: scheduler fixes and rt_overload enhancements
-In-Reply-To: <20071009142044.4941.65189.stgit@novell1.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710091054430.21404@gandalf.stny.rr.com>
-References: <20071009142044.4941.65189.stgit@novell1.haskins.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Oct 2007 11:04:21 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:47423 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753327AbXJIPEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 11:04:20 -0400
+X-IronPort-AV: E=Sophos;i="4.21,249,1188802800"; 
+   d="scan'208";a="112251673"
+Subject: NLM: Fix a memory leak in nlmsvc_testlock
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
+       Roel Kluin <12o3l@tiscali.nl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Tue, 09 Oct 2007 11:04:57 -0400
+Message-Id: <1191942297.8739.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+X-OriginalArrivalTime: 09 Oct 2007 15:04:07.0523 (UTC) FILETIME=[A3CEDB30:01C80A85]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The recent fix for a circular lock dependency unfortunately introduced a
+potential memory leak in the event where the call to nlmsvc_lookup_host
+fails for some reason.
 
+Thanks to Roel Kluin for spotting this.
 
---
-On Tue, 9 Oct 2007, Gregory Haskins wrote:
-> Hi All,
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-Hi Gregory,
+ fs/lockd/svclock.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
->
-> The first two patches are from Mike and Steven on LKML, which the rest of my
-> series is dependent on.  Patch #4 is a resend from earlier.
->
-> Series Summary:
->
-> 1) Send IPI on overload regardless of whether prev is an RT task
-
-OK.
-
-> 2) Set the NEEDS_RESCHED flag on reception of RESCHED_IPI
-
-Peter Zijlstra and I have been discussing this IPI Resched change a bit.
-It seems that it is too much overkill for what is needed. That is, the
-send_reschedule is used elsewhere where we do not want to actually do a
-schedule.
-
-I'm thinking about trying out a method that each rq has the priority of
-the current task that is running. On case where we get an rt overload
-(like in the finish_task_switch) we do a scan of all CPUS (not taking any
-locks) and find the CPU which the lowest priority. If that CPU has a lower
-prioirty than a waiting task to run on the current CPU then we grab the
-lock for that rq, check to see if the priority is still lower, and then
-push the rt task over to that CPU.
-
-If after taking the rq lock a schedule had taken place and a higher RT
-task is running, then we would try again, two more times. If this
-phenomenon happens two more times, we punt and wouldn't do anything else
-(paranoid attempt to fall into trying over and over on a high context
-switch RT system).
-
-
-> 3) Fix a mistargeted IPI on overload
-> 4) Track which CPUS are in overload for efficiency
-> 5) Track which CPUs are eligible for rebalancing for efficiency
-
-The above three may be obsoleted by this new algorithm.
-
--- Steve
-
+diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
+index d098c7a..d120ec3 100644
+--- a/fs/lockd/svclock.c
++++ b/fs/lockd/svclock.c
+@@ -485,8 +485,10 @@ nlmsvc_testlock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 			return nlm_granted;
+ 		/* Create host handle for callback */
+ 		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
+-		if (host == NULL)
++		if (host == NULL) {
++			kfree(conf);
+ 			return nlm_lck_denied_nolocks;
++		}
+ 		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
+ 		if (block == NULL) {
+ 			kfree(conf);
