@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbXJISPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbXJISPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbXJISPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXJISO6
+	id S1756750AbXJISPr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXJISPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:14:58 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:37042 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbXJISO5 (ORCPT
+	Tue, 9 Oct 2007 14:15:39 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:50360 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752805AbXJISPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:14:57 -0400
-Date: Tue, 9 Oct 2007 14:14:31 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, kravetz@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, pmorreale@novell.com,
-       sdietrich@novell.com
-Subject: Re: [RFC PATCH RT] push waiting rt tasks to cpus with lower prios.
-In-Reply-To: <1191952777.23198.8.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0710091413290.23629@gandalf.stny.rr.com>
-References: <20071009142044.4941.65189.stgit@novell1.haskins.net> 
- <Pine.LNX.4.58.0710091054430.21404@gandalf.stny.rr.com> 
- <1191944024.4281.72.camel@ghaskins-t60p.haskins.net>
- <1191952777.23198.8.camel@localhost.localdomain>
+	Tue, 9 Oct 2007 14:15:38 -0400
+Date: Tue, 9 Oct 2007 14:15:37 -0400
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [code] Unlimited partitions, a try
+Message-ID: <20071009181537.GE4003@csclub.uwaterloo.ca>
+References: <Pine.LNX.4.64.0710051347470.13406@fbirervta.pbzchgretzou.qr> <4706B6A8.2060800@zytor.com> <20071006002919.0b32c8b9@the-village.bc.nu> <4706C8BD.7080906@zytor.com> <4707E327.4020607@tmr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4707E327.4020607@tmr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 06, 2007 at 03:33:59PM -0400, Bill Davidsen wrote:
+> I'm not sure that configurations requiring more than 15 partitions are 
+> properly described as "trivial." Which is not to disagree with your 
+> point about required user tools, but most systems needing such tools 
+> will be large and complex enough that a userspace solution will be 
+> acceptable.
+
+And there is LVM too, which seems better than partitions in many cases.
 
 --
-On Tue, 9 Oct 2007, Steven Rostedt wrote:
-
-> This has been complied tested (and no more ;-)
->
->
-> The idea here is when we find a situation that we just scheduled in an
-> RT task and we either pushed a lesser RT task away or more than one RT
-> task was scheduled on this CPU before scheduling occurred.
->
-> The answer that this patch does is to do a O(n) search of CPUs for the
-> CPU with the lowest prio task running. When that CPU is found the next
-> highest RT task is pushed to that CPU.
-
-I don't want that O(n) to scare anyone. It really is a O(1) but with a
-K = NR_CPUS. I was saying if you grow the NR_CPUS the search grows too.
-
--- Steve
-
+Len Sorensen
