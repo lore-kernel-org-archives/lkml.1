@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXJISjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbXJISlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbXJISjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXJISjX
+	id S1755972AbXJISlm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXJISle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:39:23 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38841 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753080AbXJISjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:39:23 -0400
-Date: Tue, 9 Oct 2007 11:39:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Rik van Riel <riel@redhat.com>, Andi Kleen <ak@suse.de>,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: Re: [13/18] x86_64: Allow fallback for the stack
-In-Reply-To: <200710082255.05598.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0710091138250.32162@schroedinger.engr.sgi.com>
-References: <20071004035935.042951211@sgi.com> <200710071735.41386.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0710081032030.26382@schroedinger.engr.sgi.com>
- <200710082255.05598.nickpiggin@yahoo.com.au>
+	Tue, 9 Oct 2007 14:41:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:7309 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753250AbXJISld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 14:41:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,249,1188802800"; 
+   d="scan'208";a="295494183"
+Message-ID: <470BCB4D.8090307@intel.com>
+Date: Tue, 09 Oct 2007 11:41:17 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: gigabit ethernet power consumption
+References: <20071008220720.GF3484@elf.ucw.cz> <470AAFD7.9060002@intel.com> <20071009182857.GF4003@csclub.uwaterloo.ca>
+In-Reply-To: <20071009182857.GF4003@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Oct 2007 18:41:31.0811 (UTC) FILETIME=[02CF3F30:01C80AA4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007, Nick Piggin wrote:
-
-> The tight memory restrictions on stack usage do not come about because
-> of the difficulty in increasing the stack size :) It is because we want to
-> keep stack sizes small!
+Lennart Sorensen wrote:
+> On Mon, Oct 08, 2007 at 03:31:51PM -0700, Kok, Auke wrote:
+>> you most certainly want to do this in userspace I think.
+>>
+>> One of the biggest problems is that link negotiation can take a significant amount
+>> of time, well over several seconds (1 to 3 seconds typical) with gigabit, and
+>> having your ethernet connection go offline for 3 seconds may not be the desired
+>> effect for when you want to get more bandwidth in the first place.
+>>
+>> However, when a laptop is in battery mode, switching down from gigabit to 100mbit
+>> makes a lot more sense, so this is something I would recommend. This can be as
+>> easy as changing the advertisement mask of the interface and renegotiating the
+>> link. Userspace could handle that very easily.
 > 
-> Increasing the stack size 4K uses another 4MB of memory for every 1000
-> threads you have, right?
-> 
-> It would take a lot of good reason to move away from the general direction
-> we've been taking over the past years that 4/8K stacks are a good idea for
-> regular 32 and 64 bit builds in general.
+> Now if you were trying to transfer a lot of data to the laptop, would it
+> be more power efficient to do it at gigabit speeds so you can finish
+> sooner and shut down the machine entirely, or to slow to 100mbit and
+> take longer to do it, and hence spend more time powering the cpu and
+> ram?
 
-We already use 32k stacks on IA64. So the memory argument fail there.
+my suspicion is that the cost of switching is much higher than what you would
+consume running at 100mbit, even if the amount of data is quite large. going
+offline to renegotiate the link would already cost you 3W typically.
 
-> > I have some concerns about the medium NUMA systems (a few dozen of nodes)
-> > also running out of stack since more data is placed on the stack through
-> > the policy layer and since we may end up with a couple of stacked
-> > filesystems. Most of the current NUMA systems on x86_64 are basically
-> > two nodes on one motherboard. The use of NUMA controls is likely
-> > limited there and the complexity of the filesystems is also not high.
-> 
-> The solution has until now always been to fix the problems so they don't
-> use so much stack. Maybe a bigger stack is OK for you for 1024+ CPU
-> systems, but I don't think you'd be able to make that assumption for most
-> normal systems.
+I definately think that userspace is the right field to solve this problem: let
+the users decide how to use the available power on their sytems through a decent
+power profile tool (perhaps gnome-power-manager or something like that). This way
+the user can choose.
 
-Yes that is why I made the stack size configurable.
-
+Auke
