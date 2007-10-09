@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbXJISrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbXJISsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbXJISrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbXJISrN
+	id S1756672AbXJISsO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbXJISr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:47:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34235 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752543AbXJISrM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:47:12 -0400
-Date: Tue, 9 Oct 2007 11:47:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundation.org,
-       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-In-Reply-To: <20071009162526.GC26472@us.ibm.com>
-Message-ID: <Pine.LNX.4.64.0710091146360.32162@schroedinger.engr.sgi.com>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie>
- <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie>
- <20071009011143.GC14670@us.ibm.com> <20071009154052.GC12632@skynet.ie>
- <20071009162526.GC26472@us.ibm.com>
+	Tue, 9 Oct 2007 14:47:58 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53786 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808AbXJISr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 14:47:57 -0400
+Message-ID: <470BCD30.3050705@linux.vnet.ibm.com>
+Date: Tue, 09 Oct 2007 11:49:20 -0700
+From: Pradeep Satyanarayana <pradeeps@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Updated InfiniBand/RDMA merge plans for 2.6.24
+References: <adaodfdkv59.fsf@cisco.com> <47083E38.2050005@linux.vnet.ibm.com> <ada7ilwjp2l.fsf@cisco.com>
+In-Reply-To: <ada7ilwjp2l.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Oct 2007, Nishanth Aravamudan wrote:
-
-> > > And nodemask_thisnode() always gives us a nodemask with only the node
-> > > the current process is running on set, I think?
-> > > 
-> > 
-> > Yes, I interpreted THISNODE to mean "this node I am running on".
-> > Callers seemed to expect this but the memoryless needs it to be "this
-> > node I am running on unless I specify a node in which case I mean that
-> > node.".
+Roland Dreier wrote:
+>  > Roland, I submitted an updated patch incorporating some of Sean's comments within
+>  > a day or two. Rest of comments pertained to restructuring the code and adding 
+>  > some additional module parameters.
+>  > 
+>  > This would require more discussions since some of these had been already discussed
+>  > previously. We had decided upon this code structure after a lot of discussions and
+>  > incorporating these would be undoing some of that.
 > 
-> I think that is only true (THISNODE = local node) if the callpath is not
-> via alloc_pages_node(). If the callpath is via alloc_pages_node(), then
-> it depends on whether the nid parameter is -1 (in which case it is also
-> local node) or anything (in which case it is the nid specified). Ah,
-> reading further along, that's exactly what your changelog indicates too
-> :)
+> Can you give a link to your current final version of the patch?
+> 
+Roland,
 
-Right. THISNODE means the node we are on or the node that we indicated we 
-want to allocate from. 
+This is the link to the last one that I submitted on 09/18.
+
+http://lists.openfabrics.org/pipermail/general/2007-September/040917.html
+
+Pradeep
 
