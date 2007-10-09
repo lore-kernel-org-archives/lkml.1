@@ -1,52 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbXJIAw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbXJIBL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbXJIAw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 20:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJIAwu
+	id S1753168AbXJIBL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 21:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbXJIBLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 20:52:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56079 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbXJIAwt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 20:52:49 -0400
-Message-ID: <470AD0C2.9060709@zytor.com>
-Date: Mon, 08 Oct 2007 17:52:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 8 Oct 2007 21:11:50 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43994 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbXJIBLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 21:11:49 -0400
+Date: Mon, 8 Oct 2007 18:11:43 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+Message-ID: <20071009011143.GC14670@us.ibm.com>
+References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Clemens Koller <clemens.koller@anagramm.de>
-CC: Pavel Machek <pavel@ucw.cz>, tglx@linutronix.de,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: sleepy linux 2.6.23-rc9
-References: <20071008220506.GE3484@elf.ucw.cz> <470AC166.20705@anagramm.de>
-In-Reply-To: <470AC166.20705@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie>
+X-Operating-System: Linux 2.6.22.6 (x86_64)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens Koller wrote:
->>
->> When I boot init=/bin/bash vga=791 (vesa framebuffer), most wakeups
->> are caused by cursor painting (I should fix that some day, I
->> guess). But... the cursor blinking does not even work properly!
->>
->> It blinks at normal speed, then (randomly) it blinks slowly, then gets
->> back to normal speed, then inserts longer delay.
+On 28.09.2007 [15:25:27 +0100], Mel Gorman wrote:
 > 
-> Is the effect a beat that it has roughly the frequency of your Notebooks
-> screen refresh rate (60Hz)? (in german: Schwebung)
+> Two zonelists exist so that GFP_THISNODE allocations will be guaranteed
+> to use memory only from a node local to the CPU. As we can now filter the
+> zonelist based on a nodemask, we filter the standard node zonelist for zones
+> on the local node when GFP_THISNODE is specified.
 > 
->> The effect is so nice that I thought about youtube ;-). Thinkpad
->> x60.. question is, how to debug it? 
+> When GFP_THISNODE is used, a temporary nodemask is created with only the
+> node local to the CPU set. This allows us to eliminate the second zonelist.
 > 
-> No idea... check where the register of the HW cursor blink rate
-> gets written? But as it seems to be so nice, please submit a patch
-> which enables this for all platforms. ;-)
-> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Christoph Lameter <clameter@sgi.com>
 
-For the VESA framebuffer I would assume the cursor blinking is done in 
-software (if done at all.)
+<snip>
 
-	-hpa
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h
+> --- linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h	2007-09-28 15:49:57.000000000 +0100
+> +++ linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h	2007-09-28 15:55:03.000000000 +0100
+
+[Reordering the chunks to make my comments a little more logical]
+
+<snip>
+
+> -static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
+> +static inline struct zonelist *node_zonelist(int nid)
+>  {
+> -	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
+> +	return &NODE_DATA(nid)->node_zonelist;
+>  }
+> 
+>  #ifndef HAVE_ARCH_FREE_PAGE
+> @@ -198,7 +186,7 @@ static inline struct page *alloc_pages_n
+>  	if (nid < 0)
+>  		nid = numa_node_id();
+> 
+> -	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
+> +	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
+>  }
+
+This is alloc_pages_node(), and converting the nid to a zonelist means
+that lower levels (specifically __alloc_pages() here) are not aware of
+nids, as far as I can tell. This isn't a change, I just want to make
+sure I understand...
+
+<snip>
+
+>  struct page * fastcall
+>  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+>  		struct zonelist *zonelist)
+>  {
+> +	/*
+> +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> +	 * cost of allocating on the stack or the stack usage becomes
+> +	 * noticable, allocate the nodemasks per node at boot or compile time
+> +	 */
+> +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> +		nodemask_t nodemask;
+> +
+> +		return __alloc_pages_internal(gfp_mask, order,
+> +				zonelist, nodemask_thisnode(&nodemask));
+> +	}
+> +
+>  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
+>  }
+
+<snip>
+
+So alloc_pages_node() calls here and for THISNODE allocations, we go ask
+nodemask_thisnode() for a nodemask...
+
+> +static nodemask_t *nodemask_thisnode(nodemask_t *nodemask)
+> +{
+> +	/* Build a nodemask for just this node */
+> +	int nid = numa_node_id();
+> +
+> +	nodes_clear(*nodemask);
+> +	node_set(nid, *nodemask);
+> +
+> +	return nodemask;
+> +}
+
+<snip>
+
+And nodemask_thisnode() always gives us a nodemask with only the node
+the current process is running on set, I think?
+
+That seems really wrong -- and would explain what Lee was seeing while
+using my patches for the hugetlb pool allocator to use THISNODE
+allocations. All the allocations would end up coming from whatever node
+the process happened to be running on. This obviously messes up hugetlb
+accounting, as I rely on THISNODE requests returning NULL if they go
+off-node.
+
+I'm not sure how this would be fixed, as __alloc_pages() no longer has
+the nid to set in the mask.
+
+Am I wrong in my analysis?
+
+Thanks,
+Nish
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
