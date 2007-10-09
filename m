@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXJIQCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbXJIQC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbXJIQCI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 12:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbXJIQB4
+	id S1756881AbXJIQC4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 12:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbXJIQCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 12:01:56 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35964 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754212AbXJIQBz (ORCPT
+	Tue, 9 Oct 2007 12:02:44 -0400
+Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:27966 "HELO
+	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756047AbXJIQCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 12:01:55 -0400
-Date: Tue, 9 Oct 2007 12:01:54 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Miller <davem@davemloft.net>
-cc: Greg KH <greg@kroah.com>, David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB users list <linux-usb-users@lists.sourceforge.net>
-Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
-In-Reply-To: <20071008.201653.43030513.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.44L0.0710091156100.4783-100000@iolanthe.rowland.org>
+	Tue, 9 Oct 2007 12:02:43 -0400
+X-YMail-OSG: bBTUzA8VM1m_v8WOHOOQExq9pAIt1oxoCM6rewApWnmlepssK0zuwnbqt4amu4NxJU8mAwtYvg--
+X-RocketYMMF: rancidfat
+Date: Tue, 9 Oct 2007 09:02:42 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1191937926.24970.69.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <700885.76235.qm@web36601.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007, David Miller wrote:
 
-> As coicidence would have it I finally found a recipe for triggering
-> the issue, and it ties into what you're talking about here.
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+
+> On Mon, 2007-10-08 at 10:31 -0700, Casey Schaufler wrote:
+> > ...
+> > I wouldn't expect the whole thing to be more than a couple week's
+> > work for someone who really wanted to do it.
 > 
-> It happens only if I make sure OHCI gets loaded first and then EHCI
-> right afterwards.
-> 
-> It seems that indeed it is important for EHCI to get loaded first,
-> and in-kernel this is ensured by the link ordering.
-> 
-> However, when both OHCI and EHCI are built as modules (or, similarly
-> I guess, OHCI is built-in and EHCI is modular) there appears to be
-> nothing in userspace which makes sure EHCI gets loaded first.
-> 
-> When this triggers, in OHCI's root_port_reset(), the port status
-> register reads 0x111 in that inner-loop and the value never changes.
-> It stays like this forever.
+> Note that Serge said "SELinux re-written on top of Smack", not "rewrite
+> Smack to be more like SELinux".
 
-I agree with Ben; the best way to solve this is in the kernel.  Even if 
-you did manage to make sure that modules were loaded in the right order 
-initially, that wouldn't help if somebody starts unloading and loading 
-modules by hand.
+Sorry, the subtlety of the difference seems insignificant to me.
 
-The underlying cause of the problem appears to be related to the fact
-that it is impossible in principle to detect a disconnect while a
-full/low-speed reset is in progress.  However the hardware shouldn't
-rely on this, and it should fail gracefully when an unexpected
-disconnect does occur.
+> I don't believe the former is even
+> possible, given that Smack is strictly less expressive and granular by
+> design. Rewriting Smack to be more like SELinux should be possible,
 
-For example, what would the controller do if the user unplugged the USB 
-cable right in the middle of a reset?
+As I outlined, it wouldn't be that hard to rewack SELinux from Smack.
 
-Anyway, it certainly would be easy enough to make port resets mutually
-exclusive with EHCI initialization.  That would work on any platform,
-PCI or not.
+> but seems like more work than emulating Smack on SELinux via policy,
 
-Alan Stern
+Y'all keep saying that, but since noone has actually done that
+SELinux policy, or anything like it, I maintain that it's not as
+easy as you are inclined to claim. It is certainly not the "I'll
+whip it up this weekend" sort of task that some have suggested.
 
+> and to what end?
+
+Well, there is that. I personally think that one implementation of
+SELinux is plenty.
+
+On the other hand, I think that if the concept of a single security
+architecture has value the advocates of that position ought to be
+looking at SELinux on/of Smack just as carefully as they look at
+Smack on/of SELinux. If they are not, I suggest that the Single
+Security Architecture argument is a sophistic device rather than
+a legitimate issue of technology and should thus be ignored.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
