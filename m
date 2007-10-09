@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXJIG1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbXJIGh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbXJIG1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXJIG12
+	id S1754352AbXJIGh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXJIGhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:27:28 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:51718 "EHLO pasmtpA.tele.dk"
+	Tue, 9 Oct 2007 02:37:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60440 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbXJIG11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:27:27 -0400
-Date: Tue, 9 Oct 2007 08:27:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Scott Preece <sepreece@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: RFC: reviewer's statement of oversight
-Message-ID: <20071009062757.GA22303@uranus.ravnborg.org>
-References: <25555.1191864285@lwn.net> <20071008185225.GK2902@fieldses.org> <7b69d1470710081226w5b6682e6q56bfa2af5ae3f017@mail.gmail.com> <200710082216.28227.rjw@sisk.pl> <20071009020750.GB4504@goodmis.org> <470B1BA9.7080509@s5r6.in-berlin.de>
+	id S1752249AbXJIGhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:37:18 -0400
+Subject: Re: OHCI root_port_reset() deadly loop...
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: david-b@pacbell.net, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+In-Reply-To: <20071008.222622.22041332.davem@davemloft.net>
+References: <20071008.165420.42793456.davem@davemloft.net>
+	 <20071009040917.DC7FC237446@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	 <1191906816.6355.62.camel@pasglop>
+	 <20071008.222622.22041332.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 09 Oct 2007 16:37:08 +1000
+Message-Id: <1191911828.6355.64.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <470B1BA9.7080509@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 08:11:53AM +0200, Stefan Richter wrote:
-> Steven Rostedt wrote:
-> > But for those that run test suites, they should be smart enough to put
-> > in more documentation into the change log to state how it was tested.
-> 
-> I disagree.  The SCM changelog should contain _what_ a patch does and if
-> necessary _why_ it does so.
-The _why_ part is more important than _what_. The diff should hopefully
-explain the _what_ part.
 
-	Sam
+On Mon, 2007-10-08 at 22:26 -0700, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 09 Oct 2007 15:13:36 +1000
+> 
+> > I'm not even sure module load order is 100% fault proof here since
+> > khubd spawns as a thread...
+> 
+> I'm concerned about that as well, thanks for bringing it up.
+> 
+> My understanding, however, is that the critical thing is that the EHCI
+> device reset being done by the EHCI driver probe occurs and completes
+> first.  If that is true, then just making sure EHCI loads initially is
+> a sufficient constraint to fix this problem.
+
+Yup, that would be, though I hate that sort of load order
+dependencies...
+
+Ben.
+
+
