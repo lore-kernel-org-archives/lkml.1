@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbXJIEQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXJIEVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbXJIEQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 00:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbXJIEQV
+	id S1754145AbXJIEVg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 00:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXJIEV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 00:16:21 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59981 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbXJIEQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 00:16:20 -0400
-Date: Tue, 9 Oct 2007 06:17:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
-Message-ID: <20071009041743.GA21552@uranus.ravnborg.org>
-References: <20071008200255.GA16497@uranus.ravnborg.org> <20071008205048.GY22435@flower.upol.cz>
+	Tue, 9 Oct 2007 00:21:29 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53503 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbXJIEV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 00:21:28 -0400
+Subject: Re: [PATCH RT] fix rt-task scheduling issue
+From: Gregory Haskins <ghaskins@novell.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mike Kravetz <kravetz@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071009024621.GA12915@goodmis.org>
+References: <20071006021548.GE4587@monkey.ibm.com>
+	 <20071009024621.GA12915@goodmis.org>
+Content-Type: text/plain
+Date: Tue, 09 Oct 2007 00:18:53 -0400
+Message-Id: <1191903533.4281.51.camel@ghaskins-t60p.haskins.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071008205048.GY22435@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> What about, that this is the first ever prompt, that must be shown and
-> written to the .config?
-Two issues to fix before we can do this:
-1) chocie values cannot have more than one prompt
-2) We need to share much more Kconfig* between the individual architectures
-   First step is to let all arch's use drivers/Kconfig
+Hi Guys,
+  Nice find!  Comment inline..
 
-Let's get the two items above solved then we can revisit adding arch selection
-to kconfig (where it belongs in the end).
-And neither require a rewrite of kconfig...
+(adding linux-rt-users)
 
-> Also, i'd like to propose sequencing of config-enable-build-this-unit
-> in config file(s), thus Makefile(s) (sometimes very small and stupid)
-> will be not necessary. Additional link ordering can be supplied as
-> meta-config information there. Shell scripting, very ugly in the view
-> of make syntax, will be natural in config files. Extending build
-> process to get hidden dependencies or right linking/other magic is
-> part of particular configuration. Hm?
-Discussed before but so far no patches has shown up.
+ for reference to
 
-	Sam
+ http://lkml.org/lkml/2007/10/8/252
+
+On Mon, 2007-10-08 at 22:46 -0400, Steven Rostedt wrote:
+> Index: linux-2.6.23-rc9-rt2/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.23-rc9-rt2.orig/kernel/sched.c
+> +++ linux-2.6.23-rc9-rt2/kernel/sched.c
+> @@ -2207,7 +2207,7 @@ static inline void finish_task_switch(st
+>  	 * If we pushed an RT task off the runqueue,
+>  	 * then kick other CPUs, they might run it:
+>  	 */
+> -	if (unlikely(rt_task(current) && prev->se.on_rq && rt_task(prev))) {
+> +	if (unlikely(rt_task(current) && rq->rt_nr_running > 1)) {
+>  		schedstat_inc(rq, rto_schedule);
+>  		smp_send_reschedule_allbutself_cpumask(current->cpus_allowed);
+
+the current->cpus_allowed I think probably should have been
+"prev->cpus_allowed" in the original code?  However, in light of the new
+findings with this bug Mike found, this should probably be sent to
+allbutself() without the mask since you don't know what could have been
+queued behind you.
+
+Unless I am missing something?
+
+Regards,
+-Greg
+
+
