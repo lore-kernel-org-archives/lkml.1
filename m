@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbXJITYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXJIT0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbXJITYD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 15:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXJITXy
+	id S1755836AbXJIT0T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 15:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXJIT0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 15:23:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35680 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbXJITXx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 15:23:53 -0400
-Message-ID: <470BD539.9020703@zytor.com>
-Date: Tue, 09 Oct 2007 12:23:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 9 Oct 2007 15:26:11 -0400
+Received: from client062.sevenl.net ([66.241.137.62]:2464 "EHLO pcburn.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752114AbXJIT0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 15:26:10 -0400
+Message-ID: <470BD5C1.4010804@pcburn.com>
+Date: Tue, 09 Oct 2007 15:25:53 -0400
+From: Chris Bergeron <chris@pcburn.com>
+Reply-To: chris@pcburn.com
+Organization: PCBurn Media
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v4 0/3] i386/x86_64 boot: 32-bit boot protocol
-References: <1191912003.9719.17.camel@caritas-dev.intel.com>
-In-Reply-To: <1191912003.9719.17.camel@caritas-dev.intel.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
+References: <4706AD19.4040605@pcburn.com> <20071009181413.GD4003@csclub.uwaterloo.ca>
+In-Reply-To: <20071009181413.GD4003@csclub.uwaterloo.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
-> 
-> - Which fields of boot parameters should be exported directly in
->   sysfs? Export all fields of boot parameters in sysfs is too complex
->   and unnecessary. Which fields should be?
-> 
+Lennart Sorensen wrote:
+> On Fri, Oct 05, 2007 at 05:31:05PM -0400, Chris Bergeron wrote:
+>   
+>> I've just installed a multiport serial card released by an outfit called 
+>> Syba.  This is an 8 port serial-only card with an Octopus style breakout 
+>> cable.  The main chipset on it is an ITE IT8871F.
+>>     
+>
+> Well 8250_pci.c mentions IT8871, so it is probably 8250 style in
+> interface then.
+>
+>   
+That's what I had thought too after a quick LKML search.  Doing a bit 
+more research (I'm starting to think the IT8871F on the chip is 
+misleading) it looks like that support is for a single parallel multi 
+I/O card (with the other 887x cards being serial/parport PCI cards).
 
-The main this is that since this is a fixed-format, ABI-defined 
-structure, regardless of individual fields it should be exported as a 
-binary object.  That is also the only way to deal with a kernel which 
-may not itself know about specific items making the data available to 
-other users, like kexec.
+>> I've got two questions on this: Is there a driver I should try force 
+>> loading on it (and if so, what options to use)?  and is there any useful 
+>> testing I can do to report back to the LKML on this card?
+>>     
+>
+> How many serial ports is your kernel configured to use?
+>   
+The kernel I'm using has 16 for both the NR_UARTS and RUNTIME_UARTS 
+(these machines generally have a minimum of 4 ports).  dmesg doesn't 
+show the kernel as recognizing the card and only ttyS0 and ttyS1 (the 
+two onboard ports) show up on boot.
 
-It's not clear to me from reading the code what model you're using for 
-exporting this data in sysfs.  Could you describe it in some detail?
-
-What I had envisioned would be an object for the boot_params structure 
-and a systematic object for each linked-list object, at a very minimum.
-
-	-hpa
+-- Chris
