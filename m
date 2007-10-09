@@ -1,89 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbXJIGZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXJIG1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbXJIGZh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXJIGZZ
+	id S1754785AbXJIG1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXJIG12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:25:25 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58551
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752301AbXJIGZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:25:24 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: akpm@linux-foundation.org
-Subject: [PATCH] Stop docproc segfaulting when SRCTREE isn't set.
-Date: Tue, 9 Oct 2007 01:25:18 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, rdunlap@xenotime.net
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 02:27:28 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51718 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbXJIG11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:27:27 -0400
+Date: Tue, 9 Oct 2007 08:27:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Scott Preece <sepreece@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+Message-ID: <20071009062757.GA22303@uranus.ravnborg.org>
+References: <25555.1191864285@lwn.net> <20071008185225.GK2902@fieldses.org> <7b69d1470710081226w5b6682e6q56bfa2af5ae3f017@mail.gmail.com> <200710082216.28227.rjw@sisk.pl> <20071009020750.GB4504@goodmis.org> <470B1BA9.7080509@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710090125.19089.rob@landley.net>
+In-Reply-To: <470B1BA9.7080509@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+On Tue, Oct 09, 2007 at 08:11:53AM +0200, Stefan Richter wrote:
+> Steven Rostedt wrote:
+> > But for those that run test suites, they should be smart enough to put
+> > in more documentation into the change log to state how it was tested.
+> 
+> I disagree.  The SCM changelog should contain _what_ a patch does and if
+> necessary _why_ it does so.
+The _why_ part is more important than _what_. The diff should hopefully
+explain the _what_ part.
 
-Prevent docproc from segfaulting when SRCTREE isn't set.
-
-Signed-off-by: Rob Landley <rob@landley.net>
----
-
- scripts/basic/docproc.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff -r a26a53ed1101 scripts/basic/docproc.c
---- a/scripts/basic/docproc.c	Sun Oct 07 16:42:22 2007 -0700
-+++ b/scripts/basic/docproc.c	Tue Oct 09 01:08:54 2007 -0500
-@@ -64,12 +64,15 @@ FILELINE * entity_system;
- #define FUNCTION      "-function"
- #define NOFUNCTION    "-nofunction"
- 
-+char *srctree;
-+
- void usage (void)
- {
- 	fprintf(stderr, "Usage: docproc {doc|depend} file\n");
- 	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
- 	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
- 	fprintf(stderr, "depend: generate list of files referenced within file\n");
-+	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
- }
- 
- /*
-@@ -88,7 +91,7 @@ void exec_kernel_doc(char **svec)
- 			exit(1);
- 		case  0:
- 			memset(real_filename, 0, sizeof(real_filename));
--			strncat(real_filename, getenv("SRCTREE"), PATH_MAX);
-+			strncat(real_filename, srctree, PATH_MAX);
- 			strncat(real_filename, KERNELDOCPATH KERNELDOC,
- 					PATH_MAX - strlen(real_filename));
- 			execvp(real_filename, svec);
-@@ -168,7 +171,7 @@ void find_export_symbols(char * filename
- 	if (filename_exist(filename) == NULL) {
- 		char real_filename[PATH_MAX + 1];
- 		memset(real_filename, 0, sizeof(real_filename));
--		strncat(real_filename, getenv("SRCTREE"), PATH_MAX);
-+		strncat(real_filename, srctree, PATH_MAX);
- 		strncat(real_filename, filename,
- 				PATH_MAX - strlen(real_filename));
- 		sym = add_new_file(filename);
-@@ -335,6 +338,9 @@ int main(int argc, char *argv[])
- int main(int argc, char *argv[])
- {
- 	FILE * infile;
-+
-+	srctree = getenv("SRCTREE");
-+	if (!srctree) srctree = getcwd(NULL,0);
- 	if (argc != 3) {
- 		usage();
- 		exit(1);
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+	Sam
