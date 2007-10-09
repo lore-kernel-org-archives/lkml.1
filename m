@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbXJITDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbXJITMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbXJITDN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 15:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbXJITC7
+	id S1755072AbXJITMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 15:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbXJITMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 15:02:59 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:29117 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751606AbXJITC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 15:02:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=WOFWO411UiU+gL8IV40f43OALYwQjWnzTWgpYSoX7e+jNNkLnx2u21qHrmGWBtc1LCTyNMHshZAFYeOjtGdTliGHOlJB6Ibbx9wzCFE9y9DJ9+KhgRtvIO3xX0QT8CWokoRXiGm6xW3NCHKcW05pcKepRFO/dedycJX7vhJXoPI=
-Message-ID: <84144f020710091202u6b617b0ep81759d6a2696614b@mail.gmail.com>
-Date: Tue, 9 Oct 2007 22:02:57 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
-Cc: "Akinobu Mita" <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710091149221.32730@schroedinger.engr.sgi.com>
+	Tue, 9 Oct 2007 15:12:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:53165 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752940AbXJITMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 15:12:24 -0400
+Message-ID: <470BD266.8020302@goop.org>
+Date: Tue, 09 Oct 2007 12:11:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Timur Tabi <timur@freescale.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+References: <4706822D.4070509@freescale.com>	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>	<470691EB.7020209@freescale.com>	<AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>	<4706A842.9030507@freescale.com>	<20071009174623.GC4003@csclub.uwaterloo.ca>	<470BC0D5.70305@freescale.com> <m3fy0kcec4.fsf@maximus.localdomain>
+In-Reply-To: <m3fy0kcec4.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071009161328.GA6470@APFDCB5C>
-	 <Pine.LNX.4.64.0710091144020.32162@schroedinger.engr.sgi.com>
-	 <84144f020710091148s6267a69aud18348af77f941b0@mail.gmail.com>
-	 <Pine.LNX.4.64.0710091149221.32730@schroedinger.engr.sgi.com>
-X-Google-Sender-Auth: 42a330f38c2d9811
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+Krzysztof Halasa wrote:
+> There is no such thing as bit-order. The data lines are numbered,
+> say, D0 - D31, with D0 being LSB (bit) and D31 MSB.
+>   
 
-On 10/9/07, Christoph Lameter <clameter@sgi.com> wrote:
-> Our system come by default with the possibility of 1k cpus. However, a
-> small system may only have 8 cpus.
+Uh-huh.  Check out an IBM Power manual some time.
 
-Maybe I am reading the code wrong, but I don't why that matters as
-it's all statically allocated anyway (the per-cpu kmem_cache_cpu
-array). In any case, I certainly don't object to your proposal, just
-can't figure out why it matters.
-
-                                   Pekka
+    J
