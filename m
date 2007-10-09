@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXJIKCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbXJIKXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbXJIKCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 06:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXJIKC0
+	id S1753249AbXJIKXp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 06:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXJIKXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 06:02:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45291 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751897AbXJIKCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 06:02:25 -0400
-Date: Tue, 9 Oct 2007 12:02:24 +0200
-From: Andi Kleen <ak@suse.de>
-To: torvalds@osdl.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH for 2.6.23] Fix scheduler domain sysctl list
-Message-ID: <20071009100224.GA22834@wotan.suse.de>
+	Tue, 9 Oct 2007 06:23:39 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44805 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751370AbXJIKXi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 06:23:38 -0400
+Date: Tue, 9 Oct 2007 11:28:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: RFC: reviewer's statement of oversight
+Message-ID: <20071009112824.17d74610@the-village.bc.nu>
+In-Reply-To: <20071008233054.GA2902@fieldses.org>
+References: <20071008173706.GA12026@uranus.ravnborg.org>
+	<10940.1191883390@lwn.net>
+	<20071008233054.GA2902@fieldses.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 8 Oct 2007 19:30:54 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-Ingo has this already fixed in sched-devel (but he also adds
-more parameters here). Since the fix is very simple I think it should
-be fixed for .23. Especially cache_nice_tries is useful to tune
-because it is very magic and the current values are a little dubious.
+> On Mon, Oct 08, 2007 at 04:43:10PM -0600, Jonathan Corbet wrote:
+> > + (e) I understand and agree that this project and the contribution are
+> > +     public and that a record of the contribution (including my Reviewed-by
+> > +     tag and any associated public communications) is maintained
+> > +     indefinitely and may be redistributed consistent with this project or
+> > +     the open source license(s) involved.
+> 
+> Is this paragraph really necessary?  (For example, is there some history
+> of problems that this is addressing?)
 
-----
-
-Fix holes in the scheduler domain sysctl setup that prevented
-reaching the last two parameters.
-
-Also allocate array of the correct size.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux-2.6.23-rc8-misc/kernel/sched.c
-===================================================================
---- linux-2.6.23-rc8-misc.orig/kernel/sched.c
-+++ linux-2.6.23-rc8-misc/kernel/sched.c
-@@ -5224,7 +5224,7 @@ set_table_entry(struct ctl_table *entry,
- static struct ctl_table *
- sd_alloc_ctl_domain_table(struct sched_domain *sd)
- {
--	struct ctl_table *table = sd_alloc_ctl_entry(14);
-+	struct ctl_table *table = sd_alloc_ctl_entry(11);
- 
- 	set_table_entry(&table[0], "min_interval", &sd->min_interval,
- 		sizeof(long), 0644, proc_doulongvec_minmax);
-@@ -5244,10 +5244,10 @@ sd_alloc_ctl_domain_table(struct sched_d
- 		sizeof(int), 0644, proc_dointvec_minmax);
- 	set_table_entry(&table[8], "imbalance_pct", &sd->imbalance_pct,
- 		sizeof(int), 0644, proc_dointvec_minmax);
--	set_table_entry(&table[10], "cache_nice_tries",
-+	set_table_entry(&table[9], "cache_nice_tries",
- 		&sd->cache_nice_tries,
- 		sizeof(int), 0644, proc_dointvec_minmax);
--	set_table_entry(&table[12], "flags", &sd->flags,
-+	set_table_entry(&table[10], "flags", &sd->flags,
- 		sizeof(int), 0644, proc_dointvec_minmax);
- 
- 	return table;
+It was added between 1.0 and 1.1 to ensure that there were no awkward
+interactions with various privacy and data protection laws by making sure
+the submitter understands it is a public record and is contributing on
+that basis.
