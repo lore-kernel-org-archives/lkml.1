@@ -1,174 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbXJISMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbXJISOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbXJISMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXJISMp
+	id S1756074AbXJISOX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbXJISOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:12:45 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37474 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbXJISMo (ORCPT
+	Tue, 9 Oct 2007 14:14:15 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:32842 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752034AbXJISOO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:12:44 -0400
-Date: Tue, 9 Oct 2007 11:12:25 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071009181225.GA15033@us.ibm.com>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie> <20071009011143.GC14670@us.ibm.com> <20071009154052.GC12632@skynet.ie>
+	Tue, 9 Oct 2007 14:14:14 -0400
+Date: Tue, 9 Oct 2007 14:14:13 -0400
+To: Chris Bergeron <chris@pcburn.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
+Message-ID: <20071009181413.GD4003@csclub.uwaterloo.ca>
+References: <4706AD19.4040605@pcburn.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071009154052.GC12632@skynet.ie>
-X-Operating-System: Linux 2.6.20.2 (i686)
+In-Reply-To: <4706AD19.4040605@pcburn.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09.10.2007 [16:40:53 +0100], Mel Gorman wrote:
-> First, sorry for being so slow to respond. I was getting ill towards the end
-> of last week and am worse now. Brain is in total mush as a result. Thanks
-> Lee for finding this problem and thanks to Nish for investigating it properly.
-> 
-> Comments and candidate fix to one zonelist are below.
-> 
-> On (08/10/07 18:11), Nishanth Aravamudan didst pronounce:
-> > On 28.09.2007 [15:25:27 +0100], Mel Gorman wrote:
-> > > 
-> > > Two zonelists exist so that GFP_THISNODE allocations will be guaranteed
-> > > to use memory only from a node local to the CPU. As we can now filter the
-> > > zonelist based on a nodemask, we filter the standard node zonelist for zones
-> > > on the local node when GFP_THISNODE is specified.
-> > > 
-> > > When GFP_THISNODE is used, a temporary nodemask is created with only the
-> > > node local to the CPU set. This allows us to eliminate the second zonelist.
-> > > 
-> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > Acked-by: Christoph Lameter <clameter@sgi.com>
-> > 
-> > <snip>
-> > 
-> > > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h
-> > > --- linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h	2007-09-28 15:49:57.000000000 +0100
-> > > +++ linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h	2007-09-28 15:55:03.000000000 +0100
-> > 
-> > [Reordering the chunks to make my comments a little more logical]
-> > 
-> > <snip>
-> > 
-> > > -static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-> > > +static inline struct zonelist *node_zonelist(int nid)
-> > >  {
-> > > -	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
-> > > +	return &NODE_DATA(nid)->node_zonelist;
-> > >  }
-> > > 
-> > >  #ifndef HAVE_ARCH_FREE_PAGE
-> > > @@ -198,7 +186,7 @@ static inline struct page *alloc_pages_n
-> > >  	if (nid < 0)
-> > >  		nid = numa_node_id();
-> > > 
-> > > -	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-> > > +	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
-> > >  }
-> > 
-> > This is alloc_pages_node(), and converting the nid to a zonelist means
-> > that lower levels (specifically __alloc_pages() here) are not aware of
-> > nids, as far as I can tell.
-> 
-> Yep, this is correct.
-> 
-> > This isn't a change, I just want to make
-> > sure I understand...
-> > 
-> > <snip>
-> > 
-> > >  struct page * fastcall
-> > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> > >  		struct zonelist *zonelist)
-> > >  {
-> > > +	/*
-> > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > > +	 * cost of allocating on the stack or the stack usage becomes
-> > > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > > +	 */
-> > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > > +		nodemask_t nodemask;
-> > > +
-> > > +		return __alloc_pages_internal(gfp_mask, order,
-> > > +				zonelist, nodemask_thisnode(&nodemask));
-> > > +	}
-> > > +
-> > >  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-> > >  }
-> > 
-> > <snip>
-> > 
-> > So alloc_pages_node() calls here and for THISNODE allocations, we go ask
-> > nodemask_thisnode() for a nodemask...
-> > 
-> 
-> Also correct.
-> 
-> > > +static nodemask_t *nodemask_thisnode(nodemask_t *nodemask)
-> > > +{
-> > > +	/* Build a nodemask for just this node */
-> > > +	int nid = numa_node_id();
-> > > +
-> > > +	nodes_clear(*nodemask);
-> > > +	node_set(nid, *nodemask);
-> > > +
-> > > +	return nodemask;
-> > > +}
-> > 
-> > <snip>
-> > 
-> > And nodemask_thisnode() always gives us a nodemask with only the node
-> > the current process is running on set, I think?
-> > 
-> 
-> Yes, I interpreted THISNODE to mean "this node I am running on". Callers
-> seemed to expect this but the memoryless needs it to be "this node I am
-> running on unless I specify a node in which case I mean that node.".
-> 
-> > That seems really wrong -- and would explain what Lee was seeing while
-> > using my patches for the hugetlb pool allocator to use THISNODE
-> > allocations. All the allocations would end up coming from whatever node
-> > the process happened to be running on. This obviously messes up hugetlb
-> > accounting, as I rely on THISNODE requests returning NULL if they go
-> > off-node.
-> > 
-> > I'm not sure how this would be fixed, as __alloc_pages() no longer has
-> > the nid to set in the mask.
-> > 
-> > Am I wrong in my analysis?
-> > 
-> 
-> No, you seem to be right on the ball. Can you review the following patch
-> please and determine if it fixes the problem in a satisfactory manner? I
-> think it does and your tests seemed to give proper values with this patch
-> applied but brain no worky work and a second opinion is needed.
-> 
-> ====
-> Subject: Use specified node ID with GFP_THISNODE if available
-> 
-> It had been assumed that __GFP_THISNODE meant allocating from the local
-> node and only the local node. However, users of alloc_pages_node() may also
-> specify GFP_THISNODE. In this case, only the specified node should be used.
-> This patch will allocate pages only from the requested node when GFP_THISNODE
-> is used with alloc_pages_node().
-> 
-> [nacc@us.ibm.com: Detailed analysis of problem]
-> Found-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+On Fri, Oct 05, 2007 at 05:31:05PM -0400, Chris Bergeron wrote:
+> I've just installed a multiport serial card released by an outfit called 
+> Syba.  This is an 8 port serial-only card with an Octopus style breakout 
+> cable.  The main chipset on it is an ITE IT8871F.
 
-Mel, seems to fix the problem here. Nice job. Feel free to add:
+Well 8250_pci.c mentions IT8871, so it is probably 8250 style in
+interface then.
 
-Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> I've got two questions on this: Is there a driver I should try force 
+> loading on it (and if so, what options to use)?  and is there any useful 
+> testing I can do to report back to the LKML on this card?
 
-Thanks,
-Nish
+How many serial ports is your kernel configured to use?
+
+CONFIG_SERIAL_8250_NR_UARTS=16
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+
+That is from my Debian system's kernel, and it won't activate more than
+4 ports automatically.  It will allow up to 16 to be activated though.
+I don't remember what the boot command is to override those values to
+make the system look for more ports.
+
+--
+Len Sorensen
