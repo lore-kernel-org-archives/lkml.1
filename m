@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbXJII75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbXJIJRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbXJII75 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 04:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXJII7u
+	id S1753243AbXJIJRF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 05:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXJIJQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 04:59:50 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:24704 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751184AbXJII7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 04:59:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BzpxoQufbaqoiLNed3fhEqjz7LQ0JW72eVGvmWmd1foYr2ptpBeVxdxaWsKdMRQnsyAhes2Hh2ddNzgj/QFW3Z9dGIZ6uIXDR3NriA1JeKmDJlXq+rHkRuuMjRSic0O8ZBdUza3eK7vOA7CGdZFd1XkdlucBD85Wr9Wxn2Lx2sc=  ;
-X-YMail-OSG: VVR2u1QVM1l8pi2hSLGVpDx4JPqNHLZUr6Byt.h0pMfawFK_zJVwCKthiDGhd9d28bY3WsK8GA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH -mm -v4 1/3] i386/x86_64 boot: setup data
-Date: Tue, 9 Oct 2007 02:28:09 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-References: <1191912010.9719.18.camel@caritas-dev.intel.com> <200710090206.22383.nickpiggin@yahoo.com.au> <1191920123.9719.71.camel@caritas-dev.intel.com>
-In-Reply-To: <1191920123.9719.71.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 05:16:55 -0400
+Received: from verein.lst.de ([213.95.11.210]:42103 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbXJIJQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 05:16:55 -0400
+Date: Tue, 9 Oct 2007 11:16:51 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: jblunck@suse.de
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
+       agruen@suse.de, tiwai@suse.de
+Subject: Re: [patch 00/10] Use struct path in struct nameidata
+Message-ID: <20071009091651.GA20394@lst.de>
+References: <20070927141200.820970144@X40.localnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710090228.09841.nickpiggin@yahoo.com.au>
+In-Reply-To: <20070927141200.820970144@X40.localnet>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 18:55, Huang, Ying wrote:
-> On Tue, 2007-10-09 at 02:06 +1000, Nick Piggin wrote:
+Any reasons this didn't go into -mm?  It's all straight-forward cleanup
+and it would be a pity not to see it in 2.6.24
 
-> > I'm just wondering whether you really need to access highmem in
-> > boot code...
->
-> Because the zero page (boot_parameters) of i386 boot protocol has 4k
-> limitation, a linked list style boot parameter passing mechanism (struct
-> setup_data) is proposed by Peter Anvin. The linked list is provided by
-> bootloader, so it is possible to be in highmem region.
-
-OK. I don't really know the code, but I trust you ;)
-
-
-> > Definitely on most architectures it would just amount to
-> > memcpy(dst, __va(phys), n);, right? However I don't know if
->
-> Yes.
->
-> > it's worth the trouble of overriding it unless there is some
-> > non-__init user of it.
->
-> To support debugging and kexec, the boot parameters include the linked
-> list above are exported into sysfs. This function is used there too. The
-> patch is the No. 2 of the series.
-
-Ah, I see. I missed that.
-
-OK, well rather than make it weak, and have everyone except
-i386 override it, can you just ifdef CONFIG_HIGHMEM?
-
-After that, I guess most other architectures wouldn't even
-use the function. Maybe it can go into lib/ instead so that
-it can be discarded by the linker if it isn't used?
+On Thu, Sep 27, 2007 at 04:12:00PM +0200, jblunck@suse.de wrote:
+> This is a respin of the patch series Andreas posted last month. It leaves out
+> the restructuring of the intent which will be done at a later point in time.
+> 
+> There are three preparing patches that remove unneeded code IMHO. I haven't
+> got feedback from Takashi since he is on holiday. Please, can somebody else
+> acknowledge the changes?
+> 
+> Comments?
+> Jan
+> -- 
+---end quoted text---
