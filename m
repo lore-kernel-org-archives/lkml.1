@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbXJIIRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbXJIIU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbXJIIRS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 04:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXJIIRF
+	id S1755071AbXJIIU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 04:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXJIIUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 04:17:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51609 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbXJIIRD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 04:17:03 -0400
-Subject: Re: -rt more realtime scheduling issues
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mike Kravetz <kravetz@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071009030412.GB12915@goodmis.org>
-References: <20071006021548.GE4587@monkey.ibm.com>
-	 <20071008184523.GA29656@monkey.ibm.com>
-	 <20071009030412.GB12915@goodmis.org>
+	Tue, 9 Oct 2007 04:20:18 -0400
+Received: from mga02.intel.com ([134.134.136.20]:42388 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753125AbXJIIUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 04:20:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,247,1188802800"; 
+   d="scan'208";a="231128128"
+Subject: Re: [PATCH -mm -v4 1/3] i386/x86_64 boot: setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710090125.27263.nickpiggin@yahoo.com.au>
+References: <1191912010.9719.18.camel@caritas-dev.intel.com>
+	 <200710090125.27263.nickpiggin@yahoo.com.au>
 Content-Type: text/plain
-Date: Tue, 09 Oct 2007 10:16:45 +0200
-Message-Id: <1191917805.6848.0.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+Date: Tue, 09 Oct 2007 16:22:19 +0800
+Message-Id: <1191918139.9719.47.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 09 Oct 2007 08:20:13.0805 (UTC) FILETIME=[3762F1D0:01C80A4D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-08 at 23:04 -0400, Steven Rostedt wrote:
-> On Mon, Oct 08, 2007 at 11:45:23AM -0700, Mike Kravetz wrote:
-> > On Fri, Oct 05, 2007 at 07:15:48PM -0700, Mike Kravetz wrote:
-> > > After applying the fix to try_to_wake_up() I was still seeing some large
-> > > latencies for realtime tasks.
-> > 
-> > I've been looking for places in the code where reschedule IPIs should
-> > be sent in the case of 'overload' to redistribute RealTime tasks based
-> > on priority.  However, an even more basic question to ask might be:  Are
-> > the use of reschedule IPIs reliable enough for this purpose.  In the
-> > code, there is the following comment:
-> > 
-> > /*
-> >  * this function sends a 'reschedule' IPI to another CPU.
-> >  * it goes straight through and wastes no time serializing
-> >  * anything. Worst case is that we lose a reschedule ...
-> >  */
-> > 
-> > After a quick read of the code, it does appear that reschedule's can
-> > be lost if the the IPI is sent at just the right time in schedule
-> > processing.  Can someone confirm this is actually the case?
-> > 
-> > The issue I see is that the 'rt_overload' mechanism depends on reschedule
-> > IPIs for RealTime scheduling semantics.  If this is not a reliable
-> > mechanism then this can lead to breakdowns in RealTime scheduling semantics.
-> > 
-> > Are these accurate statements?  I'll start working on a reliable delivery
-> > mechanism for RealTime scheduling.  But, I just want to make sure that
-> > is really necessary.
+On Tue, 2007-10-09 at 01:25 +1000, Nick Piggin wrote:
+> On Tuesday 09 October 2007 16:40, Huang, Ying wrote:
 > 
-> For i386 I don't think so. Seems that the interrupt handler will set the
-> current task to "need_resched" and on exit of the interrupt handler, the
-> schedule should take place. I don't see the race (that doesn't mean
-> there is one).
+> > +unsigned long copy_from_phys(void *to, unsigned long from_phys,
+> > +			     unsigned long n)
+> > +{
+> > +	struct page *page;
+> > +	void *from;
+> > +	unsigned long remain = n, offset, trunck;
+> > +
+> > +	while (remain) {
+> > +		page = pfn_to_page(from_phys >> PAGE_SHIFT);
+> > +		from = kmap_atomic(page, KM_USER0);
+> > +		offset = from_phys & ~PAGE_MASK;
+> > +		if (remain > PAGE_SIZE - offset)
+> > +			trunck = PAGE_SIZE - offset;
+> > +		else
+> > +			trunck = remain;
+> > +		memcpy(to, from + offset, trunck);
+> > +		kunmap_atomic(from, KM_USER0);
+> > +		to += trunck;
+> > +		from_phys += trunck;
+> > +		remain -= trunck;
+> > +	}
+> > +	return n;
+> > +}
 > 
-> For x86_64 though, I don't think that we schedule. All the reschedule
-> vector does is return with a comment:
 > 
-> /*
->  * Reschedule call back. Nothing to do,
->  * all the work is done automatically when
->  * we return from the interrupt.
->  */
-> asmlinkage void smp_reschedule_interrupt(void)
-> {
->         ack_APIC_irq();
-> }
+> I suppose that's not unreasonable to put in mm/memory.c, although
+> it's not really considered a problem to do this kind of stuff in
+> a low level arch file...
 > 
-> I'm thinking that this was the case for i386 a while back, and we fixed
-> it for RT.
+> You have no kernel virtual mapping for the source data?
 > 
-> /me does a quick search...
-> 
-> http://lkml.org/lkml/2005/5/13/174
-> 
-> Yep!  This is a bug in x86_64. I'll fix this up tomorrow and send out a
-> patch.
 
-Hmm, my understanding is that the IPI caller needs to set
-TIF_NEED_RESCHED before issuing the IPI.
+On 32-bit platform such as i386. Some memory zones have no kernel
+virtual mapping (highmem region etc). So I think this may be useful as a
+universal way to access physical memory. But it can be more efficient to
+implement it in arch file for some arch. Should this implementation be
+used as a fall back implementation with attribute "weak"?
 
-So I'm inclined to not like this 'fix'.
+> Should it be __init?
+> 
+> Care to add a line of documentation if you keep it in mm/memory.c?
+> 
 
+OK, I will add the document in the next version.
+
+Best Regards,
+Huang Ying
