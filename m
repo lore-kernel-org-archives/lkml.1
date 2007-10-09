@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXJILHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXJILI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbXJILHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 07:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXJILHP
+	id S1754145AbXJILI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 07:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXJILIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 07:07:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50350 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751839AbXJILHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 07:07:14 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH for 2.6.23] Fix scheduler domain sysctl list
-Date: Tue, 9 Oct 2007 13:07:04 +0200
-User-Agent: KMail/1.9.6
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20071009100224.GA22834@wotan.suse.de> <20071009102632.GB15583@elte.hu>
-In-Reply-To: <20071009102632.GB15583@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 07:08:49 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42948 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752111AbXJILIt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 07:08:49 -0400
+Date: Tue, 9 Oct 2007 13:08:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
+Message-ID: <20071009110845.GA28570@one.firstfloor.org>
+References: <20071008200255.GA16497@uranus.ravnborg.org> <p73sl4k4ofq.fsf@bingen.suse.de> <20071009100030.GA22475@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710091307.04653.ak@suse.de>
+In-Reply-To: <20071009100030.GA22475@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 12:26:32 Ingo Molnar wrote:
+On Tue, Oct 09, 2007 at 12:00:30PM +0200, Sam Ravnborg wrote:
+> On Tue, Oct 09, 2007 at 11:39:21AM +0200, Andi Kleen wrote:
+> > Sam Ravnborg <sam@ravnborg.org> writes:
+> > >  
+> > > -ARCH		?= $(SUBARCH)
+> > > -CROSS_COMPILE	?=
+> > 
+> > Can you do this in a way that there are still these ARCH/CROSS_COMPILE
+> > lines that are just overriden when empty or have their default value? 
+> > 
+> > This way defaults could be still patched in for special cases.
 > 
-> * Andi Kleen <ak@suse.de> wrote:
-> 
-> > Ingo has this already fixed in sched-devel (but he also adds more 
-> > parameters here). Since the fix is very simple I think it should be 
-> > fixed for .23. Especially cache_nice_tries is useful to tune because 
-> > it is very magic and the current values are a little dubious.
-> 
-> this is a debug feature so i'll do a backport of this fix for 2.6.23.1, 
+> If it is OK to drop the $(SUBARCH) assingment like this then yes.
+> ARCH		?=
+> CROSS_COMPILE	?=
 
-Ok.
+As long as both UML and normal architectures work still out of the 
+box yes
 
-> once sched-devel.git goes into .24.
+> I was wondering why we had the empty CROSS_COMPILE assigment and this
+> explains why.
+> But why patch something in here in the fisrt place?
+> It seems to be a workaround for the actual issue this patch addresses - no?
 
-It's very debuggish -- e.g. no ENOMEM checking at all.
+Mostly.
+
+The difference is that Kbuild.config would likely contain other stuff
+too that might be not fit into a patch? Ok it's not a big difference.
 
 -Andi
 
