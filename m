@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbXJIJx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXJIJ7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbXJIJx7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 05:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXJIJxw
+	id S1754222AbXJIJ7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 05:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbXJIJ7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 05:53:52 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53638 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752292AbXJIJxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 05:53:51 -0400
-Date: Tue, 9 Oct 2007 11:54:18 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
+	Tue, 9 Oct 2007 05:59:00 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42054 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751370AbXJIJ67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 05:58:59 -0400
+Date: Tue, 9 Oct 2007 12:00:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
 Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
-Message-ID: <20071009095418.GR16424@stusta.de>
-References: <20071008200255.GA16497@uranus.ravnborg.org> <20071008211255.GP16424@stusta.de> <20071009060333.GB22087@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <20071009100030.GA22475@uranus.ravnborg.org>
+References: <20071008200255.GA16497@uranus.ravnborg.org> <p73sl4k4ofq.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071009060333.GB22087@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <p73sl4k4ofq.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 08:03:33AM +0200, Sam Ravnborg wrote:
-> On Mon, Oct 08, 2007 at 11:12:56PM +0200, Adrian Bunk wrote:
->...
-> > BTW: I'm currently trying without success to understand why the
-> >      drivers/infiniband/{hw/amso1100,ulp/srp}/Kbuild files are not
-> >      named "Makefile".
-> Giacomo explained this already..
-> But I have never done a global renaming - the
-> pain/benefit ratio seems too low.
+On Tue, Oct 09, 2007 at 11:39:21AM +0200, Andi Kleen wrote:
+> Sam Ravnborg <sam@ravnborg.org> writes:
+> >  
+> > -ARCH		?= $(SUBARCH)
+> > -CROSS_COMPILE	?=
+> 
+> Can you do this in a way that there are still these ARCH/CROSS_COMPILE
+> lines that are just overriden when empty or have their default value? 
+> 
+> This way defaults could be still patched in for special cases.
 
-Either keep all as "Makefile" or rename all.
+If it is OK to drop the $(SUBARCH) assingment like this then yes.
+ARCH		?=
+CROSS_COMPILE	?=
 
-But being inconsequent creates maximum confusion.
+I was wondering why we had the empty CROSS_COMPILE assigment and this
+explains why.
+But why patch something in here in the fisrt place?
+It seems to be a workaround for the actual issue this patch addresses - no?
 
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Sam
