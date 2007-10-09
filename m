@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbXJIPMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXJIPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbXJIPMP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXJIPMA
+	id S1755773AbXJIPOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXJIPOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:12:00 -0400
-Received: from lixom.net ([66.141.50.11]:52368 "EHLO mail.lixom.net"
+	Tue, 9 Oct 2007 11:14:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49254 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753282AbXJIPL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:11:59 -0400
-Date: Tue, 9 Oct 2007 10:17:02 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
+	id S1752574AbXJIPOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 11:14:06 -0400
+Date: Tue, 9 Oct 2007 08:13:41 -0700
+From: Greg KH <gregkh@suse.de>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Roel Kluin <12o3l@tiscali.nl>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mark Lord <mlord@pobox.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 09/12] Fix SMP poweroff hangs
-Message-ID: <20071009151702.GA19209@lixom.net>
-References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 08/12] NLM: Fix a circular lock dependency in lockd
+Message-ID: <20071009151341.GA5925@suse.de>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180629.GI7627@kroah.com> <470A8C7D.70303@tiscali.nl> <1191942028.8739.3.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071008180633.GJ7627@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1191942028.8739.3.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 08, 2007 at 11:06:33AM -0700, Greg KH wrote:
-> From: Mark Lord <lkml@rtr.ca>
+On Tue, Oct 09, 2007 at 11:00:28AM -0400, Trond Myklebust wrote:
 > 
-> commit 4047727e5ae33f9b8d2b7766d1994ea6e5ec2991 from upstream
+> On Mon, 2007-10-08 at 22:01 +0200, Roel Kluin wrote:
+> > Greg KH wrote:
+> > 
+> > @@ -477,10 +479,15 @@ nlmsvc_testlock(struct svc_rqst *rqstp, 
+> >  
+> >  	if (block == NULL) {
+> >  		struct file_lock *conf = kzalloc(sizeof(*conf), GFP_KERNEL);
+> > +		struct nlm_host	*host;
+> >  
+> >  		if (conf == NULL)
+> >  			return nlm_granted;
+> > -		block = nlmsvc_create_block(rqstp, file, lock, cookie);
+> > +		/* Create host handle for callback */
+> > +		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
+> > +		if (host == NULL)
+> > +			return nlm_lck_denied_nolocks;
+> > +		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
+> >  		if (block == NULL) {
+> >  			kfree(conf);
+> >  			return nlm_granted;
+> > 
+> > To be frankly I don't know what this is about, but shouldn't conf be freed if host == NULL?
 > 
-> We need to disable all CPUs other than the boot CPU (usually 0) before
-> attempting to power-off modern SMP machines.  This fixes the
-> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
-> new toybox.
+> Thanks for spotting this!
+> 
+> Greg, should I resend this patch, or would you prefer an incremental
+> fix?
 
-Paul Mackerras has reported crashes when rebooting some older ppc64
-systems due to this patch.
+An incremental one would be best.
 
-See http://ozlabs.org/pipermail/linuxppc-dev/2007-October/043969.html.
+thanks,
 
-
--Olof
-
+greg k-h
