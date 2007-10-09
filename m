@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXJIJej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbXJIJh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbXJIJej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 05:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXJIJec
+	id S1754667AbXJIJh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 05:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbXJIJhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 05:34:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:56712 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbXJIJeb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 05:34:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=FEKhD6slonpO1uoEguYTv5KmTt2PshD5L8ErWDBnjyN+EG+e5ctLGU/B5tD7YfyJGUZigOwSA6FhxG/PSMXkn5BYYI+4dc8iaJ/rkNarr1fHkHE05f8F0kkGahdCdACghZh65wVPaj04fFJwCrJZSsHfv/wQVEzOGVlx1sKGMT0=
-Message-ID: <84144f020710090234v297af626m583844b0f9cf875d@mail.gmail.com>
-Date: Tue, 9 Oct 2007 12:34:30 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Grosjo.net - jom" <jom@grosjo.net>
+	Tue, 9 Oct 2007 05:37:16 -0400
+Received: from smtp27.orange.fr ([80.12.242.94]:38869 "EHLO smtp27.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751788AbXJIJhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 05:37:15 -0400
+X-ME-UUID: 20071009093713299.492651C00081@mwinf2729.orange.fr
 Subject: Re: Patch for WindowsMobile5 on Linux Kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <470B47D9.30406@grosjo.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Bernd Petrovitsch <bernd@firmix.at>
+Cc: "Grosjo.net - jom" <jom@grosjo.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <1191922365.5559.1.camel@tara.firmix.at>
 References: <470B47D9.30406@grosjo.net>
-X-Google-Sender-Auth: 24d703ef0bcd0077
+	 <1191922365.5559.1.camel@tara.firmix.at>
+Content-Type: text/plain
+Date: Tue, 09 Oct 2007 11:37:09 +0200
+Message-Id: <1191922629.10146.28.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2007-10-09 at 11:32 +0200, Bernd Petrovitsch wrote:
+> On Die, 2007-10-09 at 12:20 +0300, Grosjo.net - jom wrote:
+> [...]
+> > Would it be possible to include the patches (available on www.synce.org)
+> > for WindowsMobile5, as most mobile phones are under Window$, and it is
+> > very convenient to connect it to the laptop under Linux
+> 
+> do {
+>    Test them
+>    review them
+>    sent them as patches hereover
+>    handle feedback
+> until(accepted)
 
-On 10/9/07, Grosjo.net - jom <jom@grosjo.net> wrote:
-> Would it be possible to include the patches (available on www.synce.org)
-> for WindowsMobile5, as most mobile phones are under Window$, and it is
-> very convenient to connect it to the laptop under Linux
+FWIW, the patch in question is a one-liner:
 
-Sounds useful so please ask the synce developers to submit those
-patches upstream.
+--- linux-2.6.22-rc3-orig/drivers/net/usb/rndis_host.c	2007-05-25 22:55:14.000000000 -0400
++++ linux-2.6.22-rc3/drivers/net/usb/rndis_host.c	2007-05-27 17:06:16.000000000 -0400
+@@ -499,8 +499,7 @@
+ 	net->hard_header_len += sizeof (struct rndis_data_hdr);
+ 	dev->hard_mtu = net->mtu + net->hard_header_len;
+ 
+-	dev->rx_urb_size = dev->hard_mtu + (dev->maxpacket + 1);
+-	dev->rx_urb_size &= ~(dev->maxpacket - 1);
++	dev->rx_urb_size = (dev->udev->speed == USB_SPEED_FULL) ? 16384 : 8192;
+ 	u.init->max_transfer_size = cpu_to_le32(dev->rx_urb_size);
+ 
+ 	net->change_mtu = NULL;
 
-                                  Pekka
+
+	Xav
+
+
