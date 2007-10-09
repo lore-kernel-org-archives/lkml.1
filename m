@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbXJIRlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXJIRnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbXJIRlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 13:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXJIRlQ
+	id S1755546AbXJIRnQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 13:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXJIRnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 13:41:16 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:11154 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbXJIRlQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 13:41:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=a3Y95KKvrPRsezvrsma+67K5LXsyFv+cyNYLMUQM/RUTmpZyMvp2WfuAqgw4LI50iu1uq88hamtgIsoDhJJkCoxRVpspJSkjxAJF89W0DtTYaukCTPJRQeDnel4rBQRd8b6bXJWQwyANNOcYtGBJOoXY5r7B6skeibMhwHiFOh8=
-Message-ID: <84144f020710091041t61242935x4f78fda03d322720@mail.gmail.com>
-Date: Tue, 9 Oct 2007 20:41:15 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
-In-Reply-To: <20071009161328.GA6470@APFDCB5C>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Oct 2007 13:43:04 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40954 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752776AbXJIRnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 13:43:03 -0400
+Date: Tue, 9 Oct 2007 19:44:33 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Neil Brown <neilb@suse.de>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: reviewer's statement of oversight
+Message-ID: <20071009174433.GB25750@uranus.ravnborg.org>
+References: <20071008173706.GA12026@uranus.ravnborg.org> <10940.1191883390@lwn.net> <18186.50640.970552.719041@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071009161328.GA6470@APFDCB5C>
-X-Google-Sender-Auth: 641b427299095886
+In-Reply-To: <18186.50640.970552.719041@notabene.brown>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Akinobu,
+Hi Neil.
+> 
+>    From:        The Author, Primary Author, or Authors of the patch.
+>                 Authors should also provide a Signed-off-by: tag.
+> 
+>                 Purpose: to give credit to authors
+The SCM should include this info and we should not duplicate this
+in the changelog's.
+I know some tools require this format but that's something else.
 
-On 10/9/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> This is because init_alloc_cpu_cpu() is called every time when the CPU is
-> going to be onlined but init_alloc_cpu_cpu() is not intented to be called
-> twice or more for same CPU. Then it breaks kmem_cache_cpu_free list for
-> the CPU.
->
-> This patch removes init_alloc_cpu_cpu() from cpu hotplug notifier. But
-> call it for each possible CPUs not only online CPUs at initialization time.
+> > +
+> > +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
+> > +		patch is, to the best of his or her knowledge, legally able
+> > +		to be merged into the mainline and distributed under the
+> > +		terms of the GNU General Public License, version 2.  See
+> > +		the Developer's Certificate of Origin, found in
+> > +		Documentation/SubmittingPatches, for the precise meaning of
+> > +		Signed-off-by.
+> 
+>                 Purpose: to allow subsequent review of the originality of 
+>                 the contribution should copyright questions arise.
 
-Looks good to me!
+We often use s-o-b to docuemnt the path a patch took from origin (the
+top-most s-o-b) to tree apply (lowest s-o-b).
+This is IIUC part of the intended behaviour of s-o-b but it is not
+clear from the above text.
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> > +
+> > +Acked-by:	The person named (who should be an active developer in the
+> > +		area addressed by the patch) is aware of the patch and has
+> > +		no objection to its inclusion.  An Acked-by tag does not
+> > +		imply any involvement in the development of the patch or
+> > +		that a detailed review was done.
+> 
+>                 Purpose:  to inform upstream aggregators that
+> 		consensus was achieved for the change.  This is
+> 		particularly relevant for changes that affect multiple
+> 		Maintenance Domains.
+> 
+consensus seems too strong a wording here. consensus imply more than one
+that agree on the patch where I often see people give their "Acked-by:" by
+simple changelog reading.
+So Acked-by: is not used like documented today.
+
+	Sam
