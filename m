@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXJIN72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbXJIOBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXJIN72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 09:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbXJIN7V
+	id S1754979AbXJIOBP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 10:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXJIOBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 09:59:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35359 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752117AbXJIN7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 09:59:20 -0400
-To: linux-kernel@vger.kernel.org
-Cc: linux-netdev@vger.kernel.org, David Miller <davem@redhat.com>,
-       Jeffrey Garzik <jgarzik@redhat.com>
-Subject: [PATCH] ipv4: kernel panic when only one unsecured port available
-From: Anton Arapov <aarapov@redhat.com>
-X-URL: http://people.redhat.com/aarapov
-Date: Tue, 09 Oct 2007 15:59:14 +0200
-Message-ID: <m3fy0k9yod.fsf@bandura.englab.brq.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
+	Tue, 9 Oct 2007 10:01:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:45399 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXJIOA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 10:00:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EChM52HF5/lKYe20kyTTG5Nal5jthH5NZ/hGut4pIk9/+z7dFPsLe30ydmdAPhsWkZe8k/epb1Llp9GmISvJI+jdGOtxh3WKGxXUFRBZjqQs/9DyFb4MaPu4e3roDkdlToqRbVkVMIWaMTOR+v+XrVqcTvXhv7kpm1U83dzb83k=
+Message-ID: <851fc09e0710090700u21b2db91yca2d5e88cb7a502a@mail.gmail.com>
+Date: Tue, 9 Oct 2007 22:00:57 +0800
+From: "huang ying" <huang.ying.caritas@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH -mm -v4 1/3] i386/x86_64 boot: setup data
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Huang, Ying" <ying.huang@intel.com>, linux-mm@kvack.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Chandramouli Narayanan" <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710091313.45003.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1191912010.9719.18.camel@caritas-dev.intel.com>
+	 <200710090125.27263.nickpiggin@yahoo.com.au>
+	 <200710091313.45003.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+On 10/9/07, Andi Kleen <ak@suse.de> wrote:
+>
+> > Care to add a line of documentation if you keep it in mm/memory.c?
+>
+> It would be better to just use early_ioremap() (or ioremap())
+>
+> That is how ACPI who has similar issues accessing its tables solves this.
 
-Steps to reproduce:
-Server:
-  [root@server ~]# cat /etc/exports
-  /export *(ro,insecure)
-// there is insecure ... I am using ports like "1024 to 61000"
-  [root@server ~] service nfs restart=20
+Yes. That is another solution. But there is some problem about
+early_ioremap (boot_ioremap, bt_ioremap for i386) or ioremap.
 
-Client:
-  1.[root@client ~]# echo 32768 32768 > /proc/sys/net/ipv4/ip_local_port_ra=
-nge
-  32768   32768
-// two same numbers, for ex "32769 32769" etc.
-  2.[root@client ~]# cat /proc/sys/net/ipv4/ip_local_port_range
-  32768   32768
-  3.[root@client ~]# mount server:/export /import
-=20=20
-Actual results:
-  Kernel always panics=20
+- ioremap can not be used before mem_init.
+- For i386, boot_ioremap can map at most 4 pages, bt_ioremap can map
+at most 16 pages. This will be an unnecessary constrains for size of
+setup_data.
+- For i386, the virtual memory space of ioremap is limited too.
 
-=2D-------------------------------------------------------------------
-[PATCH] ipv4: kernel panic when only one unsecured port available
-
-  Patch prevents division by zero. Kernel panics if only one=20
-unsecured port available.
-
-Signed-off-by: Anton Arapov <aarapov@redhat.com>
-=2D--
-
- net/ipv4/inet_connection_sock.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_soc=
-k.c
-index fbe7714..00ad079 100644
-=2D-- a/net/ipv4/inet_connection_sock.c
-+++ b/net/ipv4/inet_connection_sock.c
-@@ -80,7 +80,7 @@ int inet_csk_get_port(struct inet_hashinfo *hashinfo,
- 		int low =3D sysctl_local_port_range[0];
- 		int high =3D sysctl_local_port_range[1];
- 		int remaining =3D (high - low) + 1;
-=2D		int rover =3D net_random() % (high - low) + low;
-+		int rover =3D net_random() % remaining + low;
-=20
- 		do {
- 			head =3D &hashinfo->bhash[inet_bhashfn(rover, hashinfo->bhash_size)];
-
-=2D-=20
-Anton Arapov, <aarapov@redhat.com>
-Kernel Development, Red Hat
-GPG Key ID: 0x6FA8C812
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFHC4k1Vub9yW+oyBIRAknpAKCixkQa9Q3+6MNzvF1A5xBWvEjT/gCg4dud
-+Z5kOPWtaGfiTKRYS4xxI+k=
-=YaUX
------END PGP SIGNATURE-----
---=-=-=--
+Best Regards,
+Huang Ying
