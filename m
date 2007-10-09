@@ -1,37 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXJIJjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXJIJsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbXJIJjf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 05:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXJIJj1
+	id S1753882AbXJIJsI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 05:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbXJIJrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 05:39:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50815 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbXJIJj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 05:39:27 -0400
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
-References: <20071008200255.GA16497@uranus.ravnborg.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 09 Oct 2007 11:39:21 +0200
-In-Reply-To: <20071008200255.GA16497@uranus.ravnborg.org>
-Message-ID: <p73sl4k4ofq.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 9 Oct 2007 05:47:53 -0400
+Received: from grosjo.net ([194.106.115.114]:40360 "EHLO mail.grosjo.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751390AbXJIJrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 05:47:52 -0400
+Message-ID: <470B4DE0.7070207@grosjo.net>
+Date: Tue, 09 Oct 2007 12:46:08 +0300
+From: "Grosjo.net - jom" <jom@grosjo.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Xavier Bestel <xavier.bestel@free.fr>
+CC: Bernd Petrovitsch <bernd@firmix.at>, linux-kernel@vger.kernel.org
+Subject: Re: Patch for WindowsMobile5 on Linux Kernel
+References: <470B47D9.30406@grosjo.net>	 <1191922365.5559.1.camel@tara.firmix.at> <1191922629.10146.28.camel@frg-rhel40-em64t-04>
+In-Reply-To: <1191922629.10146.28.camel@frg-rhel40-em64t-04>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> writes:
->  
-> -ARCH		?= $(SUBARCH)
-> -CROSS_COMPILE	?=
 
-Can you do this in a way that there are still these ARCH/CROSS_COMPILE
-lines that are just overriden when empty or have their default value? 
+> FWIW, the patch in question is a one-liner:
+>   
+Yes, that is why it shall be probably possible to include it in the kernel ?
 
-This way defaults could be still patched in for special cases.
+I do not have the contact with SynCE developers. Maybe one of you have.
 
--Andi
+Jom
