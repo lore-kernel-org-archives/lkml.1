@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXJIQdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbXJIQia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbXJIQdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 12:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbXJIQdH
+	id S1756021AbXJIQia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 12:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbXJIQiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 12:33:07 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41396 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbXJIQdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 12:33:06 -0400
-Date: Tue, 9 Oct 2007 18:34:35 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
-Message-ID: <20071009163435.GA25408@uranus.ravnborg.org>
-References: <20071008200255.GA16497@uranus.ravnborg.org> <p73sl4k4ofq.fsf@bingen.suse.de> <20071009100030.GA22475@uranus.ravnborg.org> <20071009140906.GA4942@c2.user-mode-linux.org>
-Mime-Version: 1.0
+	Tue, 9 Oct 2007 12:38:22 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:29214 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752574AbXJIQiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 12:38:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=1di/TjlUGAjaGR2JFA6GNOsRJ+5qK6g4rfHTo6XJ0wwsVwxEj1nooixcooV2XV8xICo9xf517rJxyGFqugJDomYlDVD5bFQMu/oDOsV5r+WeP4+qcQgPJhnqnGnR51iyhg2di1o6QVi2zEDrzr69iplLucf3hEgCQu3CyGEEkgs=  ;
+X-YMail-OSG: NXFcblMVM1mQ_Fgr0imVY5ImOIwaz4lrW.enBbl7hqKRFluJ2Ru_P02VTFmErMpHO7sn_lsI.g--
+Date: Tue, 09 Oct 2007 09:38:27 -0700
+From: David Brownell <david-b@pacbell.net>
+To: davem@davemloft.net
+Subject: Re: OHCI root_port_reset() deadly loop...
+Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+References: <20071007.005156.85395415.davem@davemloft.net>
+ <20071008.165420.42793456.davem@davemloft.net>
+ <20071009043643.773CC23715F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20071008.214408.98397070.davem@davemloft.net>
+In-Reply-To: <20071008.214408.98397070.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071009140906.GA4942@c2.user-mode-linux.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071009163827.E7DB310B535@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 10:09:06AM -0400, Jeff Dike wrote:
-> On Tue, Oct 09, 2007 at 12:00:30PM +0200, Sam Ravnborg wrote:
-> > If it is OK to drop the $(SUBARCH) assingment like this then yes.
-> > ARCH		?=
-> > CROSS_COMPILE	?=
-> 
-> Does the UML build still work when you do that?
+> > What values do you see for "portstat"?
+>
+> 0x111
 
-The original behaviour is kept is ARCH is not set on the
-commandline and saved in .kbuild (Kbuild.config in the patch).
+That's unfortunately useless ... PPS, PRS, CCS (meaning powered,
+resetting, connected).  In short, there is *no* indication from
+the OHCI hardware that a disconnect happened.
 
-The logic goes basically like this:
-If there is no .kbuild file then set ARCH = $(SUBARCH)
-else set ARCH = saved ARCH from .kbuild.
-
-And then a bit sanity check that the user does not
-try to change architecture in the middle.
-
-I actually used um as testing ground for this patch so
-it works for um in my way of building um.
-
-I considered switching architectures automagically
-but concluded that in most cases when a user change ARCH
-then that's because the user forgot to specify ARCH or more
-seldom forgot what ARCH was being built in that directory.
-
-	Sam
