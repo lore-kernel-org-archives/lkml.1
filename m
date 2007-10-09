@@ -1,131 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbXJIAnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbXJIAw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbXJIAnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Oct 2007 20:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXJIAnB
+	id S1753235AbXJIAw6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Oct 2007 20:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJIAwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Oct 2007 20:43:01 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46771 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751857AbXJIAnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Oct 2007 20:43:00 -0400
-Date: Mon, 8 Oct 2007 17:43:36 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alexis Bruemmer <alexisb@us.ibm.com>
-Subject: [PATCH 2/2] aic94xx: Use sas_request_addr() to provide SAS addr if
-	the adapter lacks one
-Message-ID: <20071009004335.GD16003@tree.beaverton.ibm.com>
+	Mon, 8 Oct 2007 20:52:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56079 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbXJIAwt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Oct 2007 20:52:49 -0400
+Message-ID: <470AD0C2.9060709@zytor.com>
+Date: Mon, 08 Oct 2007 17:52:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Clemens Koller <clemens.koller@anagramm.de>
+CC: Pavel Machek <pavel@ucw.cz>, tglx@linutronix.de,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: sleepy linux 2.6.23-rc9
+References: <20071008220506.GE3484@elf.ucw.cz> <470AC166.20705@anagramm.de>
+In-Reply-To: <470AC166.20705@anagramm.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the aic94xx chip doesn't have a SAS address in the chip's flash memory,
-make libsas get one for us.  Also clean out some old code that had been
-used to do this in the past.
+Clemens Koller wrote:
+>>
+>> When I boot init=/bin/bash vga=791 (vesa framebuffer), most wakeups
+>> are caused by cursor painting (I should fix that some day, I
+>> guess). But... the cursor blinking does not even work properly!
+>>
+>> It blinks at normal speed, then (randomly) it blinks slowly, then gets
+>> back to normal speed, then inserts longer delay.
+> 
+> Is the effect a beat that it has roughly the frequency of your Notebooks
+> screen refresh rate (60Hz)? (in german: Schwebung)
+> 
+>> The effect is so nice that I thought about youtube ;-). Thinkpad
+>> x60.. question is, how to debug it? 
+> 
+> No idea... check where the register of the HW cursor blink rate
+> gets written? But as it seems to be so nice, please submit a patch
+> which enables this for all platforms. ;-)
+> 
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+For the VESA framebuffer I would assume the cursor blinking is done in 
+software (if done at all.)
 
- drivers/scsi/aic94xx/aic94xx.h      |   16 ----------------
- drivers/scsi/aic94xx/aic94xx_hwi.c  |   21 ++++++++++-----------
- drivers/scsi/aic94xx/aic94xx_init.c |    2 --
- 3 files changed, 10 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/scsi/aic94xx/aic94xx.h b/drivers/scsi/aic94xx/aic94xx.h
-index 32f513b..aee235f 100644
---- a/drivers/scsi/aic94xx/aic94xx.h
-+++ b/drivers/scsi/aic94xx/aic94xx.h
-@@ -58,7 +58,6 @@
- 
- extern struct kmem_cache *asd_dma_token_cache;
- extern struct kmem_cache *asd_ascb_cache;
--extern char sas_addr_str[2*SAS_ADDR_SIZE + 1];
- 
- static inline void asd_stringify_sas_addr(char *p, const u8 *sas_addr)
- {
-@@ -68,21 +67,6 @@ static inline void asd_stringify_sas_addr(char *p, const u8 *sas_addr)
- 	*p = '\0';
- }
- 
--static inline void asd_destringify_sas_addr(u8 *sas_addr, const char *p)
--{
--	int i;
--	for (i = 0; i < SAS_ADDR_SIZE; i++) {
--		u8 h, l;
--		if (!*p)
--			break;
--		h = isdigit(*p) ? *p-'0' : *p-'A'+10;
--		p++;
--		l = isdigit(*p) ? *p-'0' : *p-'A'+10;
--		p++;
--		sas_addr[i] = (h<<4) | l;
--	}
--}
--
- struct asd_ha_struct;
- struct asd_ascb;
- 
-diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.c b/drivers/scsi/aic94xx/aic94xx_hwi.c
-index 0cd7eed..1dc5400 100644
---- a/drivers/scsi/aic94xx/aic94xx_hwi.c
-+++ b/drivers/scsi/aic94xx/aic94xx_hwi.c
-@@ -27,6 +27,7 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-+#include <linux/firmware.h>
- 
- #include "aic94xx.h"
- #include "aic94xx_reg.h"
-@@ -38,16 +39,14 @@ u32 MBAR0_SWB_SIZE;
- 
- /* ---------- Initialization ---------- */
- 
--static void asd_get_user_sas_addr(struct asd_ha_struct *asd_ha)
-+static int asd_get_user_sas_addr(struct asd_ha_struct *asd_ha)
- {
--	extern char sas_addr_str[];
--	/* If the user has specified a WWN it overrides other settings
--	 */
--	if (sas_addr_str[0] != '\0')
--		asd_destringify_sas_addr(asd_ha->hw_prof.sas_addr,
--					 sas_addr_str);
--	else if (asd_ha->hw_prof.sas_addr[0] != 0)
--		asd_stringify_sas_addr(sas_addr_str, asd_ha->hw_prof.sas_addr);
-+	/* adapter came with a sas address */
-+	if (asd_ha->hw_prof.sas_addr[0])
-+		return 0;
-+
-+	return sas_request_addr(asd_ha->sas_ha.core.shost,
-+				asd_ha->hw_prof.sas_addr);
- }
- 
- static void asd_propagate_sas_addr(struct asd_ha_struct *asd_ha)
-@@ -657,8 +657,7 @@ int asd_init_hw(struct asd_ha_struct *asd_ha)
- 
- 	asd_init_ctxmem(asd_ha);
- 
--	asd_get_user_sas_addr(asd_ha);
--	if (!asd_ha->hw_prof.sas_addr[0]) {
-+	if (asd_get_user_sas_addr(asd_ha)) {
- 		asd_printk("No SAS Address provided for %s\n",
- 			   pci_name(asd_ha->pcidev));
- 		err = -ENODEV;
-diff --git a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
-index b70d6e7..5c99f27 100644
---- a/drivers/scsi/aic94xx/aic94xx_init.c
-+++ b/drivers/scsi/aic94xx/aic94xx_init.c
-@@ -54,8 +54,6 @@ MODULE_PARM_DESC(collector, "\n"
- 	"\tThe aic94xx SAS LLDD supports both modes.\n"
- 	"\tDefault: 0 (Direct Mode).\n");
- 
--char sas_addr_str[2*SAS_ADDR_SIZE + 1] = "";
--
- static struct scsi_transport_template *aic94xx_transport_template;
- static int asd_scan_finished(struct Scsi_Host *, unsigned long);
- static void asd_scan_start(struct Scsi_Host *);
+	-hpa
