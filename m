@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXJIHfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXJIHf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbXJIHfu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 03:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXJIHfm
+	id S1753893AbXJIHf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 03:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXJIHfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 03:35:42 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:42186 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753058AbXJIHfl (ORCPT
+	Tue, 9 Oct 2007 03:35:13 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48009
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752841AbXJIHfM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 03:35:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4UHdDU8zlshUBJyiULy3b1oNFZdGnMFYmeto4ego6TAlQLNsMtpFF+Hgg8OBg12uxMKOMEmrzzv/QNS97AGAWyRfEhezUbJzBVhbxIV8v4KCq8U0t/drdJayb4lWOEKdxQB8+OnkWtlzBfXWmQEtyruW/+OelVpH+KRz5uit8Ys=  ;
-X-YMail-OSG: y0Gjx1sVM1nT7VKYjqpRemyNOzAEIFZJWrUv5AxYfkixbhhMxiieUvJB6PX8b8woOTMuD5o8Sw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH] mm: set_page_dirty_balance() vs ->page_mkwrite()
-Date: Tue, 9 Oct 2007 00:50:04 +1000
-User-Agent: KMail/1.9.5
-Cc: David Chinner <dgc@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Howells <dhowells@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, hugh <hugh@veritas.com>,
-       stable <stable@kernel.org>
-References: <1191862477.20745.22.camel@twins> <200710081747.52627.nickpiggin@yahoo.com.au> <20071009021253.GC30360@ca-server1.us.oracle.com>
-In-Reply-To: <20071009021253.GC30360@ca-server1.us.oracle.com>
+	Tue, 9 Oct 2007 03:35:12 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: akpm@linux-foundation.org
+Subject: [PATCH] Add recommended section IDs to deviceiobook.tmpl
+Date: Tue, 9 Oct 2007 02:35:07 -0500
+User-Agent: KMail/1.9.6
+Cc: matthew@wil.cx, alan@redhat.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710090050.05059.nickpiggin@yahoo.com.au>
+Message-Id: <200710090235.08063.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 12:12, Mark Fasheh wrote:
-> On Mon, Oct 08, 2007 at 05:47:52PM +1000, Nick Piggin wrote:
-> > > block_page_mkwrite() is just using generic interfaces to do this,
-> > > same as pretty much any write() system call. The idea was to make it
-> > > as similar to the write() call path as possible...
-> > >
-> > > However, unlike generic_file_buffered_write(), we are not calling
-> > > balance_dirty_pages_ratelimited(mapping) between
-> > > ->prepare/commit_write call pairs.  Perhaps this should be added to
-> > > block_page_mkwrite() after the page is unlocked....
-> >
-> > That sounds pretty sane, in terms of matching with
-> > generic_file_buffered_write.
->
-> I agree. We could also insert a call to balance_dirty_pages_ratelimited()
-> in __ocfs2_page_mkwrite.
+From: Rob Landley <rob@landley.net>
 
-Hmm, Peter's patch got merged -- I suppose that's fine for 2.6.23 though...
+Add recommended section ID tags to deviceiobook.tmpl
 
+Signed-off-by: Rob Landley <rob@landley.net>
+---
+
+Because otherwise the link #anchors in the html vary from build to build.
+
+ Documentation/DocBook/deviceiobook.tmpl |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff -r a26a53ed1101 Documentation/DocBook/deviceiobook.tmpl
+--- a/Documentation/DocBook/deviceiobook.tmpl	Sun Oct 07 16:42:22 2007 -0700
++++ b/Documentation/DocBook/deviceiobook.tmpl	Tue Oct 09 02:32:12 2007 -0500
+@@ -85,7 +85,7 @@
+ 
+   <chapter id="mmio">
+     <title>Memory Mapped IO</title>
+-    <sect1>
++    <sect1 id="getting_access_to_the_device">
+       <title>Getting Access to the Device</title>
+       <para>
+ 	The most widely supported form of IO is memory mapped IO.
+@@ -114,7 +114,7 @@
+       </para>
+     </sect1>
+ 
+-    <sect1>
++    <sect1 id="accessing_the_device">
+       <title>Accessing the device</title>
+       <para>
+ 	The part of the interface most used by drivers is reading and
+@@ -272,9 +272,9 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
+ 
+   </chapter>
+ 
+-  <chapter>
++  <chapter id="port_space_accesses">
+     <title>Port Space Accesses</title>
+-    <sect1>
++    <sect1 id="port_space_explained">
+       <title>Port Space Explained</title>
+ 
+       <para>
+@@ -291,7 +291,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
+       </para>
+ 
+     </sect1>
+-    <sect1>
++    <sect1 id="accessing_port_space">
+       <title>Accessing Port Space</title>
+       <para>
+ 	Accesses to this space are provided through a set of functions
+
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
