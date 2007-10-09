@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbXJIFU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbXJIFYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbXJIFU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 01:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXJIFUv
+	id S1754286AbXJIFYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 01:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXJIFYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 01:20:51 -0400
-Received: from 1wt.eu ([62.212.114.60]:2855 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbXJIFUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 01:20:51 -0400
-Date: Tue, 9 Oct 2007 07:18:56 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: gigabit ethernet power consumption
-Message-ID: <20071009051856.GT10199@1wt.eu>
-References: <20071008220720.GF3484@elf.ucw.cz> <470AAFD7.9060002@intel.com>
+	Tue, 9 Oct 2007 01:24:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60113
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751463AbXJIFX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 01:23:59 -0400
+Date: Mon, 08 Oct 2007 22:23:58 -0700 (PDT)
+Message-Id: <20071008.222358.133742279.davem@davemloft.net>
+To: david-b@pacbell.net
+Cc: greg@kroah.com, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: OHCI root_port_reset() deadly loop...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071009050019.C6C6023718A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20071008.204236.92016616.davem@davemloft.net>
+	<20071009043909.GA4940@kroah.com>
+	<20071009050019.C6C6023718A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <470AAFD7.9060002@intel.com>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Auke,
+From: David Brownell <david-b@pacbell.net>
+Date: Mon, 08 Oct 2007 22:00:19 -0700
 
-On Mon, Oct 08, 2007 at 03:31:51PM -0700, Kok, Auke wrote:
-> Pavel Machek wrote:
-> > Hi!
-> > 
-> > I've found that gbit vs. 100mbit power consumption difference is about
-> > 1W -- pretty significant. (Maybe powertop should include it in the
-> > tips section? :).
-> > 
-> > Energy Star people insist that machines should switch down to 100mbit
-> > when network is idle, and I guess that makes a lot of sense -- you
-> > save 1W locally and 1W on the router.
-> > 
-> > Question is, how to implement it correctly? Daemon that would watch
-> > data rates and switch speeds using mii-tool would be simple, but is
-> > that enough?
-> 
-> you most certainly want to do this in userspace I think.
-> 
-> One of the biggest problems is that link negotiation can take a significant amount
-> of time, well over several seconds (1 to 3 seconds typical) with gigabit, and
-> having your ethernet connection go offline for 3 seconds may not be the desired
-> effect for when you want to get more bandwidth in the first place.
-> 
-> However, when a laptop is in battery mode, switching down from gigabit to 100mbit
-> makes a lot more sense, so this is something I would recommend. This can be as
-> easy as changing the advertisement mask of the interface and renegotiating the
-> link. Userspace could handle that very easily.
+> Assuming PCI is present, /sys/bus/pci/devices/*/class can tell
+> if EHCI is present (0x0c0320) ... if so, load that driver.
+> Then repeat for OHCI (0x0c0310) and UHCI (0x0c0300).
 
-If something does that, it must *only* be in userspace so that we can
-easily disable it. It's amazing how many laptops consider that you
-don't want any performance when you run off batteries. I've seen a
-2GHz laptop falling back to 600 MHz when running on batteries, which
-was very inconvenient when the laptop in question was used to go
-sniffing gigabit traffic in datacenters... I would even go as far
-as to say that my notebook runs lowpower only when it's plugged into
-the wall because it's when I'm typing or doing low activity things.
+These are facts all of us know very well, but implementing this in
+userspace in a failsafe manner isn't practical.  That's what we're
+discussing.
 
-In my opinion, battery != low power, battery == mobility. It's user's
-choice which must imply low power, so that must be done with a dedicated
-daemon.
+There are things that autoload USB drivers way before udev or similar
+even get started.
 
-Regards,
-Willy
+For example, the first thing some distributions do is try to load the
+correct keyboard maps.  Guess what that can do?  It triggers a load of
+all of the modular USB host controller drivers in case we have a USB
+keyboard.
 
+The only real solution is in the kernel, because it is the only
+clean place to trap all of the potential module load events.
