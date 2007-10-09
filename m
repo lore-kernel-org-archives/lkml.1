@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXJIVGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXJIVJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXJIVGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 17:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbXJIVGe
+	id S1756060AbXJIVJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 17:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJIVJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 17:06:34 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:63350 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbXJIVGd (ORCPT
+	Tue, 9 Oct 2007 17:09:50 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40878 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751105AbXJIVJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 17:06:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZdcFusu0VRFbvyVV2ZjyYVZpIVyU0AsRX4wNBryzP6vkaB6GEN75ysPdeIbEr3TegL/+TPC2HH7lh+p8iNqIfCZjNsxCx83N7BZpHFnyq2YYswl2B3bCS8MYqKrIClxBnMMMdl5idwjgLEcimTL1+oQJDqdOwoj5QY8JJkq1Gdk=
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add
-	of_platform binding to xilinxfb
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akonovalov@ru.mvista.com, linuxppc <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	 <1191370502.5238.1.camel@daplas>
-	 <fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
-	 <1191906242.6083.7.camel@daplas>
-	 <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 10 Oct 2007 05:06:12 +0800
-Message-Id: <1191963972.5446.1.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Tue, 9 Oct 2007 17:09:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=xrsRmpd0b9RauPfSksNcFxInZnmHFuzeRJNHEZ8XeU/Yui5rNuPHDll4zlfVPOlL04KcxE3DJ5NpEQKWn0uVrHFAhLjpHRrmOrV6FVPGZIuHE/uj+Pd37x3M2wCTabHEbRhp0vHQl5HEOBTpuqjqMg0weIjkyuA7OtfQ7Ky5yaQ=  ;
+X-YMail-OSG: CZArO28VM1n.PF.CMSf1e6iGwcNeMq09woorOJUU2DfA6unOk.mks7Ch1e1uLv.75q7gKZcltw--
+Date: Tue, 09 Oct 2007 14:09:55 -0700
+From: David Brownell <david-b@pacbell.net>
+To: davem@davemloft.net
+Subject: Re: OHCI root_port_reset() deadly loop...
+Cc: linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+References: <20071009043643.773CC23715F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20071008.214408.98397070.davem@davemloft.net>
+ <20071009163827.E7DB310B535@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20071009.134116.63997473.davem@davemloft.net>
+In-Reply-To: <20071009.134116.63997473.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071009210955.01668236A37@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-09 at 11:39 -0600, Grant Likely wrote:
-> On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
-> > > BTW, what path do framebuffer patches take to get into Linus' tree?
-> > > Does he pull your tree directly, or do they go through someone else's
-> > > tree?
-> >
-> > They all go to -mm tree, unless it's a needed fix, then to Linus's.
-> >
-> > Tony
-> 
-> Ah, okay.
-> 
-> Since the XilinxFB is a powerpc-only device, is it okay with you if I
-> get Paul Mackerras to merge them into his tree instead (that way the
-> changes go in with the platform code which requires these changes)
+> Even though I'm severly overloaded, you asked me for a patch, I gave
+> you one.
 
-Fine with me.
+And I got some questions as I reviewed it.  That's far
+from un-heard-of.  One particular question related to
+one potential simplification ... which unfortunately
+couldn't check out.  Also not un-heard-of.
 
-Tony
+
+>	And now you want to push it back at me because it isn't
+> clear to you yet that the code there right now is a huge problem.
+
+You're reading things into what I wrote which were not there.
+Calm down.
+
+- Dave
 
