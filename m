@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbXJIPup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbXJIPzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbXJIPup (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 11:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXJIPuh
+	id S1756432AbXJIPzo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 11:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbXJIPzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 11:50:37 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:45434 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbXJIPug (ORCPT
+	Tue, 9 Oct 2007 11:55:36 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44331 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754931AbXJIPzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 11:50:36 -0400
-To: "Joerg Roedel" <joerg.roedel@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Christoph Egger" <Christoph.Egger@amd.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] i386: mce cleanup part1: functional change
-In-Reply-To: <11919341961530-git-send-email-joerg.roedel@amd.com>
-References: <11919341961890-git-send-email-joerg.roedel@amd.com> <11919341961530-git-send-email-joerg.roedel@amd.com>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Tue, 9 Oct 2007 18:04:48 +0200
-Message-Id: <E1IfHZg-0003dp-FA@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Tue, 9 Oct 2007 11:55:35 -0400
+Date: Tue, 9 Oct 2007 08:55:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: Rob Landley <rob@landley.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+Subject: Re: [PATCH] Stop docproc segfaulting when SRCTREE isn't set.
+Message-Id: <20071009085500.e7be49a0.randy.dunlap@oracle.com>
+In-Reply-To: <20071009130315.GB4245@Ahmed>
+References: <200710090125.19089.rob@landley.net>
+	<20071009130315.GB4245@Ahmed>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tue,  9 Oct 2007 14:49:55 +0200
+On Tue, 9 Oct 2007 15:03:15 +0200 Ahmed S. Darwish wrote:
 
-[]
-> @@ -33,9 +33,20 @@ void fastcall (*machine_check_vector)(struct pt_regs *, long error_code) = unexp
->  /* This has to be run for each processor */
->  void mcheck_init(struct cpuinfo_x86 *c)
->  {
-> +	uint32_t mca, mce;
-> +
->  	if (mce_disabled==1)
->  		return;
->  
-> +	mca = cpu_has(c, X86_FEATURE_MCA);
-> +	mce = cpu_has(c, X86_FEATURE_MCE);
-> +
-> +	if (!mca || !mce) {
-> +		printk(KERN_INFO "CPU%i: No machine check support available\n",
-> +			smp_processor_id());
-> +		return;
-> +	}
-> +
+> Hi Rob,
+> 
+> On Tue, Oct 09, 2007 at 01:25:18AM -0500, Rob Landley wrote:
+> [...]
+> >  	FILE * infile;
+> > +
+> > +	srctree = getenv("SRCTREE");
+> > +	if (!srctree) srctree = getcwd(NULL,0);
+> >  	if (argc != 3) {
+> >  		usage();
+> >  		exit(1);
+> 
+> $ man getcwd
+> 
+>  char *getcwd(char *buf, size_t size);
+>       
+>  As an extension to the POSIX.1 standard, Linux (libc4, libc5, glibc) getcwd() 
+>  allocates the buffer dynamically using malloc() if buf is NULL on call.
+> 
+> Shouldn't "srctree" be free()ed in case getenv("SRCTREE") failed ?
 
-cpu_has() returns int,
-but would it be better to have something like
+What is there to free() at that point?  If getenv() fails (i.e.,
+the env. variable is not found), it returns NULL.
+or do I need another cup of coffee?
 
-  	if (!mce_disabled &&
-	    !(c->x86_capability & (X86_FEATURE_MCA | X86_FEATURE_MCE)) {
-		printk(KERN_INFO "CPU%i: No machine check support available\n",
-			smp_processor_id());
-		return;
-	} else
-		return;
-?
-____
+---
+~Randy
