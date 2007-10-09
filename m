@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbXJISup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXJISvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbXJISup (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXJISuY
+	id S1756105AbXJISvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbXJISu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:50:24 -0400
-Received: from khc.piap.pl ([195.187.100.11]:60157 "EHLO khc.piap.pl"
+	Tue, 9 Oct 2007 14:50:57 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:57429 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754639AbXJISuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:50:23 -0400
-To: Timur Tabi <timur@freescale.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Anton Altaparmakov <aia21@cam.ac.uk>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
+	id S1753484AbXJISu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 14:50:56 -0400
+Date: Tue, 9 Oct 2007 11:51:08 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
-References: <4706822D.4070509@freescale.com>
-	<Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr>
-	<470691EB.7020209@freescale.com>
-	<AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk>
-	<4706A842.9030507@freescale.com>
-	<20071009174623.GC4003@csclub.uwaterloo.ca>
-	<470BC0D5.70305@freescale.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 09 Oct 2007 20:50:19 +0200
-In-Reply-To: <470BC0D5.70305@freescale.com> (Timur Tabi's message of "Tue, 09 Oct 2007 12:56:37 -0500")
-Message-ID: <m3fy0kcec4.fsf@maximus.localdomain>
-MIME-Version: 1.0
+Subject: Re: [PATCH RT] fix rt-task scheduling issue
+Message-ID: <20071009185108.GA14419@monkey.ibm.com>
+References: <20071006021548.GE4587@monkey.ibm.com> <20071009024621.GA12915@goodmis.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071009024621.GA12915@goodmis.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi <timur@freescale.com> writes:
+On Mon, Oct 08, 2007 at 10:46:21PM -0400, Steven Rostedt wrote:
+> Mike,
+> 
+> Can you attach your Signed-off-by to this patch, please.
+> 
+> 
+> On Fri, Oct 05, 2007 at 07:15:48PM -0700, Mike Kravetz wrote:
+> > Hi Ingo,
+> > 
+> > After applying the fix to try_to_wake_up() I was still seeing some large
+> > latencies for realtime tasks.  Some debug code pointed out two additional
+> > causes of these latencies.  I have put fixes into my 'old' kernel and the
+> > scheduler related latencies have gone away.  I'm pretty confident that
+> > one of these bugs still exist in the latest RT patch set.  Not so sure
+> > about the other.  But, I wanted to describe in detail so that you could
+> > address in the latest version of the code if applicable.
+> > 
+> > finish_task_switch() contains the following code:
+> > 
+> > #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+> > 	/*
+> > 	 * If we pushed an RT task off the runqueue,
+> > 	 * then kick other CPUs, they might run it:
+> > 	 */
+> > 	if (unlikely(rt_task(current) && prev->se.on_rq && rt_task(prev))) {
+> > 		schedstat_inc(rq, rto_schedule);
+> > 		smp_send_reschedule_allbutself_cpumask(current->cpus_allowed);
+> > 	}
+> > #endif
+> > 
+> > My debug code found instances where more than one realtime task got
+> > put on the runqueue before the __schedule() was invoked.  So, current
+> > would be a realtime task, but prev was not realtime.  And, there was
+> > another (lesser priority, or last in) realtime task on the queue.  I
+> > believe that in this case we would still want to send the IPIs.  In my
+> > kernel I changed the test to be:
+> > 
+> > 	if (unlikely(rt_task(current) && rq->rt_nr_running > 1)) {
+> > 
+> > After this change, I definitely saw some long latencies go away.
 
-> Yeah, I read that article some time ago when trying to diagnose the
-> problem I was seeing.  It does explain the point I'm trying to make.
-> We have a device that's used on two product lines: one ARM-based, and
-> one PowerPC.  The ARM is little-endian, and the PowerPC is big-endian.
-> The device can support little-endian or big-endian data, as long as
-> the bit-order matches the byte-order.
+OK, not really a patch but
 
-There is no such thing as bit-order. The data lines are numbered,
-say, D0 - D31, with D0 being LSB (bit) and D31 MSB.
+Signed-off-by: Mike Kravetz <kravetz@us.ibm.com>
 
-You usually write register bits from MSB to LSB, so shift left
-increments and shift right decrements the value. This is orthogonal
-to the big/little-endianness.
-
-Now your device can be connected straight to the bus or the data
-lanes (4 on 32-bit PCI) can be crossed. This is platform-dependent.
-The kernel provides functions/macros to access devices in
-a independent way, such as writel/readl/pci_map_* etc.
 -- 
-Krzysztof Halasa
+Mike
