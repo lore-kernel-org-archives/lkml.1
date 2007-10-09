@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbXJIGnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbXJIGtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbXJIGnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXJIGnl
+	id S1754850AbXJIGtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbXJIGtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:43:41 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38581 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753379AbXJIGnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:43:41 -0400
-Subject: Re: OHCI root_port_reset() deadly loop...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Brownell <david-b@pacbell.net>
-Cc: greg@kroah.com, davem@davemloft.net, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071009050019.C6C6023718A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20071009031049.GD14127@kroah.com>
-	 <20071008.201653.43030513.davem@davemloft.net>
-	 <20071009033412.E37E323700C@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <20071008.204236.92016616.davem@davemloft.net>
-	 <20071009043909.GA4940@kroah.com>
-	 <20071009050019.C6C6023718A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Content-Type: text/plain
-Date: Tue, 09 Oct 2007 16:43:04 +1000
-Message-Id: <1191912184.6355.66.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 9 Oct 2007 02:49:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46750 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbXJIGs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:48:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <470B23F4.7000303@s5r6.in-berlin.de>
+Date: Tue, 09 Oct 2007 08:47:16 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Scott Preece <sepreece@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: RFC: reviewer's statement of oversight
+References: <25555.1191864285@lwn.net> <20071008185225.GK2902@fieldses.org> <7b69d1470710081226w5b6682e6q56bfa2af5ae3f017@mail.gmail.com> <200710082216.28227.rjw@sisk.pl> <20071009020750.GB4504@goodmis.org> <470B1BA9.7080509@s5r6.in-berlin.de> <20071009062757.GA22303@uranus.ravnborg.org> <470B220A.6080102@s5r6.in-berlin.de>
+In-Reply-To: <470B220A.6080102@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2007-10-08 at 22:00 -0700, David Brownell wrote:
-> > > > The old /etc/hotplug/usb.rc script made sure to load those modules
-> > > > in the correct order:  EHCI first.
-> > > 
-> > > I expected to find something cute attempting to handle this under
-> > > /etc/udev, I have failed so far :-)
-> >
-> > No, nothing cute in udev itself, but it seems that all distros that I
-> > know of have a "load these modules now" type setting in their init
-> > scripts that can be used here.
-> >
-> > I can't think of a way to enforce this load order on the modules
-> > themselves due to the fact that OHCI might not even be needed for EHCI
-> > devices on UHCI (Intel) based chipsets :(
+> Sam Ravnborg wrote:
+>> On Tue, Oct 09, 2007 at 08:11:53AM +0200, Stefan Richter wrote:
+>>> The SCM changelog should contain _what_ a patch does and if
+>>> necessary _why_ it does so.
+>> The _why_ part is more important than _what_. The diff should hopefully
+>> explain the _what_ part.
 > 
-> Assuming PCI is present, /sys/bus/pci/devices/*/class can tell
-> if EHCI is present (0x0c0320) ... if so, load that driver.
-> Then repeat for OHCI (0x0c0310) and UHCI (0x0c0300).
+> "What": fix lockup in this and that circumstances
+> "Why": because lockups are annoying
+> "How": the diff
+> (That's what I meant with what and why.)
 
-That will not work for all of the non-PCI implementations though.
-
-Ben.
-
-
+PS, example with non-trivial why:
+What: add ABI which correlates bus cycle counter and local time
+Why: apps need it to sync streams from different buses
+How: the diff
+-- 
+Stefan Richter
+-=====-=-=== =-=- -=--=
+http://arcgraph.de/sr/
