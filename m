@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbXJISed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXJISjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbXJISed (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXJISe0
+	id S1755541AbXJISjb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXJISjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:34:26 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41095 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751889AbXJISeZ (ORCPT
+	Tue, 9 Oct 2007 14:39:23 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38841 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753080AbXJISjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:34:25 -0400
-Date: Tue, 9 Oct 2007 14:34:24 -0400
-To: Timur Tabi <timur@freescale.com>
-Cc: Anton Altaparmakov <aia21@cam.ac.uk>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
-Message-ID: <20071009183424.GG4003@csclub.uwaterloo.ca>
-References: <4706822D.4070509@freescale.com> <Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr> <470691EB.7020209@freescale.com> <AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk> <4706A842.9030507@freescale.com> <20071009174623.GC4003@csclub.uwaterloo.ca> <470BC0D5.70305@freescale.com>
+	Tue, 9 Oct 2007 14:39:23 -0400
+Date: Tue, 9 Oct 2007 11:39:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Rik van Riel <riel@redhat.com>, Andi Kleen <ak@suse.de>,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [13/18] x86_64: Allow fallback for the stack
+In-Reply-To: <200710082255.05598.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0710091138250.32162@schroedinger.engr.sgi.com>
+References: <20071004035935.042951211@sgi.com> <200710071735.41386.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0710081032030.26382@schroedinger.engr.sgi.com>
+ <200710082255.05598.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <470BC0D5.70305@freescale.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 12:56:37PM -0500, Timur Tabi wrote:
-> I'm sure they're correct, my problem is that how can my driver know what 
-> they are?
+On Mon, 8 Oct 2007, Nick Piggin wrote:
 
-If they are correct, then you should only need to know about byte order
-in my experience.
-
-> I was hoping that there would be some compile-time constant I could check 
-> that would give me this information.
+> The tight memory restrictions on stack usage do not come about because
+> of the difficulty in increasing the stack size :) It is because we want to
+> keep stack sizes small!
 > 
-> Yeah, I read that article some time ago when trying to diagnose the problem 
-> I was seeing.  It does explain the point I'm trying to make.  We have a 
-> device that's used on two product lines: one ARM-based, and one PowerPC.  
-> The ARM is little-endian, and the PowerPC is big-endian.  The device can 
-> support little-endian or big-endian data, as long as the bit-order matches 
-> the byte-order.
+> Increasing the stack size 4K uses another 4MB of memory for every 1000
+> threads you have, right?
 > 
-> For now, I'm going to have to assume that they do match.
+> It would take a lot of good reason to move away from the general direction
+> we've been taking over the past years that 4/8K stacks are a good idea for
+> regular 32 and 64 bit builds in general.
 
-Well that is certainly the normal way it is done.  I think a few odd
-machines had options for doing different bit orders, but the normal
-setup is that it matches since that is the simplest layout when trying
-to implement bit shifts in hardware.
+We already use 32k stacks on IA64. So the memory argument fail there.
 
---
-Len Sorensen
+> > I have some concerns about the medium NUMA systems (a few dozen of nodes)
+> > also running out of stack since more data is placed on the stack through
+> > the policy layer and since we may end up with a couple of stacked
+> > filesystems. Most of the current NUMA systems on x86_64 are basically
+> > two nodes on one motherboard. The use of NUMA controls is likely
+> > limited there and the complexity of the filesystems is also not high.
+> 
+> The solution has until now always been to fix the problems so they don't
+> use so much stack. Maybe a bigger stack is OK for you for 1024+ CPU
+> systems, but I don't think you'd be able to make that assumption for most
+> normal systems.
+
+Yes that is why I made the stack size configurable.
+
