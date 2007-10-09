@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbXJIErg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbXJIEzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbXJIErg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 00:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbXJIEr2
+	id S1753568AbXJIEzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 00:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbXJIEzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 00:47:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51784
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751463AbXJIEr2 (ORCPT
+	Tue, 9 Oct 2007 00:55:00 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:53022 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbXJIEy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 00:47:28 -0400
-Date: Mon, 08 Oct 2007 21:47:27 -0700 (PDT)
-Message-Id: <20071008.214727.48799757.davem@davemloft.net>
-To: greg@kroah.com
-Cc: david-b@pacbell.net, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: OHCI root_port_reset() deadly loop...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071009043909.GA4940@kroah.com>
-References: <20071009033412.E37E323700C@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20071008.204236.92016616.davem@davemloft.net>
-	<20071009043909.GA4940@kroah.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 9 Oct 2007 00:54:59 -0400
+Date: Mon, 8 Oct 2007 21:53:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Oleg Verych <olecom@flower.upol.cz>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/RFT] kbuild: save ARCH & CROSS_COMPILE
+Message-Id: <20071008215316.6e186b89.randy.dunlap@oracle.com>
+In-Reply-To: <20071009041743.GA21552@uranus.ravnborg.org>
+References: <20071008200255.GA16497@uranus.ravnborg.org>
+	<20071008205048.GY22435@flower.upol.cz>
+	<20071009041743.GA21552@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <greg@kroah.com>
-Date: Mon, 8 Oct 2007 21:39:09 -0700
+On Tue, 9 Oct 2007 06:17:43 +0200 Sam Ravnborg wrote:
 
-> No, nothing cute in udev itself, but it seems that all distros that I
-> know of have a "load these modules now" type setting in their init
-> scripts that can be used here.
+> > 
+> > What about, that this is the first ever prompt, that must be shown and
+> > written to the .config?
+> Two issues to fix before we can do this:
+> 1) chocie values cannot have more than one prompt
+> 2) We need to share much more Kconfig* between the individual architectures
+>    First step is to let all arch's use drivers/Kconfig
+
+2) isn't terribly difficult, just takes some time and willingness
+of $arch maintainers to some changes, but please explain a bit more
+why it is needed...?
+
+
+> Let's get the two items above solved then we can revisit adding arch selection
+> to kconfig (where it belongs in the end).
+> And neither require a rewrite of kconfig...
 > 
-> I can't think of a way to enforce this load order on the modules
-> themselves due to the fact that OHCI might not even be needed for EHCI
-> devices on UHCI (Intel) based chipsets :(
-> 
-> Can anyone else?
+> > Also, i'd like to propose sequencing of config-enable-build-this-unit
+> > in config file(s), thus Makefile(s) (sometimes very small and stupid)
+> > will be not necessary. Additional link ordering can be supplied as
+> > meta-config information there. Shell scripting, very ugly in the view
+> > of make syntax, will be natural in config files. Extending build
+> > process to get hidden dependencies or right linking/other magic is
+> > part of particular configuration. Hm?
+> Discussed before but so far no patches has shown up.
 
-The three modules perhaps should be a bundle of whatever ones you have
-enabled, and internally we can dispatch the initialization to occur in
-the correct order from a top-level module_init().
 
-If the devices need to be initialized in a certain order in a
-situation like this, it really seems like it is the kernel's job to
-enforce it.
+---
+~Randy
