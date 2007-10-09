@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXJIRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXJIRUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXJIRTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXJIRTJ
+	id S1755541AbXJIRUO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 13:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXJIRUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 13:19:09 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:46665 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbXJIRTI (ORCPT
+	Tue, 9 Oct 2007 13:20:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:34162 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbXJIRUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 13:19:08 -0400
-Date: Tue, 9 Oct 2007 19:33:17 +0200
-To: "LKML (Cc removed)" <linux-kernel@vger.kernel.org>
-Subject: coding for optimizations (Re: [PATCH 1/2] i386: mce cleanup part1: functional change)
-Message-ID: <20071009173317.GD22435@flower.upol.cz>
-References: <11919341961890-git-send-email-joerg.roedel@amd.com> <11919341961530-git-send-email-joerg.roedel@amd.com> <E1IfHZg-0003dp-FA@flower> <20071009160605.GC13205@amd.com>
+	Tue, 9 Oct 2007 13:20:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=gtOsx/kKvb0Wf6L/CsJsv7NBZubd3vo3gTBT7edW0aKD1StlRO/uBjIBv8APda81to6CAEOV1LaP4o4fRC/g8upVHuaUzq65uOxB5wsABekpRt787AnNCe6ems7kcXOssobK27mrJkf0ubRgRymQqU2k4l6GWbl9isnCDglsk9Q=
+Date: Tue, 9 Oct 2007 19:19:49 +0200
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Rob Landley <rob@landley.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+Subject: Re: [PATCH] Stop docproc segfaulting when SRCTREE isn't set.
+Message-ID: <20071009171949.GA11579@Ahmed>
+References: <200710090125.19089.rob@landley.net> <20071009130315.GB4245@Ahmed> <20071009085500.e7be49a0.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071009160605.GC13205@amd.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+In-Reply-To: <20071009085500.e7be49a0.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 06:06:05PM +0200, Joerg Roedel wrote:
-> > >  void mcheck_init(struct cpuinfo_x86 *c)
-> > >  {
-> > > +	uint32_t mca, mce;
-> > > +
-> > >  	if (mce_disabled==1)
-> > >  		return;
-> > >  
-> > > +	mca = cpu_has(c, X86_FEATURE_MCA);
-> > > +	mce = cpu_has(c, X86_FEATURE_MCE);
-> > > +
-> > > +	if (!mca || !mce) {
-> > > +		printk(KERN_INFO "CPU%i: No machine check support available\n",
-> > > +			smp_processor_id());
-> > > +		return;
-> > > +	}
-> > > +
+On Tue, Oct 09, 2007 at 08:55:00AM -0700, Randy Dunlap wrote:
+> On Tue, 9 Oct 2007 15:03:15 +0200 Ahmed S. Darwish wrote:
+> 
+> > Hi Rob,
 > > 
-> > cpu_has() returns int,
-> > but would it be better to have something like
+> > On Tue, Oct 09, 2007 at 01:25:18AM -0500, Rob Landley wrote:
+> > [...]
+> > >  	FILE * infile;
+> > > +
+> > > +	srctree = getenv("SRCTREE");
+> > > +	if (!srctree) srctree = getcwd(NULL,0);
+> > >  	if (argc != 3) {
+> > >  		usage();
+> > >  		exit(1);
 > > 
-> >   	if (!mce_disabled &&
-> > 	    !(c->x86_capability & (X86_FEATURE_MCA | X86_FEATURE_MCE)) {
-> > 		printk(KERN_INFO "CPU%i: No machine check support available\n",
-> > 			smp_processor_id());
+> > $ man getcwd
+> > 
+> >  char *getcwd(char *buf, size_t size);
+> >       
+> >  As an extension to the POSIX.1 standard, Linux (libc4, libc5, glibc) getcwd() 
+> >  allocates the buffer dynamically using malloc() if buf is NULL on call.
+> > 
+> > Shouldn't "srctree" be free()ed in case getenv("SRCTREE") failed ?
 > 
-> This looks complicated and is harder to read. Its exactly the purpose of the
-> cpu_has() macro to avoid such constructs.
-> 
-> > 		return;
-> > 	} else
-> > 		return;
-> 
-> Return unconditionaly here?
+> What is there to free() at that point?  If getenv() fails (i.e.,
+> the env. variable is not found), it returns NULL.
+> or do I need another cup of coffee?
+>
 
-Kind of typo.
+I meant if getenv() failed, "srctree = getcwd(NULL, 0)" will let 
+"srctree" point to a _ malloc()ed _ buffer representing PWD. 
+As said in the manpage, this buffer needs to be free()ed after usage.
+Right or I'm the one who needs that cup of coffee :) ?
 
-Due to arch code, i think, it must be coded in non-gcc optimistic way. As
-practice and Linus shows, gcc's optimizations sometimes produce very
-unexpected results. People do spaghetti-like coding, without thinking
-about text size / run time.
+Regards,
 
-Compile time payment was noted by Andrew many years ago:
-
-"As you know, I'd be more concerned about moves to drop support for the
-older and much faster gcc versions.  If you're not using egcs-1.1.2,
-you're already a very patient person." <http://lkml.org/lkml/2001/12/29/163>
-
-So, i actually wanted to write this:
-
-	if (!mce_disabled) {
-	if (!(c->x86_capability & (X86_FEATURE_MCA | X86_FEATURE_MCE)) {
-		printk(KERN_INFO "CPU%i: No machine check support available\n",
- 			smp_processor_id());
-		return;
-	}
-	/* function code */
-	}
-
-(ugly, because `mce_disabled == 1' check is even in gcc is likely by
-default). But changed my mind, due to violation of the coding style.
-Of course this my be no appropriate at all, but i'd like to bring
-this, if anyone would be like to discuss this.
-____
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
