@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbXJIGid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbXJIGiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbXJIGid (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 02:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXJIGiP
+	id S1755914AbXJIGiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 02:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbXJIGiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 02:38:15 -0400
+	Tue, 9 Oct 2007 02:38:20 -0400
 Received: from mga03.intel.com ([143.182.124.21]:13115 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753141AbXJIGiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 02:38:13 -0400
+	id S1755429AbXJIGiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 02:38:18 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,246,1188802800"; 
-   d="scan'208";a="295108793"
-Subject: [PATCH -mm -v4 1/3] i386/x86_64 boot: setup data
+   d="scan'208";a="295108812"
+Subject: [PATCH -mm -v4 2/3] i386/x86_64 boot: boot parameters export via
+	sysfs
 From: "Huang, Ying" <ying.huang@intel.com>
 To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
        "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
@@ -21,354 +22,322 @@ To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Oct 2007 14:40:10 +0800
-Message-Id: <1191912010.9719.18.camel@caritas-dev.intel.com>
+Date: Tue, 09 Oct 2007 14:40:19 +0800
+Message-Id: <1191912019.9719.19.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 09 Oct 2007 06:38:03.0532 (UTC) FILETIME=[F17584C0:01C80A3E]
+X-OriginalArrivalTime: 09 Oct 2007 06:38:13.0266 (UTC) FILETIME=[F742CF20:01C80A3E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add a field of 64-bit physical pointer to NULL terminated
-single linked list of struct setup_data to real-mode kernel
-header. This is used as a more extensible boot parameters passing
-mechanism.
+This patch export the boot parameters via sysfs. This can be used for
+debugging and kexec.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
 
- arch/i386/Kconfig            |    3 -
- arch/i386/boot/header.S      |    8 +++
- arch/i386/kernel/setup.c     |   92 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86_64/kernel/setup.c   |   37 +++++++++++++++++
- include/asm-i386/bootparam.h |   15 +++++++
- include/asm-i386/io.h        |    7 +++
- include/linux/mm.h           |    2 
- mm/memory.c                  |   24 +++++++++++
- 8 files changed, 184 insertions(+), 4 deletions(-)
+ i386/kernel/Makefile    |    1 
+ i386/kernel/ksysfs.c    |  242 ++++++++++++++++++++++++++++++++++++++++++++++++
+ i386/kernel/setup.c     |    2 
+ x86_64/kernel/Makefile  |    1 
+ x86_64/kernel/setup64.c |    2 
+ 5 files changed, 246 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.23-rc8/include/asm-i386/bootparam.h
+Index: linux-2.6.23-rc8/arch/x86_64/kernel/Makefile
 ===================================================================
---- linux-2.6.23-rc8.orig/include/asm-i386/bootparam.h	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/include/asm-i386/bootparam.h	2007-10-09 14:15:14.000000000 +0800
-@@ -9,6 +9,17 @@
- #include <asm/ist.h>
- #include <video/edid.h>
+--- linux-2.6.23-rc8.orig/arch/x86_64/kernel/Makefile	2007-10-09 11:30:20.000000000 +0800
++++ linux-2.6.23-rc8/arch/x86_64/kernel/Makefile	2007-10-09 13:57:09.000000000 +0800
+@@ -39,6 +39,7 @@
+ obj-$(CONFIG_K8_NB)		+= k8.o
+ obj-$(CONFIG_AUDIT)		+= audit.o
+ obj-$(CONFIG_STACK_UNWIND)	+= unwind.o
++obj-$(CONFIG_SYSFS)		+= ../../i386/kernel/ksysfs.o
  
-+/* setup data types */
-+#define SETUP_NONE			0
-+
-+/* extensible setup data list node */
-+struct setup_data {
-+	u64 next;
-+	u32 type;
-+	u32 len;
-+	u8 data[0];
-+} __attribute__((packed));
-+
- struct setup_header {
- 	u8	setup_sects;
- 	u16	root_flags;
-@@ -41,6 +52,10 @@
- 	u32	initrd_addr_max;
- 	u32	kernel_alignment;
- 	u8	relocatable_kernel;
-+	u8	_pad2[3];
-+	u32	cmdline_size;
-+	u32	_pad3;
-+	u64	setup_data;
- } __attribute__((packed));
- 
- struct sys_desc_table {
-Index: linux-2.6.23-rc8/arch/i386/boot/header.S
+ obj-$(CONFIG_MODULES)		+= module.o
+ obj-$(CONFIG_PCI)		+= early-quirks.o
+Index: linux-2.6.23-rc8/arch/x86_64/kernel/setup64.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/i386/boot/header.S	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/arch/i386/boot/header.S	2007-10-09 11:26:08.000000000 +0800
-@@ -119,7 +119,7 @@
- 	# Part 2 of the header, from the old setup.S
+--- linux-2.6.23-rc8.orig/arch/x86_64/kernel/setup64.c	2007-10-09 11:30:20.000000000 +0800
++++ linux-2.6.23-rc8/arch/x86_64/kernel/setup64.c	2007-10-09 11:30:25.000000000 +0800
+@@ -24,7 +24,7 @@
+ #include <asm/sections.h>
+ #include <asm/setup.h>
  
- 		.ascii	"HdrS"		# header signature
--		.word	0x0206		# header version number (>= 0x0105)
-+		.word	0x0207		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- 		.globl realmode_swtch
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
-@@ -214,6 +214,12 @@
-                                                 #added with boot protocol
-                                                 #version 2.06
+-struct boot_params __initdata boot_params;
++struct boot_params boot_params;
  
-+pad4:			.long 0
-+
-+setup_data:		.quad 0			# 64-bit physical pointer to
-+						# single linked list of
-+						# struct setup_data
-+
- # End of setup header #####################################################
+ cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
  
- 	.section ".inittext", "ax"
-Index: linux-2.6.23-rc8/arch/x86_64/kernel/setup.c
+Index: linux-2.6.23-rc8/arch/i386/kernel/ksysfs.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/x86_64/kernel/setup.c	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/arch/x86_64/kernel/setup.c	2007-10-09 14:15:14.000000000 +0800
-@@ -250,6 +250,40 @@
- 		ebda_size = 64*1024;
- }
- 
-+static void __init parse_setup_data(void)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc8/arch/i386/kernel/ksysfs.c	2007-10-09 13:58:58.000000000 +0800
+@@ -0,0 +1,242 @@
++/*
++ * arch/i386/ksysfs.c - architecture specific sysfs attributes in /sys/kernel
++ *
++ * Copyright (C) 2007, Intel Corp.
++ *      Huang Ying <ying.huang@intel.com>
++ *
++ * This file is released under the GPLv2
++ */
++
++#include <linux/kobject.h>
++#include <linux/string.h>
++#include <linux/sysfs.h>
++#include <linux/init.h>
++#include <linux/stat.h>
++#include <linux/mm.h>
++
++#include <asm/setup.h>
++
++static ssize_t boot_params_version_show(struct kset *kset, char *page)
 +{
-+	struct setup_data *data;
-+	unsigned long pa_data;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = early_ioremap(pa_data, PAGE_SIZE);
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+		pa_data = data->next;
-+		early_iounmap(data, PAGE_SIZE);
-+	}
++	return sprintf(page, "0x%x\n", boot_params.hdr.version);
 +}
 +
-+static void __init reserve_setup_data(void)
-+{
-+	struct setup_data *data;
-+	unsigned long pa_data;
++static struct subsys_attribute boot_params_version_attr = {
++	.attr = {
++		.name = "version",
++		.mode = S_IRUGO,
++	},
++	.show = boot_params_version_show,
++};
 +
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = __va(pa_data);
-+		reserve_bootmem_generic(pa_data, sizeof(*data)+data->len);
-+		pa_data = data->next;
-+	}
++static struct attribute *boot_params_attrs[] = {
++	&boot_params_version_attr.attr,
++	NULL
++};
++
++static struct attribute_group boot_params_attr_group = {
++	.attrs = boot_params_attrs,
++};
++
++static ssize_t boot_params_data_read(struct kobject *kobj,
++				     struct bin_attribute *bin_attr,
++				     char *buf, loff_t off, size_t count)
++{
++	memcpy(buf, (void *)&boot_params + off, count);
++	return count;
 +}
 +
- void __init setup_arch(char **cmdline_p)
- {
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-@@ -285,6 +319,8 @@
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
- 	*cmdline_p = command_line;
- 
-+	parse_setup_data();
++static struct bin_attribute boot_params_data_attr = {
++	.attr = {
++		.name = "data",
++		.mode = S_IRUGO,
++	},
++	.read = boot_params_data_read,
++	.size = sizeof(boot_params),
++};
 +
- 	parse_early_param();
++struct setup_data_kobj
++{
++	struct kobject kobj;
++	unsigned long pa_setup_data;
++	struct bin_attribute *data_attr;
++};
++
++struct setup_data_attribute {
++	struct attribute attr;
++	ssize_t (*show) (struct setup_data_kobj *setup_data_kobj, char *buf);
++};
++
++static ssize_t setup_data_type_show(struct setup_data_kobj *setup_data_kobj,
++				    char *page)
++{
++	struct setup_data data;
++	copy_from_phys(&data, setup_data_kobj->pa_setup_data, sizeof(data));
++	return sprintf(page, "0x%x\n", data.type);
++}
++
++static struct setup_data_attribute setup_data_type_attr = {
++	.attr = {
++		.name = "type",
++		.mode = S_IRUGO,
++	},
++	.show = setup_data_type_show,
++};
++
++static ssize_t setup_data_attr_show(struct kobject *kobj,
++				    struct attribute *attr,
++				    char *buf)
++{
++	struct setup_data_kobj *setup_data_kobj =
++		(struct setup_data_kobj *)kobj;
++	struct setup_data_attribute *setup_data_attr =
++		(struct setup_data_attribute *)attr;
++	ssize_t error = -EIO;
++
++	if (setup_data_attr->show)
++		error = setup_data_attr->show(setup_data_kobj, buf);
++	return error;
++}
++
++static void setup_data_kobj_release(struct kobject *kobj)
++{
++	struct setup_data_kobj *setup_data_kobj =
++		(struct setup_data_kobj *)kobj;
++	kfree(setup_data_kobj->data_attr);
++	kfree(setup_data_kobj);
++}
++
++static struct sysfs_ops setup_data_attr_ops = {
++	.show = setup_data_attr_show,
++};
++
++static struct attribute *setup_data_default_attrs[] = {
++	&setup_data_type_attr.attr,
++	NULL,
++};
++
++static struct kobj_type ktype_setup_data = {
++	.release = &setup_data_kobj_release,
++	.sysfs_ops = &setup_data_attr_ops,
++	.default_attrs = setup_data_default_attrs,
++};
++
++static ssize_t setup_data_data_read(struct kobject *kobj,
++				    struct bin_attribute *bin_attr,
++				    char *buf, loff_t off, size_t count)
++{
++	struct setup_data_kobj *setup_data_kobj =
++		(struct setup_data_kobj *)kobj;
++	count = copy_from_phys(buf, setup_data_kobj->pa_setup_data +
++			       sizeof(struct setup_data) + off, count);
++	return count;
++}
++
++decl_subsys(boot_params, NULL, NULL);
++decl_subsys(setup_data, &ktype_setup_data, NULL);
++
++static int __init setup_data_create_kobj(struct setup_data *setup_data,
++					 unsigned long pa_setup_data,
++					 const char *name)
++{
++	struct setup_data_kobj *setup_data_kobj;
++	struct bin_attribute *data_attr;
++	int error;
++
++	setup_data_kobj = kzalloc(sizeof(struct setup_data_kobj), GFP_KERNEL);
++	if (!setup_data_kobj) {
++		error = -ENOMEM;
++		goto err_return;
++	}
++	setup_data_kobj->pa_setup_data = pa_setup_data;
++	kobject_set_name(&setup_data_kobj->kobj, "%s", name);
++	kobj_set_kset_s(setup_data_kobj, setup_data_subsys);
++	error = kobject_register(&setup_data_kobj->kobj);
++	if (error) {
++		kfree(setup_data_kobj);
++		goto err_return;
++	}
++	data_attr = kzalloc(sizeof(struct bin_attribute), GFP_KERNEL);
++	if (!data_attr) {
++		error = -ENOMEM;
++		goto err_unregister;
++	}
++	setup_data_kobj->data_attr = data_attr;
++	data_attr->attr.name = "data";
++	data_attr->attr.mode = S_IRUGO;
++	data_attr->read = setup_data_data_read;
++	data_attr->size = setup_data->len;
++	error = sysfs_create_bin_file(&setup_data_kobj->kobj,
++				      data_attr);
++	if (error)
++		goto err_unregister;
++	return 0;
++err_unregister:
++	kobject_unregister(&setup_data_kobj->kobj);
++err_return:
++	return error;
++}
++
++static void __init setup_data_kobjs_del(void)
++{
++	struct kobject *kobj;
++
++	spin_lock(&setup_data_subsys.list_lock);
++	list_for_each_entry(kobj, &setup_data_subsys.list, entry)
++		kobject_unregister(kobj);
++	spin_unlock(&setup_data_subsys.list_lock);
++}
++
++static int __init boot_params_ksysfs_init(void)
++{
++	int error;
++	struct setup_data setup_data;
++	unsigned long pa_setup_data;
++	int n = 0;
++	char buf[8];
++
++	kobj_set_kset_s(&boot_params_subsys, kernel_subsys);
++	error = subsystem_register(&boot_params_subsys);
++	if (error)
++		goto err_return;
++	error = sysfs_create_group(&boot_params_subsys.kobj,
++				   &boot_params_attr_group);
++	if (error)
++		goto err_boot_params_subsys_unregister;
++	error = sysfs_create_bin_file(&boot_params_subsys.kobj,
++				      &boot_params_data_attr);
++	if (error)
++		goto err_boot_params_subsys_unregister;
++	kobj_set_kset_s(&setup_data_subsys, boot_params_subsys);
++	error = subsystem_register(&setup_data_subsys);
++	if (error)
++		goto err_boot_params_subsys_unregister;
++	pa_setup_data = boot_params.hdr.setup_data;
++	while (pa_setup_data) {
++		copy_from_phys(&setup_data, pa_setup_data, sizeof(setup_data));
++		sprintf(buf, "%d", n++);
++		error = setup_data_create_kobj(&setup_data, pa_setup_data, buf);
++		if (error)
++			goto err_setup_data_kobjs_del;
++		pa_setup_data = setup_data.next;
++	}
++	return 0;
++err_setup_data_kobjs_del:
++	setup_data_kobjs_del();
++	subsystem_unregister(&setup_data_subsys);
++err_boot_params_subsys_unregister:
++	subsystem_unregister(&boot_params_subsys);
++err_return:
++	return error;
++}
++
++static int __init arch_ksysfs_init(void)
++{
++	int error;
++
++	error = boot_params_ksysfs_init();
++
++	return error;
++}
++
++arch_initcall(arch_ksysfs_init);
+Index: linux-2.6.23-rc8/arch/i386/kernel/Makefile
+===================================================================
+--- linux-2.6.23-rc8.orig/arch/i386/kernel/Makefile	2007-10-09 11:30:20.000000000 +0800
++++ linux-2.6.23-rc8/arch/i386/kernel/Makefile	2007-10-09 11:30:25.000000000 +0800
+@@ -44,6 +44,7 @@
+ obj-$(CONFIG_K8_NB)		+= k8.o
+ obj-$(CONFIG_MGEODE_LX)		+= geode.o mfgpt.o
+ obj-$(CONFIG_STACK_UNWIND)	+= unwind.o
++obj-$(CONFIG_SYSFS)		+= ksysfs.o
  
- 	finish_e820_parsing();
-@@ -373,6 +409,7 @@
-         */
-        acpi_reserve_bootmem();
- #endif
-+	reserve_setup_data();
- 	/*
- 	 * Find and reserve possible boot-time SMP configuration:
- 	 */
+ obj-$(CONFIG_VMI)		+= vmi.o vmiclock.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
 Index: linux-2.6.23-rc8/arch/i386/kernel/setup.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/i386/kernel/setup.c	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/arch/i386/kernel/setup.c	2007-10-09 14:20:04.000000000 +0800
-@@ -424,6 +424,91 @@
- {}
- #endif
+--- linux-2.6.23-rc8.orig/arch/i386/kernel/setup.c	2007-10-09 11:30:29.000000000 +0800
++++ linux-2.6.23-rc8/arch/i386/kernel/setup.c	2007-10-09 13:13:07.000000000 +0800
+@@ -126,7 +126,7 @@
  
-+static void __init reserve_setup_data(void)
-+{
-+	struct setup_data *data;
-+	unsigned long max_low_addr = (max_low_pfn<<PAGE_SHIFT);
-+	unsigned long pa_data, data_len;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = boot_ioremap(pa_data, sizeof(*data));
-+		data_len = sizeof(*data)+data->len;
-+		if (pa_data+data_len <= max_low_addr)
-+			reserve_bootmem(pa_data, data_len);
-+		else if (pa_data < max_low_addr)
-+			reserve_bootmem(pa_data, max_low_addr - pa_data);
-+		pa_data = data->next;
-+	}
-+}
-+
-+/*
-+ * The setup data in high memory can not be reserved by bootmem
-+ * allocator, so they are copied to low memory.
-+ */
-+static void __init copy_setup_data(void)
-+{
-+	struct setup_data data, *pdata;
-+	u64 *ppa_next;
-+	unsigned long data_len;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	ppa_next = &boot_params.hdr.setup_data;
-+	while (*ppa_next) {
-+		copy_from_phys(&data, *ppa_next, sizeof(data));
-+		data_len = sizeof(data)+data.len;
-+		if (*ppa_next+data_len > (max_low_pfn<<PAGE_SHIFT)) {
-+			pdata = alloc_bootmem_low(data_len);
-+			copy_from_phys(pdata, *ppa_next, data_len);
-+			*ppa_next = __pa(pdata);
-+		}
-+		ppa_next = &((struct setup_data *)__va(*ppa_next))->next;
-+	}
-+}
-+
-+static void __init parse_setup_data(void)
-+{
-+	struct setup_data *data;
-+	unsigned long pa_data, pa_next;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	pa_data = boot_params.hdr.setup_data;
-+	while (pa_data) {
-+		data = boot_ioremap(pa_data, PAGE_SIZE);
-+		pa_next = data->next;
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+		pa_data = pa_next;
-+	}
-+}
-+
-+/*
-+ * The memory location of setup data may be changed after
-+ * copy_setup_data, so late_parse_setup_data are provided for needed
-+ * user.
-+ */
-+static void __init late_parse_setup_data(void)
-+{
-+	struct setup_data *data;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	for (data = __va(boot_params.hdr.setup_data);
-+	     data != __va(0);
-+	     data = __va(data->next)) {
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+	}
-+}
-+
- void __init setup_bootmem_allocator(void)
- {
- 	unsigned long bootmap_size;
-@@ -500,6 +585,7 @@
- 	}
- #endif
- 	reserve_crashkernel();
-+	reserve_setup_data();
- }
+ static char __initdata command_line[COMMAND_LINE_SIZE];
  
- /*
-@@ -583,6 +669,9 @@
- 	rd_prompt = ((boot_params.hdr.ram_size & RAMDISK_PROMPT_FLAG) != 0);
- 	rd_doload = ((boot_params.hdr.ram_size & RAMDISK_LOAD_FLAG) != 0);
- #endif
-+
-+	parse_setup_data();
-+
- 	ARCH_SETUP
- 	if (efi_enabled)
- 		efi_init();
-@@ -657,6 +746,9 @@
- 	if (efi_enabled)
- 		efi_map_memmap();
+-struct boot_params __initdata boot_params;
++struct boot_params boot_params;
  
-+	copy_setup_data();
-+	late_parse_setup_data();
-+
- #ifdef CONFIG_ACPI
- 	/*
- 	 * Parse the ACPI tables for possible boot-time SMP configuration.
-Index: linux-2.6.23-rc8/include/asm-i386/io.h
-===================================================================
---- linux-2.6.23-rc8.orig/include/asm-i386/io.h	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/include/asm-i386/io.h	2007-10-09 11:26:08.000000000 +0800
-@@ -126,6 +126,13 @@
- extern void iounmap(volatile void __iomem *addr);
- 
- /*
-+ * boot_ioremap is for temporary early boot-time mappings, before
-+ * paging_init(), when the boot-time page tables are still in use.
-+ * The mapping is currently limited to at most 4 pages.
-+ */
-+extern void *boot_ioremap(unsigned long offset, unsigned long size);
-+
-+/*
-  * bt_ioremap() and bt_iounmap() are for temporary early boot-time
-  * mappings, before the real ioremap() is functional.
-  * A boot-time mapping is currently limited to at most 16 pages.
-Index: linux-2.6.23-rc8/arch/i386/Kconfig
-===================================================================
---- linux-2.6.23-rc8.orig/arch/i386/Kconfig	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/arch/i386/Kconfig	2007-10-09 11:26:08.000000000 +0800
-@@ -784,11 +784,8 @@
-  	  The default yes will allow the kernel to do irq load balancing.
- 	  Saying no will keep the kernel from doing irq load balancing.
- 
--# turning this on wastes a bunch of space.
--# Summit needs it only when NUMA is on
- config BOOT_IOREMAP
- 	bool
--	depends on (((X86_SUMMIT || X86_GENERICARCH) && NUMA) || (X86 && EFI))
- 	default y
- 
- config SECCOMP
-Index: linux-2.6.23-rc8/include/linux/mm.h
-===================================================================
---- linux-2.6.23-rc8.orig/include/linux/mm.h	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/include/linux/mm.h	2007-10-09 11:26:08.000000000 +0800
-@@ -942,6 +942,8 @@
- extern void show_mem(void);
- extern void si_meminfo(struct sysinfo * val);
- extern void si_meminfo_node(struct sysinfo *val, int nid);
-+extern unsigned long copy_from_phys(void *to, unsigned long from_phys,
-+				    unsigned long n);
- 
- #ifdef CONFIG_NUMA
- extern void setup_per_cpu_pageset(void);
-Index: linux-2.6.23-rc8/mm/memory.c
-===================================================================
---- linux-2.6.23-rc8.orig/mm/memory.c	2007-10-09 11:26:06.000000000 +0800
-+++ linux-2.6.23-rc8/mm/memory.c	2007-10-09 11:26:08.000000000 +0800
-@@ -2788,3 +2788,27 @@
- 	return buf - old_buf;
- }
- EXPORT_SYMBOL_GPL(access_process_vm);
-+
-+unsigned long copy_from_phys(void *to, unsigned long from_phys,
-+			     unsigned long n)
-+{
-+	struct page *page;
-+	void *from;
-+	unsigned long remain = n, offset, trunck;
-+
-+	while (remain) {
-+		page = pfn_to_page(from_phys >> PAGE_SHIFT);
-+		from = kmap_atomic(page, KM_USER0);
-+		offset = from_phys & ~PAGE_MASK;
-+		if (remain > PAGE_SIZE - offset)
-+			trunck = PAGE_SIZE - offset;
-+		else
-+			trunck = remain;
-+		memcpy(to, from + offset, trunck);
-+		kunmap_atomic(from, KM_USER0);
-+		to += trunck;
-+		from_phys += trunck;
-+		remain -= trunck;
-+	}
-+	return n;
-+}
+ #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+ struct edd edd;
