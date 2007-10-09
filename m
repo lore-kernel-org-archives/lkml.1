@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbXJIXVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXJIXWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbXJIXVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXJIXVm
+	id S1756919AbXJIXWB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbXJIXVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:21:42 -0400
-Received: from namei.org ([69.55.235.186]:44180 "EHLO us.intercode.com.au"
+	Tue, 9 Oct 2007 19:21:43 -0400
+Received: from namei.org ([69.55.235.186]:44181 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750790AbXJIXVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751839AbXJIXVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Oct 2007 19:21:41 -0400
-Date: Wed, 10 Oct 2007 09:20:35 +1000 (EST)
+Date: Wed, 10 Oct 2007 09:21:16 +1000 (EST)
 From: James Morris <jmorris@namei.org>
 X-X-Sender: jmorris@us.intercode.com.au
 To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: [PATCH 2/6] SELinux: tune avtab to reduce memory usage
+Subject: [PATCH 3/6] SELinux: Improve read/write performance
 In-Reply-To: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
-Message-ID: <Xine.LNX.4.64.0710100919590.14862@us.intercode.com.au>
+Message-ID: <Xine.LNX.4.64.0710100920410.14862@us.intercode.com.au>
 References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,304 +25,247 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Yuichi Nakamura <ynakam@hitachisoft.jp>
 
-This patch reduces memory usage of SELinux by tuning avtab. Number of hash
-slots in avtab was 32768. Unused slots used memory when number of rules is
-fewer. This patch decides number of hash slots dynamically based on number
-of rules. (chain length)^2 is also printed out in avtab_hash_eval to see
-standard deviation of avtab hash table.
+It reduces the selinux overhead on read/write by only revalidating
+permissions in selinux_file_permission if the task or inode labels have
+changed or the policy has changed since the open-time check.  A new LSM
+hook, security_dentry_open, is added to capture the necessary state at open
+time to allow this optimization.
+
+(see http://marc.info/?l=selinux&m=118972995207740&w=2)
 
 Signed-off-by: Yuichi Nakamura<ynakam@hitachisoft.jp>
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
-Signed-off-by: James Morris <jmorris@e.namei>
+Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
+Signed-off-by: James Morris <jmorris@localhost.localdomain>
 ---
- security/selinux/ss/avtab.c       |   91 ++++++++++++++++++++++++++-----------
- security/selinux/ss/avtab.h       |   16 +++++--
- security/selinux/ss/conditional.c |    4 ++
- security/selinux/ss/policydb.c    |    7 +--
- 4 files changed, 82 insertions(+), 36 deletions(-)
+ fs/open.c                         |    4 +++
+ include/linux/security.h          |   18 ++++++++++++
+ security/dummy.c                  |    6 ++++
+ security/selinux/avc.c            |    5 +++
+ security/selinux/hooks.c          |   53 ++++++++++++++++++++++++++++++++++++-
+ security/selinux/include/avc.h    |    2 +
+ security/selinux/include/objsec.h |    2 +
+ 7 files changed, 89 insertions(+), 1 deletions(-)
 
-diff --git a/security/selinux/ss/avtab.c b/security/selinux/ss/avtab.c
-index 85705eb..7551af1 100644
---- a/security/selinux/ss/avtab.c
-+++ b/security/selinux/ss/avtab.c
-@@ -12,24 +12,25 @@
-  *	This program is free software; you can redistribute it and/or modify
-  *  	it under the terms of the GNU General Public License as published by
-  *	the Free Software Foundation, version 2.
-+ *
-+ * Updated: Yuichi Nakamura <ynakam@hitachisoft.jp>
-+ * 	Tuned number of hash slots for avtab to reduce memory usage
-  */
+diff --git a/fs/open.c b/fs/open.c
+index 1d9e5e9..044bfa8 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -757,6 +757,10 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
+ 	f->f_op = fops_get(inode->i_fop);
+ 	file_move(f, &inode->i_sb->s_files);
  
- #include <linux/kernel.h>
- #include <linux/slab.h>
--#include <linux/vmalloc.h>
- #include <linux/errno.h>
--
- #include "avtab.h"
- #include "policydb.h"
- 
--#define AVTAB_HASH(keyp) \
--((keyp->target_class + \
-- (keyp->target_type << 2) + \
-- (keyp->source_type << 9)) & \
-- AVTAB_HASH_MASK)
--
- static struct kmem_cache *avtab_node_cachep;
- 
-+static inline int avtab_hash(struct avtab_key *keyp, u16 mask)
-+{
-+	return ((keyp->target_class + (keyp->target_type << 2) +
-+		 (keyp->source_type << 9)) & mask);
-+}
++	error = security_dentry_open(f);
++	if (error)
++		goto cleanup_all;
 +
- static struct avtab_node*
- avtab_insert_node(struct avtab *h, int hvalue,
- 		  struct avtab_node * prev, struct avtab_node * cur,
-@@ -59,10 +60,10 @@ static int avtab_insert(struct avtab *h, struct avtab_key *key, struct avtab_dat
- 	struct avtab_node *prev, *cur, *newnode;
- 	u16 specified = key->specified & ~(AVTAB_ENABLED|AVTAB_ENABLED_OLD);
+ 	if (!open && f->f_op)
+ 		open = f->f_op->open;
+ 	if (open) {
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 1a15526..928d479 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -504,6 +504,13 @@ struct request_sock;
+  *	@file contains the file structure being received.
+  *	Return 0 if permission is granted.
+  *
++ * Security hook for dentry
++ *
++ * @dentry_open
++ *	Save open-time permission checking state for later use upon
++ *	file_permission, and recheck access if anything has changed
++ *	since inode_permission.
++ *
+  * Security hooks for task operations.
+  *
+  * @task_create:
+@@ -1256,6 +1263,7 @@ struct security_operations {
+ 	int (*file_send_sigiotask) (struct task_struct * tsk,
+ 				    struct fown_struct * fown, int sig);
+ 	int (*file_receive) (struct file * file);
++	int (*dentry_open)  (struct file *file);
  
--	if (!h)
-+	if (!h || !h->htable)
- 		return -EINVAL;
- 
--	hvalue = AVTAB_HASH(key);
-+	hvalue = avtab_hash(key, h->mask);
- 	for (prev = NULL, cur = h->htable[hvalue];
- 	     cur;
- 	     prev = cur, cur = cur->next) {
-@@ -100,9 +101,9 @@ avtab_insert_nonunique(struct avtab * h, struct avtab_key * key, struct avtab_da
- 	struct avtab_node *prev, *cur, *newnode;
- 	u16 specified = key->specified & ~(AVTAB_ENABLED|AVTAB_ENABLED_OLD);
- 
--	if (!h)
-+	if (!h || !h->htable)
- 		return NULL;
--	hvalue = AVTAB_HASH(key);
-+	hvalue = avtab_hash(key, h->mask);
- 	for (prev = NULL, cur = h->htable[hvalue];
- 	     cur;
- 	     prev = cur, cur = cur->next) {
-@@ -132,10 +133,10 @@ struct avtab_datum *avtab_search(struct avtab *h, struct avtab_key *key)
- 	struct avtab_node *cur;
- 	u16 specified = key->specified & ~(AVTAB_ENABLED|AVTAB_ENABLED_OLD);
- 
--	if (!h)
-+	if (!h || !h->htable)
- 		return NULL;
- 
--	hvalue = AVTAB_HASH(key);
-+	hvalue = avtab_hash(key, h->mask);
- 	for (cur = h->htable[hvalue]; cur; cur = cur->next) {
- 		if (key->source_type == cur->key.source_type &&
- 		    key->target_type == cur->key.target_type &&
-@@ -167,10 +168,10 @@ avtab_search_node(struct avtab *h, struct avtab_key *key)
- 	struct avtab_node *cur;
- 	u16 specified = key->specified & ~(AVTAB_ENABLED|AVTAB_ENABLED_OLD);
- 
--	if (!h)
-+	if (!h || !h->htable)
- 		return NULL;
- 
--	hvalue = AVTAB_HASH(key);
-+	hvalue = avtab_hash(key, h->mask);
- 	for (cur = h->htable[hvalue]; cur; cur = cur->next) {
- 		if (key->source_type == cur->key.source_type &&
- 		    key->target_type == cur->key.target_type &&
-@@ -228,7 +229,7 @@ void avtab_destroy(struct avtab *h)
- 	if (!h || !h->htable)
- 		return;
- 
--	for (i = 0; i < AVTAB_SIZE; i++) {
-+	for (i = 0; i < h->nslot; i++) {
- 		cur = h->htable[i];
- 		while (cur != NULL) {
- 			temp = cur;
-@@ -237,32 +238,63 @@ void avtab_destroy(struct avtab *h)
- 		}
- 		h->htable[i] = NULL;
- 	}
--	vfree(h->htable);
-+	kfree(h->htable);
- 	h->htable = NULL;
-+	h->nslot = 0;
-+	h->mask = 0;
+ 	int (*task_create) (unsigned long clone_flags);
+ 	int (*task_alloc_security) (struct task_struct * p);
+@@ -1864,6 +1872,11 @@ static inline int security_file_receive (struct file *file)
+ 	return security_ops->file_receive (file);
  }
  
--
- int avtab_init(struct avtab *h)
- {
--	int i;
-+	h->htable = NULL;
-+	h->nel = 0;
-+	return 0;
++static inline int security_dentry_open (struct file *file)
++{
++	return security_ops->dentry_open (file);
 +}
 +
-+int avtab_alloc(struct avtab *h, u32 nrules)
-+{
-+	u16 mask = 0;
-+	u32 shift = 0;
-+	u32 work = nrules;
-+	u32 nslot = 0;
-+
-+	if (nrules == 0)
-+		goto avtab_alloc_out;
- 
--	h->htable = vmalloc(sizeof(*(h->htable)) * AVTAB_SIZE);
-+	while (work) {
-+		work  = work >> 1;
-+		shift++;
-+	}
-+	if (shift > 2)
-+		shift = shift - 2;
-+	nslot = 1 << shift;
-+	if (nslot > MAX_AVTAB_SIZE)
-+		nslot = MAX_AVTAB_SIZE;
-+	mask = nslot - 1;
-+
-+	h->htable = kcalloc(nslot, sizeof(*(h->htable)), GFP_KERNEL);
- 	if (!h->htable)
- 		return -ENOMEM;
--	for (i = 0; i < AVTAB_SIZE; i++)
--		h->htable[i] = NULL;
-+
-+ avtab_alloc_out:
- 	h->nel = 0;
-+	h->nslot = nslot;
-+	h->mask = mask;
-+	printk(KERN_DEBUG "SELinux:%d avtab hash slots allocated."
-+	       "Num of rules:%d\n", h->nslot, nrules);
+ static inline int security_task_create (unsigned long clone_flags)
+ {
+ 	return security_ops->task_create (clone_flags);
+@@ -2546,6 +2559,11 @@ static inline int security_file_receive (struct file *file)
  	return 0;
  }
  
- void avtab_hash_eval(struct avtab *h, char *tag)
++static inline int security_dentry_open (struct file *file)
++{
++	return 0;
++}
++
+ static inline int security_task_create (unsigned long clone_flags)
  {
- 	int i, chain_len, slots_used, max_chain_len;
-+	unsigned long long chain2_len_sum;
- 	struct avtab_node *cur;
- 
- 	slots_used = 0;
- 	max_chain_len = 0;
--	for (i = 0; i < AVTAB_SIZE; i++) {
-+	chain2_len_sum = 0;
-+	for (i = 0; i < h->nslot; i++) {
- 		cur = h->htable[i];
- 		if (cur) {
- 			slots_used++;
-@@ -274,12 +306,14 @@ void avtab_hash_eval(struct avtab *h, char *tag)
- 
- 			if (chain_len > max_chain_len)
- 				max_chain_len = chain_len;
-+			chain2_len_sum += chain_len * chain_len;
- 		}
- 	}
- 
- 	printk(KERN_DEBUG "%s:  %d entries and %d/%d buckets used, longest "
--	       "chain length %d\n", tag, h->nel, slots_used, AVTAB_SIZE,
--	       max_chain_len);
-+	       "chain length %d sum of chain length^2 %Lu\n",
-+	       tag, h->nel, slots_used, h->nslot, max_chain_len,
-+	       chain2_len_sum);
+ 	return 0;
+diff --git a/security/dummy.c b/security/dummy.c
+index 853ec22..64b647a 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -463,6 +463,11 @@ static int dummy_file_receive (struct file *file)
+ 	return 0;
  }
  
- static uint16_t spec_order[] = {
-@@ -419,6 +453,11 @@ int avtab_read(struct avtab *a, void *fp, u32 vers)
- 		rc = -EINVAL;
- 		goto bad;
- 	}
++static int dummy_dentry_open (struct file *file)
++{
++	return 0;
++}
 +
-+	rc = avtab_alloc(a, nel);
-+	if (rc)
-+		goto bad;
+ static int dummy_task_create (unsigned long clone_flags)
+ {
+ 	return 0;
+@@ -1033,6 +1038,7 @@ void security_fixup_ops (struct security_operations *ops)
+ 	set_to_dummy_if_null(ops, file_set_fowner);
+ 	set_to_dummy_if_null(ops, file_send_sigiotask);
+ 	set_to_dummy_if_null(ops, file_receive);
++	set_to_dummy_if_null(ops, dentry_open);
+ 	set_to_dummy_if_null(ops, task_create);
+ 	set_to_dummy_if_null(ops, task_alloc_security);
+ 	set_to_dummy_if_null(ops, task_free_security);
+diff --git a/security/selinux/avc.c b/security/selinux/avc.c
+index 0e69adf..81b3dff 100644
+--- a/security/selinux/avc.c
++++ b/security/selinux/avc.c
+@@ -916,3 +916,8 @@ int avc_has_perm(u32 ssid, u32 tsid, u16 tclass,
+ 	avc_audit(ssid, tsid, tclass, requested, &avd, rc, auditdata);
+ 	return rc;
+ }
 +
- 	for (i = 0; i < nel; i++) {
- 		rc = avtab_read_item(fp,vers, a, avtab_insertf, NULL);
- 		if (rc) {
-diff --git a/security/selinux/ss/avtab.h b/security/selinux/ss/avtab.h
-index 0a90d93..d8edf8c 100644
---- a/security/selinux/ss/avtab.h
-+++ b/security/selinux/ss/avtab.h
-@@ -16,6 +16,9 @@
++u32 avc_policy_seqno(void)
++{
++	return avc_cache.latest_notif;
++}
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 0753b20..e842308 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -14,6 +14,8 @@
+  *                          <dgoeddel@trustedcs.com>
+  *  Copyright (C) 2006 Hewlett-Packard Development Company, L.P.
+  *                     Paul Moore, <paul.moore@hp.com>
++ *  Copyright (C) 2007 Hitachi Software Engineering Co., Ltd.
++ *                     Yuichi Nakamura <ynakam@hitachisoft.jp>
+  *
   *	This program is free software; you can redistribute it and/or modify
-  *  	it under the terms of the GNU General Public License as published by
-  *	the Free Software Foundation, version 2.
-+ *
-+ * Updated: Yuichi Nakamura <ynakam@hitachisoft.jp>
-+ * 	Tuned number of hash slots for avtab to reduce memory usage
-  */
- #ifndef _SS_AVTAB_H_
- #define _SS_AVTAB_H_
-@@ -50,9 +53,13 @@ struct avtab_node {
- struct avtab {
- 	struct avtab_node **htable;
- 	u32 nel;	/* number of elements */
-+	u32 nslot;      /* number of hash slots */
-+	u16 mask;       /* mask to compute hash func */
+  *	it under the terms of the GNU General Public License version 2,
+@@ -2464,7 +2466,7 @@ static int selinux_inode_listsecurity(struct inode *inode, char *buffer, size_t
+ 
+ /* file security operations */
+ 
+-static int selinux_file_permission(struct file *file, int mask)
++static int selinux_revalidate_file_permission(struct file *file, int mask)
+ {
+ 	int rc;
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+@@ -2486,6 +2488,25 @@ static int selinux_file_permission(struct file *file, int mask)
+ 	return selinux_netlbl_inode_permission(inode, mask);
+ }
+ 
++static int selinux_file_permission(struct file *file, int mask)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	struct task_security_struct *tsec = current->security;
++	struct file_security_struct *fsec = file->f_security;
++	struct inode_security_struct *isec = inode->i_security;
 +
++	if (!mask) {
++		/* No permission to check.  Existence test. */
++		return 0;
++	}
++
++	if (tsec->sid == fsec->sid && fsec->isid == isec->sid
++	    && fsec->pseqno == avc_policy_seqno())
++		return selinux_netlbl_inode_permission(inode, mask);
++
++	return selinux_revalidate_file_permission(file, mask);
++}
++
+ static int selinux_file_alloc_security(struct file *file)
+ {
+ 	return file_alloc_security(file);
+@@ -2725,6 +2746,34 @@ static int selinux_file_receive(struct file *file)
+ 	return file_has_perm(current, file, file_to_av(file));
+ }
+ 
++static int selinux_dentry_open(struct file *file)
++{
++	struct file_security_struct *fsec;
++	struct inode *inode;
++	struct inode_security_struct *isec;
++	inode = file->f_path.dentry->d_inode;
++	fsec = file->f_security;
++	isec = inode->i_security;
++	/*
++	 * Save inode label and policy sequence number
++	 * at open-time so that selinux_file_permission
++	 * can determine whether revalidation is necessary.
++	 * Task label is already saved in the file security
++	 * struct as its SID.
++	 */
++	fsec->isid = isec->sid;
++	fsec->pseqno = avc_policy_seqno();
++	/*
++	 * Since the inode label or policy seqno may have changed
++	 * between the selinux_inode_permission check and the saving
++	 * of state above, recheck that access is still permitted.
++	 * Otherwise, access might never be revalidated against the
++	 * new inode label or new policy.
++	 * This check is not redundant - do not remove.
++	 */
++	return inode_has_perm(current, inode, file_to_av(file), NULL);
++}
++
+ /* task security operations */
+ 
+ static int selinux_task_create(unsigned long clone_flags)
+@@ -4790,6 +4839,8 @@ static struct security_operations selinux_ops = {
+ 	.file_send_sigiotask =		selinux_file_send_sigiotask,
+ 	.file_receive =			selinux_file_receive,
+ 
++	.dentry_open =                  selinux_dentry_open,
++
+ 	.task_create =			selinux_task_create,
+ 	.task_alloc_security =		selinux_task_alloc_security,
+ 	.task_free_security =		selinux_task_free_security,
+diff --git a/security/selinux/include/avc.h b/security/selinux/include/avc.h
+index e145f6e..553607a 100644
+--- a/security/selinux/include/avc.h
++++ b/security/selinux/include/avc.h
+@@ -112,6 +112,8 @@ int avc_has_perm(u32 ssid, u32 tsid,
+                  u16 tclass, u32 requested,
+                  struct avc_audit_data *auditdata);
+ 
++u32 avc_policy_seqno(void);
++
+ #define AVC_CALLBACK_GRANT		1
+ #define AVC_CALLBACK_TRY_REVOKE		2
+ #define AVC_CALLBACK_REVOKE		4
+diff --git a/security/selinux/include/objsec.h b/security/selinux/include/objsec.h
+index 91b88f0..642a9fd 100644
+--- a/security/selinux/include/objsec.h
++++ b/security/selinux/include/objsec.h
+@@ -53,6 +53,8 @@ struct file_security_struct {
+ 	struct file *file;              /* back pointer to file object */
+ 	u32 sid;              /* SID of open file description */
+ 	u32 fown_sid;         /* SID of file owner (for SIGIO) */
++	u32 isid;             /* SID of inode at the time of file open */
++	u32 pseqno;           /* Policy seqno at the time of file open */
  };
  
- int avtab_init(struct avtab *);
-+int avtab_alloc(struct avtab *, u32);
- struct avtab_datum *avtab_search(struct avtab *h, struct avtab_key *k);
- void avtab_destroy(struct avtab *h);
- void avtab_hash_eval(struct avtab *h, char *tag);
-@@ -74,11 +81,10 @@ struct avtab_node *avtab_search_node_next(struct avtab_node *node, int specified
- void avtab_cache_init(void);
- void avtab_cache_destroy(void);
- 
--#define AVTAB_HASH_BITS 15
--#define AVTAB_HASH_BUCKETS (1 << AVTAB_HASH_BITS)
--#define AVTAB_HASH_MASK (AVTAB_HASH_BUCKETS-1)
--
--#define AVTAB_SIZE AVTAB_HASH_BUCKETS
-+#define MAX_AVTAB_HASH_BITS 13
-+#define MAX_AVTAB_HASH_BUCKETS (1 << MAX_AVTAB_HASH_BITS)
-+#define MAX_AVTAB_HASH_MASK (MAX_AVTAB_HASH_BUCKETS-1)
-+#define MAX_AVTAB_SIZE MAX_AVTAB_HASH_BUCKETS
- 
- #endif	/* _SS_AVTAB_H_ */
- 
-diff --git a/security/selinux/ss/conditional.c b/security/selinux/ss/conditional.c
-index d2737ed..45b93a8 100644
---- a/security/selinux/ss/conditional.c
-+++ b/security/selinux/ss/conditional.c
-@@ -456,6 +456,10 @@ int cond_read_list(struct policydb *p, void *fp)
- 
- 	len = le32_to_cpu(buf[0]);
- 
-+	rc = avtab_alloc(&(p->te_cond_avtab), p->te_avtab.nel);
-+	if (rc)
-+		goto err;
-+
- 	for (i = 0; i < len; i++) {
- 		node = kzalloc(sizeof(struct cond_node), GFP_KERNEL);
- 		if (!node)
-diff --git a/security/selinux/ss/policydb.c b/security/selinux/ss/policydb.c
-index f05f97a..5ecbad7 100644
---- a/security/selinux/ss/policydb.c
-+++ b/security/selinux/ss/policydb.c
-@@ -177,18 +177,15 @@ static int policydb_init(struct policydb *p)
- 
- 	rc = roles_init(p);
- 	if (rc)
--		goto out_free_avtab;
-+		goto out_free_symtab;
- 
- 	rc = cond_policydb_init(p);
- 	if (rc)
--		goto out_free_avtab;
-+		goto out_free_symtab;
- 
- out:
- 	return rc;
- 
--out_free_avtab:
--	avtab_destroy(&p->te_avtab);
--
- out_free_symtab:
- 	for (i = 0; i < SYM_NUM; i++)
- 		hashtab_destroy(p->symtab[i].table);
+ struct superblock_security_struct {
 -- 
 1.5.2.4
 
