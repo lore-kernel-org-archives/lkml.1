@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbXJISbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbXJISed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbXJISbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 14:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXJISbS
+	id S1755682AbXJISed (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 14:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXJISe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 14:31:18 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:19448 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753552AbXJISbR (ORCPT
+	Tue, 9 Oct 2007 14:34:26 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41095 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751889AbXJISeZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 14:31:17 -0400
-X-BigFish: VP
-X-FB-SS: 0,
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Tue, 9 Oct 2007 20:30:11 +0200
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: olecom@flower.upol.cz
-cc: "LKML (Cc removed)" <linux-kernel@vger.kernel.org>
-Subject: Re: coding for optimizations (Re: [PATCH 1/2] i386: mce cleanup
- part1: functional change)
-Message-ID: <20071009183011.GE13205@amd.com>
-References: <11919341961890-git-send-email-joerg.roedel@amd.com>
- <11919341961530-git-send-email-joerg.roedel@amd.com>
- <E1IfHZg-0003dp-FA@flower> <20071009160605.GC13205@amd.com>
- <20071009173317.GD22435@flower.upol.cz>
+	Tue, 9 Oct 2007 14:34:25 -0400
+Date: Tue, 9 Oct 2007 14:34:24 -0400
+To: Timur Tabi <timur@freescale.com>
+Cc: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: __LITTLE_ENDIAN vs. __LITTLE_ENDIAN_BITFIELD
+Message-ID: <20071009183424.GG4003@csclub.uwaterloo.ca>
+References: <4706822D.4070509@freescale.com> <Pine.LNX.4.64.0710052031310.13406@fbirervta.pbzchgretzou.qr> <470691EB.7020209@freescale.com> <AECA61F9-0EF6-4883-9D37-004C00C57417@cam.ac.uk> <4706A842.9030507@freescale.com> <20071009174623.GC4003@csclub.uwaterloo.ca> <470BC0D5.70305@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20071009173317.GD22435@flower.upol.cz>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 09 Oct 2007 18:30:11.0321 (UTC)
- FILETIME=[6D34B690:01C80AA2]
-X-WSS-ID: 6B15176E0601331641-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <470BC0D5.70305@freescale.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 07:33:17PM +0200, olecom@flower.upol.cz wrote:
-> 	if (!mce_disabled) {
-> 	if (!(c->x86_capability & (X86_FEATURE_MCA | X86_FEATURE_MCE)) {
-> 		printk(KERN_INFO "CPU%i: No machine check support available\n",
->  			smp_processor_id());
-> 		return;
-> 	}
-> 	/* function code */
-> 	}
+On Tue, Oct 09, 2007 at 12:56:37PM -0500, Timur Tabi wrote:
+> I'm sure they're correct, my problem is that how can my driver know what 
+> they are?
 
-I have 2 problems with this way:
+If they are correct, then you should only need to know about byte order
+in my experience.
 
-1) It is totally broken because c->x86_capability is not an integer but
-   an *array* of integers. This is also the reason why test_bit() is used
-   in cpu_has() and not plain logical operators.
+> I was hoping that there would be some compile-time constant I could check 
+> that would give me this information.
+> 
+> Yeah, I read that article some time ago when trying to diagnose the problem 
+> I was seeing.  It does explain the point I'm trying to make.  We have a 
+> device that's used on two product lines: one ARM-based, and one PowerPC.  
+> The ARM is little-endian, and the PowerPC is big-endian.  The device can 
+> support little-endian or big-endian data, as long as the bit-order matches 
+> the byte-order.
+> 
+> For now, I'm going to have to assume that they do match.
 
-2) It is still hard to read and breaks the kernel coding style.
+Well that is certainly the normal way it is done.  I think a few odd
+machines had options for doing different bit orders, but the normal
+setup is that it matches since that is the simplest layout when trying
+to implement bit shifts in hardware.
 
-But you are right with the redundant mca and mce variables. They are not
-needed and I will inline the cpu_has() checks into the condition check.
-I'll resubmit tomorrow.
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
+--
+Len Sorensen
