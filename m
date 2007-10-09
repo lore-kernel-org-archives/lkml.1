@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJIOMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbXJIOPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXJIOMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 10:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXJIOMX
+	id S1755321AbXJIOPl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 10:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbXJIOPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 10:12:23 -0400
-Received: from nn7.de ([85.214.94.156]:40922 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbXJIOMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 10:12:22 -0400
-Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, nickpiggin@yahoo.com.au
-In-Reply-To: <470B7D7E.5070901@wpkg.org>
-References: <470B7D7E.5070901@wpkg.org>
-Content-Type: text/plain
+	Tue, 9 Oct 2007 10:15:34 -0400
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:57592 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752122AbXJIOPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 10:15:33 -0400
+Message-ID: <470B8D04.30401@opengridcomputing.com>
+Date: Tue, 09 Oct 2007 09:15:32 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Updated InfiniBand/RDMA merge plans for 2.6.24
+References: <adaodfdkv59.fsf@cisco.com>	<47090708.6060604@opengridcomputing.com> <adair5hjh64.fsf@cisco.com>
+In-Reply-To: <adair5hjh64.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Oct 2007 14:12:12 +0000
-Message-Id: <1191939132.4377.63.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2007-10-09 at 15:09 +0200, Tomasz Chmielewski wrote:
-> Soeren Sonnenburg wrote:
-> 
-> >> Fixing recursive fault but reboot is needed!
-> > 
-> > Hmmhh, so now I rebooted and again tried to
-> > 
-> > $ make
-> > 
-> > the new kernel which again triggered this(?) BUG:
-> 
-> I had a similar issue with 2.6.22.9, but as I had a proprietary nvidia 
-> module loaded, I didn't report it. X was not enabled, though.
-> 
-> At this moment, the machine was spawning quite a bit of bash / awk etc. 
-> processes with large variables (50 MB or so), and used memory and CPU a lot.
-> 
-> Normally, it's my desktop machine, and it's rarely on for more than ~12 
-> hours, but this time, I left it on for a couple of days.
-> 
-> After this happened, these bash / awk processes died. After I restarted 
-> the script again, I lost ssh access to the machine, and I saw no more 
 
-I am afraid you are seeing some kind of hardware failure/bad driver
-behavior, just the symptom is the same.
+Roland Dreier wrote:
+>  > No mention about the iwarp port space issue?
+> 
+> I don't think we're at a stage where I'm prepared to merge something--
+> we all agree the latest patch has serious drawbacks, and it commits us
+> to a suboptimal interface that is userspace-visible.
+> 
 
-I am saying this as I have an uptime of 22 days with that very same
-machine now. And all I changed was unloading the asus p7131 dvb-t driver
-(saa71xx).
+Fair enough.
 
-Soeren
+>  > I'm at a loss as to how to proceed.
+> 
+> Could we try to do some cleanups to the net core to make the alias
+> stuff less painful?  eg is there any sane way to make it possible for
+> a device that creates 'eth0' to also create an 'iw0' alias without an
+> assigning an address?
+> 
+
+Well, "alias" interfaces really don't exist.  ethX:iw is really just 
+adding a address record (struct in_ifaddr) to ethX.  So in the current 
+core design, adding an alias without an address is really adding the 
+alias with address 0.0.0.0.  And I think the core net code assumes if an 
+in_ifaddr struct exists for a device, then its IP address is indeed valid.
+
+So I think the changes wouldn't be small to enhance the design to add a 
+concept of an alias interface.
+
+I'll look into this more though.
+
+Steve.
+
