@@ -1,179 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbXJIQZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbXJIQ0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbXJIQZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 12:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXJIQZv
+	id S1756587AbXJIQ0c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 12:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbXJIQ0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 12:25:51 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55269 "EHLO e4.ny.us.ibm.com"
+	Tue, 9 Oct 2007 12:26:25 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:23121 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752961AbXJIQZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 12:25:50 -0400
-Date: Tue, 9 Oct 2007 09:25:26 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071009162526.GC26472@us.ibm.com>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie> <20071009011143.GC14670@us.ibm.com> <20071009154052.GC12632@skynet.ie>
+	id S1754678AbXJIQ0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 12:26:24 -0400
+Message-ID: <470BABAC.2030706@msgid.tls.msk.ru>
+Date: Tue, 09 Oct 2007 20:26:20 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071009154052.GC12632@skynet.ie>
-X-Operating-System: Linux 2.6.22.6 (x86_64)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Andi Kleen <andi@firstfloor.org>, Michael Stiller <ms@2scale.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: howto boost write(2) performance?
+References: <1191937817.3641.9.camel@blackberry> <p73odf849rq.fsf@bingen.suse.de> <470BA14C.90608@panasas.com>
+In-Reply-To: <470BA14C.90608@panasas.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09.10.2007 [16:40:53 +0100], Mel Gorman wrote:
-> First, sorry for being so slow to respond. I was getting ill towards the end
-> of last week and am worse now. Brain is in total mush as a result. Thanks
-> Lee for finding this problem and thanks to Nish for investigating it properly.
+Boaz Harrosh wrote:
+[]
+> If your target is a SCSI target you can gain up to 15% by using
+> sg. Search on the net for the "sg utils" package. The source code
+> of sg_dd and others are a grate example of how to do it.
 > 
-> Comments and candidate fix to one zonelist are below.
-> 
-> On (08/10/07 18:11), Nishanth Aravamudan didst pronounce:
-> > On 28.09.2007 [15:25:27 +0100], Mel Gorman wrote:
-> > > 
-> > > Two zonelists exist so that GFP_THISNODE allocations will be guaranteed
-> > > to use memory only from a node local to the CPU. As we can now filter the
-> > > zonelist based on a nodemask, we filter the standard node zonelist for zones
-> > > on the local node when GFP_THISNODE is specified.
-> > > 
-> > > When GFP_THISNODE is used, a temporary nodemask is created with only the
-> > > node local to the CPU set. This allows us to eliminate the second zonelist.
-> > > 
-> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > Acked-by: Christoph Lameter <clameter@sgi.com>
-> > 
-> > <snip>
-> > 
-> > > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h
-> > > --- linux-2.6.23-rc8-mm2-030_filter_nodemask/include/linux/gfp.h	2007-09-28 15:49:57.000000000 +0100
-> > > +++ linux-2.6.23-rc8-mm2-040_use_one_zonelist/include/linux/gfp.h	2007-09-28 15:55:03.000000000 +0100
-> > 
-> > [Reordering the chunks to make my comments a little more logical]
-> > 
-> > <snip>
-> > 
-> > > -static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-> > > +static inline struct zonelist *node_zonelist(int nid)
-> > >  {
-> > > -	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
-> > > +	return &NODE_DATA(nid)->node_zonelist;
-> > >  }
-> > > 
-> > >  #ifndef HAVE_ARCH_FREE_PAGE
-> > > @@ -198,7 +186,7 @@ static inline struct page *alloc_pages_n
-> > >  	if (nid < 0)
-> > >  		nid = numa_node_id();
-> > > 
-> > > -	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-> > > +	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
-> > >  }
-> > 
-> > This is alloc_pages_node(), and converting the nid to a zonelist means
-> > that lower levels (specifically __alloc_pages() here) are not aware of
-> > nids, as far as I can tell.
-> 
-> Yep, this is correct.
-> 
-> > This isn't a change, I just want to make
-> > sure I understand...
-> > 
-> > <snip>
-> > 
-> > >  struct page * fastcall
-> > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> > >  		struct zonelist *zonelist)
-> > >  {
-> > > +	/*
-> > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > > +	 * cost of allocating on the stack or the stack usage becomes
-> > > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > > +	 */
-> > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > > +		nodemask_t nodemask;
-> > > +
-> > > +		return __alloc_pages_internal(gfp_mask, order,
-> > > +				zonelist, nodemask_thisnode(&nodemask));
-> > > +	}
-> > > +
-> > >  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-> > >  }
-> > 
-> > <snip>
-> > 
-> > So alloc_pages_node() calls here and for THISNODE allocations, we go ask
-> > nodemask_thisnode() for a nodemask...
-> > 
-> 
-> Also correct.
-> 
-> > > +static nodemask_t *nodemask_thisnode(nodemask_t *nodemask)
-> > > +{
-> > > +	/* Build a nodemask for just this node */
-> > > +	int nid = numa_node_id();
-> > > +
-> > > +	nodes_clear(*nodemask);
-> > > +	node_set(nid, *nodemask);
-> > > +
-> > > +	return nodemask;
-> > > +}
-> > 
-> > <snip>
-> > 
-> > And nodemask_thisnode() always gives us a nodemask with only the node
-> > the current process is running on set, I think?
-> > 
-> 
-> Yes, I interpreted THISNODE to mean "this node I am running on".
-> Callers seemed to expect this but the memoryless needs it to be "this
-> node I am running on unless I specify a node in which case I mean that
-> node.".
+> Other wise O_DIRECT is your friend. Also look for asynchronous
+> I/O so you have a few pending IO buffers to keep the pipes full.
 
-I think that is only true (THISNODE = local node) if the callpath is not
-via alloc_pages_node(). If the callpath is via alloc_pages_node(), then
-it depends on whether the nid parameter is -1 (in which case it is also
-local node) or anything (in which case it is the nid specified). Ah,
-reading further along, that's exactly what your changelog indicates too
-:)
+What's the advantage of sg_io over O_DIRECT to the block device?
+I think sg devices are being (slowly?) obsoleted since most stuff
+which has been in sg now works over normal block device, no?
+At least, I haven't seen any significant difference between
+sg_dd and dd with oflag=direct.
 
-> > That seems really wrong -- and would explain what Lee was seeing while
-> > using my patches for the hugetlb pool allocator to use THISNODE
-> > allocations. All the allocations would end up coming from whatever node
-> > the process happened to be running on. This obviously messes up hugetlb
-> > accounting, as I rely on THISNODE requests returning NULL if they go
-> > off-node.
-> > 
-> > I'm not sure how this would be fixed, as __alloc_pages() no longer has
-> > the nid to set in the mask.
-> > 
-> > Am I wrong in my analysis?
-> > 
-> 
-> No, you seem to be right on the ball. Can you review the following patch
-> please and determine if it fixes the problem in a satisfactory manner? I
-> think it does and your tests seemed to give proper values with this patch
-> applied but brain no worky work and a second opinion is needed.
-> 
-> ====
-> Subject: Use specified node ID with GFP_THISNODE if available
-> 
-> It had been assumed that __GFP_THISNODE meant allocating from the local
-> node and only the local node. However, users of alloc_pages_node() may also
-> specify GFP_THISNODE. In this case, only the specified node should be used.
-> This patch will allocate pages only from the requested node when GFP_THISNODE
-> is used with alloc_pages_node().
+Thanks.
 
-I will throw this into my tests and see if it fixes things. It looks
-like it should.
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+/mjt
