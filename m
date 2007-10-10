@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbXJJNgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbXJJNga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbXJJNgJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 09:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbXJJNfz
+	id S1755439AbXJJNga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 09:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXJJNgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 09:35:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:6037 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbXJJNfx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 09:35:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XV1sGZnmTnV94V5ErtkQuaIWdXGc3YBh4wUBxmEmHi1+Heai2LFYZ0Jd7VuvZXbLguwBIjnQOyjchFMGO/8+6ydNv+mjxwQo98qS0BChfsbE52fo8iKLROVpMokChteKXLwHn6DmrMGsLONcP+ASG/6quem2ra6yUcm8U8U7vLk=
-Message-ID: <118833cc0710100635x205503a2peb73d24384538afa@mail.gmail.com>
-Date: Wed, 10 Oct 2007 09:35:49 -0400
-From: "Morten Welinder" <mwelinder@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@sw.ru>
-Subject: Re: idio{,ma}tic typos (was Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch added to -mm tree)
-Cc: "Al Viro" <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       davej@codemonkey.org.uk, "Pierre Ossman" <drzeus@drzeus.cx>,
-       akpm@osdl.org, linux-sparse@vger.kernel.org
-In-Reply-To: <20071010104540.GA6366@localhost.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071010104540.GA6366@localhost.sw.ru>
+	Wed, 10 Oct 2007 09:36:22 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:39100 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753173AbXJJNgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 09:36:21 -0400
+To: torvalds@linux-foundation.org
+Subject: [git pull] jfs update
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-Id: <20071010133542.D234E4C9AED@norville.austin.ibm.com>
+Date: Wed, 10 Oct 2007 08:35:42 -0500 (CDT)
+From: shaggy@linux.vnet.ibm.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> While we're at it, below is somewhat ugly sparse patch for detecting
-> "&& 0x" typos.
+Linus, please pull from
 
-Excellent idea, and there is something to be said about a low-footprint patch
-like that.  However, if you really want to capture this kind of bugs, you would
-need to have some kind "not a boolean" or "bitfield" attribute that
-can propagate.
-For example, you would want
+git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
 
-    if (foo && (BAR | BAZ)) ...;
+This will update the following files:
 
-with BAR and BAZ being hex constants to produce the same warning.
+ fs/jfs/jfs_dtree.c |    8 ++------
+ fs/jfs/jfs_dtree.h |    4 ++--
+ fs/jfs/resize.c    |    2 +-
+ 3 files changed, 5 insertions(+), 9 deletions(-)
 
-Incidentally, it is probably not just hex constants that deserve this treatment:
-octal constants and variations of (1 << cst) are of the same nature.  As well
-as enums defined in such manners.
+through these ChangeSets:
 
-Morten
+Commit: 2c5c37da093cd2f455ce818ee7b02b7a39d10498 
+Author: Shaun Zinck <shaun.zinck@gmail.com> Fri, 31 Aug 2007 12:57:28 -0500 
+
+    JFS: use DIV_ROUND_UP where appropriate
+    
+    This replaces some macros and code, which do the same thing as DIV_ROUND_UP
+    defined in kernel.h, to use the DIV_ROUND_UP macro.
+    
+    Signed-off-by: Shaun Zinck <shaun.zinck@gmail.com>
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+Commit: 85e65c39f050a4964d0b943304bd896ff5375988 
+Author: Jack Stone <jack@hawkeye.stone.uk.eu.org> Tue, 31 Jul 2007 09:36:53 -0500 
+
+    Remove unnecessary kmalloc casts in the jfs filesystem
+    
+    Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
