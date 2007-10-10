@@ -1,122 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbXJJQgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXJJQgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbXJJQgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXJJQfL
+	id S1757298AbXJJQgf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbXJJQfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:35:11 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57478 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756633AbXJJQfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:35:08 -0400
-Subject: [RFC][PATCH 7/7] keep track of mnt_writer state of struct file
+	Wed, 10 Oct 2007 12:35:12 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47393 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756638AbXJJQfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 12:35:09 -0400
+Subject: [RFC][PATCH 2/7] get mount write in __dentry_open()
 To: linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, hch@infradead.org, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Wed, 10 Oct 2007 09:34:46 -0700
+Date: Wed, 10 Oct 2007 09:34:39 -0700
 References: <20071010163439.0F8089F7@kernel>
 In-Reply-To: <20071010163439.0F8089F7@kernel>
-Message-Id: <20071010163446.2C8F86AC@kernel>
+Message-Id: <20071010163439.9DB7F219@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There have been a few oopses caused by 'struct file's with
-NULL f_vfsmnts.  There was also a set of potentially missed
-mnt_want_write()s from dentry_open() calls.
+The first patch fixes an actual bug.  I think the
+reset will reduce the chance for any future bugs
+to creep in.
 
-This patch provides a very simple debugging framework to
-catch these kinds of bugs.  It will WARN_ON() them, but
-should stop us from having any oopses or mnt_writer
-count imbalances.
+--
 
+The r/o bind mount patches require matching mnt_want_write()
+at filp creation time with a mnt_drop_write() at __fput().
+
+We used to do this in may_open(), but Miklos pointed out
+that __dentry_open() is used as well to create filps.  We
+don't currently do mnt_want_write() for these.
+
+If a filp on a writeable file is created this way, and
+destroyed via __fput() we'll get a mount count imbalance.
+
+This patch moves the mount write count acquisition from
+may_open() into __dentry_open(), where we should catch
+many more of the users.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/file_table.c    |   21 +++++++++++++++++++--
- lxc-dave/fs/open.c          |    2 ++
- lxc-dave/include/linux/fs.h |    4 ++++
- 3 files changed, 25 insertions(+), 2 deletions(-)
+ lxc-dave/fs/namei.c |   12 ------------
+ lxc-dave/fs/open.c  |   45 ++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 38 insertions(+), 19 deletions(-)
 
-diff -puN fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file fs/file_table.c
---- lxc/fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
-+++ lxc-dave/fs/file_table.c	2007-10-03 14:40:14.000000000 -0700
-@@ -42,6 +42,12 @@ static inline void file_free_rcu(struct 
- static inline void file_free(struct file *f)
- {
- 	percpu_counter_dec(&nr_files);
+diff -puN fs/namei.c~get-write-in-__dentry_open fs/namei.c
+--- lxc/fs/namei.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-10-04 18:02:48.000000000 -0700
+@@ -1621,14 +1621,6 @@ int may_open(struct nameidata *nd, int a
+ 			return -EACCES;
+ 
+ 		flag &= ~O_TRUNC;
+-	} else if (flag & FMODE_WRITE) {
+-		/*
+-		 * effectively: !special_file()
+-		 * balanced by __fput()
+-		 */
+-		error = mnt_want_write(nd->mnt);
+-		if (error)
+-			return error;
+ 	}
+ 
+ 	error = vfs_permission(nd, acc_mode);
+@@ -1778,11 +1770,7 @@ do_last:
+ 
+ 	/* Negative dentry, just create the file */
+ 	if (!path.dentry->d_inode) {
+-		error = mnt_want_write(nd->mnt);
+-		if (error)
+-			goto exit_mutex_unlock;
+ 		error = open_namei_create(nd, &path, flag, mode);
+-		mnt_drop_write(nd->mnt);
+ 		if (error)
+ 			goto exit;
+ 		return 0;
+diff -puN fs/open.c~get-write-in-__dentry_open fs/open.c
+--- lxc/fs/open.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
++++ lxc-dave/fs/open.c	2007-10-04 18:02:48.000000000 -0700
+@@ -766,22 +766,51 @@ out:
+ 	return error;
+ }
+ 
++/*
++ * You have to be very careful that these write
++ * counts get cleaned up in error cases and
++ * upon __fput().  This should probably never
++ * be called outside of __dentry_open().
++ */
++static inline int __get_file_write_access(struct inode *inode,
++					  struct vfsmount *mnt)
++{
++	int error;
++	error = get_write_access(inode);
++	if (error)
++		return error;
 +	/*
-+	 * At this point, either both or neither of these bits
-+	 * should be set.
++	 * Do not take mount writer counts on
++	 * special files since no writes to
++	 * the mount itself will occur.
 +	 */
-+	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN);
-+	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_RELEASED);
- 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
- }
- 
-@@ -194,6 +200,7 @@ int init_file(struct file *file, struct 
- 	file->f_mode = mode;
- 	file->f_op = fop;
- 	if (mode & FMODE_WRITE) {
-+		file->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
- 		error = mnt_want_write(mnt);
- 		WARN_ON(error);
- 	}
-@@ -236,8 +243,18 @@ void fastcall __fput(struct file *file)
- 	fops_put(file->f_op);
- 	if (file->f_mode & FMODE_WRITE) {
- 		put_write_access(inode);
--		if (!special_file(inode->i_mode))
--			mnt_drop_write(mnt);
-+		if (!special_file(inode->i_mode)) {
-+			if (file->f_mnt_write_state == FILE_MNT_WRITE_TAKEN) {
-+				mnt_drop_write(mnt);
-+				file->f_mnt_write_state |=
-+					FILE_MNT_WRITE_RELEASED;
-+			} else {
-+				printk(KERN_WARNING "__fput() of writeable "
-+						"file with no "
-+						"mnt_want_write()\n");
-+				WARN_ON(1);
-+			}
-+		}
- 	}
- 	put_pid(file->f_owner.pid);
- 	file_kill(file);
-diff -puN fs/namei.c~keep-track-of-mnt_writer-state-of-struct-file fs/namei.c
-diff -puN include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file include/linux/fs.h
---- lxc/include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
-+++ lxc-dave/include/linux/fs.h	2007-10-03 14:40:14.000000000 -0700
-@@ -779,6 +779,9 @@ static inline int ra_has_index(struct fi
- 		index <  ra->start + ra->size);
- }
- 
-+#define FILE_MNT_WRITE_TAKEN	1
-+#define FILE_MNT_WRITE_RELEASED	2
++	if (special_file(inode->i_mode))
++		return 0;
 +
- struct file {
- 	/*
- 	 * fu_list becomes invalid after file_free is called and queued via
-@@ -813,6 +816,7 @@ struct file {
- 	spinlock_t		f_ep_lock;
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
-+	unsigned long f_mnt_write_state;
- };
- extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
-diff -puN fs/open.c~keep-track-of-mnt_writer-state-of-struct-file fs/open.c
---- lxc/fs/open.c~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
-+++ lxc-dave/fs/open.c	2007-10-03 14:42:01.000000000 -0700
-@@ -790,6 +790,8 @@ static struct file *__dentry_open(struct
- 			mnt_drop_write(mnt);
- 			goto cleanup_file;
- 		}
-+		WARN_ON(f->f_mnt_write_state != 0);
-+		f->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
- 	}
++	/*
++	 * Balanced in __fput()
++	 */
++	error = mnt_want_write(mnt);
++	if (error)
++		put_write_access(inode);
++	return error;
++}
++
+ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
+ 					int flags, struct file *f,
+ 					int (*open)(struct inode *, struct file *))
+ {
+ 	struct inode *inode;
+-	int error;
++	int error = 0;
+ 
+ 	f->f_flags = flags;
+ 	f->f_mode = ((flags+1) & O_ACCMODE) | FMODE_LSEEK |
+ 				FMODE_PREAD | FMODE_PWRITE;
+ 	inode = dentry->d_inode;
+-	if (f->f_mode & FMODE_WRITE) {
+-		error = get_write_access(inode);
+-		if (error)
+-			goto cleanup_file;
+-	}
++	if (f->f_mode & FMODE_WRITE)
++		error = __get_file_write_access(inode, mnt);
++	if (error)
++		goto cleanup_file;
  
  	f->f_mapping = inode->i_mapping;
+ 	f->f_path.dentry = dentry;
+@@ -820,8 +849,10 @@ static struct file *__dentry_open(struct
+ 
+ cleanup_all:
+ 	fops_put(f->f_op);
+-	if (f->f_mode & FMODE_WRITE)
++	if (f->f_mode & FMODE_WRITE) {
+ 		put_write_access(inode);
++		mnt_drop_write(mnt);
++	}
+ 	file_kill(f);
+ 	f->f_path.dentry = NULL;
+ 	f->f_path.mnt = NULL;
+diff -puN fs/file_table.c~get-write-in-__dentry_open fs/file_table.c
 _
