@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXJJRjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbXJJRtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbXJJRjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 13:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXJJRje
+	id S1756161AbXJJRtt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 13:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXJJRtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 13:39:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56368 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754724AbXJJRjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 13:39:33 -0400
-Date: Wed, 10 Oct 2007 10:39:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Akinobu Mita <akinobu.mita@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
-In-Reply-To: <20071010121853.GA3911@APFDCB5C>
-Message-ID: <Pine.LNX.4.64.0710101037210.7158@schroedinger.engr.sgi.com>
-References: <20071009161328.GA6470@APFDCB5C>
- <Pine.LNX.4.64.0710091144020.32162@schroedinger.engr.sgi.com>
- <20071010121853.GA3911@APFDCB5C>
+	Wed, 10 Oct 2007 13:49:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:33319 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754608AbXJJRtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 13:49:41 -0400
+Message-ID: <470D1088.1030908@goop.org>
+Date: Wed, 10 Oct 2007 10:48:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
+       Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [PATCH RFC REPOST 1/2] paravirt: refactor struct paravirt_ops
+ into smaller pv_*_ops
+References: <470BC758.1030504@goop.org> <200710101635.10139.rusty@rustcorp.com.au>
+In-Reply-To: <200710101635.10139.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Oct 2007, Akinobu Mita wrote:
+Rusty Russell wrote:
+>> +	OFFSET(PARAVIRT_enabled, pv_info, paravirt_enabled);
+>>     
+>
+> I think this gives the right answer for the wrong reasons?
+>   
 
-> I couldn't use get_cpu_slab() for that check. But I reviced the patch to do
-> what you said.
+Actually, it was OK.  The only use is in entry.S, which uses pv_info +
+PARAVIRT_enabled.
 
-Why would get_cpu_slab not work?
-
-> +	if (per_cpu(kmem_cache_cpu_free, cpu)) {
-> +		/* Already initialized once */
-> +		return;
-> +	}
-> +
-
-kmem_cache_cpu_free is not only NULL if the cpu is not up yet but it is 
-also NULL if the per cpu pool of kmem_cache_cpu structures was 
-exhausted.
+    J
