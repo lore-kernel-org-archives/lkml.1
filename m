@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbXJJTtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXJJTtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbXJJTtJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 15:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJJTs5
+	id S1756828AbXJJTtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 15:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbXJJTtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 15:48:57 -0400
-Received: from web31805.mail.mud.yahoo.com ([68.142.207.68]:22669 "HELO
-	web31805.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755482AbXJJTs4 (ORCPT
+	Wed, 10 Oct 2007 15:49:10 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:36200 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756553AbXJJTtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 15:48:56 -0400
-X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 15:48:56 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=cRtDbMlYN9P3auHs+BpGZAa7ZR0uvN0pjedwx4axUZRguB4r35YapDIpKw/GsH+4jaY35bepXjFSYT5Xib12FVOYAg4vLfza2CJL7lX96HTX3dHGtH3+v3L2xhY/yHJEprPFfc+nSTBkjqKkDU4FFQ4n3LltuTBs0mS5XOp7V8c=;
-X-YMail-OSG: Ucd043oVM1lYsgoW6BuIUjqZRIkaMKleF9Et.x59kTl.9KoAxmcPbhutGiCRV90BcipAsw--
-Date: Wed, 10 Oct 2007 12:38:42 -0700 (PDT)
-From: Luben Tuikov <ltuikov@yahoo.com>
-Reply-To: ltuikov@yahoo.com
-Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address if the adapter lacks one
-To: James.Smart@Emulex.Com, "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alexis Bruemmer <alexisb@us.ibm.com>,
-       James Bottomley <james.bottomley@steeleye.com>
-In-Reply-To: <470CE78B.2080509@emulex.com>
+	Wed, 10 Oct 2007 15:49:07 -0400
+X-Originating-Ip: 99.236.101.138
+Date: Wed, 10 Oct 2007 15:43:54 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Matthew Wilcox <matthew@wil.cx>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [matthew@wil.cx: Re: [parisc-linux] parisc arch makefile clean-up
+ needed [Was: cleaning up "make headers_install" for various architectures]]
+In-Reply-To: <20071010191538.GF2730@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0710101542350.12230@localhost.localdomain>
+References: <20071010191538.GF2730@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <105757.49287.qm@web31805.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.19, required 5, autolearn=not spam,
+	ADDRESS_IN_SUBJECT 0.53, ALL_TRUSTED -1.80, BAYES_00 -15.00,
+	INIT_RECVD_OUR_AUTH -20.00, TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- James Smart <James.Smart@Emulex.Com> wrote:
-> Here's one pro for setting WWNs at arbitrary times...
->    If the box is migrating applications (say containers) that want
->    different SAN connectivity, where that connectivity (view) is based
->    on their WWN, it would be really nice to selectively set the WWN and
->    not touch the SAN config.
+On Wed, 10 Oct 2007, Matthew Wilcox wrote:
 
-No.  The WWN stays the same and the SAN is re-configured to be
-aware of the node migration.  Access patterns could be more
-complex than just a single portal allowing access to/from the
-SAN from/to the node.
+>
+> Sam mipslet 'parisc-linux' in the first mail ... so i replied to the
+> second mail ... without checking l-k was still cc'd.
+>
+> ----- Forwarded message from Matthew Wilcox <matthew@wil.cx> -----
+>
+> From: Matthew Wilcox <matthew@wil.cx>
+> To: Sam Ravnborg <sam@ravnborg.org>
+> Cc: parisc-linux@lists.parisc-linux.org
+> Subject: Re: [parisc-linux] parisc arch makefile clean-up needed [Was:
+> 	cleaning up "make headers_install" for various architectures]
+>
+> On Wed, Oct 10, 2007 at 08:42:25PM +0200, Sam Ravnborg wrote:
+> > parisc arch Makefile needs some love and care...
+> >
+> > The logic selecting CROSS_COMPILE seems fishy and wrong -
+> > the error reported by rday is obvious in this respect.
+>
+> He doesn't have a compiler installed that can target parisc.  It
+> doesn't seem obvious to me that this should work.
 
-WWN is supposed to be persistent.  This is what it actually is.
-It is NOT supposed to be "(auto)generated" and/or changed at a whim.
+are you claiming that installing arch-specific kernel headers should,
+in fact, require an appropriate cross compiler?  i wouldn't have
+thought so, but i'm willing to be corrected.
 
-This also has security implications, and enterprise networks may
-refuse to use software (read "kernel") which allows for arbitrary
-changes to a node's WWN.
+rday
 
-If access to a node is compromised, a rogue agent may change
-the node's WWN in order to access SAN zones that it normally
-will be denied access to.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-    Luben
-
+http://crashcourse.ca
+========================================================================
