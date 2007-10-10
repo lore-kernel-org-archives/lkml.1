@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbXJJASw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXJJATZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbXJJASw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 20:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXJJASj
+	id S1756576AbXJJATZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 20:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJJATN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 20:18:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47151 "EHLO smtps.tip.net.au"
+	Tue, 9 Oct 2007 20:19:13 -0400
+Received: from as4.cineca.com ([130.186.84.213]:34715 "EHLO as4.cineca.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755413AbXJJASh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 20:18:37 -0400
-Date: Wed, 10 Oct 2007 10:18:26 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, tgall.foo@gmail.com,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
-Subject: Re: [PATCH] powerpc: don't enable cpu hotplug on mpic-based pseries
-Message-Id: <20071010101826.186f1f24.sfr@canb.auug.org.au>
-In-Reply-To: <20071010000815.GB7875@lixom.net>
-References: <20071008180406.052382073@mini.kroah.org>
-	<20071008180633.GJ7627@kroah.com>
-	<20071009151702.GA19209@lixom.net>
-	<20071009222003.GA21228@kroah.com>
-	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
-	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
-	<20071010000815.GB7875@lixom.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__10_Oct_2007_10_18_26_+1000_wInLiMp5dDA90KdZ"
+	id S1752833AbXJJATM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 20:19:12 -0400
+From: Luca Risolia <luca.risolia@studio.unibo.it>
+Reply-To: luca.risolia@studio.unibo.it
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 2/3] V4L: zc0301, remove bad usage of ERESTARTSYS
+Date: Wed, 10 Oct 2007 02:18:50 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, mchehab@infradead.org,
+       video4linux-list@redhat.com
+References: <11237258561195029635@pripojeni.net>
+In-Reply-To: <11237258561195029635@pripojeni.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710100218.50987.luca.risolia@studio.unibo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__10_Oct_2007_10_18_26_+1000_wInLiMp5dDA90KdZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+acked-by: Luca Risolia <luca.risolia@studio.unibo.it>
 
-Hi Olof,
 
-On Tue, 9 Oct 2007 19:08:15 -0500 Olof Johansson <olof@lixom.net> wrote:
+On Monday 08 October 2007 14:40:53 Jiri Slaby wrote:
+> zc0301, remove bad usage of ERESTARTSYS
 >
-> Don't allow cpu hotplug on systems lacking XICS interrupt controller,
-> since current platform code is hardcoded for it.
->=20
->=20
-> Signed-off-by: Olof Johansson <olof@lixom.net>
->=20
->=20
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index 9711eb0..e29b890 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -252,6 +252,19 @@ static struct notifier_block pseries_smp_nb =3D {
-> =20
->  static int __init pseries_cpu_hotplug_init(void)
->  {
-> +	struct device_node *np;
-> +	const char *typep;
-> +
-> +	for (np =3D NULL; (np =3D of_find_node_by_name(np,
-> +						   "interrupt-controller"));) {
-> +		typep =3D of_get_property(np, "compatible", NULL);
-> +		if (strstr(typep, "open-pic")) {
-> +			printk(KERN_INFO "CPU Hotplug not supported on "
-> +				"systems using MPIC\n");
+> down_read_trylock can't be interrupted and so ERESTARTSYS would reach
+> userspace, which is not permitted. Change it to EAGAIN
+>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>
+> ---
+> commit 235cf594bc65128250632a642f3e9d7e4df4975e
+> tree 0557746416827daeb4d829610fec2f0c9111a675
+> parent db38c559d37219c32b179ae005ca7e489336ec94
+> author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:15:47 +0200
+> committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:15:47 +0200
+>
+>  drivers/media/video/zc0301/zc0301_core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/media/video/zc0301/zc0301_core.c
+> b/drivers/media/video/zc0301/zc0301_core.c index 35138c5..08a93c3 100644
+> --- a/drivers/media/video/zc0301/zc0301_core.c
+> +++ b/drivers/media/video/zc0301/zc0301_core.c
+> @@ -655,7 +655,7 @@ static int zc0301_open(struct inode* inode, struct
+> file* filp) int err = 0;
+>
+>  	if (!down_read_trylock(&zc0301_dev_lock))
+> -		return -ERESTARTSYS;
+> +		return -EAGAIN;
+>
+>  	cam = video_get_drvdata(video_devdata(filp));
 
-You need an of_node_put(np) here.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__10_Oct_2007_10_18_26_+1000_wInLiMp5dDA90KdZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHDBpWTgG2atn1QN8RAuKPAJ9QWVu4JBfurc0fWfwcFj1fFr5J+ACeMrr4
-oShUFBVn4/m4NEkuU6hw+BY=
-=DxMO
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Oct_2007_10_18_26_+1000_wInLiMp5dDA90KdZ--
