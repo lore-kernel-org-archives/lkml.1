@@ -1,85 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbXJJNlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbXJJNp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617AbXJJNlG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 09:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXJJNkz
+	id S1755304AbXJJNp5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 09:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXJJNpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 09:40:55 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:46167 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbXJJNky (ORCPT
+	Wed, 10 Oct 2007 09:45:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44351 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753445AbXJJNpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 09:40:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I9oFNzZ2lICwHHXIxskgwrleFsK9tQbWw3RVWHhxTduAPqoon23dfwK67nudeYA/GlpHlZZKMzFUPG+hblpC0KvCrC7bUnGOnuLZGFqvZepAWQ44ZiPoXCoR86IPS0bdtrYJWGj9ntjpOw5rTQ06vcuq+nhQOnPs/zhHzmJ/B88=
-Message-ID: <7b69d1470710100640g230818ep243a58b256a78c02@mail.gmail.com>
-Date: Wed, 10 Oct 2007 08:40:51 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Jonathan Corbet" <corbet@lwn.net>
-Subject: Re: RFC: reviewer's statement of oversight
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <10940.1191883390@lwn.net>
+	Wed, 10 Oct 2007 09:45:49 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
+References: <11902755392688-git-send-email-htejun@gmail.com>
+	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
+	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
+	<20071005062302.GB16914@kroah.com>
+	<m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
+	<20071009225139.GF21228@kroah.com>
+Date: Wed, 10 Oct 2007 07:16:48 -0600
+In-Reply-To: <20071009225139.GF21228@kroah.com> (Greg KH's message of "Tue, 9
+	Oct 2007 15:51:39 -0700")
+Message-ID: <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071008173706.GA12026@uranus.ravnborg.org>
-	 <10940.1191883390@lwn.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/8/07, Jonathan Corbet <corbet@lwn.net> wrote:
+Greg KH <greg@kroah.com> writes:
 
-Some minor rewording suggestions:
+> On Fri, Oct 05, 2007 at 06:12:41AM -0600, Eric W. Biederman wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> >
+>> >>   Also fun is that the dev file implementation needs to be able to
+>> >>   report different major:minor numbers based on which mount of
+>> >>   sysfs we are dealing with.
+>> >
+>> > Um, no, that's not going to happen.  /dev/sda will _always_ have the
+>> > same major:minor number, as defined by the LSB spec.  You can not break
+>> > that at all.  So while you might not want to show all mounts
+>> > /sys/devices/block/sda/ the ones that you do, will all have the LSB
+>> > defined major:minor number assigned to it.
+>> 
+>> Hmm.  If that is in the LSB it must come from
+>> Documentation/devices.txt
+>
+> Yes, that is the requirement.
+>
+>> I'm not after changing the user visible major/minor assignments.
+>
+> Oh, I misunderstood what you wrote above then.
 
-> + (b) Any problems, concerns, or questions relating to the patch have been
-> +     communicated back to the submitter.  I am satisfied with how the
-> +     submitter has responded to my comments.
----
+My above sentence is slightly misleading.  That should have been.
+I am not after changing the device name to major:minor assignments
+as specified in Documentation/devices.txt.
 
-Replace the last sentence with "I am satisfied with the submitter's
-response to my comments." or "The submitter has responded to my
-comments in a way that satisfied my concerns."
+So within a single device namespace everything is normal and as it
+always has been.  Weirdness only ensues when you look across device
+namespaces.
 
----
-> +
-> + (c) While there may (or may not) be things which could be improved with
-> +     this submission, I believe that it is, at this time, (1) a worthwhile
-> +     modification to the kernel, and (2) free of known issues which would
-> +     argue against its inclusion.
----
+>> Let me see if a concrete example will help.  Suppose I have
+>> have a SAN with two disks:  disk-1 and disk-2.  I have
+>> two machines A and B.  On machine A I get the mapping:
+>> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
+>> a different probe order so I get the mapping: sda -> disk-2
+>> sdb ->disk-1.
+>
+> Ok.
+>
+>> To be very clear by sda I mean the block device with major 8 and
+>> minor 0, and by sdb I mean the block device with major 8 and minor
+>> 16.
+>
+> Ok.
+>
+>> So I decide I want an environment on machine B that looks just
+>> like the environment on machine A, so I can bring transfer over
+>> a running program or whatever.  So I run around looking at UUID
+>> labels and what not and I discover that the machine B knows disk-1 as
+>> sdb and that machine A knows disk-1 as sda.  So I want to say:
+>> /sys/devices/block/sdb show up in this other device namespace as
+>> /sys/devices/block/sda.
 
-I would suggest dropping the "(or may not)" as unnecessary, and
-changing the "which would" to "that would".
+>
+> Ah, but if you do that then the "other" device namespace would have
+> /sys/devices/block/sda/dev be 8:16, right? 
 
----
-> +
-> + (d) While I have reviewed the patch and believe it to be sound, I can not
----
+No. The "other" device namespace I would construct on machine B to
+look just like the device namespace that existed on machine A.
+Making /sys/devices/block/sda would still be 8:0.
 
->From a legal standpoint, "I do not" might be preferable to "I cannot",
-since it disclaims any intention to make such a statement, regardless
-of qualification.
+So to be very clear on machine B when talking about disk-1 I would have.
+initial device namespace:
+  /sys/devices/block/sdb
+  /sys/devices/block/sdb/dev 8:16
 
----
-> +     (unless explicitly stated elsewhere) make any warranties or guarantees
-> +     that it will achieve its stated purpose or function properly in any
-> +     given situation.
-> +
-> + (e) I understand and agree that this project and the contribution are
-> +     public and that a record of the contribution (including my Reviewed-by
-> +     tag and any associated public communications) is maintained
-> +     indefinitely and may be redistributed consistent with this project or
-> +     the open source license(s) involved.
----
+"other" device namespace:
+  /sys/devices/block/sda
+  /sys/devices/block/sda/dev 8:0
 
-(e) seems over-careful, especially since you're applying it only to
-the Review-by tag, while all the other tags would also have the same
-concern.
+Similarly on machine B when talking about disk-2 I would have.
+initial device namespace:
+  /sys/devices/block/sda
+  /sys/devices/block/sda/dev 8:0
 
+"other" device namespace:
+  /sys/devices/block/sdb
+  /sys/devices/block/sdb/dev 8:16
 
+So between the two devices namespaces on machine B the two disks
+would exchange their user visible identities.
 
--- 
-scott preece
+Eric
