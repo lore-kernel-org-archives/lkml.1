@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbXJJTwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJJTyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbXJJTwr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 15:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbXJJTwj
+	id S1756894AbXJJTyl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 15:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbXJJTye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 15:52:39 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39947 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755308AbXJJTwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 15:52:39 -0400
-Date: Wed, 10 Oct 2007 21:54:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: parisc arch makefile clean-up needed [Was: cleaning up "make headers_install" for various architectures]
-Message-ID: <20071010195406.GB2791@uranus.ravnborg.org>
-References: <20071010191538.GF2730@parisc-linux.org>
+	Wed, 10 Oct 2007 15:54:34 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37992 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755630AbXJJTyd (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 15:54:33 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of depends
+In-Reply-To: Your message of "Wed, 10 Oct 2007 08:40:31 PDT."
+             <470CF26F.10606@oracle.com>
+From: Valdis.Kletnieks@vt.edu
+References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au> <Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au> <20071009162812.00e80a0c.randy.dunlap@oracle.com> <1192018350.2687.16.camel@moss-spartans.epoch.ncsc.mil>
+            <470CF26F.10606@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071010191538.GF2730@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; boundary="==_Exmh_1192045982_2784P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 10 Oct 2007 15:53:02 -0400
+Message-ID: <27818.1192045982@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Oct 10, 2007 at 08:42:25PM +0200, Sam Ravnborg wrote:
-> > parisc arch Makefile needs some love and care...
-> > 
-> > The logic selecting CROSS_COMPILE seems fishy and wrong -
-> > the error reported by rday is obvious in this respect.
+--==_Exmh_1192045982_2784P
+Content-Type: text/plain; charset=us-ascii
+
+On Wed, 10 Oct 2007 08:40:31 PDT, Randy Dunlap said:
+
+> >>>  config SECURITY_SELINUX
+> >>>  	bool "NSA SELinux Support"
+> >>> -	depends on SECURITY_NETWORK && AUDIT && NET && INET
+> >>> +	depends on SECURITY
+> >>> +	select SECURITY_NETWORK
+> >>> +	select AUDIT
+> >>> +	select NET
+> >>> +	select INET
+> >>>  	select NETWORK_SECMARK
+
+> AUDIT isn't quite library code, still I don't have a (big) problem with
+> selecting it or NETWORK_SECMARK.  (other than select is evil :)
 > 
-> He doesn't have a compiler installed that can target parisc.  It doesn't
-> seem obvious to me that this should work.
+> OTOH, NET and INET are large config options, not library-like code, and
+> should not be selected.
 
-We have at least the header_install target where it makes sense
-to continue with a gcc that is not for the architecture being build.
+If it does a 'select SECURITY_NETWORK' but NET=n, does the resulting kernel
+actually build?  The problem seems to be that select isn't transitive - if
+you select something, it won't automagically select that something's pre-reqs
+(modulo the recent patches I've seen posted, have those been mainlined?).
 
-So plain gcc (aka no CROSS_COMPILE) should be the fallback
-solution. This fallback is anyway what most architectures use.
 
+--==_Exmh_1192045982_2784P
+Content-Type: application/pgp-signature
 
-> > The libs-y assignment should learn from the other architectures how to
-> > get the gcc lib filename:
-> > $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-> 
-> Actually, this looks utterly unstandardised:
-> 
-> arch/cris/Makefile:LIBGCC = $(shell $(CC) $(CFLAGS) -print-file-name=libgcc.a)
-> arch/h8300/Makefile:LIBGCC := $(shell $(CROSS-COMPILE)$(CC) $(CFLAGS) -print-libgcc-file-name)
-> arch/m32r/Makefile:LIBGCC       := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-> arch/parisc/Makefile:libs-y     += arch/parisc/lib/ `$(CC) -print-libgcc-file-name`
-> arch/sh64/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-> arch/sh/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-> arch/xtensa/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-> 
-> How about we set it in the main Makefile, or one of the ones in
-> scripts/?  That way we don't have to learn why $(shell $(CC) $(CFLAGS)
-> -print-libgcc-file-name) is superior to `$(CC) -print-libgcc-file-name`
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-cris lacks a major rehaul - planned in this merge window. Will sync it when done.
-h8300 should not use CROSS_COMPILE - a bit confused here.
+iD8DBQFHDS2ecC3lWbTT17ARAon9AKC8JfOFtPWbvoIP6LhXPfYFv2sV4QCg7J9t
+hWQHXfMLVEjoZQK3v1gn6Sg=
+=ym/f
+-----END PGP SIGNATURE-----
 
-And the reason why $(shell ) is preferred over backticks is simple.
-We almost never use backticks in the kernel Makefile since the $(shell )
-syntax is more obvious and I like it this way.
-
-	Sam
+--==_Exmh_1192045982_2784P--
