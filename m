@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXJJLXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbXJJLZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642AbXJJLXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 07:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXJJLXZ
+	id S1754952AbXJJLZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 07:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXJJLZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 07:23:25 -0400
-Received: from ns2.suse.de ([195.135.220.15]:48720 "EHLO mx2.suse.de"
+	Wed, 10 Oct 2007 07:25:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47356 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751983AbXJJLXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 07:23:24 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       davej@codemonkey.org.uk, Pierre Ossman <drzeus@drzeus.cx>,
-       akpm@osdl.org, linux-sparse@vger.kernel.org
-Subject: Re: idio{,ma}tic typos (was Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch added to -mm tree)
-References: <20071010104540.GA6366@localhost.sw.ru>
-X-Yow: Used staples are good with SOY SAUCE!
-Date: Wed, 10 Oct 2007 13:23:19 +0200
-In-Reply-To: <20071010104540.GA6366@localhost.sw.ru> (Alexey Dobriyan's
-	message of "Wed\, 10 Oct 2007 14\:45\:40 +0400")
-Message-ID: <je7ilvtdqw.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1752103AbXJJLZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 07:25:43 -0400
+Date: Wed, 10 Oct 2007 13:25:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/6] scheduler: Remove some unnecessary gotos in
+	sched.c
+Message-ID: <20071010112540.GA10717@elte.hu>
+References: <200710071059.126674000@suse.de> <20071007205954.4053C13E06@wotan.suse.de> <20071009191730.GA8887@elte.hu> <20071010005546.GA756@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071010005546.GA756@bingen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@sw.ru> writes:
 
-> --- a/drivers/net/wireless/arlan.h
-> +++ b/drivers/net/wireless/arlan.h
-> @@ -485,7 +485,7 @@ struct arlan_private {
->  #define clearClearInterrupt(dev){\
->     writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
->  #define setPowerOff(dev){\
-> -   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
-> +   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER & ARLAN_ACCESS));\
+* Andi Kleen <ak@suse.de> wrote:
 
-Methinks that this actually wants (ARLAN_POWER | ARLAN_ACCESS), since
-(ARLAN_POWER & ARLAN_ACCESS) == 0.
+> > this crashes during bootup - removed it for now.
+> 
+> Boots here and also survived LTP and some other tests. Hmm; i had an 
+> early version that hung because I forgot a break. Perhaps I forgot 
+> quilt refresh. Can you check you have this version?
 
-Andreas.
+hm, i've got your latest. I did some more debugging today and this was a 
+red herring: it turns out that it was not your patch causing this 
+problem, it triggered with your patch only because of a subtle .config 
+difference that i overlooked. Sorry!
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	Ingo
