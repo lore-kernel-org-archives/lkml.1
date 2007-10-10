@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbXJJQLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXJJQRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbXJJQLh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbXJJQL2
+	id S1756159AbXJJQRA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXJJQQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:11:28 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3308 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753933AbXJJQL1 (ORCPT
+	Wed, 10 Oct 2007 12:16:52 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:33918 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbXJJQQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:11:27 -0400
-From: Mark Brown <broonie@sirena.org.uk>
-To: Jeff Garzik <jgarzik@pobox.com>, thockin@hockin.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@sirena.org.uk>
-Date: Wed, 10 Oct 2007 17:11:12 +0100
-Message-Id: <1192032672-4676-1-git-send-email-broonie@sirena.org.uk>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
-References: <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
-X-SA-Exim-Connect-IP: 212.50.174.218
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: [PATCH] natsemi: Check return value for pci_enable_device()
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Wed, 10 Oct 2007 12:16:51 -0400
+Date: Wed, 10 Oct 2007 18:16:18 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       <ebiederm@xmission.com>, <kay.sievers@vrfy.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
+ model
+Message-ID: <20071010181618.54060d13@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0710101135240.4792-100000@iolanthe.rowland.org>
+References: <20071009224820.GE21228@kroah.com>
+	<Pine.LNX.4.44L0.0710101135240.4792-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pci_enable_device() is __must_check so do that in natsemi_resume().
+On Wed, 10 Oct 2007 11:38:50 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Signed-off-by: Mark Brown <broonie@sirena.org.uk>
----
- drivers/net/natsemi.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+> On Tue, 9 Oct 2007, Greg KH wrote:
+> 
+> > The rules for sysfs files are the following:
+> > 	- one value, in text format, per file.
+> > 	- no action apon open/close
+> > 	- binary files are only allowed for "pass-through" type files
+> > 	  that the kernel does not touch (like for firmware and pci
+> > 	  config space)
+> > 	- directories should be associated with a kobject where it makes
+> > 	  sense (no nesting deep subdirectories without a kobject
+> > 	  present)
+> 
+> You have to stretch this a little for the power/ subdirectory every 
+> device gets.  The only kobject it corresponds to is the one in the 
+> device, which already corresponds to the parent directory.
 
-diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
-index b881786..50e1ec6 100644
---- a/drivers/net/natsemi.c
-+++ b/drivers/net/natsemi.c
-@@ -3314,13 +3314,19 @@ static int natsemi_resume (struct pci_dev *pdev)
- {
- 	struct net_device *dev = pci_get_drvdata (pdev);
- 	struct netdev_private *np = netdev_priv(dev);
-+	int ret = 0;
- 
- 	rtnl_lock();
- 	if (netif_device_present(dev))
- 		goto out;
- 	if (netif_running(dev)) {
- 		BUG_ON(!np->hands_off);
--		pci_enable_device(pdev);
-+		ret = pci_enable_device(pdev);
-+		if (ret < 0) {
-+			dev_err(&pdev->dev,
-+				"pci_enable_device() failed: %d\n", ret);
-+			goto out;
-+		}
- 	/*	pci_power_on(pdev); */
- 
- 		napi_enable(&np->napi);
-@@ -3340,7 +3346,7 @@ static int natsemi_resume (struct pci_dev *pdev)
- 	netif_device_attach(dev);
- out:
- 	rtnl_unlock();
--	return 0;
-+	return ret;
- }
- 
- #endif /* CONFIG_PM */
--- 
-1.5.3.4
-
+Yes, this should be "directories should be associated with a kobject or
+generated by an attribute group". This way you won't get deep nesting
+either.
