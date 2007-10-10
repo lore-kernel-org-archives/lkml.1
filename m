@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXJJKRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbXJJKfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbXJJKRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 06:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbXJJKRE
+	id S1754561AbXJJKfK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 06:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbXJJKe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 06:17:04 -0400
-Received: from isis45.plusserver.de ([217.172.174.164]:47858 "EHLO
-	isis45.plusserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbXJJKRD (ORCPT
+	Wed, 10 Oct 2007 06:34:58 -0400
+Received: from [80.75.67.54] ([80.75.67.54]:47097 "EHLO
+	opensource.wolfsonmicro.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752059AbXJJKe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 06:17:03 -0400
-Date: Wed, 10 Oct 2007 12:15:08 +0200
-From: Maik Broemme <mbroemme@plusserver.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Added support for Wacom WACF007 and WACF008 to serial pnp
-	driver.
-Message-ID: <20071010101508.GG10600@bart.intergenia.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Message-Flag: Outlook : A program to spread viri, but it can do mail too.
-X-Operating-System: Linux bart 2.6.23-rc9 
-Organization: PlusServer GmbH
-X-PGP-Key-FingerPrint: 109D 0AC6 86CF 06BD 4890  17B0 8FB9 9971 4EEB 31F1
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Spam-Score: -103.7
+	Wed, 10 Oct 2007 06:34:57 -0400
+X-Greylist: delayed 1523 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 06:34:57 EDT
+Subject: Re: TR: codec audio Cirrus CS42L51 - Audio capture problems
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Pierre Savary <pierre.savary@kerlink.fr>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       sylvain.lesage@kerlink.fr
+In-Reply-To: <000901c80b16$6779ca00$366d5e00$@savary@kerlink.fr>
+References: <000901c80b16$6779ca00$366d5e00$@savary@kerlink.fr>
+Content-Type: text/plain
+Date: Wed, 10 Oct 2007 11:09:32 +0100
+Message-Id: <1192010972.12060.407.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-10-10 at 10:20 +0200, Pierre Savary wrote:
 
-notebook manufacturer seems to built a newer Wacom pen enabled tablet to
-recent tablet pcs which are not recognized by the serial pnp driver.
+> 
+> I am currently writing a driver for the CS42L51 audio codec to work with
+> at91sam9260, using I2C and I2S. I used the couple of files {
+> /sound/soc/at91/eti_b1_wm8731.c , /sound/soc/codecs/wm8731.c } as a model.
+> I succeeded in playing sounds using the codec (WAV or MP3), via /dev/dsp. 
+> 
+> Unfortunately, I encounter problems implementing the opposite, i.e.
+> recording sounds. For example, when I launch the command  "cat /dev/dsp >
+> foo.wav", or the command "wavrec foo.wav", I get "read error: Input/output
+> error".
+> 
+> I have observed the clock signals and the RD signal (data sent from the
+> codec), and when I launch the command, these signals seem correct (data is
+> provided by the codec on RD pin and all signals are correctly synchronized
+> together).
+> 
+> I didn't modify the driver dedicated to the configuration of at91sam9260
+> registers  (at91-i2s.c) and it seems to me it should work in both ways
+> (playback and record). I notably checked that the RFMR and RCMR registers of
+> at91sam9260 were well configured.
+> 
+> Do someone has an idea on where the error could come from ? I must precise
+> that, as I don't work with a kernel debugger, I didn't localize where the
+> error occurs.
+> 
 
-Attached is a patch which makes the newer Wacom WACF007 and WACF008
-tablets useable with the serial driver. The device is fully compatible
-with it.
+Can you try "arecord -f cd -Dhw:0,0 > file.wav" as this will rule out
+any OSS emulation or PCM plugin issues (this command will read directly
+from your hardware).
 
-Signed-off-by: Maik Broemme <mbroemme@plusserver.de>
----
-diff -Nur linux-2.6.23-rc8/drivers/serial/8250_pnp.c linux-2.6.23-rc8-newer-wacom/drivers/serial/8250_pnp.c
---- linux-2.6.23-rc8/drivers/serial/8250_pnp.c  2007-09-28 17:14:07.000000000 +0200
-+++ linux-2.6.23-rc8-newer-wacom/drivers/serial/8250_pnp.c      2007-09-28 17:09:45.000000000 +0200
-@@ -327,6 +327,8 @@
-	{       "WACF004",              0       },
-	{       "WACF005",              0       },
-	{       "WACF006",              0       },
-+	{       "WACF007",              0       },
-+	{       "WACF008",              0       },
-	/* Compaq touchscreen */
-	{       "FPI2002",              0 },
-	/* Fujitsu Stylistic touchscreens */
+Fwiw, this error is usually seen in capture when the upper alsa layers
+don't receive any data from your hardware. This could mean your DMA or
+your I2S port is not configured correctly.
 
---
-Maik
+Liam
+
+
+
