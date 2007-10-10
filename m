@@ -1,45 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbXJJVC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbXJJVDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbXJJVC7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbXJJVCt
+	id S1756763AbXJJVDc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXJJVDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:02:49 -0400
-Received: from mga10.intel.com ([192.55.52.92]:45906 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755582AbXJJVCs (ORCPT
+	Wed, 10 Oct 2007 17:03:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43054 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756034AbXJJVDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:02:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
-   d="scan'208";a="341631623"
-Message-ID: <470D3D93.2020606@ichips.intel.com>
-Date: Wed, 10 Oct 2007 14:01:07 -0700
-From: Sean Hefty <mshefty@ichips.intel.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 10 Oct 2007 17:03:22 -0400
+Date: Wed, 10 Oct 2007 13:44:49 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
+	model
+Message-ID: <20071010204449.GA23680@kroah.com>
+References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com> <20071005062302.GB16914@kroah.com> <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com> <20071009225139.GF21228@kroah.com> <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
- from the host TCP port space.
-References: <46B883B5.8040702@opengridcomputing.com>	<46BB61D0.4090101@opengridcomputing.com>	<46BB89C0.4040303@ichips.intel.com> <20070809.145534.102938208.davem@davemloft.net> <470AA729.2050009@opengridcomputing.com>
-In-Reply-To: <470AA729.2050009@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The hack to use a socket and bind it to claim the port was just for 
-> demostrating the idea.  The correct solution, IMO, is to enhance the 
-> core low level 4-tuple allocation services to be more generic (eg: not 
-> be tied to a struct sock).  Then the host tcp stack and the host rdma 
-> stack can allocate TCP/iWARP ports/4tuples from this common exported 
-> service and share the port space.  This allocation service could also be 
-> used by other deep adapters like iscsi adapters if needed.
+On Wed, Oct 10, 2007 at 07:16:48AM -0600, Eric W. Biederman wrote:
+> Greg KH <greg@kroah.com> writes:
+> 
+> > On Fri, Oct 05, 2007 at 06:12:41AM -0600, Eric W. Biederman wrote:
+> >> Greg KH <greg@kroah.com> writes:
+> >> >
+> >> >>   Also fun is that the dev file implementation needs to be able to
+> >> >>   report different major:minor numbers based on which mount of
+> >> >>   sysfs we are dealing with.
+> >> >
+> >> > Um, no, that's not going to happen.  /dev/sda will _always_ have the
+> >> > same major:minor number, as defined by the LSB spec.  You can not break
+> >> > that at all.  So while you might not want to show all mounts
+> >> > /sys/devices/block/sda/ the ones that you do, will all have the LSB
+> >> > defined major:minor number assigned to it.
+> >> 
+> >> Hmm.  If that is in the LSB it must come from
+> >> Documentation/devices.txt
+> >
+> > Yes, that is the requirement.
+> >
+> >> I'm not after changing the user visible major/minor assignments.
+> >
+> > Oh, I misunderstood what you wrote above then.
+> 
+> My above sentence is slightly misleading.  That should have been.
+> I am not after changing the device name to major:minor assignments
+> as specified in Documentation/devices.txt.
+> 
+> So within a single device namespace everything is normal and as it
+> always has been.  Weirdness only ensues when you look across device
+> namespaces.
+> 
+> >> Let me see if a concrete example will help.  Suppose I have
+> >> have a SAN with two disks:  disk-1 and disk-2.  I have
+> >> two machines A and B.  On machine A I get the mapping:
+> >> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
+> >> a different probe order so I get the mapping: sda -> disk-2
+> >> sdb ->disk-1.
+> >
+> > Ok.
+> >
+> >> To be very clear by sda I mean the block device with major 8 and
+> >> minor 0, and by sdb I mean the block device with major 8 and minor
+> >> 16.
+> >
+> > Ok.
+> >
+> >> So I decide I want an environment on machine B that looks just
+> >> like the environment on machine A, so I can bring transfer over
+> >> a running program or whatever.  So I run around looking at UUID
+> >> labels and what not and I discover that the machine B knows disk-1 as
+> >> sdb and that machine A knows disk-1 as sda.  So I want to say:
+> >> /sys/devices/block/sdb show up in this other device namespace as
+> >> /sys/devices/block/sda.
+> 
+> >
+> > Ah, but if you do that then the "other" device namespace would have
+> > /sys/devices/block/sda/dev be 8:16, right? 
+> 
+> No. The "other" device namespace I would construct on machine B to
+> look just like the device namespace that existed on machine A.
+> Making /sys/devices/block/sda would still be 8:0.
+> 
+> So to be very clear on machine B when talking about disk-1 I would have.
+> initial device namespace:
+>   /sys/devices/block/sdb
+>   /sys/devices/block/sdb/dev 8:16
+> 
+> "other" device namespace:
+>   /sys/devices/block/sda
+>   /sys/devices/block/sda/dev 8:0
+> 
+> Similarly on machine B when talking about disk-2 I would have.
+> initial device namespace:
+>   /sys/devices/block/sda
+>   /sys/devices/block/sda/dev 8:0
+> 
+> "other" device namespace:
+>   /sys/devices/block/sdb
+>   /sys/devices/block/sdb/dev 8:16
+> 
+> So between the two devices namespaces on machine B the two disks
+> would exchange their user visible identities.
 
-Since iWarp runs on top of TCP, the port space is really the same. 
-FWIW, I agree that this proposal is the correct solution to support iWarp.
+Ah, ok, that makes more sense.
 
-- Sean
+And seems quite difficult to do, good luck with that :)
+
+greg k-h
