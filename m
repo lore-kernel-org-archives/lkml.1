@@ -1,88 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbXJJSDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbXJJSEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbXJJSDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 14:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXJJSDg
+	id S1756701AbXJJSEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 14:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXJJSEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 14:03:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:50049 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbXJJSDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 14:03:35 -0400
-Message-ID: <470D13CA.3000202@goop.org>
-Date: Wed, 10 Oct 2007 11:02:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 10 Oct 2007 14:04:44 -0400
+Received: from nijmegen.renzel.net ([195.243.213.130]:41370 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbXJJSEn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 14:04:43 -0400
+Message-ID: <470D1420.3070109@linuxtv.org>
+Date: Wed, 10 Oct 2007 20:04:16 +0200
+From: Marcel Siegert <mws@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
-       Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@qumranet.com>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [PATCH RFC REPOST 1/2] paravirt: refactor struct paravirt_ops
- into smaller pv_*_ops
-References: <470BC758.1030504@goop.org> <200710101635.10139.rusty@rustcorp.com.au>
-In-Reply-To: <200710101635.10139.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Manu Abraham <abraham.manu@gmail.com>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
+       Jiri Slaby <jirislaby@gmail.com>, daniel@qanu.de,
+       linux-kernel@vger.kernel.org, holger@qanu.de,
+       Alan Cox <alan@redhat.com>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH 3/3] V4L: cinergyT2, remove bad	usage
+ of ERESTARTSYS
+References: <24841282012868130110@pripojeni.net>	<1191979260.5492.32.camel@gaivota>	<470C5294.8060502@linuxtv.org>	<1192030541.5896.54.camel@gaivota>	<20071010155920.GC22618@devserv.devel.redhat.com>	<1192033070.5896.77.camel@gaivota> <470D0087.3050606@gmail.com> <470D0373.1030308@linuxtv.org> <470D0656.80706@gmail.com>
+In-Reply-To: <470D0656.80706@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huh, thought I did a more complete reply to this.  Must have farted on it.
-
-Rusty Russell wrote:
-> Thanks Jeremy, I've actually taken time to finally review this in detail (I'm 
-> assuming you'll refactor as necessary after the x86 arch merger).
->   
-
-Yep.
-
->> +struct paravirt_ops paravirt_ops;
->> +
->>     
->
-> Do you actually need to define this?  See below...
->
->   
->> +DEF_NATIVE(, ud2a, "ud2a");
->>     
->
-> Hmm, that's ugly.  It was ugly before, but it's uglier now.  Maybe just 
-> use "unsigned char ud2a[] = { 0x0f, 0x0b };" in paravirt_patch_default?
->   
-
-Yeah, its not pretty.  I'll have another go.
-
->>  }
+Manu Abraham schrieb:
+> Marcel Siegert wrote:
+>> Manu Abraham schrieb:
+>>> Mauro Carvalho Chehab wrote:
+>>>> Em Qua, 2007-10-10 Ã s 11:59 -0400, Alan Cox escreveu:
+>>>>> On Wed, Oct 10, 2007 at 12:35:41PM -0300, Mauro Carvalho Chehab wrote:
+>>>>>> Em Qua, 2007-10-10 Ã s 00:18 -0400, Michael Krufky escreveu:
+>>>>>>> Is this illegal as per kernel codingstyle?
+>>>>>> Yes, it is. CodingStyle states:
+>>>>> <rant>
+>>>>> No.. "Illegal" means prohibited by law. Its merely wrong 8)
+>>>>> </rant>
+>>>> LOL
+>>>>
+>>>>>> The proper fix is just to replace the offended code by this:
+>>>>>>
+>>>>>> err=foo();
+>>>>>> if (error)
+>>>>>>     goto error;
+>>>>> Lots of code uses
+>>>>>
+>>>>>     if ((err = foo()) < 0)
+>>>>>
+>>>>> so I would'y worry too much. The split one however clearer and also
+>>>>> safer.
+>>>> Yes, this is not a severe CodingStyle violation. Still, the above code
+>>>> is better than the used one.
+>>>>
+>>>> Since, on your example, it is clear that the programmer wanted to test
+>>>> if the value is less than zero.
+>>>> The code:
+>>>>
+>>>>     if ( (err=foo()) )
+>>>>
+>>>> should also indicate an operator mistake of using =, instead of ==.
+>>>>
+>>>> Probably, source code analyzers like Coverity will complain about the
+>>>> above.
+>>>>
+>>>> If not violating CodingStyle, I would rather prefer to code this as:
+>>>>     if ( !(err=foo() ) or, even better, using:
+>>>>     if ( (err=foo()) != 0)
+>>>>
+>>>> clearly indicating that it is tested if the value is not zero.
+>>>>
+>>>> Even being a quite simple issue, I would prefer if Jiri can fix it.
+>>>>
+>>>
+>>> When you have only some few lines of code you can write
+>>>
+>>>  err = foo()
+>>>  if (err) {
+>>>   do whatever
+>>>  }
+>>> doesn't matter ..
+>>>
+>>> But when you have hell a lot of code, checking error's what you
+>>> mention is insane.
+>>>
+>>> ie,
+>>>
+>>> if ((err = foo()) expr ) is better.
+>>>
+>>> http://lkml.org/lkml/2007/2/4/56
+>>>
+>>> Manu
+>>>
+>> hi manu,
 >>
->>  struct paravirt_ops paravirt_ops = {
->>     
-> ...
->   
->> +	.pv_info = {
->> +		.name = "bare hardware",
->> +		.paravirt_enabled = 0,
->> +		.kernel_rpl = 0,
->> +		.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
->> +	},
->>     
->
-> This is the bit I don't get.  Why not just declare struct pv_info pvinfo, etc, 
-> and use the declaration of struct paravirt_ops to get your unique 
-> offset-based identifiers for patching?
->   
+>> it's not worth discussing this in a way like
+>> "i know something from the past and that was a different solution".
+>>
+> 
+> didn't mean to look at it that way, because i had addressed my concerns 
+> at that time as well.
+> 
+>> if you look to other parts in that thread like
+>>
+>> http://lkml.org/lkml/2007/2/3/150
+>>
+>> you will see that they came also to a kind of different solution,
+>> NOT to use the 1-liner for assignment statements.
+>>
+>> it's more like a religious/personal discussion how to
+>> struct/indent/format code.
+>> and, to state my position for clear,
+> 
+> 
+> It is. Sometimes i find such things in CodingStyle to be too silly.
+> 
+>> if kernel coding style document isnt updated to allow the constructions
+>> of code that caused this discussion, we dont have to discuss but follow
+>> the rules.
+>>
+>> anything else on this topic (coding style and it's sense) is to be
+>> discussed on kernel ml.
+>>
+> 
+> Marcel, It is on LKML.
 
-Given an op id number in .parainstructions, the patching code needs to
-be able to index into something to get the corresponding function
-pointer.  If each pv_* structure is its own little unrelated structure,
-then the id has to be a <structure, id> tuple, which just complicates
-things.  If I pack them all into a single structure then it becomes a
-simple offset calculation.
+i do know manu, but as far as i can see from my fresh 2.6.23,
+its not solved or changed in vanilla kernel CodingStyle doc.
 
-That said, there's no need for pv_info to be in that structure, since it
-contains no function pointers.  I'll move it out.
+so we have to follow actual guidelines _or_ wait until
+CodingStyle is accordingly updated.
 
-    J
+not more, not less.
+
+
+regards
+marcel
+
