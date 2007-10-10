@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbXJJXn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXJJXwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbXJJXn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 19:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXJJXnV
+	id S1757404AbXJJXwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 19:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbXJJXwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 19:43:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51316 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754583AbXJJXnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 19:43:21 -0400
-Date: Wed, 10 Oct 2007 16:42:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-dvb-maintainer@linuxtv.org,
-       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB changes for 2.6.24
-In-Reply-To: <d9def9db0710101600m79bd52e5s210d28630469b1c9@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0710101639550.20690@woody.linux-foundation.org>
-References: <1192053794.15601.47.camel@gaivota>
- <d9def9db0710101600m79bd52e5s210d28630469b1c9@mail.gmail.com>
+	Wed, 10 Oct 2007 19:52:07 -0400
+Received: from zap.org.AU ([129.94.172.224]:37599 "EHLO mail.zap.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756820AbXJJXwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 19:52:06 -0400
+Date: Thu, 11 Oct 2007 09:52:01 +1000
+From: John Zaitseff <J.Zaitseff@zap.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb: Key codes for Microsoft Natural Ergonomic 4000 USB keyboard
+Message-ID: <20071010235201.GA12338@zap.org.au>
+References: <20071010055958.GA25938@zap.org.au> <Pine.LNX.4.64.0710100953050.20620@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710100953050.20620@jikos.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Jiri,
 
-
-On Thu, 11 Oct 2007, Markus Rechberger wrote:
+On Wed, Oct 10, 2007 at 09:55:26AM +0200, Jiri Kosina wrote:
+> On Wed, 10 Oct 2007, John Zaitseff wrote:
 > 
-> the chances of the em28xx are not accepted from my side since the latest code
-> which supports way more hardware is offtree for various reasons.
+> > The following patch to Linux kernel 2.6.23 enables most of the
+> > extra keys found on the Microsoft Natural Ergonomic 4000 USB
+> > keyboard.  I had to add one keycode to include/linux/input.h;
+> > feel free to reallocate the ID assigned to it (KEY_SPELL).
+> 
+> thanks a lot for the patch!  However I think I have already added
+> all the needed support for this keyboard.  It is currently in my
+> tree, queued until Linus opens the merge window for 2.6.24.
+> Please look at
+> http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git;a=commitdiff;h=0f48b3ce23a34dbe70dcd04b4216fbcb965ab906
+> 
+> Commit 945bcc3a in the same branch is also related.
 
-Well, I've talked to various people, and none of the main kernel people 
-end up being at all interested in a kernel that has external dependencies 
-on binary blobs for tuners.
+Excellent!  However, I don't see the following:
 
-So right now it seems like while I would personally want to have more 
-vendors supprt their own drivers, if that in this case means that we'd 
-have to have user-space and unmaintainable binaries to tune the cards, 
-everybody seems to hate that idea. 
+* case 0x182: map_key_clear(KEY_FAVORITES);
+  ... in drivers/usb/input/hid-input.c, to handle the My Favorites key
 
-As such, the old and decrepit em28xx driver seems more useful to people, 
-since at least it supports the limited set of hardware on its own.
+* the change to drivers/hid/usbhid/usbkbd.c to enable the "(" and
+  ")" on the right hand side of the keyboard
 
-		Linus
+Have these already been included elsewhere?
+
+Yours truly,
+
+John Zaitseff
+
+-- 
+John Zaitseff                    ,--_|\    The ZAP Group
+Phone:  +61 2 9643 7737         /      \   Sydney, Australia
+E-mail: J.Zaitseff@zap.org.au   \_,--._*   http://www.zap.org.au/
+                                      v
