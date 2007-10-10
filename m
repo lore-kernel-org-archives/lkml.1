@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXJJNIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXJJNTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbXJJNIi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 09:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbXJJNI3
+	id S1754212AbXJJNTD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 09:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbXJJNSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 09:08:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56983 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbXJJNI2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 09:08:28 -0400
-Message-ID: <470CCEA4.4020007@torque.net>
-Date: Wed, 10 Oct 2007 09:07:48 -0400
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 10 Oct 2007 09:18:54 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56836 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751381AbXJJNSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 09:18:53 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: x86_64 : kernel initial decompression hangs on vmware
+Date: Wed, 10 Oct 2007 15:18:42 +0200
+User-Agent: KMail/1.9.6
+Cc: Zachary Amsden <zach@vmware.com>, Avi Kivity <avi@argo.co.il>,
+       lkml <linux-kernel@vger.kernel.org>, david-g@263.net
+References: <392001863.28140@ustc.edu.cn>
+In-Reply-To: <392001863.28140@ustc.edu.cn>
 MIME-Version: 1.0
-To: SCSI Mailing List <linux-scsi@vger.kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tomas Fasth <tomfa@debian.org>, Kumba <kumba@gentoo.org>
-Subject: [ANNOUNCE] sdparm 1.02
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200710101518.42830.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sdparm is a command line utility designed to get and set
-SCSI device parameters (cf hdparm for ATA disks). The
-parameters are held in mode pages. Apart from SCSI devices
-(e.g. disks, tapes and enclosures) sdparm can be used on
-any device that uses a SCSI command set. Almost all CD/DVD
-drives use the SCSI MMC set irrespective of the transport.
-sdparm also can decode VPD pages including the device
-identification page. Commands to start and stop the media;
-load and unload removable media and some other housekeeping
-functions are supported. sdparm supports both the linux
-kernel 2.4 and 2.6 series with ports to FreeBSD, Solaris,
-Tru64 and Windows.
+On Wednesday 10 October 2007 09:37:39 Fengguang Wu wrote:
 
-ChangeLog for sdparm-1.02 [20071008]
-  - support mode page descriptors with
-    <acronym_name>[.<descriptor_num] syntax
-    - "2_<acronym>" type entries replaced by new syntax
-    - support medium partition mpage (SSC) with partitions
-      as descriptors
-  - append relative target port identifier to SAS target
-    port address with '-iq' option
-  - add solaris port
-  - place vendor specific data in sdparm_data_vendor.c
-  - in the absence of an explicit transport or vendor,
-    and if no match on mode page name or field, then try
-    SAS transport
-  - add block device characteristics VPD page
-  - add protocol-specific logical unit information VPD
-    page (SAS)
-  - use new sg_lib sg_get_num_nomult()
-  - place source in subversion repository
-    - use svn:externals property to point to sg3_utils'
-      include/ and lib/ directories
-    - move some files around (e.g. sdparm.8 to doc/)
+> One of my friends' vmware "hangs" 
 
+It should just be a little slow. VMware seems to do something fishy
+here -- KVM or Xen using VT don't have this issue.
 
-For more information and downloads see:
-http://www.torque.net/sg/sdparm.html
+> on booting Linux 2.6.23, and then get 
+> it to work by applying your patch at http://lkml.org/lkml/2007/8/4/72.
 
-A release announcement has been sent to freshmeat.net .
+The patch is already in 2.6.23; it was just missing in .22. Perhaps
+your friend confused those two.
 
-Doug Gilbert
-
+-Andi
