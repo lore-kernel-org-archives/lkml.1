@@ -1,51 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXJJLqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXJJLvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXJJLqG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 07:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbXJJLpy
+	id S1754650AbXJJLvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 07:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXJJLvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 07:45:54 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:58848 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbXJJLpx (ORCPT
+	Wed, 10 Oct 2007 07:51:06 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:59972 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbXJJLvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 07:45:53 -0400
-Message-ID: <470CBB6A.7020305@freedesktop.org>
-Date: Wed, 10 Oct 2007 04:45:46 -0700
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Wed, 10 Oct 2007 07:51:05 -0400
+Date: Wed, 10 Oct 2007 07:50:52 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: -rt more realtime scheduling issues
+Message-ID: <20071010115052.GA21391@goodmis.org>
+References: <20071006021548.GE4587@monkey.ibm.com> <20071008184523.GA29656@monkey.ibm.com> <20071009030412.GB12915@goodmis.org> <20071009184953.GA3285@monkey.ibm.com>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@sw.ru>
-CC: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       davej@codemonkey.org.uk, Pierre Ossman <drzeus@drzeus.cx>,
-       akpm@osdl.org, linux-sparse@vger.kernel.org
-Subject: Re: idio{,ma}tic typos (was Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch
- added to -mm tree)
-References: <20071010104540.GA6366@localhost.sw.ru>
-In-Reply-To: <20071010104540.GA6366@localhost.sw.ru>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071009184953.GA3285@monkey.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> ["if (!x & y)" patch from yanzheng@]
-> ["if (!x & y)" patch from adobriyan@]
-> ["if (!x & y)" patches from viro@]
+On Tue, Oct 09, 2007 at 11:49:53AM -0700, Mike Kravetz wrote:
+> The more I try understand the IPI handling the more confused I get. :(
+> At fist I was concerned about an IPI happening in the middle of the
+> __schedule routine.  But, then it occurred to me that interrupts are
+> disabled when in this routine (when holding the runqueue lock).  So, IPIs
+> are not delivered during __schedule processing.  Right?
 > 
-> While we're at it, below is somewhat ugly sparse patch for detecting
-> "&& 0x" typos.
+> But, if this is case then I don't understand the following code in
+> schedule():
+> 
+>         local_irq_disable();
+> 
+>         do {
+>                 __schedule();
+>         } while (unlikely(test_thread_flag(TIF_NEED_RESCHED) ||
+>                           test_thread_flag(TIF_NEED_RESCHED_DELAYED)));
+> 
+>         local_irq_enable();
+> 
+> How can the reschedule flags possibly be set AFTER running __schedule.
+> Especially when the call is explicitly surrounded by local_irq_disable/
+> local_irq_enable.
+> 
+> Can someone help me?
+> 
 
-Excellent idea!  I think it applies to || as well.  I'll most likely
-add a -Wboolean-logic-on-bit-constant to turn this warning on.
+Sure, another CPU can set the tasks NEED_RESCHED flag. In try_to_wake_up,
+if the process that is waking up is on a runqueue on another CPU and it
+is of higher priority than the current running task, the process that is
+doing the waking will set the NEED_RESCHED flag for that task.
 
-Any reason why this wouldn't apply to octal constants or to GCC's new
-binary constants?  I can trivially modify this patch to handle those
-as well, just by dropping the check for an 'x' or 'X', and renaming the
-flag.
+So to prevent a race where we have called schedule and after getting to
+the new running task, a higher priority process just got scheduled in,
+we will catch that here.
 
-As far as patch beauty goes, I think this patch looks just fine.
+Now if this is really needed? I don't know. It seems that it just wants
+to check here so we don't need to jump to the interrupt and then
+schedule while coming back out of the interrupt handler as a preemption
+schedule. This way we just schedule again and save a little overhead
+from doing that through the interrupt.
 
-- Josh Triplett
+But this brings up an interesting point. Since the IRQ handlers are run
+as threads, and the interrupt is what will wake them, this seems to add
+a bit of latency to interrupts.
+
+For example:
+
+  We schedule in process A of prio 1
+
+  before exiting __schedule process B is woken up on that same rq
+  with a prio of 2 and sets A's NEED_RESCHED flag.
+
+  Also an interrupt goes off and sent to this CPU. But since interrupts
+  are disabled, we wait.
+
+  leaving __schedule() we see that A's NEED_RESCHED flag is set, so we
+  continue the do while loop and call __schedule again.
+
+  We schedule in B of prio 2.
+
+  Leave __schedule as well as the do while loop and then enable
+  interrupts.
+
+  The interrupt that was pending is now triggered.
+
+  Wakes up the handler of prio 90 and since it is higher in priority
+  than process B of prio 2 it sets B's NEED_RESCHED flag.
+
+  On return from the interrupt we call schedule again.
+
+This seems strange. I can imagine on a large # of CPUs box that this can
+happen quite often, and have the interrupts disabled for several rounds
+through schedule.
+
+I say we ax that while loop.
+
+Ingo?
+
+-- Steve
 
