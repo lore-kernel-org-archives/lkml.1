@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXJJTqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbXJJTtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbXJJTqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 15:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbXJJTq0
+	id S1756626AbXJJTtJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 15:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJJTs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 15:46:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51249 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbXJJTqZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 15:46:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TPM driver changes to support multiple locality
-In-Reply-To: Your message of "Tue, 09 Oct 2007 15:51:11 PDT."
-             <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1192045583_2784P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 10 Oct 2007 15:46:23 -0400
-Message-ID: <27383.1192045583@turing-police.cc.vt.edu>
+	Wed, 10 Oct 2007 15:48:57 -0400
+Received: from web31805.mail.mud.yahoo.com ([68.142.207.68]:22669 "HELO
+	web31805.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755482AbXJJTs4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 15:48:56 -0400
+X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 15:48:56 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=cRtDbMlYN9P3auHs+BpGZAa7ZR0uvN0pjedwx4axUZRguB4r35YapDIpKw/GsH+4jaY35bepXjFSYT5Xib12FVOYAg4vLfza2CJL7lX96HTX3dHGtH3+v3L2xhY/yHJEprPFfc+nSTBkjqKkDU4FFQ4n3LltuTBs0mS5XOp7V8c=;
+X-YMail-OSG: Ucd043oVM1lYsgoW6BuIUjqZRIkaMKleF9Et.x59kTl.9KoAxmcPbhutGiCRV90BcipAsw--
+Date: Wed, 10 Oct 2007 12:38:42 -0700 (PDT)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address if the adapter lacks one
+To: James.Smart@Emulex.Com, "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+In-Reply-To: <470CE78B.2080509@emulex.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <105757.49287.qm@web31805.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1192045583_2784P
-Content-Type: text/plain; charset=us-ascii
+--- James Smart <James.Smart@Emulex.Com> wrote:
+> Here's one pro for setting WWNs at arbitrary times...
+>    If the box is migrating applications (say containers) that want
+>    different SAN connectivity, where that connectivity (view) is based
+>    on their WWN, it would be really nice to selectively set the WWN and
+>    not touch the SAN config.
 
-On Tue, 09 Oct 2007 15:51:11 PDT, "Agarwal, Lomesh" said:
-> Current TPM driver supports only locality 0. I am planning to add
-> support so that it can access any locality. Locality parameter will be
-> passed as parameter. Will this change be acceptable? If yes then I will
-> modify the driver and send the patch.
+No.  The WWN stays the same and the SAN is re-configured to be
+aware of the node migration.  Access patterns could be more
+complex than just a single portal allowing access to/from the
+SAN from/to the node.
 
-Make sure you extend the API in such a way that older userspace programs
-that don't pass the new locality parameter still work correctly.
+WWN is supposed to be persistent.  This is what it actually is.
+It is NOT supposed to be "(auto)generated" and/or changed at a whim.
 
---==_Exmh_1192045583_2784P
-Content-Type: application/pgp-signature
+This also has security implications, and enterprise networks may
+refuse to use software (read "kernel") which allows for arbitrary
+changes to a node's WWN.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+If access to a node is compromised, a rogue agent may change
+the node's WWN in order to access SAN zones that it normally
+will be denied access to.
 
-iD8DBQFHDSwPcC3lWbTT17ARAklbAKClsuI8z5mhyzpXMqdrWjX136rFdgCg7vjP
-e53TQCVURc6NtLK9KlyEajk=
-=nIqg
------END PGP SIGNATURE-----
+    Luben
 
---==_Exmh_1192045583_2784P--
