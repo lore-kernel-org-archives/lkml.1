@@ -1,95 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbXJJQf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbXJJQgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbXJJQf6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbXJJQfA
+	id S1757197AbXJJQgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXJJQfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:35:00 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:51799 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836AbXJJQe7 (ORCPT
+	Wed, 10 Oct 2007 12:35:11 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:57478 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756633AbXJJQfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:34:59 -0400
-Subject: [RFC][PATCH 5/7] kill do_filp_open()
+	Wed, 10 Oct 2007 12:35:08 -0400
+Subject: [RFC][PATCH 7/7] keep track of mnt_writer state of struct file
 To: linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, hch@infradead.org, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Wed, 10 Oct 2007 09:34:43 -0700
+Date: Wed, 10 Oct 2007 09:34:46 -0700
 References: <20071010163439.0F8089F7@kernel>
 In-Reply-To: <20071010163439.0F8089F7@kernel>
-Message-Id: <20071010163443.1D13D173@kernel>
+Message-Id: <20071010163446.2C8F86AC@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This kills off the almost empty do_filp_open().  The indenting
-change in do_sys_open() is because we would have gone over our
-80 characters otherwise.
+There have been a few oopses caused by 'struct file's with
+NULL f_vfsmnts.  There was also a set of potentially missed
+mnt_want_write()s from dentry_open() calls.
+
+This patch provides a very simple debugging framework to
+catch these kinds of bugs.  It will WARN_ON() them, but
+should stop us from having any oopses or mnt_writer
+count imbalances.
+
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/open.c |   39 ++++++++++++++++++---------------------
- 1 file changed, 18 insertions(+), 21 deletions(-)
+ lxc-dave/fs/file_table.c    |   21 +++++++++++++++++++--
+ lxc-dave/fs/open.c          |    2 ++
+ lxc-dave/include/linux/fs.h |    4 ++++
+ 3 files changed, 25 insertions(+), 2 deletions(-)
 
-diff -puN fs/open.c~kill-do_filp_open fs/open.c
---- lxc/fs/open.c~kill-do_filp_open	2007-10-04 13:59:44.000000000 -0700
-+++ lxc-dave/fs/open.c	2007-10-04 13:59:44.000000000 -0700
-@@ -863,17 +863,10 @@ cleanup_file:
- 	return ERR_PTR(error);
- }
- 
--static struct file *do_filp_open(int dfd, const char *filename, int flags,
--				 int mode)
--{
--	struct nameidata nd;
--
--	return open_namei(dfd, filename, flags, mode, &nd);
--}
--
- struct file *filp_open(const char *filename, int flags, int mode)
+diff -puN fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file fs/file_table.c
+--- lxc/fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
++++ lxc-dave/fs/file_table.c	2007-10-03 14:40:14.000000000 -0700
+@@ -42,6 +42,12 @@ static inline void file_free_rcu(struct 
+ static inline void file_free(struct file *f)
  {
--	return do_filp_open(AT_FDCWD, filename, flags, mode);
-+	struct nameidata nd;
-+	return open_namei(AT_FDCWD, filename, flags, mode, &nd);
+ 	percpu_counter_dec(&nr_files);
++	/*
++	 * At this point, either both or neither of these bits
++	 * should be set.
++	 */
++	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN);
++	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_RELEASED);
+ 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
  }
- EXPORT_SYMBOL(filp_open);
  
-@@ -1072,20 +1065,24 @@ long do_sys_open(int dfd, const char __u
- 	char *tmp = getname(filename);
- 	int fd = PTR_ERR(tmp);
- 
--	if (!IS_ERR(tmp)) {
--		fd = get_unused_fd_flags(flags);
--		if (fd >= 0) {
--			struct file *f = do_filp_open(dfd, tmp, flags, mode);
--			if (IS_ERR(f)) {
--				put_unused_fd(fd);
--				fd = PTR_ERR(f);
--			} else {
--				fsnotify_open(f->f_path.dentry);
--				fd_install(fd, f);
--			}
-+	if (IS_ERR(tmp))
-+		goto out;
-+
-+	fd = get_unused_fd_flags(flags);
-+	if (fd >= 0) {
-+		struct nameidata nd;
-+		struct file *f = open_namei(dfd, tmp, flags, mode, &nd);
-+
-+		if (IS_ERR(f)) {
-+			put_unused_fd(fd);
-+			fd = PTR_ERR(f);
-+		} else {
-+			fsnotify_open(f->f_path.dentry);
-+			fd_install(fd, f);
- 		}
--		putname(tmp);
+@@ -194,6 +200,7 @@ int init_file(struct file *file, struct 
+ 	file->f_mode = mode;
+ 	file->f_op = fop;
+ 	if (mode & FMODE_WRITE) {
++		file->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
+ 		error = mnt_want_write(mnt);
+ 		WARN_ON(error);
  	}
-+	putname(tmp);
-+out:
- 	return fd;
+@@ -236,8 +243,18 @@ void fastcall __fput(struct file *file)
+ 	fops_put(file->f_op);
+ 	if (file->f_mode & FMODE_WRITE) {
+ 		put_write_access(inode);
+-		if (!special_file(inode->i_mode))
+-			mnt_drop_write(mnt);
++		if (!special_file(inode->i_mode)) {
++			if (file->f_mnt_write_state == FILE_MNT_WRITE_TAKEN) {
++				mnt_drop_write(mnt);
++				file->f_mnt_write_state |=
++					FILE_MNT_WRITE_RELEASED;
++			} else {
++				printk(KERN_WARNING "__fput() of writeable "
++						"file with no "
++						"mnt_want_write()\n");
++				WARN_ON(1);
++			}
++		}
+ 	}
+ 	put_pid(file->f_owner.pid);
+ 	file_kill(file);
+diff -puN fs/namei.c~keep-track-of-mnt_writer-state-of-struct-file fs/namei.c
+diff -puN include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file include/linux/fs.h
+--- lxc/include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
++++ lxc-dave/include/linux/fs.h	2007-10-03 14:40:14.000000000 -0700
+@@ -779,6 +779,9 @@ static inline int ra_has_index(struct fi
+ 		index <  ra->start + ra->size);
  }
  
++#define FILE_MNT_WRITE_TAKEN	1
++#define FILE_MNT_WRITE_RELEASED	2
++
+ struct file {
+ 	/*
+ 	 * fu_list becomes invalid after file_free is called and queued via
+@@ -813,6 +816,7 @@ struct file {
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
+ 	struct address_space	*f_mapping;
++	unsigned long f_mnt_write_state;
+ };
+ extern spinlock_t files_lock;
+ #define file_list_lock() spin_lock(&files_lock);
+diff -puN fs/open.c~keep-track-of-mnt_writer-state-of-struct-file fs/open.c
+--- lxc/fs/open.c~keep-track-of-mnt_writer-state-of-struct-file	2007-10-03 14:40:14.000000000 -0700
++++ lxc-dave/fs/open.c	2007-10-03 14:42:01.000000000 -0700
+@@ -790,6 +790,8 @@ static struct file *__dentry_open(struct
+ 			mnt_drop_write(mnt);
+ 			goto cleanup_file;
+ 		}
++		WARN_ON(f->f_mnt_write_state != 0);
++		f->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
+ 	}
+ 
+ 	f->f_mapping = inode->i_mapping;
 _
