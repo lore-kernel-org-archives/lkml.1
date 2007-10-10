@@ -1,135 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXJJDRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbXJJD5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbXJJDRt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 23:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXJJDRj
+	id S1754319AbXJJD5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 23:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXJJD5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 23:17:39 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2913 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750739AbXJJDRi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 23:17:38 -0400
-Date: Wed, 10 Oct 2007 11:17:29 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Crypto Update for 2.6.24
-Message-ID: <20071010031729.GA26697@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Tue, 9 Oct 2007 23:57:31 -0400
+Received: from rrcs-64-183-102-10.west.biz.rr.com ([64.183.102.10]:34449 "EHLO
+	jg555.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751147AbXJJD5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 23:57:30 -0400
+X-Greylist: delayed 307 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Oct 2007 23:57:30 EDT
+Message-ID: <470C4C6A.8090109@jg555.com>
+Date: Tue, 09 Oct 2007 20:52:10 -0700
+From: Jim Gifford <maillist@jg555.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Kernel <linux-kernel@vger.kernel.org>
+Subject: Nvidia SATA - Seagate SATA Drives
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi:
+Here's the situation. I have a MSI KN8Neo-f motherboard with a Seagate 
+Barracuda 250 GB SATA drive. I have replaced this drive three times in 
+the last two weeks due to it failing. Now the only thing in common is 
+the use of a 2.6.22.9 kernel I built from scratch, before that I was 
+using 2.6.19 kernel but working on doing some upgrades for the CLFS 
+project and tried a 2.6.22.9.  I will explain the situation and 
+including the links I used for fix the issues.
 
-Here is the crypto update for 2.6.24:
+It boots up and instantly has a problem detecting so I have to add 
+irqpoll to my bootup line. {Reference 
+http://my.opera.com/snowburn/blog/index.dml/tag/failed%20to%20set%20xfermode} 
+Then I get the adma issue, so I add sata_nv.adma=0 to my bootup 
+line.{Reference 
+http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/1424.html}
 
-Please pull from
+Now after a few times of booting the drive completely fails. So is the 
+nv_sata drive the cause?? Based on what I have done yes, and the reason 
+I can say that is because I took another one of those drives and the 
+same computer loaded Windows(forgive me for using this word!!!) on it 
+and it worked perfectly.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+One other issue that showed up was the drive does not recognize the 
+drive when it's in the 3gb transfer mode, I have to jumper it to 1.5gb mode.
 
-or
+Here's a link to the drive model:   
+http://www.seagate.com/ww/v/index.jsp?vgnextoid=a62099f4fa74c010VgnVCM100000dd04090aRCRD&locale=en-US
+Here's a link to my motherboard: 
+http://www.msicomputer.com/product/p_spec.asp?model=K8N_Neo4-F&class=mb
+It has 2GB of Memory and a Nvidia PCI-E Graphics Adapter
 
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+I will work with any member of the lkml team to help isolate the issue, 
+the only issue is that when it locks up everything has to be written 
+down or photographed.
 
-Summary:
+Jim Gifford - CLFS Developer
+http://www.cross-lfs.org
 
-* Added SEED algorithm.
-* Added XTS block cipher mode.
-* Added new aead type (essentially blkcipher + hash).
-* Added authenc wrapper as first aead algorithm.
-* Preparatory work for CTR (Counter) mode support.
-* Better loading of optimised algorithm modules.
-
-
-Adrian Bunk (2):
-      [CRYPTO] Kconfig: Remove "default m"s
-      [CRYPTO] drivers/Kconfig: Remove "default m"s
-
-Herbert Xu (15):
-      [CRYPTO] api: Add aead crypto type
-      [CRYPTO] api: Add support for multiple template parameters
-      [CRYPTO] api: Add missing headers for setkey_unaligned
-      [CRYPTO] ablkcipher: Remove queue pointer from common alg object
-      [CRYPTO] api: Move scatterwalk into algapi
-      [CRYPTO] scatterwalk: Add scatterwalk_map_and_copy
-      [CRYPTO] api: Fixed crypto_*_reqsize return type
-      [CRYPTO] aead: Add authenc
-      [CRYPTO] api: Kill crypto_km_types
-      [CRYPTO] cryptomgr: Fix parsing of recursive algorithms
-      [CRYPTO] authenc: Kill spaces in algorithm names
-      [CRYPTO] blkcipher: Remove alignment restriction on block size
-      [CRYPTO] api: Explain the comparison on larval cra_name
-      [CRYPTO] blkcipher: Increase kmalloc amount to aligned block size
-      [CRYPTO] blkcipher: Added blkcipher_walk_virt_block
-
-Hye-Shik Chang (1):
-      [CRYPTO] seed: New cipher algorithm
-
-Ingo Oeser (1):
-      [CRYPTO] blkcipher: Use max() in blkcipher_get_spot() to state the intention
-
-Jan Glauber (1):
-      [CRYPTO] sha: Add header file for SHA definitions
-
-Rik Snel (1):
-      [CRYPTO] xts: XTS blockcipher mode implementation without partial blocks
-
-Sebastian Siewior (4):
-      [CRYPTO] api: Add crypto_ablkcipher_ctx_aligned
-      [CRYPTO] des: Rename des to des-generic
-      [CRYPTO] aes: Rename aes to aes-generic
-      [CRYPTO] sha: Load the SHA[1|256] module by an alias
-
- arch/s390/crypto/aes_s390.c      |    2 
- arch/s390/crypto/sha1_s390.c     |   16 
- arch/s390/crypto/sha256_s390.c   |   22 
- crypto/Kconfig                   |   40 +
- crypto/Makefile                  |   16 
- crypto/ablkcipher.c              |    9 
- crypto/aead.c                    |  101 +++
- crypto/aes.c                     |  456 -----------------
- crypto/aes_generic.c             |  456 +++++++++++++++++
- crypto/algapi.c                  |   37 +
- crypto/authenc.c                 |  400 +++++++++++++++
- crypto/blkcipher.c               |   57 +-
- crypto/cipher.c                  |    5 
- crypto/cryptd.c                  |    7 
- crypto/cryptomgr.c               |   96 ++-
- crypto/des.c                     | 1011 --------------------------------------
- crypto/des_generic.c             | 1012 +++++++++++++++++++++++++++++++++++++++
- crypto/gf128mul.c                |   11 
- crypto/hash.c                    |    3 
- crypto/internal.h                |   11 
- crypto/scatterwalk.c             |   30 -
- crypto/scatterwalk.h             |    3 
- crypto/seed.c                    |  479 ++++++++++++++++++
- crypto/sha1.c                    |  142 -----
- crypto/sha1_generic.c            |  140 +++++
- crypto/sha256.c                  |  342 -------------
- crypto/sha256_generic.c          |  331 ++++++++++++
- crypto/sha512.c                  |   63 --
- crypto/tcrypt.c                  |   20 
- crypto/tcrypt.h                  |  507 +++++++++++++++++++
- crypto/xts.c                     |  292 +++++++++++
- drivers/crypto/Kconfig           |    5 
- drivers/crypto/geode-aes.c       |    1 
- drivers/crypto/padlock-aes.c     |    4 
- drivers/crypto/padlock-sha.c     |   53 --
- include/crypto/algapi.h          |   73 ++
- include/crypto/gf128mul.h        |    2 
- include/crypto/sha.h             |   53 ++
- include/linux/crypto.h           |  214 ++++++++
- 39 files changed, 4366 insertions(+), 2156 deletions(-)
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
