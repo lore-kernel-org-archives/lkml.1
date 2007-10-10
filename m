@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJJUpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXJJUq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbXJJUpI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbXJJUo4
+	id S1757054AbXJJUq6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbXJJUqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:44:56 -0400
-Received: from mga10.intel.com ([192.55.52.92]:28912 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753333AbXJJUo4 (ORCPT
+	Wed, 10 Oct 2007 16:46:50 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45413 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756064AbXJJUqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:44:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
-   d="scan'208";a="169168397"
-Date: Wed, 10 Oct 2007 13:44:22 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: gigabit ethernet power consumption
-Message-ID: <20071010204422.GC5097@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071008220720.GF3484@elf.ucw.cz> <470AAFD7.9060002@intel.com> <20071009182857.GF4003@csclub.uwaterloo.ca> <470BCB4D.8090307@intel.com>
+	Wed, 10 Oct 2007 16:46:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=xIKmHQh5FmNuYNnNES9YMyiYlIxFaN3vtocnncRauCWNysmmULrsojdwaf814Se1Y
+	qyNhrS3uRSWRXSYwBJSTg==
+Message-ID: <6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
+Date: Wed, 10 Oct 2007 13:46:36 -0700
+From: "Paul Menage" <menage@google.com>
+To: "David Rientjes" <rientjes@google.com>
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
+Cc: "Paul Jackson" <pj@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
+       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+In-Reply-To: <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <470BCB4D.8090307@intel.com>
-User-Agent: Mutt/1.5.11
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	 <20071003105817.7adf6516.pj@sgi.com>
+	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	 <20071003131632.fed4b848.pj@sgi.com>
+	 <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+	 <20071006012437.c0fd3a8a.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
+	 <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
+	 <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 11:41:17AM -0700, Kok, Auke wrote:
-> Lennart Sorensen wrote:
-> > On Mon, Oct 08, 2007 at 03:31:51PM -0700, Kok, Auke wrote:
-> >> you most certainly want to do this in userspace I think.
-> >>
-> >> One of the biggest problems is that link negotiation can take a significant amount
-> >> of time, well over several seconds (1 to 3 seconds typical) with gigabit, and
-> >> having your ethernet connection go offline for 3 seconds may not be the desired
-> >> effect for when you want to get more bandwidth in the first place.
-> >>
-> >> However, when a laptop is in battery mode, switching down from gigabit to 100mbit
-> >> makes a lot more sense, so this is something I would recommend. This can be as
-> >> easy as changing the advertisement mask of the interface and renegotiating the
-> >> link. Userspace could handle that very easily.
-> > 
-> > Now if you were trying to transfer a lot of data to the laptop, would it
-> > be more power efficient to do it at gigabit speeds so you can finish
-> > sooner and shut down the machine entirely, or to slow to 100mbit and
-> > take longer to do it, and hence spend more time powering the cpu and
-> > ram?
-> 
-> my suspicion is that the cost of switching is much higher than what you would
-> consume running at 100mbit, even if the amount of data is quite large. going
-> offline to renegotiate the link would already cost you 3W typically.
-> 
-> I definately think that userspace is the right field to solve this problem: let
-> the users decide how to use the available power on their sytems through a decent
-> power profile tool (perhaps gnome-power-manager or something like that). This way
-> the user can choose.
-> 
+On 10/6/07, David Rientjes <rientjes@google.com> wrote:
+>
+> It can race with sched_setaffinity().  It has to give up tasklist_lock as
+> well to call set_cpus_allowed() and can race
+>
+>         cpus_allowed = cpuset_cpus_allowed(p);
+>         cpus_and(new_mask, new_mask, cpus_allowed);
+>         retval = set_cpus_allowed(p, new_mask);
+>
+> and allow a task to have a cpu outside of the cpuset's new cpus_allowed if
+> you've taken it away between cpuset_cpus_allowed() and set_cpus_allowed().
 
-Auke, 
-I was wondering if we could use PM-QOS to have the driver drop to the
-100Mb speed, when requests for bandwidth and latency are not in effect?
+cpuset_cpus_allowed() takes callback_mutex, which is held by
+update_cpumask() when it updates cs->cpus_allowed. So if we continue
+to hold callback_mutex across the task update loop this wouldn't be a
+race. Having said that, holding callback mutex for that long might not
+be a good idea.
 
---mgross
+A cleaner solution might be to drop callback_mutex after updating
+cs->cpus_allowed in update_cpumask() and then make sched_setaffinity()
+do a post-check:
+
+	cpus_allowed = cpuset_cpus_allowed(p);
+ again:
+	cpus_and(new_mask, new_mask, cpus_allowed);
+	retval = set_cpus_allowed(p, new_mask);
+	if (!retval) {
+		/* Check for races with cpuset updates */
+		cpus_allowed = cpuset_cpus_allowed(p);
+		if (!cpus_subset(new_mask, cpus_allowed)) {
+			/*
+			 * We raced with a change to cpuset update,
+			 * and our cpumask is now outside the
+			 * permitted cpumask for the cpuset.  Since a
+			 * change to the cpuset's cpus resets the
+			 * cpumask for each task, do the same thing
+			 * here.
+			 */
+			new_mask = cpus_allowed;
+			goto again;
+		}
+	}
+
+Paul
