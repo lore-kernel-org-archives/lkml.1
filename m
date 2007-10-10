@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbXJJOyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXJJO6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbXJJOyx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 10:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbXJJOyo
+	id S1756142AbXJJO6J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 10:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbXJJO54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 10:54:44 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:63303 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbXJJOym (ORCPT
+	Wed, 10 Oct 2007 10:57:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33851 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753042AbXJJO54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 10:54:42 -0400
-Message-ID: <470CE78B.2080509@emulex.com>
-Date: Wed, 10 Oct 2007 10:54:03 -0400
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 10 Oct 2007 10:57:56 -0400
+Date: Wed, 10 Oct 2007 07:57:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kevin <spaceman__spiff@cox.net>
+cc: Peter Anvin <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: ARPM shutdown oops (Re: [stable] [patch 09/12] Fix SMP poweroff
+ hangs)
+In-Reply-To: <200710092359.47144.spaceman__spiff@cox.net>
+Message-ID: <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org>
+References: <20071008180406.052382073@mini.kroah.org>
+ <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
+ <alpine.LFD.0.999.0710092224000.3838@woody.linux-foundation.org>
+ <200710092359.47144.spaceman__spiff@cox.net>
 MIME-Version: 1.0
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-CC: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alexis Bruemmer <alexisb@us.ibm.com>,
-       James Bottomley <james.bottomley@steeleye.com>
-Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
- if the adapter lacks one
-References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org> <20071008235009.GB16003@tree.beaverton.ibm.com> <20071009001240.GA13922@plap3.qlogic.org> <470B9E50.2090205@emulex.com> <20071009164147.GB19854@plap3.qlogic.org> <20071009170643.GE16003@tree.beaverton.ibm.com>
-In-Reply-To: <20071009170643.GE16003@tree.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Oct 2007 14:54:03.0996 (UTC) FILETIME=[667DB1C0:01C80B4D]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darrick J. Wong wrote:
->> Though I don't see why both can't coexist cleanly -- I take it the use
->> case you are considering is: software recognizes no valid WWPN
->> available, query via request_firmware() fails, software halts
->> initialization (rather than fail), and awaits the admin to poke
->> '0x123456.. > /sys/.../fc_host/soft_port_name', causing a ping to the
->> driver and continuation of initialization with requested portname?
+
+
+On Tue, 9 Oct 2007, Kevin wrote:
 > 
-> Hmm... could we use such a sysfs attribute to reassign adapter WWNs at
-> arbitrary times?  Is that even a good idea?
+> I don't own a digital camera but I did jot the info down by hand.
 
-As the threads on this topic has shown - allowing any kind of override
-or WWN generation isn't a well-liked idea. But there are plausible
-scenarios where it makes sense.
+Heh, yeah, that's what I used to do too (and still do if a camera isn't 
+handy).
 
-Here's one pro for setting WWNs at arbitrary times...
-   If the box is migrating applications (say containers) that want
-   different SAN connectivity, where that connectivity (view) is based
-   on their WWN, it would be really nice to selectively set the WWN and
-   not touch the SAN config.  Granted, in FC, NPIV can do the same thing,
-   but this could be done on an adapter or configuration that can't do NPIV.
+> Call Trace:
+> [<c010e852>] apm_bios_call_simple+0x92/0x110
+> [<c0285a0>] acpi_hw_clear_gpe_block+00/0x32
+> [<c010e8ec>] set_system_power_state+0x1c/0x30
+> [<c010f93a>] apm_system_power_off+0x6a/0x80
+> [<c010f8d0>] apm_system_power_off+0x0/0x80
+> [<c010e434>] native_machine_power_off+0x14/0x20
+> [<c010e406>] machine_power_off+0x6/0x10
+> [<c0127cb9>] sys_reboot+0x99/0x140
+>...
+> Code: Bad EIP Value
+> EIP: [<00007825>] 0x7825 SS:ESP 0068:e7305de8
+> /etc/rc.d/rc.0: Line 261: 2796 Segmentation Fault   /sbin/poweroff
 
-So, what's the decision - are we only allowing this for physical adapters
-that don't have a name ? or are we allowing it to be more dynamic ?
+Ahh. APM. That does explain the strange EIP register values: we're jumping 
+into the BIOS, and the BIOS is doing something unexpected.
 
-My thoughts on request_firmware() vs sysfs:
-  via request_firmware
-    pro: It seems to imply a stronger level of control, as it seems more
-      hidden from the casual admin and/or tools. Too many random things
-      now peruse sysfs attributes without knowing their meaning.
-      Also, easier (more correct) to pass multiple elements (WWNN & WWPN)
-      if needed.
-    con: ?? when does it get used - only at initial attachment and
-      under failure ?  If you were to make it more arbitrary, doesn't
-      it imply some sysfs use to poke the driver/transport to get the
-      new value ? and if arbitrary, how to marry that with kdump so the
-      initrd is up to date.  Also, it's yet another mgmt interface - how many
-      does an admin need to know about ?  Hotplug scripts to identify the
-      adapter and specify the proper names are more complex for the admin
-      than sysfs.
+However, that doesn't really explain the oops, because I don't think 
+anything changed in APM from 2.6.22->23, and in particular, I don't think 
+it has anything to do with the thing that caused problems for PPC.
 
-  via sysfs:
-    pro: Keeps all mgmt in the sysfs area, which admins are starting to
-      become comfortable with. Easily supports a dynamic, change at any time
-      model.
-    con: Drives to a set-after-attachment model, and doesn't support kdump
-      well (requires initrd tools). Multiple elements can be a bit cumbersome
-      if one follows the one-value-per-attribute sysfs rules.
-      Must protect against random rogue sysfs tools.
+We did have some APM *detection* changes, and maybe APM wasn't even 
+detected for you before, or it was detected differently. That would be due 
+to the bootup changes, I'm Cc'ing Peter Anvin (and the kernel mailing 
+list, in case somebody else see a pattern to this).
 
-Overall, I guess I like the stronger controls of request_firmware(), but dislike
-using yet another mgmt interface for admins.
+Can you please
+ - try with APM turned off (APM really shouldn't be useful on any machines 
+   built in the last ten years or so), just to verify that things work 
+   without APM.
+ - send the bootup "dmesg" output and a machine description (and please 
+   keep people Cc'd - sending things just to me is a sure-fire way to get 
+   things dropped eventually, if only because I'm a lazy clutz).
+ - what was the last kernel that worked (and if you can bisect the 
+   problem, that would likely help enormously)
 
--- james s
+Thanks,
 
+		Linus
