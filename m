@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbXJJC5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJJDGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbXJJC5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 22:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXJJC5O
+	id S1755308AbXJJDGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 23:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXJJDGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 22:57:14 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:24642 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751926AbXJJC5O (ORCPT
+	Tue, 9 Oct 2007 23:06:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58604 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751280AbXJJDGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 22:57:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fUCCTXrv9ao15E4xQOiNNTfCNEYV43sLItuAMZ2mrrSW07TiK2i6XhdGvRrfkCVy/42pf7G4zbbH6Xj/gaJASvVXK5qsCO7ylRGo3u+y03YAZZp0Dhccpuajld35JhQjOknLj+47rajncuCIL7iJMHas+58FmcDVfuJE7GWWnA8=  ;
-X-YMail-OSG: 9u_pTwcVM1kBulPGEzRYvVCRS91tE8aF04TXkJ_.FwAcgy1pW5VnQQA8q0s7Vb9oIWg_Hs5YJw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Michael Stiller <ms@2scale.net>
-Subject: Re: howto boost write(2) performance?
-Date: Tue, 9 Oct 2007 20:25:34 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <1191937817.3641.9.camel@blackberry>
-In-Reply-To: <1191937817.3641.9.camel@blackberry>
+	Tue, 9 Oct 2007 23:06:23 -0400
+Date: Tue, 9 Oct 2007 20:06:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
+In-Reply-To: <200710092015.07741.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.0.999.0710091955100.3838@woody.linux-foundation.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+ <200710091931.51564.nickpiggin@yahoo.com.au>
+ <alpine.LFD.0.999.0710091917410.3838@woody.linux-foundation.org>
+ <200710092015.07741.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710092025.34436.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 23:50, Michael Stiller wrote:
-> Hi list,
->
-> i'm developing an application (in C) which needs to write about
-> 1Gbit/s (125Mb/s) to a disk array attached via U320 SCSI.
-> It runs on Dual Core 2 Xeons @2Ghz utilizing kernel 2.6.22.7.
->
-> I buffer the data in (currently 4) 400Mb buffers and use write(2) in a
-> dedicated thread to write them to the raw disk (no fs).
->
-> The write(2) performance is not good enough, the writer threads take to
-> much time, and i ask you for ideas, howto to boost the write
-> performance.
 
-The kernel really cannot sustain 125MB/s? I assume the disk
-array is capable?
 
-Where is the bottleneck? Does it keep all disks busy, or are
-the CPUs overloaded?
+On Tue, 9 Oct 2007, Nick Piggin wrote:
+> 
+> I gave 2 other numbers. After that, it really doesn't matter if I give
+> you 2 numbers or 200, because it wouldn't change the fact that there
+> are 3 programs using the ZERO_PAGE that we'll never know about.
+
+You gave me no timings what-so-ever. Yes, you said "1000 page faults", but 
+no, I have yet to see a *single* actual performance number.
+
+Maybe I missed it? Or maybe you just never did them.
+
+Was it really so non-obvious that I actually wanted *performance* numbers, 
+not just some random numbers about how many page faults you have? Or did 
+you post them somewhere else? I don't have any memory of having seen any 
+performance numbers what-so-ever, but I admittedly get too much email.
+
+Here's three numbers of my own: 8, 17 and 975.
+
+So I gave you "numbers", but what do they _mean_? 
+
+So let me try one more time:
+
+ - I don't want any excuses about how bad PAGE_ZERO is. You made it bad, 
+   it wasn't bad before.
+ - I want numbers. I want the commit message to tell us *why* this is 
+   done. The numbers I want is performance numbers, not handwave numbers. 
+   Both for the bad case that it's supposed to fix, *and* for "normal 
+   load".
+ - I want you to just say that if it turns out that there are people who 
+   use ZERO_PAGE, you stop calling them crazy, and promise to look at the 
+   alternatives.
+
+How much clearer can I be? I have said several times that I think this 
+patch is kind of sad, and the reason I think it's sad is that you (and 
+Hugh) convinced me to take the patch that made it sad in the first place. 
+It didn't *use* to be bad. And I've use ZERO_PAGE myself for timing, I've 
+had nice test-programs that knew that it could ignore cache effects and 
+get pure TLB effects when it just allocated memory and didn't write to it.
+
+That's why I don't like the lack of numbers. That's why I didn't like the 
+original commit message that tried to blame the wrong part. That's why I 
+didn't like this patch to begin with.
+
+But I'm perfectly ready to take it, and see if anybody complains. 
+Hopefully nobody ever will.
+
+But by now I absolutely *detest* this patch because of its history, and 
+how I *told* you guys what the reserved bit did, and how you totally 
+ignored it, and then tried to blame ZERO_PAGE for that. So yes, I want the 
+patch to be accompanied by an explanation, which includes the performance 
+side of why it is wanted/needed in the first place.
+
+If this patch didn't have that kind of history, I wouldn't give a flying f 
+about it. As it is, this whole thing has a background.
+
+		Linus
