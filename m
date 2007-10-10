@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbXJJPEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbXJJPF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbXJJPEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbXJJPEd
+	id S1756494AbXJJPF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbXJJPFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:04:33 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38132 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753933AbXJJPEc (ORCPT
+	Wed, 10 Oct 2007 11:05:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41428 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755155AbXJJPFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:04:32 -0400
-Message-Id: <1192028669.25145.1215155009@webmail.messagingengine.com>
-X-Sasl-Enc: o2X/t0Cyhle8hHGlUeTdM9G44l8D9XnyzbFDRuUnm28h 1192028669
-From: "Jupe" <jupejupe@rushpost.com>
-To: linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed, 10 Oct 2007 11:05:18 -0400
+Date: Wed, 10 Oct 2007 08:04:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
+In-Reply-To: <200710100030.28806.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.0.999.0710100758460.3838@woody.linux-foundation.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0710100424050.24074@blonde.wat.veritas.com>
+ <alpine.LFD.0.999.0710092202000.3838@woody.linux-foundation.org>
+ <200710100030.28806.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: Ethernet driver problem
-Date: Wed, 10 Oct 2007 08:04:29 -0700
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-I have written an ethernet driver for an ARM based board.
-Linux version: 2.6.20.1
-
-Ping is working fine.
-
-I have written a test server/client application using socket programming
-(TCP).
-After the connection is setup the server sends a file to the client.
-
-When I run server on PC and client on ARM board it works without any
-problem.
-
-BUT if I run server on ARM board and client on PC, it works for some
-time and 
-then the speed is drastically reduced. (I am sending 4k of data each
-time.
-after 50 sends it reduces its speed.  This happens always.)
-
-I did some debugging and found that after 50 sends, tcp_sendmsg() is not
-being 
-called at the same frequency before slowdown.  Also when my driver
-ether_tx seems to 
-be working fine.
-
-But still i am not able to get the reason for this behaviour.  Can
-anyone give hints as to 
-why this is happening? 
 
 
-Regards
-Jupe
+On Wed, 10 Oct 2007, Nick Piggin wrote:
+> 
+> It just seems like now might be a good time to just _try_ removing
+> the zero page
 
--- 
-  Jupe
-  jupejupe@rushpost.com
+Yes. Let's do your patch immediately after the x86 merge, and just see if 
+anybody screams. 
 
--- 
-http://www.fastmail.fm - mmm... Fastmail...
+It might take a while, because I certainly agree that whoever would be 
+affected by it is likely to be unusual.
 
+> OK, maybe this is where we are not on the same page.
+> There are 2 issues really. Firstly, performance problem of
+> refcounting the zero-page -- we've established that it causes
+> this livelock and that we should stop refcounting it, right?
+
+Yes, I do agree that refcounting is problematic. 
+
+> Second issue is the performance difference between removing the
+> zero page completely, and de-refcounting it (it's obviously
+> incorrect to argue for zero page removal for performance reasons
+> if the performance improvement is simply coming from avoiding
+> the refcounting).
+
+Well, even if it's a "when you don't get into the bad behaviour, 
+performance difference is not measurable", and give a before-and-after 
+number for some random but interesting load. Even if it's just a kernel 
+compile..
+
+		Linus
