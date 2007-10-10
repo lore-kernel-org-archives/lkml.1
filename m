@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbXJJVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbXJJVPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbXJJVLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXJJVLg
+	id S1757176AbXJJVPa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXJJVPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:11:36 -0400
-Received: from mga01.intel.com ([192.55.52.88]:47098 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756467AbXJJVLg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:11:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
-   d="scan'208";a="341636560"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 10 Oct 2007 17:15:22 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:58648 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753785AbXJJVPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 17:15:21 -0400
+Message-ID: <392050922.22220@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 11 Oct 2007 05:15:17 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Avi Kivity <avi@argo.co.il>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, david-g@263.net
+Subject: Re: x86_64 : kernel initial decompression hangs on vmware
+Message-ID: <20071010211517.GA11612@mail.ustc.edu.cn>
+References: <20071010073739.GA5952@mail.ustc.edu.cn> <1192043790.7073.61.camel@bodhitayantram.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: TPM driver changes to support multiple locality
-Date: Wed, 10 Oct 2007 14:09:24 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628CB9403@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <27383.1192045583@turing-police.cc.vt.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: TPM driver changes to support multiple locality
-Thread-Index: AcgLdklDzSEVWzzDRSifb0a4f9wMMAACzmKg
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com> <27383.1192045583@turing-police.cc.vt.edu>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: <Valdis.Kletnieks@vt.edu>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Oct 2007 21:09:27.0689 (UTC) FILETIME=[D7A87F90:01C80B81]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192043790.7073.61.camel@bodhitayantram.eng.vmware.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There will be no change in API. Driver will accept a parameter
-"locality" and it will always operate on that locality. By default this
-parameter will be 0 which is what current driver assumes.
-Who is the maintainer for this driver?
+On Wed, Oct 10, 2007 at 12:16:30PM -0700, Zachary Amsden wrote:
+> On Wed, 2007-10-10 at 15:37 +0800, Fengguang Wu wrote:
+> > Hi Zachary,
+> > 
+> > One of my friends' vmware "hangs" on booting Linux 2.6.23, and then get
+> > it to work by applying your patch at http://lkml.org/lkml/2007/8/4/72.
+> > 
+> > It would be nice to see your fix going into mainline :-)
+> 
+> I thought that patch already went into mainline in 2.6.23?  If not, it
 
------Original Message-----
-From: Valdis.Kletnieks@vt.edu [mailto:Valdis.Kletnieks@vt.edu] 
-Sent: Wednesday, October 10, 2007 12:46 PM
-To: Agarwal, Lomesh
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TPM driver changes to support multiple locality
+Sorry, the problematic kernel was 2.6.22.
 
-On Tue, 09 Oct 2007 15:51:11 PDT, "Agarwal, Lomesh" said:
-> Current TPM driver supports only locality 0. I am planning to add
-> support so that it can access any locality. Locality parameter will be
-> passed as parameter. Will this change be acceptable? If yes then I
-will
-> modify the driver and send the patch.
+> would be nice to queue it for -stable (also for 2.6.22).
 
-Make sure you extend the API in such a way that older userspace programs
-that don't pass the new locality parameter still work correctly.
+Agreed.
+
