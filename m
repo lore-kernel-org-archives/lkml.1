@@ -1,60 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbXJJUVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbXJJUWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbXJJUVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXJJUVb
+	id S1756539AbXJJUWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXJJUWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:21:31 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50081 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbXJJUVa (ORCPT
+	Wed, 10 Oct 2007 16:22:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:19799 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755621AbXJJUWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:21:30 -0400
-Date: Wed, 10 Oct 2007 14:21:28 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       parisc-linux-request@lists.parisc-linux.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@parisc-linux.org>
-Subject: Re: parisc arch makefile clean-up needed [Was: cleaning up "make headers_install" for various architectures]
-Message-ID: <20071010202128.GG2730@parisc-linux.org>
-References: <Pine.LNX.4.64.0710101234340.32502@localhost.localdomain> <20071010095954.79c39a73.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710101324230.6071@localhost.localdomain> <20071010183858.GA2270@uranus.ravnborg.org>
+	Wed, 10 Oct 2007 16:22:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ks1usIGR7Q67iHKDpJ9LIiCCKMnQRUO1KstN+ojl39OC0OZ3et5fHvrs06FLvkYv3yAWxoXMAVzs/EG8/iGTmlQDyJJqIR92T9V9BIaW2gvFRATEmxm48EUV9XtrCRiMtggkyhgImb3RmeqMv8Zae6OkCOfNGCDIQtIwzaiqAig=
+Message-ID: <470D3485.5040400@gmail.com>
+Date: Wed, 10 Oct 2007 22:22:29 +0200
+From: Patrizio Bassi <patrizio.bassi@gmail.com>
+Reply-To: patrizio.bassi@gmail.com
+Organization: patrizio.bassi@gmail.com
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071010183858.GA2270@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: libata not working for sis5533
+References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com> <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com> <46E85AA8.3080302@redhat.com>
+In-Reply-To: <46E85AA8.3080302@redhat.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 08:38:58PM +0200, Sam Ravnborg wrote:
-> parisc arch Makefile needs some love and care...
+Chuck Ebbert ha scritto:
+> On 08/31/2007 06:20 PM, Patrizio Bassi wrote:
+>   
+>> Patrizio Bassi ha scritto:
+>>     
+>>> Michal Piotrowski ha scritto:
+>>>       
+>>>> Hi,
+>>>>
+>>>> [Adding IDE wizards to CC]
+>>>>
+>>>> On 26/08/07, Patrizio Bassi <patrizio.bassi@gmail.com> wrote:
+>>>>   
+>>>>         
+>>>>> My sis630 chipset shipped with Asus A1000
+>>>>> doesn't work properly with suspend with ide drivers
+>>>>> (http://bugzilla.kernel.org/show_bug.cgi?id=7077)
+>>>>>
+>>>>> i tried to switch to libata but i cannot boot.
+>>>>> I've enabled generic ide and sis specific code, both in-kernel. of
+>>>>> course scsi too.
+>>>>>
+>>>>> when i boot i get: irq #14 nobody cared and stop
+>>>>>
+>>>>> i have to remove battery to reboot pc.
+>>>>> I'm using 2.6.22.5, but i never got any libata kernel working.
+>>>>>
+>>>>> Patrizio
+>>>>>
+>>>>> ps. i'm writing from my desktop as i'm doing hardware mainteinance on
+>>>>> the laptop and could not boot it
+>>>>>
+>>>>> Please CC me.
+>>>>>
+>>>>> lspci:
+>>>>> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 630 Host (rev 11)
+>>>>> 00:00.1 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev d0)
+>>>>> 00:01.0 ISA bridge: Silicon Integrated Systems [SiS] SiS85C503/5513 (LPC
+>>>>> Bridge)
+>>>>> 00:01.1 Ethernet controller: Silicon Integrated Systems [SiS] SiS900
+>>>>> PCI Fast Ethernet (rev 80)
+>>>>> 00:01.2 USB Controller: Silicon Integrated Systems [SiS] USB  1.0
+>>>>> Controller (rev 07)
+>>>>> 00:01.3 USB Controller: Silicon Integrated Systems [SiS] USB 1.0
+>>>>> Controller (rev 07)
+>>>>> 00:01.4 Multimedia audio controller: Silicon Integrated Systems [SiS]
+>>>>> SiS PCI Audio Accelerator (rev 01)
+>>>>>  00:01.6 Modem: Silicon Integrated Systems [SiS] AC'97 Modem
+>>>>> Controller (rev a0)
+>>>>> 00:02.0 PCI bridge: Silicon Integrated Systems [SiS] Virtual
+>>>>> PCI-to-PCI bridge (AGP)
+>>>>> 00:0a.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
+>>>>> 00:0a.1 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
+>>>>> 01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
+>>>>> 630/730 PCI/AGP VGA Display Adapter (rev 11)
+>>>>>     
+>>>>>           
+>>>> Regards,
+>>>> Michal
+>>>>
+>>>>   
+>>>>         
+>> i've been out for a week, but found no notice, did i lost any email or
+>> no activity on this issue?
+>>
+>>     
+>
+> I assume you tried the standard workarounds, like
+>
+>   pci=nommconf,nomsi
+>   pci=noacpi
+>   pci=biosirq
+>
+> (one at at time, not all at once.)
+>
+>
+>   
 
-None of your comments actually address the thing that he was having
-problems with:
+I waited 2.6.23 to be out and tried again, but still no chance to get
+libata working for my notebook.
 
-ifneq ($(call cc-ifversion, -lt, 0303, "bad"),)
-$(error Sorry, GCC v3.3 or above is required.)
-endif
+Anything i can try?
 
-Now, compiler.h has some checks like:
-
-#elif __GNUC__ == 3 && __GNUC_MINOR__ >= 2
-# include <linux/compiler-gcc3.h>
-#else
-# error Sorry, your compiler is too old/not recognized.
-#endif
-
-But it doesn't permit us to rule out gcc 3.3 unless we patch compiler.h.
-There's no asm/compiler.h, for example.  Obviously, we could put some
-tests for compiler version in arch/parisc somewhere.  Where's the right
-place these days?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+---
+Patrizio Bassi
+www.patriziobassi.it
