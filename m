@@ -1,66 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbXJJLNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbXJJLO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbXJJLNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 07:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXJJLNK
+	id S1754209AbXJJLO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 07:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXJJLOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 07:13:10 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:23685 "EHLO hobbit.corpit.ru"
+	Wed, 10 Oct 2007 07:14:22 -0400
+Received: from sacred.ru ([62.205.161.221]:38685 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbXJJLNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 07:13:09 -0400
-Message-ID: <470CB3BF.2040904@msgid.tls.msk.ru>
-Date: Wed, 10 Oct 2007 15:13:03 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	id S1751925AbXJJLOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 07:14:21 -0400
+Message-ID: <470CB330.2040508@openvz.org>
+Date: Wed, 10 Oct 2007 15:10:40 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       =?ISO-8859-1?Q?Ren=E9_Rebe?= <rene@exactcode.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23
-References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>  <200710100944.16378.rene@exactcode.de>  <b6fcc0a0710100137l7deb2547h8cbd48f38b4d3417@mail.gmail.com>  <470C977E.6010704@msgid.tls.msk.ru> <b6fcc0a0710100336t679b881es644aa4c27a3ce4fc@mail.gmail.com> <Pine.LNX.4.64.0710101250520.22916@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710101250520.22916@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: [PATCH] Rewrite proc seq operations via seq_list_xxx ones
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 10 Oct 2007 15:13:02 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Oct 10 2007 14:36, Alexey Dobriyan wrote:
->>>>> --- linux-2.6.23/include/linux/mm.h.vanilla
->>>>> +++ linux-2.6.23/include/linux/mm.h
->>>>> +struct super_block;
->>>>>  extern void drop_pagecache_sb(struct super_block *);
->>>>>  void drop_pagecache(void);
->>>>>  void drop_slab(void);
->>>>>
->>>>> You probably end up fixing it some other way, but as I do not know this
->>>>> file inside out I just wanted to drop a note.
->>>> You have some strange vanilla kernel. 2.6.23 doesn't have this prototype.
->>> The same happens here as well.
->>>
->>> -rw-rw-r--  1 mjt mjt 45488158 Oct  9 20:48 linux-2.6.23.tar.bz2
->>> 2cc2fd4d521dc5d7cfce0d8a9d1b3472  linux-2.6.23.tar.bz2
->>>
->>> (timestamp is in UTC) Downloaded yesterday, 3 hours after an announce,
->>> from http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.tar.bz2 .
->> Strange. Same size, same md5, no super_block in mm.h, though
-> 
-> Does someone still have the broken tarball?
-> 
-> There has not been any drop_pagecache_sb anytime between 2.6.23-rc1
-> and 2.6.23. drop_pagecache_sb reminds me of reiser4, too.
+Some time ago I posted a set of patches that consolidated
+the seq files, walking the list_head-s. This set was merged
+in the mm tree. /proc/diskstats and /proc/partitions files 
+were included in this set, but a bit later this part was 
+dropped because of conflicts with some other changes.
 
-ghhrm.  That's nonsense.  I found where that struct super_block come
-from -- it's from unionfs patches for 2.6.22, which I forgot to
-update for 2.6.23 (I just dropped new kernel tarball into my
-build directory together with other patches and ran usual build
-procedure).  It's a definitely false alarm - the tarball is
-fine.
+Here's the fixed version against the latest git block repo.
 
-/mjt
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+
+diff --git a/block/genhd.c b/block/genhd.c
+index 3af1e7a..27f7061 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -264,39 +264,34 @@ void __init printk_all_partitions(void)
+ 
+ #ifdef CONFIG_PROC_FS
+ /* iterator */
+-static void *part_start(struct seq_file *part, loff_t *pos)
++static void *disk_start(struct seq_file *part, loff_t *pos)
+ {
+-	struct list_head *p;
+-	loff_t l = *pos;
+-
+ 	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
+-		if (!l--)
+-			return list_entry(p, struct gendisk, kobj.entry);
+-	return NULL;
++	return seq_list_start_head(&block_subsys.list, *pos);
+ }
+ 
+-static void *part_next(struct seq_file *part, void *v, loff_t *pos)
++static void *disk_next(struct seq_file *part, void *v, loff_t *pos)
+ {
+-	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+-	++*pos;
+-	return p==&block_subsys.list ? NULL :
+-		list_entry(p, struct gendisk, kobj.entry);
++	return seq_list_next(v, &block_subsys.list, pos);
+ }
+ 
+-static void part_stop(struct seq_file *part, void *v)
++static void disk_stop(struct seq_file *part, void *v)
+ {
+ 	mutex_unlock(&block_subsys_lock);
+ }
+ 
+ static int show_partition(struct seq_file *part, void *v)
+ {
+-	struct gendisk *sgp = v;
++	struct gendisk *sgp;
+ 	int n;
+ 	char buf[BDEVNAME_SIZE];
+ 
+-	if (&sgp->kobj.entry == block_subsys.list.next)
++	if (v == &block_subsys.list) {
+ 		seq_puts(part, "major minor  #blocks  name\n\n");
++		return 0;
++	}
++
++	sgp = list_entry(v, struct gendisk, kobj.entry);
+ 
+ 	/* Don't show non-partitionable removeable devices or empty devices */
+ 	if (!get_capacity(sgp) ||
+@@ -325,9 +320,9 @@ static int show_partition(struct seq_fil
+ }
+ 
+ struct seq_operations partitions_op = {
+-	.start =part_start,
+-	.next =	part_next,
+-	.stop =	part_stop,
++	.start =disk_start,
++	.next =	disk_next,
++	.stop =	disk_stop,
+ 	.show =	show_partition
+ };
+ #endif
+@@ -616,44 +611,22 @@ decl_subsys(block, &ktype_block, &block_
+  */
+ 
+ /* iterator */
+-static void *diskstats_start(struct seq_file *part, loff_t *pos)
+-{
+-	loff_t k = *pos;
+-	struct list_head *p;
+-
+-	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
+-		if (!k--)
+-			return list_entry(p, struct gendisk, kobj.entry);
+-	return NULL;
+-}
+-
+-static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
+-{
+-	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+-	++*pos;
+-	return p==&block_subsys.list ? NULL :
+-		list_entry(p, struct gendisk, kobj.entry);
+-}
+-
+-static void diskstats_stop(struct seq_file *part, void *v)
+-{
+-	mutex_unlock(&block_subsys_lock);
+-}
+-
+ static int diskstats_show(struct seq_file *s, void *v)
+ {
+-	struct gendisk *gp = v;
++	struct gendisk *gp;
+ 	char buf[BDEVNAME_SIZE];
+ 	int n = 0;
+ 
++	if (v == &block_subsys.list)
+ 	/*
+-	if (&sgp->kobj.entry == block_subsys.kset.list.next)
+ 		seq_puts(s,	"major minor name"
+ 				"     rio rmerge rsect ruse wio wmerge "
+ 				"wsect wuse running use aveq"
+ 				"\n\n");
+ 	*/
++		return 0;
++
++	gp = list_entry(v, struct gendisk, kobj.entry);
+  
+ 	preempt_disable();
+ 	disk_round_stats(gp);
+@@ -686,9 +659,9 @@ static int diskstats_show(struct seq_fil
+ }
+ 
+ struct seq_operations diskstats_op = {
+-	.start	= diskstats_start,
+-	.next	= diskstats_next,
+-	.stop	= diskstats_stop,
++	.start	= disk_start,
++	.next	= disk_next,
++	.stop	= disk_stop,
+ 	.show	= diskstats_show
+ };
+ 
