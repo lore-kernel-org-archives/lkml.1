@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbXJJUiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbXJJUjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbXJJUiD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:38:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbXJJUhy
+	id S1756841AbXJJUjY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXJJUjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:37:54 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41641 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbXJJUhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:37:53 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 10 Oct 2007 22:37:25 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2.6.22.y.] firewire: fix unloading of fw-ohci while devices
- are attached
-To: stable@kernel.org
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.da18b1110ff68dcd@s5r6.in-berlin.de>
+	Wed, 10 Oct 2007 16:39:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:35441 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752833AbXJJUjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 16:39:16 -0400
+Message-ID: <470D3846.1000209@goop.org>
+Date: Wed, 10 Oct 2007 13:38:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andi Kleen <ak@suse.de>, William Lee Irwin III <wli@holomorphy.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386:  remove dead code in pgtable_cache_init
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix panic in run_timer_softirq right after "modprobe -r firewire-ohci"
-if a FireWire disk was attached and firewire-sbp2 loaded.
+The conversion from using a slab cache to quicklist left some residual dead code.
 
-Same as commit 8a2d9ed3210464d22fccb9834970629c1c36fa36.
+I note that in the conversion it now always allocates a whole page for
+the pgd, rather than the 32 bytes needed for a PAE pgd.  Was this
+intended?
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: William Lee Irwin III <wli@holomorphy.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+
 ---
+ arch/i386/mm/init.c |   22 +++++-----------------
+ 1 file changed, 5 insertions(+), 17 deletions(-)
 
-(I somehow forgot to send this earlier.)
-
- drivers/firewire/fw-card.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.22.10/drivers/firewire/fw-card.c
 ===================================================================
---- linux-2.6.22.10.orig/drivers/firewire/fw-card.c
-+++ linux-2.6.22.10/drivers/firewire/fw-card.c
-@@ -507,9 +507,11 @@ fw_core_remove_card(struct fw_card *card
- 	/* Set up the dummy driver. */
- 	card->driver = &dummy_driver;
+--- a/arch/i386/mm/init.c
++++ b/arch/i386/mm/init.c
+@@ -746,24 +746,12 @@ struct kmem_cache *pmd_cache;
  
--	fw_flush_transactions(card);
+ void __init pgtable_cache_init(void)
+ {
+-	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
 -
- 	fw_destroy_nodes(card);
-+	flush_scheduled_work();
-+
-+	fw_flush_transactions(card);
-+	del_timer_sync(&card->flush_timer);
- 
- 	fw_card_put(card);
+-	if (PTRS_PER_PMD > 1) {
++	if (PTRS_PER_PMD > 1)
+ 		pmd_cache = kmem_cache_create("pmd",
+-					PTRS_PER_PMD*sizeof(pmd_t),
+-					PTRS_PER_PMD*sizeof(pmd_t),
+-					SLAB_PANIC,
+-					pmd_ctor);
+-		if (!SHARED_KERNEL_PMD) {
+-			/* If we're in PAE mode and have a non-shared
+-			   kernel pmd, then the pgd size must be a
+-			   page size.  This is because the pgd_list
+-			   links through the page structure, so there
+-			   can only be one pgd per page for this to
+-			   work. */
+-			pgd_size = PAGE_SIZE;
+-		}
+-	}
++					      PTRS_PER_PMD*sizeof(pmd_t),
++					      PTRS_PER_PMD*sizeof(pmd_t),
++					      SLAB_PANIC,
++					      pmd_ctor);
  }
-
--- 
-Stefan Richter
--=====-=-=== =-=- -=-=-
-http://arcgraph.de/sr/
+ 
+ /*
 
