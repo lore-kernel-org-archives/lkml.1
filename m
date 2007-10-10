@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbXJJVsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXJJVsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbXJJVsN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbXJJVoS
+	id S1758269AbXJJVsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbXJJVoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:44:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38430 "EHLO mx1.redhat.com"
+	Wed, 10 Oct 2007 17:44:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38439 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757017AbXJJVoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:44:15 -0400
+	id S1756818AbXJJVoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 17:44:20 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 11/31] IGET: Stop EFS from using iget() and read_inode() [try
+Subject: [PATCH 12/31] IGET: Stop EXT2 from using iget() and read_inode() [try
 	#3]
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Wed, 10 Oct 2007 22:44:04 +0100
-Message-ID: <20071010214404.17535.10872.stgit@warthog.procyon.org.uk>
+Date: Wed, 10 Oct 2007 22:44:09 +0100
+Message-ID: <20071010214409.17535.49456.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 References: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,197 +30,209 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the EFS filesystem from using iget() and read_inode().  Replace
-efs_read_inode() with efs_iget(), and call that instead of iget().
-efs_iget() then uses iget_locked() directly and returns a proper error code
+Stop the EXT2 filesystem from using iget() and read_inode().  Replace
+ext2_read_inode() with ext2_iget(), and call that instead of iget().
+ext2_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-efs_fill_super() returns any error incurred when getting the root inode
-instead of EACCES.
+ext2_fill_super() returns any error incurred when getting the root inode
+instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
 
- fs/efs/inode.c         |   25 +++++++++++++++++--------
- fs/efs/namei.c         |   23 ++++++++++++-----------
- fs/efs/super.c         |   18 ++++++++++++------
- include/linux/efs_fs.h |    2 +-
- 4 files changed, 42 insertions(+), 26 deletions(-)
+ fs/ext2/ext2.h  |    2 +-
+ fs/ext2/inode.c |   30 ++++++++++++++++++++++--------
+ fs/ext2/namei.c |   12 ++++++------
+ fs/ext2/super.c |   32 ++++++++++++++++++--------------
+ 4 files changed, 47 insertions(+), 29 deletions(-)
 
-diff --git a/fs/efs/inode.c b/fs/efs/inode.c
-index 174696f..627c302 100644
---- a/fs/efs/inode.c
-+++ b/fs/efs/inode.c
-@@ -45,17 +45,26 @@ static inline void extent_copy(efs_extent *src, efs_extent *dst) {
- 	return;
+diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
+index 9fd0ec5..85ca3de 100644
+--- a/fs/ext2/ext2.h
++++ b/fs/ext2/ext2.h
+@@ -123,7 +123,7 @@ extern void ext2_check_inodes_bitmap (struct super_block *);
+ extern unsigned long ext2_count_free (struct buffer_head *, unsigned);
+ 
+ /* inode.c */
+-extern void ext2_read_inode (struct inode *);
++extern struct inode *ext2_iget (struct super_block *, unsigned long);
+ extern int ext2_write_inode (struct inode *, int);
+ extern void ext2_put_inode (struct inode *);
+ extern void ext2_delete_inode (struct inode *);
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index 0079b2c..fa5e115 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -1074,20 +1074,32 @@ void ext2_get_inode_flags(struct ext2_inode_info *ei)
+ 		ei->i_flags |= EXT2_DIRSYNC_FL;
  }
  
--void efs_read_inode(struct inode *inode)
-+struct inode *efs_iget(struct super_block *super, unsigned long ino)
+-void ext2_read_inode (struct inode * inode)
++struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
  {
- 	int i, inode_index;
- 	dev_t device;
- 	u32 rdev;
- 	struct buffer_head *bh;
--	struct efs_sb_info    *sb = SUPER_INFO(inode->i_sb);
--	struct efs_inode_info *in = INODE_INFO(inode);
-+	struct efs_sb_info    *sb = SUPER_INFO(super);
-+	struct efs_inode_info *in;
- 	efs_block_t block, offset;
- 	struct efs_dinode *efs_inode;
--  
+-	struct ext2_inode_info *ei = EXT2_I(inode);
+-	ino_t ino = inode->i_ino;
++	struct ext2_inode_info *ei;
+ 	struct buffer_head * bh;
+-	struct ext2_inode * raw_inode = ext2_get_inode(inode->i_sb, ino, &bh);
++	struct ext2_inode * raw_inode;
 +	struct inode *inode;
-+
-+	inode = iget_locked(super, ino);
-+	if (IS_ERR(inode))
++	long ret = -EIO;
+ 	int n;
+ 
++	inode = iget_locked(sb, ino);
++	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
 +
-+	in = INODE_INFO(inode);
++	ei = EXT2_I(inode);
+ #ifdef CONFIG_EXT2_FS_POSIX_ACL
+ 	ei->i_acl = EXT2_ACL_NOT_CACHED;
+ 	ei->i_default_acl = EXT2_ACL_NOT_CACHED;
+ #endif
+-	if (IS_ERR(raw_inode))
 +
- 	/*
- 	** EFS layout:
- 	**
-@@ -159,13 +168,13 @@ void efs_read_inode(struct inode *inode)
- 			break;
- 	}
++	raw_inode = ext2_get_inode(inode->i_sb, ino, &bh);
++	if (IS_ERR(raw_inode)) {
++		ret = PTR_ERR(raw_inode);
+  		goto bad_inode;
++	}
  
+ 	inode->i_mode = le16_to_cpu(raw_inode->i_mode);
+ 	inode->i_uid = (uid_t)le16_to_cpu(raw_inode->i_uid_low);
+@@ -1111,6 +1123,7 @@ void ext2_read_inode (struct inode * inode)
+ 	if (inode->i_nlink == 0 && (inode->i_mode == 0 || ei->i_dtime)) {
+ 		/* this inode is deleted */
+ 		brelse (bh);
++		ret = -ESTALE;
+ 		goto bad_inode;
+ 	}
+ 	inode->i_blocks = le32_to_cpu(raw_inode->i_blocks);
+@@ -1180,11 +1193,12 @@ void ext2_read_inode (struct inode * inode)
+ 	}
+ 	brelse (bh);
+ 	ext2_set_inode_flags(inode);
 -	return;
 +	unlock_new_inode(inode);
 +	return inode;
-         
- read_inode_error:
- 	printk(KERN_WARNING "EFS: failed to read inode %lu\n", inode->i_ino);
+ 	
+ bad_inode:
 -	make_bad_inode(inode);
--
 -	return;
 +	iget_failed(inode);
-+	return ERR_PTR(-EIO);
++	return ERR_PTR(ret);
  }
  
- static inline efs_block_t
-diff --git a/fs/efs/namei.c b/fs/efs/namei.c
-index 5276b19..77d7106 100644
---- a/fs/efs/namei.c
-+++ b/fs/efs/namei.c
-@@ -64,9 +64,10 @@ struct dentry *efs_lookup(struct inode *dir, struct dentry *dentry, struct namei
- 	lock_kernel();
- 	inodenum = efs_find_entry(dir, dentry->d_name.name, dentry->d_name.len);
- 	if (inodenum) {
--		if (!(inode = iget(dir->i_sb, inodenum))) {
-+		inode = efs_iget(dir->i_sb, inodenum);
-+		if (IS_ERR(inode)) {
- 			unlock_kernel();
+ static int ext2_update_inode(struct inode * inode, int do_sync)
+diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
+index e69beed..80c97fd 100644
+--- a/fs/ext2/namei.c
++++ b/fs/ext2/namei.c
+@@ -63,9 +63,9 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
+ 	ino = ext2_inode_by_name(dir, dentry);
+ 	inode = NULL;
+ 	if (ino) {
+-		inode = iget(dir->i_sb, ino);
+-		if (!inode)
 -			return ERR_PTR(-EACCES);
++		inode = ext2_iget(dir->i_sb, ino);
++		if (IS_ERR(inode))
 +			return ERR_CAST(inode);
- 		}
  	}
- 	unlock_kernel();
-@@ -85,12 +86,11 @@ struct dentry *efs_get_dentry(struct super_block *sb, void *vobjp)
+ 	return d_splice_alias(inode, dentry);
+ }
+@@ -83,10 +83,10 @@ struct dentry *ext2_get_parent(struct dentry *child)
+ 	ino = ext2_inode_by_name(child->d_inode, &dotdot);
+ 	if (!ino)
+ 		return ERR_PTR(-ENOENT);
+-	inode = iget(child->d_inode->i_sb, ino);
++	inode = ext2_iget(child->d_inode->i_sb, ino);
  
- 	if (ino == 0)
- 		return ERR_PTR(-ESTALE);
+-	if (!inode)
+-		return ERR_PTR(-EACCES);
++	if (IS_ERR(inode))
++		return ERR_CAST(inode);
+ 	parent = d_alloc_anon(inode);
+ 	if (!parent) {
+ 		iput(inode);
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index 639a32c..33e8b29 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -232,7 +232,6 @@ static ssize_t ext2_quota_write(struct super_block *sb, int type, const char *da
+ static const struct super_operations ext2_sops = {
+ 	.alloc_inode	= ext2_alloc_inode,
+ 	.destroy_inode	= ext2_destroy_inode,
+-	.read_inode	= ext2_read_inode,
+ 	.write_inode	= ext2_write_inode,
+ 	.put_inode	= ext2_put_inode,
+ 	.delete_inode	= ext2_delete_inode,
+@@ -266,11 +265,10 @@ static struct dentry *ext2_get_dentry(struct super_block *sb, void *vobjp)
+ 	 * it might be "neater" to call ext2_get_inode first and check
+ 	 * if the inode is valid.....
+ 	 */
 -	inode = iget(sb, ino);
 -	if (inode == NULL)
 -		return ERR_PTR(-ENOMEM);
-+	inode = efs_iget(sb, ino);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
- 
 -	if (is_bad_inode(inode) ||
 -	    (generation && inode->i_generation != generation)) {
++	inode = ext2_iget(sb, ino);
++	if (IS_ERR(inode))
++		return ERR_CAST(inode);
 +	if (generation && inode->i_generation != generation) {
- 	    	result = ERR_PTR(-ESTALE);
- 		goto out_iput;
- 	}
-@@ -112,7 +112,7 @@ struct dentry *efs_get_parent(struct dentry *child)
- 	struct dentry *parent;
- 	struct inode *inode;
- 	efs_ino_t ino;
--	int error;
-+	long error;
- 
- 	lock_kernel();
- 
-@@ -121,10 +121,11 @@ struct dentry *efs_get_parent(struct dentry *child)
- 	if (!ino)
- 		goto fail;
- 
--	error = -EACCES;
--	inode = iget(child->d_inode->i_sb, ino);
--	if (!inode)
-+	inode = efs_iget(child->d_inode->i_sb, ino);
-+	if (IS_ERR(inode)) {
-+		error = PTR_ERR(inode);
- 		goto fail;
-+	}
- 
- 	error = -ENOMEM;
- 	parent = d_alloc_anon(inode);
-diff --git a/fs/efs/super.c b/fs/efs/super.c
-index ce4acb8..685279d 100644
---- a/fs/efs/super.c
-+++ b/fs/efs/super.c
-@@ -107,7 +107,6 @@ static int efs_remount(struct super_block *sb, int *flags, char *data)
- static const struct super_operations efs_superblock_operations = {
- 	.alloc_inode	= efs_alloc_inode,
- 	.destroy_inode	= efs_destroy_inode,
--	.read_inode	= efs_read_inode,
- 	.put_super	= efs_put_super,
- 	.statfs		= efs_statfs,
- 	.remount_fs	= efs_remount,
-@@ -246,6 +245,7 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
- 	struct efs_sb_info *sb;
- 	struct buffer_head *bh;
- 	struct inode *root;
-+	int ret = -EINVAL;
- 
-  	sb = kzalloc(sizeof(struct efs_sb_info), GFP_KERNEL);
- 	if (!sb)
-@@ -302,12 +302,18 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
- 	}
- 	s->s_op   = &efs_superblock_operations;
- 	s->s_export_op = &efs_export_ops;
--	root = iget(s, EFS_ROOTINODE);
--	s->s_root = d_alloc_root(root);
-- 
--	if (!(s->s_root)) {
-+	root = efs_iget(s, EFS_ROOTINODE);
+ 		/* we didn't find the right inode.. */
+ 		iput(inode);
+ 		return ERR_PTR(-ESTALE);
+@@ -649,6 +647,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
+ 	unsigned long logic_sb_block;
+ 	unsigned long offset = 0;
+ 	unsigned long def_mount_opts;
++	long ret = -EINVAL;
+ 	int blocksize = BLOCK_SIZE;
+ 	int db_count;
+ 	int i, j;
+@@ -918,19 +917,24 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
+ 	sb->s_op = &ext2_sops;
+ 	sb->s_export_op = &ext2_export_ops;
+ 	sb->s_xattr = ext2_xattr_handlers;
+-	root = iget(sb, EXT2_ROOT_INO);
+-	sb->s_root = d_alloc_root(root);
+-	if (!sb->s_root) {
+-		iput(root);
+-		printk(KERN_ERR "EXT2-fs: get root inode failed\n");
++	root = ext2_iget(sb, EXT2_ROOT_INO);
 +	if (IS_ERR(root)) {
- 		printk(KERN_ERR "EFS: get root inode failed\n");
 +		ret = PTR_ERR(root);
-+		goto out_no_fs;
-+	}
-+
-+	s->s_root = d_alloc_root(root); 
-+	if (!(s->s_root)) {
-+		printk(KERN_ERR "EFS: get root dentry failed\n");
- 		iput(root);
-+		ret = -ENOMEM;
- 		goto out_no_fs;
+ 		goto failed_mount3;
  	}
- 
-@@ -317,7 +323,7 @@ out_no_fs_ul:
- out_no_fs:
- 	s->s_fs_info = NULL;
- 	kfree(sb);
+ 	if (!S_ISDIR(root->i_mode) || !root->i_blocks || !root->i_size) {
+-		dput(sb->s_root);
+-		sb->s_root = NULL;
++		iput(root);
+ 		printk(KERN_ERR "EXT2-fs: corrupt root inode, run e2fsck\n");
+ 		goto failed_mount3;
+ 	}
++
++	sb->s_root = d_alloc_root(root);
++	if (!sb->s_root) {
++		iput(root);
++		printk(KERN_ERR "EXT2-fs: get root inode failed\n");
++		ret = -ENOMEM;
++		goto failed_mount3;
++	}
+ 	if (EXT2_HAS_COMPAT_FEATURE(sb, EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+ 		ext2_warning(sb, __FUNCTION__,
+ 			"mounting ext3 filesystem as ext2");
+@@ -957,7 +961,7 @@ failed_mount:
+ failed_sbi:
+ 	sb->s_fs_info = NULL;
+ 	kfree(sbi);
 -	return -EINVAL;
 +	return ret;
  }
  
- static int efs_statfs(struct dentry *dentry, struct kstatfs *buf) {
-diff --git a/include/linux/efs_fs.h b/include/linux/efs_fs.h
-index 16cb25c..18b725f 100644
---- a/include/linux/efs_fs.h
-+++ b/include/linux/efs_fs.h
-@@ -40,7 +40,7 @@ extern const struct inode_operations efs_dir_inode_operations;
- extern const struct file_operations efs_dir_operations;
- extern const struct address_space_operations efs_symlink_aops;
- 
--extern void efs_read_inode(struct inode *);
-+extern struct inode *efs_iget(struct super_block *, unsigned long);
- extern efs_block_t efs_map_block(struct inode *, efs_block_t);
- extern int efs_get_block(struct inode *, sector_t, struct buffer_head *, int);
- 
+ static void ext2_commit_super (struct super_block * sb,
 
