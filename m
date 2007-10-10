@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbXJJPjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXJJPkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbXJJPjD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbXJJPix
+	id S1756202AbXJJPkd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbXJJPkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:38:53 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:48261 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754072AbXJJPix (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:38:53 -0400
-Date: Wed, 10 Oct 2007 11:38:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Tejun Heo <htejun@gmail.com>, <ebiederm@xmission.com>,
-       <cornelia.huck@de.ibm.com>, <kay.sievers@vrfy.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
- model
-In-Reply-To: <20071009224820.GE21228@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0710101135240.4792-100000@iolanthe.rowland.org>
+	Wed, 10 Oct 2007 11:40:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52651 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754177AbXJJPkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 11:40:24 -0400
+Message-ID: <470CF25A.9050403@garzik.org>
+Date: Wed, 10 Oct 2007 11:40:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James.Smart@Emulex.Com
+CC: "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
+ if the adapter lacks one
+References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org> <20071008235009.GB16003@tree.beaverton.ibm.com> <20071009001240.GA13922@plap3.qlogic.org> <470B9E50.2090205@emulex.com> <20071009164147.GB19854@plap3.qlogic.org> <20071009170643.GE16003@tree.beaverton.ibm.com> <470CE78B.2080509@emulex.com>
+In-Reply-To: <470CE78B.2080509@emulex.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Oct 2007, Greg KH wrote:
+James Smart wrote:
+> So, what's the decision - are we only allowing this for physical adapters
+> that don't have a name ? or are we allowing it to be more dynamic ?
 
-> The rules for sysfs files are the following:
-> 	- one value, in text format, per file.
-> 	- no action apon open/close
-> 	- binary files are only allowed for "pass-through" type files
-> 	  that the kernel does not touch (like for firmware and pci
-> 	  config space)
-> 	- directories should be associated with a kobject where it makes
-> 	  sense (no nesting deep subdirectories without a kobject
-> 	  present)
+At a minimum, I think(?) we all agree that current upstream aic94xx 
+behavior is nice:  allow the admin to override the WWN manually, even if 
+the adapter already has one.
 
-You have to stretch this a little for the power/ subdirectory every 
-device gets.  The only kobject it corresponds to is the one in the 
-device, which already corresponds to the parent directory.
+As to the question of request_firmware() versus sysfs, it's IMO largely 
+a question of taste -- do you like the "get property" on-demand pull 
+model, or a push model that presumes the property must be set before it 
+is needed?  And which solution requires the least amount of additional 
+userspace machinery in order to be usable?
 
-Alan Stern
+	Jeff
+
 
