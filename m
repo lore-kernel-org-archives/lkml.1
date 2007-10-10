@@ -1,98 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbXJJVA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbXJJVC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756835AbXJJVA3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXJJVAT
+	id S1756987AbXJJVC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbXJJVCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:00:19 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:50280 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbXJJVAR (ORCPT
+	Wed, 10 Oct 2007 17:02:49 -0400
+Received: from mga10.intel.com ([192.55.52.92]:45906 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755582AbXJJVCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:00:17 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=ngHSAxKjhAP/7gZTAQvGU8LU+GqiylBwA8vtVXM3aOsUDeYCTR/yVMtbKq8M+NuXA
-	BSndwzPfoDQRG1VHZZUEQ==
-Date: Wed, 10 Oct 2007 13:59:44 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Menage <menage@google.com>
-cc: Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-In-Reply-To: <6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
-Message-ID: <alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>  <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>  <20071003105817.7adf6516.pj@sgi.com>  <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> 
- <20071003131632.fed4b848.pj@sgi.com>  <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>  <20071006012437.c0fd3a8a.pj@sgi.com>  <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>  <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
-  <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com> <6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
+	Wed, 10 Oct 2007 17:02:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
+   d="scan'208";a="341631623"
+Message-ID: <470D3D93.2020606@ichips.intel.com>
+Date: Wed, 10 Oct 2007 14:01:07 -0700
+From: Sean Hefty <mshefty@ichips.intel.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steve Wise <swise@opengridcomputing.com>
+CC: David Miller <davem@davemloft.net>, rdreier@cisco.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
+ from the host TCP port space.
+References: <46B883B5.8040702@opengridcomputing.com>	<46BB61D0.4090101@opengridcomputing.com>	<46BB89C0.4040303@ichips.intel.com> <20070809.145534.102938208.davem@davemloft.net> <470AA729.2050009@opengridcomputing.com>
+In-Reply-To: <470AA729.2050009@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Oct 2007, Paul Menage wrote:
+> The hack to use a socket and bind it to claim the port was just for 
+> demostrating the idea.  The correct solution, IMO, is to enhance the 
+> core low level 4-tuple allocation services to be more generic (eg: not 
+> be tied to a struct sock).  Then the host tcp stack and the host rdma 
+> stack can allocate TCP/iWARP ports/4tuples from this common exported 
+> service and share the port space.  This allocation service could also be 
+> used by other deep adapters like iscsi adapters if needed.
 
-> On 10/6/07, David Rientjes <rientjes@google.com> wrote:
-> >
-> > It can race with sched_setaffinity().  It has to give up tasklist_lock as
-> > well to call set_cpus_allowed() and can race
-> >
-> >         cpus_allowed = cpuset_cpus_allowed(p);
-> >         cpus_and(new_mask, new_mask, cpus_allowed);
-> >         retval = set_cpus_allowed(p, new_mask);
-> >
-> > and allow a task to have a cpu outside of the cpuset's new cpus_allowed if
-> > you've taken it away between cpuset_cpus_allowed() and set_cpus_allowed().
-> 
-> cpuset_cpus_allowed() takes callback_mutex, which is held by
-> update_cpumask() when it updates cs->cpus_allowed. So if we continue
-> to hold callback_mutex across the task update loop this wouldn't be a
-> race. Having said that, holding callback mutex for that long might not
-> be a good idea.
-> 
+Since iWarp runs on top of TCP, the port space is really the same. 
+FWIW, I agree that this proposal is the correct solution to support iWarp.
 
-Moving the actual use of set_cpus_allowed() from the cgroup code to 
-sched.c would probably be the best in terms of a clean interface.  Then 
-you could protect the whole thing by sched_hotcpu_mutex, which is 
-expressly designed for migrations.
-
-Something like this:
-
-	struct cgroup_iter it;
-	struct task_struct *p, **tasks;
-	int i = 0;
-
-	cgroup_iter_start(cs->css.cgroup, &it);
-	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
-		get_task_struct(p);
-		tasks[i++] = p;
-	}
-	cgroup_iter_end(cs->css.cgroup, &it);
-
-	while (--i >= 0) {
-		sched_migrate_task(tasks[i], cs->cpus_allowed);
-		put_task_struct(tasks[i]);
-	}
-
-kernel/sched.c:
-
-	void sched_migrate_task(struct task_struct *task,
-				cpumask_t cpus_allowed)
-	{
-		mutex_lock(&sched_hotcpu_mutex);
-		set_cpus_allowed(task, cpus_allowed);
-		mutex_unlock(&sched_hotcpu_mutex);
-	}
-
-It'd be faster to just pass **tasks to a sched.c function with the number 
-of tasks to migrate to reduce the contention on sched_hotcpu_mutex, but 
-then the put_task_struct() is left dangling over in cgroup code.  
-sched_hotcpu_mutex should be rarely contended, anyway.
-
-		David
+- Sean
