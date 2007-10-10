@@ -1,87 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJJDGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXJJDRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXJJDGd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 23:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXJJDGY
+	id S1754202AbXJJDRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 23:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXJJDRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 23:06:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58604 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751280AbXJJDGX (ORCPT
+	Tue, 9 Oct 2007 23:17:39 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2913 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750739AbXJJDRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 23:06:23 -0400
-Date: Tue, 9 Oct 2007 20:06:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
-In-Reply-To: <200710092015.07741.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0710091955100.3838@woody.linux-foundation.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <200710091931.51564.nickpiggin@yahoo.com.au>
- <alpine.LFD.0.999.0710091917410.3838@woody.linux-foundation.org>
- <200710092015.07741.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 9 Oct 2007 23:17:38 -0400
+Date: Wed, 10 Oct 2007 11:17:29 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Crypto Update for 2.6.24
+Message-ID: <20071010031729.GA26697@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi:
+
+Here is the crypto update for 2.6.24:
+
+Please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+Summary:
+
+* Added SEED algorithm.
+* Added XTS block cipher mode.
+* Added new aead type (essentially blkcipher + hash).
+* Added authenc wrapper as first aead algorithm.
+* Preparatory work for CTR (Counter) mode support.
+* Better loading of optimised algorithm modules.
 
 
-On Tue, 9 Oct 2007, Nick Piggin wrote:
-> 
-> I gave 2 other numbers. After that, it really doesn't matter if I give
-> you 2 numbers or 200, because it wouldn't change the fact that there
-> are 3 programs using the ZERO_PAGE that we'll never know about.
+Adrian Bunk (2):
+      [CRYPTO] Kconfig: Remove "default m"s
+      [CRYPTO] drivers/Kconfig: Remove "default m"s
 
-You gave me no timings what-so-ever. Yes, you said "1000 page faults", but 
-no, I have yet to see a *single* actual performance number.
+Herbert Xu (15):
+      [CRYPTO] api: Add aead crypto type
+      [CRYPTO] api: Add support for multiple template parameters
+      [CRYPTO] api: Add missing headers for setkey_unaligned
+      [CRYPTO] ablkcipher: Remove queue pointer from common alg object
+      [CRYPTO] api: Move scatterwalk into algapi
+      [CRYPTO] scatterwalk: Add scatterwalk_map_and_copy
+      [CRYPTO] api: Fixed crypto_*_reqsize return type
+      [CRYPTO] aead: Add authenc
+      [CRYPTO] api: Kill crypto_km_types
+      [CRYPTO] cryptomgr: Fix parsing of recursive algorithms
+      [CRYPTO] authenc: Kill spaces in algorithm names
+      [CRYPTO] blkcipher: Remove alignment restriction on block size
+      [CRYPTO] api: Explain the comparison on larval cra_name
+      [CRYPTO] blkcipher: Increase kmalloc amount to aligned block size
+      [CRYPTO] blkcipher: Added blkcipher_walk_virt_block
 
-Maybe I missed it? Or maybe you just never did them.
+Hye-Shik Chang (1):
+      [CRYPTO] seed: New cipher algorithm
 
-Was it really so non-obvious that I actually wanted *performance* numbers, 
-not just some random numbers about how many page faults you have? Or did 
-you post them somewhere else? I don't have any memory of having seen any 
-performance numbers what-so-ever, but I admittedly get too much email.
+Ingo Oeser (1):
+      [CRYPTO] blkcipher: Use max() in blkcipher_get_spot() to state the intention
 
-Here's three numbers of my own: 8, 17 and 975.
+Jan Glauber (1):
+      [CRYPTO] sha: Add header file for SHA definitions
 
-So I gave you "numbers", but what do they _mean_? 
+Rik Snel (1):
+      [CRYPTO] xts: XTS blockcipher mode implementation without partial blocks
 
-So let me try one more time:
+Sebastian Siewior (4):
+      [CRYPTO] api: Add crypto_ablkcipher_ctx_aligned
+      [CRYPTO] des: Rename des to des-generic
+      [CRYPTO] aes: Rename aes to aes-generic
+      [CRYPTO] sha: Load the SHA[1|256] module by an alias
 
- - I don't want any excuses about how bad PAGE_ZERO is. You made it bad, 
-   it wasn't bad before.
- - I want numbers. I want the commit message to tell us *why* this is 
-   done. The numbers I want is performance numbers, not handwave numbers. 
-   Both for the bad case that it's supposed to fix, *and* for "normal 
-   load".
- - I want you to just say that if it turns out that there are people who 
-   use ZERO_PAGE, you stop calling them crazy, and promise to look at the 
-   alternatives.
+ arch/s390/crypto/aes_s390.c      |    2 
+ arch/s390/crypto/sha1_s390.c     |   16 
+ arch/s390/crypto/sha256_s390.c   |   22 
+ crypto/Kconfig                   |   40 +
+ crypto/Makefile                  |   16 
+ crypto/ablkcipher.c              |    9 
+ crypto/aead.c                    |  101 +++
+ crypto/aes.c                     |  456 -----------------
+ crypto/aes_generic.c             |  456 +++++++++++++++++
+ crypto/algapi.c                  |   37 +
+ crypto/authenc.c                 |  400 +++++++++++++++
+ crypto/blkcipher.c               |   57 +-
+ crypto/cipher.c                  |    5 
+ crypto/cryptd.c                  |    7 
+ crypto/cryptomgr.c               |   96 ++-
+ crypto/des.c                     | 1011 --------------------------------------
+ crypto/des_generic.c             | 1012 +++++++++++++++++++++++++++++++++++++++
+ crypto/gf128mul.c                |   11 
+ crypto/hash.c                    |    3 
+ crypto/internal.h                |   11 
+ crypto/scatterwalk.c             |   30 -
+ crypto/scatterwalk.h             |    3 
+ crypto/seed.c                    |  479 ++++++++++++++++++
+ crypto/sha1.c                    |  142 -----
+ crypto/sha1_generic.c            |  140 +++++
+ crypto/sha256.c                  |  342 -------------
+ crypto/sha256_generic.c          |  331 ++++++++++++
+ crypto/sha512.c                  |   63 --
+ crypto/tcrypt.c                  |   20 
+ crypto/tcrypt.h                  |  507 +++++++++++++++++++
+ crypto/xts.c                     |  292 +++++++++++
+ drivers/crypto/Kconfig           |    5 
+ drivers/crypto/geode-aes.c       |    1 
+ drivers/crypto/padlock-aes.c     |    4 
+ drivers/crypto/padlock-sha.c     |   53 --
+ include/crypto/algapi.h          |   73 ++
+ include/crypto/gf128mul.h        |    2 
+ include/crypto/sha.h             |   53 ++
+ include/linux/crypto.h           |  214 ++++++++
+ 39 files changed, 4366 insertions(+), 2156 deletions(-)
 
-How much clearer can I be? I have said several times that I think this 
-patch is kind of sad, and the reason I think it's sad is that you (and 
-Hugh) convinced me to take the patch that made it sad in the first place. 
-It didn't *use* to be bad. And I've use ZERO_PAGE myself for timing, I've 
-had nice test-programs that knew that it could ignore cache effects and 
-get pure TLB effects when it just allocated memory and didn't write to it.
-
-That's why I don't like the lack of numbers. That's why I didn't like the 
-original commit message that tried to blame the wrong part. That's why I 
-didn't like this patch to begin with.
-
-But I'm perfectly ready to take it, and see if anybody complains. 
-Hopefully nobody ever will.
-
-But by now I absolutely *detest* this patch because of its history, and 
-how I *told* you guys what the reserved bit did, and how you totally 
-ignored it, and then tried to blame ZERO_PAGE for that. So yes, I want the 
-patch to be accompanied by an explanation, which includes the performance 
-side of why it is wanted/needed in the first place.
-
-If this patch didn't have that kind of history, I wouldn't give a flying f 
-about it. As it is, this whole thing has a background.
-
-		Linus
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
