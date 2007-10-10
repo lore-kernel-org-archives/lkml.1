@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXJJUq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbXJJUrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXJJUq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbXJJUqu
+	id S1757217AbXJJUrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbXJJUrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:46:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:45413 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756064AbXJJUqt (ORCPT
+	Wed, 10 Oct 2007 16:47:23 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42667 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbXJJUrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:46:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=xIKmHQh5FmNuYNnNES9YMyiYlIxFaN3vtocnncRauCWNysmmULrsojdwaf814Se1Y
-	qyNhrS3uRSWRXSYwBJSTg==
-Message-ID: <6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
-Date: Wed, 10 Oct 2007 13:46:36 -0700
-From: "Paul Menage" <menage@google.com>
-To: "David Rientjes" <rientjes@google.com>
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for cpusets
-Cc: "Paul Jackson" <pj@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-In-Reply-To: <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
+	Wed, 10 Oct 2007 16:47:22 -0400
+Message-ID: <470D2E92.8050606@oracle.com>
+Date: Wed, 10 Oct 2007 12:57:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Valdis.Kletnieks@vt.edu
+CC: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of
+ depends
+References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au> <Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au> <20071009162812.00e80a0c.randy.dunlap@oracle.com> <1192018350.2687.16.camel@moss-spartans.epoch.ncsc.mil>            <470CF26F.10606@oracle.com> <27818.1192045982@turing-police.cc.vt.edu>
+In-Reply-To: <27818.1192045982@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	 <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	 <20071003105817.7adf6516.pj@sgi.com>
-	 <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
-	 <20071003131632.fed4b848.pj@sgi.com>
-	 <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
-	 <20071006012437.c0fd3a8a.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-	 <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
-	 <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/6/07, David Rientjes <rientjes@google.com> wrote:
->
-> It can race with sched_setaffinity().  It has to give up tasklist_lock as
-> well to call set_cpus_allowed() and can race
->
->         cpus_allowed = cpuset_cpus_allowed(p);
->         cpus_and(new_mask, new_mask, cpus_allowed);
->         retval = set_cpus_allowed(p, new_mask);
->
-> and allow a task to have a cpu outside of the cpuset's new cpus_allowed if
-> you've taken it away between cpuset_cpus_allowed() and set_cpus_allowed().
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 10 Oct 2007 08:40:31 PDT, Randy Dunlap said:
+> 
+>>>>>  config SECURITY_SELINUX
+>>>>>  	bool "NSA SELinux Support"
+>>>>> -	depends on SECURITY_NETWORK && AUDIT && NET && INET
+>>>>> +	depends on SECURITY
+>>>>> +	select SECURITY_NETWORK
+>>>>> +	select AUDIT
+>>>>> +	select NET
+>>>>> +	select INET
+>>>>>  	select NETWORK_SECMARK
+> 
+>> AUDIT isn't quite library code, still I don't have a (big) problem with
+>> selecting it or NETWORK_SECMARK.  (other than select is evil :)
+>>
+>> OTOH, NET and INET are large config options, not library-like code, and
+>> should not be selected.
+> 
+> If it does a 'select SECURITY_NETWORK' but NET=n, does the resulting kernel
+> actually build?  The problem seems to be that select isn't transitive - if
+> you select something, it won't automagically select that something's pre-reqs
+> (modulo the recent patches I've seen posted, have those been mainlined?).
 
-cpuset_cpus_allowed() takes callback_mutex, which is held by
-update_cpumask() when it updates cs->cpus_allowed. So if we continue
-to hold callback_mutex across the task update loop this wouldn't be a
-race. Having said that, holding callback mutex for that long might not
-be a good idea.
+Good point.
 
-A cleaner solution might be to drop callback_mutex after updating
-cs->cpus_allowed in update_cpumask() and then make sched_setaffinity()
-do a post-check:
+I haven't tested that, but it's most likely still a problem.
+"select" does not follow its dependency chain...
 
-	cpus_allowed = cpuset_cpus_allowed(p);
- again:
-	cpus_and(new_mask, new_mask, cpus_allowed);
-	retval = set_cpus_allowed(p, new_mask);
-	if (!retval) {
-		/* Check for races with cpuset updates */
-		cpus_allowed = cpuset_cpus_allowed(p);
-		if (!cpus_subset(new_mask, cpus_allowed)) {
-			/*
-			 * We raced with a change to cpuset update,
-			 * and our cpumask is now outside the
-			 * permitted cpumask for the cpuset.  Since a
-			 * change to the cpuset's cpus resets the
-			 * cpumask for each task, do the same thing
-			 * here.
-			 */
-			new_mask = cpus_allowed;
-			goto again;
-		}
-	}
 
-Paul
+-- 
+~Randy
