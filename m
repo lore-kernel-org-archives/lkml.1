@@ -1,110 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbXJJOtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbXJJOyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbXJJOtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 10:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXJJOto
+	id S1755885AbXJJOyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 10:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbXJJOyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 10:49:44 -0400
-Received: from smtpout3.l-3com.com ([166.20.84.211]:8934 "EHLO
-	smtpout3.l-3com.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbXJJOtn convert rfc822-to-8bit (ORCPT
+	Wed, 10 Oct 2007 10:54:44 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:63303 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753547AbXJJOym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 10:49:43 -0400
-X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 10:49:43 EDT
-X-IronPort-AV: E=Sophos;i="4.21,255,1188792000"; 
-   d="scan'208";a="90334508"
-From: Jason.V.Mock@L-3Com.com
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 10 Oct 2007 10:54:42 -0400
+Message-ID: <470CE78B.2080509@emulex.com>
+Date: Wed, 10 Oct 2007 10:54:03 -0400
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Kernel Oops in NFS
-Date: Wed, 10 Oct 2007 09:39:52 -0500
-Message-ID: <F31FEAB987B7C2469181758C14265CFA040BBB64@gvlexch03.is.l-3com.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Kernel Oops in NFS
-Thread-Index: AcgLSwxixhUOkFQSQmOTIG2FX0iecQ==
-To: <nfs@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-Cc: "Kile, SE Scott @ IS" <scott.kile@L-3Com.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+CC: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexis Bruemmer <alexisb@us.ibm.com>,
+       James Bottomley <james.bottomley@steeleye.com>
+Subject: Re: [PATCH] aic94xx: Use request_firmware() to provide SAS address
+ if the adapter lacks one
+References: <20071008212553.GI16752@tree.beaverton.ibm.com> <20071008224832.GB11993@plap3.qlogic.org> <20071008235009.GB16003@tree.beaverton.ibm.com> <20071009001240.GA13922@plap3.qlogic.org> <470B9E50.2090205@emulex.com> <20071009164147.GB19854@plap3.qlogic.org> <20071009170643.GE16003@tree.beaverton.ibm.com>
+In-Reply-To: <20071009170643.GE16003@tree.beaverton.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Oct 2007 14:54:03.0996 (UTC) FILETIME=[667DB1C0:01C80B4D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've come across an Oops, in what appears to NFS.
+Darrick J. Wong wrote:
+>> Though I don't see why both can't coexist cleanly -- I take it the use
+>> case you are considering is: software recognizes no valid WWPN
+>> available, query via request_firmware() fails, software halts
+>> initialization (rather than fail), and awaits the admin to poke
+>> '0x123456.. > /sys/.../fc_host/soft_port_name', causing a ping to the
+>> driver and continuation of initialization with requested portname?
+> 
+> Hmm... could we use such a sysfs attribute to reassign adapter WWNs at
+> arbitrary times?  Is that even a good idea?
 
-2.6.22.6 vanilla + realtime-lsm
-RHEL4 over PXE/NFS_ROOT
+As the threads on this topic has shown - allowing any kind of override
+or WWN generation isn't a well-liked idea. But there are plausible
+scenarios where it makes sense.
 
+Here's one pro for setting WWNs at arbitrary times...
+   If the box is migrating applications (say containers) that want
+   different SAN connectivity, where that connectivity (view) is based
+   on their WWN, it would be really nice to selectively set the WWN and
+   not touch the SAN config.  Granted, in FC, NPIV can do the same thing,
+   but this could be done on an adapter or configuration that can't do NPIV.
 
-Oct  9 14:26:13 WS15 gdm(pam_unix)[6038]: session opened for user mockj
-by (uid=0)
-Oct  9 14:26:48 WS15 gconfd (mockj-7583): starting (version 2.8.1), pid
-7583 user 'mockj'
-Oct  9 14:26:48 WS15 kernel: BUG: unable to handle kernel NULL pointer
-dereference at virtual address 00000004
-Oct  9 14:26:48 WS15 kernel:  printing eip:
-Oct  9 14:26:48 WS15 kernel: c01a9fb8
-Oct  9 14:26:48 WS15 kernel: *pde = c691d067
-Oct  9 14:26:48 WS15 kernel: Oops: 0000 [#1]
-Oct  9 14:26:48 WS15 kernel: PREEMPT SMP 
-Oct  9 14:26:48 WS15 kernel: Modules linked in: lm85 w83781d hwmon_vid
-hwmon ipv6 parport_pc lp parport autofs4 tulip dm_mirror dm_mod button
-battery ac mct_u232 usbserial uhci_hcd ehci_hcd nvidia(P) e7xxx_edac
-edac_mc rng_core i2c_i801 i2c_core aic79xx scsi_transport_spi ata_piix
-libata scsi_mod snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss
-snd_mixer_oss snd_pcm snd_page_alloc snd_seq_dummy snd_seq_oss
-snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore
-realtime commoncap
-Oct  9 14:26:48 WS15 kernel: CPU:    0
-Oct  9 14:26:48 WS15 kernel: EIP:    0060:[<c01a9fb8>]    Tainted: P
-VLI
-Oct  9 14:26:48 WS15 kernel: EFLAGS: 00210246   (2.6.22-6.0.WSsmp #1)
-Oct  9 14:26:48 WS15 kernel: EIP is at nfs_lookup+0x11b/0x26a
-Oct  9 14:26:48 WS15 kernel: eax: 00000000   ebx: c0367600   ecx:
-00000000   edx: 00000000
-Oct  9 14:26:48 WS15 kernel: esi: 00000000   edi: 00000000   ebp:
-00000000   esp: f63b5d44
-Oct  9 14:26:48 WS15 kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033
-ss: 0068
-Oct  9 14:26:48 WS15 kernel: Process gconfd-2 (pid: 7583, ti=f63b4000
-task=f6273070 task.ti=f63b4000)
-Oct  9 14:26:48 WS15 kernel: Stack: f63b5d60 f63b5d98 f63b5d9c 7fffffff
-f63b5ed8 f63ef118 f63f5e8c f63b0002 
-Oct  9 14:26:48 WS15 kernel:        f63db21c 00000000 c014843e 00000000
-0000000e 00000001 00000001 000081c0 
-Oct  9 14:26:48 WS15 kernel:        00000002 00001459 000000c9 00000271
-00000000 00002000 00000008 00000000 
-Oct  9 14:26:48 WS15 kernel: Call Trace:
-Oct  9 14:26:48 WS15 kernel:  [<c014843e>] write_cache_pages+0x235/0x285
-Oct  9 14:26:48 WS15 kernel:  [<c01b4332>] nfs_flush_one+0x0/0xe5
-Oct  9 14:26:48 WS15 kernel:  [<c01488c5>] mapping_tagged+0x2b/0x32
-Oct  9 14:26:48 WS15 kernel:  [<c016e227>] d_alloc+0x15e/0x166
-Oct  9 14:26:48 WS15 kernel:  [<c0166663>] lookup_one_len+0xc5/0xe0
-Oct  9 14:26:48 WS15 kernel:  [<c01aabba>] nfs_sillyrename+0x12b/0x253
-Oct  9 14:26:48 WS15 kernel:  [<c01aba09>] nfs_permission+0x0/0x147
-Oct  9 14:26:48 WS15 kernel:  [<c01aae6e>] nfs_unlink+0x81/0xfc
-Oct  9 14:26:48 WS15 kernel:  [<c01667f4>] may_delete+0x55/0x10a
-Oct  9 14:26:48 WS15 kernel:  [<c0167a82>] vfs_unlink+0xa1/0xc5
-Oct  9 14:26:48 WS15 kernel:  [<c0167b3b>] do_unlinkat+0x95/0xf5
-Oct  9 14:26:48 WS15 kernel:  [<c0105a67>] do_syscall_trace+0x15c/0x19d
-Oct  9 14:26:48 WS15 kernel:  [<c0103136>] syscall_call+0x7/0xb
-Oct  9 14:26:48 WS15 kernel:  [<c0350000>] cache_make_upcall+0x40/0x129
-Oct  9 14:26:48 WS15 kernel:  =======================
-Oct  9 14:26:48 WS15 kernel: Code: 24 14 8b 00 83 c2 20 8b 58 38 8d 44
-24 1c 89 04 24 8b 44 24 18 ff 53 20 83 f8 fe 0f 84 93 00 00 00 85 c0 89
-c5 0f 88 3d 01 00 00 <8b> 76 04 8b 54 24 18 89 74 24 10 8b 82 a4 00 00
-00 8b 54 24 64 
-Oct  9 14:26:48 WS15 kernel: EIP: [<c01a9fb8>] nfs_lookup+0x11b/0x26a
-SS:ESP 0068:f63b5d4
+So, what's the decision - are we only allowing this for physical adapters
+that don't have a name ? or are we allowing it to be more dynamic ?
 
-We haven't seen any negative side-effects other than users seeing this
-in Kwrited quite often.  We've yet to update to 2.6.22.9, however we've
-examined the change logs and patches associated with NFS between then
-and now, and don't see anything appropriate for the errors we're
-receiving.  Let me know if you need anything else for this...
+My thoughts on request_firmware() vs sysfs:
+  via request_firmware
+    pro: It seems to imply a stronger level of control, as it seems more
+      hidden from the casual admin and/or tools. Too many random things
+      now peruse sysfs attributes without knowing their meaning.
+      Also, easier (more correct) to pass multiple elements (WWNN & WWPN)
+      if needed.
+    con: ?? when does it get used - only at initial attachment and
+      under failure ?  If you were to make it more arbitrary, doesn't
+      it imply some sysfs use to poke the driver/transport to get the
+      new value ? and if arbitrary, how to marry that with kdump so the
+      initrd is up to date.  Also, it's yet another mgmt interface - how many
+      does an admin need to know about ?  Hotplug scripts to identify the
+      adapter and specify the proper names are more complex for the admin
+      than sysfs.
 
-Jason V. Mock
-Software Engineer
-L-3 Communications - Greenville Integrated Systems
+  via sysfs:
+    pro: Keeps all mgmt in the sysfs area, which admins are starting to
+      become comfortable with. Easily supports a dynamic, change at any time
+      model.
+    con: Drives to a set-after-attachment model, and doesn't support kdump
+      well (requires initrd tools). Multiple elements can be a bit cumbersome
+      if one follows the one-value-per-attribute sysfs rules.
+      Must protect against random rogue sysfs tools.
+
+Overall, I guess I like the stronger controls of request_firmware(), but dislike
+using yet another mgmt interface for admins.
+
+-- james s
+
