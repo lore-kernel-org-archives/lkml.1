@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbXJIXwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXJIX6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbXJIXwI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 19:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXJIXv4
+	id S1754381AbXJIX6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 19:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXJIX6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 19:51:56 -0400
-Received: from namei.org ([69.55.235.186]:45432 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751632AbXJIXv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 19:51:56 -0400
-Date: Wed, 10 Oct 2007 09:50:49 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of
- depends
-In-Reply-To: <20071009162812.00e80a0c.randy.dunlap@oracle.com>
-Message-ID: <Xine.LNX.4.64.0710100937390.20449@us.intercode.com.au>
-References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
- <Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au>
- <20071009162812.00e80a0c.randy.dunlap@oracle.com>
+	Tue, 9 Oct 2007 19:58:13 -0400
+Received: from lixom.net ([66.141.50.11]:45160 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751409AbXJIX6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Oct 2007 19:58:12 -0400
+Date: Tue, 9 Oct 2007 19:03:18 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Greg KH <greg@kroah.com>,
+       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk, linuxppc-dev@ozlabs.org
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+Message-ID: <20071010000318.GA7875@lixom.net>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com> <20071009151702.GA19209@lixom.net> <20071009222003.GA21228@kroah.com> <alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain> <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Oct 2007, Randy Dunlap wrote:
+On Tue, Oct 09, 2007 at 04:27:06PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
+> > 
+> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
+> 
+> Well, the ppc oops seems to be a ppc bug regardless.
+> 
+> If CPU_HOTPLUG isn't defined, the thing does nothing. And if it is 
+> defined, I don't see why/how ppc can validly oops. So I think the first 
+> thing to do is to try to figure out why it oopses, not to disable it for 
+> ppc.
 
-> I doth protest.  Enabling the entire NET subsystem thru a hidden
-> select is awful.  Select should be used (sparingly) to enable
-> library code only.  If someone wants NET enabled, they should
-> enable it overtly, not covertly.
+The machine Paul tried on most likely has MPIC interrupt controller, and
+the oops was when the pseries_cpu_disable tried calling XICS code instead.
+It's not surprising that it failed, I don't think IBM has (traditionally)
+cared about cpu hotplug on those machines.
 
-Ok, fair enough.
-
-I've dropped the patch and rebased the branch.  Please pull per:
-
-
-The following changes since commit bbf25010f1a6b761914430f5fca081ec8c7accd1:
-  Linus Torvalds (1):
-        Linux 2.6.23
-
-are available in the git repository at:
-
-ssh://master.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git for-linus
-
-Eric Paris (1):
-      SELinux: policy selectable handling of unknown classes and perms
-
-KaiGai Kohei (2):
-      SELinux: improve performance when AVC misses.
-      SELinux: kills warnings in Improve SELinux performance when AVC misses
-
-Yuichi Nakamura (2):
-      SELinux: tune avtab to reduce memory usage
-      SELinux: Improve read/write performance
-
- fs/open.c                           |    4 +
- include/linux/security.h            |   18 +++
- security/dummy.c                    |    6 +
- security/selinux/avc.c              |    5 +
- security/selinux/hooks.c            |   53 +++++++-
- security/selinux/include/avc.h      |    2 +
- security/selinux/include/objsec.h   |    2 +
- security/selinux/include/security.h |    2 +
- security/selinux/selinuxfs.c        |   26 ++++
- security/selinux/ss/avtab.c         |   91 ++++++++----
- security/selinux/ss/avtab.h         |   16 ++-
- security/selinux/ss/conditional.c   |    4 +
- security/selinux/ss/ebitmap.c       |  282 +++++++++++++++++++---------------
- security/selinux/ss/ebitmap.h       |   89 +++++++++---
- security/selinux/ss/mls.c           |  156 +++++++++----------
- security/selinux/ss/policydb.c      |   11 +-
- security/selinux/ss/policydb.h      |    8 +
- security/selinux/ss/services.c      |   91 +++++++++---
- 18 files changed, 582 insertions(+), 284 deletions(-)
- 
+So the PPC-side fix is to not enable cpu hotplug on mpic-based
+systems. I'll follow up with a patch, but I have no way to test it since
+I only have one POWER5 machine, no other IBM hardware. I'd appreciate
+it if someone with hardware could verify it.
 
 
-
--- 
-James Morris
-<jmorris@namei.org>
+-Olof
