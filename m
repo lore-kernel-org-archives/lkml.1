@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXJJFav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJJFcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbXJJFav (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 01:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXJJFan
+	id S1755308AbXJJFcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 01:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXJJFcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 01:30:43 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:32783 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173AbXJJFam (ORCPT
+	Wed, 10 Oct 2007 01:32:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48827 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751820AbXJJFcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 01:30:42 -0400
-Date: Wed, 10 Oct 2007 11:00:58 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
-       mark_salyzyn@adaptec.com, ak@suse.de
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
-Message-ID: <20071010053057.GA24434@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071009210623.GK4335@rhun.haifa.ibm.com>
-User-Agent: Mutt/1.5.11
+	Wed, 10 Oct 2007 01:32:16 -0400
+Date: Tue, 9 Oct 2007 22:29:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Greg KH <greg@kroah.com>, Olof Johansson <olof@lixom.net>,
+       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk, Kevin <spaceman__spiff@cox.net>
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+In-Reply-To: <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0710092224000.3838@woody.linux-foundation.org>
+References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
+ <20071009151702.GA19209@lixom.net> <20071009222003.GA21228@kroah.com>
+ <alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
+ <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+ <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 11:06:23PM +0200, Muli Ben-Yehuda wrote:
-> Hi Chandru,
+
+
+On Wed, 10 Oct 2007, Thomas Gleixner wrote:
 > 
-> Thanks for the patch. Comments on the patch below, but first a general
-> question for my education: the main problem here that aacraid
-> continues DMA'ing when it shouldn't. Why can't we shut it down
-> cleanly? Even without the presence of an IOMMU, it seems dangerous to
-> let an adapter continue DMA'ing to and from memory when the kernel is
-> an inconsistent state.
+> Fair enough. OTOH for the affected PPC users it's a regression and that's 
+> what I'm concerned of.
+
+Hmm.. I just got the appended (Kevin, better not just send me email, other 
+people can be interested too):
+
+From: Kevin <spaceman__spiff@cox.net>:
+Subject: Segmentation Fault
 > 
-
-Hi Muli,
-
-After the kernel crash, we can't rely on the crashed kernel's data
-structures or methods any more. We can't call the device shutdown methods of
-all the device drivers as we might be invoking a driver which actually might
-have caused the crash. Hence we don't perform any device shutdown
-in the case of kdump. Instead after the crash, we try to take the shortest
-route to second kernel (Execute minimum code in crashed kernel).
-
-Whatever special handling is required to bring up the second kernel on 
-a potentially unknown state hardware, is taken in second kernel.
-
-We will not be too concerned about ongoing DMA's as long as there is no
-corruption of tce tables. That would mean DMA is happening in first
-kernel's memory buffer and second kernel is not impacted. But if TCE
-tables themselves are corrupted, then it can potentially interfere with
-second kernel's operation. Don't know how it can be addressed.
-  
-> The patch below looks reasonable *if* that is the least worst way of
-> doing it - let's see if we can come up with something cleaner that
-> doesn't rely in the new kernel on data (which may or may not be
-> corrupted...) from the old kernel.
+> I just installed Linux Kernel 2.6.23 and am getting a Segmentation Fault 
+> upon exit (init 0).
 > 
+> Code: Bad EIP Value
+> EIP: [<00007825>] 0x7825 SS:ESP 0068:e7305de8
+> /etc/rc.d/rc.0: Line 261: 2796 Segmentation Fault   /sbin/poweroff
+> 
+> I'm running Slackware 12.0
 
-I think the issue here is that some DMA was going on when first kernel
-crashed. After the crash, second kernel booted and created new TCE tables
-and switched to it. This resulted in ongoing DMA failure and hardware raised
-an alarm. 
+and while there's not a lot of information there, it might still mean that 
+there may be some issues on x86 too at the shutdown path.
 
-In this case, probably it would make sense to re-use the TCE tables of
-previous kernel (until and unless we have a way to tell hardware not
-to flag a DMA error if TCE mapping is changed while DMA is going on ?)
+Kevin: can you get the rest of the message? The kernel should have printed 
+out much more than just those two lines (there should have been a stack 
+trace and register state (often most easily captured simply with a digital 
+camera)
 
-I think, we also need to reserve some TCE table entries (in first kernel),
-which can be used by second kernel for saving kernel core file to disk. There
-might be a case where first kernel has used up all TCE entries and second
-kernel can't allocate more. I think ppc64 has taken the approach of freeing
-some entries in second kernel but that will have the problem as you might
-be clearing an entry which is being used by ongoing DMA.  
-
-Thanks
-Vivek
+			Linus
