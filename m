@@ -1,43 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXJJQAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbXJJQEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbXJJQAX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXJJQAK
+	id S1756577AbXJJQEI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbXJJQDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:00:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38396 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755281AbXJJQAJ (ORCPT
+	Wed, 10 Oct 2007 12:03:55 -0400
+Received: from postmark.cse.wustl.edu ([128.252.166.5]:58998 "EHLO
+	mail.cse.wustl.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbXJJQDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:00:09 -0400
-Date: Wed, 10 Oct 2007 08:59:18 -0700
-From: Greg KH <greg@kroah.com>
-To: wit <is01kzh@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: about probing a device
-Message-ID: <20071010155918.GA5824@kroah.com>
-References: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com> <20071010044619.GA23561@kroah.com> <105610bf0710100841t1c9463c1q9742534c8bb0dfe5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <105610bf0710100841t1c9463c1q9742534c8bb0dfe5@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 10 Oct 2007 12:03:54 -0400
+X-Greylist: delayed 1821 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 12:03:54 EDT
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.23 spinlock hang in kswapd under heavy disk write loads
+Message-Id: <20071010153332.71479CECBD@tamarack.cse.wustl.edu>
+Date: Wed, 10 Oct 2007 10:33:32 -0500 (CDT)
+From: berkley@cse.wustl.edu (Berkley Shands)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 11:41:47PM +0800, wit wrote:
-> Thanks very much
-> 
-> > Why, is there some use for multiple drivers to devices that you want to
-> > use?
-> >
-> 
-> I'm just trying to figure out the difference between 2.4 & 2.6 device
-> drivers. And this is just an issue that came up to my mind suddently.
+2.6.23 with CONFIG_DEBUG_SPINLOCK on does not hang under very high write loads
+to either an LSI8888ELP (write rate 1.1GB/Sec) or to a highpoint RR2340 (write rate 1.0GB/Sec).
+With CONFIG_DEBUG_SPINLOCK off however, the system hangs with kswapd getting
+100% of the cpu and most if not all other processes are locked out. Sometimes even the
+keyboard is locked out.
 
-For 2.4, we could not bind multiple drivers to devices either, so this
-should not have changed.
+This is seen on a supermicro H8DM3-2 and H8DMi-2 motherboards, 16 GB RAM, 2222 SE or 2216 processors.
+Not seen on a Uniwide 3546ES, or on a Supermicro H8DM8 with 8222 CPUS.
 
-thanks,
+kswapd sits at (according to KDB)
+__spinlock_irqsave + 0x15
+prepare_to_wait + 0x15
+kswapd + 0xe3
+kthread + 0x47
 
-greg k-h
+berkley
