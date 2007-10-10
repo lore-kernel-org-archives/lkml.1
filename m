@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbXJJQ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXJJQcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbXJJQ0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXJJQ0M
+	id S1755931AbXJJQcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbXJJQcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:26:12 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:9740 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbXJJQ0M (ORCPT
+	Wed, 10 Oct 2007 12:32:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51867 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222AbXJJQcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:26:12 -0400
-Date: Wed, 10 Oct 2007 18:26:12 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: wit <is01kzh@gmail.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: about probing a device
-Message-ID: <20071010182612.1f228ed1@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <105610bf0710100850n2eb3c68codc3781d963df764e@mail.gmail.com>
-References: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com>
-	<20071010130923.004ee895@the-village.bc.nu>
-	<105610bf0710100850n2eb3c68codc3781d963df764e@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Oct 2007 12:32:12 -0400
+Message-ID: <470CFE65.80800@zytor.com>
+Date: Wed, 10 Oct 2007 09:31:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Kevin <spaceman__spiff@cox.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ARPM shutdown oops (Re: [stable] [patch 09/12] Fix SMP poweroff
+ hangs)
+References: <20071008180406.052382073@mini.kroah.org> <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain> <alpine.LFD.0.999.0710092224000.3838@woody.linux-foundation.org> <200710092359.47144.spaceman__spiff@cox.net> <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Oct 2007 23:50:01 +0800,
-wit <is01kzh@gmail.com> wrote:
-
-> > The first one which matches and successfully attaches "wins".
+Linus Torvalds wrote:
 > 
-> Seems that calling the bind routine can bind a driver to a device. Is
-> there any bad side effect of doing such thing?
+> We did have some APM *detection* changes, and maybe APM wasn't even 
+> detected for you before, or it was detected differently. That would be due 
+> to the bootup changes, I'm Cc'ing Peter Anvin (and the kernel mailing 
+> list, in case somebody else see a pattern to this).
+> 
 
-If the device is already bound to another driver, it will fail.
+Well, I did have exactly one bug report about APM, and that was a user 
+who had inadvertently flipped his CONFIG_APM setting (from on to off in 
+his particular case -- it was a 10-year-old machine without ACPI.)
 
-If you have multiple drivers for the same device, just use the drivers'
-bind/unbind attributes if the wrong one "won".
+	-hpa
