@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXJJEfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbXJJFJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbXJJEfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 00:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750705AbXJJEfF
+	id S1753224AbXJJFJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 01:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbXJJFJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 00:35:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37674
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750740AbXJJEfE (ORCPT
+	Wed, 10 Oct 2007 01:09:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47033 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbXJJFJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 00:35:04 -0400
-Date: Tue, 09 Oct 2007 21:35:07 -0700 (PDT)
-Message-Id: <20071009.213507.78708496.davem@davemloft.net>
-To: david-b@pacbell.net
-Cc: stern@rowland.harvard.edu, greg@kroah.com, linux-kernel@vger.kernel.org,
-       linux-usb-users@lists.sourceforge.net
-Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071009.150040.55724885.davem@davemloft.net>
-References: <20071009.142719.68041626.davem@davemloft.net>
-	<200710091443.54998.david-b@pacbell.net>
-	<20071009.150040.55724885.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Oct 2007 01:09:48 -0400
+Date: Tue, 9 Oct 2007 21:46:19 -0700
+From: Greg KH <greg@kroah.com>
+To: wit <is01kzh@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: about probing a device
+Message-ID: <20071010044619.GA23561@kroah.com>
+References: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 09 Oct 2007 15:00:40 -0700 (PDT)
+On Wed, Oct 10, 2007 at 09:39:44AM +0800, wit wrote:
+> Hi,
+> I found these routines in the kernel, does this means only one driver
+> can be matched to a device?
 
-> From: David Brownell <david-b@pacbell.net>
-> Date: Tue, 9 Oct 2007 14:43:54 -0700
-> 
-> > Does it resolve the problem you observed?
-> 
-> I will definitely give the patch a try and report back.
+Yes, you are correct, that is how the driver model currently works.
 
-My tests look really good with Alan Stern's patch.
+> What if two drivers both can drive the device, like sd & sg in scsi
+> subsystem?
 
-With a kernel is hacked to load OHCI before EHCI, and
-that always hangs, the patch makes the hang go away
-reliably.
+You have to go through a lot of pain to get it to work :)
+
+Or create a virtual bus and devices, but that is not how scsi decided to
+go about this.
+
+I do have some half-baked patches to fix this in a generic way, to allow
+multiple drivers to bind to devices, but it's not fully working right
+now and I got side-tracked by having to clean up the kset/kobject/ktype
+mess first to get this to work properly, so it might be a few months.
+
+Why, is there some use for multiple drivers to devices that you want to
+use?
+
+thanks,
+
+greg k-h
