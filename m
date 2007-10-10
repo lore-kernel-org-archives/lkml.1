@@ -1,61 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbXJJPF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbXJJPLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756494AbXJJPF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbXJJPFU
+	id S1756013AbXJJPLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbXJJPKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:05:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41428 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755155AbXJJPFS (ORCPT
+	Wed, 10 Oct 2007 11:10:53 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:64146 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754296AbXJJPKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:05:18 -0400
-Date: Wed, 10 Oct 2007 08:04:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: remove zero_page (was Re: -mm merge plans for 2.6.24)
-In-Reply-To: <200710100030.28806.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0710100758460.3838@woody.linux-foundation.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0710100424050.24074@blonde.wat.veritas.com>
- <alpine.LFD.0.999.0710092202000.3838@woody.linux-foundation.org>
- <200710100030.28806.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 10 Oct 2007 11:10:52 -0400
+Date: Wed, 10 Oct 2007 11:10:49 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] Rewrite proc seq operations via seq_list_xxx ones
+Message-ID: <20071010151049.GA14613@Krystal>
+References: <470CB330.2040508@openvz.org> <20071010144526.GA11501@Krystal> <470CE82A.9080306@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <470CE82A.9080306@openvz.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:03:18 up 72 days, 15:22,  4 users,  load average: 1.49, 1.26, 1.31
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 10 Oct 2007, Nick Piggin wrote:
+* Pavel Emelyanov (xemul@openvz.org) wrote:
+> Mathieu Desnoyers wrote:
+> > * Pavel Emelyanov (xemul@openvz.org) wrote:
+> >> Some time ago I posted a set of patches that consolidated
+> >> the seq files, walking the list_head-s. This set was merged
+> >> in the mm tree. /proc/diskstats and /proc/partitions files 
+> >> were included in this set, but a bit later this part was 
+> >> dropped because of conflicts with some other changes.
+> >>
+> >> Here's the fixed version against the latest git block repo.
+> >>
+> > 
+> > Hi Pavel,
+> > 
+> > You might want to try implementing this patch on top of the sorted seq
+> > list patch I proposed there. It deals with a race between proc file read
+> > and list modification between iterations.
 > 
-> It just seems like now might be a good time to just _try_ removing
-> the zero page
+> AFAIS there's no race - everything is protected with the mutex.
+> 
+> OTOH, If you mean the problem that the list can change while the 
+> seq file reallocates its buffers, then this problem exists for all
+> the kernel and I don't think it's a good idea to stick to the block
+> proc files only.
+> 
 
-Yes. Let's do your patch immediately after the x86 merge, and just see if 
-anybody screams. 
+The problem is that the list can change between two consecutive reads.
+And yes, all proc files using lists are affected, but changing every
+proc file users is a quite large task.
 
-It might take a while, because I certainly agree that whoever would be 
-affected by it is likely to be unusual.
+A problematic sequence would be:
 
-> OK, maybe this is where we are not on the same page.
-> There are 2 issues really. Firstly, performance problem of
-> refcounting the zero-page -- we've established that it causes
-> this livelock and that we should stop refcounting it, right?
+1st procfs read()
+*_start()
+- mutex down
+- seq list start
 
-Yes, I do agree that refcounting is problematic. 
+*_next()
+- seq list next
 
-> Second issue is the performance difference between removing the
-> zero page completely, and de-refcounting it (it's obviously
-> incorrect to argue for zero page removal for performance reasons
-> if the performance improvement is simply coming from avoiding
-> the refcounting).
+*_stop()
+- mutex up
+end of 1st procfs read()
 
-Well, even if it's a "when you don't get into the bad behaviour, 
-performance difference is not measurable", and give a before-and-after 
-number for some random but interesting load. Even if it's just a kernel 
-compile..
+mutex down
+-> Removing a list entry
+mutex up
 
-		Linus
+2nd procfs read()
+*_start()
+- mutex down
+... we now skip a list entry depending on the relative position of our
+iterator and the deletion.
+
+The mutex is taken/released at each and every read, therefore not
+protecting against modifications across reads.
+
+Mathieu
+
+
+> > http://lkml.org/lkml/2007/9/6/175
+> > 
+> > See this patch for a user implementation example and test code
+> > (/proc/modules) :
+> > 
+> > http://lkml.org/lkml/2007/9/6/176
+> > 
+> > Mathieu
+> > 
+> >> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> >>
+> >> ---
+> >>
+> >> diff --git a/block/genhd.c b/block/genhd.c
+> >> index 3af1e7a..27f7061 100644
+> >> --- a/block/genhd.c
+> >> +++ b/block/genhd.c
+> >> @@ -264,39 +264,34 @@ void __init printk_all_partitions(void)
+> >>  
+> >>  #ifdef CONFIG_PROC_FS
+> >>  /* iterator */
+> >> -static void *part_start(struct seq_file *part, loff_t *pos)
+> >> +static void *disk_start(struct seq_file *part, loff_t *pos)
+> >>  {
+> >> -	struct list_head *p;
+> >> -	loff_t l = *pos;
+> >> -
+> >>  	mutex_lock(&block_subsys_lock);
+> >> -	list_for_each(p, &block_subsys.list)
+> >> -		if (!l--)
+> >> -			return list_entry(p, struct gendisk, kobj.entry);
+> >> -	return NULL;
+> >> +	return seq_list_start_head(&block_subsys.list, *pos);
+> >>  }
+> >>  
+> >> -static void *part_next(struct seq_file *part, void *v, loff_t *pos)
+> >> +static void *disk_next(struct seq_file *part, void *v, loff_t *pos)
+> >>  {
+> >> -	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+> >> -	++*pos;
+> >> -	return p==&block_subsys.list ? NULL :
+> >> -		list_entry(p, struct gendisk, kobj.entry);
+> >> +	return seq_list_next(v, &block_subsys.list, pos);
+> >>  }
+> >>  
+> >> -static void part_stop(struct seq_file *part, void *v)
+> >> +static void disk_stop(struct seq_file *part, void *v)
+> >>  {
+> >>  	mutex_unlock(&block_subsys_lock);
+> >>  }
+> >>  
+> >>  static int show_partition(struct seq_file *part, void *v)
+> >>  {
+> >> -	struct gendisk *sgp = v;
+> >> +	struct gendisk *sgp;
+> >>  	int n;
+> >>  	char buf[BDEVNAME_SIZE];
+> >>  
+> >> -	if (&sgp->kobj.entry == block_subsys.list.next)
+> >> +	if (v == &block_subsys.list) {
+> >>  		seq_puts(part, "major minor  #blocks  name\n\n");
+> >> +		return 0;
+> >> +	}
+> >> +
+> >> +	sgp = list_entry(v, struct gendisk, kobj.entry);
+> >>  
+> >>  	/* Don't show non-partitionable removeable devices or empty devices */
+> >>  	if (!get_capacity(sgp) ||
+> >> @@ -325,9 +320,9 @@ static int show_partition(struct seq_fil
+> >>  }
+> >>  
+> >>  struct seq_operations partitions_op = {
+> >> -	.start =part_start,
+> >> -	.next =	part_next,
+> >> -	.stop =	part_stop,
+> >> +	.start =disk_start,
+> >> +	.next =	disk_next,
+> >> +	.stop =	disk_stop,
+> >>  	.show =	show_partition
+> >>  };
+> >>  #endif
+> >> @@ -616,44 +611,22 @@ decl_subsys(block, &ktype_block, &block_
+> >>   */
+> >>  
+> >>  /* iterator */
+> >> -static void *diskstats_start(struct seq_file *part, loff_t *pos)
+> >> -{
+> >> -	loff_t k = *pos;
+> >> -	struct list_head *p;
+> >> -
+> >> -	mutex_lock(&block_subsys_lock);
+> >> -	list_for_each(p, &block_subsys.list)
+> >> -		if (!k--)
+> >> -			return list_entry(p, struct gendisk, kobj.entry);
+> >> -	return NULL;
+> >> -}
+> >> -
+> >> -static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
+> >> -{
+> >> -	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+> >> -	++*pos;
+> >> -	return p==&block_subsys.list ? NULL :
+> >> -		list_entry(p, struct gendisk, kobj.entry);
+> >> -}
+> >> -
+> >> -static void diskstats_stop(struct seq_file *part, void *v)
+> >> -{
+> >> -	mutex_unlock(&block_subsys_lock);
+> >> -}
+> >> -
+> >>  static int diskstats_show(struct seq_file *s, void *v)
+> >>  {
+> >> -	struct gendisk *gp = v;
+> >> +	struct gendisk *gp;
+> >>  	char buf[BDEVNAME_SIZE];
+> >>  	int n = 0;
+> >>  
+> >> +	if (v == &block_subsys.list)
+> >>  	/*
+> >> -	if (&sgp->kobj.entry == block_subsys.kset.list.next)
+> >>  		seq_puts(s,	"major minor name"
+> >>  				"     rio rmerge rsect ruse wio wmerge "
+> >>  				"wsect wuse running use aveq"
+> >>  				"\n\n");
+> >>  	*/
+> >> +		return 0;
+> >> +
+> >> +	gp = list_entry(v, struct gendisk, kobj.entry);
+> >>   
+> >>  	preempt_disable();
+> >>  	disk_round_stats(gp);
+> >> @@ -686,9 +659,9 @@ static int diskstats_show(struct seq_fil
+> >>  }
+> >>  
+> >>  struct seq_operations diskstats_op = {
+> >> -	.start	= diskstats_start,
+> >> -	.next	= diskstats_next,
+> >> -	.stop	= diskstats_stop,
+> >> +	.start	= disk_start,
+> >> +	.next	= disk_next,
+> >> +	.stop	= disk_stop,
+> >>  	.show	= diskstats_show
+> >>  };
+> >>  
+> >> -
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at  http://www.tux.org/lkml/
+> >>
+> > 
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
