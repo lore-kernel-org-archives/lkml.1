@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbXJJOXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbXJJOb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbXJJOXF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 10:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXJJOWy
+	id S1754892AbXJJOb4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 10:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXJJObt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 10:22:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:12522 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752292AbXJJOWx (ORCPT
+	Wed, 10 Oct 2007 10:31:49 -0400
+Received: from mail.exegy.com ([209.83.156.2]:1973 "EHLO mail.exegy.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753042AbXJJObs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 10:22:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LPTCZl9xhgcc+5RwVUh+PF/eFGY5Mwwqg6OOuLZr6MuOhslYqege3eIMqJUQxsvb5wW7U2OxE5nKzS/CTnyViMvJTq+H1oHEDYiI9LDiU/7AkjYZqfAJW2ekfEKWPov2u0hwPunFM8W7J78Vw4/ZWwY6ddAyTCLArWuSHOMAnw4=
-Message-ID: <79759ec90710100722s4384ca79if67167257cb431bc@mail.gmail.com>
-Date: Wed, 10 Oct 2007 07:22:52 -0700
-From: "Scott Simpson" <simpson100@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Conflict when loading initio driver
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071006111318.1d2aab90@the-village.bc.nu>
+	Wed, 10 Oct 2007 10:31:48 -0400
+Thread-Index: AcgLSkoQ1BcRavw5ROaMAn5rnnBNWw==
+X-Ninja-AntiSpoofing: spoofed
+Message-ID: <470CE253.8040501@exegy.com>
+Date: Wed, 10 Oct 2007 09:31:47 -0500
+From: "Mr. Berkley Shands" <bshands@exegy.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <79759ec90710052032r577b9fey92f024d3908a56b5@mail.gmail.com>
-	 <20071006111318.1d2aab90@the-village.bc.nu>
+To: "MegaRaid" <megaraidlinux@lsi.com>, <linux-kernel@vger.kernel.org>
+Subject: 2.6.23 gotcha megaraid_sas missing
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
+Content-class: urn:content-classes:message
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4073
+Importance: normal
+X-OriginalArrivalTime: 10 Oct 2007 14:31:47.0708 (UTC) FILETIME=[4A0053C0:01C80B4A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK. I did some debugging in this initio.c driver. I put printk
-statements at the beginning of each routine and I got the following
-output:
+a new Kconfig entry was made CONFIG_SCSI_LOWLEVEL for 2.6.23 (since 
+2.6.23-rc7)
+Which turns OFF by default all the SCSI drivers, including MEGARAID_SAS.
+This was not present previous to 2.6.23-rc9. As a result
+a "make oldconfig" will nuke the scsi driver tree.
 
-initio_se2_rd
-initio_se2_instr
-(The previous two routines repeat a bunch of times then I get:)
-initio_stop_bm
-i91u: PCI Base=0xEC00, IRQ=0, BIOS=0x0000, SCSI ID=7
-i91u: Reset SCSI Bus...
-initio_reset_scsi
-scsi2: Initio INI-9X00U/UW SCSI device driver
-i91u_queuecommand
-initio_alloc_scb
+The default for this Kconfig
+in drivers/scsi/Kconfig is wrong. it should default to on.
 
-So it seems to be dieing in initio_alloc_scb. I think it is dieing on
-the first spin lock if that makes any sense, but it could be dieing
-somewhere else in that routine. Hope this helps.
+menuconfig SCSI_LOWLEVEL
+        bool "SCSI low-level drivers"
+        depends on SCSI!=n
+
+
+berkley
+
+-- 
+
+// E. F. Berkley Shands, MSc//
+
+** Exegy Inc.**
+
+349 Marshall Road, Suite 100
+
+St. Louis , MO  63119
+
+Direct:  (314) 218-3600 X450
+
+Cell:  (314) 303-2546
+
+Office:  (314) 218-3600
+
+Fax:  (314) 218-3601
+
+ 
+
+The Usual Disclaimer follows...
+ 
+This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
