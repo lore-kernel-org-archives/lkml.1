@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbXJJTub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbXJJTwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbXJJTub (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 15:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXJJTuY
+	id S1756783AbXJJTwr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 15:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbXJJTwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 15:50:24 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37974 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755372AbXJJTuX (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 15:50:23 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Gustavo Chain <g@0xff.cl>
-Cc: David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Reserve N process to root
-In-Reply-To: Your message of "Wed, 10 Oct 2007 09:46:22 EDT."
-             <20071010094622.7b8121cf@0xff.cl>
-From: Valdis.Kletnieks@vt.edu
-References: <20071009194820.6c8d6e8d@0xff.cl> <470C2FA7.5030207@davidnewall.com> <20071010011523.7d6cca12@0xff.cl> <470C66A6.2060801@davidnewall.com>
-            <20071010094622.7b8121cf@0xff.cl>
+	Wed, 10 Oct 2007 15:52:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39947 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755308AbXJJTwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 15:52:39 -0400
+Date: Wed, 10 Oct 2007 21:54:06 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: parisc arch makefile clean-up needed [Was: cleaning up "make headers_install" for various architectures]
+Message-ID: <20071010195406.GB2791@uranus.ravnborg.org>
+References: <20071010191538.GF2730@parisc-linux.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1192045814_2784P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 10 Oct 2007 15:50:14 -0400
-Message-ID: <27658.1192045814@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071010191538.GF2730@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1192045814_2784P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Oct 10, 2007 at 08:42:25PM +0200, Sam Ravnborg wrote:
+> > parisc arch Makefile needs some love and care...
+> > 
+> > The logic selecting CROSS_COMPILE seems fishy and wrong -
+> > the error reported by rday is obvious in this respect.
+> 
+> He doesn't have a compiler installed that can target parisc.  It doesn't
+> seem obvious to me that this should work.
 
-On Wed, 10 Oct 2007 09:46:22 EDT, Gustavo Chain said:
-> El Wed, 10 Oct 2007 15:14:06 +0930
-> David Newall <david=40davidnewall.com> escribi=F3:
-> > That was what I thought you had in mind; it protects from some kind
-> > of fork bomb, right?  But it doesn't seem useful unless you guarantee=
-=20
-> > having a process already running (with CAP_SYS_ADMIN) *before* the
-> > bomb goes off.
->=20
-> Not really, because fork bomb will never reach maximum pid possible.
-> And root will always have a =22slot=22 to kill desired processes.
+We have at least the header_install target where it makes sense
+to continue with a gcc that is not for the architecture being build.
 
-What David meant was that =22root will always have a slot=22 doesn't *act=
-ually*
-help unless you *also* have a way to actually *spawn* such a process.  In=
- order
-to do the ps, kill, and so on that you need to recover, you need to alrea=
-dy
-have either a root shell available, or a way to *get* a root shell that d=
-oesn't
-rely on a non-root process (so /bin/su doesn't help here).
-
-Many distros will leave a /sbin/mingetty running on tty1 through tty6, an=
-d
-you *can* use those to get a root shell.  David's point is that without
-something like that already in place, the patch doesn't help....
+So plain gcc (aka no CROSS_COMPILE) should be the fallback
+solution. This fallback is anyway what most architectures use.
 
 
---==_Exmh_1192045814_2784P
-Content-Type: application/pgp-signature
+> > The libs-y assignment should learn from the other architectures how to
+> > get the gcc lib filename:
+> > $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+> 
+> Actually, this looks utterly unstandardised:
+> 
+> arch/cris/Makefile:LIBGCC = $(shell $(CC) $(CFLAGS) -print-file-name=libgcc.a)
+> arch/h8300/Makefile:LIBGCC := $(shell $(CROSS-COMPILE)$(CC) $(CFLAGS) -print-libgcc-file-name)
+> arch/m32r/Makefile:LIBGCC       := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+> arch/parisc/Makefile:libs-y     += arch/parisc/lib/ `$(CC) -print-libgcc-file-name`
+> arch/sh64/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+> arch/sh/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+> arch/xtensa/Makefile:LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+> 
+> How about we set it in the main Makefile, or one of the ones in
+> scripts/?  That way we don't have to learn why $(shell $(CC) $(CFLAGS)
+> -print-libgcc-file-name) is superior to `$(CC) -print-libgcc-file-name`
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+cris lacks a major rehaul - planned in this merge window. Will sync it when done.
+h8300 should not use CROSS_COMPILE - a bit confused here.
 
-iD8DBQFHDSz2cC3lWbTT17ARAipSAKDZFnvHSbNQnXt4kuvvqMSVIrLkXQCfe73o
-qQtk5S60qmYu8JOV56nwPiQ=
-=0ZO6
------END PGP SIGNATURE-----
+And the reason why $(shell ) is preferred over backticks is simple.
+We almost never use backticks in the kernel Makefile since the $(shell )
+syntax is more obvious and I like it this way.
 
---==_Exmh_1192045814_2784P--
+	Sam
