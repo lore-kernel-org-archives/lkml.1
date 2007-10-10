@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbXJJQJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbXJJQLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbXJJQJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXJJQJd
+	id S1756656AbXJJQLh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbXJJQL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:09:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38029 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbXJJQJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:09:33 -0400
-Date: Wed, 10 Oct 2007 17:09:30 +0100
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Nishanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071010160930.GF16361@skynet.ie>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie> <20071009011143.GC14670@us.ibm.com> <20071009154052.GC12632@skynet.ie> <1192031620.5617.39.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1192031620.5617.39.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Wed, 10 Oct 2007 12:11:28 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3308 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753933AbXJJQL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 12:11:27 -0400
+From: Mark Brown <broonie@sirena.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>, thockin@hockin.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@sirena.org.uk>
+Date: Wed, 10 Oct 2007 17:11:12 +0100
+Message-Id: <1192032672-4676-1-git-send-email-broonie@sirena.org.uk>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
+References: <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
+X-SA-Exim-Connect-IP: 212.50.174.218
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH] natsemi: Check return value for pci_enable_device()
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/10/07 11:53), Lee Schermerhorn didst pronounce:
-> On Tue, 2007-10-09 at 16:40 +0100, Mel Gorman wrote:
-> <snip>
-> > ====
-> > Subject: Use specified node ID with GFP_THISNODE if available
-> > 
-> > It had been assumed that __GFP_THISNODE meant allocating from the local
-> > node and only the local node. However, users of alloc_pages_node() may also
-> > specify GFP_THISNODE. In this case, only the specified node should be used.
-> > This patch will allocate pages only from the requested node when GFP_THISNODE
-> > is used with alloc_pages_node().
-> > 
-> > [nacc@us.ibm.com: Detailed analysis of problem]
-> > Found-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > 
-> <snip>
-> 
-> Mel:  I applied this patch [to your v8 series--the most recent, I
-> think?] and it does fix the problem.  However, now I'm tripping over
-> this warning in __alloc_pages_nodemask:
-> 
-> 	/* Specifying both __GFP_THISNODE and nodemask is stupid. Warn user */
-> 	WARN_ON(gfp_mask & __GFP_THISNODE);
-> 
-> for each huge page allocated.  Rather slow as my console is a virtual
-> serial line and the warning includes the stack traceback.
-> 
-> I think we want to just drop this warning, but maybe you have a tighter
-> condition that you want to warn about?
-> 
+pci_enable_device() is __must_check so do that in natsemi_resume().
 
-I should drop the warning. The nature of the comment and the WARN_ON was
-rooted in my belief that "THISNODE means this node I am running on" and the
-warning was defensive programming just in case the assumption was broken. Now
-we know the assumption was wrong and the warning is bogus.
+Signed-off-by: Mark Brown <broonie@sirena.org.uk>
+---
+ drivers/net/natsemi.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-Thanks Lee.
-
+diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+index b881786..50e1ec6 100644
+--- a/drivers/net/natsemi.c
++++ b/drivers/net/natsemi.c
+@@ -3314,13 +3314,19 @@ static int natsemi_resume (struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata (pdev);
+ 	struct netdev_private *np = netdev_priv(dev);
++	int ret = 0;
+ 
+ 	rtnl_lock();
+ 	if (netif_device_present(dev))
+ 		goto out;
+ 	if (netif_running(dev)) {
+ 		BUG_ON(!np->hands_off);
+-		pci_enable_device(pdev);
++		ret = pci_enable_device(pdev);
++		if (ret < 0) {
++			dev_err(&pdev->dev,
++				"pci_enable_device() failed: %d\n", ret);
++			goto out;
++		}
+ 	/*	pci_power_on(pdev); */
+ 
+ 		napi_enable(&np->napi);
+@@ -3340,7 +3346,7 @@ static int natsemi_resume (struct pci_dev *pdev)
+ 	netif_device_attach(dev);
+ out:
+ 	rtnl_unlock();
+-	return 0;
++	return ret;
+ }
+ 
+ #endif /* CONFIG_PM */
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.5.3.4
+
