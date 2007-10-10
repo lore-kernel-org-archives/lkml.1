@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbXJJNga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbXJJNkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbXJJNga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 09:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXJJNgW
+	id S1754956AbXJJNkq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 09:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXJJNkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 09:36:22 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:39100 "EHLO e5.ny.us.ibm.com"
+	Wed, 10 Oct 2007 09:40:39 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38740 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753173AbXJJNgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 09:36:21 -0400
-To: torvalds@linux-foundation.org
-Subject: [git pull] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20071010133542.D234E4C9AED@norville.austin.ibm.com>
-Date: Wed, 10 Oct 2007 08:35:42 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com
+	id S1753050AbXJJNki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 09:40:38 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] x86_64, vsyscall: fix the oops crash with __pa_vsymbol()
+Date: Wed, 10 Oct 2007 15:36:58 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, yanmin.zhang@intel.com, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20071010015922.GC30676@linux-os.sc.intel.com>
+In-Reply-To: <20071010015922.GC30676@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200710101536.59156.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Wednesday 10 October 2007 03:59:22 Siddha, Suresh B wrote:
+> Appended patch fixes an oops while changing the vsyscall sysctl.
+> I am sure no one tested this code before integrating into mainline :(
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+The original code worked, but got broken by 0dbf7028c0c1f266c9631139450a1502d3cd457e
+> 
+> BTW, using ioremap() in vsyscall_sysctl_change() to get the virtual
+> address of a kernel symbol sounds like an over kill.
 
-This will update the following files:
+Another point was to get a writable mapping. At some point we had write 
+protected kernels, although that was later then removed again.
 
- fs/jfs/jfs_dtree.c |    8 ++------
- fs/jfs/jfs_dtree.h |    4 ++--
- fs/jfs/resize.c    |    2 +-
- 3 files changed, 5 insertions(+), 9 deletions(-)
+> And also, the whole nop out syscall in vsyscall page infrastructure
+> (vsyscall_sysctl_change()) is added to make some attacks difficult,
+> and yet I don't see this nop out being done by default. This area
+> requires more cleanups?
 
-through these ChangeSets:
+It used to be done, but it is difficult with the changing vreads
+in timesources and was probably disabled then. Yes you're right right now 
+it looks dubious.
 
-Commit: 2c5c37da093cd2f455ce818ee7b02b7a39d10498 
-Author: Shaun Zinck <shaun.zinck@gmail.com> Fri, 31 Aug 2007 12:57:28 -0500 
+It needs to be updated when the timesource is updated.
 
-    JFS: use DIV_ROUND_UP where appropriate
-    
-    This replaces some macros and code, which do the same thing as DIV_ROUND_UP
-    defined in kernel.h, to use the DIV_ROUND_UP macro.
-    
-    Signed-off-by: Shaun Zinck <shaun.zinck@gmail.com>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-Commit: 85e65c39f050a4964d0b943304bd896ff5375988 
-Author: Jack Stone <jack@hawkeye.stone.uk.eu.org> Tue, 31 Jul 2007 09:36:53 -0500 
-
-    Remove unnecessary kmalloc casts in the jfs filesystem
-    
-    Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+-Andi
 
