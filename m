@@ -1,205 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXJJOpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbXJJOtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbXJJOpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 10:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbXJJOpf
+	id S1755899AbXJJOtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 10:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXJJOto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 10:45:35 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:42552 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754577AbXJJOpe (ORCPT
+	Wed, 10 Oct 2007 10:49:44 -0400
+Received: from smtpout3.l-3com.com ([166.20.84.211]:8934 "EHLO
+	smtpout3.l-3com.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbXJJOtn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 10:45:34 -0400
-Date: Wed, 10 Oct 2007 10:45:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Rewrite proc seq operations via seq_list_xxx ones
-Message-ID: <20071010144526.GA11501@Krystal>
-References: <470CB330.2040508@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <470CB330.2040508@openvz.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:41:24 up 72 days, 15:00,  3 users,  load average: 2.04, 1.43, 1.22
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 10 Oct 2007 10:49:43 -0400
+X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 10:49:43 EDT
+X-IronPort-AV: E=Sophos;i="4.21,255,1188792000"; 
+   d="scan'208";a="90334508"
+From: Jason.V.Mock@L-3Com.com
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Kernel Oops in NFS
+Date: Wed, 10 Oct 2007 09:39:52 -0500
+Message-ID: <F31FEAB987B7C2469181758C14265CFA040BBB64@gvlexch03.is.l-3com.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Kernel Oops in NFS
+Thread-Index: AcgLSwxixhUOkFQSQmOTIG2FX0iecQ==
+To: <nfs@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+Cc: "Kile, SE Scott @ IS" <scott.kile@L-3Com.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Emelyanov (xemul@openvz.org) wrote:
-> Some time ago I posted a set of patches that consolidated
-> the seq files, walking the list_head-s. This set was merged
-> in the mm tree. /proc/diskstats and /proc/partitions files 
-> were included in this set, but a bit later this part was 
-> dropped because of conflicts with some other changes.
-> 
-> Here's the fixed version against the latest git block repo.
-> 
+We've come across an Oops, in what appears to NFS.
 
-Hi Pavel,
+2.6.22.6 vanilla + realtime-lsm
+RHEL4 over PXE/NFS_ROOT
 
-You might want to try implementing this patch on top of the sorted seq
-list patch I proposed there. It deals with a race between proc file read
-and list modification between iterations.
 
-http://lkml.org/lkml/2007/9/6/175
+Oct  9 14:26:13 WS15 gdm(pam_unix)[6038]: session opened for user mockj
+by (uid=0)
+Oct  9 14:26:48 WS15 gconfd (mockj-7583): starting (version 2.8.1), pid
+7583 user 'mockj'
+Oct  9 14:26:48 WS15 kernel: BUG: unable to handle kernel NULL pointer
+dereference at virtual address 00000004
+Oct  9 14:26:48 WS15 kernel:  printing eip:
+Oct  9 14:26:48 WS15 kernel: c01a9fb8
+Oct  9 14:26:48 WS15 kernel: *pde = c691d067
+Oct  9 14:26:48 WS15 kernel: Oops: 0000 [#1]
+Oct  9 14:26:48 WS15 kernel: PREEMPT SMP 
+Oct  9 14:26:48 WS15 kernel: Modules linked in: lm85 w83781d hwmon_vid
+hwmon ipv6 parport_pc lp parport autofs4 tulip dm_mirror dm_mod button
+battery ac mct_u232 usbserial uhci_hcd ehci_hcd nvidia(P) e7xxx_edac
+edac_mc rng_core i2c_i801 i2c_core aic79xx scsi_transport_spi ata_piix
+libata scsi_mod snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss
+snd_mixer_oss snd_pcm snd_page_alloc snd_seq_dummy snd_seq_oss
+snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore
+realtime commoncap
+Oct  9 14:26:48 WS15 kernel: CPU:    0
+Oct  9 14:26:48 WS15 kernel: EIP:    0060:[<c01a9fb8>]    Tainted: P
+VLI
+Oct  9 14:26:48 WS15 kernel: EFLAGS: 00210246   (2.6.22-6.0.WSsmp #1)
+Oct  9 14:26:48 WS15 kernel: EIP is at nfs_lookup+0x11b/0x26a
+Oct  9 14:26:48 WS15 kernel: eax: 00000000   ebx: c0367600   ecx:
+00000000   edx: 00000000
+Oct  9 14:26:48 WS15 kernel: esi: 00000000   edi: 00000000   ebp:
+00000000   esp: f63b5d44
+Oct  9 14:26:48 WS15 kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033
+ss: 0068
+Oct  9 14:26:48 WS15 kernel: Process gconfd-2 (pid: 7583, ti=f63b4000
+task=f6273070 task.ti=f63b4000)
+Oct  9 14:26:48 WS15 kernel: Stack: f63b5d60 f63b5d98 f63b5d9c 7fffffff
+f63b5ed8 f63ef118 f63f5e8c f63b0002 
+Oct  9 14:26:48 WS15 kernel:        f63db21c 00000000 c014843e 00000000
+0000000e 00000001 00000001 000081c0 
+Oct  9 14:26:48 WS15 kernel:        00000002 00001459 000000c9 00000271
+00000000 00002000 00000008 00000000 
+Oct  9 14:26:48 WS15 kernel: Call Trace:
+Oct  9 14:26:48 WS15 kernel:  [<c014843e>] write_cache_pages+0x235/0x285
+Oct  9 14:26:48 WS15 kernel:  [<c01b4332>] nfs_flush_one+0x0/0xe5
+Oct  9 14:26:48 WS15 kernel:  [<c01488c5>] mapping_tagged+0x2b/0x32
+Oct  9 14:26:48 WS15 kernel:  [<c016e227>] d_alloc+0x15e/0x166
+Oct  9 14:26:48 WS15 kernel:  [<c0166663>] lookup_one_len+0xc5/0xe0
+Oct  9 14:26:48 WS15 kernel:  [<c01aabba>] nfs_sillyrename+0x12b/0x253
+Oct  9 14:26:48 WS15 kernel:  [<c01aba09>] nfs_permission+0x0/0x147
+Oct  9 14:26:48 WS15 kernel:  [<c01aae6e>] nfs_unlink+0x81/0xfc
+Oct  9 14:26:48 WS15 kernel:  [<c01667f4>] may_delete+0x55/0x10a
+Oct  9 14:26:48 WS15 kernel:  [<c0167a82>] vfs_unlink+0xa1/0xc5
+Oct  9 14:26:48 WS15 kernel:  [<c0167b3b>] do_unlinkat+0x95/0xf5
+Oct  9 14:26:48 WS15 kernel:  [<c0105a67>] do_syscall_trace+0x15c/0x19d
+Oct  9 14:26:48 WS15 kernel:  [<c0103136>] syscall_call+0x7/0xb
+Oct  9 14:26:48 WS15 kernel:  [<c0350000>] cache_make_upcall+0x40/0x129
+Oct  9 14:26:48 WS15 kernel:  =======================
+Oct  9 14:26:48 WS15 kernel: Code: 24 14 8b 00 83 c2 20 8b 58 38 8d 44
+24 1c 89 04 24 8b 44 24 18 ff 53 20 83 f8 fe 0f 84 93 00 00 00 85 c0 89
+c5 0f 88 3d 01 00 00 <8b> 76 04 8b 54 24 18 89 74 24 10 8b 82 a4 00 00
+00 8b 54 24 64 
+Oct  9 14:26:48 WS15 kernel: EIP: [<c01a9fb8>] nfs_lookup+0x11b/0x26a
+SS:ESP 0068:f63b5d4
 
-See this patch for a user implementation example and test code
-(/proc/modules) :
+We haven't seen any negative side-effects other than users seeing this
+in Kwrited quite often.  We've yet to update to 2.6.22.9, however we've
+examined the change logs and patches associated with NFS between then
+and now, and don't see anything appropriate for the errors we're
+receiving.  Let me know if you need anything else for this...
 
-http://lkml.org/lkml/2007/9/6/176
-
-Mathieu
-
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/block/genhd.c b/block/genhd.c
-> index 3af1e7a..27f7061 100644
-> --- a/block/genhd.c
-> +++ b/block/genhd.c
-> @@ -264,39 +264,34 @@ void __init printk_all_partitions(void)
->  
->  #ifdef CONFIG_PROC_FS
->  /* iterator */
-> -static void *part_start(struct seq_file *part, loff_t *pos)
-> +static void *disk_start(struct seq_file *part, loff_t *pos)
->  {
-> -	struct list_head *p;
-> -	loff_t l = *pos;
-> -
->  	mutex_lock(&block_subsys_lock);
-> -	list_for_each(p, &block_subsys.list)
-> -		if (!l--)
-> -			return list_entry(p, struct gendisk, kobj.entry);
-> -	return NULL;
-> +	return seq_list_start_head(&block_subsys.list, *pos);
->  }
->  
-> -static void *part_next(struct seq_file *part, void *v, loff_t *pos)
-> +static void *disk_next(struct seq_file *part, void *v, loff_t *pos)
->  {
-> -	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
-> -	++*pos;
-> -	return p==&block_subsys.list ? NULL :
-> -		list_entry(p, struct gendisk, kobj.entry);
-> +	return seq_list_next(v, &block_subsys.list, pos);
->  }
->  
-> -static void part_stop(struct seq_file *part, void *v)
-> +static void disk_stop(struct seq_file *part, void *v)
->  {
->  	mutex_unlock(&block_subsys_lock);
->  }
->  
->  static int show_partition(struct seq_file *part, void *v)
->  {
-> -	struct gendisk *sgp = v;
-> +	struct gendisk *sgp;
->  	int n;
->  	char buf[BDEVNAME_SIZE];
->  
-> -	if (&sgp->kobj.entry == block_subsys.list.next)
-> +	if (v == &block_subsys.list) {
->  		seq_puts(part, "major minor  #blocks  name\n\n");
-> +		return 0;
-> +	}
-> +
-> +	sgp = list_entry(v, struct gendisk, kobj.entry);
->  
->  	/* Don't show non-partitionable removeable devices or empty devices */
->  	if (!get_capacity(sgp) ||
-> @@ -325,9 +320,9 @@ static int show_partition(struct seq_fil
->  }
->  
->  struct seq_operations partitions_op = {
-> -	.start =part_start,
-> -	.next =	part_next,
-> -	.stop =	part_stop,
-> +	.start =disk_start,
-> +	.next =	disk_next,
-> +	.stop =	disk_stop,
->  	.show =	show_partition
->  };
->  #endif
-> @@ -616,44 +611,22 @@ decl_subsys(block, &ktype_block, &block_
->   */
->  
->  /* iterator */
-> -static void *diskstats_start(struct seq_file *part, loff_t *pos)
-> -{
-> -	loff_t k = *pos;
-> -	struct list_head *p;
-> -
-> -	mutex_lock(&block_subsys_lock);
-> -	list_for_each(p, &block_subsys.list)
-> -		if (!k--)
-> -			return list_entry(p, struct gendisk, kobj.entry);
-> -	return NULL;
-> -}
-> -
-> -static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
-> -{
-> -	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
-> -	++*pos;
-> -	return p==&block_subsys.list ? NULL :
-> -		list_entry(p, struct gendisk, kobj.entry);
-> -}
-> -
-> -static void diskstats_stop(struct seq_file *part, void *v)
-> -{
-> -	mutex_unlock(&block_subsys_lock);
-> -}
-> -
->  static int diskstats_show(struct seq_file *s, void *v)
->  {
-> -	struct gendisk *gp = v;
-> +	struct gendisk *gp;
->  	char buf[BDEVNAME_SIZE];
->  	int n = 0;
->  
-> +	if (v == &block_subsys.list)
->  	/*
-> -	if (&sgp->kobj.entry == block_subsys.kset.list.next)
->  		seq_puts(s,	"major minor name"
->  				"     rio rmerge rsect ruse wio wmerge "
->  				"wsect wuse running use aveq"
->  				"\n\n");
->  	*/
-> +		return 0;
-> +
-> +	gp = list_entry(v, struct gendisk, kobj.entry);
->   
->  	preempt_disable();
->  	disk_round_stats(gp);
-> @@ -686,9 +659,9 @@ static int diskstats_show(struct seq_fil
->  }
->  
->  struct seq_operations diskstats_op = {
-> -	.start	= diskstats_start,
-> -	.next	= diskstats_next,
-> -	.stop	= diskstats_stop,
-> +	.start	= disk_start,
-> +	.next	= disk_next,
-> +	.stop	= disk_stop,
->  	.show	= diskstats_show
->  };
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jason V. Mock
+Software Engineer
+L-3 Communications - Greenville Integrated Systems
