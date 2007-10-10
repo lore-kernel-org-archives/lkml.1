@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbXJJNp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbXJJNr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbXJJNp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 09:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXJJNpu
+	id S1755569AbXJJNr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 09:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJJNrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 09:45:50 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44351 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbXJJNpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 09:45:49 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Tejun Heo <htejun@gmail.com>, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
-References: <11902755392688-git-send-email-htejun@gmail.com>
-	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
-	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
-	<20071005062302.GB16914@kroah.com>
-	<m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
-	<20071009225139.GF21228@kroah.com>
-Date: Wed, 10 Oct 2007 07:16:48 -0600
-In-Reply-To: <20071009225139.GF21228@kroah.com> (Greg KH's message of "Tue, 9
-	Oct 2007 15:51:39 -0700")
-Message-ID: <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 10 Oct 2007 09:47:18 -0400
+Received: from mailbigip.dreamhost.com ([208.97.132.5]:54018 "EHLO
+	jankymail-a2.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752506AbXJJNrS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 09:47:18 -0400
+Date: Wed, 10 Oct 2007 09:46:22 -0400
+From: Gustavo Chain <g@0xff.cl>
+To: David Newall <david@davidnewall.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Reserve N process to root
+Message-ID: <20071010094622.7b8121cf@0xff.cl>
+In-Reply-To: <470C66A6.2060801@davidnewall.com>
+References: <20071009194820.6c8d6e8d@0xff.cl>
+	<470C2FA7.5030207@davidnewall.com>
+	<20071010011523.7d6cca12@0xff.cl>
+	<470C66A6.2060801@davidnewall.com>
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+El Wed, 10 Oct 2007 15:14:06 +0930
+David Newall <david@davidnewall.com> escribió:
 
-> On Fri, Oct 05, 2007 at 06:12:41AM -0600, Eric W. Biederman wrote:
->> Greg KH <greg@kroah.com> writes:
->> >
->> >>   Also fun is that the dev file implementation needs to be able to
->> >>   report different major:minor numbers based on which mount of
->> >>   sysfs we are dealing with.
->> >
->> > Um, no, that's not going to happen.  /dev/sda will _always_ have the
->> > same major:minor number, as defined by the LSB spec.  You can not break
->> > that at all.  So while you might not want to show all mounts
->> > /sys/devices/block/sda/ the ones that you do, will all have the LSB
->> > defined major:minor number assigned to it.
->> 
->> Hmm.  If that is in the LSB it must come from
->> Documentation/devices.txt
->
-> Yes, that is the requirement.
->
->> I'm not after changing the user visible major/minor assignments.
->
-> Oh, I misunderstood what you wrote above then.
+> Gustavo Chain wrote:
+> > El Wed, 10 Oct 2007 11:19:27 +0930
+> > David Newall <david@davidnewall.com> escribió:
+> >   
+> >> Gustavo Chain wrote:
+> >>     
+> >>> I think it's necessary to reserve some pids to the super user.
+> >>> 5 must be sufficient.
+> >>>       
+> >> Why?  (Sorry if I missed something.)
+> >>     
+> >
+> > ¿ To prevent a posible DoS ?
+> >   
+> 
+> That was what I thought you had in mind; it protects from some kind
+> of fork bomb, right?  But it doesn't seem useful unless you guarantee 
+> having a process already running (with CAP_SYS_ADMIN) *before* the
+> bomb goes off.
 
-My above sentence is slightly misleading.  That should have been.
-I am not after changing the device name to major:minor assignments
-as specified in Documentation/devices.txt.
+Not really, because fork bomb will never reach maximum pid possible.
+And root will always have a "slot" to kill desired processes.
 
-So within a single device namespace everything is normal and as it
-always has been.  Weirdness only ensues when you look across device
-namespaces.
-
->> Let me see if a concrete example will help.  Suppose I have
->> have a SAN with two disks:  disk-1 and disk-2.  I have
->> two machines A and B.  On machine A I get the mapping:
->> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
->> a different probe order so I get the mapping: sda -> disk-2
->> sdb ->disk-1.
->
-> Ok.
->
->> To be very clear by sda I mean the block device with major 8 and
->> minor 0, and by sdb I mean the block device with major 8 and minor
->> 16.
->
-> Ok.
->
->> So I decide I want an environment on machine B that looks just
->> like the environment on machine A, so I can bring transfer over
->> a running program or whatever.  So I run around looking at UUID
->> labels and what not and I discover that the machine B knows disk-1 as
->> sdb and that machine A knows disk-1 as sda.  So I want to say:
->> /sys/devices/block/sdb show up in this other device namespace as
->> /sys/devices/block/sda.
-
->
-> Ah, but if you do that then the "other" device namespace would have
-> /sys/devices/block/sda/dev be 8:16, right? 
-
-No. The "other" device namespace I would construct on machine B to
-look just like the device namespace that existed on machine A.
-Making /sys/devices/block/sda would still be 8:0.
-
-So to be very clear on machine B when talking about disk-1 I would have.
-initial device namespace:
-  /sys/devices/block/sdb
-  /sys/devices/block/sdb/dev 8:16
-
-"other" device namespace:
-  /sys/devices/block/sda
-  /sys/devices/block/sda/dev 8:0
-
-Similarly on machine B when talking about disk-2 I would have.
-initial device namespace:
-  /sys/devices/block/sda
-  /sys/devices/block/sda/dev 8:0
-
-"other" device namespace:
-  /sys/devices/block/sdb
-  /sys/devices/block/sdb/dev 8:16
-
-So between the two devices namespaces on machine B the two disks
-would exchange their user visible identities.
-
-Eric
+-- 
+Gustavo Chaín Dumit
