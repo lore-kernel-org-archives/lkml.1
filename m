@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbXJJUjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXJJUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbXJJUjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXJJUjR
+	id S1756985AbXJJUkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXJJUkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:39:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:35441 "EHLO mail.goop.org"
+	Wed, 10 Oct 2007 16:40:10 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59569 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752833AbXJJUjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:39:16 -0400
-Message-ID: <470D3846.1000209@goop.org>
-Date: Wed, 10 Oct 2007 13:38:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andi Kleen <ak@suse.de>, William Lee Irwin III <wli@holomorphy.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386:  remove dead code in pgtable_cache_init
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1755891AbXJJUkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 16:40:08 -0400
+Date: Wed, 10 Oct 2007 22:41:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       parisc-linux-request@lists.parisc-linux.org,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@parisc-linux.org>
+Subject: Re: parisc arch makefile clean-up needed [Was: cleaning up "make headers_install" for various architectures]
+Message-ID: <20071010204139.GA3255@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0710101234340.32502@localhost.localdomain> <20071010095954.79c39a73.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710101324230.6071@localhost.localdomain> <20071010183858.GA2270@uranus.ravnborg.org> <20071010202128.GG2730@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071010202128.GG2730@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The conversion from using a slab cache to quicklist left some residual dead code.
+> 
+> Now, compiler.h has some checks like:
+> 
+> #elif __GNUC__ == 3 && __GNUC_MINOR__ >= 2
+> # include <linux/compiler-gcc3.h>
+> #else
+> # error Sorry, your compiler is too old/not recognized.
+> #endif
+> 
+> But it doesn't permit us to rule out gcc 3.3 unless we patch compiler.h.
+> There's no asm/compiler.h, for example.  Obviously, we could put some
+> tests for compiler version in arch/parisc somewhere.  Where's the right
+> place these days?
 
-I note that in the conversion it now always allocates a whole page for
-the pgd, rather than the 32 bytes needed for a PAE pgd.  Was this
-intended?
+Good question...
+I prefer the solution used by powerpc.
+See the checkbin dependency of archprepare:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+archprepare: is only triggered when we actually try to build a kernel,
+and will not trigger for the said headers_install thing.
 
----
- arch/i386/mm/init.c |   22 +++++-----------------
- 1 file changed, 5 insertions(+), 17 deletions(-)
-
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -746,24 +746,12 @@ struct kmem_cache *pmd_cache;
- 
- void __init pgtable_cache_init(void)
- {
--	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
--
--	if (PTRS_PER_PMD > 1) {
-+	if (PTRS_PER_PMD > 1)
- 		pmd_cache = kmem_cache_create("pmd",
--					PTRS_PER_PMD*sizeof(pmd_t),
--					PTRS_PER_PMD*sizeof(pmd_t),
--					SLAB_PANIC,
--					pmd_ctor);
--		if (!SHARED_KERNEL_PMD) {
--			/* If we're in PAE mode and have a non-shared
--			   kernel pmd, then the pgd size must be a
--			   page size.  This is because the pgd_list
--			   links through the page structure, so there
--			   can only be one pgd per page for this to
--			   work. */
--			pgd_size = PAGE_SIZE;
--		}
--	}
-+					      PTRS_PER_PMD*sizeof(pmd_t),
-+					      PTRS_PER_PMD*sizeof(pmd_t),
-+					      SLAB_PANIC,
-+					      pmd_ctor);
- }
- 
- /*
-
+	Sam
