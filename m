@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXJJPDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbXJJPEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbXJJPDH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXJJPC4
+	id S1756297AbXJJPEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbXJJPEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:02:56 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:51197
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753877AbXJJPCz (ORCPT
+	Wed, 10 Oct 2007 11:04:33 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38132 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753933AbXJJPEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:02:55 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] RT: Fix special-case exception for preempting the local CPU
-To: mingo@elte.hu, peterz@infradead.org, kravetz@us.ibm.com,
-       rostedt@goodmis.org
-Cc: ghaskins@novell.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Wed, 10 Oct 2007 10:49:35 -0400
-Message-ID: <20071010144824.21333.52155.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 10 Oct 2007 11:04:32 -0400
+Message-Id: <1192028669.25145.1215155009@webmail.messagingengine.com>
+X-Sasl-Enc: o2X/t0Cyhle8hHGlUeTdM9G44l8D9XnyzbFDRuUnm28h 1192028669
+From: "Jupe" <jupejupe@rushpost.com>
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: Ethernet driver problem
+Date: Wed, 10 Oct 2007 08:04:29 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies to 2.6.23-rc9-rt2...  This is another RTO related fix from the thread
-two days ago.
+Hi,
 
----
-RT: Fix special-case exception for preempting the local CPU
+I have written an ethernet driver for an ARM based board.
+Linux version: 2.6.20.1
 
-Check whether the local CPU is eligible to take the task before trying to
-preempt it.
+Ping is working fine.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+I have written a test server/client application using socket programming
+(TCP).
+After the connection is setup the server sends a file to the client.
 
- kernel/sched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+When I run server on PC and client on ARM board it works without any
+problem.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3e75c62..b7f7a96 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1869,7 +1869,8 @@ out_activate:
- 		 * extra locking in this particular case, because
- 		 * we are on the current CPU.)
- 		 */
--		if (TASK_PREEMPTS_CURR(p, this_rq))
-+		if (TASK_PREEMPTS_CURR(p, this_rq)
-+		    && cpu_isset(this_cpu, p->cpus_allowed))
- 			set_tsk_need_resched(this_rq->curr);
- 		else
- 			/*
+BUT if I run server on ARM board and client on PC, it works for some
+time and 
+then the speed is drastically reduced. (I am sending 4k of data each
+time.
+after 50 sends it reduces its speed.  This happens always.)
+
+I did some debugging and found that after 50 sends, tcp_sendmsg() is not
+being 
+called at the same frequency before slowdown.  Also when my driver
+ether_tx seems to 
+be working fine.
+
+But still i am not able to get the reason for this behaviour.  Can
+anyone give hints as to 
+why this is happening? 
+
+
+Regards
+Jupe
+
+-- 
+  Jupe
+  jupejupe@rushpost.com
+
+-- 
+http://www.fastmail.fm - mmm... Fastmail...
 
