@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbXJJAGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXJJARp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbXJJAGk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Oct 2007 20:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXJJAGc
+	id S1754588AbXJJARp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Oct 2007 20:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbXJJARh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Oct 2007 20:06:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58333 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751489AbXJJAGc (ORCPT
+	Tue, 9 Oct 2007 20:17:37 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:21682 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXJJARg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Oct 2007 20:06:32 -0400
-Date: Wed, 10 Oct 2007 10:06:14 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-Message-ID: <20071010000614.GA23367404@sgi.com>
-References: <18186.50640.970552.719041@notabene.brown> <31862.1191948560@lwn.net>
+	Tue, 9 Oct 2007 20:17:36 -0400
+Date: Tue, 9 Oct 2007 17:16:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: James Morris <jmorris@namei.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH 1/6] SELinux: change Kconfig to use select instead of
+ depends
+Message-Id: <20071009171635.7e9a3e0c.randy.dunlap@oracle.com>
+In-Reply-To: <Xine.LNX.4.64.0710100937390.20449@us.intercode.com.au>
+References: <Xine.LNX.4.64.0710100917010.14862@us.intercode.com.au>
+	<Xine.LNX.4.64.0710100918520.14862@us.intercode.com.au>
+	<20071009162812.00e80a0c.randy.dunlap@oracle.com>
+	<Xine.LNX.4.64.0710100937390.20449@us.intercode.com.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <31862.1191948560@lwn.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 09, 2007 at 10:49:20AM -0600, Jonathan Corbet wrote:
-> Neil Brown <neilb@suse.de> wrote:
-> > > + (b) Any problems, concerns, or questions relating to the patch have been
-> > > +     communicated back to the submitter.  I am satisfied with how the
-> > > +     submitter has responded to my comments.
-> > 
-> > This seems more detailed that necessary.  The process (communicated
-> > back / responded) is not really relevant.
+On Wed, 10 Oct 2007 09:50:49 +1000 (EST) James Morris wrote:
+
+> On Tue, 9 Oct 2007, Randy Dunlap wrote:
 > 
-> Instead, it seems to me that the process is crucially important.
-> Reviewed-by shouldn't be a rubber stamp that somebody applies to a
-> patch; I think it should really imply that issues of interest have been
-> communicated to the developers.  If we are setting expectations for what
-> Reviewed-by means, I would prefer to leave an explicit mention of
-> communication in there. 
+> > I doth protest.  Enabling the entire NET subsystem thru a hidden
+> > select is awful.  Select should be used (sparingly) to enable
+> > library code only.  If someone wants NET enabled, they should
+> > enable it overtly, not covertly.
+> 
+> Ok, fair enough.
+> 
+> I've dropped the patch and rebased the branch.  Please pull per:
 
-I couldn't agree more, Jon.
+Great, thanks.
 
-If we are to have a meaningful reviewed-by tag, it has to be clearly
-documented as to what responsibilities it places on the reviewer. If
-someone doesn't want to perform a well conducted review, then they
-haven't earned the right to issue a Reviewed-by tag - they can use
-the Acked-by rubber stamp instead.
-
-FWIW, w.r.t. XFS patches, we already follow both the letter and
-intent of your proposed reviewed-by tag for all changes to XFS code
-and reviewers are currently listed as Signed-off-by in git-commits
-(our internal SCM records the reviewer(s) and the git export script
-converts that to s-o-b).  It would be much more meaningful if they
-were exported as Reviewed-by under your definition....
-
-IOWs, I fully support your definition of the Reviewed-by tag.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+---
+~Randy
