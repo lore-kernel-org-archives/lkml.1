@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbXJJKfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbXJJKgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbXJJKfK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 06:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbXJJKe6
+	id S1755027AbXJJKgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 06:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXJJKge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 06:34:58 -0400
-Received: from [80.75.67.54] ([80.75.67.54]:47097 "EHLO
-	opensource.wolfsonmicro.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752059AbXJJKe5 (ORCPT
+	Wed, 10 Oct 2007 06:36:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:26957 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbXJJKgd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 06:34:57 -0400
-X-Greylist: delayed 1523 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 06:34:57 EDT
-Subject: Re: TR: codec audio Cirrus CS42L51 - Audio capture problems
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Pierre Savary <pierre.savary@kerlink.fr>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       sylvain.lesage@kerlink.fr
-In-Reply-To: <000901c80b16$6779ca00$366d5e00$@savary@kerlink.fr>
-References: <000901c80b16$6779ca00$366d5e00$@savary@kerlink.fr>
-Content-Type: text/plain
-Date: Wed, 10 Oct 2007 11:09:32 +0100
-Message-Id: <1192010972.12060.407.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Oct 2007 06:36:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IJ9R2J7IeCl2XT/EAKNkgsM3EJ7cxK8qCTCKc4xpnb5bcQ5jEC7Ainva7Q3VV4dkhYQn70j/33xDq/N26useKAL/tcS+vEveW78nANIdyCntbAEnRV4zu33RNSAZ7+QUfZ6Zwjx3+APNx91MUb8h4jDEgKvFd/KhpLEj8QwF5mA=
+Message-ID: <b6fcc0a0710100336t679b881es644aa4c27a3ce4fc@mail.gmail.com>
+Date: Wed, 10 Oct 2007 14:36:31 +0400
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Michael Tokarev" <mjt@tls.msk.ru>
+Subject: Re: Linux 2.6.23
+Cc: "=?ISO-8859-1?Q?Ren=E9_Rebe?=" <rene@exactcode.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <470C977E.6010704@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
+	 <200710100944.16378.rene@exactcode.de>
+	 <b6fcc0a0710100137l7deb2547h8cbd48f38b4d3417@mail.gmail.com>
+	 <470C977E.6010704@msgid.tls.msk.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-10 at 10:20 +0200, Pierre Savary wrote:
+On 10/10/07, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> Alexey Dobriyan wrote:
+> > On 10/10/07, René Rebe <rene@exactcode.de> wrote:
+> >> 2.6.23 does not build with my usual .config on x86_64 and gcc-4.2.1:
+> >>
+> >> In file included from fs/drop_caches.c:8:
+> >> include/linux/mm.h:1210: warning: 'struct super_block' declared inside
+> >> parameter list
+> >
+> >> --- linux-2.6.23/include/linux/mm.h.vanilla
+> >> +++ linux-2.6.23/include/linux/mm.h
+> >
+> >> +struct super_block;
+> >>  extern void drop_pagecache_sb(struct super_block *);
+> >>  void drop_pagecache(void);
+> >>  void drop_slab(void);
+> >>
+> >> You probably end up fixing it some other way, but as I do not know this
+> >> file inside out I just wanted to drop a note.
+> >
+> > You have some strange vanilla kernel. 2.6.23 doesn't have this prototype.
+>
+> The same happens here as well.
+>
+> -rw-rw-r--  1 mjt mjt 45488158 Oct  9 20:48 linux-2.6.23.tar.bz2
+> 2cc2fd4d521dc5d7cfce0d8a9d1b3472  linux-2.6.23.tar.bz2
+>
+> (timestamp is in UTC) Downloaded yesterday, 3 hours after an announce,
+> from http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.tar.bz2 .
 
-> 
-> I am currently writing a driver for the CS42L51 audio codec to work with
-> at91sam9260, using I2C and I2S. I used the couple of files {
-> /sound/soc/at91/eti_b1_wm8731.c , /sound/soc/codecs/wm8731.c } as a model.
-> I succeeded in playing sounds using the codec (WAV or MP3), via /dev/dsp. 
-> 
-> Unfortunately, I encounter problems implementing the opposite, i.e.
-> recording sounds. For example, when I launch the command  "cat /dev/dsp >
-> foo.wav", or the command "wavrec foo.wav", I get "read error: Input/output
-> error".
-> 
-> I have observed the clock signals and the RD signal (data sent from the
-> codec), and when I launch the command, these signals seem correct (data is
-> provided by the codec on RD pin and all signals are correctly synchronized
-> together).
-> 
-> I didn't modify the driver dedicated to the configuration of at91sam9260
-> registers  (at91-i2s.c) and it seems to me it should work in both ways
-> (playback and record). I notably checked that the RFMR and RCMR registers of
-> at91sam9260 were well configured.
-> 
-> Do someone has an idea on where the error could come from ? I must precise
-> that, as I don't work with a kernel debugger, I didn't localize where the
-> error occurs.
-> 
-
-Can you try "arecord -f cd -Dhw:0,0 > file.wav" as this will rule out
-any OSS emulation or PCM plugin issues (this command will read directly
-from your hardware).
-
-Fwiw, this error is usually seen in capture when the upper alsa layers
-don't receive any data from your hardware. This could mean your DMA or
-your I2S port is not configured correctly.
-
-Liam
-
-
-
+Strange. Same size, same md5, no super_block in mm.h, though
