@@ -1,43 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbXJJJkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbXJJJkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbXJJJkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 05:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXJJJkD
+	id S1755464AbXJJJkj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 05:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbXJJJkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 05:40:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43888
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753504AbXJJJkC (ORCPT
+	Wed, 10 Oct 2007 05:40:21 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44607 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754807AbXJJJkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 05:40:02 -0400
-Date: Wed, 10 Oct 2007 02:40:05 -0700 (PDT)
-Message-Id: <20071010.024005.40832336.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: torvalds@linux-foundation.org, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Crypto Update for 2.6.24
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071010031729.GA26697@gondor.apana.org.au>
-References: <20071010031729.GA26697@gondor.apana.org.au>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Oct 2007 05:40:20 -0400
+Date: Wed, 10 Oct 2007 11:40:18 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: James Bowes <jbowes@dangerouslyinc.com>
+cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] Documentation: Fix typo in SubmitChecklist.
+In-Reply-To: <20071008185510.GA28549@crux.toronto.redhat.com>
+Message-ID: <Pine.LNX.4.64.0710101139480.22916@fbirervta.pbzchgretzou.qr>
+References: <20071008185510.GA28549@crux.toronto.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 10 Oct 2007 11:17:29 +0800
 
-> Here is the crypto update for 2.6.24:
+On Oct 8 2007 14:55, James Bowes wrote:
+> 20: Check that it all passes `make headers_check'.
 > 
-> Please pull from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-> 
-> or
-> 
-> master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+> 21: Has been checked with injection of at least slab and page-allocation
+>-    fauilures.  See Documentation/fault-injection/.
+>+    failures.  See Documentation/fault-injection/.
 
-I've integrated this into my 2.6.24 networking tree, thanks
-Herbert.
+It was a fault injection, after all. :)
