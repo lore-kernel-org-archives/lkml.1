@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbXJJVoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXJJVpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbXJJVoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXJJVnf
+	id S1756903AbXJJVpD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbXJJVnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:43:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38377 "EHLO mx1.redhat.com"
+	Wed, 10 Oct 2007 17:43:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38381 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756865AbXJJVnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:43:33 -0400
+	id S1757023AbXJJVnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 17:43:39 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 03/31] IGET: Introduce a function to register iget failure
-	[try #3]
+Subject: [PATCH 04/31] IGET: Use iget_failed() in AFS [try #3]
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Wed, 10 Oct 2007 22:43:23 +0100
-Message-ID: <20071010214323.17535.45120.stgit@warthog.procyon.org.uk>
+Date: Wed, 10 Oct 2007 22:43:29 +0100
+Message-ID: <20071010214328.17535.99884.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 References: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,79 +29,28 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a function to register failure in an inode construction path.  This
-includes marking the inode under construction as bad, unlocking it and
-releasing it.
+Use iget_failed() in AFS to kill a failed inode.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- Documentation/filesystems/porting |   18 +++++++++++++-----
- fs/bad_inode.c                    |   14 ++++++++++++++
- include/linux/fs.h                |    1 +
- 3 files changed, 28 insertions(+), 5 deletions(-)
+ fs/afs/inode.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/filesystems/porting b/Documentation/filesystems/porting
-index dac45c9..3b0fb22 100644
---- a/Documentation/filesystems/porting
-+++ b/Documentation/filesystems/porting
-@@ -184,11 +184,19 @@ just takes the superblock and inode number as arguments and does the
- test and set for you.
+diff --git a/fs/afs/inode.c b/fs/afs/inode.c
+index d196840..ca9b02f 100644
+--- a/fs/afs/inode.c
++++ b/fs/afs/inode.c
+@@ -196,10 +196,7 @@ struct inode *afs_iget(struct super_block *sb, struct key *key,
  
- e.g.
--       inode = iget_locked(sb, ino);
--       if (inode->i_state & I_NEW) {
--               read_inode_from_disk(inode);
--               unlock_new_inode(inode);
--       }
-+	inode = iget_locked(sb, ino);
-+	if (inode->i_state & I_NEW) {
-+		err = read_inode_from_disk(inode);
-+		if (err < 0) {
-+			iget_failed(inode);
-+			return err;
-+		}
-+		unlock_new_inode(inode);
-+	}
-+
-+Note that if the process of setting up a new inode fails, then iget_failed()
-+should be called on the inode to render it dead, and an appropriate error
-+should be passed back to the caller.
- 
- ---
- [recommended]
-diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index 521ff7c..f1c2ea8 100644
---- a/fs/bad_inode.c
-+++ b/fs/bad_inode.c
-@@ -359,3 +359,17 @@ int is_bad_inode(struct inode *inode)
+ 	/* failure */
+ bad_inode:
+-	make_bad_inode(inode);
+-	unlock_new_inode(inode);
+-	iput(inode);
+-
++	iget_failed(inode);
+ 	_leave(" = %d [bad]", ret);
+ 	return ERR_PTR(ret);
  }
- 
- EXPORT_SYMBOL(is_bad_inode);
-+
-+/**
-+ * iget_failed - Mark an under-construction inode as dead and release it
-+ * @inode: The inode to discard
-+ *
-+ * Mark an under-construction inode as dead and release it.
-+ */
-+void iget_failed(struct inode *inode)
-+{
-+	make_bad_inode(inode);
-+	unlock_new_inode(inode);
-+	iput(inode);
-+}
-+EXPORT_SYMBOL(iget_failed);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 16421f6..c24d433 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1631,6 +1631,7 @@ static inline struct inode *iget(struct super_block *sb, unsigned long ino)
- }
- 
- extern void __iget(struct inode * inode);
-+extern void iget_failed(struct inode *);
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
 
