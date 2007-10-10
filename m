@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXJJUkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJJUpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbXJJUkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 16:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXJJUkK
+	id S1756894AbXJJUpI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 16:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbXJJUo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 16:40:10 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59569 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755891AbXJJUkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 16:40:08 -0400
-Date: Wed, 10 Oct 2007 22:41:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       parisc-linux-request@lists.parisc-linux.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@parisc-linux.org>
-Subject: Re: parisc arch makefile clean-up needed [Was: cleaning up "make headers_install" for various architectures]
-Message-ID: <20071010204139.GA3255@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0710101234340.32502@localhost.localdomain> <20071010095954.79c39a73.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710101324230.6071@localhost.localdomain> <20071010183858.GA2270@uranus.ravnborg.org> <20071010202128.GG2730@parisc-linux.org>
-Mime-Version: 1.0
+	Wed, 10 Oct 2007 16:44:56 -0400
+Received: from mga10.intel.com ([192.55.52.92]:28912 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753333AbXJJUo4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 16:44:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
+   d="scan'208";a="169168397"
+Date: Wed, 10 Oct 2007 13:44:22 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: gigabit ethernet power consumption
+Message-ID: <20071010204422.GC5097@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071008220720.GF3484@elf.ucw.cz> <470AAFD7.9060002@intel.com> <20071009182857.GF4003@csclub.uwaterloo.ca> <470BCB4D.8090307@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071010202128.GG2730@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <470BCB4D.8090307@intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 09, 2007 at 11:41:17AM -0700, Kok, Auke wrote:
+> Lennart Sorensen wrote:
+> > On Mon, Oct 08, 2007 at 03:31:51PM -0700, Kok, Auke wrote:
+> >> you most certainly want to do this in userspace I think.
+> >>
+> >> One of the biggest problems is that link negotiation can take a significant amount
+> >> of time, well over several seconds (1 to 3 seconds typical) with gigabit, and
+> >> having your ethernet connection go offline for 3 seconds may not be the desired
+> >> effect for when you want to get more bandwidth in the first place.
+> >>
+> >> However, when a laptop is in battery mode, switching down from gigabit to 100mbit
+> >> makes a lot more sense, so this is something I would recommend. This can be as
+> >> easy as changing the advertisement mask of the interface and renegotiating the
+> >> link. Userspace could handle that very easily.
+> > 
+> > Now if you were trying to transfer a lot of data to the laptop, would it
+> > be more power efficient to do it at gigabit speeds so you can finish
+> > sooner and shut down the machine entirely, or to slow to 100mbit and
+> > take longer to do it, and hence spend more time powering the cpu and
+> > ram?
 > 
-> Now, compiler.h has some checks like:
+> my suspicion is that the cost of switching is much higher than what you would
+> consume running at 100mbit, even if the amount of data is quite large. going
+> offline to renegotiate the link would already cost you 3W typically.
 > 
-> #elif __GNUC__ == 3 && __GNUC_MINOR__ >= 2
-> # include <linux/compiler-gcc3.h>
-> #else
-> # error Sorry, your compiler is too old/not recognized.
-> #endif
+> I definately think that userspace is the right field to solve this problem: let
+> the users decide how to use the available power on their sytems through a decent
+> power profile tool (perhaps gnome-power-manager or something like that). This way
+> the user can choose.
 > 
-> But it doesn't permit us to rule out gcc 3.3 unless we patch compiler.h.
-> There's no asm/compiler.h, for example.  Obviously, we could put some
-> tests for compiler version in arch/parisc somewhere.  Where's the right
-> place these days?
 
-Good question...
-I prefer the solution used by powerpc.
-See the checkbin dependency of archprepare:
+Auke, 
+I was wondering if we could use PM-QOS to have the driver drop to the
+100Mb speed, when requests for bandwidth and latency are not in effect?
 
-archprepare: is only triggered when we actually try to build a kernel,
-and will not trigger for the said headers_install thing.
-
-	Sam
+--mgross
