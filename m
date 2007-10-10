@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbXJJP7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXJJQAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbXJJP7l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXJJP7e
+	id S1756348AbXJJQAX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXJJQAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:59:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40899 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755281AbXJJP7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:59:33 -0400
-Date: Wed, 10 Oct 2007 11:59:20 -0400
-From: Alan Cox <alan@redhat.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Michael Krufky <mkrufky@linuxtv.org>, video4linux-list@redhat.com,
-       Jiri Slaby <jirislaby@gmail.com>, daniel@qanu.de,
-       linux-kernel@vger.kernel.org, holger@qanu.de,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH 3/3] V4L: cinergyT2, remove bad usage of ERESTARTSYS
-Message-ID: <20071010155920.GC22618@devserv.devel.redhat.com>
-References: <24841282012868130110@pripojeni.net> <1191979260.5492.32.camel@gaivota> <470C5294.8060502@linuxtv.org> <1192030541.5896.54.camel@gaivota>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 10 Oct 2007 12:00:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38396 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755281AbXJJQAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 12:00:09 -0400
+Date: Wed, 10 Oct 2007 08:59:18 -0700
+From: Greg KH <greg@kroah.com>
+To: wit <is01kzh@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: about probing a device
+Message-ID: <20071010155918.GA5824@kroah.com>
+References: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com> <20071010044619.GA23561@kroah.com> <105610bf0710100841t1c9463c1q9742534c8bb0dfe5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1192030541.5896.54.camel@gaivota>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+In-Reply-To: <105610bf0710100841t1c9463c1q9742534c8bb0dfe5@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 12:35:41PM -0300, Mauro Carvalho Chehab wrote:
-> Em Qua, 2007-10-10 às 00:18 -0400, Michael Krufky escreveu:
-> > 
-> > Is this illegal as per kernel codingstyle?
+On Wed, Oct 10, 2007 at 11:41:47PM +0800, wit wrote:
+> Thanks very much
 > 
-> Yes, it is. CodingStyle states:
-
-<rant>
-No.. "Illegal" means prohibited by law. Its merely wrong 8)
-</rant>
-
-> The proper fix is just to replace the offended code by this:
+> > Why, is there some use for multiple drivers to devices that you want to
+> > use?
+> >
 > 
-> err=foo();
-> if (error)
-> 	goto error;
+> I'm just trying to figure out the difference between 2.4 & 2.6 device
+> drivers. And this is just an issue that came up to my mind suddently.
 
-Lots of code uses
+For 2.4, we could not bind multiple drivers to devices either, so this
+should not have changed.
 
-	if ((err = foo()) < 0)
+thanks,
 
-so I would'y worry too much. The split one however clearer and also
-safer.
-
+greg k-h
