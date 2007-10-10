@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbXJJVyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbXJJVyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbXJJVyD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 17:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbXJJVpv
+	id S1759180AbXJJVyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 17:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbXJJVp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 17:45:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34307 "EHLO mx1.redhat.com"
+	Wed, 10 Oct 2007 17:45:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34332 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757559AbXJJVpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 17:45:42 -0400
+	id S1757625AbXJJVpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 17:45:53 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 28/31] IGET: Stop OPENPROMFS from using iget() and
-	read_inode() [try #3]
+Subject: [PATCH 30/31] IGET: Stop HPPFS from using iget() and read_inode()
+	[try #3]
 To: hch@infradead.org, viro@ftp.linux.org.uk, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Wed, 10 Oct 2007 22:45:31 +0100
-Message-ID: <20071010214531.17535.19810.stgit@warthog.procyon.org.uk>
+Date: Wed, 10 Oct 2007 22:45:41 +0100
+Message-ID: <20071010214541.17535.60387.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 References: <20071010214308.17535.5406.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,124 +30,90 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the OPENPROMFS filesystem from using iget() and read_inode().  Replace
-openpromfs_read_inode() with openpromfs_iget(), and call that instead of
-iget().  openpromfs_iget() then uses iget_locked() directly and returns a
-proper error code instead of an inode in the event of an error.
+Stop the HPPFS filesystem from using iget() and read_inode().  Provide an
+hppfs_iget(), and call that instead of iget().  hppfs_iget() then uses
+iget_locked() directly and returns a proper error code instead of an inode in
+the event of an error.
 
-openpromfs_fill_super() returns any error incurred when getting the root inode
-instead of ENOMEM (not that it currently incurs any other error).
+hppfs_fill_sb_common() returns any error incurred when getting the root inode
+instead of EINVAL.
+
+Note that the contents of hppfs_kern.c need to be examined:
+
+ (*) The HPPFS inode retains a pointer to the proc dentry it is shadowing, but
+     whilst it does appear to retain a reference to it, it doesn't appear to
+     destroy the reference if the inode goes away.
+
+ (*) hppfs_iget() should perhaps subsume init_inode() and hppfs_read_inode().
+
+ (*) It would appear that all hppfs inodes are the same inode because iget()
+     was being called with inode number 0, which forms the lookup key.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/openpromfs/inode.c |   45 ++++++++++++++++++++++++++++++---------------
- 1 files changed, 30 insertions(+), 15 deletions(-)
+ fs/hppfs/hppfs_kern.c |   27 ++++++++++++++++++++++-----
+ 1 files changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/fs/openpromfs/inode.c b/fs/openpromfs/inode.c
-index dd86be2..9c6017b 100644
---- a/fs/openpromfs/inode.c
-+++ b/fs/openpromfs/inode.c
-@@ -38,6 +38,8 @@ struct op_inode_info {
- 	union op_inode_data	u;
- };
- 
-+static struct inode *openprom_iget(struct super_block *sb, ino_t ino);
-+
- static inline struct op_inode_info *OP_I(struct inode *inode)
- {
- 	return container_of(inode, struct op_inode_info, vfs_inode);
-@@ -226,10 +228,10 @@ static struct dentry *openpromfs_lookup(struct inode *dir, struct dentry *dentry
- 	return ERR_PTR(-ENOENT);
- 
- found:
--	inode = iget(dir->i_sb, ino);
-+	inode = openprom_iget(dir->i_sb, ino);
- 	mutex_unlock(&op_mutex);
--	if (!inode)
--		return ERR_PTR(-EINVAL);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
- 	ent_oi = OP_I(inode);
- 	ent_oi->type = ent_type;
- 	ent_oi->u = ent_data;
-@@ -348,14 +350,23 @@ static void openprom_destroy_inode(struct inode *inode)
- 	kmem_cache_free(op_inode_cachep, OP_I(inode));
+diff --git a/fs/hppfs/hppfs_kern.c b/fs/hppfs/hppfs_kern.c
+index affb741..a1e1f0f 100644
+--- a/fs/hppfs/hppfs_kern.c
++++ b/fs/hppfs/hppfs_kern.c
+@@ -155,6 +155,20 @@ static void hppfs_read_inode(struct inode *ino)
+ 	ino->i_blocks = proc_ino->i_blocks;
  }
  
--static void openprom_read_inode(struct inode * inode)
-+static struct inode *openprom_iget(struct super_block *sb, ino_t ino)
- {
--	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
--	if (inode->i_ino == OPENPROM_ROOT_INO) {
--		inode->i_op = &openprom_inode_operations;
--		inode->i_fop = &openprom_operations;
--		inode->i_mode = S_IFDIR | S_IRUGO | S_IXUGO;
++static struct inode *hppfs_iget(struct super_block *sb)
++{
 +	struct inode *inode;
 +
-+	inode = iget_locked(sb, ino);
++	inode = iget_locked(sb, 0);
 +	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (inode->i_state & I_NEW) {
-+		inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
-+		if (inode->i_ino == OPENPROM_ROOT_INO) {
-+			inode->i_op = &openprom_inode_operations;
-+			inode->i_fop = &openprom_operations;
-+			inode->i_mode = S_IFDIR | S_IRUGO | S_IXUGO;
-+		}
++		hppfs_read_inode(inode);
 +		unlock_new_inode(inode);
- 	}
++	}
 +	return inode;
- }
- 
- static int openprom_remount(struct super_block *sb, int *flags, char *data)
-@@ -367,7 +378,6 @@ static int openprom_remount(struct super_block *sb, int *flags, char *data)
- static const struct super_operations openprom_sops = {
- 	.alloc_inode	= openprom_alloc_inode,
- 	.destroy_inode	= openprom_destroy_inode,
--	.read_inode	= openprom_read_inode,
- 	.statfs		= simple_statfs,
- 	.remount_fs	= openprom_remount,
- };
-@@ -376,6 +386,7 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
++}
++
+ static struct dentry *hppfs_lookup(struct inode *ino, struct dentry *dentry,
+                                   struct nameidata *nd)
  {
- 	struct inode *root_inode;
- 	struct op_inode_info *oi;
-+	int ret;
+@@ -190,9 +204,11 @@ static struct dentry *hppfs_lookup(struct inode *ino, struct dentry *dentry,
+ 	if(IS_ERR(proc_dentry))
+ 		return(proc_dentry);
  
- 	s->s_flags |= MS_NOATIME;
- 	s->s_blocksize = 1024;
-@@ -383,9 +394,11 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
- 	s->s_magic = OPENPROM_SUPER_MAGIC;
- 	s->s_op = &openprom_sops;
- 	s->s_time_gran = 1;
--	root_inode = iget(s, OPENPROM_ROOT_INO);
--	if (!root_inode)
-+	root_inode = openprom_iget(s, OPENPROM_ROOT_INO);
-+	if (IS_ERR(root_inode)) {
-+		ret = PTR_ERR(root_inode);
- 		goto out_no_root;
+-	inode = iget(ino->i_sb, 0);
+-	if(inode == NULL)
++	inode = hppfs_iget(ino->i_sb);
++	if (IS_ERR(inode)) {
++		err = PTR_ERR(inode);
+ 		goto out_dput;
 +	}
  
- 	oi = OP_I(root_inode);
- 	oi->type = op_inode_node;
-@@ -393,13 +406,15 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
+ 	err = init_inode(inode, proc_dentry);
+ 	if(err)
+@@ -652,7 +668,6 @@ static void hppfs_destroy_inode(struct inode *inode)
+ static const struct super_operations hppfs_sbops = {
+ 	.alloc_inode	= hppfs_alloc_inode,
+ 	.destroy_inode	= hppfs_destroy_inode,
+-	.read_inode	= hppfs_read_inode,
+ 	.delete_inode	= hppfs_delete_inode,
+ 	.statfs		= hppfs_statfs,
+ };
+@@ -745,9 +760,11 @@ static int hppfs_fill_super(struct super_block *sb, void *d, int silent)
+ 	sb->s_magic = HPPFS_SUPER_MAGIC;
+ 	sb->s_op = &hppfs_sbops;
  
- 	s->s_root = d_alloc_root(root_inode);
- 	if (!s->s_root)
--		goto out_no_root;
-+		goto out_no_root_dentry;
- 	return 0;
+-	root_inode = iget(sb, 0);
+-	if(root_inode == NULL)
++	root_inode = hppfs_iget(sb);
++	if (IS_ERR(root_inode)) {
++		err = PTR_ERR(root_inode);
+ 		goto out;
++	}
  
-+out_no_root_dentry:
-+	iput(root_inode);
-+	ret = -ENOMEM;
- out_no_root:
- 	printk("openprom_fill_super: get root inode failed\n");
--	iput(root_inode);
--	return -ENOMEM;
-+	return ret;
- }
- 
- static int openprom_get_sb(struct file_system_type *fs_type,
+ 	err = init_inode(root_inode, proc_sb->s_root);
+ 	if(err)
 
