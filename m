@@ -1,320 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbXJJHzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbXJJIQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbXJJHzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 03:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbXJJHzX
+	id S1754154AbXJJIQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 04:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXJJIQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 03:55:23 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:1844 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbXJJHzV (ORCPT
+	Wed, 10 Oct 2007 04:16:23 -0400
+Received: from mx01.qsc.de ([213.148.129.14]:59108 "EHLO mx01.qsc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416AbXJJIQV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 03:55:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=eSRA+f3z/dABNazKPd6a4dcEBz81xCRdgtUsKZgxEla9hErOm271bovKkesiHjAymBIy5NsDarNo7zUawgQp9Qony39cq940HMrO7Jr0pxoTnRZMJFS627tcZj9mp99+gYuVOnJeM9+Ex4hSlW98JkDY3cPuYGwJJoQpq1W/3CQ=
-Message-ID: <6e25f4cc0710100055xeeebca4ve037e56b2ef6ba6@mail.gmail.com>
-Date: Wed, 10 Oct 2007 15:55:19 +0800
-From: Dafu <maillist.linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: kernel panic when loading built-in E1000's driver.
-Cc: danmei.wei@alcatel-sbell.com.cn
+	Wed, 10 Oct 2007 04:16:21 -0400
+X-Greylist: delayed 1914 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 04:16:20 EDT
+From: =?iso-8859-15?q?Ren=E9_Rebe?= <rene@exactcode.de>
+Organization: ExactCODE
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.23
+Date: Wed, 10 Oct 2007 09:44:16 +0200
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+Message-Id: <200710100944.16378.rene@exactcode.de>
+X-Spam-Score: -3.6 (---)
+X-Spam-Report: Spam detection software, running on the system "exactcode.de", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  Hi Linus et al., 2.6.23 does not build with my usual .config
+	on x86_64 and gcc-4.2.1: In file included from fs/drop_caches.c:8: include/linux/mm.h:1210:
+	warning: 'struct super_block' declared inside parameter list nclude/linux/mm.h:1210:
+	warning: its scope is only this definition or declaration, which is probably
+	not what you want fs/drop_caches.c:17: error: conflicting types for 'drop_pagecache_sb'
+	include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb'
+	was here fs/drop_caches.c:28: error: conflicting types for 'drop_pagecache_sb'
+	include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb'
+	was here [...] 
+	Content analysis details:   (-3.6 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.5 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.5 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-When I run linux kernel ver2.6.10 built by myself, there was a kernel
-panic when loading E1000 device driver. (See the details below.)
-
-Then I built E1000 device driver as a loadable module and insmod it in
-/etc/rc.d/rc3.d, the ethernet device worked well.
-
-I would like to know what the difference is between loadable modules
-and built-in drivers to the kernel. Does anyone encounter this kind of
-problems?
-
-Thanks!
-Dafu
-
----
-
-Here is the log of kernel panic:
-
-Loading vmlinuz-tpgsm.......................
-
-Loading initrd-tpgsm.gz.........................................................
-
-................................................................................
-
-................................................................................
-
-Ready..........................................................................Linux
-version 2.6.10_mvlcge401-pc_target-x86_pentium3 (danmei.wei@sbardz07)
-(gcc version 3.4.3 (MontaVista 3.4.3-25.0.41.0501420 2005-09-07)) #1
-Fri Sep 28 09:34:29 CST 2007
-
-BIOS-provided physical RAM map:
-
-BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-
-BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-
-BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
-
-BIOS-e820: 0000000000100000 - 0000000020000000 (usable)
-
-BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
-
-512MB LOWMEM available.
-
-DMI 2.3 present.
-
-ACPI: Unable to locate RSDP
-
-Built 1 zonelists
-
-Kernel command line: BOOT_IMAGE=vmlinuz-tpgsm ramdisk_size=400000
-console=ttyS0,38400 initrd=initrd-tpgsm.gz root=/dev/ram0 ide1=noprobe
-rw
-
-Initializing CPU#0
-
-PID hash table entries: 4096 (order: 12, 65536 bytes)
-
-Detected 1099.841 MHz processor.
-
-Using hrt_tsc for high-res timesource
-
-Console: colour dummy device 80x25
-
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-
-Memory: 457260k/524288k available (1696k kernel code, 66484k reserved,
-666k data, 192k init, 0k highmem)
-
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-
-CPU: L1 I cache: 32K, L1 D cache: 32K
-
-CPU: L2 cache: 1024K
-
-Intel machine check architecture supported.
-
-Intel machine check reporting enabled on CPU#0.
-
-mtrr: v2.0 (20020519)
-
-CPU: Intel(R) Pentium(R) M processor 1100MHz stepping 05
-
-Enabling fast FPU save and restore... done.
-
-Enabling unmasked SIMD FPU exception support... done.
-
-Checking 'hlt' instruction... OK.
-
-spawn_desched_task(00000000)
-
-desched cpu_callback 3/00000000
-
-ksoftirqd started up.
-
-desched cpu_callback 2/00000000
-
-checking if image is initramfs...it isn't (no cpio magic); looks like an initrd
-
-desched thread 0 started up.
-
-Freeing initrd memory: 58779k freed
-
-NET: Registered protocol family 16
-
-PCI: Using configuration type 1
-
-ACPI: Subsystem revision 20041105
-
-ACPI: Interpreter disabled.
-
-PCI: Probing PCI hardware
-
-PCI: Probing PCI hardware (bus 00)
-
-PCI quirk: region 0800-087f claimed by ICH4 ACPI/GPIO/TCO
-
-PCI quirk: region 0480-04bf claimed by ICH4 GPIO
-
-PCI: Transparent bridge - 0000:00:1e.0
-
-PCI: Using IRQ router PIIX/ICH [8086/25a1] at 0000:00:1f.0
-
-IA-32 Microcode Update Driver: v1.14 <tigran@veritas.com>
-
-devfs: 2004-01-31 Richard Gooch (rgooch@atnf.csiro.au)
-
-devfs: boot_options: 0x1
-
-Initializing Cryptographic API
-
-serio: i8042 AUX port at 0x60,0x64 irq 12
-
-serio: i8042 KBD port at 0x60,0x64 irq 1
-
-Serial: 8250/16550 driver $Revision: 1.90 $ 8 ports, IRQ sharing disabled
-
-ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-
-ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-
-ttyS2 at I/O 0x3e8 (irq = 4) is a 16550A
-
-ttyS3 at I/O 0x2e8 (irq = 3) is a 16550A
-
-io scheduler noop registered
-
-io scheduler anticipatory registered
-
-io scheduler deadline registered
-
-io scheduler cfq registered
-
-RAMDISK driver initialized: 16 RAM disks of 400000K size 1024 blocksize
-
-loop: loaded (max 8 devices)
-
-Intel(R) PRO/1000 Network Driver - version 7.3.15
-
-Copyright (c) 1999-2006 Intel Corporation.
-
-PCI: Found IRQ 11 for device 0000:01:01.0
-
-PCI: Sharing IRQ 11 with 0000:00:02.0
-
-PCI: Sharing IRQ 11 with 0000:00:1d.0
-
-PCI: Sharing IRQ 11 with 0000:01:01.1
-
-e1000: 0000:01:01.0: e1000_probe: (PCI-X:66MHz:64-bit) 00:03:cc:39:06:54
-
-e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-
-PCI: Found IRQ 11 for device 0000:01:01.1
-
-PCI: Sharing IRQ 11 with 0000:00:02.0
-
-PCI: Sharing IRQ 11 with 0000:00:1d.0
-
-PCI: Sharing IRQ 11 with 0000:01:01.0
-
-e1000: 0000:01:01.1: e1000_probe: (PCI-X:66MHz:64-bit) 00:03:cc:39:06:55
-
-e1000: eth1: e1000_probe: Intel(R) PRO/1000 Network Connection
-
-mice: PS/2 mouse device common for all mice
-
-NET: Registered protocol family 2
-
-IP: routing cache hash table of 4096 buckets, 32Kbytes
-
-TCP: Hash tables configured (established 131072 bind 65536)
-
-IPv4 over IPv4 tunneling driver
-
-ip_conntrack version 2.1 (4096 buckets, 32768 max) - 180 bytes per conntrack
-
-ip_tables: (C) 2000-2002 Netfilter core team
-
-NET: Registered protocol family 1
-
-NET: Registered protocol family 17
-
-802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
-
-All bugs added by David S. Miller <davem@redhat.com>
-
-BUG: Unable to handle kernel NULL pointer dereference at virtual
-address 00000000
-
-printing eip:
-
-00000000
-
-*pde = 00000000
-
-Oops: 0000 [#1]
-
-Modules linked in:
-
-CPU:    0
-
-EIP:    0060:[<00000000>]    Not tainted VLI
-
-EFLAGS: 00010246   (2.6.10_mvlcge401-pc_target-x86_pentium3)
-
-EIP is at 0x0
-
-eax: dc717c80   ebx: 00000000   ecx: 00000000   edx: 00000000
-
-esi: dc718220   edi: 00000000   ebp: dc71842c   esp: dc641e48
-
-ds: 007b   es: 007b   ss: 0068   preempt: 00010000
-
-Process swapper (pid: 1, threadinfo=dc640000 task=dc661a00)
-
-Stack: c021bbeb dc718220 dc717c80 dc725700 00010000 dc640000 00000001 c012fd96
-
-       0000000b dc718000 dc641ec0 04000000 00000001 dc641ec0 0000000b 000002c0
-
-       0000000b c034ecc0 dc725740 c012ff0f c034ecc0 dc71842c 00000046 dc641ec0
-
-Call Trace:
-
-[<c021bbeb>] e1000_intr+0x8b/0x150 (4)
-
-[<c012fd96>] handle_IRQ_event+0x66/0xf0 (28)
-
-[<c012ff0f>] __do_IRQ+0xcf/0x120 (48)
-
-[<c01043e9>] do_IRQ+0x19/0x30 (36)
-
-[<c0102776>] common_interrupt+0x1a/0x20 (4)
-
-[<c02199ae>] e1000_set_multi+0x15e/0x200 (44)
-
-[<c0216acb>] e1000_up+0x1b/0xd0 (52)
-
-[<c0216be2>] e1000_power_up_phy+0x62/0x70 (8)
-
-[<c0217ef6>] e1000_open+0x66/0xf0 (24)
-
-[<c0241dad>] dev_open+0x7d/0x90 (20)
-
-[<c024346f>] dev_change_flags+0x5f/0x150 (24)
-
-[<c0377409>] ic_open_devs+0x189/0x2b0 (32)
-
-[<c0377a5e>] ip_auto_config+0x5e/0x290 (32)
-
-[<c0352893>] do_initcalls+0x53/0xd0 (28)
-
-[<c01002c0>] init+0x0/0x110 (12)
-
-[<c01002c0>] init+0x0/0x110 (4)
-
-[<c01002e5>] init+0x25/0x110 (12)
-
-[<c0100948>] kernel_thread_helper+0x0/0xb (12)
-
-[<c010094d>] kernel_thread_helper+0x5/0xb (4)
-
-Code:  Bad EIP value.
-
-<0>Kernel panic - not syncing: Fatal exception in interrupt
+Hi Linus et al.,
+
+2.6.23 does not build with my usual .config on x86_64 and gcc-4.2.1:
+
+In file included from fs/drop_caches.c:8:
+include/linux/mm.h:1210: warning: 'struct super_block' declared inside parameter list
+nclude/linux/mm.h:1210: warning: its scope is only this definition or declaration, which is probably not what you want
+fs/drop_caches.c:17: error: conflicting types for 'drop_pagecache_sb'
+include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
+fs/drop_caches.c:28: error: conflicting types for 'drop_pagecache_sb'
+include/linux/mm.h:1210: error: previous declaration of 'drop_pagecache_sb' was here
+
+A little forward declaration fixes this:
+
+--- linux-2.6.23/include/linux/mm.h.vanilla	2007-10-10 09:28:33.000000000 +0200
++++ linux-2.6.23/include/linux/mm.h	2007-10-10 09:30:23.000000000 +0200
+@@ -1207,6 +1207,7 @@
+ 					void __user *, size_t *, loff_t *);
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+ 			unsigned long lru_pages);
++struct super_block;
+ extern void drop_pagecache_sb(struct super_block *);
+ void drop_pagecache(void);
+ void drop_slab(void);
+
+You probably end up fixing it some other way, but as I do not know this
+file inside out I just wanted to drop a note.
+
+Yours,
+  René Rebe
+
+On Tuesday 09 October 2007 22:54:30 Linus Torvalds wrote:
+
+> Finally.
+> 
+> Yeah, it got delayed, not because of any huge issues, but because of 
+> various bugfixes trickling in and causing me to reset my "release clock" 
+> all the time. But it's out there now, and hopefully better for the wait.
+> 
+> Not a whole lot of changes since -rc9, although there's a few updates to 
+> mips, sparc64 and blackfin in there.  Ignoring those arch updates, there's 
+> basically a number of mostly one-liners (mostly in drivers, but there's 
+> some networking fixes and soem VFS/VM fixes there too).
+> 
+> Shortlog and diffstat appended (both relative to -rc9, of course - the 
+> full log from 2.6.22 is on kernel.org as usual).
+> 
+> I want this to be what people look at for a few days, but expect the x86 
+> merge to go ahead after that. So far, all indications are still that it's 
+> going to be all smooth sailing, but hey, those indicators seem to always 
+> say that, and only after the fact do people notice any problems ;)
+> 
+> 		Linus
+
+-- 
+  René Rebe - ExactCODE GmbH - Europe, Germany, Berlin
+  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
