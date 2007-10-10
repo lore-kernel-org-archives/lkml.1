@@ -1,83 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXJJRG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbXJJRHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbXJJRG7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 13:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbXJJRGw
+	id S1755650AbXJJRHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 13:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbXJJRHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 13:06:52 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:37369 "EHLO
-	outbound4-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755371AbXJJRGv convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 13:06:51 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 10 Oct 2007 13:07:19 -0400
+Received: from nijmegen.renzel.net ([195.243.213.130]:53572 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755429AbXJJRHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 13:07:16 -0400
+X-Greylist: delayed 819 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 13:07:16 EDT
+Message-ID: <470D0373.1030308@linuxtv.org>
+Date: Wed, 10 Oct 2007 18:53:07 +0200
+From: Marcel Siegert <mws@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Subject: RE: [PATCH][try 2] architectural pstate driver for powernow-k8
-Date: Wed, 10 Oct 2007 12:06:28 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDF02077087@SAUSEXMB1.amd.com>
-In-Reply-To: <20071010163518.GB6443@alberich.amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][try 2] architectural pstate driver for powernow-k8
-Thread-Index: AcgLW4yjsacRATojSECkI0uFvArw6wABBnTA
-References: <200710091446.38432.mark.langsdorf@amd.com>
- <p73fy0k3ve8.fsf@bingen.suse.de>
- <200710091543.21350.mark.langsdorf@amd.com>
- <20071009234125.GB6879@redhat.com>
- <20071010163518.GB6443@alberich.amd.com>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Herrmann3, Andreas" <Andreas.Herrmann3@amd.com>,
-       "Dave Jones" <davej@redhat.com>, "Andi Kleen" <andi@firstfloor.org>,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-X-OriginalArrivalTime: 10 Oct 2007 17:06:38.0690 (UTC)
- FILETIME=[EBDBAC20:01C80B5F]
-X-WSS-ID: 6B13D9152ZC1583002-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+To: Manu Abraham <abraham.manu@gmail.com>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
+       Jiri Slaby <jirislaby@gmail.com>, daniel@qanu.de,
+       linux-kernel@vger.kernel.org, holger@qanu.de,
+       Alan Cox <alan@redhat.com>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH 3/3] V4L: cinergyT2, remove bad	usage
+ of ERESTARTSYS
+References: <24841282012868130110@pripojeni.net>	<1191979260.5492.32.camel@gaivota>	<470C5294.8060502@linuxtv.org>	<1192030541.5896.54.camel@gaivota>	<20071010155920.GC22618@devserv.devel.redhat.com>	<1192033070.5896.77.camel@gaivota> <470D0087.3050606@gmail.com>
+In-Reply-To: <470D0087.3050606@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Has this been tested on older implementations of powernow yet?
-> > I'm happy to merge this and give it some time in -mm, before it
-> > goes to mainline, but if no-one is testing on those older
-> > opterons/turions etc then we're not going to know we regressed
-> > until its too late.   If it hasn't been tested yet, any chance
-> > you can scrounge some up at AMD and give it a spin just to be sure?
+Manu Abraham schrieb:
+> Mauro Carvalho Chehab wrote:
+>> Em Qua, 2007-10-10 Ã s 11:59 -0400, Alan Cox escreveu:
+>>> On Wed, Oct 10, 2007 at 12:35:41PM -0300, Mauro Carvalho Chehab wrote:
+>>>> Em Qua, 2007-10-10 Ã s 00:18 -0400, Michael Krufky escreveu:
+>>>>> Is this illegal as per kernel codingstyle?
+>>>> Yes, it is. CodingStyle states:
+>>> <rant>
+>>> No.. "Illegal" means prohibited by law. Its merely wrong 8)
+>>> </rant>
+>> LOL
+>>
+>>>> The proper fix is just to replace the offended code by this:
+>>>>
+>>>> err=foo();
+>>>> if (error)
+>>>> 	goto error;
+>>> Lots of code uses
+>>>
+>>> 	if ((err = foo()) < 0)
+>>>
+>>> so I would'y worry too much. The split one however clearer and also
+>>> safer.
+>> Yes, this is not a severe CodingStyle violation. Still, the above code
+>> is better than the used one.
+>>
+>> Since, on your example, it is clear that the programmer wanted to test
+>> if the value is less than zero. 
+>>
+>> The code:
+>>
+>> 	if ( (err=foo()) )
+>>
+>> should also indicate an operator mistake of using =, instead of ==.
+>>
+>> Probably, source code analyzers like Coverity will complain about the
+>> above.
+>>
+>> If not violating CodingStyle, I would rather prefer to code this as:
+>> 	if ( !(err=foo() ) 
+>> or, even better, using:
+>> 	if ( (err=foo()) != 0)
+>>
+>> clearly indicating that it is tested if the value is not zero.
+>>
+>> Even being a quite simple issue, I would prefer if Jiri can fix it.
+>>
 > 
 > 
-> I'd like to see this driver in the next kernel release.
+> When you have only some few lines of code you can write
+> 
+>  err = foo()
+>  if (err) {
+>   do whatever
+>  } 
+> 
+> doesn't matter ..
+> 
+> But when you have hell a lot of code, checking error's what you 
+> mention is insane.
+> 
+> ie,
+> 
+> if ((err = foo()) expr ) is better.
+> 
+> http://lkml.org/lkml/2007/2/4/56
+> 
+> Manu
+> 
+hi manu,
 
-Thanks, Andreas.
+it's not worth discussing this in a way like
+"i know something from the past and that was a different solution".
 
-> So I have done some tests with this code - based on kernel 
-> version 2.6.23. I have tested it on Athlon 64 X2, Athlon 64,
-> Turion X2 and some other parts
-> (e.g.family 0x10) and with different cpufreq governors.
-> I did not observe any problems with this driver update.
-> Behaviour is the same as before.
+if you look to other parts in that thread like
 
-I've also been running it on my Turion X2 laptop for a 
-few weeks without issues.  It doesn't touch the legacy
-code path at all.  
+http://lkml.org/lkml/2007/2/3/150
 
- 
-> So please consider to add the attached patch for 2.6.24.
-> Patch is against current Linus' git tree. This means the patch
-> "[CPUFREQ] Support different families in fid/did to frequency 
-> conversion" which is contained in the cpufreq.git should
-> be ommitted. The issue fixed with that patch is solved
-> with this driver update, too.
+you will see that they came also to a kind of different solution,
+NOT to use the 1-liner for assignment statements.
 
-Either patch is acceptable; I think they're fundamentally
-identical anyway.
+it's more like a religious/personal discussion how to 
+struct/indent/format code.
+and, to state my position for clear,
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+if kernel coding style document isnt updated to allow the constructions
+of code that caused this discussion, we dont have to discuss but follow 
+the rules.
 
+anything else on this topic (coding style and it's sense) is to be 
+discussed on kernel ml.
+
+my 2ct
+marcel
+
+
+
+> _______________________________________________
+> v4l-dvb-maintainer mailing list
+> v4l-dvb-maintainer@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
 
