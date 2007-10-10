@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXJJFcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXJJFh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXJJFcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 01:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXJJFcR
+	id S1754588AbXJJFh1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 01:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXJJFhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 01:32:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48827 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820AbXJJFcQ (ORCPT
+	Wed, 10 Oct 2007 01:37:16 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38994 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbXJJFhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 01:32:16 -0400
-Date: Tue, 9 Oct 2007 22:29:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Greg KH <greg@kroah.com>, Olof Johansson <olof@lixom.net>,
-       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk, Kevin <spaceman__spiff@cox.net>
-Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
-In-Reply-To: <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0710092224000.3838@woody.linux-foundation.org>
-References: <20071008180406.052382073@mini.kroah.org> <20071008180633.GJ7627@kroah.com>
- <20071009151702.GA19209@lixom.net> <20071009222003.GA21228@kroah.com>
- <alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
- <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
- <alpine.LFD.0.99.0710100133590.5040@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 10 Oct 2007 01:37:14 -0400
+Date: Wed, 10 Oct 2007 11:07:30 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: chandru <chandru@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com, muli@il.ibm.com,
+       ak@suse.de
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
+Message-ID: <20071010053730.GB24434@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <1191962414.24134.68.camel@chandru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191962414.24134.68.camel@chandru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 10 Oct 2007, Thomas Gleixner wrote:
+On Wed, Oct 10, 2007 at 02:10:13AM +0530, chandru wrote:
+> kdump kernel fails to boot with calgary iommu and aacraid driver on a
+> x366 box.  The ongoing dma's of aacraid from the first kernel continue
+> to exist until the driver is loaded in the kdump kernel. Calgary is
+> initialized prior to aacraid and creation of new tce tables causes wrong
+> dma's to occur. 
 > 
-> Fair enough. OTOH for the affected PPC users it's a regression and that's 
-> what I'm concerned of.
-
-Hmm.. I just got the appended (Kevin, better not just send me email, other 
-people can be interested too):
-
-From: Kevin <spaceman__spiff@cox.net>:
-Subject: Segmentation Fault
+> Here we try to grab the tce tables of the first kernel in kdump kernel
+> and use them. While in the kdump kernel we do not allocate new tce
+> tables but rather read the base address register contents of calgary
+> iommu and use the tables that the registers point to. With these changes
+> the kdump kernel and hence aacraid now boots normally. 
 > 
-> I just installed Linux Kernel 2.6.23 and am getting a Segmentation Fault 
-> upon exit (init 0).
+> Another point that came when talking with Vivek was to reserve part of
+> the tce table space in first kernel for use in the kdump kernel. 
 > 
-> Code: Bad EIP Value
-> EIP: [<00007825>] 0x7825 SS:ESP 0068:e7305de8
-> /etc/rc.d/rc.0: Line 261: 2796 Segmentation Fault   /sbin/poweroff
+
+Yes, I think reserving some entries for second kernel will be important
+to make sure second kernel can perform DMA while saving the kernel core.
+We don't want to clear some entries in second kernel as some ongoing DMA
+might be using it and we will run into issues.
+
+[..]
+> --- linux-2.6.23-rc9/include/linux/bootmem.h.orig       2007-10-09
+> 23:39:32.000000000 +0530
+> +++ linux-2.6.23-rc9/include/linux/bootmem.h    2007-10-09
+> 23:26:19.000000000 +0530
+> @@ -21,6 +21,12 @@ extern unsigned long max_pfn;
 > 
-> I'm running Slackware 12.0
+>  #ifdef CONFIG_CRASH_DUMP
+>  extern unsigned long saved_max_pfn;
+> +static inline int is_kdump_kernel(void)
+> +{
+> +       return reset_devices ? 1 : 0 ;
+> +}
+> +#else
+> +static inline is_kdump_kernel(void) { return 0; }
+>  #endif
 
-and while there's not a lot of information there, it might still mean that 
-there may be some issues on x86 too at the shutdown path.
+In general, run checkpatch.pl on the patch.
 
-Kevin: can you get the rest of the message? The kernel should have printed 
-out much more than just those two lines (there should have been a stack 
-trace and register state (often most easily captured simply with a digital 
-camera)
+is_kdump_kernel() can go in kdump specific files and exported here.
+This function can be used by some other drivers too.
 
-			Linus
+I think use "elfcorehdr" instead of "reset_devices" to detect the kdump
+kernel. reset_devices can in general also be used for booting on a kernel
+on a fauly bios which does not does a good job of resetting the devices.
+
+Thanks
+Vivek
