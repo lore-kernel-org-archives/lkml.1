@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbXJJOb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbXJJOcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbXJJOb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 10:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXJJObt
+	id S1755533AbXJJOcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 10:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXJJOcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 10:31:49 -0400
-Received: from mail.exegy.com ([209.83.156.2]:1973 "EHLO mail.exegy.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753042AbXJJObs convert rfc822-to-8bit (ORCPT
+	Wed, 10 Oct 2007 10:32:16 -0400
+Received: from smtp-out3.libero.it ([212.52.84.43]:43796 "EHLO
+	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753533AbXJJOcP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 10:31:48 -0400
-Thread-Index: AcgLSkoQ1BcRavw5ROaMAn5rnnBNWw==
-X-Ninja-AntiSpoofing: spoofed
-Message-ID: <470CE253.8040501@exegy.com>
-Date: Wed, 10 Oct 2007 09:31:47 -0500
-From: "Mr. Berkley Shands" <bshands@exegy.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 10 Oct 2007 10:32:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAH9/DEfAqBEO/2dsb2JhbAAMgWCOBQ
+Date: Wed, 10 Oct 2007 16:32:14 +0200
+Message-Id: <JPP9PQ$5165335324AD67AF49D09426E79B2B12@libero.it>
+Subject: Sr Nr: 0909AOB09
 MIME-Version: 1.0
-To: "MegaRaid" <megaraidlinux@lsi.com>, <linux-kernel@vger.kernel.org>
-Subject: 2.6.23 gotcha megaraid_sas missing
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-Content-class: urn:content-classes:message
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4073
-Importance: normal
-X-OriginalArrivalTime: 10 Oct 2007 14:31:47.0708 (UTC) FILETIME=[4A0053C0:01C80B4A]
+X-Sensitivity: 3
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+From: "info_euromiliiones07" <info_euromiliiones07@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl19)
+X-SenderIP: 81.202.160.159
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a new Kconfig entry was made CONFIG_SCSI_LOWLEVEL for 2.6.23 (since 
-2.6.23-rc7)
-Which turns OFF by default all the SCSI drivers, including MEGARAID_SAS.
-This was not present previous to 2.6.23-rc9. As a result
-a "make oldconfig" will nuke the scsi driver tree.
+YOU 'VE WON.
 
-The default for this Kconfig
-in drivers/scsi/Kconfig is wrong. it should default to on.
+You have won $655,000.00 Dollars in DE EUROMILLIONES ONLINE INT.LOTTERY SPAIN.For further development for Clearification and procedure please Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es) TEL: +34 692 486 797.
 
-menuconfig SCSI_LOWLEVEL
-        bool "SCSI low-level drivers"
-        depends on SCSI!=n
+(1) Tic Nr: 6460DGH
+(2) Sr Nr: 0909AOB09
+(3) LU Nr: 726726XZJHN
+(4) BT Nr: 2GH267XZZ1-5-42
+(5) RF Nr 9527BCV-33-7-7-7
+
+Regards.
+Mss.Sodic Lasy
 
 
-berkley
 
--- 
+------------------------------------------------------
+Leggi GRATIS le tue mail con il telefonino i-mode™ di Wind
+http://i-mode.wind.it/
 
-// E. F. Berkley Shands, MSc//
-
-** Exegy Inc.**
-
-349 Marshall Road, Suite 100
-
-St. Louis , MO  63119
-
-Direct:  (314) 218-3600 X450
-
-Cell:  (314) 303-2546
-
-Office:  (314) 218-3600
-
-Fax:  (314) 218-3601
-
- 
-
-The Usual Disclaimer follows...
- 
-This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
