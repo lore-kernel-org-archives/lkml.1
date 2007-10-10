@@ -1,49 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbXJJQid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbXJJQlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179AbXJJQid (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 12:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbXJJQiY
+	id S1756604AbXJJQlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 12:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXJJQkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 12:38:24 -0400
-Received: from lixom.net ([66.141.50.11]:50826 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbXJJQiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 12:38:23 -0400
-Date: Wed, 10 Oct 2007 11:43:36 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Milton Miller <miltonm@bga.com>
-Cc: Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] powerpc: don't enable cpu hotplug on mpic-based
-	pseries
-Message-ID: <20071010164336.GA21507@lixom.net>
-References: <20071010003824.GA8477@lixom.net> <200710101008.l9AA8hIG084068@sullivan.realtime.net>
+	Wed, 10 Oct 2007 12:40:52 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:35728 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754266AbXJJQkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 12:40:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=SEoDgWcI/sH++jYV6DC/D7MRIRAZHo9Bhw4wsjXNHjrweB06Ny2WWFBmXPXtokrAoA57f08s5HCHUPwXPNlNzVowhLy4j9JRB2Rx7veaTD88jurN4ktEBdxNZTLCghv7+4gVJY2KIrSqfZFzJw482Oz64AUB8/NG+jkFCjHzQI4=
+Message-ID: <470D0087.3050606@gmail.com>
+Date: Wed, 10 Oct 2007 20:40:39 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710101008.l9AA8hIG084068@sullivan.realtime.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alan Cox <alan@redhat.com>, video4linux-list@redhat.com,
+       Jiri Slaby <jirislaby@gmail.com>, daniel@qanu.de,
+       linux-kernel@vger.kernel.org, holger@qanu.de,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH 3/3] V4L: cinergyT2,	remove bad	usage
+ of ERESTARTSYS
+References: <24841282012868130110@pripojeni.net>	<1191979260.5492.32.camel@gaivota> <470C5294.8060502@linuxtv.org>	<1192030541.5896.54.camel@gaivota>	<20071010155920.GC22618@devserv.devel.redhat.com> <1192033070.5896.77.camel@gaivota>
+In-Reply-To: <1192033070.5896.77.camel@gaivota>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 05:08:44AM -0500, Milton Miller wrote:
-> Olof's patch searched the device-tree again, looking for an mpic.   This
-> code instead checks that we found an xics the first time by checking the
-> init function.
+Mauro Carvalho Chehab wrote:
+> Em Qua, 2007-10-10 Ã s 11:59 -0400, Alan Cox escreveu:
+>> On Wed, Oct 10, 2007 at 12:35:41PM -0300, Mauro Carvalho Chehab wrote:
+>>> Em Qua, 2007-10-10 Ã s 00:18 -0400, Michael Krufky escreveu:
+>>>> Is this illegal as per kernel codingstyle?
+>>> Yes, it is. CodingStyle states:
+>> <rant>
+>> No.. "Illegal" means prohibited by law. Its merely wrong 8)
+>> </rant>
+> 
+> LOL
+> 
+>>> The proper fix is just to replace the offended code by this:
+>>>
+>>> err=foo();
+>>> if (error)
+>>> 	goto error;
+>> Lots of code uses
+>>
+>> 	if ((err = foo()) < 0)
+>>
+>> so I would'y worry too much. The split one however clearer and also
+>> safer.
+> 
+> Yes, this is not a severe CodingStyle violation. Still, the above code
+> is better than the used one.
+> 
+> Since, on your example, it is clear that the programmer wanted to test
+> if the value is less than zero. 
+> 
+> The code:
+> 
+> 	if ( (err=foo()) )
+> 
+> should also indicate an operator mistake of using =, instead of ==.
+> 
+> Probably, source code analyzers like Coverity will complain about the
+> above.
+> 
+> If not violating CodingStyle, I would rather prefer to code this as:
+> 	if ( !(err=foo() ) 
+> or, even better, using:
+> 	if ( (err=foo()) != 0)
+> 
+> clearly indicating that it is tested if the value is not zero.
+> 
+> Even being a quite simple issue, I would prefer if Jiri can fix it.
+> 
 
-I'm glad you find the kernel so perfect that your best use of time is
-to tweak the code added in a non-critical path (performance-wise) with
-a new way of checking for hardware features (no other code in the kernel
-checks ppc_md function pointers for that purpose).
 
-Pseries can only have mpic or xics, so it's not like it matters if we
-check for mpic or !xics, either.
+When you have only some few lines of code you can write
 
-But hey, any color bike shed will do, and I don't care which one Paul
-chooses to merge. I will not waste more time debating this simple patch
-though. :)
+ err = foo()
+ if (err) {
+  do whatever
+ } 
 
+doesn't matter ..
 
--Olof
+But when you have hell a lot of code, checking error's what you 
+mention is insane.
+
+ie,
+
+if ((err = foo()) expr ) is better.
+
+http://lkml.org/lkml/2007/2/4/56
+
+Manu
