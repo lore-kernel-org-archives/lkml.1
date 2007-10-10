@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbXJJPxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbXJJPzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbXJJPxn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbXJJPxf
+	id S1756707AbXJJPzH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbXJJPy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:53:35 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:48130 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755132AbXJJPxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:53:34 -0400
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Nishanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-In-Reply-To: <20071009154052.GC12632@skynet.ie>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie>
-	 <20070928142526.16783.97067.sendpatchset@skynet.skynet.ie>
-	 <20071009011143.GC14670@us.ibm.com>  <20071009154052.GC12632@skynet.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 10 Oct 2007 11:53:40 -0400
-Message-Id: <1192031620.5617.39.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 10 Oct 2007 11:54:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30061 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754072AbXJJPyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 11:54:55 -0400
+Message-ID: <470CF594.5090803@oracle.com>
+Date: Wed, 10 Oct 2007 08:53:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Matt LaPlante <kernel1@cyberdogtech.com>
+CC: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: (resubmitting) typo fixes for 2.6.23
+References: <20071009181355.3ae1cb3b.kernel1@cyberdogtech.com>	<20071009161214.be33d7d7.randy.dunlap@oracle.com> <20071010090016.5f8e4af1.kernel1@cyberdogtech.com>
+In-Reply-To: <20071010090016.5f8e4af1.kernel1@cyberdogtech.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-09 at 16:40 +0100, Mel Gorman wrote:
-<snip>
-> ====
-> Subject: Use specified node ID with GFP_THISNODE if available
+Matt LaPlante wrote:
+> On Tue, 9 Oct 2007 16:12:14 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> It had been assumed that __GFP_THISNODE meant allocating from the local
-> node and only the local node. However, users of alloc_pages_node() may also
-> specify GFP_THISNODE. In this case, only the specified node should be used.
-> This patch will allocate pages only from the requested node when GFP_THISNODE
-> is used with alloc_pages_node().
+>> On Tue, 9 Oct 2007 18:13:55 -0400 Matt LaPlante wrote:
+>>
+>>> Most of these fixes were already submitted for old kernel versions, and were approved, but for some reason they never made it into the releases.  I've updated the changes for the 2.6.23 kernel and attached the resulting patch.  Because this is a consolidation of a couple old missed patches, it touches both Kconfigs and documentation texts.
+>>>
+>>> Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
+>>> --
+>> Hi Matt,
+>> Mostly looks very good... a few nits below.
+>>
 > 
-> [nacc@us.ibm.com: Detailed analysis of problem]
-> Found-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-<snip>
+> Thanks as always, Randy.  Fixes below...
 
-Mel:  I applied this patch [to your v8 series--the most recent, I
-think?] and it does fix the problem.  However, now I'm tripping over
-this warning in __alloc_pages_nodemask:
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-	/* Specifying both __GFP_THISNODE and nodemask is stupid. Warn user */
-	WARN_ON(gfp_mask & __GFP_THISNODE);
+Thanks, Matt.
 
-for each huge page allocated.  Rather slow as my console is a virtual
-serial line and the warning includes the stack traceback.
-
-I think we want to just drop this warning, but maybe you have a tighter
-condition that you want to warn about?
-
-Lee
-
+-- 
+~Randy
