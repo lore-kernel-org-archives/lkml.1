@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXJJFh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXJJFoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbXJJFh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 01:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXJJFhQ
+	id S1754130AbXJJFoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 01:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXJJFoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 01:37:16 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:38994 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbXJJFhO (ORCPT
+	Wed, 10 Oct 2007 01:44:11 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:35465 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbXJJFoK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 01:37:14 -0400
-Date: Wed, 10 Oct 2007 11:07:30 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: chandru <chandru@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com, muli@il.ibm.com,
-       ak@suse.de
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
-Message-ID: <20071010053730.GB24434@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1191962414.24134.68.camel@chandru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1191962414.24134.68.camel@chandru>
-User-Agent: Mutt/1.5.11
+	Wed, 10 Oct 2007 01:44:10 -0400
+Message-ID: <470C66A6.2060801@davidnewall.com>
+Date: Wed, 10 Oct 2007 15:14:06 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Gustavo Chain <g@0xff.cl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Reserve N process to root
+References: <20071009194820.6c8d6e8d@0xff.cl> <470C2FA7.5030207@davidnewall.com> <20071010011523.7d6cca12@0xff.cl>
+In-Reply-To: <20071010011523.7d6cca12@0xff.cl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 02:10:13AM +0530, chandru wrote:
-> kdump kernel fails to boot with calgary iommu and aacraid driver on a
-> x366 box.  The ongoing dma's of aacraid from the first kernel continue
-> to exist until the driver is loaded in the kdump kernel. Calgary is
-> initialized prior to aacraid and creation of new tce tables causes wrong
-> dma's to occur. 
-> 
-> Here we try to grab the tce tables of the first kernel in kdump kernel
-> and use them. While in the kdump kernel we do not allocate new tce
-> tables but rather read the base address register contents of calgary
-> iommu and use the tables that the registers point to. With these changes
-> the kdump kernel and hence aacraid now boots normally. 
-> 
-> Another point that came when talking with Vivek was to reserve part of
-> the tce table space in first kernel for use in the kdump kernel. 
-> 
+Gustavo Chain wrote:
+> El Wed, 10 Oct 2007 11:19:27 +0930
+> David Newall <david@davidnewall.com> escribió:
+>   
+>> Gustavo Chain wrote:
+>>     
+>>> I think it's necessary to reserve some pids to the super user.
+>>> 5 must be sufficient.
+>>>       
+>> Why?  (Sorry if I missed something.)
+>>     
+>
+> ¿ To prevent a posible DoS ?
+>   
 
-Yes, I think reserving some entries for second kernel will be important
-to make sure second kernel can perform DMA while saving the kernel core.
-We don't want to clear some entries in second kernel as some ongoing DMA
-might be using it and we will run into issues.
+That was what I thought you had in mind; it protects from some kind of 
+fork bomb, right?  But it doesn't seem useful unless you guarantee 
+having a process already running (with CAP_SYS_ADMIN) *before* the bomb 
+goes off.
 
-[..]
-> --- linux-2.6.23-rc9/include/linux/bootmem.h.orig       2007-10-09
-> 23:39:32.000000000 +0530
-> +++ linux-2.6.23-rc9/include/linux/bootmem.h    2007-10-09
-> 23:26:19.000000000 +0530
-> @@ -21,6 +21,12 @@ extern unsigned long max_pfn;
-> 
->  #ifdef CONFIG_CRASH_DUMP
->  extern unsigned long saved_max_pfn;
-> +static inline int is_kdump_kernel(void)
-> +{
-> +       return reset_devices ? 1 : 0 ;
-> +}
-> +#else
-> +static inline is_kdump_kernel(void) { return 0; }
->  #endif
-
-In general, run checkpatch.pl on the patch.
-
-is_kdump_kernel() can go in kdump specific files and exported here.
-This function can be used by some other drivers too.
-
-I think use "elfcorehdr" instead of "reset_devices" to detect the kdump
-kernel. reset_devices can in general also be used for booting on a kernel
-on a fauly bios which does not does a good job of resetting the devices.
-
-Thanks
-Vivek
