@@ -1,102 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXJJPZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbXJJPcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbXJJPZF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 11:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbXJJPYz
+	id S1755650AbXJJPcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 11:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbXJJPcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 11:24:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:40819 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbXJJPYy (ORCPT
+	Wed, 10 Oct 2007 11:32:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59385 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753933AbXJJPcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 11:24:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=DeFllw/s5tPRw0dViD9krydVBtNUr0GSGGMMOkB5IfCiTyXzSLGmnRAVi5MmiuVzHfD4+0S0xs5SIztoQSoEVO7gJ61QINj1UDkBdkVA9P4T5AgazXwOU6NPbB/8ZowcYSWn6RXzSrqT42NPZxIgLEno80KMPFc3PWiM4/XmTug=
-Date: Thu, 11 Oct 2007 00:20:51 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       Tim Shimmin <xfs-masters@oss.sgi.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH] update sb->s_frozen when freezing read-only mounted device, too
-Message-ID: <20071010152051.GA4059@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com, Tim Shimmin <xfs-masters@oss.sgi.com>,
-	David Chinner <dgc@sgi.com>
-References: <20070929100912.GB4121@APFDCB5C> <20071004202004.GA13316@lst.de> <961aa3350710050620q42eb6192wdacce1510cc76a4b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <961aa3350710050620q42eb6192wdacce1510cc76a4b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 10 Oct 2007 11:32:42 -0400
+Date: Wed, 10 Oct 2007 11:32:37 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: linux-usb-devel@lists.sourceforge.net, <greg@kroah.com>,
+       <davem@davemloft.net>, <linux-usb-users@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] OHCI root_port_reset() deadly loop...
+In-Reply-To: <20071009192250.BD703236A37@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0710101057400.4765-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-freeze_bdev() with read-only mounted device(*) does not change sb->s_frozen
-from SB_UNFROZEN to SB_FREEZE_TRANS.
+On Tue, 9 Oct 2007, David Brownell wrote:
 
-Because of this behavior, xfs_freeze can break read-only filesystem.
+> > From: Greg KH <greg@kroah.com>
+> >
+> > Here's some information from Intel about where they have seen this
+> > happen for UHCI controllers, so it's not just an OHCI issue :(
+> >
+> >	...
+> >
 
-Because xfs_thaw does nothing for the filesystem whose sb->s_frozen is
-SB_UNFROZEN. So frozen read-only XFS filesystem will never be unfrozen.
-Thus we cannot do any unmount/remount operations for that filesystem.
+The Intel error reports here are kind of unclear.
 
-This patch updates sb->s_frozen when freeze_bdev() is called for read-only
-mounted device, too.
+> > 1) We see that the ports with low speed devices are still in EHCI mode
+> > (port owner bit not written to in EHCI driver).
 
-(*) freezing read-only filesystem is not so pointless.  Because it can
-prevent from someone trying to remount read/write while freezing.
+_When_ are they still in EHCI mode?
 
-Cc: David Chinner <dgc@sgi.com>
-Cc:  Tim Shimmin <xfs-masters@oss.sgi.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> > In our analyzer captures
+> > we see the reads from the Port Status & Control register and it is
+> > indicating that there are low speed devices on the ports. Can you tell
+> > us why the driver would not be doing the write to the port owner bit
+> > when it sees that low speed devices are attached to that port? Is there
+> > something specific that it looks for and decides not to do the write?
+> 
+> It's hard to say without more info about what's going on.  It
+> might be on a non-enumeraton code path -- where nothing expects
+> to set the OWNER bit -- or the CONNECT bit might not be set.
+> See host/ehci-hub.c for details about exactly what the EHCI parts
+> are doing, and core/hub.c for how it's driven.
 
----
- fs/buffer.c |   25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+Right.  In general the driver _does_ write to the port owner bit when 
+it sees a low-speed device is attached to the port.  If that didn't 
+happen in this case, maybe it's because the driver didn't see it.  
+There are only one or two places in the code where the driver checks.
 
-Index: 2.6-git/fs/buffer.c
-===================================================================
---- 2.6-git.orig/fs/buffer.c
-+++ 2.6-git/fs/buffer.c
-@@ -190,21 +190,28 @@ struct super_block *freeze_bdev(struct b
- 
- 	down(&bdev->bd_mount_sem);
- 	sb = get_super(bdev);
--	if (sb && !(sb->s_flags & MS_RDONLY)) {
--		sb->s_frozen = SB_FREEZE_WRITE;
--		smp_wmb();
--
--		__fsync_super(sb);
-+	if (!sb)
-+		goto out;
- 
-+	if (sb->s_flags & MS_RDONLY) {
- 		sb->s_frozen = SB_FREEZE_TRANS;
- 		smp_wmb();
-+		goto out;
-+	}
- 
--		sync_blockdev(sb->s_bdev);
-+	sb->s_frozen = SB_FREEZE_WRITE;
-+	smp_wmb();
- 
--		if (sb->s_op->write_super_lockfs)
--			sb->s_op->write_super_lockfs(sb);
--	}
-+	__fsync_super(sb);
-+
-+	sb->s_frozen = SB_FREEZE_TRANS;
-+	smp_wmb();
- 
-+	sync_blockdev(sb->s_bdev);
-+
-+	if (sb->s_op->write_super_lockfs)
-+		sb->s_op->write_super_lockfs(sb);
-+out:
- 	sync_blockdev(bdev);
- 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
- }
+> (It can be tricky to make sense of all that, easier if debugging
+> messages are turned on.   But that changes timings.  Better yet
+> would be being non-intrusive tracing of the actual code paths
+> that the CPU follows.)
+
+It certainly would help us if the tests were made on a kernel with
+CONFIG_USB_DEBUG enabled.
+
+> > 2) In other cases we see that the ports with the low speed devices are
+> > back in UHCI mode but the ports are disabled. In this case we see from
+> > the analyzer traces that the UHCI driver has completed setting up the
+> > port. It has actually enabled that port in UHCI mode.
+
+This implies that the reset sequence finished successfully.  Did that 
+actually happen?
+
+> > We then see the
+> > EHCI driver comes in and it resets everything. The driver then gives
+> > control back to the UCHI controller (by setting the port owner bit)
+> > but...since the UHCI driver has already setup this port once it seems
+> > that it does not go back and set it up again. In this case we do not
+> > think that the UHCI driver has completed running when the EHCI driver
+> > comes in and does the reset.
+
+But above they said that it _had_ completed!  Did they mean that the 
+reset was complete but the driver hadn't yet detected that it was 
+complete?
+
+> > Can you tell us if the UHCI driver was
+> > interrupted in the middle but after the ports with the low speed devices
+> > had been enabled would the UHCI driver ever go back and reinitialize the
+> > ports with the low speed devices?
+> 
+> If the UHCI driver got disconnect and reconnect notifications,
+> I expect it would do so.  At least OHCI seems *not* to have gotten
+> such notifications.  I'm speculating that the "just a switch"
+> behavior for the CF (and OWNER) bits may not allow notifications
+> like that to happen when the companion controllers are resetting.
+
+That seems likely.  There's no way (as far as I can tell) for a host to 
+see a disconnect while a reset is in progress.  Of course, as soon as 
+the reset is over then the host should see the disconnect, and it 
+should set the corresponding Connect-Status-Changed bit.
+
+Amusing scenario: Suppose that ehci-hcd initializes the EHCI controller 
+(taking control of the port), sees that the device isn't high speed, 
+and switches port ownership back to the companion controller, all 
+during the span of the companion's reset.  The companion would never 
+know anything had happened!  But then everything should just work -- 
+the port would be enabled and communication should proceed normally.
+
+Alan Stern
+
