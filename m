@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbXJKQqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbXJKQua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbXJKQqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 12:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXJKQq2
+	id S1756039AbXJKQua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 12:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXJKQuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 12:46:28 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50304 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753515AbXJKQq1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 12:46:27 -0400
-Date: Thu, 11 Oct 2007 09:46:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Akinobu Mita <akinobu.mita@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
-In-Reply-To: <20071011143656.GA3972@APFDCB5C>
-Message-ID: <Pine.LNX.4.64.0710110944270.31423@schroedinger.engr.sgi.com>
-References: <20071009161328.GA6470@APFDCB5C>
- <Pine.LNX.4.64.0710091144020.32162@schroedinger.engr.sgi.com>
- <20071010121853.GA3911@APFDCB5C> <Pine.LNX.4.64.0710101037210.7158@schroedinger.engr.sgi.com>
- <20071011143656.GA3972@APFDCB5C>
+	Thu, 11 Oct 2007 12:50:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:59535 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752186AbXJKQuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 12:50:21 -0400
+Date: Thu, 11 Oct 2007 18:50:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Egger <Christoph.Egger@amd.com>
+cc: Joerg Roedel <joerg.roedel@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: mce init optimization and signedness fixup
+In-Reply-To: <200710111703.35129.Christoph.Egger@amd.com>
+Message-ID: <alpine.LFD.0.9999.0710111844000.15917@localhost.localdomain>
+References: <11921050742274-git-send-email-joerg.roedel@amd.com> <200710111601.02630.Christoph.Egger@amd.com> <alpine.LFD.0.9999.0710111651350.15917@localhost.localdomain> <200710111703.35129.Christoph.Egger@amd.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007, Akinobu Mita wrote:
+On Thu, 11 Oct 2007, Christoph Egger wrote:
+> On Thursday 11 October 2007 16:55:36 Thomas Gleixner wrote:
+> > > > > +
+> > > > > +	if (!cpu_has(c, X86_FEATURE_MCA) || !cpu_has(c, X86_FEATURE_MCE)) {
+> > > > > +		printk(KERN_INFO "CPU%i: No machine check support available\n",
+> > > > > +			smp_processor_id());
+> > > > > +		return;
+> > > >
+> > > > This breaks winchip MCE support.
+> > >
+> > > First, what is a winchip? It sounds to be something windows specific. ;)
+> > > Second, can you explain in which way MCE support gets broken, please?
+> >
+> > First, winchip is the code name of Centaurs early x86 cpus.
+> >
+> > Second, those beasts do not have FEATURE_MCA, but they have FEATURE_MCE,
+> > so they support the fatal exception, but not the non fatal check.
+> 
+> So when I change the above code snippet to:
+> 
+> +	if (!cpu_has(c, X86_FEATURE_MCE)) {
+> +		printk(KERN_INFO "CPU%i: No machine check support available\n",
+> +			smp_processor_id());
+> +		return;
+> 
+> Would this make the whole patch acceptable then?
 
-> > Why would get_cpu_slab not work?
-> 
-> 
->         case CPU_DEAD:
->         case CPU_DEAD_FROZEN:
->                 down_read(&slub_lock);
->                 list_for_each_entry(s, &slab_caches, list) {
->                         struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
-> 
->                         local_irq_save(flags);
->                         __flush_cpu_slab(s, cpu);
->                         local_irq_restore(flags);
->                         free_kmem_cache_cpu(c, cpu);
->                         s->cpu_slab[cpu] = NULL; <----------------------
->                 }
->                 up_read(&slub_lock);
->                 break;
-> 
-> When CPU is offlined, cpu-hotplug notifier sets s->cpu_slab[cpu] = NULL.
-> This means get_cpu_slab() always return NULL when CPU is being onlined.
-> So I can't use get_cpu_slab to check whether kmem_cache_cpu_free
-> initalization for the CPU has already been done or not.
+Yeah, but then we can clean up the extra checks for _MCE in the various 
+cpu type init functions as well.
 
-If you have set it to NULL then the earlier kmem_cache_cpu structures has 
-been freed. Why is it a problem to allocate another one when the cpu comes 
-up again?
+	tglx
