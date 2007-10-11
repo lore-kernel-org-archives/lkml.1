@@ -1,172 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXJKHcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbXJKHhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbXJKHcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 03:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXJKHcb
+	id S1757149AbXJKHhk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 03:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbXJKHhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 03:32:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59146 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbXJKHca (ORCPT
+	Thu, 11 Oct 2007 03:37:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:64410 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754968AbXJKHha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 03:32:30 -0400
-Date: Thu, 11 Oct 2007 09:32:22 +0200
-From: Pierre Peiffer <Pierre.Peiffer@bull.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] IPC: fix error case when idr-cache is empty in ipcget()
-Message-Id: <20071011093222.5600520c.Pierre.Peiffer@bull.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/10/2007 09:38:48,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/10/2007 09:38:50,
-	Serialize complete at 11/10/2007 09:38:50
+	Thu, 11 Oct 2007 03:37:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Cv6F8pQd9aGFEZLwSvfOQBm/6w92GCFBs0nLn+7QlrpxaFbdxn41O8YLOMUNI66MJ4LLbBGdRTbja1D6CUMFJabayFd8Y0VCMu+n28IAq/DYtWP5H5KZEjK7eXBWxF4yVPFlwazfH3GRbzYJmk4GA7Hgi78pCVb2FTYIEuJosQU=
+Message-ID: <19f34abd0710110037q5b94992u53689269051b674c@mail.gmail.com>
+Date: Thu, 11 Oct 2007 09:37:29 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm: Fix printk format strings
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Hugh Dickins" <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071011001300.7682a93b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+References: <1192085221.26648.31.camel@grianne>
+	 <20071010235306.c71afe66.akpm@linux-foundation.org>
+	 <19f34abd0710110004k78d103fate87558822fb631a3@mail.gmail.com>
+	 <20071011001300.7682a93b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I resend this patch, by taking into account Nadia's remarks.
+On 10/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 11 Oct 2007 09:04:57 +0200 "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
+>
+> > > > -     printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n"
+> > > > -             " free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+> > > > +     printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n",
+> > > >               global_page_state(NR_ACTIVE),
+> > > >               global_page_state(NR_INACTIVE),
+> > > >               global_page_state(NR_FILE_DIRTY),
+> > > >               global_page_state(NR_WRITEBACK),
+> > > > -             global_page_state(NR_UNSTABLE_NFS),
+> > > > +             global_page_state(NR_UNSTABLE_NFS));
+> > > > +     printk(" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+> > > >               global_page_state(NR_FREE_PAGES),
+> > > >               global_page_state(NR_SLAB_RECLAIMABLE) +
+> > > >                       global_page_state(NR_SLAB_UNRECLAIMABLE),
+> > >
+> > > I don't understand the reason for this change.
+> >
+> > I'm sorry :). It helps to make one line per call only, since this
+> > allows changing the printk internals for the better by reducing some
+> > complexity. I believe this is a good thing. I have a patch that
+> > changes printk, but it assumes that each format string only contains a
+> > single line. Is this a very bad assumption to make? Or maybe I should
+> > have sent that change first and made a reference to it?
+> >
+> > But don't you also agree, on the grounds of principle, that a single
+> > line per call is better style?
+>
+> Well we do multiple-lines-per-printk in rather a lot of places and it has
+> two advantages:
+>
+> - less text size (I expect)
+>
+> - the printk is "atomic" in that the logically-connected output lines
+>   won't get tangled up with an intervening printk from another CPU, or from
+>   an interrupt handler on this CPU.
+>
+> Those are pretty modest advantages and I guess we could live without them
+> if we got a significant gain from doing so.  But it'd take quite some
+> effort hunting down all the callsites, and preventing new ones from
+> occuring.
 
-With the use of idr to store the ipc, the case where the idr cache is
-empty, when idr_get_new is called (this may happen even if we call
-idr_pre_get() before), is not well handled: it lets semget()/shmget()/msgget()
-return ENOSPC when this cache is empty, what 1. does not reflect the facts
-and 2. does not conform to the man(s).
+I have written a sparse program to detect all callers that don't use
+single-line literal strings for the printk format (posted to sparse
+mailing list yesterday). So in fact, what I was doing was just that,
+hunting them down and cleaning it up.
 
-This patch fixes this by retrying the whole process of allocation in this case.
+It so happens that my other patch also introduce a buffered printk
+that supports atomic line continuations and multiple uninterrupted
+lines, though this requires of course that the callers use these
+functions. Other benefits include writing directly to the ring-buffer,
+saving a 1K temporary buffer. The printk patch(es) can be viewed at
+http://folk.uio.no/vegardno/xprintf/
 
-This patch applies on top of 2.6.23-rc8-mm2 and should probably be merged
-in 2.6.24 if Nadia's patches are included.
-
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-
----
- ipc/msg.c  |    4 ++--
- ipc/sem.c  |    4 ++--
- ipc/shm.c  |    5 +++--
- ipc/util.c |   16 +++++++++++-----
- 4 files changed, 18 insertions(+), 11 deletions(-)
-
-Index: b/ipc/msg.c
-===================================================================
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -188,10 +188,10 @@ static int newque(struct ipc_namespace *
- 	 * ipc_addid() locks msq
- 	 */
- 	id = ipc_addid(&msg_ids(ns), &msq->q_perm, ns->msg_ctlmni);
--	if (id == -1) {
-+	if (id < 0) {
- 		security_msg_queue_free(msq);
- 		ipc_rcu_putref(msq);
--		return -ENOSPC;
-+		return id;
- 	}
- 
- 	msq->q_perm.id = msg_buildid(ns, id, msq->q_perm.seq);
-Index: b/ipc/sem.c
-===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -269,10 +269,10 @@ static int newary(struct ipc_namespace *
- 	}
- 
- 	id = ipc_addid(&sem_ids(ns), &sma->sem_perm, ns->sc_semmni);
--	if(id == -1) {
-+	if (id < 0) {
- 		security_sem_free(sma);
- 		ipc_rcu_putref(sma);
--		return -ENOSPC;
-+		return id;
- 	}
- 	ns->used_sems += nsems;
- 
-Index: b/ipc/shm.c
-===================================================================
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -409,10 +409,11 @@ static int newseg(struct ipc_namespace *
- 	if (IS_ERR(file))
- 		goto no_file;
- 
--	error = -ENOSPC;
- 	id = shm_addid(ns, shp);
--	if(id == -1) 
-+	if (id < 0) {
-+		error = id;
- 		goto no_id;
-+	}
- 
- 	shp->shm_cprid = task_tgid_vnr(current);
- 	shp->shm_lprid = 0;
-Index: b/ipc/util.c
-===================================================================
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -261,7 +261,7 @@ int ipc_get_maxid(struct ipc_ids *ids)
-  *	Add an entry 'new' to the IPC ids idr. The permissions object is
-  *	initialised and the first free entry is set up and the id assigned
-  *	is returned. The 'new' entry is returned in a locked state on success.
-- *	On failure the entry is not locked and -1 is returned.
-+ *	On failure the entry is not locked and a negative err-code is returned.
-  *
-  *	Called with ipc_ids.mutex held.
-  */
-@@ -274,11 +274,11 @@ int ipc_addid(struct ipc_ids* ids, struc
- 		size = IPCMNI;
- 
- 	if (ids->in_use >= size)
--		return -1;
-+		return -ENOSPC;
- 
- 	err = idr_get_new(&ids->ipcs_idr, new, &id);
- 	if (err)
--		return -1;
-+		return err;
- 
- 	ids->in_use++;
- 
-@@ -310,7 +310,7 @@ int ipcget_new(struct ipc_namespace *ns,
- 		struct ipc_ops *ops, struct ipc_params *params)
- {
- 	int err;
--
-+retry:
- 	err = idr_pre_get(&ids->ipcs_idr, GFP_KERNEL);
- 
- 	if (!err)
-@@ -320,6 +320,9 @@ int ipcget_new(struct ipc_namespace *ns,
- 	err = ops->getnew(ns, params);
- 	mutex_unlock(&ids->mutex);
- 
-+	if (err == -EAGAIN)
-+		goto retry;
-+
- 	return err;
- }
- 
-@@ -373,7 +376,7 @@ int ipcget_public(struct ipc_namespace *
- 	struct kern_ipc_perm *ipcp;
- 	int flg = params->flg;
- 	int err;
--
-+retry:
- 	err = idr_pre_get(&ids->ipcs_idr, GFP_KERNEL);
- 
- 	mutex_lock(&ids->mutex);
-@@ -406,6 +409,9 @@ int ipcget_public(struct ipc_namespace *
- 	}
- 	mutex_unlock(&ids->mutex);
- 
-+	if (err == -EAGAIN)
-+		goto retry;
-+
- 	return err;
- }
-
--- 
-Pierre Peiffer
+Vegard
