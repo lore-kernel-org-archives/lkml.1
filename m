@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXJJXwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbXJKAF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbXJJXwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 19:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbXJJXwH
+	id S1757399AbXJKAF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 20:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXJKAFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 19:52:07 -0400
-Received: from zap.org.AU ([129.94.172.224]:37599 "EHLO mail.zap.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756820AbXJJXwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 19:52:06 -0400
-Date: Thu, 11 Oct 2007 09:52:01 +1000
-From: John Zaitseff <J.Zaitseff@zap.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: Key codes for Microsoft Natural Ergonomic 4000 USB keyboard
-Message-ID: <20071010235201.GA12338@zap.org.au>
-References: <20071010055958.GA25938@zap.org.au> <Pine.LNX.4.64.0710100953050.20620@jikos.suse.cz>
+	Wed, 10 Oct 2007 20:05:51 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:35539 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755291AbXJKAFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 20:05:50 -0400
+Message-ID: <470D68DA.2010803@davidnewall.com>
+Date: Thu, 11 Oct 2007 09:35:46 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710100953050.20620@jikos.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Valdis.Kletnieks@vt.edu
+CC: Gustavo Chain <g@0xff.cl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Reserve N process to root
+References: <20071009194820.6c8d6e8d@0xff.cl> <470C2FA7.5030207@davidnewall.com> <20071010011523.7d6cca12@0xff.cl> <470C66A6.2060801@davidnewall.com>            <20071010094622.7b8121cf@0xff.cl> <27658.1192045814@turing-police.cc.vt.edu>
+In-Reply-To: <27658.1192045814@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Jiri,
+Valdis.Kletnieks@vt.edu wrote:
+> What David meant was that "root will always have a slot" doesn't *actually*
+> help unless you *also* have a way to actually *spawn* such a process.  In order
+> to do the ps, kill, and so on that you need to recover, you need to already
+> have either a root shell available, or a way to *get* a root shell that doesn't
+> rely on a non-root process (so /bin/su doesn't help here).
 
-On Wed, Oct 10, 2007 at 09:55:26AM +0200, Jiri Kosina wrote:
-> On Wed, 10 Oct 2007, John Zaitseff wrote:
-> 
-> > The following patch to Linux kernel 2.6.23 enables most of the
-> > extra keys found on the Microsoft Natural Ergonomic 4000 USB
-> > keyboard.  I had to add one keycode to include/linux/input.h;
-> > feel free to reallocate the ID assigned to it (KEY_SPELL).
-> 
-> thanks a lot for the patch!  However I think I have already added
-> all the needed support for this keyboard.  It is currently in my
-> tree, queued until Linus opens the merge window for 2.6.24.
-> Please look at
-> http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git;a=commitdiff;h=0f48b3ce23a34dbe70dcd04b4216fbcb965ab906
-> 
-> Commit 945bcc3a in the same branch is also related.
-
-Excellent!  However, I don't see the following:
-
-* case 0x182: map_key_clear(KEY_FAVORITES);
-  ... in drivers/usb/input/hid-input.c, to handle the My Favorites key
-
-* the change to drivers/hid/usbhid/usbkbd.c to enable the "(" and
-  ")" on the right hand side of the keyboard
-
-Have these already been included elsewhere?
-
-Yours truly,
-
-John Zaitseff
-
--- 
-John Zaitseff                    ,--_|\    The ZAP Group
-Phone:  +61 2 9643 7737         /      \   Sydney, Australia
-E-mail: J.Zaitseff@zap.org.au   \_,--._*   http://www.zap.org.au/
-                                      v
+That's right, although it's worse than that.  You need to have a process 
+with CAP_SYS_ADMIN.  If root processes normally have that capability 
+then the reserved slots may well disappear before you notice a problem.  
+If root processes normally don't have it, then you need to guarantee 
+that one is already running.
