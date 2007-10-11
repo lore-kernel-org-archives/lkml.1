@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbXJKWAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbXJKWBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbXJKWAh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 18:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbXJKWAa
+	id S1759345AbXJKWBl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 18:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXJKWBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 18:00:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45346 "EHLO ogre.sisk.pl"
+	Thu, 11 Oct 2007 18:01:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56541 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755095AbXJKWA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 18:00:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [QUESTION] I need advice for writing .suspend/.resume functions
-Date: Fri, 12 Oct 2007 00:15:29 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200710110513.10753.maximlevitsky@gmail.com>
-In-Reply-To: <200710110513.10753.maximlevitsky@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1755095AbXJKWBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 18:01:33 -0400
+In-Reply-To: <18190.39864.4562.852292@cargo.ozlabs.ibm.com>
+References: <20071011071558.676463639@au1.ibm.com> <20071011072208.075979098@au1.ibm.com> <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org> <18190.39864.4562.852292@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2C31F1C3-3337-483B-A463-767459305F1E@kernel.crashing.org>
+Cc: markn@au1.ibm.com, PowerPC dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710120015.30607.rjw@sisk.pl>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
+Date: Thu, 11 Oct 2007 17:01:43 -0500
+To: Paul Mackerras <paulus@samba.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Well, unfortunately I have only a little experience with writing device
-drivers, so please take my comments below with a grain of salt.
+On Oct 11, 2007, at 4:55 PM, Paul Mackerras wrote:
 
-Also, I think it's better to discuss this on linux-pm to which some more
-experienced people are subscribed.
-
-On Thursday, 11 October 2007 05:13, Maxim Levitsky wrote:
-> Hi,
-> 
-> I have few questions about .suspend()/.resume() driver functions and how best to write them.
-> 
-> I have written a support for suspend/resume for saa7134 v4l driver.
-> Now looking at code again and again, I found few problems, and I am seeking your advice how to fix them.
-> 
-> First of all the .suspend() function:
-> 
-> Looking at various drivers (including v4l ones) it seems that in general the function:
-> 
-> 1) tells upper layers that it is suspended
-> 2) saves the state of device
-> (generally there is nothing to save, since the driver maintains a copy of device state in memory)
-> 
-> 3) disables the device (including DMA)
-> 4) does usual pci_save_state+pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state))
-> (I am talking about pci devices of course)
-> 
-> But there is one problem that my .suspend() function have together with quite a lot of drivers:
-> It can race with IRQ handler. Suppose the handler is called just before .suspend(), and thus .suspend() literally 
-> pulls the hadware from that handler.
+> Kumar Gala writes:
 >
-> I was told that I should use synchronize_irq(), and it looks exactly like the solution.
+>>> #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current  
+>>> users so
+>>> there's are no change in behaviour.
+>>
+>> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled
+>> to the x86 specific name?
+>
+> How is "extended floating point registers" x86-specific?
 
-Yes, that seems to be the right solution.
+we'll I don't consider the altivec register file as 'extended fp'.   
+I'm assuming the name XFP came from IA32 land when MMX/SSE came into  
+existence.
 
-> But I was surprised to see that very few drivers use it in their .suspend() routines.
+> ELF_CORE_XFPREG_TYPE is a suitable name for something that's used in
+> conjunction with a function called elf_core_copy_task_xfpregs().
 
-Frankly, I'm not sure why that is so.
+agreed, I think the function name should change as well.
 
-> Another issue, even bigger happens during the resume:
-> Suppose the IRQ line is shared with some other device and it gets resumed first.
-> And my IRQ handler is called because of the other device.
-> Now my IRQ handler can't determine whenever the IRQ for the device, since the hardware is still powered off.
-> 
-> Probably I can fix the following issues doing this:
-> 
-> 1) do free_irq() in .suspend(), and request_irq() in .resume
-> this solves both problems since free_irq()  calls synchronize_irq()
-> Few drivers do that this way. I would like to know if this is the right way.
-
-AFAICS, it is not and these drivers should probably be modified not to do so.
-
-The problem, as I see it, is that we don't know what state the device will be
-in during the resume (this may be a resume from disk and the device may have
-been initialized by the BIOS and we get it actually generating interrupts).
- 
-> 2) Disable the card's IRQ register , then call synchronize_irq(), at that
-> point I can be sure that no IRQ handler is running and will run then set some
-> per device flag say dev->insuspend 
-> 
-> let IRQ handler check this flag, and bail out if set, so false interrupts are caught on resume
-> Probably not a good idea, since I didn't find such implementation in kernel
-
-I'm not sure of that.  Sounds better than freeing the IRQs in .suspend() to me.
-
-Greetings,
-Rafael
+- k
