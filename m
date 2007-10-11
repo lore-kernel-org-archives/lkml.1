@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbXJKWDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbXJKWMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbXJKWDd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 18:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXJKWDY
+	id S1757387AbXJKWMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 18:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbXJKWMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 18:03:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44197 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756424AbXJKWDW (ORCPT
+	Thu, 11 Oct 2007 18:12:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:37357 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754457AbXJKWMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 18:03:22 -0400
-Date: Thu, 11 Oct 2007 15:03:15 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: rientjes@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-Message-Id: <20071011150315.78c4f45f.pj@sgi.com>
-In-Reply-To: <6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	<20071003105817.7adf6516.pj@sgi.com>
-	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
-	<20071003131632.fed4b848.pj@sgi.com>
-	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
-	<20071006012437.c0fd3a8a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-	<20071006125904.a26ed99f.pj@sgi.com>
-	<6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Oct 2007 18:12:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hdfpmnPbKRHt1/qhVG+41At8px9UtlT0SEHyCKdLYV1xhso8to3zLWujeS7zMt8pCCxNPfyyYN3ilSFuFUPX5pu3ifBDYsYXtLCmjdJDWl1GMLf0r4mnO415pNFqw5irTUwjIvJD4mSVWe0/db72BcR1Wp3/MwjB2aXBLW+UmW8=
+Message-ID: <cfa94dc20710111512j9b6c038qf89c516ecd605411@mail.gmail.com>
+Date: Thu, 11 Oct 2007 15:12:05 -0700
+From: "Ryan Finnie" <ryan@finnie.org>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
+Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+In-Reply-To: <20071011144740.136b31a8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200710071920.l97JKJX5018871@agora.fsl.cs.sunysb.edu>
+	 <20071011144740.136b31a8.akpm@linux-foundation.org>
+X-Google-Sender-Auth: cf4b428906295f05
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Several days ago, Paul M replied to Paul J:
-> > Hmmm ... guess I'd have to loop over the cgroup twice, once to count
-> > them (the 'count' field is not claimed to be accurate) and then again,
-> > after I've kmalloc'd the tasks[] array, filling in the tasks[] array.
+On 10/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> shit.  That's a nasty bug.  Really userspace should be testing for -1, but
+> the msync() library function should only ever return 0 or -1.
+>
+> Does this fix it?
+>
+> --- a/mm/page-writeback.c~a
+> +++ a/mm/page-writeback.c
+> @@ -850,8 +850,10 @@ retry:
+>
+>                         ret = (*writepage)(page, wbc, data);
+>
+> -                       if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
+> +                       if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+>                                 unlock_page(page);
+> +                               ret = 0;
+> +                       }
+>                         if (ret || (--(wbc->nr_to_write) <= 0))
+>                                 done = 1;
+>                         if (wbc->nonblocking && bdi_write_congested(bdi)) {
+> _
+>
+
+Pekka Enberg replied with an identical patch a few days ago, but for
+some reason the same condition flows up to msync as -1 EIO instead of
+AOP_WRITEPAGE_ACTIVATE with that patch applied.  The last part of the
+thread is below.  Thanks.
+
+Ryan
+
+On 10/7/07, Ryan Finnie <ryan@finnie.org> wrote:
+> On 10/7/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> > On 10/7/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> > > Anyway, some Ubuntu users of Unionfs reported that msync(2) sometimes
+> > > returns AOP_WRITEPAGE_ACTIVATE (decimal 524288) back to userland.
+> > > Therefore, some user programs fail, esp. if they're written such as
+> > > this:
 > >
-> > On a big cgroup on a big system, this could easily be thousands of
-> > iteration loops.
-> 
-> But if userspace has to do it, the effect will be far more expensive.
-
-Ah - but I'm not trying to optimize this particular operation (changing
-a cpusets 'cpus').  It's not at all performance critical.
-
-I'm trying to minimize the amount of special purpose code in the
-kernel.
-
-The maintenance costs of a line of kernel code are quite a bit higher
-than for a line of user code.  I work hard to have most of my lines of
-kernel code be on well traveled code paths, of general usefulness, even
-if this means that some infrequent operations require yet more user
-source code lines and user CPU cycles, in order to be refactored as the
-combination of multiple system call primitives.
-
-... all within reasonable limits, of course.
-
-Corner case, special situation, non-trivial chunks of kernel code are
-very expensive.  They don't get very good testing coverage in the
-real world, and end up harboring latent bugs for months or years,
-by which time it can be expensive to deal with them.
-
-Be that as it may, I've just started digesting the actual code
-suggestions posted by yourself and David (thanks!) this last week.
-I just couldn't resist a bit of philosophizing ... sorry.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+> ...
+> > It's a kernel bug. AOP_WRITEPAGE_ACTIVATE is a hint to the VM to avoid
+> > writeback of the page in the near future. I wonder if it's enough that we
+> > change the return value to zero from
+> > mm/page-writeback.c:write_cache_pages() in case we hit AOP_WRITEPAGE_ACTIVE...
+>
+> Doesn't appear to be enough.  I can't figure out why (since it appears
+> write_cache_pages bubbles up directly to sys_msync), but with that
+> patch applied, in my test case[1], msync returns -1 EIO.  However,
+> with the exact same kernel without that patch applied, msync returns
+> 524288 (AOP_WRITEPAGE_ACTIVATE).  But as your patch specifically flips
+> 524288 to 0, I can't figure out how it eventually returns  -1 EIO.
+>
+> Ryan
+>
+> [1] "apt-get check" on a unionfs2 mount backed by tmpfs over cdrom,
+> standard livecd setup
+>
