@@ -1,96 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbXJKOEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbXJKOTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758124AbXJKOEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 10:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbXJKOEY
+	id S1755908AbXJKOTy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 10:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXJKOTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 10:04:24 -0400
-Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:20971 "HELO
-	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752203AbXJKOEX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 10:04:23 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Oct 2007 10:04:23 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=r4Fxv8vl+1LXVb5yOGrDSVro6/aYCCQlqC1u3yDctAwlH2dp+vox5ElH2fEGfDFtrbr7LJzPF+waQXxmVkIl5rf6NkanfGXh3uHbgt+yzr2EYUjyzTpsYmgVMJrmgLi53Fl6HVa2P1oiY3exIdjvL33NcaAqcE7xxexzEGfk4Hc=;
-X-YMail-OSG: GHhni.sVM1lvBMOt8VxcI.XD80D39UKC5wR7hwhwno_mdSrTZsHlC_wsHpm0J0XFJwy_XL3w8vVH8stfVt7Hp4UOM1DGjlPyW8MkvvTr7L2M8uJZrS2h3I2LRG_kHQ--
-Date: Thu, 11 Oct 2007 06:57:42 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: idio{,ma}tic typos (was Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch added to -mm tree)
-To: Pierre Ossman <drzeus@drzeus.cx>, Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071010202223.292176a1@poseidon.drzeus.cx>
+	Thu, 11 Oct 2007 10:19:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51935 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751748AbXJKOTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 10:19:42 -0400
+Message-ID: <470E30F9.5060705@garzik.org>
+Date: Thu, 11 Oct 2007 10:19:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <712072.37707.qm@web36702.mail.mud.yahoo.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Bernd Schubert <bs@q-leap.de>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] faster workaround
+References: <200710081709.18253.bs@q-leap.de>	<200710101112.20448.bs@q-leap.de>	<200710111409.56210.bs@q-leap.de>	<200710111433.23833.bs@q-leap.de> <20071011142628.48272a4a@the-village.bc.nu>
+In-Reply-To: <20071011142628.48272a4a@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Pierre Ossman <drzeus@drzeus.cx> wrote:
-
-> On Wed, 10 Oct 2007 14:45:40 +0400
-> Alexey Dobriyan <adobriyan@sw.ru> wrote:
+Alan Cox wrote:
+>> -static void ata_fill_sg(struct ata_queued_cmd *qc)
+>> +void ata_fill_sg(struct ata_queued_cmd *qc)
+>>  {
+>>  	struct ata_port *ap = qc->ap;
+>>  	struct scatterlist *sg;
+>> @@ -4217,10 +4217,15 @@ int ata_check_atapi_dma(struct ata_queue
+>>   */
+>>  void ata_qc_prep(struct ata_queued_cmd *qc)
+>>  {
+>> +	struct ata_port *ap = qc->ap;
+>> +
+>>  	if (!(qc->flags & ATA_QCFLAG_DMAMAP))
+>>  		return;
+>>  
+>> -	ata_fill_sg(qc);
+>> +	if (ap->ops->fill_sg)
+>> +		ap->ops->fill_sg(qc);
+>> +	else
+>> +		ata_fill_sg(qc);
+>>  }
 > 
-> > ["if (!x & y)" patch from yanzheng@]
-> > ["if (!x & y)" patch from adobriyan@]
-> > ["if (!x & y)" patches from viro@]
-> > 
-> > While we're at it, below is somewhat ugly sparse patch for detecting
-> > "&& 0x" typos.
-> > 
+> Its probably better to simply make your own sil_qc_prep function for this
+> case rather than touch the core code.
 > 
-> The maintainer for tifm is Alex Dubov, so cc:ing him.
+>> -	.sg_tablesize		= LIBATA_MAX_PRD,
+>> +	.sg_tablesize		= 120, /* max 15 kiB sectors ? */
 > 
-> > drivers/mmc/host/tifm_sd.c:183:9: warning: dubious && 0x
-> > 
-> > 	if ((r_data->flags & MMC_DATA_WRITE)
-> >             && DATA_CARRY)
-> > 		writel(host->bounce_buf_data[0],
-> > 		host->dev->addr
-> > 		+ SOCK_MMCSD_DATA);
-> > 
-> > 	given that DATA_CARRY is always used together with
-> > ->cmd_flags, this place is asking for obvious fixlet:
-> > 
-> > 
-> > [PATCH] tifm_sd.c: fix DATA_CARRY check
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> > ---
-> > 
-> >  drivers/mmc/host/tifm_sd.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- a/drivers/mmc/host/tifm_sd.c
-> > +++ b/drivers/mmc/host/tifm_sd.c
-> > @@ -180,7 +180,7 @@ static void tifm_sd_transfer_data(struct tifm_sd
-> > *host) host->sg_pos++;
-> >  			if (host->sg_pos == host->sg_len) {
-> >  				if ((r_data->flags & MMC_DATA_WRITE)
-> > -				    && DATA_CARRY)
-> > +				    && (host->cmd_flags &
-> > DATA_CARRY)) writel(host->bounce_buf_data[0],
-> >  					       host->dev->addr
-> >  					       + SOCK_MMCSD_DATA);
-> > 
-> > 
-> > 
+> If you are just fiddling with the way the data is split then
+> LIBATA_MAX_PRD - 1 should be totally safe)
 > 
-> Rgds
-> Pierre
+>>  	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
+>>  	.emulated		= ATA_SHT_EMULATED,
+>> -	.use_clustering		= ATA_SHT_USE_CLUSTERING,
+>> +	.use_clustering		= 1,
 > 
+> Un-needed
+> 
+>>  	.proc_name		= DRV_NAME,
+>> -	.dma_boundary		= ATA_DMA_BOUNDARY,
+>> +	.dma_boundary		= 0x1fff,
+> 
+> Ok
+> 
+>>  	.slave_configure	= ata_scsi_slave_config,
+>>  	.slave_destroy		= ata_scsi_slave_destroy,
+>>  	.bios_param		= ata_std_bios_param,
+> 
+>> +	/* Errata workaround: if last segment is exactly 8K, split
+>> +	 * into 7.5K and 512b pieces.
+>> +	 */
+>> +	len = le32_to_cpu(ap->prd[idx].flags_len) & 0xffff;
+>> +	if (len == 8192) {
+>> +		addr = le32_to_cpu(ap->prd[idx].addr);
+>> +		ap->prd[idx].flags_len = cpu_to_le32(15 * 512);
+>> +
+>> +		idx++;
+>> +		ap->prd[idx].addr = cpu_to_le32(addr + (15 * 512));
+>> +		ap->prd[idx].flags_len = cpu_to_le32(512 | ATA_PRD_EOT);
+>> +	}
+>> +}
+> 
+> And since in this approach we are merely splitting the last PRD entry in
+> some obscure cases we might as well do it by default as it should have no
+> performance impact of any note done this way.
 
-Oops. I wonder why this was never triggered (some users are having problems with dma, so they use
-PIO rather extensively). The patch is probably correct, but I can't do any testing because I'm
-currently on vacation.
+Unfortunately all this stuff is quite meaningless, which was why my 
+patch was never merged.
 
+The problem is that the 3112 generates Data FIS's of a size other than a 
+multiple of 512 bytes.  Spec-legal, but exposed firmware bugs in many 
+early SATA drives.  Early Seagate hard drives choked when the formula 
+(sector%15)==1 was satisfied (or something along those lines).
 
+The problem with the fix is that Data FIS size is only roughly 
+correlated to PRD segment length or DMA boundary -- the chip could 
+decide to send out a frame even if the PRD length is < 8K.  The 3112 can 
+generate not-512b-sized FIS's at any time, not just at the end of the 
+transfer.
 
-      ____________________________________________________________________________________
-Shape Yahoo! in your own image.  Join our Network Research Panel today!   http://surveylink.yahoo.com/gmrs/yahoo_panel_invite.asp?a=7 
+That leaves us with two observations:
+
+1) Just about the only valid optimization is to ensure that only the 
+write path must be limited to small chunks, not both read- and 
+write-paths.  Tejun had a patch to do this a long time ago, but it's an 
+open question whether the large amount of code is worth it for a rare 
+combination.
+
+2) Once we identified, over time, the set of drives affected by this 
+3112 quirk (aka drives that didn't fully comply to SATA spec), the 
+debugging of corruption cases largely shifted to the standard routine: 
+update the BIOS, replace the cables/RAM/power/mainboard/slot/etc. to be 
+certain of problem location.
+
+	Jeff
 
 
