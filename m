@@ -1,119 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbXJKHkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbXJKHoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbXJKHkw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 03:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbXJKHko
+	id S1757922AbXJKHoi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 03:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXJKHoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 03:40:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52957 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755604AbXJKHkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 03:40:43 -0400
+	Thu, 11 Oct 2007 03:44:30 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:10875 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755663AbXJKHo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 03:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Jjp+0Zp+0Jb+Gr/meKk6Lz3/BJEDDUV1K1/5QrALvbkQqkdRdWamNnhsiWI4/9QBNHsxFkAayuyIp58Lp2PByQhAKXbI9stQ5hCEYWcRyRsDjzX6yz4UVopEox33JHwkf4IP3jIFKX7haCUH2rrF/m2YJmKH3ByYlvttKUiJw2I=
+Message-ID: <b647ffbd0710110044r5424d7ffi58fc64221a440c7d@mail.gmail.com>
+Date: Thu, 11 Oct 2007 09:44:28 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Peter Williams" <pwil3058@bigpond.net.au>
+Subject: Re: [PATCH] sched: Rationalize sys_sched_rr_get_interval()
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071011065946.GB32125@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Andrew Morton <akpm@linux-foundation.org>Andi Kleen" <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64 vDSO linker script cleanup
-In-Reply-To: Roland McGrath's message of  Monday, 24 September 2007 04:04:17 -0700 <20070924110417.BD06A4D0325@magilla.localdomain>
-References: <20070924110417.BD06A4D0325@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-X-Shopping-List: (1) Judicious distenders
-   (2) Apocalyptic ablution admonishers
-   (3) Scary horsie
-Message-Id: <20071011074037.9C15C4D026B@magilla.localdomain>
-Date: Thu, 11 Oct 2007 00:40:37 -0700 (PDT)
+Content-Disposition: inline
+References: <470D7055.4090000@bigpond.net.au> <20071011065946.GB32125@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This replaces my earlier patch by the same title:
-x86_64-vdso-linker-script-cleanup.patch
+On 11/10/2007, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+>
+> > -#define MIN_TIMESLICE                max(5 * HZ / 1000, 1)
+> > -#define DEF_TIMESLICE                (100 * HZ / 1000)
+>
+> hm, this got removed by Dmitry quite some time ago. Could you please do
+> this patch against the sched-devel git tree:
+
+here is the commit:
+http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=commit;h=dd3fec36addd1bf76b05225b7e483378b80c3f9e
+
+I had also considered introducing smth like
+sched_class::task_timeslice() but decided it was not worth it.
 
 
-Thanks,
-Roland
-
----
-
-[PATCH] x86_64 vDSO linker script cleanup
-
-This reorganizes the x86_64 vDSO layout to pack the contents better.
-This yields a smaller image, while keeping code cache-aligned away
-from data, and leaving more room to grow both in the .note section
-(where --build-id can add some), and in the code (.text) section,
-before the image grows past one 4kb page.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Cc: Andi Kleen <ak@suse.de>
----
- arch/x86_64/vdso/vdso.lds.S |   47 +++++++++++++++++++++++++++++-------------
- 1 files changed, 32 insertions(+), 15 deletions(-)
-
-diff --git a/arch/x86_64/vdso/vdso.lds.S b/arch/x86_64/vdso/vdso.lds.S
-index b9a60e6..726bc6d 100644
---- a/arch/x86_64/vdso/vdso.lds.S
-+++ b/arch/x86_64/vdso/vdso.lds.S
-@@ -20,30 +20,47 @@ SECTIONS
-   .gnu.version_d  : { *(.gnu.version_d) }
-   .gnu.version_r  : { *(.gnu.version_r) }
- 
-+  /* The kernel does not need to know these addresses,
-+     so they don't need to be before VDSO_TEXT_OFFSET.
-+     Pack these in here to sop up the space used for the alignment.  */
-+  .note		  : { *(.note.*) }		:text :note
-+  .useless        : {
-+  	*(.got.plt) *(.got)
-+	*(.gnu.linkonce.d.*)
-+	*(.gnu.linkonce.b.*)
-+  }						:text
-+
-   /* This linker script is used both with -r and with -shared.
-      For the layouts to match, we need to skip more than enough
-      space for the dynamic symbol table et al.  If this amount
--     is insufficient, ld -shared will barf.  Just increase it here.  */
-+     is insufficient, ld -shared will barf.
-+     Just increase VDSO_TEXT_OFFSET (in voffset.h).  */
-   . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
- 
--  .text           : { *(.text) }		:text
--  .text.ptr       : { *(.text.ptr) }		:text
--  . = VDSO_PRELINK + 0x900;
--  .data           : { *(.data) }		:text
--  .bss            : { *(.bss) }			:text
-+  .rodata         : { *(.rodata*) }		:text
-+  .data		  : {
-+	*(.data*)
-+	*(.sdata*)
-+	*(.bss*)
-+	*(.dynbss*)
-+  }						:text
- 
--  .altinstructions : { *(.altinstructions) }			:text
--  .altinstr_replacement  : { *(.altinstr_replacement) }	:text
-+  .dynamic        : { *(.dynamic) }		:text :dynamic
- 
--  .note		  : { *(.note.*) }		:text :note
-   .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text :eh_frame_hdr
-   .eh_frame       : { KEEP (*(.eh_frame)) }	:text
--  .dynamic        : { *(.dynamic) }		:text :dynamic
--  .useless        : {
--  	*(.got.plt) *(.got)
--	*(.gnu.linkonce.d.*)
--	*(.dynbss)
--	*(.gnu.linkonce.b.*)
-+
-+  .altinstructions : { *(.altinstructions) }		:text
-+  .altinstr_replacement  : { *(.altinstr_replacement) }	:text
-+
-+  /* Separate actual executed code from other data for happy caches.  */
-+  . = ALIGN(128);
-+
-+  .text           : {
-+  	FILL(0x90909090);
-+	*(.text .stub .text.* .gnu.linkonce.t.*)
-+    	KEEP (*(.text.*personality*))
-+  	. = ALIGN(128);
-   }						:text
- }
- 
+-- 
+Best regards,
+Dmitry Adamushko
