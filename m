@@ -1,134 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbXJKChA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbXJKChy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbXJKChA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 22:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbXJKCgx
+	id S1758016AbXJKChy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 22:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbXJKChq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 22:36:53 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:38896 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756011AbXJKCgw (ORCPT
+	Wed, 10 Oct 2007 22:37:46 -0400
+Received: from 0x3e42aafc.adsl.cybercity.dk ([62.66.170.252]:26873 "EHLO
+	dawn.lix-world.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956AbXJKChq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 22:36:52 -0400
-Date: Wed, 10 Oct 2007 19:37:23 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -rt more realtime scheduling issues
-Message-ID: <20071011023723.GI5049@monkey.ibm.com>
-References: <20071006021548.GE4587@monkey.ibm.com> <20071008184523.GA29656@monkey.ibm.com> <20071009030412.GB12915@goodmis.org> <20071009184953.GA3285@monkey.ibm.com> <20071010115052.GA21391@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071010115052.GA21391@goodmis.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 10 Oct 2007 22:37:46 -0400
+Message-ID: <470D8C75.402@lix-world.net>
+Date: Thu, 11 Oct 2007 04:37:41 +0200
+From: Steen Eugen Poulsen <sep@lix-world.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; da; rv:1.8.1.6) Gecko/20070921 Thunderbird/2.0.0.6 ThunderBrowse/3.1.5 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Greg Cormier <gcormier@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+References: <29a863790710101217g607b5425g6a3374c2be1d75a5@mail.gmail.com>
+In-Reply-To: <29a863790710101217g607b5425g6a3374c2be1d75a5@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms050803080605020609030209"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 07:50:52AM -0400, Steven Rostedt wrote:
-> On Tue, Oct 09, 2007 at 11:49:53AM -0700, Mike Kravetz wrote:
-> > The more I try understand the IPI handling the more confused I get. :(
-> > At fist I was concerned about an IPI happening in the middle of the
-> > __schedule routine.  But, then it occurred to me that interrupts are
-> > disabled when in this routine (when holding the runqueue lock).  So, IPIs
-> > are not delivered during __schedule processing.  Right?
-> > 
-> > But, if this is case then I don't understand the following code in
-> > schedule():
-> > 
-> >         local_irq_disable();
-> > 
-> >         do {
-> >                 __schedule();
-> >         } while (unlikely(test_thread_flag(TIF_NEED_RESCHED) ||
-> >                           test_thread_flag(TIF_NEED_RESCHED_DELAYED)));
-> > 
-> >         local_irq_enable();
-> > 
-> > How can the reschedule flags possibly be set AFTER running __schedule.
-> > Especially when the call is explicitly surrounded by local_irq_disable/
-> > local_irq_enable.
-> > 
-> > Can someone help me?
-> > 
-> 
-> Sure, another CPU can set the tasks NEED_RESCHED flag. In try_to_wake_up,
-> if the process that is waking up is on a runqueue on another CPU and it
-> is of higher priority than the current running task, the process that is
-> doing the waking will set the NEED_RESCHED flag for that task.
+This is a cryptographically signed message in MIME format.
 
-Yes right.  I guess I spent too much time thinking about the 'broadcast
-IPI' case where NEED_RESCHED is only set by the handler.  In the case
-where we 'reschedule' on a specific CPU the flag is set and IPI sent.
+--------------ms050803080605020609030209
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Greg Cormier skrev:
+> I've been having issues recently (couple of weeks?) with my server. I
+> have three WD5000YS (500gb) drives in RAID5, on an Asus A8N
+> motherboard which is nForce 4. I've even RMA'd one of the drives, but
+> now I'm thinking the drives are fine.
+
+Intel/VIA motherboard and software raid. Same errors in dmesg though.
+
+Machine ran for a month with no issues, then one disk died. After boot
+one disk was missing, additional reboots and both disks is again running.
+
+I'm thinking broken hardware and not a kernel issue on this, but I'm a
+software guy, so there could be a lot I don't understand here.
 
 
-> So to prevent a race where we have called schedule and after getting to
-> the new running task, a higher priority process just got scheduled in,
-> we will catch that here.
-> 
-> Now if this is really needed? I don't know. It seems that it just wants
-> to check here so we don't need to jump to the interrupt and then
-> schedule while coming back out of the interrupt handler as a preemption
-> schedule. This way we just schedule again and save a little overhead
-> from doing that through the interrupt.
 
-One more thing.  test_thread_flag() uses thread info of the current
-thread.  But, if __schedule() did a context switch then it is possible
-the NEED_RESCHED flag was set in the previous task, instead of current.
-Does that make sense?  The resched flags get cleared at the begining
-of __schedule (as they should).  But, if we really want that loop to
-be valid shouldn't the flags be copied to the current task.  Something
-like the following after the context switch:
+--------------ms050803080605020609030209
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
 
-	if (test_and_clear_tsk_thread_flag(prev, TIF_NEED_RESCHED))
-		set_tsk_need_resched(current);
-	if (test_and_clear_tsk_thread_flag(prev, TIF_NEED_RESCHED_DELAYED))
-		set_tsk_need_resched_delayed(current);
-
-Don't we also need to worry about the flags being left set in the
-previous task?  That is why I think a test_and_clear would make sense.
-
-But, your argument about axing the loop altogether makes sense as well.
-
-> But this brings up an interesting point. Since the IRQ handlers are run
-> as threads, and the interrupt is what will wake them, this seems to add
-> a bit of latency to interrupts.
-> 
-> For example:
-> 
->   We schedule in process A of prio 1
-> 
->   before exiting __schedule process B is woken up on that same rq
->   with a prio of 2 and sets A's NEED_RESCHED flag.
-> 
->   Also an interrupt goes off and sent to this CPU. But since interrupts
->   are disabled, we wait.
-> 
->   leaving __schedule() we see that A's NEED_RESCHED flag is set, so we
->   continue the do while loop and call __schedule again.
-> 
->   We schedule in B of prio 2.
-> 
->   Leave __schedule as well as the do while loop and then enable
->   interrupts.
-> 
->   The interrupt that was pending is now triggered.
-> 
->   Wakes up the handler of prio 90 and since it is higher in priority
->   than process B of prio 2 it sets B's NEED_RESCHED flag.
-> 
->   On return from the interrupt we call schedule again.
-> 
-> This seems strange. I can imagine on a large # of CPUs box that this can
-> happen quite often, and have the interrupts disabled for several rounds
-> through schedule.
-> 
-> I say we ax that while loop.
-> 
-> Ingo?
-> 
-> -- Steve
-
--- 
-Mike
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIK7DCC
+BXIwggRaoAMCAQICBEOGqWgwDQYJKoZIhvcNAQEFBQAwMTELMAkGA1UEBhMCREsxDDAKBgNV
+BAoTA1REQzEUMBIGA1UEAxMLVERDIE9DRVMgQ0EwHhcNMDYwNzI2MTMyNTM1WhcNMDgwNzI2
+MTM1NTM1WjB7MQswCQYDVQQGEwJESzEpMCcGA1UEChMgSW5nZW4gb3JnYW5pc2F0b3Jpc2sg
+dGlsa255dG5pbmcxQTAaBgNVBAMTE1N0ZWVuIEV1Z2VuIFBvdWxzZW4wIwYDVQQFExxQSUQ6
+OTIwOC0yMDAyLTItMzE3NjE3NjE4MTQ5MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDl
+v74PjpJrPTPfGCsZVhVK+ihTc1gLzPApQLuuAwFkU1YlotH5E92uO6YAGBh0u7Nu89N/N5Ad
+JV4v6Hsmr8CZRAm6K/Nib3QsIByUi8VdgCcfD/MPheu8nne/YYQ6Edws3M1vBvY22NHW7Hkd
+dtjYNiD2biGQ36eNoLbCTeMClwIDAQABo4ICyjCCAsYwDgYDVR0PAQH/BAQDAgP4MCsGA1Ud
+EAQkMCKADzIwMDYwNzI2MTMyNTM1WoEPMjAwODA3MjYxMzU1MzVaMIIBNwYDVR0gBIIBLjCC
+ASowggEmBgoqgVCBKQEBAQEDMIIBFjAvBggrBgEFBQcCARYjaHR0cDovL3d3dy5jZXJ0aWZp
+a2F0LmRrL3JlcG9zaXRvcnkwgeIGCCsGAQUFBwICMIHVMAoWA1REQzADAgEBGoHGRm9yIGFu
+dmVuZGVsc2UgYWYgY2VydGlmaWthdGV0IGfmbGRlciBPQ0VTIHZpbGvlciwgQ1BTIG9nIE9D
+RVMgQ1AsIGRlciBrYW4gaGVudGVzIGZyYSB3d3cuY2VydGlmaWthdC5kay9yZXBvc2l0b3J5
+LiBCZW3mcmssIGF0IFREQyBlZnRlciB2aWxr5XJlbmUgaGFyIGV0IGJlZ3LmbnNldCBhbnN2
+YXIgaWZ0LiBwcm9mZXNzaW9uZWxsZSBwYXJ0ZXIuMEEGCCsGAQUFBwEBBDUwMzAxBggrBgEF
+BQcwAYYlaHR0cDovL29jc3AuY2VydGlmaWthdC5kay9vY3NwL3N0YXR1czAcBgNVHREEFTAT
+gRFzZXBAbGl4LXdvcmxkLm5ldDCBhAYDVR0fBH0wezBLoEmgR6RFMEMxCzAJBgNVBAYTAkRL
+MQwwCgYDVQQKEwNUREMxFDASBgNVBAMTC1REQyBPQ0VTIENBMRAwDgYDVQQDEwdDUkwxNDAz
+MCygKqAohiZodHRwOi8vY3JsLm9jZXMuY2VydGlmaWthdC5kay9vY2VzLmNybDAfBgNVHSME
+GDAWgBRgtYXsVmR+EhknZx1QFUtzrjv5EjAdBgNVHQ4EFgQUGnA0kYplEvpmQTxbkQMwljvV
+XMcwCQYDVR0TBAIwADAZBgkqhkiG9n0HQQAEDDAKGwRWNy4xAwIDqDANBgkqhkiG9w0BAQUF
+AAOCAQEAT5wZtMDaWA31Y7uOj4Z1YXx70TbIreJe1IdVGmQCb0X5LCapVCRHtnP0LEOOPZlJ
+WuR89jSRz8Ojxi+bR/maVu2bIlP900p+S18TksLsR1k7eiEPDYta8/rz7s5EHwuG00Ts9AiO
+4nySH3ra/fqBh3HgUUQCbhLLPAB9YhvHGgxJpdzICzw2g9KzzCLsXqWaGCwb64K46CE9klOX
+UIFoQJ82HeJmjzsMy9ULY5c1JwKPbn8AzbxSOrQi3ssGOiuZQ51zqFfXckXGy9GPQigT/IWk
+5sqzgVFmD1znzEl9+YITBfBSALKUdHxfkXu+UvOx+CjkWow4eSk/0QiF9DCZejCCBXIwggRa
+oAMCAQICBEOGqWgwDQYJKoZIhvcNAQEFBQAwMTELMAkGA1UEBhMCREsxDDAKBgNVBAoTA1RE
+QzEUMBIGA1UEAxMLVERDIE9DRVMgQ0EwHhcNMDYwNzI2MTMyNTM1WhcNMDgwNzI2MTM1NTM1
+WjB7MQswCQYDVQQGEwJESzEpMCcGA1UEChMgSW5nZW4gb3JnYW5pc2F0b3Jpc2sgdGlsa255
+dG5pbmcxQTAaBgNVBAMTE1N0ZWVuIEV1Z2VuIFBvdWxzZW4wIwYDVQQFExxQSUQ6OTIwOC0y
+MDAyLTItMzE3NjE3NjE4MTQ5MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlv74PjpJr
+PTPfGCsZVhVK+ihTc1gLzPApQLuuAwFkU1YlotH5E92uO6YAGBh0u7Nu89N/N5AdJV4v6Hsm
+r8CZRAm6K/Nib3QsIByUi8VdgCcfD/MPheu8nne/YYQ6Edws3M1vBvY22NHW7HkddtjYNiD2
+biGQ36eNoLbCTeMClwIDAQABo4ICyjCCAsYwDgYDVR0PAQH/BAQDAgP4MCsGA1UdEAQkMCKA
+DzIwMDYwNzI2MTMyNTM1WoEPMjAwODA3MjYxMzU1MzVaMIIBNwYDVR0gBIIBLjCCASowggEm
+BgoqgVCBKQEBAQEDMIIBFjAvBggrBgEFBQcCARYjaHR0cDovL3d3dy5jZXJ0aWZpa2F0LmRr
+L3JlcG9zaXRvcnkwgeIGCCsGAQUFBwICMIHVMAoWA1REQzADAgEBGoHGRm9yIGFudmVuZGVs
+c2UgYWYgY2VydGlmaWthdGV0IGfmbGRlciBPQ0VTIHZpbGvlciwgQ1BTIG9nIE9DRVMgQ1As
+IGRlciBrYW4gaGVudGVzIGZyYSB3d3cuY2VydGlmaWthdC5kay9yZXBvc2l0b3J5LiBCZW3m
+cmssIGF0IFREQyBlZnRlciB2aWxr5XJlbmUgaGFyIGV0IGJlZ3LmbnNldCBhbnN2YXIgaWZ0
+LiBwcm9mZXNzaW9uZWxsZSBwYXJ0ZXIuMEEGCCsGAQUFBwEBBDUwMzAxBggrBgEFBQcwAYYl
+aHR0cDovL29jc3AuY2VydGlmaWthdC5kay9vY3NwL3N0YXR1czAcBgNVHREEFTATgRFzZXBA
+bGl4LXdvcmxkLm5ldDCBhAYDVR0fBH0wezBLoEmgR6RFMEMxCzAJBgNVBAYTAkRLMQwwCgYD
+VQQKEwNUREMxFDASBgNVBAMTC1REQyBPQ0VTIENBMRAwDgYDVQQDEwdDUkwxNDAzMCygKqAo
+hiZodHRwOi8vY3JsLm9jZXMuY2VydGlmaWthdC5kay9vY2VzLmNybDAfBgNVHSMEGDAWgBRg
+tYXsVmR+EhknZx1QFUtzrjv5EjAdBgNVHQ4EFgQUGnA0kYplEvpmQTxbkQMwljvVXMcwCQYD
+VR0TBAIwADAZBgkqhkiG9n0HQQAEDDAKGwRWNy4xAwIDqDANBgkqhkiG9w0BAQUFAAOCAQEA
+T5wZtMDaWA31Y7uOj4Z1YXx70TbIreJe1IdVGmQCb0X5LCapVCRHtnP0LEOOPZlJWuR89jSR
+z8Ojxi+bR/maVu2bIlP900p+S18TksLsR1k7eiEPDYta8/rz7s5EHwuG00Ts9AiO4nySH3ra
+/fqBh3HgUUQCbhLLPAB9YhvHGgxJpdzICzw2g9KzzCLsXqWaGCwb64K46CE9klOXUIFoQJ82
+HeJmjzsMy9ULY5c1JwKPbn8AzbxSOrQi3ssGOiuZQ51zqFfXckXGy9GPQigT/IWk5sqzgVFm
+D1znzEl9+YITBfBSALKUdHxfkXu+UvOx+CjkWow4eSk/0QiF9DCZejGCAiowggImAgEBMDkw
+MTELMAkGA1UEBhMCREsxDDAKBgNVBAoTA1REQzEUMBIGA1UEAxMLVERDIE9DRVMgQ0ECBEOG
+qWgwCQYFKw4DAhoFAKCCAUcwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0B
+CQUxDxcNMDcxMDExMDIzNzQxWjAjBgkqhkiG9w0BCQQxFgQUuXlcydNIJsSUuFhDPpM0Hf2k
+0RAwSAYJKwYBBAGCNxAEMTswOTAxMQswCQYDVQQGEwJESzEMMAoGA1UEChMDVERDMRQwEgYD
+VQQDEwtUREMgT0NFUyBDQQIEQ4apaDBKBgsqhkiG9w0BCRACCzE7oDkwMTELMAkGA1UEBhMC
+REsxDDAKBgNVBAoTA1REQzEUMBIGA1UEAxMLVERDIE9DRVMgQ0ECBEOGqWgwUgYJKoZIhvcN
+AQkPMUUwQzAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcNAwICAUAwBwYF
+Kw4DAgcwDQYIKoZIhvcNAwICASgwDQYJKoZIhvcNAQEBBQAEgYASxf6J3KOdhUZEPnNjwlZ5
+lZft91DRLFoXbcbfHxE7pruxB/QxYfF1gJ1LGaQoJmiASuLG+Paxc60zJnaNN4QBLYcbnclL
+thazB07j9d40xtYaX+8e54C+tWlQNY8f4R6K4JtcSg+ylcbYu4SXWzYOn8Ch/brqM1cG/lEu
+8+SfOgAAAAAAAA==
+--------------ms050803080605020609030209--
