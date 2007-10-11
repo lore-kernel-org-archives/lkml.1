@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXJLC7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbXJLDEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbXJLC7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 22:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXJLC7g
+	id S1755999AbXJLDEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 23:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbXJLDDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 22:59:36 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33636 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbXJLC7f (ORCPT
+	Thu, 11 Oct 2007 23:03:51 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:21979 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755767AbXJLDDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 22:59:35 -0400
-X-IronPort-AV: i="4.21,263,1188792000"; 
-   d="scan'208"; a="53831765:sNHT28648312"
-Subject: Re: [PATCH 1/9] Blackfin SPI driver: use new GPIO API and add
-	error handling
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: David Brownell <david-b@pacbell.net>
-Cc: Bryan Wu <bryan.wu@analog.com>, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-In-Reply-To: <200710111446.29725.david-b@pacbell.net>
-References: <1192097441-24962-1-git-send-email-bryan.wu@analog.com>
-	 <1192097441-24962-2-git-send-email-bryan.wu@analog.com>
-	 <200710111446.29725.david-b@pacbell.net>
-Content-Type: text/plain
+	Thu, 11 Oct 2007 23:03:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0asSqmPxm882oYJF84CaPJhoev3rFizNAwjfi5fMQoAdzv4rbeUB3oNlgYOuqVBx0T8oF+ET2RVYbNiisWSt+5rVFPV3Ltre+miDPNM+aF5sjRjCoqBjNwAA5DTkKRFLLYxcQdPaJ3IpZTIrTQ0zVnrh6que6+WziC73hLnoK4g=  ;
+X-YMail-OSG: C8wNqPYVM1mpiIYLh0847uMV6LjoWR63lhWex26VU4z8T.7AwRnjLrQCsEBg6kkDXtw4zWB2gw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Mr. Berkley Shands" <bshands@exegy.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, linux-netdev@vger.kernel.org
+Subject: Re: 2.6.23 spinlock hang in kswapd under heavy disk write loads
+Date: Thu, 11 Oct 2007 20:32:07 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <470E4E02.4000504@exegy.com>
+In-Reply-To: <470E4E02.4000504@exegy.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Fri, 12 Oct 2007 10:59:28 +0800
-Message-Id: <1192157968.6247.1.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 12 Oct 2007 02:59:33.0266 (UTC) FILETIME=[EA5EEF20:01C80C7B]
+Content-Disposition: inline
+Message-Id: <200710112032.07717.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-11 at 14:46 -0700, David Brownell wrote:
-> On Thursday 11 October 2007, Bryan Wu wrote:
-> > @@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
-> >                 return -ENOMEM;
-> >         }
-> >  
-> > -       if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
-> > -                peripheral_request(P_SPI0_MISO, DRV_NAME) ||
-> > -                peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
-> > -
-> > +       if (setup_pin_mux(1)) {
-> >                 dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
-> > -               goto out_error_queue_alloc;
-> > +               goto out_error;
-> >         }
-> >  
-> >         drv_data = spi_master_get_devdata(master);
-> 
-> 
-> This doesn't apply against 2.6.23 ... ?
+On Friday 12 October 2007 02:23, Mr. Berkley Shands wrote:
+> With DEBUG_SLAB on, I can run only a very short time under 2.6.23
+> before a kernel panic.
+>
+> [  626.028180] eth0: too many iterations (6) in nv_nic_irq.
+> [  626.167583] eth0: too many iterations (6) in nv_nic_irq.
+> [  626.206729] eth0: too many iterations (6) in nv_nic_irq.
+> [  626.400171] eth0: too many iterations (6) in nv_nic_irq.
+> [  626.446374] eth0: too many iterations (6) in nv_nic_irq.
+>
+> followed by the crash at
+> forcedeth:nv_nic_irq_optimized+0x89
+> handle_IRQ_event+0x25
+> handle_edge_IRQ+0xe3
+> do_IRQ
 
-Oops, I missed the first patch in this patch series.
-It will be sent as soon as possible.
+OK, thanks. Probably we should try to fix this problem before
+attempting the more elusive looking corruption.
 
-Thanks a lot
--Bryan
+CC'ed forcedeth maintainer and netdev.
+
+Can you reiterate what your hardware is (including lspci)?
