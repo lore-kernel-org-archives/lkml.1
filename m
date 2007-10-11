@@ -1,104 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXJKPMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbXJKPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbXJKPMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 11:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbXJKPML
+	id S1758927AbXJKPOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbXJKPOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 11:12:11 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:54663 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758693AbXJKPMI (ORCPT
+	Thu, 11 Oct 2007 11:14:11 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:40672 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752751AbXJKPOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 11:12:08 -0400
-Date: Thu, 11 Oct 2007 17:12:06 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Rob Landley <rob@landley.net>
-cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-In-Reply-To: <200710110827.12631.rob@landley.net>
-Message-ID: <Pine.LNX.4.64.0710111707270.3729@anakin>
-References: <200710101722.21126.rob@landley.net> <20071011113931.GB8393@uranus.ravnborg.org>
- <Pine.LNX.4.64.0710111443530.3729@anakin> <200710110827.12631.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 11 Oct 2007 11:14:10 -0400
+To: haveblue@us.ibm.com
+CC: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
+       haveblue@us.ibm.com
+In-reply-to: <20071010163439.9DB7F219@kernel> (message from Dave Hansen on
+	Wed, 10 Oct 2007 09:34:39 -0700)
+Subject: Re: [RFC][PATCH 2/7] get mount write in __dentry_open()
+References: <20071010163439.0F8089F7@kernel> <20071010163439.9DB7F219@kernel>
+Message-Id: <E1IfzeX-0007qp-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 11 Oct 2007 17:08:45 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007, Rob Landley wrote:
-> On Thursday 11 October 2007 7:46:47 am Geert Uytterhoeven wrote:
-> > On Thu, 11 Oct 2007, Sam Ravnborg wrote:
-> > > On Thu, Oct 11, 2007 at 09:25:19AM +0200, Geert Uytterhoeven wrote:
-> > > > On Wed, 10 Oct 2007, Rob Landley wrote:
-> > > > > Rip out hardwired cross compiler name assumption that only m68k
-> > > > > makes.
-> > > > >
-> > > > > Signed-off-by: Rob Landley <rob@landley.net>
-> > > > > ---
-> > > > > When you cross compile, you have to set the prefix CROSS_COMPILE to
-> > > > > your cross compiler prefix.  You need to do this for all targets
-> > > > > (arm, mips, ppc, x86-64 on x86, etc).  This is not specific to m68k,
-> > > > > and this value is supplied _to_ the build, not supplied _by_ the
-> > > > > build.
-> > > > >
-> > > > > The build shouldn't unconditionally overwrite the existing value of
-> > > > > this variable with one it makes up.  It has no idea what I called my
-> > > > > cross compiler.
-> > > >
-> > > > The build does not unconditionally overwrite the existing value of this
-> > > > variable. You can specify the name of your cross compiler like this:
-> > > >
-> > > >     make CROSS_COMPILE=m68k-linux-
-> > > >
-> > > > BTW, m68k-linux-gnu- is the default name for a m68k cross compiler.
-> > >
-> > > For "make headers_install" this is not good.
-> > > But I see there is confliting usages here.
-> > > 1) current functionality makes it easy to build a cross compiled m68k
-> > >
-> > > Btw. if you did:
-> > > CROSS_COMPILE ?= m68k-linux-
-> > >
-> > > then I could do:
-> > > export CROSS_COMPILE=my-m68k-linux-
-> > > make
-> > >
-> > > and still get the expected result.
-> >
-> > That won't work, cfr. http://lkml.org/lkml/2007/5/6/58.
 > 
-> Reading the patch in that link, recent cross compilers from _where_?  
-> Buildroot?  Cross-tools?  Gentoo embedded?  Cross Linux From Scratch?  My 
-> Firmware Linux project?
->
-> You assume they all use the same name, yet your patch changes them from one 
-> default name to another default name, presumably due to a gcc version change 
-> becoming increasingly political about the GNU/Linux/Dammit thing...
+> 
+> The first patch fixes an actual bug.  I think the
+> reset will reduce the chance for any future bugs
+> to creep in.
+> 
+> --
+> 
+> The r/o bind mount patches require matching mnt_want_write()
+> at filp creation time with a mnt_drop_write() at __fput().
+> 
+> We used to do this in may_open(), but Miklos pointed out
+> that __dentry_open() is used as well to create filps.  We
+> don't currently do mnt_want_write() for these.
+> 
+> If a filp on a writeable file is created this way, and
+> destroyed via __fput() we'll get a mount count imbalance.
+> 
+> This patch moves the mount write count acquisition from
+> may_open() into __dentry_open(), where we should catch
+> many more of the users.
+> 
+> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+> ---
+> 
+>  lxc-dave/fs/namei.c |   12 ------------
+>  lxc-dave/fs/open.c  |   45 ++++++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 38 insertions(+), 19 deletions(-)
+> 
+> diff -puN fs/namei.c~get-write-in-__dentry_open fs/namei.c
+> --- lxc/fs/namei.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
+> +++ lxc-dave/fs/namei.c	2007-10-04 18:02:48.000000000 -0700
+> @@ -1621,14 +1621,6 @@ int may_open(struct nameidata *nd, int a
+>  			return -EACCES;
+>  
+>  		flag &= ~O_TRUNC;
+> -	} else if (flag & FMODE_WRITE) {
+> -		/*
+> -		 * effectively: !special_file()
+> -		 * balanced by __fput()
+> -		 */
+> -		error = mnt_want_write(nd->mnt);
+> -		if (error)
+> -			return error;
+>  	}
 
-Compilers build from the only remaining distribution that supports (sort
-of) m68k: Debian.
+Maybe readonly should still be checked here, so that the order of
+error checking doesn't change.  If racing with a read-only remount the
+order is irrelevant anyway.  Something like this?
 
-> None of the other targets I've tried attempt to _supply_ a default.  Just like 
-Obviously you haven't tried them all...
+	} else if (flag & FMODE_WRITE && __mnt_is_readonly(nd->mnt)) {
+		return -EROFS
+	}
 
-> the Linux kernel errors out early in the build if you distclean and then try 
-> to run "make" without having run config first.  It doesn't run "defconfig" 
-> for you and continue on in that case.  But m68k, uniquely, assumes it knows 
-> what you want to do when you didn't tell it.  Other targets do not do this.
+>  	error = vfs_permission(nd, acc_mode);
+> @@ -1778,11 +1770,7 @@ do_last:
+>  
+>  	/* Negative dentry, just create the file */
+>  	if (!path.dentry->d_inode) {
+> -		error = mnt_want_write(nd->mnt);
+> -		if (error)
+> -			goto exit_mutex_unlock;
+>  		error = open_namei_create(nd, &path, flag, mode);
+> -		mnt_drop_write(nd->mnt);
 
-If you cross compile for m68k and don't specify a toolchain, you get a
-default one: the one the m68k developers use.
+This is still needed, isn't it?
 
-On some other architectures, you always have to specify the toolchain.
-What's wrong with providing a default?
+And they should be added around do_truncate() as well, since you
+remove the protection from may_open().
 
-Gr{oetje,eeting}s,
+This one introduces an interesting race between ro-remount and
+open(O_TRUNC), where the truncate can succeed but the open fail with
+EROFS.  Is that a problem?
 
-						Geert
+>  		if (error)
+>  			goto exit;
+>  		return 0;
+> diff -puN fs/open.c~get-write-in-__dentry_open fs/open.c
+> --- lxc/fs/open.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
+> +++ lxc-dave/fs/open.c	2007-10-04 18:02:48.000000000 -0700
+> @@ -766,22 +766,51 @@ out:
+>  	return error;
+>  }
+>  
+> +/*
+> + * You have to be very careful that these write
+> + * counts get cleaned up in error cases and
+> + * upon __fput().  This should probably never
+> + * be called outside of __dentry_open().
+> + */
+> +static inline int __get_file_write_access(struct inode *inode,
+> +					  struct vfsmount *mnt)
+> +{
+> +	int error;
+> +	error = get_write_access(inode);
+> +	if (error)
+> +		return error;
+> +	/*
+> +	 * Do not take mount writer counts on
+> +	 * special files since no writes to
+> +	 * the mount itself will occur.
+> +	 */
+> +	if (special_file(inode->i_mode))
+> +		return 0;
+> +
+> +	/*
+> +	 * Balanced in __fput()
+> +	 */
+> +	error = mnt_want_write(mnt);
+> +	if (error)
+> +		put_write_access(inode);
+> +	return error;
+> +}
+> +
+>  static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
+>  					int flags, struct file *f,
+>  					int (*open)(struct inode *, struct file *))
+>  {
+>  	struct inode *inode;
+> -	int error;
+> +	int error = 0;
+>  
+>  	f->f_flags = flags;
+>  	f->f_mode = ((flags+1) & O_ACCMODE) | FMODE_LSEEK |
+>  				FMODE_PREAD | FMODE_PWRITE;
+>  	inode = dentry->d_inode;
+> -	if (f->f_mode & FMODE_WRITE) {
+> -		error = get_write_access(inode);
+> -		if (error)
+> -			goto cleanup_file;
+> -	}
+> +	if (f->f_mode & FMODE_WRITE)
+> +		error = __get_file_write_access(inode, mnt);
+> +	if (error)
+> +		goto cleanup_file;
+>  
+>  	f->f_mapping = inode->i_mapping;
+>  	f->f_path.dentry = dentry;
+> @@ -820,8 +849,10 @@ static struct file *__dentry_open(struct
+>  
+>  cleanup_all:
+>  	fops_put(f->f_op);
+> -	if (f->f_mode & FMODE_WRITE)
+> +	if (f->f_mode & FMODE_WRITE) {
+>  		put_write_access(inode);
+> +		mnt_drop_write(mnt);
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Shouldn't this be conditional on !special_file()?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Miklos
