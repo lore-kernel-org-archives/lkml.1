@@ -1,150 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbXJKXbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbXJKXe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbXJKXbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 19:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXJKXbP
+	id S1753977AbXJKXe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 19:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXJKXeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 19:31:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:42025 "EHLO ozlabs.org"
+	Thu, 11 Oct 2007 19:34:22 -0400
+Received: from mga11.intel.com ([192.55.52.93]:22267 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbXJKXbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 19:31:14 -0400
-Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE
-	#define
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: markn@au1.ibm.com, PowerPC dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-References: <20071011071558.676463639@au1.ibm.com>
-	 <20071011072208.075979098@au1.ibm.com>
-	 <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZbF/pTGSW0O73+6a+MeH"
-Date: Fri, 12 Oct 2007 09:31:12 +1000
-Message-Id: <1192145472.6274.4.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1752450AbXJKXeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 19:34:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,261,1188802800"; 
+   d="scan'208";a="170124318"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C80C5F.25B8B407"
+Subject: RE: TPM driver changes to support multiple locality
+Date: Thu, 11 Oct 2007 16:33:36 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD628CB9E61@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <20071011160221.87f77c61.randy.dunlap@oracle.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: TPM driver changes to support multiple locality
+Thread-Index: AcgMWuayc76pXWlNSleAG87w4tTQvAAAIS6g
+References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com><27383.1192045583@turing-police.cc.vt.edu><A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com><20071011115429.92326cbd.randy.dunlap@oracle.com><A3258B497F1C1441AD36A2E8B45FD628CB9CB2@scsmsx412.amr.corp.intel.com><20071011143917.0eb75029.randy.dunlap@oracle.com><A3258B497F1C1441AD36A2E8B45FD628CB9DD5@scsmsx412.amr.corp.intel.com> <20071011160221.87f77c61.randy.dunlap@oracle.com>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Oct 2007 23:33:37.0865 (UTC) FILETIME=[25FA5B90:01C80C5F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
 
---=-ZbF/pTGSW0O73+6a+MeH
-Content-Type: text/plain
+------_=_NextPart_001_01C80C5F.25B8B407
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-10-11 at 08:04 -0500, Kumar Gala wrote:
-> On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
->=20
-> > Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code =20
-> > which
-> > allows for more flexibility in the note type for the state of =20
-> > 'extended
-> > floating point' implementations in coredumps. New note types can =20
-> > now be
-> > added with an appropriate #define.
-> >
-> > #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
-> > there's are no change in behaviour.
->=20
-> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled =20
-> to the x86 specific name?
->=20
-> >
-> > Signed-off-by: Mark Nelson <markn@au1.ibm.com>
-> > ---
-> >  arch/ia64/ia32/elfcore32.h     |    1 +
-> >  arch/x86_64/ia32/ia32_binfmt.c |    1 +
-> >  fs/binfmt_elf.c                |    4 ++--
-> >  include/asm-i386/elf.h         |    1 +
-> >  4 files changed, 5 insertions(+), 2 deletions(-)
-> >
-> > Index: linux/arch/ia64/ia32/elfcore32.h
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/arch/ia64/ia32/elfcore32.h
-> > +++ linux/arch/ia64/ia32/elfcore32.h
-> > @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
-> >  }
-> >
-> >  #define ELF_CORE_COPY_XFPREGS 1
-> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
-> >  static inline int
-> >  elf_core_copy_task_xfpregs(struct task_struct *tsk, =20
-> > elf_fpxregset_t *xfpu)
-> >  {
-> > Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-> > +++ linux/arch/x86_64/ia32/ia32_binfmt.c
-> > @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
-> >  }
-> >
-> >  #define ELF_CORE_COPY_XFPREGS 1
-> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
-> >  static inline int
-> >  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t =20
-> > *xfpu)
-> >  {
-> > Index: linux/fs/binfmt_elf.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/fs/binfmt_elf.c
-> > +++ linux/fs/binfmt_elf.c
-> > @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
-> >
-> >  #ifdef ELF_CORE_COPY_XFPREGS
-> >  	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
-> > -		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
-> > -			  &t->xfpu);
-> > +		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-> > +			  sizeof(t->xfpu), &t->xfpu);
-> >  		t->num_notes++;
-> >  		sz +=3D notesize(&t->notes[2]);
-> >  	}
->=20
-> You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
->=20
-> Also, I'm not a fan of your proposed mechanism to "overload" the =20
-> elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t =20
-> and have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
 
-He's not overloading it, there is no such thing as an elf_fpxregset_t,
-unless it's typedef'd to something else by the arch code, eg:
 
-include/asm-i386/elf.h:typedef struct user_fxsr_struct elf_fpxregset_t;
-include/asm-ia64/elf.h:typedef unsigned long elf_fpxregset_t;
+-----Original Message-----
+From: Randy Dunlap [mailto:randy.dunlap@oracle.com]=20
+Sent: Thursday, October 11, 2007 4:02 PM
+To: Agarwal, Lomesh
+Cc: Valdis.Kletnieks@vt.edu; linux-kernel@vger.kernel.org
+Subject: Re: TPM driver changes to support multiple locality
 
-Introducing another typedef would just be another layer of obfuscation
-IMO, and the elf code doesn't need any more of that.
+On Thu, 11 Oct 2007 15:46:03 -0700 Agarwal, Lomesh wrote:
 
-cheers
+> Attached is the patch which resolves all the comments.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Inline patches are preferred so that reviewers can comment on them
+more easily.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+What mail client are you using?
+[Agarwal, Lomesh] I am using MS Outlook. Earlier you said inline patches
+have problem because of mail client. That's why I sent it as attachment.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+The patch has trailing CRs on each line ("DOS mode").
 
---=-ZbF/pTGSW0O73+6a+MeH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Just verifying:  this TPM device has interrupts per locality?
 
-iD8DBQBHDrJAdSjSd0sB4dIRAjLxAJ4mzBvuCsD43PszkIoCDxrhXK04SACgpjSC
-cIMJvUxlwPO4hqc9dMpHbLA=
-=8e3U
------END PGP SIGNATURE-----
++	/* check if interrupt is meant for this locality */
++	if (check_locality(chip, locality) < 0)
++		return IRQ_NONE;
 
---=-ZbF/pTGSW0O73+6a+MeH--
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Agarwal, Lomesh] TPM device has only one interrupt. so on receiving
+interrupt driver has to make sure that its meant for its locality.
 
+init_tis() still seems to have some problems.
+
+ static int __init init_tis(void)
+ {
++#define DEVNAME_SIZE 10
++
+ 	int rc;
+=20
++	if ((locality < 0) || (locality > 4))
++		return PTR_ERR(pdev);
+
+pdev hasn't been set (so it's NULL).
+
++		pdev =3D platform_device_register_simple(devname, -1,
+NULL, 0);
++		if (IS_ERR(pdev))
+ 			return PTR_ERR(pdev);
+
+Error path above needs to call driver_unregister().
+[Agarwal, Lomesh] attached is the new patch.
+
+
+---
+~Randy
+
+------_=_NextPart_001_01C80C5F.25B8B407
+Content-Type: application/octet-stream;
+	name="tpm_tis.c.patch"
+Content-Transfer-Encoding: base64
+Content-Description: tpm_tis.c.patch
+Content-Disposition: attachment;
+	filename="tpm_tis.c.patch"
+
+QWRkaW5nIHN1cHBvcnQgZm9yIG11bHRpcGxlIGxvY2FsaXRpZXMgaW4gdHBtIGRyaXZlcgp0aGlz
+IGRyaXZlciBjYW4gYmUgaW5zdGF0aWF0ZWQgd2l0aCBhIGxvY2FsaXR5IHBhcmFtZXRlciBhbmQg
+dGhhdCBpbnN0YW5jZQp3aWxsIG9wZXJhdGUgb24gZ2l2ZW4gbG9jYWxpdHkuCkJ5IGRlZmF1bHQg
+aXQgd29ya3Mgb24gbG9jYWxpdHkgMApTaWduZWQtb2ZmLWJ5OiBMb21lc2ggQWdhcndhbCA8bG9t
+ZXNoLmFnYXJ3YWxAaW50ZWwuY29tPgotLS0KCmRyaXZlcnMvY2hhci90cG0vdHBtX3Rpcy5jIHwg
+ICA4MyArKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQs
+IDU4IGluc2VydGlvbnMoKyksIDI1IGRlbGV0aW9ucygtKQoKLS0tIHByaXN0aW5lLWxpbnV4LTIu
+Ni4xOC9kcml2ZXJzL2NoYXIvdHBtL3RwbV90aXMuYwkyMDA2LTA5LTIwIDExOjQyOjA2LjAwMDAw
+MDAwMCArMDgwMAorKysgbGludXgtMi42LjE4LXhlbi9kcml2ZXJzL2NoYXIvdHBtL3RwbV90aXMu
+YwkyMDA3LTEwLTEyIDA3OjE2OjQyLjAwMDAwMDAwMCArMDgwMApAQCAtNTYsMjkgKzU2LDM3IEBA
+IGVudW0gdGlzX2ludF9mbGFncyB7CiAKIGVudW0gdGlzX2RlZmF1bHRzIHsKIAlUSVNfTUVNX0JB
+U0UgPSAweEZFRDQwMDAwLAotCVRJU19NRU1fTEVOID0gMHg1MDAwLAorCVRJU19MT0NBTElUWV9T
+SElGVCA9IDEyLAorCVRJU19NRU1fTEVOID0gMHgxMDAwLAogCVRJU19TSE9SVF9USU1FT1VUID0g
+NzUwLAkvKiBtcyAqLwogCVRJU19MT05HX1RJTUVPVVQgPSAyMDAwLAkvKiAyIHNlYyAqLwogfTsK
+IAotI2RlZmluZQlUUE1fQUNDRVNTKGwpCQkJKDB4MDAwMCB8ICgobCkgPDwgMTIpKQotI2RlZmlu
+ZQlUUE1fSU5UX0VOQUJMRShsKQkJKDB4MDAwOCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1f
+SU5UX1ZFQ1RPUihsKQkJKDB4MDAwQyB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fSU5UX1NU
+QVRVUyhsKQkJKDB4MDAxMCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fSU5URl9DQVBTKGwp
+CQkoMHgwMDE0IHwgKChsKSA8PCAxMikpCi0jZGVmaW5lCVRQTV9TVFMobCkJCQkoMHgwMDE4IHwg
+KChsKSA8PCAxMikpCi0jZGVmaW5lCVRQTV9EQVRBX0ZJRk8obCkJCSgweDAwMjQgfCAoKGwpIDw8
+IDEyKSkKKyNkZWZpbmUJVFBNX0FDQ0VTUyhsKQkJCSgweDAwMDApCisjZGVmaW5lCVRQTV9JTlRf
+RU5BQkxFKGwpCQkoMHgwMDA4KQorI2RlZmluZQlUUE1fSU5UX1ZFQ1RPUihsKQkJKDB4MDAwQykK
+KyNkZWZpbmUJVFBNX0lOVF9TVEFUVVMobCkJCSgweDAwMTApCisjZGVmaW5lCVRQTV9JTlRGX0NB
+UFMobCkJCSgweDAwMTQpCisjZGVmaW5lCVRQTV9TVFMobCkJCQkoMHgwMDE4KQorI2RlZmluZQlU
+UE1fREFUQV9GSUZPKGwpCQkoMHgwMDI0KQogCi0jZGVmaW5lCVRQTV9ESURfVklEKGwpCQkJKDB4
+MEYwMCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fUklEKGwpCQkJKDB4MEYwNCB8ICgobCkg
+PDwgMTIpKQorI2RlZmluZQlUUE1fRElEX1ZJRChsKQkJCSgweDBGMDApCisjZGVmaW5lCVRQTV9S
+SUQobCkJCQkoMHgwRjA0KQogCiBzdGF0aWMgTElTVF9IRUFEKHRpc19jaGlwcyk7CiBzdGF0aWMg
+REVGSU5FX1NQSU5MT0NLKHRpc19sb2NrKTsKIAogc3RhdGljIGludCBjaGVja19sb2NhbGl0eShz
+dHJ1Y3QgdHBtX2NoaXAgKmNoaXAsIGludCBsKQogewotCWlmICgoaW9yZWFkOChjaGlwLT52ZW5k
+b3IuaW9iYXNlICsgVFBNX0FDQ0VTUyhsKSkgJgotCSAgICAgKFRQTV9BQ0NFU1NfQUNUSVZFX0xP
+Q0FMSVRZIHwgVFBNX0FDQ0VTU19WQUxJRCkpID09CisJdW5zaWduZWQgY2hhciB0cG1fYWNjZXNz
+OworCisJdHBtX2FjY2VzcyA9IGlvcmVhZDgoY2hpcC0+dmVuZG9yLmlvYmFzZSArIFRQTV9BQ0NF
+U1MobCkpOworCisJLyogY2hlY2sgaWYgbG9jYWxpdHkgaXMgY2xvc2VkICovCisJaWYgKHRwbV9h
+Y2Nlc3MgPT0gMHhGRikKKwkJcmV0dXJuIC0xOworCisJaWYgKCh0cG1fYWNjZXNzICYgKFRQTV9B
+Q0NFU1NfQUNUSVZFX0xPQ0FMSVRZIHwgVFBNX0FDQ0VTU19WQUxJRCkpID09CiAJICAgIChUUE1f
+QUNDRVNTX0FDVElWRV9MT0NBTElUWSB8IFRQTV9BQ0NFU1NfVkFMSUQpKQogCQlyZXR1cm4gY2hp
+cC0+dmVuZG9yLmxvY2FsaXR5ID0gbDsKIApAQCAtMjUxLDEwICsyNTksMTQgQEAgc3RhdGljIGlu
+dCB0cG1fdGlzX3JlY3Yoc3RydWN0IHRwbV9jaGlwIAogCiBvdXQ6CiAJdHBtX3Rpc19yZWFkeShj
+aGlwKTsKLQlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMCk7
+CisJcmVsZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3IubG9jYWxpdHksIDEpOwogCXJl
+dHVybiBzaXplOwogfQogCitzdGF0aWMgaW50IGxvY2FsaXR5OworbW9kdWxlX3BhcmFtKGxvY2Fs
+aXR5LCBpbnQsIDA0NDQpOworTU9EVUxFX1BBUk1fREVTQyhsb2NhbGl0eSwgIlRQTSBMb2NhbGl0
+eSBUbyBhY2Nlc3MiKTsKKwogLyoKICAqIElmIGludGVycnVwdHMgYXJlIHVzZWQgKHNpZ25hbGVk
+IGJ5IGFuIGlycSBzZXQgaW4gdGhlIHZlbmRvciBzdHJ1Y3R1cmUpCiAgKiB0cG0uYyBjYW4gc2tp
+cCBwb2xsaW5nIGZvciB0aGUgZGF0YSB0byBiZSBhdmFpbGFibGUgYXMgdGhlIGludGVycnVwdCBp
+cwpAQCAtMjY2LDcgKzI3OCw3IEBAIHN0YXRpYyBpbnQgdHBtX3Rpc19zZW5kKHN0cnVjdCB0cG1f
+Y2hpcCAKIAlzaXplX3QgY291bnQgPSAwOwogCXUzMiBvcmRpbmFsOwogCi0JaWYgKHJlcXVlc3Rf
+bG9jYWxpdHkoY2hpcCwgMCkgPCAwKQorCWlmIChyZXF1ZXN0X2xvY2FsaXR5KGNoaXAsIGxvY2Fs
+aXR5KSA8IDApCiAJCXJldHVybiAtRUJVU1k7CiAKIAlzdGF0dXMgPSB0cG1fdGlzX3N0YXR1cyhj
+aGlwKTsKQEAgLTMyNiw3ICszMzgsNyBAQCBzdGF0aWMgaW50IHRwbV90aXNfc2VuZChzdHJ1Y3Qg
+dHBtX2NoaXAgCiAJcmV0dXJuIGxlbjsKIG91dF9lcnI6CiAJdHBtX3Rpc19yZWFkeShjaGlwKTsK
+LQlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMCk7CisJcmVs
+ZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3IubG9jYWxpdHksIDEpOwogCXJldHVybiBy
+YzsKIH0KIApAQCAtNDAxLDcgKzQxMywxMCBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgdGlzX2ludF9o
+YW5kbGVyKGludCBpCiB7CiAJc3RydWN0IHRwbV9jaGlwICpjaGlwID0gKHN0cnVjdCB0cG1fY2hp
+cCAqKSBkZXZfaWQ7CiAJdTMyIGludGVycnVwdDsKLQlpbnQgaTsKKworCS8qIGNoZWNrIGlmIGlu
+dGVycnVwdCBpcyBtZWFudCBmb3IgdGhpcyBsb2NhbGl0eSAqLworCWlmIChjaGVja19sb2NhbGl0
+eShjaGlwLCBsb2NhbGl0eSkgPCAwKQorCQlyZXR1cm4gSVJRX05PTkU7CiAKIAlpbnRlcnJ1cHQg
+PSBpb3JlYWQzMihjaGlwLT52ZW5kb3IuaW9iYXNlICsKIAkJCSAgICAgVFBNX0lOVF9TVEFUVVMo
+Y2hpcC0+dmVuZG9yLmxvY2FsaXR5KSk7CkBAIC00MTEsMTAgKzQyNiw2IEBAIHN0YXRpYyBpcnFy
+ZXR1cm5fdCB0aXNfaW50X2hhbmRsZXIoaW50IGkKIAogCWlmIChpbnRlcnJ1cHQgJiBUUE1fSU5U
+Rl9EQVRBX0FWQUlMX0lOVCkKIAkJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZjaGlwLT52ZW5kb3Iu
+cmVhZF9xdWV1ZSk7Ci0JaWYgKGludGVycnVwdCAmIFRQTV9JTlRGX0xPQ0FMSVRZX0NIQU5HRV9J
+TlQpCi0JCWZvciAoaSA9IDA7IGkgPCA1OyBpKyspCi0JCQlpZiAoY2hlY2tfbG9jYWxpdHkoY2hp
+cCwgaSkgPj0gMCkKLQkJCQlicmVhazsKIAlpZiAoaW50ZXJydXB0ICYKIAkgICAgKFRQTV9JTlRG
+X0xPQ0FMSVRZX0NIQU5HRV9JTlQgfCBUUE1fSU5URl9TVFNfVkFMSURfSU5UIHwKIAkgICAgIFRQ
+TV9JTlRGX0NNRF9SRUFEWV9JTlQpKQpAQCAtNDQwLDcgKzQ1MSw3IEBAIHN0YXRpYyBpbnQgdHBt
+X3Rpc19pbml0KHN0cnVjdCBkZXZpY2UgKmQKIAlzdHJ1Y3QgdHBtX2NoaXAgKmNoaXA7CiAKIAlp
+ZiAoIXN0YXJ0KQotCQlzdGFydCA9IFRJU19NRU1fQkFTRTsKKwkJc3RhcnQgPSBUSVNfTUVNX0JB
+U0UgfCAobG9jYWxpdHkgPDwgVElTX0xPQ0FMSVRZX1NISUZUKTsKIAlpZiAoIWxlbikKIAkJbGVu
+ID0gVElTX01FTV9MRU47CiAKQEAgLTQ5MCw4ICs1MDEsMTAgQEAgc3RhdGljIGludCB0cG1fdGlz
+X2luaXQoc3RydWN0IGRldmljZSAqZAogCWlmIChpbnRmY2FwcyAmIFRQTV9JTlRGX0RBVEFfQVZB
+SUxfSU5UKQogCQlkZXZfZGJnKGRldiwgIlx0RGF0YSBBdmFpbCBJbnQgU3VwcG9ydFxuIik7CiAK
+LQlpZiAocmVxdWVzdF9sb2NhbGl0eShjaGlwLCAwKSAhPSAwKSB7Ci0JCXJjID0gLUVOT0RFVjsK
+KwlpZiAocmVxdWVzdF9sb2NhbGl0eShjaGlwLCBsb2NhbGl0eSkgPCAwKSB7CisJCXJjID0gLUVC
+VVNZOworCQlwcmludGsoS0VSTl9XQVJOSU5HICJ0cG1fdGlzOiBmYWlsZWQgcmVxdWVzdF9sb2Nh
+bGl0eSAlZFxuIiwKKwkJCWxvY2FsaXR5KTsKIAkJZ290byBvdXRfZXJyOwogCX0KIApAQCAtNTgy
+LDkgKzU5NSwxMSBAQCBzdGF0aWMgaW50IHRwbV90aXNfaW5pdChzdHJ1Y3QgZGV2aWNlICpkCiAK
+IAl0cG1fZ2V0X3RpbWVvdXRzKGNoaXApOwogCXRwbV9jb250aW51ZV9zZWxmdGVzdChjaGlwKTsK
+KwlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMSk7CiAKIAly
+ZXR1cm4gMDsKIG91dF9lcnI6CisJcmVsZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3Iu
+bG9jYWxpdHksIDEpOwogCWlmIChjaGlwLT52ZW5kb3IuaW9iYXNlKQogCQlpb3VubWFwKGNoaXAt
+PnZlbmRvci5pb2Jhc2UpOwogCXRwbV9yZW1vdmVfaGFyZHdhcmUoY2hpcC0+ZGV2KTsKQEAgLTYz
+Niw3ICs2NTEsNyBAQCBtb2R1bGVfcGFyYW1fc3RyaW5nKGhpZCwgdHBtX3BucF90YmxbVElTCiBN
+T0RVTEVfUEFSTV9ERVNDKGhpZCwgIlNldCBhZGRpdGlvbmFsIHNwZWNpZmljIEhJRCBmb3IgdGhp
+cyBkcml2ZXIgdG8gcHJvYmUiKTsKIAogc3RhdGljIHN0cnVjdCBkZXZpY2VfZHJpdmVyIHRpc19k
+cnYgPSB7Ci0JLm5hbWUgPSAidHBtX3RpcyIsCisJLm5hbWUgPSAiIiwKIAkuYnVzID0gJnBsYXRm
+b3JtX2J1c190eXBlLAogCS5vd25lciA9IFRISVNfTU9EVUxFLAogCS5zdXNwZW5kID0gdHBtX3Bt
+X3N1c3BlbmQsCkBAIC02NDgsMTkgKzY2MywzNiBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2Rl
+dmljZSAqcGRldjsKIHN0YXRpYyBpbnQgZm9yY2U7CiBtb2R1bGVfcGFyYW0oZm9yY2UsIGJvb2ws
+IDA0NDQpOwogTU9EVUxFX1BBUk1fREVTQyhmb3JjZSwgIkZvcmNlIGRldmljZSBwcm9iZSByYXRo
+ZXIgdGhhbiB1c2luZyBBQ1BJIGVudHJ5Iik7CisKK3N0YXRpYyBjaGFyICpkZXZuYW1lOworCiBz
+dGF0aWMgaW50IF9faW5pdCBpbml0X3Rpcyh2b2lkKQogeworI2RlZmluZSBERVZOQU1FX1NJWkUg
+MTAKKwogCWludCByYzsKIAorCWlmICgobG9jYWxpdHkgPCAwKSB8fCAobG9jYWxpdHkgPiA0KSkK
+KwkJcmV0dXJuIC0xOworCiAJaWYgKGZvcmNlKSB7CisJCWRldm5hbWUgPSBrbWFsbG9jKERFVk5B
+TUVfU0laRSwgR0ZQX0tFUk5FTCk7CisJCXNjbnByaW50ZihkZXZuYW1lLCBERVZOQU1FX1NJWkUs
+ICIlcyVkIiwgInRwbV90aXMiLCBsb2NhbGl0eSk7CisKKwkJdGlzX2Rydi5uYW1lID0gZGV2bmFt
+ZTsKIAkJcmMgPSBkcml2ZXJfcmVnaXN0ZXIoJnRpc19kcnYpOwogCQlpZiAocmMgPCAwKQogCQkJ
+cmV0dXJuIHJjOwotCQlpZiAoSVNfRVJSKHBkZXY9cGxhdGZvcm1fZGV2aWNlX3JlZ2lzdGVyX3Np
+bXBsZSgidHBtX3RpcyIsIC0xLCBOVUxMLCAwKSkpCisKKwkJcGRldiA9IHBsYXRmb3JtX2Rldmlj
+ZV9yZWdpc3Rlcl9zaW1wbGUoZGV2bmFtZSwgLTEsIE5VTEwsIDApOworCQlpZiAoSVNfRVJSKHBk
+ZXYpKSB7CisJCQlkcml2ZXJfdW5yZWdpc3RlcigmdGlzX2Rydik7CiAJCQlyZXR1cm4gUFRSX0VS
+UihwZGV2KTsKKwkJfQogCQlpZigocmM9dHBtX3Rpc19pbml0KCZwZGV2LT5kZXYsIDAsIDApKSAh
+PSAwKSB7CiAJCQlwbGF0Zm9ybV9kZXZpY2VfdW5yZWdpc3RlcihwZGV2KTsKIAkJCWRyaXZlcl91
+bnJlZ2lzdGVyKCZ0aXNfZHJ2KTsKKwkJCWtmcmVlKGRldm5hbWUpOwogCQl9CiAJCXJldHVybiBy
+YzsKIAl9CkBAIC02OTIsNiArNzI0LDcgQEAgc3RhdGljIHZvaWQgX19leGl0IGNsZWFudXBfdGlz
+KHZvaWQpCiAJaWYgKGZvcmNlKSB7CiAJCXBsYXRmb3JtX2RldmljZV91bnJlZ2lzdGVyKHBkZXYp
+OwogCQlkcml2ZXJfdW5yZWdpc3RlcigmdGlzX2Rydik7CisJCWtmcmVlKGRldm5hbWUpOwogCX0g
+ZWxzZQogCQlwbnBfdW5yZWdpc3Rlcl9kcml2ZXIoJnRpc19wbnBfZHJpdmVyKTsKIH0K
+
+------_=_NextPart_001_01C80C5F.25B8B407--
