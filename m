@@ -1,127 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbXJKCdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXJKCfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbXJKCdq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 22:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbXJKCdj
+	id S1757863AbXJKCfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 22:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXJKCf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 22:33:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54660 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755775AbXJKCdi (ORCPT
+	Wed, 10 Oct 2007 22:35:27 -0400
+Received: from mga05.intel.com ([192.55.52.89]:51367 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755570AbXJKCf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 22:33:38 -0400
-Date: Wed, 10 Oct 2007 19:29:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>, Cliff Wickman <cpw@sgi.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] cpuset sched_load_balance flag
-Message-Id: <20071010192957.78d3668f.akpm@linux-foundation.org>
-In-Reply-To: <20071006094747.17518.44098.sendpatchset@jackhammer.engr.sgi.com>
-References: <20071006094747.17518.44098.sendpatchset@jackhammer.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 10 Oct 2007 22:35:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
+   d="scan'208";a="341863498"
+Subject: Re: Linux 2.6.23
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071010101452.GA25433@elte.hu>
+References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
+	 <1191996740.8694.7.camel@entropy>  <20071010101452.GA25433@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 11 Oct 2007 10:34:17 +0800
+Message-Id: <1192070057.3019.17.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Oct 2007 02:47:47 -0700 Paul Jackson <pj@sgi.com> wrote:
+On Wed, 2007-10-10 at 12:14 +0200, Ingo Molnar wrote:
+> * Nicholas Miell <nmiell@comcast.net> wrote:
+> 
+> > Does CFS still generate the following sysbench graphs with 2.6.23, or 
+> > did that get fixed?
+> >
+> > http://people.freebsd.org/~kris/scaling/linux-pgsql.png 
+> > http://people.freebsd.org/~kris/scaling/linux-mysql.png
+I also captured the same issue on a couple of machines.
 
-> From: Paul Jackson <pj@sgi.com>
 > 
-> Add a new per-cpuset flag called 'sched_load_balance'.
+> as far as my testsystem goes, v2.6.23 beats v2.6.22.9 in sysbench:
 > 
-> When enabled in a cpuset (the default value) it tells the kernel
-> scheduler that the scheduler should provide the normal load
-> balancing on the CPUs in that cpuset, sometimes moving tasks
-> from one CPU to a second CPU if the second CPU is less loaded
-> and if that task is allowed to run there.
+>     http://redhat.com/~mingo/misc/sysbench.jpg
 > 
-> When disabled (write "0" to the file) then it tells the kernel
-> scheduler that load balancing is not required for the CPUs in
-> that cpuset.
+> As you can see it in the graph, v2.6.23 schedules much more consistently 
+> too. [ v2.6.22 has a small (but potentially statistically insignificant) 
+> edge at 4-6 clients, and CFS has a slightly better peak (which is 
+> statistically insignificant). ]
 > 
-> Now even if this flag is disabled for some cpuset, the kernel
-> may still have to load balance some or all the CPUs in that
-> cpuset, if some overlapping cpuset has its sched_load_balance
-> flag enabled.
-> 
-> If there are some CPUs that are not in any cpuset whose
-> sched_load_balance flag is enabled, the kernel scheduler will
-> not load balance tasks to those CPUs.
-> 
-> Moreover the kernel will partition the 'sched domains'
-> (non-overlapping sets of CPUs over which load balancing is
-> attempted) into the finest granularity partition that it can
-> find, while still keeping any two CPUs that are in the same
-> shed_load_balance enabled cpuset in the same element of the
-> partition.
-> 
-> This serves two purposes:
->  1) It provides a mechanism for real time isolation of some CPUs, and
->  2) it can be used to improve performance on systems with many CPUs
->     by supporting configurations in which load balancing is not done
->     across all CPUs at once, but rather only done in several smaller
->     disjoint sets of CPUs.
-> 
-> This mechanism replaces the earlier overloading of the per-cpuset
-> flag 'cpu_exclusive', which overloading was removed in an earlier
-> patch: cpuset-remove-sched-domain-hooks-from-cpusets
-> 
-> See further the Documentation and comments in the code itself.
-> 
-> ...
->
-> +static void rebuild_sched_domains(void)
-> +{
-> +	struct kfifo *q;	/* queue of cpusets to be scanned */
-> +	struct cpuset *cp;	/* scans q */
-> +	struct cpuset **csa;	/* array of all cpuset ptrs */
-> +	int csn;		/* how many cpuset ptrs in csa so far */
-> +	int i, j, k;		/* indices for partition finding loops */
-> +	cpumask_t *doms;	/* resulting partition; i.e. sched domains */
-> +	int ndoms;		/* number of sched domains in result */
-> +	int nslot;		/* next empty doms[] cpumask_t slot */
-> +
-> +	q = NULL;
-> +	csa = NULL;
-> +	doms = NULL;
-> +
-> +	/* Special case for the 99% of systems with one, full, sched domain */
-> +	if (is_sched_load_balance(&top_cpuset)) {
-> +		ndoms = 1;
-> +		doms = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
-> +		*doms = top_cpuset.cpus_allowed;
-
-We generally only excuse failure to check kmalloc return value when the
-code is called on the bootup path.  But this code is called at other times.
-
->
->  static int arch_init_sched_domains(const cpumask_t *cpu_map)
->  {
-> -	cpumask_t cpu_default_map;
-> -	int err;
-> -
-> -	/*
-> -	 * Setup mask for cpus without special case scheduling requirements.
-> -	 * For now this just excludes isolated cpus, but could be used to
-> -	 * exclude other special cases in the future.
-> -	 */
-> -	cpus_andnot(cpu_default_map, *cpu_map, cpu_isolated_map);
-> +	ndoms_cur = 1;
-> +	doms_cur =  kmalloc(sizeof(cpumask_t), GFP_KERNEL);
-> +	cpus_andnot(*doms_cur, *cpu_map, cpu_isolated_map);
-
-> -	err = build_sched_domains(&cpu_default_map);
-> -
-> -	return err;
-> +	return build_sched_domains(doms_cur);
->  }
-
-Ditto
+> ( Config is at http://redhat.com/~mingo/misc/config, system is Core2Duo
+>   1.83 GHz, mysql-5.0.45, glibc-2.6. Nothing fancy either in the config
+>   nor in the setup - everything is pretty close to the defaults. )
+I used FedoraCore 8 Test2 distribution, so glibc-2.6.90-13 already fixed
+the old malloc scalability issue. Cpu is 2.66GHZ quad core, 2 physical
+processor, totally 8 cores. The regression is about 28%.
 
 
-I't s a fairly minor thing really, but children might be watching..
+> 
+> i'm aware of a 2.6.21 vs. 2.6.23 sysbench regression report, and it 
+> apparently got resolved after various changes to the test environment:
+> 
+>    http://jeffr-tech.livejournal.com/10103.html
+> 
+>  " [<CFS>] has virtually no dropoff and performs better under load than
+>    the default 2.6.21 scheduler. " (paraphrased)
+> 
+> (The new link you posted, just a few hours after the release of v2.6.23, 
+> has not been reported to lkml before AFAICS - when did you become aware 
+> of it? If you learned about it before v2.6.23 it might have been useful 
+> to report it to the v2.6.23 regression list.)
+I tested it in 2.6.22 and all 2.6.23-rc kernels. All 2.6.23-rc kernel has
+the same regression. The testing result is stable.
+
+> At a quick glance there are no .configs or other testing details at or 
+> around that URL that i could use to reproduce their result precisely, so 
+> at least a minimal bugreport would be nice.
+Commandline to run testing:
+#sysbench --test=oltp --mysql-user=root --mysql-db=mysql --max-time=120
+--max-requests=0 --oltp-read-only=on --num-threads=16 run
+
+> In any case, here are a few general comments about sysbench numbers:
+> 
+> Sysbench is a pretty 'batched' workload: it benefits most from batchy 
+> scheduling: the client doing as much work as it can, then server doing 
+> as much work as it can - and so on. The longer the client can work the 
+> more cache-efficient the workload is. Any round-trip to the server due 
+> to pesky preemption only blows up the cache footprint of the workload 
+> and gives lower throughput.
+> 
+> This kind of workload would probably run best on DOS or Windows 3.11, 
+> with no preemptive scheduling done at all. In other words: run both 
+> mysqld and the client as SCHED_FIFO to get the best performance out of 
+> it. So in that sense the workload is a bit similar to dbench.
+> 
+> The other thing is that mysqld does _tons_ of sys_time() calls, so GTOD 
+> differences between .22 and .23 might cause extra overhead - especially 
+> with 8 CPUs/cores. Does the sys_time() scalability patch below improve 
+> sysbench performance for you? (i'm not sure about psqld)
+> 
+> If it's indeed due to batched vs. well-spread-out scheduling behavior 
+> (which is possible), there are a few things you could do to make 
+> scheduling more batched:
+> 
+> 1) start the DB daemon up as SCHED_BATCH:
+> 
+>      schedtool -B -e service mysqld restart
+> 
+>    (and do the same with the client-side commands as well)
+> 
+>    or:
+> 
+>        schedtool -B $$
+> 
+>    to mark the parent shell as SCHED_BATCH - then start up the DB and 
+>    start the client workload. (All other tasks not started from this 
+>    shell will still be SCHED_OTHER, so only your mysql workload will be 
+>    affected.) For example "beagled" already runs under SCHED_BATCH by 
+>    default.
+> 
+>    SCHED_BATCH will cause the scheduler to batch up the workload more. 
+>    You basically tell the scheduler: "this workload really wants
+>    throughput above all", and the scheduler takes that hint and acts 
+>    upon it. (it's still not as drastic as SCHED_FIFO, it's somewhere 
+>    between SCHED_OTHER and SCHED_FIFO, in terms of batching. Start up 
+>    your DB and your client as SCHED_FIFO via "schedtool -F -p 10 ..." to 
+>    establish the best-case batching win.)
+> 
+> 2) check out the v22 CFS backport patch which has the latest & greatest 
+>    scheduler code, from http://people.redhat.com/mingo/cfs-scheduler/ . 
+>    Does performance go up for you with it? It's somewhat less
+>    preemption-eager, which might as well make the crutial difference for
+>    sysbench.
+> 
+> 3) if it's enabled, disable CONFIG_PREEMPT=y. CONFIG_PREEMPT can cause
+>    unwanted overscheduling and cache-trashing under overload.
+Below is PREMPT config in my kernel config file.
+
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+CONFIG_PREEMPT_BKL=y
+# CONFIG_NUMA is not set
+
+
+-yanmin
