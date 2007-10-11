@@ -1,123 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbXJKNE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbXJKNRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbXJKNE0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXJKNET
+	id S1755772AbXJKNRk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXJKNRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:04:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53222 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbXJKNES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:04:18 -0400
-In-Reply-To: <20071011072208.075979098@au1.ibm.com>
-References: <20071011071558.676463639@au1.ibm.com> <20071011072208.075979098@au1.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
-Date: Thu, 11 Oct 2007 08:04:17 -0500
-To: markn@au1.ibm.com
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 11 Oct 2007 09:17:30 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39955
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751983AbXJKNR2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 09:17:28 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: Scsi on sparc build break in 2.6.23.
+Date: Thu, 11 Oct 2007 08:17:22 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-scsi@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200710110552.49129.rob@landley.net> <20071011110555.GV16424@stusta.de>
+In-Reply-To: <20071011110555.GV16424@stusta.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_iJiDHa8xrR1VwBb"
+Message-Id: <200710110817.22344.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_iJiDHa8xrR1VwBb
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
+On Thursday 11 October 2007 6:05:55 am Adrian Bunk wrote:
+> On Thu, Oct 11, 2007 at 05:52:48AM -0500, Rob Landley wrote:
+> > CONFIG_SCSI_SUNESP=y breaks the build in 2.6.23:
+> >
+> >   LD      vmlinux
+> > `scsi_esp_unregister' referenced in section `__ksymtab' of
+> > drivers/built-in.o: defined in discarded section `.exit.text' of
+> > drivers/built-in.o
+> > make: *** [vmlinux] Error 1
+> >
+> > Do you need my full .config to reproduce this?
+>
+> Please always attach the .config when reporting errors.
+> The few bytes don't matter and it often saves some time.
+>
+> I have an idea regarding what might be going wrong in this case,
+> but it would cost me additional time to look at it because you didn't
+> send your .config.
 
-> Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code  
-> which
-> allows for more flexibility in the note type for the state of  
-> 'extended
-> floating point' implementations in coredumps. New note types can  
-> now be
-> added with an appropriate #define.
->
-> #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
-> there's are no change in behaviour.
+*shrug*  That's why I asked.
 
-Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled  
-to the x86 specific name?
+The reason I hesitated is I use miniconfig files rather than big .config 
+files, and some people get confused by that.  Drop the attached 
+miniconfig-linux in the kernel source directory and go:
+  make ARCH=sparc allnoconfig KCONFIG_ALLCONFIG=miniconfig-linux
 
->
-> Signed-off-by: Mark Nelson <markn@au1.ibm.com>
-> ---
->  arch/ia64/ia32/elfcore32.h     |    1 +
->  arch/x86_64/ia32/ia32_binfmt.c |    1 +
->  fs/binfmt_elf.c                |    4 ++--
->  include/asm-i386/elf.h         |    1 +
->  4 files changed, 5 insertions(+), 2 deletions(-)
->
-> Index: linux/arch/ia64/ia32/elfcore32.h
-> ===================================================================
-> --- linux.orig/arch/ia64/ia32/elfcore32.h
-> +++ linux/arch/ia64/ia32/elfcore32.h
-> @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
->  }
->
->  #define ELF_CORE_COPY_XFPREGS 1
-> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
->  static inline int
->  elf_core_copy_task_xfpregs(struct task_struct *tsk,  
-> elf_fpxregset_t *xfpu)
->  {
-> Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-> ===================================================================
-> --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-> +++ linux/arch/x86_64/ia32/ia32_binfmt.c
-> @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
->  }
->
->  #define ELF_CORE_COPY_XFPREGS 1
-> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
->  static inline int
->  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t  
-> *xfpu)
->  {
-> Index: linux/fs/binfmt_elf.c
-> ===================================================================
-> --- linux.orig/fs/binfmt_elf.c
-> +++ linux/fs/binfmt_elf.c
-> @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
->
->  #ifdef ELF_CORE_COPY_XFPREGS
->  	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
-> -		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
-> -			  &t->xfpu);
-> +		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-> +			  sizeof(t->xfpu), &t->xfpu);
->  		t->num_notes++;
->  		sz += notesize(&t->notes[2]);
->  	}
+That expands it to a big .config file, and from there "make ARCH=sparc 
+CROSS_COMPILE=sparc-" to reproduce the problem.  Assuming you have a sparc 
+cross-compiler lying around.
 
-You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
+Disable CONFIG_SCSI_SUNESP and it builds to the end, (and the result boots but 
+won't mount the root filesystem, which is sort of expected).
 
-Also, I'm not a fan of your proposed mechanism to "overload" the  
-elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t  
-and have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
 
-> Index: linux/include/asm-i386/elf.h
-> ===================================================================
-> --- linux.orig/include/asm-i386/elf.h
-> +++ linux/include/asm-i386/elf.h
-> @@ -129,6 +129,7 @@ extern int dump_task_extended_fpu (struc
->  #define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk,  
-> elf_regs)
->  #define ELF_CORE_COPY_FPREGS(tsk, elf_fpregs) dump_task_fpu(tsk,  
-> elf_fpregs)
->  #define ELF_CORE_COPY_XFPREGS(tsk, elf_xfpregs)  
-> dump_task_extended_fpu(tsk, elf_xfpregs)
-> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
->
->  #define VDSO_HIGH_BASE		(__fix_to_virt(FIX_VDSO))
->  #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
->
-> -- 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--Boundary-00=_iJiDHa8xrR1VwBb
+Content-Type: text/plain;
+  charset="utf-8";
+  name="miniconfig-linux"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="miniconfig-linux"
 
+CONFIG_EXPERIMENTAL=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SHMEM=y
+CONFIG_SLAB=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_BINFMT_ELF=y
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_IP_PNP=y
+CONFIG_INET_DIAG=y
+CONFIG_NETFILTER=y
+CONFIG_VLAN_8021Q=y
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=4
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_SCSI=y
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_SCSI_PROC_FS=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_BLK_DEV_SR=y
+CONFIG_SCSI_SUNESP=y
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=y
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_SUNLANCE=y
+CONFIG_INPUT=y
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_SERIAL_SUNZILOG=y
+CONFIG_SERIAL_SUNZILOG_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_HWMON=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_UNIX98_PTY_COUNT=64
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_DNOTIFY=y
+CONFIG_ISO9660_FS=y
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="ascii"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_CODEPAGE_850=y
+CONFIG_NLS_ASCII=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_LOG_BUF_SHIFT=15
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_DEBUG_SLAB=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_KOBJECT=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_UNWIND_INFO=y
+CONFIG_FORCED_INLINING=y
+CONFIG_SECURITY=y
+CONFIG_SECURITY_CAPABILITIES=y
+CONFIG_SQUASHFS=y
+
+--Boundary-00=_iJiDHa8xrR1VwBb--
