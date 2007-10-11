@@ -1,155 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbXJKUu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbXJKU5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbXJKUu3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 16:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXJKUuT
+	id S1758202AbXJKU5h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 16:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbXJKU53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 16:50:19 -0400
-Received: from pat.uio.no ([129.240.10.15]:39452 "EHLO pat.uio.no"
+	Thu, 11 Oct 2007 16:57:29 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:36059 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754962AbXJKUuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 16:50:17 -0400
-Subject: Re: [PATCH] Documentation/patch-tags v3
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <30616.1192133818@lwn.net>
-References: <30616.1192133818@lwn.net>
-Content-Type: text/plain
-Date: Thu, 11 Oct 2007 16:50:11 -0400
-Message-Id: <1192135811.7899.25.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.140)
-X-UiO-Scanned: 410BF6124E17315E52C4A06BCD252D24EDBEC6D7
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 877 total 4441324 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1754730AbXJKU53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 16:57:29 -0400
+Date: Thu, 11 Oct 2007 16:57:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Greg KH <greg@kroah.com>, Andi Kleen <ak@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 1/2] PCI: Add 'nodomains' boot option, and
+	pci_domains_supported global
+Message-ID: <20071011205727.GA29222@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2007-10-11 at 14:16 -0600, Jonathan Corbet wrote:
-> Here's the current version of the patch-tags document; I've made changes
-> in response to comments from a Randy Dunlap and Scott Preece.  The only
-> substantive change, though, is the removal of the privacy term, since it
-> really does seem to be overkill.  It can come back if it turns out to be
-> truly needed.
-> 
-> Andrew, you've been quiet on this.  Does it correspond to your notion of
-> what Reviewed-by should mean?  
-> 
-> jon
-> 
-> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-> index 43e89b1..fa1518b 100644
-> --- a/Documentation/00-INDEX
-> +++ b/Documentation/00-INDEX
-> @@ -284,6 +284,8 @@ parport.txt
->  	- how to use the parallel-port driver.
->  parport-lowlevel.txt
->  	- description and usage of the low level parallel port functions.
-> +patch-tags
-> +	- description of the tags which can be added to patches
->  pci-error-recovery.txt
->  	- info on PCI error recovery.
->  pci.txt
-> diff --git a/Documentation/patch-tags b/Documentation/patch-tags
-> new file mode 100644
-> index 0000000..6acde5e
-> --- /dev/null
-> +++ b/Documentation/patch-tags
-> @@ -0,0 +1,76 @@
-> +Patches headed for the mainline may contain a variety of tags documenting
-> +who played a hand in (or was at least aware of) their progress.  All of
-> +these tags have the form:
-> +
-> +	Something-done-by: Full name <email@address> [optional random stuff]
-> +
-> +These tags are:
-> +
-> +From: 	   	The original author of the patch.  This tag will ensure
-> +		that credit is properly given when somebody other than the
-> +		original author submits the patch.
-> +
-> +Signed-off-by:	A person adding a Signed-off-by tag is attesting that the
-> +		patch is, to the best of his or her knowledge, legally able
-> +		to be merged into the mainline and distributed under the
-> +		terms of the GNU General Public License, version 2.  See
-> +		the Developer's Certificate of Origin, found in
-> +		Documentation/SubmittingPatches, for the precise meaning of
-> +		Signed-off-by.  This tag assures upstream maintainers that
-> +		the provenance of the patch is known and allows the origin
-> +		of the patch to be reviewed should copyright questions
-> +		arise.
-> +
-> +Acked-by:	The person named (who should be an active developer in the
-> +		area addressed by the patch) is aware of the patch and has
-> +		no objection to its inclusion; it informs upstream
-> +		maintainers that a certain degree of consensus on the patch
-> +		as been achieved..  An Acked-by tag does not imply any
-> +		involvement in the development of the patch or that a
-> +		detailed review was done. 
-> +
-> +Reviewed-by:	The patch has been reviewed and found acceptable according
-> +		to the Reviewer's Statement as found at the bottom of this
-> +		file.  A Reviewed-by tag is a statement of opinion that the
-> +		patch is an appropriate modification of the kernel without
-> +		any remaining serious technical issues.  Any interested
-> +		reviewer (who has done the work) can offer a Reviewed-by
-> +		tag for a patch.  This tag serves to give credit to
-> +		reviewers and to inform maintainers of the degree of review
-> +		which has been done on the patch.
+* Introduce pci_domains_supported global, hardcoded to zero if
+  !CONFIG_PCI_DOMAINS.
 
-Does 'Reviewed-by' also imply 'Signed-off-by'? In other words, who is
-actually supposed to add this tag?
+* Introduce 'nodomains' boot option, which clears pci_domains_supported
+  on platforms that enable it by default (x86, x86-64, and others when
+  they are converted to use this).
 
-Is it the reviewer who passes on an officially 'reviewed' patch to the
-maintainer, or is it the patch author him/herself who is responsible for
-soliciting reviews and adding the tag?
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+Revised per Andi's comments, and split into two patches.
 
-> +
-> +Cc:		The person named was given the opportunity to comment on
-> +		the patch.  This is the only tag which might be added
-> +		without an explicit action by the person it names.  This
-> +		tag documents that potentially interested parties have been
-> +		included in the discussion.
-> +
-> +Tested-by:	The patch has been successfully tested (in some
-> +		environment) by the person named.  This tag informs
-> +		maintainers that some testing has been performed, provides
-> +		a means to locate testers for future patches, and ensures
-> +		credit for the testers.
+As found in jgarzik/misc-2.6.git#ALL and jgarzik/misc-2.6.git#pciseg.
 
-Again. Who is supposed to add this?
+ Documentation/kernel-parameters.txt |    2 ++
+ drivers/pci/pci.c                   |   13 +++++++++++++
+ include/linux/pci.h                 |    7 +++++--
+ 3 files changed, 20 insertions(+), 2 deletions(-)
 
-> +----
-> +
-> +Reviewer's statement of oversight
-> +
-> +By offering my Reviewed-by: tag, I state that:
-> +
-> + (a) I have carried out a technical review of this patch to evaluate its
-> +     appropriateness and readiness for inclusion into the mainline kernel. 
-> +
-> + (b) Any problems, concerns, or questions relating to the patch have been
-> +     communicated back to the submitter.  I am satisfied with the
-> +     submitter's response to my comments.
-> +
-> + (c) While there may be things that could be improved with this submission,
-> +     I believe that it is, at this time, (1) a worthwhile modification to
-> +     the kernel, and (2) free of known issues which would argue against its
-> +     inclusion.
-> +
-> + (d) While I have reviewed the patch and believe it to be sound, I do not
-> +     (unless explicitly stated elsewhere) make any warranties or guarantees
-> +     that it will achieve its stated purpose or function properly in any
-> +     given situation.
-
-I'm confused about how to reconcile (c) and (d) here. If you are not
-sure about whether or not the patch will achieve its stated purpose, why
-would you be arguing that it is a worthwhile modification?
-
-Trond
-
+5d29ec863821020822c00384eca8b1006ab3c686
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4d175c7..a4d43ae 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1269,6 +1269,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 				Mechanism 1.
+ 		conf2		[X86-32] Force use of PCI Configuration
+ 				Mechanism 2.
++		nodomains	[PCI] Disable support for multiple PCI
++				root domains (aka PCI segments, in ACPI-speak).
+ 		nommconf	[X86-32,X86_64] Disable use of MMCONFIG for PCI
+ 				Configuration
+ 		nomsi		[MSI] If the PCI_MSI kernel config parameter is
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 37c00f6..a82b4d1 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -22,6 +22,10 @@
+ 
+ unsigned int pci_pm_d3_delay = 10;
+ 
++#ifdef CONFIG_PCI_DOMAINS
++int pci_domains_supported = 1;
++#endif
++
+ #define DEFAULT_CARDBUS_IO_SIZE		(256)
+ #define DEFAULT_CARDBUS_MEM_SIZE	(64*1024*1024)
+ /* pci=cbmemsize=nnM,cbiosize=nn can override this */
+@@ -1566,6 +1570,13 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+ 	return bars;
+ }
+ 
++static void __devinit pci_no_domains(void)
++{
++#ifdef CONFIG_PCI_DOMAINS
++	pci_domains_supported = 0;
++#endif
++}
++
+ static int __devinit pci_init(void)
+ {
+ 	struct pci_dev *dev = NULL;
+@@ -1585,6 +1596,8 @@ static int __devinit pci_setup(char *str)
+ 		if (*str && (str = pcibios_setup(str)) && *str) {
+ 			if (!strcmp(str, "nomsi")) {
+ 				pci_no_msi();
++			} else if (!strcmp(str, "nodomains")) {
++				pci_no_domains();
+ 			} else if (!strncmp(str, "cbiosize=", 9)) {
+ 				pci_cardbus_io_size = memparse(str + 9, &str);
+ 			} else if (!strncmp(str, "cbmemsize=", 10)) {
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 038a0dc..ee99959 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -685,13 +685,16 @@ extern void pci_unblock_user_cfg_access(struct pci_dev *dev);
+  * a PCI domain is defined to be a set of PCI busses which share
+  * configuration space.
+  */
+-#ifndef CONFIG_PCI_DOMAINS
++#ifdef CONFIG_PCI_DOMAINS
++extern int pci_domains_supported;
++#else
++enum { pci_domains_supported = 0; };
+ static inline int pci_domain_nr(struct pci_bus *bus) { return 0; }
+ static inline int pci_proc_domain(struct pci_bus *bus)
+ {
+ 	return 0;
+ }
+-#endif
++#endif /* CONFIG_PCI_DOMAINS */
+ 
+ #else /* CONFIG_PCI is not enabled */
+ 
