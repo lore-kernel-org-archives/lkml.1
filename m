@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbXJKVQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbXJKVR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758772AbXJKVQg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 17:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbXJKVQ3
+	id S1758929AbXJKVR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 17:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbXJKVRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 17:16:29 -0400
-Received: from [212.12.190.171] ([212.12.190.171]:56387 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755700AbXJKVQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 17:16:28 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Reserve N process to root
-Date: Fri, 12 Oct 2007 00:02:37 +0300
-User-Agent: KMail/1.5
+	Thu, 11 Oct 2007 17:17:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45503 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755141AbXJKVRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 17:17:18 -0400
+Message-ID: <470E92D8.8060603@garzik.org>
+Date: Thu, 11 Oct 2007 17:17:12 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>, Andi Kleen <ak@suse.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2 1/2] PCI: Add 'nodomains' boot option, and	pci_domains_supported
+ global
+References: <20071011205727.GA29222@havoc.gtf.org>
+In-Reply-To: <20071011205727.GA29222@havoc.gtf.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710120002.37341.a1426z@gawab.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Valdis.Kletnieks@vt.edu wrote:
-> > What David meant was that "root will always have a slot" doesn't
-> > *actually* help unless you *also* have a way to actually *spawn* such a
-> > process.  In order to do the ps, kill, and so on that you need to
-> > recover, you need to already have either a root shell available, or a
-> > way to *get* a root shell that doesn't rely on a non-root process (so
-> > /bin/su doesn't help here).
->
-> That's right, although it's worse than that.  You need to have a process
-> with CAP_SYS_ADMIN.  If root processes normally have that capability
-> then the reserved slots may well disappear before you notice a problem.
-> If root processes normally don't have it, then you need to guarantee
-> that one is already running.
-
-I once posted a patch to handle this DoS, but, as usual, it wasn't accepted.  
-Go figure...
-
-Here is an excerpt:
-
-Re: [PATCH 1/1] threads_max: Simple lockout prevention patch
-
-From: Al Boldi <a1426z@gawab.com>
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-kernel@vger.kernel.org
-Date: 04/24/06 02:12 pm
-
-Andrew Morton wrote:
-> Al Boldi <a1426z@gawab.com> wrote:
-> > This is a another resend, which was ignored before w/o comment.
-> > Andrew, can you at least comment on it?  Thanks!
->
-> I don't have a clue what it's for.
-
-Quoting from the 'Resource limits' thread on lkml on 27/09/05:
->>>>> Consider this dilemma:
->>>>> Runaway proc/s hit the limit.
->>>>> Try to kill some and you are denied due to the resource limit.
->>>>> Use some previously running app like top, hope it hasn't been killed
->>>>> by some OOM situation, try killing some procs and another one takes
->>>>> it's place because of the runaway situation.
->>>>> Raise the limit, and it gets filled by the runaways.
->>>>> You are pretty much stuck.
->>>>
->>>> Not really, this is the sort of thing ulimit is meant for.  To keep
->>>> processes from any one user from running away.  It lets you limit the
->>>> damage it can do, until such time as you can control it and fix the
->>>> runaway application.
->>>
->>> threads-max = 1024
->>> ulimit = 100 forks
->>> 11 runaway procs hitting the threads-max limit
->>
->> This is incorrect.  If you ulimit a user to 100 forks, and 11 processes
->> running with that uid
+Jeff Garzik wrote:
+> * Introduce pci_domains_supported global, hardcoded to zero if
+>   !CONFIG_PCI_DOMAINS.
 > 
-> Different uid.
+> * Introduce 'nodomains' boot option, which clears pci_domains_supported
+>   on platforms that enable it by default (x86, x86-64, and others when
+>   they are converted to use this).
 > 
-Then yes, if you set a system-wide limit that is less than the sum of the 
-limits imposed on each accountable part of the system you can have lock out.  
-But thats your fault for misconfiguring the system.  Don't do that.
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+> Revised per Andi's comments, and split into two patches.
+> 
+> As found in jgarzik/misc-2.6.git#ALL and jgarzik/misc-2.6.git#pciseg.
+> 
+>  Documentation/kernel-parameters.txt |    2 ++
+>  drivers/pci/pci.c                   |   13 +++++++++++++
+>  include/linux/pci.h                 |    7 +++++--
+>  3 files changed, 20 insertions(+), 2 deletions(-)
 
--- end of quote
+As a note, if this wasn't obvious, this was not implemented in 
+x86-specific code because I think other arches can/should be able to 
+hook into this.
 
-Thanks!
+The default !CONFIG_PCI_DOMAINS implementation continues to work for all 
+such arches.
 
---
-Al
 
