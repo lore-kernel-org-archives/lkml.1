@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXJLJ02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbXJLJ3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbXJLJ02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933067AbXJLJVN
+	id S1760740AbXJLJ3A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbXJLJ2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:21:13 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:44567 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933059AbXJLJVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:21:10 -0400
-Date: Fri, 12 Oct 2007 14:50:44 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Paul E McKenney <paulmck@us.ibm.com>, josh@freedesktop.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Dipankar Sarma <dipankar@in.ibm.com>,
-       rostedt@goodmis.org
-Subject: [PATCH] Use raw_smp_processor_id() in rcu_random()
-Message-ID: <20071012092044.GA1138@in.ibm.com>
-Reply-To: ego@in.ibm.com
+	Fri, 12 Oct 2007 05:28:50 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:24180 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754148AbXJLJ2t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:28:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ESkOYHJqyap/ndZmFlvC3YwPC3C5jIeWaKCAn9zygUZdzmN73yL7uBBVhd62EPXabI0tsGi0HVsSUl7PrFCPL8y3ZJ/SFZu5P8hWCimm1PIknEOB96Us7S7KeSlZiI82M8pPJp+ngI+NF2X+b6QM7MTffJZdSkO2LhD6BV2BsR4=  ;
+X-YMail-OSG: 9vNhaCMVM1mABnyfdRDZwvaQuIxTiRHYiZ4zXuFeQHYxNq_UI_KTF6.ppmj283CGpGX6uIzB3Q--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] mm: avoid dirtying shared mappings on mlock
+Date: Fri, 12 Oct 2007 02:57:05 +1000
+User-Agent: KMail/1.9.5
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
+       hugh <hugh@veritas.com>
+References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org> <69AF9B2A-6AA7-4078-B0A2-BE3D4914AEDC@FreeBSD.org> <1192179805.27435.6.camel@twins>
+In-Reply-To: <1192179805.27435.6.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200710120257.05960.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 12 October 2007 19:03, Peter Zijlstra wrote:
+> Subject: mm: avoid dirtying shared mappings on mlock
+>
+> Suleiman noticed that shared mappings get dirtied when mlocked.
+> Avoid this by teaching make_pages_present about this case.
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Acked-by: Suleiman Souhlal <suleiman@google.com>
 
-With CONFIG_PREEMPT=y on 2.6.23-rc8-mm2, rcu_random() calls 
-smp_processor_id() from a preemptible context, triggering the
-following kernel error.
+Umm, I don't see the other piece of this thread, so I don't
+know what the actual problem was.
 
-BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5155
-caller is rcu_random+0x16/0x39 [rcutorture]
- [<c010612f>] dump_trace+0x68/0x1d2
- [<c01062b1>] show_trace_log_lvl+0x18/0x2c
- [<c0106c23>] show_trace+0xf/0x11
- [<c0106d33>] dump_stack+0x12/0x14
- [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
- [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
- [<f8870cdf>] <3>BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5156
-rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
- [<c0139b32>] caller is rcu_random+0x16/0x39 [rcutorture]
-kthread+0x38/0x5e
- [<c0105ca7>] kernel_thread_helper+0x7/0x10
- =======================
- [<c010612f>] dump_trace+0x68/0x1d2
- [<c01062b1>] show_trace_log_lvl+0x18/0x2c
- [<c0106c23>] show_trace+0xf/0x11
- [<c0106d33>] dump_stack+0x12/0x14
- [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
- [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
- [<f8870cdf>] rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
+But I would really rather not do this. If you do this, then you
+now can get random SIGBUSes when you write into the memory if it
+can't allocate blocks or ... (some other filesystem specific
+condition).
 
-rcu_random() can do with raw_smp_processor_id() as a parameter to cpu_clock()
-in this particular context.
+I agree it feels suboptimal, but we've _always_ done this, right?
+Is it suddenly a problem? Unless a really nice general way is
+made to solve this, optimising it like this makes it harder to
+ensure good semantics for all corner cases I think (and then once
+the optimisation is in place, it's a lot harder to remove it).
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+I'll go away and have a better look for the old thread.
 
----
- kernel/rcutorture.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.23-rc8/kernel/rcutorture.c
-===================================================================
---- linux-2.6.23-rc8.orig/kernel/rcutorture.c
-+++ linux-2.6.23-rc8/kernel/rcutorture.c
-@@ -170,7 +170,8 @@ static unsigned long
- rcu_random(struct rcu_random_state *rrsp)
- {
- 	if (--rrsp->rrs_count < 0) {
--		rrsp->rrs_state += (unsigned long)cpu_clock(smp_processor_id());
-+		rrsp->rrs_state +=
-+			(unsigned long)cpu_clock(raw_smp_processor_id());
- 		rrsp->rrs_count = RCU_RANDOM_REFRESH;
- 	}
- 	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+> ---
+>  mm/memory.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6/mm/memory.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory.c
+> +++ linux-2.6/mm/memory.c
+> @@ -2719,7 +2719,12 @@ int make_pages_present(unsigned long add
+>  	vma = find_vma(current->mm, addr);
+>  	if (!vma)
+>  		return -1;
+> -	write = (vma->vm_flags & VM_WRITE) != 0;
+> +	/*
+> +	 * We want to touch writable mappings with a write fault in order
+> +	 * to break COW, except for shared mappings because these don't COW
+> +	 * and we would not want to dirty them for nothing.
+> +	 */
+> +	write = (vma->vm_flags & (VM_WRITE|VM_SHARED)) == VM_WRITE;
+>  	BUG_ON(addr >= end);
+>  	BUG_ON(end > vma->vm_end);
+>  	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
