@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXJKPFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXJKPIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbXJKPFB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 11:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXJKPEv
+	id S1757979AbXJKPIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 11:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbXJKPIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 11:04:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42067 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754177AbXJKPEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 11:04:50 -0400
-Message-ID: <470E3B8D.4080002@garzik.org>
-Date: Thu, 11 Oct 2007 11:04:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Bernd Schubert <bs@q-leap.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] faster workaround
-References: <200710081709.18253.bs@q-leap.de> <20071011142628.48272a4a@the-village.bc.nu> <470E30F9.5060705@garzik.org> <200710111639.38240.bs@q-leap.de>
-In-Reply-To: <200710111639.38240.bs@q-leap.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 11 Oct 2007 11:08:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59819 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753406AbXJKPIK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 11:08:10 -0400
+Date: Thu, 11 Oct 2007 16:11:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Egger <Christoph.Egger@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: mce init optimization and signedness fixup
+Message-ID: <20071011161157.5a32122e@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.9999.0710111651350.15917@localhost.localdomain>
+References: <11921050742274-git-send-email-joerg.roedel@amd.com>
+	<1192105075473-git-send-email-joerg.roedel@amd.com>
+	<alpine.LFD.0.9999.0710111550400.15917@localhost.localdomain>
+	<200710111601.02630.Christoph.Egger@amd.com>
+	<alpine.LFD.0.9999.0710111651350.15917@localhost.localdomain>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Schubert wrote:
-> On Thursday 11 October 2007 16:19:37 Jeff Garzik wrote:
->> 1) Just about the only valid optimization is to ensure that only the
->> write path must be limited to small chunks, not both read- and
->> write-paths.  Tejun had a patch to do this a long time ago, but it's an
->> open question whether the large amount of code is worth it for a rare
->> combination.
+On Thu, 11 Oct 2007 16:55:36 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Thu, 11 Oct 2007, Christoph Egger wrote:
 > 
-> How large? This patch is rather small? Where can I find it?
-
-http://home-tj.org/wiki/index.php/Sil_m15w
-
-> The problem came up, when 200GB drives were replaced by *newer* 250GB drives 
-> (well maybe not the newest, no idea were they came from).
+> > On Thursday 11 October 2007 15:51:49 Thomas Gleixner wrote:
+> > > On Thu, 11 Oct 2007, Joerg Roedel wrote:
+> > > > MCG_CAP never reports a negative count of available error-reporting
+> > > > banks. Therefore, make nr_mce_banks unsigned.
+> > > > Check for MCA/MCE feature bits as early as possible.
+> > > >
+> > > > +
+> > > > +	if (!cpu_has(c, X86_FEATURE_MCA) || !cpu_has(c, X86_FEATURE_MCE)) {
+> > > > +		printk(KERN_INFO "CPU%i: No machine check support available\n",
+> > > > +			smp_processor_id());
+> > > > +		return;
+> > >
+> > > This breaks winchip MCE support.
+> > 
+> > First, what is a winchip? It sounds to be something windows specific. ;)
+> > Second, can you explain in which way MCE support gets broken, please?
 > 
-> Anyway, I'm testing for more than 24h already and didn't observe any data 
-> corruption as without the patch. I know this is only an obersavation and no 
-> definite prove...
-> Also, this is with 3114, maybe this chip behaves a bit different than 3112?
+> First, winchip is the code name of Centaurs early x86 cpus.
+> 
+> Second, those beasts do not have FEATURE_MCA, but they have FEATURE_MCE, 
+> so they support the fatal exception, but not the non fatal check.
 
-3114 + new SATA drive is definitely a new one for us.
+Ditto some of the original Intel Preventium processors which have limited
+MC support hidden in the magic 'Appendix H'
 
-It would help to (a) use the latest kernel, (b) post your .config with 
-the latest kernel, (c) post lspci booted into latest kernel, and (d) 
-post dmesg booted into latest kernel.
-
-	Jeff
-
-
+Alan
