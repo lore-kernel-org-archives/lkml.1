@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXJKKo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbXJKKo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbXJKKo2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXJKKoU
+	id S1756035AbXJKKo7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXJKKov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:44:20 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:45159 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbXJKKoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:44:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XsYkzqnkx+jizczAxJTo97/Je3PDBb9R/L+LF0K6Wkk+C1Hmlu0fkno0Gk5LbDNS0PmPfl6QB6wZlRgCqErULAONMiaYdLqWF3RyHaJ3dnr86RMnWtuCElijxjNtfT051zCz7bz6/M+F5IqhPcBt7Za+wAplvHzoQ9YEk8I7bwg=
-Message-ID: <105610bf0710110344i638f10ayaf7719eb9d851807@mail.gmail.com>
-Date: Thu, 11 Oct 2007 18:44:18 +0800
-From: wit <is01kzh@gmail.com>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Subject: Re: about probing a device
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071010182612.1f228ed1@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 06:44:51 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40620 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752479AbXJKKov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 06:44:51 -0400
+Date: Thu, 11 Oct 2007 14:49:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] core dump: remain dumpable
+Message-ID: <20071011104942.GA144@tv-sign.ru>
+References: <20071011062730.19F774D026B@magilla.localdomain> <20071011102507.GA101@tv-sign.ru> <20071011103446.89BCC4D03F7@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <105610bf0710091839r3b2fc1bfp4260ceaf6ad94b7@mail.gmail.com>
-	 <20071010130923.004ee895@the-village.bc.nu>
-	 <105610bf0710100850n2eb3c68codc3781d963df764e@mail.gmail.com>
-	 <20071010182612.1f228ed1@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071011103446.89BCC4D03F7@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks all..
+On 10/11, Roland McGrath wrote:
+>
+> > Hmm. Actually, do we need any check? If another thread (or CLONE_VM task)
+> > already started do_coredump(), we must see SIGNAL_GROUP_EXIT when we take
+> > ->mmap_sem. In that case coredump_wait() does nothing but returns -EAGAIN.
+> 
+> You're right again here.  I'm sure the old use predates this checking in
+> zap_threads, so it's understandable that something different was needed for
+> this synchronization before.
+
+Ugh, sorry, I was wrong. coredump_wait() initializes mm->core_done and sets
+mm->core_startup_done before checking SIGNAL_GROUP_EXIT. This means we have
+to check ->core_waiters or SIGNAL_GROUP_EXIT before calling coredump_wait().
+
+Oleg.
+
