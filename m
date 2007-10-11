@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbXJKMSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbXJKMUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758304AbXJKMSt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 08:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXJKMSS
+	id S1757996AbXJKMUt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 08:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXJKMUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 08:18:18 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:50897 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754439AbXJKMSR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 08:18:17 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Joerg Roedel" <joerg.roedel@amd.com>,
-       "Christoph Egger" <Christoph.Egger@amd.com>
-Subject: [PATCH 1/2] x86: mce init optimization and signedness fixup
-Date: Thu, 11 Oct 2007 14:17:53 +0200
-Message-ID: <1192105075473-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <11921050742274-git-send-email-joerg.roedel@amd.com>
-References: <11921050742274-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 11 Oct 2007 12:17:55.0492 (UTC)
- FILETIME=[C0D72E40:01C80C00]
+	Thu, 11 Oct 2007 08:20:39 -0400
+Received: from ns1.q-leap.de ([153.94.51.193]:49764 "EHLO mail.q-leap.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752801AbXJKMUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 08:20:37 -0400
+From: Bernd Schubert <bs@q-leap.de>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2/3] Re: sil3114 data corruption
+Date: Thu, 11 Oct 2007 14:20:34 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200710081709.18253.bs@q-leap.de> <200710111409.56210.bs@q-leap.de> <200710111415.35203.bs@q-leap.de>
+In-Reply-To: <200710111415.35203.bs@q-leap.de>
 MIME-Version: 1.0
-X-WSS-ID: 6B10CBF61DW1494538-01-01
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710111420.35166.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MCG_CAP never reports a negative count of available error-reporting banks.
-Therefore, make nr_mce_banks unsigned.
-Check for MCA/MCE feature bits as early as possible.
+This will add the sil3114 back to the controllers with the mod15 bug. Without 
+this patch no workaround for this controller is done and people might/will 
+suffer from data corruption.
 
-Signed-off-by: Christoph Egger <Christoph.Egger@amd.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/cpu/mcheck/mce.c |   12 ++++++++++--
- arch/x86/kernel/cpu/mcheck/mce.h |    2 +-
- 2 files changed, 11 insertions(+), 3 deletions(-)
+Also rather trivial, though with a huge effect, the speed for the effected 
+disks will go down from about 45-50MB/s to 20-25MB/s. But better safe than 
+lost data or damaged filesystem.
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 34c781e..e1ac4f7 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -17,7 +17,7 @@
- #include "mce.h"
- 
- int mce_disabled = 0;
--int nr_mce_banks;
-+unsigned int nr_mce_banks;
- 
- EXPORT_SYMBOL_GPL(nr_mce_banks);	/* non-fatal.o */
- 
-@@ -33,8 +33,16 @@ void fastcall (*machine_check_vector)(struct pt_regs *, long error_code) = unexp
- /* This has to be run for each processor */
- void mcheck_init(struct cpuinfo_x86 *c)
- {
--	if (mce_disabled==1)
-+	if (mce_disabled == 1) {
-+		printk(KERN_INFO "MCE support disabled by bootparam\n");
- 		return;
-+	}
-+
-+	if (!cpu_has(c, X86_FEATURE_MCA) || !cpu_has(c, X86_FEATURE_MCE)) {
-+		printk(KERN_INFO "CPU%i: No machine check support available\n",
-+			smp_processor_id());
-+		return;
-+	}
- 
- 	switch (c->x86_vendor) {
- 		case X86_VENDOR_AMD:
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.h b/arch/x86/kernel/cpu/mcheck/mce.h
-index 81fb6e2..9cbe812 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.h
-+++ b/arch/x86/kernel/cpu/mcheck/mce.h
-@@ -10,5 +10,5 @@ void winchip_mcheck_init(struct cpuinfo_x86 *c);
- /* Call the installed machine check handler for this CPU setup. */
- extern fastcall void (*machine_check_vector)(struct pt_regs *, long error_code);
- 
--extern int nr_mce_banks;
-+extern unsigned int nr_mce_banks;
- 
+Signed-off-by: Bernd Schubert <bs@q-leap.de>
+
+Index: linux-2.6.23-rc9/drivers/ata/sata_sil.c
+===================================================================
+--- linux-2.6.23-rc9.orig/drivers/ata/sata_sil.c	2007-10-11 10:45:02.000000000 
++0200
++++ linux-2.6.23-rc9/drivers/ata/sata_sil.c	2007-10-11 10:45:08.000000000 
++0200
+@@ -241,7 +241,8 @@ static const struct ata_port_info sil_po
+ 	},
+ 	/* sil_3114 */
+ 	{
+-		.flags		= SIL_DFL_PORT_FLAGS | SIL_FLAG_RERR_ON_DMA_ACT,
++		.flags		= SIL_DFL_PORT_FLAGS | SIL_FLAG_RERR_ON_DMA_ACT
++				| SIL_FLAG_MOD15WRITE,
+ 		.pio_mask	= 0x1f,			/* pio0-4 */
+ 		.mwdma_mask	= 0x07,			/* mwdma0-2 */
+ 		.udma_mask	= ATA_UDMA5,
+
+
+
 -- 
-1.5.2.5
-
-
-
+Bernd Schubert
+Q-Leap Networks GmbH
