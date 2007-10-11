@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbXJKRho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXJKRvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbXJKRho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 13:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbXJKRhg
+	id S1757231AbXJKRvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 13:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbXJKRvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 13:37:36 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53461 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753158AbXJKRhf (ORCPT
+	Thu, 11 Oct 2007 13:51:15 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:13883 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755413AbXJKRvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 13:37:35 -0400
-Date: Thu, 11 Oct 2007 10:37:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Akinobu Mita <akinobu.mita@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH -mm] slub: fix cpu hotplug offline/online path
-In-Reply-To: <20071011143656.GA3972@APFDCB5C>
-Message-ID: <Pine.LNX.4.64.0710111037040.31811@schroedinger.engr.sgi.com>
-References: <20071009161328.GA6470@APFDCB5C>
- <Pine.LNX.4.64.0710091144020.32162@schroedinger.engr.sgi.com>
- <20071010121853.GA3911@APFDCB5C> <Pine.LNX.4.64.0710101037210.7158@schroedinger.engr.sgi.com>
- <20071011143656.GA3972@APFDCB5C>
+	Thu, 11 Oct 2007 13:51:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KSh5QMeyrw0sN70VFnBd637PBw7//zcyWMgn5MEJrQGGeRqvHWgJeEew0RBPnkVAgB3GewCn4vOH/HrysXGs7FWJEzyBUIyDiGL5Y84KfZ2IRkrTiLCdkD3blyZsCZC9sWhMxIeVdgviybyKeCBB+/IlUiV8tWN65imXnN7Eejw=
+Message-ID: <64bb37e0710111051w40409d61w91a4ec155abab41a@mail.gmail.com>
+Date: Thu, 11 Oct 2007 19:51:11 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+Cc: "Jens Axboe" <jens.axboe@oracle.com>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <470DC213.5080307@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
+	 <20071003163804.GR19691@waste.org>
+	 <64bb37e0710032232o71225bf6k8a0d493687eb80bd@mail.gmail.com>
+	 <20071004170536.GY19691@waste.org>
+	 <64bb37e0710042306s6c629163gde7bc5c93973153e@mail.gmail.com>
+	 <64bb37e0710070144m6bc2c844oc96ef715b53b9819@mail.gmail.com>
+	 <64bb37e0710070739s67805d72x6d675cb2af2e8b24@mail.gmail.com>
+	 <470D97BD.4020300@gmail.com>
+	 <64bb37e0710102254n60e22338t4baf75a47b93ac14@mail.gmail.com>
+	 <470DC213.5080307@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007, Akinobu Mita wrote:
+On 10/11/07, Tejun Heo <htejun@gmail.com> wrote:
+> Torsten Kaiser wrote:
+> >>> That missing +1 would explain, why the SGE_TRM never gets set.
+> >> Thanks a lot for tracking this down.  Does changing the above code fix
+> >> your problem?
+> >
+> > I did not try it.
+> > I'm not an libata expert and while this change looks suspicios, I
+> > can't be 100% sure if that change was intended.
+> > And I did not want to experiment this deep in the code and risk
+> > corrupting the hole drive.
+>
+> I don't think you would risk too much by changing that bit of code.
+> Please try it.
 
-> This is another approach for the fix.
+The debug output now shows that SGE_TRM is getting set.
+I will try to reproduce the error tomorrow morning, and report if I'm
+still seeing it.
 
-Looks like the cleanest solution.
+Reporting that I'm no longer see it is sadly not a good indicator, as
+it also seems to depend on other factors like memory layout and/or
+code alignment.
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
-
-
-> Use cpumask to check whether kmem_cache_cpu_free initalization for
-> the CPU has already been done or not.
-> 
-> ---
->  mm/slub.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> Index: 2.6-mm/mm/slub.c
-> ===================================================================
-> --- 2.6-mm.orig/mm/slub.c
-> +++ 2.6-mm/mm/slub.c
-> @@ -1959,6 +1959,7 @@ static DEFINE_PER_CPU(struct kmem_cache_
->  				kmem_cache_cpu)[NR_KMEM_CACHE_CPU];
->  
->  static DEFINE_PER_CPU(struct kmem_cache_cpu *, kmem_cache_cpu_free);
-> +static cpumask_t kmem_cach_cpu_free_init_once = CPU_MASK_NONE;
->  
->  static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
->  							int cpu, gfp_t flags)
-> @@ -2033,8 +2034,13 @@ static void init_alloc_cpu_cpu(int cpu)
->  {
->  	int i;
->  
-> +	if (cpu_isset(cpu, kmem_cach_cpu_free_init_once))
-> +		return;
-> +
->  	for (i = NR_KMEM_CACHE_CPU - 1; i >= 0; i--)
->  		free_kmem_cache_cpu(&per_cpu(kmem_cache_cpu, cpu)[i], cpu);
-> +
-> +	cpu_set(cpu, kmem_cach_cpu_free_init_once);
->  }
->  
->  static void __init init_alloc_cpu(void)
-> 
+Torsten
