@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXJKLbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXJKLgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbXJKLbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 07:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXJKLbP
+	id S1756085AbXJKLgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 07:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXJKLga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 07:31:15 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38127
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751236AbXJKLbO (ORCPT
+	Thu, 11 Oct 2007 07:36:30 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:52301 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbXJKLg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 07:31:14 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-Date: Thu, 11 Oct 2007 06:31:09 -0500
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710110923470.23818@anakin>
-In-Reply-To: <Pine.LNX.4.64.0710110923470.23818@anakin>
+	Thu, 11 Oct 2007 07:36:29 -0400
+Date: Thu, 11 Oct 2007 17:05:40 +0530
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Subject: Re: gigabit ethernet power consumption
+Reply-To: prasad@linux.vnet.ibm.com
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Organization: IBM
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Arjan van de Ven" <arjan@infradead.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+References: <20071008220720.GF3484@elf.ucw.cz> <470AAFD7.9060002@intel.com> <20071009182857.GF4003@csclub.uwaterloo.ca> <470BCB4D.8090307@intel.com>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710110631.09231.rob@landley.net>
+Message-ID: <op.tz06hqzf03j166@localhost.localdomain>
+In-Reply-To: <470BCB4D.8090307@intel.com>
+User-Agent: Opera Mail/9.23 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 October 2007 2:25:19 am Geert Uytterhoeven wrote:
-> On Wed, 10 Oct 2007, Rob Landley wrote:
-> > From: Rob Landley <rob@landley.net>
-> >
-> > Rip out hardwired cross compiler name assumption that only m68k makes.
-> >
-> > Signed-off-by: Rob Landley <rob@landley.net>
-> > ---
-> > When you cross compile, you have to set the prefix CROSS_COMPILE to your
-> > cross compiler prefix.  You need to do this for all targets (arm, mips,
-> > ppc, x86-64 on x86, etc).  This is not specific to m68k, and this value
-> > is supplied _to_ the build, not supplied _by_ the build.
-> >
-> > The build shouldn't unconditionally overwrite the existing value of this
-> > variable with one it makes up.  It has no idea what I called my cross
-> > compiler.
+On Wed, 10 Oct 2007 00:11:17 +0530, Kok, Auke <auke-jan.h.kok@intel.com>  
+wrote:
+
+> Lennart Sorensen wrote:
+>> On Mon, Oct 08, 2007 at 03:31:51PM -0700, Kok, Auke wrote:
+>>> you most certainly want to do this in userspace I think.
+>>>
+>>> One of the biggest problems is that link negotiation can take a  
+>>> significant amount
+>>> of time, well over several seconds (1 to 3 seconds typical) with  
+>>> gigabit, and
+>>> having your ethernet connection go offline for 3 seconds may not be  
+>>> the desired
+>>> effect for when you want to get more bandwidth in the first place.
+>>>
+>>> However, when a laptop is in battery mode, switching down from gigabit  
+>>> to 100mbit
+>>> makes a lot more sense, so this is something I would recommend. This  
+>>> can be as
+>>> easy as changing the advertisement mask of the interface and  
+>>> renegotiating the
+>>> link. Userspace could handle that very easily.
+>>
+>> Now if you were trying to transfer a lot of data to the laptop, would it
+>> be more power efficient to do it at gigabit speeds so you can finish
+>> sooner and shut down the machine entirely, or to slow to 100mbit and
+>> take longer to do it, and hence spend more time powering the cpu and
+>> ram?
 >
-> The build does not unconditionally overwrite the existing value of this
-> variable. You can specify the name of your cross compiler like this:
+> my suspicion is that the cost of switching is much higher than what you  
+> would
+> consume running at 100mbit, even if the amount of data is quite large.  
+> going
+> offline to renegotiate the link would already cost you 3W typically.
 >
->     make CROSS_COMPILE=m68k-linux-
+> I definately think that userspace is the right field to solve this  
+> problem: let
+> the users decide how to use the available power on their sytems through  
+> a decent
+> power profile tool (perhaps gnome-power-manager or something like that).  
+> This way
+> the user can choose.
+>
+> Auke
+> -
 
-I noticed this because you have to specify ARCH for "make headers_install" but 
-don't have to specify a CROSS_COMPILE prefix for that because it doesn't 
-build anything.  Yet the first line it spits out is a complaint that it can't 
-find m68k-linux-gnu-gcc.
+Perhaps interrupt moderation could be of help here (say - switch to lesser  
+interrupts per unit of time when running on battery), which I find that  
+the e1000 driver doesn't employ in the kernel presently. (For interrupt  
+moderation, refer:  
+http://download.intel.com/design/network/applnots/ap450.pdf.)
 
-I do note that the error message doesn't stop the build, and seems to be 
-ignored...
+Without the side-effect of experiencing a link-flap when switching to a  
+lower-speed (with its toll in terms of down-time for auto-negotiation,  
+STP, etc), the Interrupt Moderation Algorithm dynamically adjusts the  
+number of interrupts based on traffic - and presumably consume less power.  
+For an "Optimise for Power" kind of profile - the driver can be loaded  
+with a higher throttle rate during boot-time.
 
-> BTW, m68k-linux-gnu- is the default name for a m68k cross compiler.
-
-*shrug*  This is the eleventh target I've tried to build, and the first one 
-that has this behavior.  It seemed unnecessary at best.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Thanks,
+K.Prasad
