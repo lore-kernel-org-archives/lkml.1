@@ -1,56 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbXJKBuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXJKCMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756808AbXJKBuu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 21:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbXJKBum
+	id S1757345AbXJKCMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 22:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbXJKCMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 21:50:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:55837 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbXJKBul (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 21:50:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jk60M1VyaNsN6kBRKq4dnNYfqafD3x/qrEY5EMZ+FMOrEevL5sJfBmkCff6293NReSngee1D5i1YVI3hPKlm7rcKUlRFbwv1mwmqRqya7OtoG2nSyRJICQnSELuIWrIBlKp+WbGqsdqx5gogCaPCyqr+W7QQOm8wGZJL5YOuouI=
-Message-ID: <f9d2a5e10710101850u26144173s2473f8c2dad62c3b@mail.gmail.com>
-Date: Wed, 10 Oct 2007 18:50:39 -0700
-From: "Russ Dill" <russ.dill@gmail.com>
-To: "David Newall" <david@davidnewall.com>
-Subject: Re: [OT] Argument with an OS professor over profile=3
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <470D7E08.10209@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Oct 2007 22:12:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:30590 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754033AbXJKCMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 22:12:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
+   d="scan'208";a="296349044"
+Subject: [PATCH 2/2 -mm] kexec based hibernation -v5: kexec restore
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f9d2a5e10710101708l707eb619l6446f2e648ee016e@mail.gmail.com>
-	 <470D7E08.10209@davidnewall.com>
+Date: Thu, 11 Oct 2007 10:14:17 +0800
+Message-Id: <1192068857.27482.15.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 11 Oct 2007 02:12:05.0809 (UTC) FILETIME=[1EBDBA10:01C80BAC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/10/07, David Newall <david@davidnewall.com> wrote:
-> Russ Dill wrote:
-> > I've been having a back and forth going for a while with my TA and OS
-> > professor on the meaning of profile=3 and have been unable to convince
-> > either of them. The basic question is if profile=3 is passed to kernel
-> > with an 8MB text section, how big is the allocated profile buffer. His
-> > answer is 1MB....
-> >
-> >         if (prof_shift) {
-> >                 unsigned int size;
-> >                 /* only text is profiled */
-> >                 prof_len = (unsigned *) &_etext - (unsigned *) &_stext;
-> >
-> You stipulated 8MB text, but this calculates in unsigned ints, so
-> prof_len = 2M.
+This patch adds writing support for /dev/oldmem. This is used to
+restore the memory contents of hibernated system.
 
-Please have a look at my followup, I accidentally sent out code that I
-had used to produce an answer as my prof thought it works. The actual
-code casts to (unsigned long). Sigh, I've shot myself in the foot...
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Anyway, the book (and the class covers 2.4.1) and the associated code
-has since moved from init/main.c. Here's how the 2.4.1ish code looks:
+---
 
-http://tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/init_main.html
+Index: linux-2.6.23-rc6/arch/i386/kernel/crash_dump.c
+===================================================================
+--- linux-2.6.23-rc6.orig/arch/i386/kernel/crash_dump.c	2007-09-28 09:46:22.000000000 +0800
++++ linux-2.6.23-rc6/arch/i386/kernel/crash_dump.c	2007-09-28 09:46:25.000000000 +0800
+@@ -58,6 +58,33 @@
+ 	return csize;
+ }
+ 
++ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
++			  size_t csize, unsigned long offset, int userbuf)
++{
++	void  *vaddr;
++
++	if (!csize)
++		return 0;
++
++	if (!userbuf) {
++		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
++		memcpy(vaddr + offset, buf, csize);
++	} else {
++		if (!kdump_buf_page) {
++			printk(KERN_WARNING "Kdump: Kdump buffer page not"
++				" allocated\n");
++			return -EFAULT;
++		}
++		if (copy_from_user(kdump_buf_page, buf, csize))
++			return -EFAULT;
++		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
++		memcpy(vaddr + offset, kdump_buf_page, csize);
++	}
++	kunmap_atomic(vaddr, KM_PTE0);
++
++	return csize;
++}
++
+ static int __init kdump_buf_page_init(void)
+ {
+ 	int ret = 0;
+Index: linux-2.6.23-rc6/include/linux/crash_dump.h
+===================================================================
+--- linux-2.6.23-rc6.orig/include/linux/crash_dump.h	2007-09-28 09:46:22.000000000 +0800
++++ linux-2.6.23-rc6/include/linux/crash_dump.h	2007-09-28 09:46:25.000000000 +0800
+@@ -11,6 +11,8 @@
+ extern unsigned long long elfcorehdr_addr;
+ extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
+ 						unsigned long, int);
++extern ssize_t write_oldmem_page(unsigned long, const char *, size_t,
++				 unsigned long, int);
+ extern const struct file_operations proc_vmcore_operations;
+ extern struct proc_dir_entry *proc_vmcore;
+ 
+Index: linux-2.6.23-rc6/drivers/char/mem.c
+===================================================================
+--- linux-2.6.23-rc6.orig/drivers/char/mem.c	2007-09-28 09:46:22.000000000 +0800
++++ linux-2.6.23-rc6/drivers/char/mem.c	2007-09-28 09:46:25.000000000 +0800
+@@ -348,6 +348,37 @@
+ 	}
+ 	return read;
+ }
++
++/*
++ * Write memory corresponding to the old kernel.
++ */
++static ssize_t write_oldmem(struct file *file, const char __user *buf,
++			    size_t count, loff_t *ppos)
++{
++	unsigned long pfn, offset;
++	size_t write = 0, csize;
++	int rc = 0;
++
++	while (count) {
++		pfn = *ppos / PAGE_SIZE;
++		if (pfn > saved_max_pfn)
++			return write;
++
++		offset = (unsigned long)(*ppos % PAGE_SIZE);
++		if (count > PAGE_SIZE - offset)
++			csize = PAGE_SIZE - offset;
++		else
++			csize = count;
++		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
++		if (rc < 0)
++			return rc;
++		buf += csize;
++		*ppos += csize;
++		write += csize;
++		count -= csize;
++	}
++	return write;
++}
+ #endif
+ 
+ extern long vread(char *buf, char *addr, unsigned long count);
+@@ -783,6 +814,7 @@
+ #ifdef CONFIG_CRASH_DUMP
+ static const struct file_operations oldmem_fops = {
+ 	.read	= read_oldmem,
++	.write	= write_oldmem,
+ 	.open	= open_oldmem,
+ };
+ #endif
