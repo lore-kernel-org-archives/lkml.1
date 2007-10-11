@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbXJKWYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbXJKWYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbXJKWYJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 18:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbXJKWXz
+	id S1757562AbXJKWYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 18:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759008AbXJKWX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 18:23:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55447 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758774AbXJKWXy (ORCPT
+	Thu, 11 Oct 2007 18:23:59 -0400
+Received: from omta03ps.mx.bigpond.com ([144.140.82.155]:53094 "EHLO
+	omta03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758917AbXJKWX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 18:23:54 -0400
-Date: Thu, 11 Oct 2007 18:23:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: [QUESTION] I need advice for writing .suspend/.resume
- functions
-In-Reply-To: <200710120015.30607.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0710111813540.6334-100000@iolanthe.rowland.org>
+	Thu, 11 Oct 2007 18:23:58 -0400
+Message-ID: <470EA277.7090107@bigpond.net.au>
+Date: Fri, 12 Oct 2007 08:23:51 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: Rationalize sys_sched_rr_get_interval()
+References: <470D7055.4090000@bigpond.net.au> <20071011065946.GB32125@elte.hu> <b647ffbd0710110044r5424d7ffi58fc64221a440c7d@mail.gmail.com>
+In-Reply-To: <b647ffbd0710110044r5424d7ffi58fc64221a440c7d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta04ps.mx.bigpond.com from [121.222.199.46] using ID pwil3058@bigpond.net.au at Thu, 11 Oct 2007 22:23:51 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007, Rafael J. Wysocki wrote:
-
-> On Thursday, 11 October 2007 05:13, Maxim Levitsky wrote:
-> > Hi,
-> > 
-> > I have few questions about .suspend()/.resume() driver functions and how best to write them.
-> > 
-> > I have written a support for suspend/resume for saa7134 v4l driver.
-> > Now looking at code again and again, I found few problems, and I am seeking your advice how to fix them.
-> > 
-> > First of all the .suspend() function:
-> > 
-> > Looking at various drivers (including v4l ones) it seems that in general the function:
-> > 
-> > 1) tells upper layers that it is suspended
-> > 2) saves the state of device
-> > (generally there is nothing to save, since the driver maintains a copy of device state in memory)
-> > 
-> > 3) disables the device (including DMA)
-> > 4) does usual pci_save_state+pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state))
-> > (I am talking about pci devices of course)
-> > 
-> > But there is one problem that my .suspend() function have together with quite a lot of drivers:
-> > It can race with IRQ handler. Suppose the handler is called just before .suspend(), and thus .suspend() literally 
-> > pulls the hadware from that handler.
-> >
-> > I was told that I should use synchronize_irq(), and it looks exactly like the solution.
+Dmitry Adamushko wrote:
+> On 11/10/2007, Ingo Molnar <mingo@elte.hu> wrote:
+>> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+>>
+>>> -#define MIN_TIMESLICE                max(5 * HZ / 1000, 1)
+>>> -#define DEF_TIMESLICE                (100 * HZ / 1000)
+>> hm, this got removed by Dmitry quite some time ago. Could you please do
+>> this patch against the sched-devel git tree:
 > 
-> Yes, that seems to be the right solution.
+> here is the commit:
+> http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=commit;h=dd3fec36addd1bf76b05225b7e483378b80c3f9e
 > 
-> > But I was surprised to see that very few drivers use it in their .suspend() routines.
-> 
-> Frankly, I'm not sure why that is so.
+> I had also considered introducing smth like
+> sched_class::task_timeslice() but decided it was not worth it.
 
-USB calls it.
+The reason I was going that route was for modularity (which helps when 
+adding plugsched patches).  I'll submit a revised patch for consideration.
 
-> > Another issue, even bigger happens during the resume:
-> > Suppose the IRQ line is shared with some other device and it gets resumed first.
-> > And my IRQ handler is called because of the other device.
-> > Now my IRQ handler can't determine whenever the IRQ for the device, since the hardware is still powered off.
-> > 
-> > Probably I can fix the following issues doing this:
-> > 
-> > 1) do free_irq() in .suspend(), and request_irq() in .resume
-> > this solves both problems since free_irq()  calls synchronize_irq()
-> > Few drivers do that this way. I would like to know if this is the right way.
-> 
-> AFAICS, it is not and these drivers should probably be modified not to do so.
-> 
-> The problem, as I see it, is that we don't know what state the device will be
-> in during the resume (this may be a resume from disk and the device may have
-> been initialized by the BIOS and we get it actually generating interrupts).
->  
-> > 2) Disable the card's IRQ register , then call synchronize_irq(), at that
-> > point I can be sure that no IRQ handler is running and will run then set some
-> > per device flag say dev->insuspend 
-> > 
-> > let IRQ handler check this flag, and bail out if set, so false interrupts are caught on resume
-> > Probably not a good idea, since I didn't find such implementation in kernel
-> 
-> I'm not sure of that.  Sounds better than freeing the IRQs in .suspend() to me.
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
-USB uses 2).  Actually we set the "insuspend" flag after disabling IRQ
-generation but before calling synchronize_irq() -- presumably this
-doesn't lead to any problems.
-
-The problem of devices initialized by the BIOS and generating unwanted 
-interrupts is handled by a PCI quirk routine.  The device's IRQ-enable 
-flag is turned off early on in the boot kernel.
-
-Alan Stern
-
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
