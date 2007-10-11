@@ -1,121 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbXJKKYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbXJKKY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbXJKKYk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbXJKKX4
+	id S1755112AbXJKKY5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbXJKKX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:23:56 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:10730 "EHLO
+	Thu, 11 Oct 2007 06:23:59 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:38739 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbXJKKXt (ORCPT
+	with ESMTP id S1754416AbXJKKXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:23:49 -0400
+	Thu, 11 Oct 2007 06:23:50 -0400
 X-IronPort-AV: i="4.21,259,1188792000"; 
-   d="scan'208"; a="53763186:sNHT117168023"
+   d="scan'208"; a="53763187:sNHT47251722"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
        linux-joystick@atrey.karlin.mff.cuni.cz, linux-serial@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
        Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 3/3] Blackfin serial driver: this driver enable SPORTs on Blackfin emulate UART
-Date: Thu, 11 Oct 2007 18:23:40 +0800
-Message-Id: <1192098220-25828-4-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 2/3] Input/Touchscreen Driver: add support AD7877 touchscreen driver
+Date: Thu, 11 Oct 2007 18:23:39 +0800
+Message-Id: <1192098220-25828-3-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1192098220-25828-1-git-send-email-bryan.wu@analog.com>
 References: <1192098220-25828-1-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Michael Hennerich <michael.hennerich@analog.com>
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/serial/Kconfig           |   43 +++
- drivers/serial/Makefile          |    1 +
- drivers/serial/bfin_sport_uart.c |  614 ++++++++++++++++++++++++++++++++++++++
- drivers/serial/bfin_sport_uart.h |   63 ++++
- include/linux/serial_core.h      |    2 +
- 5 files changed, 723 insertions(+), 0 deletions(-)
- create mode 100644 drivers/serial/bfin_sport_uart.c
- create mode 100644 drivers/serial/bfin_sport_uart.h
+ drivers/input/touchscreen/Kconfig  |   13 +
+ drivers/input/touchscreen/Makefile |    1 +
+ drivers/input/touchscreen/ad7877.c |  973 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 987 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/ad7877.c
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 81b52b7..f3bfbe1 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -1259,4 +1259,47 @@ config SERIAL_OF_PLATFORM
- 	  Currently, only 8250 compatible ports are supported, but
- 	  others can easily be added.
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index f929fcd..d755048 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -29,6 +29,19 @@ config TOUCHSCREEN_ADS7846
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called ads7846.
  
-+config SERIAL_BFIN_SPORT
-+	tristate "Blackfin SPORT emulate UART (EXPERIMENTAL)"
-+	depends on BFIN && EXPERIMENTAL
-+	select SERIAL_CORE
++config TOUCHSCREEN_AD7877
++	tristate "AD7877 based touchscreens"
++	depends on SPI_MASTER
 +	help
-+	  Enble support SPORT emulate UART on Blackfin series.
++	  Say Y here if you have a touchscreen interface using the
++	  AD7877 controller, and your board-specific initialization
++	  code includes that in its table of SPI devices.
 +
-+	  To compile this driver as a module, choose M here: the 
-+	  module will be called bfin_sport_uart.
++	  If unsure, say N (but it's safe to say "Y").
 +
-+choice
-+	prompt "Baud rate for Blackfin SPORT UART"
-+	depends on SERIAL_BFIN_SPORT
-+	default SERIAL_SPORT_BAUD_RATE_57600
-+	help
-+	  Choose a baud rate for the SPORT UART, other uart settings are
-+	  8 bit, 1 stop bit, no parity, no flow control.
++	  To compile this driver as a module, choose M here: the
++	  module will be called ad7877.
 +
-+config SERIAL_SPORT_BAUD_RATE_115200
-+	bool "115200"
-+
-+config SERIAL_SPORT_BAUD_RATE_57600
-+	bool "57600"
-+
-+config SERIAL_SPORT_BAUD_RATE_38400
-+	bool "38400"
-+
-+config SERIAL_SPORT_BAUD_RATE_19200
-+	bool "19200"
-+
-+config SERIAL_SPORT_BAUD_RATE_9600
-+	bool "9600"
-+endchoice
-+
-+config SPORT_BAUD_RATE
-+	int
-+	depends on SERIAL_BFIN_SPORT
-+	default 115200 if (SERIAL_SPORT_BAUD_RATE_115200)
-+	default 57600 if (SERIAL_SPORT_BAUD_RATE_57600)
-+	default 38400 if (SERIAL_SPORT_BAUD_RATE_38400)
-+	default 19200 if (SERIAL_SPORT_BAUD_RATE_19200)
-+	default 9600 if (SERIAL_SPORT_BAUD_RATE_9600)
-+
- endmenu
-diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
-index af6377d..05dea96 100644
---- a/drivers/serial/Makefile
-+++ b/drivers/serial/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_SERIAL_PXA) += pxa.o
- obj-$(CONFIG_SERIAL_PNX8XXX) += pnx8xxx_uart.o
- obj-$(CONFIG_SERIAL_SA1100) += sa1100.o
- obj-$(CONFIG_SERIAL_BFIN) += bfin_5xx.o
-+obj-$(CONFIG_SERIAL_BFIN_SPORT) += bfin_sport_uart.o
- obj-$(CONFIG_SERIAL_S3C2410) += s3c2410.o
- obj-$(CONFIG_SERIAL_SUNCORE) += suncore.o
- obj-$(CONFIG_SERIAL_SUNHV) += sunhv.o
-diff --git a/drivers/serial/bfin_sport_uart.c b/drivers/serial/bfin_sport_uart.c
+ config TOUCHSCREEN_BITSY
+ 	tristate "Compaq iPAQ H3600 (Bitsy) touchscreen"
+ 	depends on SA1100_BITSY
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 5de8933..5ee3c2b 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -4,6 +4,7 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++obj-$(CONFIG_TOUCHSCREEN_AD7877)	+= ad7877.o
+ obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
+ obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
+ obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
+diff --git a/drivers/input/touchscreen/ad7877.c b/drivers/input/touchscreen/ad7877.c
 new file mode 100644
-index 0000000..aca1240
+index 0000000..68554e2
 --- /dev/null
-+++ b/drivers/serial/bfin_sport_uart.c
-@@ -0,0 +1,614 @@
++++ b/drivers/input/touchscreen/ad7877.c
+@@ -0,0 +1,973 @@
 +/*
-+ * File:	linux/drivers/serial/bfin_sport_uart.c
++ * File:        drivers/input/touchscreen/ad7877.c
 + *
-+ * Based on:	drivers/serial/bfin_5xx.c by Aubrey Li.
-+ * Author:	Roy Huang <roy.huang@analog.com>
++ * Based on: 	ads7846.c
 + *
-+ * Created:	Nov 22, 2006
-+ * Copyright:	(c) 2006-2007 Analog Devices Inc.
-+ * Description: this driver enable SPORTs on Blackfin emulate UART.
++ *		Copyright (C) 2006 Michael Hennerich, Analog Devices Inc.
++ *
++ * Author:	Michael Hennerich, Analog Devices Inc.
++ *
++ * Created:	Nov, 10th 2006
++ * Description:	AD7877 based touchscreen, sensor (ADCs), DAC and GPIO driver
++ *
++ * Rev:         $Id: ad7877.c 2655 2007-01-16 11:09:40Z hennerich $
++ *
++ * Modified:
++ *              Copyright 2004-2006 Analog Devices Inc.
++ *
++ * Bugs:        Enter bugs at http://blackfin.uclinux.org/
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -131,677 +113,945 @@ index 0000000..aca1240
 + * along with this program; if not, see the file COPYING, or write
 + * to the Free Software Foundation, Inc.,
 + * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ * History:
++ * Copyright (c) 2005 David Brownell
++ * Copyright (c) 2006 Nokia Corporation
++ * Various changes: Imre Deak <imre.deak@nokia.com>
++ *
++ * Using code from:
++ *  - corgi_ts.c
++ *	Copyright (C) 2004-2005 Richard Purdie
++ *  - omap_ts.[hc], ads7846.h, ts_osk.c
++ *	Copyright (C) 2002 MontaVista Software
++ *	Copyright (C) 2004 Texas Instruments
++ *	Copyright (C) 2005 Dirk Behme
 + */
 +
-+/*
-+ * This driver and the hardware supported are in term of EE-191 of ADI.
-+ * http://www.analog.com/UploadedFiles/Application_Notes/399447663EE191.pdf
-+ * This application note describe how to implement a UART on a Sharc DSP,
-+ * but this driver is implemented on Blackfin Processor.
-+ */
 +
-+/* After reset, there is a prelude of low level pulse when transmit data first
-+ * time. No addtional pulse in following transmit.
-+ * According to document:
-+ * The SPORTs are ready to start transmitting or receiving data no later than
-+ * three serial clock cycles after they are enabled in the SPORTx_TCR1 or
-+ * SPORTx_RCR1 register. No serial clock cycles are lost from this point on.
-+ * The first internal frame sync will occur one frame sync delay after the
-+ * SPORTs are ready. External frame syncs can occur as soon as the SPORT is
-+ * ready.
-+ */
-+
-+/* Thanks to Axel Alatalo <axel@rubico.se> for fixing sport rx bug. Sometimes
-+ * sport receives data incorrectly. The following is Axel's words.
-+ * As EE-191, sport rx samples 3 times of the UART baudrate and takes the
-+ * middle smaple of every 3 samples as the data bit. For a 8-N-1 UART setting,
-+ * 30 samples will be required for a byte. If transmitter sends a 1/3 bit short
-+ * byte due to buadrate drift, then the 30th sample of a byte, this sample is
-+ * also the third sample of the stop bit, will happens on the immediately
-+ * following start bit which will be thrown away and missed. Thus since parts
-+ * of the startbit will be missed and the receiver will begin to drift, the
-+ * effect accumulates over time until synchronization is lost.
-+ * If only require 2 samples of the stopbit (by sampling in total 29 samples),
-+ * then a to short byte as in the case above will be tolerated. Then the 1/3
-+ * early startbit will trigger a framesync since the last read is complete
-+ * after only 2/3 stopbit and framesync is active during the last 1/3 looking
-+ * for a possible early startbit. */
-+
-+//#define DEBUG
-+
-+#include <linux/module.h>
-+#include <linux/ioport.h>
++#include <linux/device.h>
 +#include <linux/init.h>
-+#include <linux/console.h>
-+#include <linux/sysrq.h>
-+#include <linux/platform_device.h>
-+#include <linux/tty.h>
-+#include <linux/tty_flip.h>
-+#include <linux/serial_core.h>
++#include <linux/delay.h>
++#include <linux/input.h>
++#include <linux/interrupt.h>
++#include <linux/slab.h>
++#include <linux/kthread.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/ad7877.h>
++#include <linux/freezer.h>
++#include <asm/irq.h>
 +
-+#include <asm/delay.h>
-+#include <asm/portmux.h>
++#ifdef	CONFIG_BFIN
++#include <asm/blackfin.h>
++#endif
 +
-+#include "bfin_sport_uart.h"
++#define	TS_PEN_UP_TIMEOUT	msecs_to_jiffies(50)
 +
-+unsigned short bfin_uart_pin_req_sport0[] =
-+	{P_SPORT0_TFS, P_SPORT0_DTPRI, P_SPORT0_TSCLK, P_SPORT0_RFS, \
-+	 P_SPORT0_DRPRI, P_SPORT0_RSCLK, P_SPORT0_DRSEC, P_SPORT0_DTSEC, 0};
++/*--------------------------------------------------------------------------*/
 +
-+unsigned short bfin_uart_pin_req_sport1[] =
-+	{P_SPORT1_TFS, P_SPORT1_DTPRI, P_SPORT1_TSCLK, P_SPORT1_RFS, \
-+	P_SPORT1_DRPRI, P_SPORT1_RSCLK, P_SPORT1_DRSEC, P_SPORT1_DTSEC, 0};
++#define MAX_SPI_FREQ_HZ			20000000
++#define	MAX_12BIT			((1<<12)-1)
 +
-+#define DRV_NAME "bfin-sport-uart"
++#define AD7877_REG_ZEROS			0
++#define AD7877_REG_CTRL1			1
++#define AD7877_REG_CTRL2			2
++#define AD7877_REG_ALERT			3
++#define AD7877_REG_AUX1HIGH			4
++#define AD7877_REG_AUX1LOW			5
++#define AD7877_REG_BAT1HIGH			6
++#define AD7877_REG_BAT1LOW			7
++#define AD7877_REG_BAT2HIGH			8
++#define AD7877_REG_BAT2LOW			9
++#define AD7877_REG_TEMP1HIGH			10
++#define AD7877_REG_TEMP1LOW			11
++#define AD7877_REG_SEQ0				12
++#define AD7877_REG_SEQ1				13
++#define AD7877_REG_DAC				14
++#define AD7877_REG_NONE1			15
++#define AD7877_REG_EXTWRITE			15
++#define AD7877_REG_XPLUS			16
++#define AD7877_REG_YPLUS			17
++#define AD7877_REG_Z2				18
++#define AD7877_REG_aux1				19
++#define AD7877_REG_aux2				20
++#define AD7877_REG_aux3				21
++#define AD7877_REG_bat1				22
++#define AD7877_REG_bat2				23
++#define AD7877_REG_temp1			24
++#define AD7877_REG_temp2			25
++#define AD7877_REG_Z1				26
++#define AD7877_REG_GPIOCTRL1			27
++#define AD7877_REG_GPIOCTRL2			28
++#define AD7877_REG_GPIODATA			29
++#define AD7877_REG_NONE2			30
++#define AD7877_REG_NONE3			31
 +
-+struct sport_uart_port {
-+	struct uart_port	port;
-+	char			*name;
++#define AD7877_SEQ_YPLUS_BIT			(1<<11)
++#define AD7877_SEQ_XPLUS_BIT			(1<<10)
++#define AD7877_SEQ_Z2_BIT			(1<<9)
++#define AD7877_SEQ_AUX1_BIT			(1<<8)
++#define AD7877_SEQ_AUX2_BIT			(1<<7)
++#define AD7877_SEQ_AUX3_BIT			(1<<6)
++#define AD7877_SEQ_BAT1_BIT			(1<<5)
++#define AD7877_SEQ_BAT2_BIT			(1<<4)
++#define AD7877_SEQ_TEMP1_BIT			(1<<3)
++#define AD7877_SEQ_TEMP2_BIT			(1<<2)
++#define AD7877_SEQ_Z1_BIT			(1<<1)
 +
-+	int			tx_irq;
-+	int			rx_irq;
-+	int			err_irq;
++enum {
++	AD7877_SEQ_YPOS  = 0,
++	AD7877_SEQ_XPOS  = 1,
++	AD7877_SEQ_Z2    = 2,
++	AD7877_SEQ_AUX1  = 3,
++	AD7877_SEQ_AUX2  = 4,
++	AD7877_SEQ_AUX3  = 5,
++	AD7877_SEQ_BAT1  = 6,
++	AD7877_SEQ_BAT2  = 7,
++	AD7877_SEQ_TEMP1 = 8,
++	AD7877_SEQ_TEMP2 = 9,
++	AD7877_SEQ_Z1    = 10,
++
++	AD7877_NR_SENSE  = 11,
 +};
 +
-+static void sport_uart_tx_chars(struct sport_uart_port *up);
-+static void sport_stop_tx(struct uart_port *port);
-+
-+static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
-+{
-+	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+	/* Place a Start and Stop bit */
-+	__asm__ volatile (
-+		"R2 = b#01111111100;\n\t"
-+		"R3 = b#10000000001;\n\t"
-+		"%0 <<= 2;\n\t"
-+		"%0 = %0 & R2;\n\t"
-+		"%0 = %0 | R3;\n\t"
-+		:"=r"(value)
-+		:"0"(value)
-+		:"R2", "R3");
-+	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+
-+	SPORT_PUT_TX(up, value);
-+}
-+
-+static inline unsigned int rx_one_byte(struct sport_uart_port *up)
-+{
-+	unsigned int value, extract;
-+
-+	value = SPORT_GET_RX32(up);
-+	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+
-+	/* Extract 8 bits data */
-+	__asm__ volatile (
-+		"R5 = 0;\n\t"
-+		"P0 = 8;\n\t"
-+		"R1 = 0x1801(Z);\n\t"
-+		"R3 = 0x0300(Z);\n\t"
-+		"R4 = 0;\n\t"
-+		"LSETUP(loop_s, loop_e) LC0 = P0;\nloop_s:\t"
-+		"R2 = extract(%1, R1.L)(Z);\n\t"
-+		"R2 <<= R4;\n\t"
-+		"R5 = R5 | R2;\n\t"
-+		"R1 = R1 - R3;\nloop_e:\t"
-+		"R4 += 1;\n\t"
-+		"%0 = R5;\n\t"
-+		:"=r"(extract)
-+		:"r"(value)
-+		:"P0", "R1", "R2","R3","R4", "R5");
-+
-+	pr_debug("	extract:%x\n", extract);
-+	return extract;
-+}
-+
-+static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
-+{
-+	int tclkdiv, tfsdiv, rclkdiv;
-+
-+	/* Set TCR1 and TCR2 */
-+	SPORT_PUT_TCR1(up, (LTFS | ITFS | TFSR | TLSBIT | ITCLK));
-+	SPORT_PUT_TCR2(up, 10);
-+	pr_debug("%s TCR1:%x, TCR2:%x\n", __FUNCTION__, SPORT_GET_TCR1(up), SPORT_GET_TCR2(up));
-+
-+	/* Set RCR1 and RCR2 */
-+	SPORT_PUT_RCR1(up, (RCKFE | LARFS | LRFS | RFSR | IRCLK));
-+	SPORT_PUT_RCR2(up, 28);
-+	pr_debug("%s RCR1:%x, RCR2:%x\n", __FUNCTION__, SPORT_GET_RCR1(up), SPORT_GET_RCR2(up));
-+
-+	tclkdiv = sclk/(2 * baud_rate) - 1;
-+	tfsdiv = 12;
-+	rclkdiv = sclk/(2 * baud_rate * 3) - 1;
-+	SPORT_PUT_TCLKDIV(up, tclkdiv);
-+	SPORT_PUT_TFSDIV(up, tfsdiv);
-+	SPORT_PUT_RCLKDIV(up, rclkdiv);
-+	SSYNC();
-+	pr_debug("%s sclk:%d, baud_rate:%d, tclkdiv:%d, tfsdiv:%d, rclkdiv:%d\n",
-+			__FUNCTION__, sclk, baud_rate, tclkdiv, tfsdiv, rclkdiv);
-+
-+	return 0;
-+}
-+
-+static irqreturn_t sport_uart_rx_irq(int irq, void *dev_id)
-+{
-+	struct sport_uart_port *up = dev_id;
-+	struct tty_struct *tty = up->port.info->tty;
-+	unsigned int ch;
-+
-+	do {
-+		ch = rx_one_byte(up);
-+		up->port.icount.rx++;
-+
-+		if (uart_handle_sysrq_char(&up->port, ch))
-+			;
-+		else
-+			tty_insert_flip_char(tty, ch, TTY_NORMAL);
-+	} while (SPORT_GET_STAT(up) & RXNE);
-+	tty_flip_buffer_push(tty);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t sport_uart_tx_irq(int irq, void *dev_id)
-+{
-+	sport_uart_tx_chars(dev_id);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t sport_uart_err_irq(int irq, void *dev_id)
-+{
-+	struct sport_uart_port *up = dev_id;
-+	struct tty_struct *tty = up->port.info->tty;
-+	unsigned int stat = SPORT_GET_STAT(up);
-+
-+	/* Overflow in RX FIFO */
-+	if (stat & ROVF) {
-+		up->port.icount.overrun++;
-+		tty_insert_flip_char(tty, 0, TTY_OVERRUN);
-+		SPORT_PUT_STAT(up, ROVF); /* Clear ROVF bit */
-+	}
-+	/* These should not happen */
-+	if (stat & (TOVF | TUVF | RUVF)) {
-+		printk(KERN_ERR "SPORT Error:%s %s %s\n",
-+				(stat & TOVF)?"TX overflow":"",
-+				(stat & TUVF)?"TX underflow":"",
-+				(stat & RUVF)?"RX underflow":"");
-+		SPORT_PUT_TCR1(up, SPORT_GET_TCR1(up) & ~TSPEN);
-+		SPORT_PUT_RCR1(up, SPORT_GET_RCR1(up) & ~RSPEN);
-+	}
-+	SSYNC();
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* Reqeust IRQ, Setup clock */
-+static int sport_startup(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+	char buffer[20];
-+	int retval;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	memset(buffer, 20, '\0');
-+	snprintf(buffer, 20, "%s rx", up->name);
-+	retval = request_irq(up->rx_irq, sport_uart_rx_irq, IRQF_SAMPLE_RANDOM, buffer, up);
-+	if (retval) {
-+		printk(KERN_ERR "Unable to request interrupt %s\n", buffer);
-+		return retval;
-+	}
-+
-+	snprintf(buffer, 20, "%s tx", up->name);
-+	retval = request_irq(up->tx_irq, sport_uart_tx_irq, IRQF_SAMPLE_RANDOM, buffer, up);
-+	if (retval) {
-+		printk(KERN_ERR "Unable to request interrupt %s\n", buffer);
-+		goto fail1;
-+	}
-+
-+	snprintf(buffer, 20, "%s err", up->name);
-+	retval = request_irq(up->err_irq, sport_uart_err_irq, IRQF_SAMPLE_RANDOM, buffer, up);
-+	if (retval) {
-+		printk(KERN_ERR "Unable to request interrupt %s\n", buffer);
-+		goto fail2;
-+	}
-+
-+	if (port->line) {
-+		if (peripheral_request_list(bfin_uart_pin_req_sport1, DRV_NAME))
-+			goto fail3;
-+	} else {
-+		if (peripheral_request_list(bfin_uart_pin_req_sport0, DRV_NAME))
-+			goto fail3;
-+	}
-+
-+	sport_uart_setup(up, get_sclk(), port->uartclk);
-+
-+	/* Enable receive interrupt */
-+	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) | RSPEN));
-+	SSYNC();
-+
-+	return 0;
-+
-+
-+fail3:
-+	printk(KERN_ERR DRV_NAME
-+		": Requesting Peripherals failed\n");
-+
-+	free_irq(up->err_irq, up);
-+fail2:
-+	free_irq(up->tx_irq, up);
-+fail1:
-+	free_irq(up->rx_irq, up);
-+
-+	return retval;
-+
-+}
-+
-+static void sport_uart_tx_chars(struct sport_uart_port *up)
-+{
-+	struct circ_buf *xmit = &up->port.info->xmit;
-+
-+	if (SPORT_GET_STAT(up) & TXF)
-+		return;
-+
-+	if (up->port.x_char) {
-+		tx_one_byte(up, up->port.x_char);
-+		up->port.icount.tx++;
-+		up->port.x_char = 0;
-+		return;
-+	}
-+
-+	if (uart_circ_empty(xmit) || uart_tx_stopped(&up->port)) {
-+		sport_stop_tx(&up->port);
-+		return;
-+	}
-+
-+	while(!(SPORT_GET_STAT(up) & TXF) && !uart_circ_empty(xmit)) {
-+		tx_one_byte(up, xmit->buf[xmit->tail]);
-+		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE -1);
-+		up->port.icount.tx++;
-+	}
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(&up->port);
-+}
-+
-+static unsigned int sport_tx_empty(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+	unsigned int stat;
-+
-+	stat = SPORT_GET_STAT(up);
-+	pr_debug("%s stat:%04x\n", __FUNCTION__, stat);
-+	if (stat & TXHRE) {
-+		return TIOCSER_TEMT;
-+	} else
-+		return 0;
-+}
-+
-+static unsigned int sport_get_mctrl(struct uart_port *port)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	return (TIOCM_CTS | TIOCM_CD | TIOCM_DSR);
-+}
-+
-+static void sport_set_mctrl(struct uart_port *port, unsigned int mctrl)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+}
-+
-+static void sport_stop_tx(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+	unsigned int stat;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+
-+	stat = SPORT_GET_STAT(up);
-+	while(!(stat & TXHRE)) {
-+		udelay(1);
-+		stat = SPORT_GET_STAT(up);
-+	}
-+	/* Although the hold register is empty, last byte is still in shift
-+	 * register and not sent out yet. If baud rate is lower than default,
-+	 * delay should be longer. For example, if the baud rate is 9600,
-+	 * the delay must be at least 2ms by experience */
-+	udelay(500);
-+
-+	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) & ~TSPEN));
-+	SSYNC();
-+
-+	return;
-+}
-+
-+static void sport_start_tx(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	/* Write data into SPORT FIFO before enable SPROT to transmit */
-+	sport_uart_tx_chars(up);
-+
-+	/* Enable transmit, then an interrupt will generated */
-+	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) | TSPEN));
-+	SSYNC();
-+	pr_debug("%s exit\n", __FUNCTION__);
-+}
-+
-+static void sport_stop_rx(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	/* Disable sport to stop rx */
-+	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) & ~RSPEN));
-+	SSYNC();
-+}
-+
-+static void sport_enable_ms(struct uart_port *port)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+}
-+
-+static void sport_break_ctl(struct uart_port *port, int break_state)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+}
-+
-+static void sport_shutdown(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+
-+	/* Disable sport */
-+	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) & ~TSPEN));
-+	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) & ~RSPEN));
-+	SSYNC();
-+
-+	if (port->line) {
-+		peripheral_free_list(bfin_uart_pin_req_sport1);
-+	} else {
-+		peripheral_free_list(bfin_uart_pin_req_sport0);
-+	}
-+
-+	free_irq(up->rx_irq, up);
-+	free_irq(up->tx_irq, up);
-+	free_irq(up->err_irq, up);
-+}
-+
-+static void sport_set_termios(struct uart_port *port,
-+		struct termios *termios, struct termios *old)
-+{
-+	pr_debug("%s enter, c_cflag:%08x\n", __FUNCTION__, termios->c_cflag);
-+	uart_update_timeout(port, CS8 ,port->uartclk);
-+}
-+
-+static const char *sport_type(struct uart_port *port)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	return up->name;
-+}
-+
-+static void sport_release_port(struct uart_port *port)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+}
-+
-+static int sport_request_port(struct uart_port *port)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	return 0;
-+}
-+
-+static void sport_config_port(struct uart_port *port, int flags)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)port;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	up->port.type = PORT_BFIN_SPORT;
-+}
-+
-+static int sport_verify_port(struct uart_port *port, struct serial_struct *ser)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	return 0;
-+}
-+
-+struct uart_ops sport_uart_ops = {
-+	.tx_empty	= sport_tx_empty,
-+	.set_mctrl	= sport_set_mctrl,
-+	.get_mctrl	= sport_get_mctrl,
-+	.stop_tx	= sport_stop_tx,
-+	.start_tx	= sport_start_tx,
-+	.stop_rx	= sport_stop_rx,
-+	.enable_ms	= sport_enable_ms,
-+	.break_ctl	= sport_break_ctl,
-+	.startup	= sport_startup,
-+	.shutdown	= sport_shutdown,
-+	.set_termios	= sport_set_termios,
-+	.type		= sport_type,
-+	.release_port	= sport_release_port,
-+	.request_port	= sport_request_port,
-+	.config_port	= sport_config_port,
-+	.verify_port	= sport_verify_port,
++
++/* DAC Register Default RANGE 0 to Vcc, Volatge Mode, DAC On */
++#define AD7877_DAC_CONF			0x1
++
++/* If gpio3 is set AUX3/GPIO3 acts as GPIO Output */
++#define AD7877_EXTW_GPIO_3_CONF		0x1C4
++#define AD7877_EXTW_GPIO_DATA		0x200
++
++/* Control REG 2 */
++#define AD7877_TMR(x)			((x & 0x3) << 0)
++#define AD7877_REF(x)			((x & 0x1) << 2)
++#define AD7877_POL(x)			((x & 0x1) << 3)
++#define AD7877_FCD(x)			((x & 0x3) << 4)
++#define AD7877_PM(x)			((x & 0x3) << 6)
++#define AD7877_ACQ(x)			((x & 0x3) << 8)
++#define AD7877_AVG(x)			((x & 0x3) << 10)
++
++/* Control REG 1 */
++#define	AD7877_SER			(1 << 11)	/* non-differential */
++#define	AD7877_DFR			(0 << 11)	/* differential */
++
++#define AD7877_MODE_NOC  (0)	/* Do not convert */
++#define AD7877_MODE_SCC  (1)	/* Single channel conversion */
++#define AD7877_MODE_SEQ0 (2)	/* Sequence 0 in Slave Mode */
++#define AD7877_MODE_SEQ1 (3)	/* Sequence 1 in Master Mode */
++
++#define AD7877_CHANADD(x)		((x&0xF)<<7)
++#define AD7877_READADD(x)		((x)<<2)
++#define AD7877_WRITEADD(x)		((x)<<12)
++
++
++#define AD7877_READ_CHAN(x) (AD7877_WRITEADD(AD7877_REG_CTRL1) | AD7877_SER | \
++		AD7877_MODE_SCC | AD7877_CHANADD(AD7877_REG_ ## x) | \
++		AD7877_READADD(AD7877_REG_ ## x))
++
++
++#define AD7877_MM_SEQUENCE (AD7877_SEQ_YPLUS_BIT | AD7877_SEQ_XPLUS_BIT | AD7877_SEQ_Z2_BIT | AD7877_SEQ_Z1_BIT)
++/*--------------------------------------------------------------------------*/
++
++
++struct ad7877 {
++	struct input_dev	*input;
++	char			phys[32];
++
++	struct spi_device	*spi;
++	u16			model;
++	u16			vref_delay_usecs;
++	u16			x_plate_ohms;
++	u16			pressure_max;
++
++	u16			cmd_crtl1;
++	u16			cmd_crtl2;
++	u16			cmd_dummy;
++	u16			dac;
++
++	u8			stopacq_polarity;
++	u8			first_conversion_delay;
++	u8			acquisition_time;
++	u8			averaging;
++	u8			pen_down_acc_interval;
++
++	u16 conversion_data[AD7877_NR_SENSE];
++
++	struct spi_transfer	xfer[3];
++	struct spi_message	msg;
++
++
++	int intr_flag;
++
++	spinlock_t		lock;
++	struct timer_list	timer;		/* P: lock */
++	unsigned		pendown:1;	/* P: lock */
++	unsigned		pending:1;	/* P: lock */
++
++	unsigned		irq_disabled:1;	/* P: lock */
++	unsigned		disabled:1;
++	unsigned		gpio3:1;
++	unsigned		gpio4:1;
++
 +};
 +
-+static struct sport_uart_port sport_uart_ports[] = {
-+	{ /* SPORT 0 */
-+		.name	= "SPORT0",
-+		.tx_irq = IRQ_SPORT0_TX,
-+		.rx_irq = IRQ_SPORT0_RX,
-+		.err_irq= IRQ_SPORT0_ERROR,
-+		.port	= {
-+			.type		= PORT_BFIN_SPORT,
-+			.iotype		= UPIO_MEM,
-+			.membase	= (void __iomem *)SPORT0_TCR1,
-+			.mapbase	= SPORT0_TCR1,
-+			.irq		= IRQ_SPORT0_RX,
-+			.uartclk	= CONFIG_SPORT_BAUD_RATE,
-+			.fifosize	= 8,
-+			.ops		= &sport_uart_ops,
-+			.line		= 0,
-+		},
-+	}, { /* SPORT 1 */
-+		.name	= "SPORT1",
-+		.tx_irq = IRQ_SPORT1_TX,
-+		.rx_irq = IRQ_SPORT1_RX,
-+		.err_irq= IRQ_SPORT1_ERROR,
-+		.port	= {
-+			.type		= PORT_BFIN_SPORT,
-+			.iotype		= UPIO_MEM,
-+			.membase	= (void __iomem *)SPORT1_TCR1,
-+			.mapbase	= SPORT1_TCR1,
-+			.irq		= IRQ_SPORT1_RX,
-+			.uartclk	= CONFIG_SPORT_BAUD_RATE,
-+			.fifosize	= 8,
-+			.ops		= &sport_uart_ops,
-+			.line		= 1,
-+		},
-+	}
-+};
-+
-+static struct uart_driver sport_uart_reg = {
-+	.owner		= THIS_MODULE,
-+	.driver_name	= "SPORT-UART",
-+	.dev_name	= "ttySS",
-+	.major		= 204,
-+	.minor		= 84,
-+	.nr		= ARRAY_SIZE(sport_uart_ports),
-+	.cons		= NULL,
-+};
-+
-+static int sport_uart_suspend(struct platform_device *dev, pm_message_t state)
-+{
-+	struct sport_uart_port *sport = platform_get_drvdata(dev);
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	if (sport)
-+		uart_suspend_port(&sport_uart_reg, &sport->port);
-+
-+	return 0;
-+}
-+
-+static int sport_uart_resume(struct platform_device *dev)
-+{
-+	struct sport_uart_port *sport = platform_get_drvdata(dev);
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	if (sport)
-+		uart_resume_port(&sport_uart_reg, &sport->port);
-+
-+	return 0;
-+}
-+
-+static int sport_uart_probe(struct platform_device *dev)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	sport_uart_ports[dev->id].port.dev = &dev->dev;
-+	uart_add_one_port(&sport_uart_reg, &sport_uart_ports[dev->id].port);
-+	platform_set_drvdata(dev, &sport_uart_ports[dev->id]);
-+
-+	return 0;
-+}
-+
-+static int sport_uart_remove(struct platform_device *dev)
-+{
-+	struct sport_uart_port *sport = platform_get_drvdata(dev);
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	platform_set_drvdata(dev, NULL);
-+
-+	if (sport)
-+		uart_remove_one_port(&sport_uart_reg, &sport->port);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver sport_uart_driver = {
-+	.probe		= sport_uart_probe,
-+	.remove		= sport_uart_remove,
-+	.suspend	= sport_uart_suspend,
-+	.resume		= sport_uart_resume,
-+	.driver		= {
-+		.name	= DRV_NAME,
-+	},
-+};
-+
-+static int __init sport_uart_init(void)
-+{
-+	int ret;
-+
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	ret = uart_register_driver(&sport_uart_reg);
-+	if (ret != 0) {
-+		printk(KERN_ERR "Failed to register %s:%d\n",
-+				sport_uart_reg.driver_name, ret);
-+		return ret;
-+	}
-+
-+	ret = platform_driver_register(&sport_uart_driver);
-+	if (ret != 0) {
-+		printk(KERN_ERR "Failed to register sport uart driver:%d\n", ret);
-+		uart_unregister_driver(&sport_uart_reg);
-+	}
-+
-+
-+	pr_debug("%s exit\n", __FUNCTION__);
-+	return ret;
-+}
-+
-+static void __exit sport_uart_exit(void)
-+{
-+	pr_debug("%s enter\n", __FUNCTION__);
-+	platform_driver_unregister(&sport_uart_driver);
-+	uart_unregister_driver(&sport_uart_reg);
-+}
-+
-+module_init(sport_uart_init);
-+module_exit(sport_uart_exit);
-+
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/serial/bfin_sport_uart.h b/drivers/serial/bfin_sport_uart.h
-new file mode 100644
-index 0000000..ffe5ed9
---- /dev/null
-+++ b/drivers/serial/bfin_sport_uart.h
-@@ -0,0 +1,63 @@
 +/*
-+ * File:	linux/drivers/serial/bfin_sport_uart.h
-+ *
-+ * Based on:	include/asm-blackfin/mach-533/bfin_serial_5xx.h
-+ * Author:	Roy Huang <roy.huang>analog.com>
-+ * 
-+ * Created:	Nov 22, 2006
-+ * Copyright:	(C) Analog Device Inc.
-+ * Description: this driver enable SPORTs on Blackfin emulate UART.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ * Non-touchscreen sensors only use single-ended conversions.
 + */
 +
++static int gpio3 = 0;
 +
-+#define OFFSET_TCR1		0x00	/* Transmit Configuration 1 Register */
-+#define OFFSET_TCR2		0x04	/* Transmit Configuration 2 Register */
-+#define OFFSET_TCLKDIV		0x08	/* Transmit Serial Clock Divider Register */
-+#define OFFSET_TFSDIV		0x0C	/* Transmit Frame Sync Divider Register */
-+#define OFFSET_TX		0x10	/* Transmit Data Register		*/
-+#define OFFSET_RX		0x18	/* Receive Data Register		*/
-+#define OFFSET_RCR1		0x20	/* Receive Configuration 1 Register	*/
-+#define OFFSET_RCR2		0x24	/* Receive Configuration 2 Register	*/
-+#define OFFSET_RCLKDIV		0x28	/* Receive Serial Clock Divider Register */
-+#define OFFSET_RFSDIV		0x2c	/* Receive Frame Sync Divider Register */
-+#define OFFSET_STAT		0x30	/* Status Register			*/
++struct ser_req {
++	u16			ref_on;
++	u16			command;
++	u16			sample;
++	struct spi_message	msg;
++	struct spi_transfer	xfer[5];
++};
 +
-+#define SPORT_GET_TCR1(sport)		bfin_read16(((sport)->port.membase + OFFSET_TCR1))
-+#define SPORT_GET_TCR2(sport)		bfin_read16(((sport)->port.membase + OFFSET_TCR2))
-+#define SPORT_GET_TCLKDIV(sport)	bfin_read16(((sport)->port.membase + OFFSET_TCLKDIV))
-+#define SPORT_GET_TFSDIV(sport)		bfin_read16(((sport)->port.membase + OFFSET_TFSDIV))
-+#define SPORT_GET_TX(sport)		bfin_read16(((sport)->port.membase + OFFSET_TX))
-+#define SPORT_GET_RX(sport)		bfin_read16(((sport)->port.membase + OFFSET_RX))
-+#define SPORT_GET_RX32(sport)		bfin_read32(((sport)->port.membase + OFFSET_RX))
-+#define SPORT_GET_RCR1(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR1))
-+#define SPORT_GET_RCR2(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR2))
-+#define SPORT_GET_RCLKDIV(sport)	bfin_read16(((sport)->port.membase + OFFSET_RCLKDIV))
-+#define SPORT_GET_RFSDIV(sport)		bfin_read16(((sport)->port.membase + OFFSET_RFSDIV))
-+#define SPORT_GET_STAT(sport)		bfin_read16(((sport)->port.membase + OFFSET_STAT))
++static struct task_struct *ad7877_task;
++static DECLARE_WAIT_QUEUE_HEAD(ad7877_wait);
 +
-+#define SPORT_PUT_TCR1(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_TCR1), v)
-+#define SPORT_PUT_TCR2(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_TCR2), v)
-+#define SPORT_PUT_TCLKDIV(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_TCLKDIV), v)
-+#define SPORT_PUT_TFSDIV(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_TFSDIV), v)
-+#define SPORT_PUT_TX(sport, v)		bfin_write16(((sport)->port.membase + OFFSET_TX), v)
-+#define SPORT_PUT_RX(sport, v)		bfin_write16(((sport)->port.membase + OFFSET_RX), v)
-+#define SPORT_PUT_RCR1(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_RCR1), v)
-+#define SPORT_PUT_RCR2(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_RCR2), v)
-+#define SPORT_PUT_RCLKDIV(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_RCLKDIV), v)
-+#define SPORT_PUT_RFSDIV(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_RFSDIV), v)
-+#define SPORT_PUT_STAT(sport, v)	bfin_write16(((sport)->port.membase + OFFSET_STAT), v)
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 09d17b0..e257302 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -146,6 +146,8 @@
- /* Broadcom SB1250, etc. SOC */
- #define PORT_SB1250_DUART	77
- 
-+/* Blackfin SPORT */
-+#define PORT_BFIN_SPORT		78
- 
- #ifdef __KERNEL__
- 
++static void ad7877_enable(struct ad7877 *ts);
++static void ad7877_disable(struct ad7877 *ts);
++
++static int device_suspended(struct device *dev)
++{
++	struct ad7877 *ts = dev_get_drvdata(dev);
++	return dev->power.power_state.event != PM_EVENT_ON || ts->disabled;
++}
++
++static int ad7877_read(struct device *dev, u16 reg)
++{
++	struct spi_device	*spi = to_spi_device(dev);
++	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
++	int			status;
++
++	if (!req)
++		return -ENOMEM;
++
++	spi_message_init(&req->msg);
++
++
++	req->command = (u16) (AD7877_WRITEADD(AD7877_REG_CTRL1) | AD7877_READADD(reg));
++	req->xfer[0].tx_buf = &req->command;
++	req->xfer[0].len = 2;
++
++	req->xfer[1].rx_buf = &req->sample;
++	req->xfer[1].len = 2;
++
++	spi_message_add_tail(&req->xfer[0], &req->msg);
++	spi_message_add_tail(&req->xfer[1], &req->msg);
++
++	status = spi_sync(spi, &req->msg);
++
++	if (req->msg.status)
++		status = req->msg.status;
++
++	kfree(req);
++	return status ? status : req->sample;
++}
++
++static int ad7877_write(struct device *dev, u16 reg, u16 val)
++{
++	struct spi_device	*spi = to_spi_device(dev);
++	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
++	int			status;
++
++	if (!req)
++		return -ENOMEM;
++
++	spi_message_init(&req->msg);
++
++
++	req->command = (u16) (AD7877_WRITEADD(reg) | (val & MAX_12BIT));
++	req->xfer[0].tx_buf = &req->command;
++	req->xfer[0].len = 2;
++
++
++	spi_message_add_tail(&req->xfer[0], &req->msg);
++
++	status = spi_sync(spi, &req->msg);
++
++	if (req->msg.status)
++		status = req->msg.status;
++
++	kfree(req);
++
++	return status;
++}
++
++static int ad7877_read_adc(struct device *dev, unsigned command)
++{
++	struct spi_device	*spi = to_spi_device(dev);
++	struct ad7877		*ts = dev_get_drvdata(dev);
++	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
++	int			status;
++	int			sample;
++	int			i;
++
++	if (!req)
++		return -ENOMEM;
++
++	spi_message_init(&req->msg);
++
++	/* activate reference, so it has time to settle; */
++	req->ref_on = AD7877_WRITEADD(AD7877_REG_CTRL2) | AD7877_POL(ts->stopacq_polarity) |\
++			 AD7877_AVG(0) | AD7877_PM(2) | AD7877_TMR(0) |\
++			 AD7877_ACQ(ts->acquisition_time) | AD7877_FCD(0);
++
++	req->command = (u16) command;
++
++	req->xfer[0].tx_buf = &req->ref_on;
++	req->xfer[0].len = 2;
++	req->xfer[0].delay_usecs = ts->vref_delay_usecs;
++
++	req->xfer[1].tx_buf = &req->command;
++	req->xfer[1].len = 2;
++	req->xfer[1].delay_usecs = ts->vref_delay_usecs;
++
++	req->xfer[2].rx_buf = &req->sample;
++	req->xfer[2].len = 2;
++
++	req->xfer[3].tx_buf = &ts->cmd_crtl2;	/*REF OFF*/
++	req->xfer[3].len = 2;
++
++	req->xfer[4].tx_buf = &ts->cmd_crtl1;	/*DEFAULT*/
++	req->xfer[4].len = 2;
++
++
++	/* group all the transfers together, so we can't interfere with
++	 * reading touchscreen state; disable penirq while sampling
++	 */
++	for (i = 0; i < 5; i++)
++		spi_message_add_tail(&req->xfer[i], &req->msg);
++
++
++	ts->irq_disabled = 1;
++	disable_irq(spi->irq);
++	status = spi_sync(spi, &req->msg);
++	ts->irq_disabled = 0;
++	enable_irq(spi->irq);
++
++	if (req->msg.status)
++		status = req->msg.status;
++
++
++	sample = req->sample;
++
++	kfree(req);
++	return status ? status : sample;
++}
++
++#define SHOW(name) static ssize_t \
++name ## _show(struct device *dev, struct device_attribute *attr, char *buf) \
++{ \
++	ssize_t v = ad7877_read_adc(dev, \
++			AD7877_READ_CHAN(name)); \
++	if (v < 0) \
++		return v; \
++	return sprintf(buf, "%u\n", (unsigned) v); \
++} \
++static DEVICE_ATTR(name, S_IRUGO, name ## _show, NULL);
++
++SHOW(aux1)
++SHOW(aux2)
++SHOW(aux3)
++SHOW(bat1)
++SHOW(bat2)
++SHOW(temp1)
++SHOW(temp2)
++
++
++static ssize_t ad7877_disable_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct ad7877	*ts = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%u\n", ts->disabled);
++}
++
++static ssize_t ad7877_disable_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct ad7877 *ts = dev_get_drvdata(dev);
++	char *endp;
++	int i;
++
++	i = simple_strtoul(buf, &endp, 10);
++	spin_lock_irq(&ts->lock);
++
++	if (i)
++		ad7877_disable(ts);
++	else
++		ad7877_enable(ts);
++
++	spin_unlock_irq(&ts->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(disable, 0664, ad7877_disable_show, ad7877_disable_store);
++
++static ssize_t ad7877_dac_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct ad7877	*ts = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%u\n", ts->dac);
++}
++
++static ssize_t ad7877_dac_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct ad7877 *ts = dev_get_drvdata(dev);
++	char *endp;
++	int i;
++
++	i = simple_strtoul(buf, &endp, 10);
++
++	ts->dac = i & 0xFF;
++
++	ad7877_write(dev, AD7877_REG_DAC, (ts->dac << 4) | AD7877_DAC_CONF);
++
++	return count;
++}
++
++static DEVICE_ATTR(dac, 0664, ad7877_dac_show, ad7877_dac_store);
++
++static ssize_t ad7877_gpio3_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct ad7877	*ts = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%u\n", ts->gpio3);
++}
++
++static ssize_t ad7877_gpio3_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct ad7877 *ts = dev_get_drvdata(dev);
++	char *endp;
++	int i;
++
++	i = simple_strtoul(buf, &endp, 10);
++	spin_lock_irq(&ts->lock);
++
++	if (i) {
++		ts->gpio3=1;
++	} else {
++		ts->gpio3=0;
++	}
++
++	ad7877_write(dev, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA | (ts->gpio4 << 4) | (ts->gpio3 << 5));
++
++	spin_unlock_irq(&ts->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(gpio3, 0664, ad7877_gpio3_show, ad7877_gpio3_store);
++
++static ssize_t ad7877_gpio4_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct ad7877	*ts = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%u\n", ts->gpio4);
++}
++
++static ssize_t ad7877_gpio4_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct ad7877 *ts = dev_get_drvdata(dev);
++	char *endp;
++	int i;
++
++	i = simple_strtoul(buf, &endp, 10);
++	spin_lock_irq(&ts->lock);
++
++	if (i) {
++		ts->gpio4=1;
++	} else {
++		ts->gpio4=0;
++	}
++
++	ad7877_write(dev, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA | (ts->gpio4 << 4) | (ts->gpio3 << 5));
++	spin_unlock_irq(&ts->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(gpio4, 0664, ad7877_gpio4_show, ad7877_gpio4_store);
++
++static struct attribute *ad7877_attributes[] = {
++	&dev_attr_temp1.attr,
++	&dev_attr_temp2.attr,
++	&dev_attr_aux1.attr,
++	&dev_attr_aux2.attr,
++	&dev_attr_bat1.attr,
++	&dev_attr_bat2.attr,
++	&dev_attr_disable.attr,
++	&dev_attr_dac.attr,
++	&dev_attr_gpio4.attr,
++	NULL
++};
++
++static const struct attribute_group ad7877_attr_group = {
++	.attrs = ad7877_attributes,
++};
++
++/*--------------------------------------------------------------------------*/
++
++/*
++ * /DAV Data available Interrupt only kicks the kthread.
++ * The kthread kicks the timer only to issue the Pen Up Event if
++ * no new data is available
++ *
++ */
++
++static void ad7877_rx(void *ads)
++{
++	struct ad7877		*ts = ads;
++	struct input_dev	*input_dev = ts->input;
++	unsigned		Rt;
++	unsigned		sync = 0;
++	u16			x, y, z1, z2;
++
++	x = ts->conversion_data[AD7877_SEQ_XPOS] & MAX_12BIT;
++	y = ts->conversion_data[AD7877_SEQ_YPOS]& MAX_12BIT;
++	z1 = ts->conversion_data[AD7877_SEQ_Z1] & MAX_12BIT;
++	z2 = ts->conversion_data[AD7877_SEQ_Z2] & MAX_12BIT;
++
++	/* range filtering */
++	if (x == MAX_12BIT)
++		x = 0;
++
++	if (likely(x && z1 && !device_suspended(&ts->spi->dev))) {
++		/* compute touch pressure resistance using equation #2 */
++		Rt = z2;
++		Rt -= z1;
++		Rt *= x;
++		Rt *= ts->x_plate_ohms;
++		Rt /= z1;
++		Rt = (Rt + 2047) >> 12;
++	} else
++		Rt = 0;
++
++	if (Rt) {
++		input_report_abs(input_dev, ABS_X, x);
++		input_report_abs(input_dev, ABS_Y, y);
++		sync = 1;
++	}
++
++	if (sync) {
++		input_report_abs(input_dev, ABS_PRESSURE, Rt);
++		input_sync(input_dev);
++	}
++
++#ifdef	VERBOSE
++	if (Rt)
++		pr_debug("%s: %d/%d/%d%s\n", ts->spi->dev.bus_id,
++			x, y, Rt, Rt ? "" : " UP");
++#endif
++
++}
++
++
++static inline void ad7877_ts_event_release(struct ad7877 *ts)
++{
++	struct input_dev *input_dev = ts->input;
++	input_report_abs(input_dev, ABS_PRESSURE, 0);
++	input_sync(input_dev);
++}
++
++static void ad7877_timer(unsigned long handle)
++{
++	struct ad7877	*ts = (void *)handle;
++
++	spin_lock_irq(&ts->lock);
++
++	ad7877_ts_event_release(ts);
++
++	spin_unlock_irq(&ts->lock);
++}
++
++
++static irqreturn_t ad7877_irq(int irq, void *handle)
++{
++	struct ad7877 *ts = handle;
++	unsigned long flags;
++
++	spin_lock_irqsave(&ts->lock, flags);
++
++		if (!ts->irq_disabled) {
++			ts->irq_disabled = 1;
++			disable_irq(ts->spi->irq);
++			ts->pending = 1;
++		}
++
++	ts->intr_flag = 1;
++
++	spin_unlock_irqrestore(&ts->lock, flags);
++
++	wake_up_interruptible(&ad7877_wait);
++
++	return IRQ_HANDLED;
++}
++
++
++static int ad7877_thread(void *_ts)
++{
++	struct ad7877 *ts = _ts;
++	int status;
++	unsigned long flags;
++
++        do {
++		wait_event_interruptible(ad7877_wait, kthread_should_stop() || (ts->intr_flag!=0));
++
++		if(ts->intr_flag) {
++			status = spi_sync(ts->spi, &ts->msg);
++			if (status)
++				dev_err(&ts->spi->dev, "spi_sync --> %d\n", status);
++
++			ad7877_rx(ts);
++
++			spin_lock_irqsave(&ts->lock, flags);
++
++	                ts->intr_flag = 0;
++			ts->pending = 0;
++
++			if (!device_suspended(&ts->spi->dev)) {
++				ts->irq_disabled = 0;
++				enable_irq(ts->spi->irq);
++				mod_timer(&ts->timer, jiffies + TS_PEN_UP_TIMEOUT);
++			}
++
++			spin_unlock_irqrestore(&ts->lock, flags);
++	}
++        	try_to_freeze();
++        } while (!kthread_should_stop());
++        printk(KERN_DEBUG "ad7877: ktsd kthread exiting\n");
++        return 0;
++}
++
++
++/*--------------------------------------------------------------------------*/
++
++/* Must be called with ts->lock held */
++static void ad7877_disable(struct ad7877 *ts)
++{
++	if (ts->disabled)
++		return;
++
++	ts->disabled = 1;
++
++	if (!ts->pending) {
++		ts->irq_disabled = 1;
++		disable_irq(ts->spi->irq);
++	} else {
++		/* the kthread will run at least once more, and
++		 * leave everything in a clean state, IRQ disabled
++		 */
++		while (ts->pending) {
++			spin_unlock_irq(&ts->lock);
++			msleep(1);
++			spin_lock_irq(&ts->lock);
++		}
++	}
++
++	/* we know the chip's in lowpower mode since we always
++	 * leave it that way after every request
++	 */
++
++}
++
++/* Must be called with ts->lock held */
++static void ad7877_enable(struct ad7877 *ts)
++{
++	if (!ts->disabled)
++		return;
++
++	ts->disabled = 0;
++	ts->irq_disabled = 0;
++	enable_irq(ts->spi->irq);
++}
++
++static int ad7877_suspend(struct spi_device *spi, pm_message_t message)
++{
++	struct ad7877 *ts = dev_get_drvdata(&spi->dev);
++
++	spin_lock_irq(&ts->lock);
++
++	spi->dev.power.power_state = message;
++	ad7877_disable(ts);
++
++	spin_unlock_irq(&ts->lock);
++
++	return 0;
++
++}
++
++static int ad7877_resume(struct spi_device *spi)
++{
++	struct ad7877 *ts = dev_get_drvdata(&spi->dev);
++
++	spin_lock_irq(&ts->lock);
++
++	spi->dev.power.power_state = PMSG_ON;
++	ad7877_enable(ts);
++
++	spin_unlock_irq(&ts->lock);
++
++	return 0;
++}
++
++static int __devinit ad7877_probe(struct spi_device *spi)
++{
++	struct ad7877			*ts;
++	struct input_dev		*input_dev;
++	struct ad7877_platform_data	*pdata = spi->dev.platform_data;
++	struct spi_message		*m;
++	int				err;
++	u16				verify;
++
++
++	if (!spi->irq) {
++		dev_dbg(&spi->dev, "no IRQ?\n");
++		return -ENODEV;
++	}
++
++
++	if (!pdata) {
++		dev_dbg(&spi->dev, "no platform data?\n");
++		return -ENODEV;
++	}
++
++
++	/* don't exceed max specified SPI CLK frequency */
++	if (spi->max_speed_hz > MAX_SPI_FREQ_HZ) {
++		dev_dbg(&spi->dev, "SPI CLK %d Hz?\n",spi->max_speed_hz);
++		return -EINVAL;
++	}
++
++	ts = kzalloc(sizeof(struct ad7877), GFP_KERNEL);
++	input_dev = input_allocate_device();
++	if (!ts || !input_dev) {
++		err = -ENOMEM;
++		goto err_free_mem;
++	}
++
++
++	dev_set_drvdata(&spi->dev, ts);
++	spi->dev.power.power_state = PMSG_ON;
++
++	ts->spi = spi;
++	ts->input = input_dev;
++	ts->intr_flag = 0;
++	init_timer(&ts->timer);
++	ts->timer.data = (unsigned long) ts;
++	ts->timer.function = ad7877_timer;
++
++	spin_lock_init(&ts->lock);
++
++	ts->model = pdata->model ? : 7877;
++	ts->vref_delay_usecs = pdata->vref_delay_usecs ? : 100;
++	ts->x_plate_ohms = pdata->x_plate_ohms ? : 400;
++	ts->pressure_max = pdata->pressure_max ? : ~0;
++
++
++	ts->stopacq_polarity = pdata->stopacq_polarity;
++	ts->first_conversion_delay = pdata->first_conversion_delay;
++	ts->acquisition_time = pdata->acquisition_time;
++	ts->averaging = pdata->averaging;
++	ts->pen_down_acc_interval = pdata->pen_down_acc_interval;
++
++	snprintf(ts->phys, sizeof(ts->phys), "%s/input0", spi->dev.bus_id);
++
++	input_dev->name = "AD7877 Touchscreen";
++	input_dev->phys = ts->phys;
++	input_dev->cdev.dev = &spi->dev;
++
++        set_bit(EV_KEY, input_dev->evbit);
++        set_bit(EV_ABS, input_dev->evbit);
++	set_bit(ABS_X, input_dev->absbit);
++	set_bit(ABS_Y, input_dev->absbit);
++	set_bit(ABS_PRESSURE, input_dev->absbit);
++
++	input_set_abs_params(input_dev, ABS_X,
++			pdata->x_min ? : 0,
++			pdata->x_max ? : MAX_12BIT,
++			0, 0);
++	input_set_abs_params(input_dev, ABS_Y,
++			pdata->y_min ? : 0,
++			pdata->y_max ? : MAX_12BIT,
++			0, 0);
++	input_set_abs_params(input_dev, ABS_PRESSURE,
++			pdata->pressure_min, pdata->pressure_max, 0, 0);
++
++	ad7877_write((struct device *) spi, AD7877_REG_SEQ1, AD7877_MM_SEQUENCE);
++
++
++	verify = ad7877_read((struct device *) spi, AD7877_REG_SEQ1);
++
++	if (verify != AD7877_MM_SEQUENCE){
++		printk(KERN_ERR "%s: Failed to probe %s\n", spi->dev.bus_id, input_dev->name);
++		err = -ENODEV;
++		goto err_free_mem;
++	}
++
++	if(gpio3)
++		ad7877_write((struct device *) spi, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_3_CONF);
++
++
++	ts->cmd_crtl2 =  AD7877_WRITEADD(AD7877_REG_CTRL2) | AD7877_POL(ts->stopacq_polarity) |\
++			AD7877_AVG(ts->averaging) | AD7877_PM(1) |\
++			AD7877_TMR(ts->pen_down_acc_interval) | AD7877_ACQ(ts->acquisition_time) |\
++			AD7877_FCD(ts->first_conversion_delay);
++
++	ad7877_write((struct device *) spi, AD7877_REG_CTRL2, ts->cmd_crtl2);
++
++	ts->cmd_crtl1 =  AD7877_WRITEADD(AD7877_REG_CTRL1) | AD7877_READADD(AD7877_REG_XPLUS-1) |\
++			 AD7877_MODE_SEQ1 | AD7877_DFR;
++
++	ad7877_write((struct device *) spi, AD7877_REG_CTRL1, ts->cmd_crtl1);
++
++	ts->cmd_dummy = 0;
++
++	m = &ts->msg;
++
++	spi_message_init(m);
++
++	ts->xfer[0].tx_buf = &ts->cmd_crtl1;
++	ts->xfer[0].len = 2;
++
++	spi_message_add_tail(&ts->xfer[0], m);
++
++	ts->xfer[1].tx_buf = &ts->cmd_dummy; /* Send ZERO */
++	ts->xfer[1].len = 2;
++
++	spi_message_add_tail(&ts->xfer[1], m);
++
++	ts->xfer[2].rx_buf = &ts->conversion_data[AD7877_SEQ_YPOS];
++	ts->xfer[2].len = AD7877_NR_SENSE * sizeof(u16);
++
++	spi_message_add_tail(&ts->xfer[2], m);
++
++	/* Request AD7877 /DAV GPIO interrupt */
++
++	if (request_irq(spi->irq, ad7877_irq, IRQF_TRIGGER_LOW,
++			spi->dev.driver->name, ts)) {
++		dev_dbg(&spi->dev, "irq %d busy?\n", spi->irq);
++		err = -EBUSY;
++		goto err_free_mem;
++	}
++
++	dev_info(&spi->dev, "touchscreen, irq %d\n", spi->irq);
++
++	err = sysfs_create_group(&spi->dev.kobj, &ad7877_attr_group);
++	if (err)
++		goto err_remove_attr;
++
++	if(gpio3)
++		err = device_create_file(&spi->dev, &dev_attr_gpio3);
++	else
++		err = device_create_file(&spi->dev, &dev_attr_aux3);
++
++	if (err)
++		goto err_remove_attr;
++
++	err = input_register_device(input_dev);
++	if (err)
++		goto err_remove_attr;
++
++	ts->intr_flag = 0;
++
++	ad7877_task = kthread_run(ad7877_thread, ts, "ad7877_ktsd");
++
++        if (IS_ERR(ad7877_task)) {
++                printk(KERN_ERR "ts: Failed to start ad7877_task\n");
++                goto err_remove_attr;
++        }
++
++	return 0;
++
++ err_remove_attr:
++
++	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
++
++	if(gpio3)
++		device_remove_file(&spi->dev, &dev_attr_gpio3);
++	else
++		device_remove_file(&spi->dev, &dev_attr_aux3);
++
++
++	free_irq(spi->irq, ts);
++ err_free_mem:
++	input_free_device(input_dev);
++	kfree(ts);
++	return err;
++}
++
++static int __devexit ad7877_remove(struct spi_device *spi)
++{
++	struct ad7877		*ts = dev_get_drvdata(&spi->dev);
++
++	input_unregister_device(ts->input);
++
++	ad7877_suspend(spi, PMSG_SUSPEND);
++
++	kthread_stop(ad7877_task);
++
++	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
++
++	if(gpio3)
++		device_remove_file(&spi->dev, &dev_attr_gpio3);
++	else
++		device_remove_file(&spi->dev, &dev_attr_aux3);
++
++	free_irq(ts->spi->irq, ts);
++
++	kfree(ts);
++
++	dev_dbg(&spi->dev, "unregistered touchscreen\n");
++	return 0;
++}
++
++static struct spi_driver ad7877_driver = {
++	.driver = {
++		.name	= "ad7877",
++		.bus	= &spi_bus_type,
++		.owner	= THIS_MODULE,
++	},
++	.probe		= ad7877_probe,
++	.remove		= __devexit_p(ad7877_remove),
++	.suspend	= ad7877_suspend,
++	.resume		= ad7877_resume,
++};
++
++static int __init ad7877_init(void)
++{
++
++	return spi_register_driver(&ad7877_driver);
++}
++module_init(ad7877_init);
++
++static void __exit ad7877_exit(void)
++{
++	spi_unregister_driver(&ad7877_driver);
++
++}
++module_exit(ad7877_exit);
++
++module_param(gpio3, int, 0);
++MODULE_PARM_DESC(gpio3,
++	"If gpio3 is set to 1 AUX3 acts as GPIO3");
++
++MODULE_DESCRIPTION("ad7877 TouchScreen Driver");
++MODULE_LICENSE("GPL");
 -- 
 1.5.3.4
