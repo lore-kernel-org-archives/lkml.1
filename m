@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXJKVqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbXJKVr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbXJKVqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 17:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbXJKVqd
+	id S1758426AbXJKVr3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 17:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbXJKVrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 17:46:33 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23639 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756728AbXJKVqc (ORCPT
+	Thu, 11 Oct 2007 17:47:19 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42739
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755671AbXJKVrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 17:46:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rUK7BrswHyJN1sp3LLyTNDdtyBWlfWLscf3zRMwz4bzS2YY2LLYxWAy82yj/o8zaugh2P4ziW/zo06DirhxQpPjWeMGcQ0+PMDgAL0Z22izydZf1vj2gK6qs6ngrX3URAO3Yv7J7b8n1zf8thhrK6MJZBZ25qLq2OpQT71j3G1M=  ;
-X-YMail-OSG: xqu_0icVM1lot.NEtvBCKC8Vnp.2qZOyY2N309lcsr5tumTHvidknXcRt.ILkpj89SxEqxosaw--
-From: David Brownell <david-b@pacbell.net>
-To: Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 1/9] Blackfin SPI driver: use new GPIO API and add error handling
-Date: Thu, 11 Oct 2007 14:46:29 -0700
+	Thu, 11 Oct 2007 17:47:18 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] esp_scsi.c: remove __dev{init,exit}
+Date: Thu, 11 Oct 2007 17:47:02 -0500
 User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-References: <1192097441-24962-1-git-send-email-bryan.wu@analog.com> <1192097441-24962-2-git-send-email-bryan.wu@analog.com>
-In-Reply-To: <1192097441-24962-2-git-send-email-bryan.wu@analog.com>
+Cc: James Bottomley <James.Bottomley@steeleye.com>, linux-scsi@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+References: <200710110552.49129.rob@landley.net> <1192109439.3352.11.camel@localhost.localdomain> <20071011153520.GA16424@stusta.de>
+In-Reply-To: <20071011153520.GA16424@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710111446.29725.david-b@pacbell.net>
+Message-Id: <200710111747.03119.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 October 2007, Bryan Wu wrote:
-> @@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
->                 return -ENOMEM;
->         }
->  
-> -       if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
-> -                peripheral_request(P_SPI0_MISO, DRV_NAME) ||
-> -                peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
-> -
-> +       if (setup_pin_mux(1)) {
->                 dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
-> -               goto out_error_queue_alloc;
-> +               goto out_error;
->         }
->  
->         drv_data = spi_master_get_devdata(master);
+On Thursday 11 October 2007 10:35:20 am Adrian Bunk wrote:
+> Since scsi_esp_{,un}register() are EXPORT_SYMBOL'ed, these functions
+> (and the functions they use) can't be __dev{init,exit}.
+>
+> Based on a bug report by Rob Landley.
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
+Acked-by: Rob Landley <rob@landley.net>
 
-This doesn't apply against 2.6.23 ... ?
+Worked for me...
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
