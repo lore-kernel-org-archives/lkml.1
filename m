@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbXJKPVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbXJKPVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbXJKPVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 11:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbXJKPVF
+	id S1759275AbXJKPVe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 11:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759053AbXJKPVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 11:21:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47202 "EHLO
+	Thu, 11 Oct 2007 11:21:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47205 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755581AbXJKPVC (ORCPT
+	with ESMTP id S1755604AbXJKPVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 11:21:02 -0400
-Date: Thu, 11 Oct 2007 17:21:30 +0200
+	Thu, 11 Oct 2007 11:21:22 -0400
+Date: Thu, 11 Oct 2007 17:21:49 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       "LKML (Cc removed)" <linux-kernel@vger.kernel.org>
-Subject: Re: coding for optimizations (Re: [PATCH 1/2] i386: mce cleanup
-	part1: functional change)
-Message-ID: <20071011152129.GY16424@stusta.de>
-References: <11919341961890-git-send-email-joerg.roedel@amd.com> <11919341961530-git-send-email-joerg.roedel@amd.com> <E1IfHZg-0003dp-FA@flower> <20071009160605.GC13205@amd.com> <20071009173317.GD22435@flower.upol.cz> <20071009183011.GE13205@amd.com> <20071010231428.GU16424@stusta.de> <20071011152609.GF22435@flower.upol.cz>
+To: Rob Landley <rob@landley.net>
+Cc: linux-scsi@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scsi on sparc build break in 2.6.23.
+Message-ID: <20071011152149.GZ16424@stusta.de>
+References: <200710110552.49129.rob@landley.net> <20071011110555.GV16424@stusta.de> <200710110817.22344.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071011152609.GF22435@flower.upol.cz>
+In-Reply-To: <200710110817.22344.rob@landley.net>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 05:26:09PM +0200, Oleg Verych wrote:
-> On Thu, Oct 11, 2007 at 01:14:29AM +0200, Adrian Bunk wrote:
-> [] 
-> > It's also a quite ill idea to think about whether gcc might produce a 
-> > few bytes more or less code at the if when there's such a long printk() 
-> > in the middle...
+On Thu, Oct 11, 2007 at 08:17:22AM -0500, Rob Landley wrote:
+> On Thursday 11 October 2007 6:05:55 am Adrian Bunk wrote:
+> > On Thu, Oct 11, 2007 at 05:52:48AM -0500, Rob Landley wrote:
+> > > CONFIG_SCSI_SUNESP=y breaks the build in 2.6.23:
+> > >
+> > >   LD      vmlinux
+> > > `scsi_esp_unregister' referenced in section `__ksymtab' of
+> > > drivers/built-in.o: defined in discarded section `.exit.text' of
+> > > drivers/built-in.o
+> > > make: *** [vmlinux] Error 1
+> > >
+> > > Do you need my full .config to reproduce this?
+> >
+> > Please always attach the .config when reporting errors.
+> > The few bytes don't matter and it often saves some time.
+> >
+> > I have an idea regarding what might be going wrong in this case,
+> > but it would cost me additional time to look at it because you didn't
+> > send your .config.
 > 
-> printk() problem was discussed with proper banana userspace replacement
-> proposition by me, so i don't care much.
+> *shrug*  That's why I asked.
 > 
-> Though, why MCE can't be enabled/disabled by config option? Native
-> engineers from proper company should know what processors have this
-> feature... If kconfig isn't flexible for this, i'm glad to hear
-> opinions. If it's needed anyway, then sorry.
+> The reason I hesitated is I use miniconfig files rather than big .config 
+> files, and some people get confused by that.  Drop the attached 
+> miniconfig-linux in the kernel source directory and go:
+>   make ARCH=sparc allnoconfig KCONFIG_ALLCONFIG=miniconfig-linux
+>...
 
-You should better say sorry for not having checked that it can already 
-be disabled with a kconfig option...
+I assume you have the full .config in your build directory, and could 
+have taken it from there?
+
+> Rob
 
 cu
 Adrian
