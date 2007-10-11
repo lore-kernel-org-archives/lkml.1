@@ -1,94 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbXJKX1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbXJKXbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbXJKX1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 19:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXJKX12
+	id S1754094AbXJKXbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 19:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXJKXbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 19:27:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43142 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752879AbXJKX11 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 19:27:27 -0400
-Date: Fri, 12 Oct 2007 01:27:55 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin <spaceman__spiff@cox.net>, Greg KH <greg@kroah.com>,
-       Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk, BDFL <volkerdi@slackware.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: APM shutdown oops (Re: [stable] [patch 09/12] Fix SMP poweroff
-	hangs)
-Message-ID: <20071011232755.GA3620@stusta.de>
-References: <20071008180406.052382073@mini.kroah.org> <200710092359.47144.spaceman__spiff@cox.net> <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org> <200710102005.02184.spaceman__spiff@cox.net> <alpine.LFD.0.999.0710110818580.20690@woody.linux-foundation.org> <470E6E79.6040908@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <470E6E79.6040908@pobox.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 11 Oct 2007 19:31:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:42025 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752879AbXJKXbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 19:31:14 -0400
+Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE
+	#define
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: markn@au1.ibm.com, PowerPC dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+References: <20071011071558.676463639@au1.ibm.com>
+	 <20071011072208.075979098@au1.ibm.com>
+	 <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZbF/pTGSW0O73+6a+MeH"
+Date: Fri, 12 Oct 2007 09:31:12 +1000
+Message-Id: <1192145472.6274.4.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 02:42:01PM -0400, Jeff Garzik wrote:
-> Linus Torvalds wrote:
->> On Wed, 10 Oct 2007, Kevin wrote:
->>> The last kernel I used was 6.2.22 the "dmesg" the file is attached:
->>>
->>> dmesg 2.6.22 line 158 >  apm: overridden by ACPI.
->>>
->>> dmesg, APM on, has no line > apm: overridden by ACPI.
->> Ok, this is the real reason. The APM code does:
->>         if (PM_IS_ACTIVE()) {
->>                 printk(KERN_NOTICE "apm: overridden by ACPI.\n");
->>                 apm_info.disabled = 1;
->>                 return -ENODEV;
->>         }
->> and in previous kernels that would notice that you have ACPI enabled, and 
->> APM gets shut out, and you never see your buggy APM BIOS.
->> In 2.6.23, this apparently doesn't happen for some reason.
->> And I think I see the problem: it's a config change. You don't have 
->> PM_LEGACY enabled. Your config file diff shows:
->> 	-CONFIG_PM_LEGACY=y
->> 	+# CONFIG_PM_LEGACY is not set
->> I suspect we should make CONFIG_APM either depend on, or select, 
->> PM_LEGACY. But as far as I can see, nothing has actually changed in this 
->> area in the kernel, and this bug has been there before - just your config 
->> change made it appear. Rafael? Stephen? Opinions? I'd think that making 
->> APM depend on CONFIG_PM_LEGACY is the right thing to do these days..
->
-> Speaking as the author of
->
-> 	[PATCH] move pm_register/etc. to CONFIG_PM_LEGACY, pm_legacy.h
->
-> I agree.  arch/i386/kernel/apm.c clearly requires include/linux/pm_legacy.h 
-> and the legacy PM API.
->
-> I would vote for a dependency rather than select, but don't have any strong 
-> feelings on the matter...
 
-It should be a select since a dependency would make it needlessly hard 
-for kconfig users to find the APM option.
+--=-ZbF/pTGSW0O73+6a+MeH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 	Jeff
+On Thu, 2007-10-11 at 08:04 -0500, Kumar Gala wrote:
+> On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
+>=20
+> > Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code =20
+> > which
+> > allows for more flexibility in the note type for the state of =20
+> > 'extended
+> > floating point' implementations in coredumps. New note types can =20
+> > now be
+> > added with an appropriate #define.
+> >
+> > #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
+> > there's are no change in behaviour.
+>=20
+> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled =20
+> to the x86 specific name?
+>=20
+> >
+> > Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+> > ---
+> >  arch/ia64/ia32/elfcore32.h     |    1 +
+> >  arch/x86_64/ia32/ia32_binfmt.c |    1 +
+> >  fs/binfmt_elf.c                |    4 ++--
+> >  include/asm-i386/elf.h         |    1 +
+> >  4 files changed, 5 insertions(+), 2 deletions(-)
+> >
+> > Index: linux/arch/ia64/ia32/elfcore32.h
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/arch/ia64/ia32/elfcore32.h
+> > +++ linux/arch/ia64/ia32/elfcore32.h
+> > @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
+> >  }
+> >
+> >  #define ELF_CORE_COPY_XFPREGS 1
+> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+> >  static inline int
+> >  elf_core_copy_task_xfpregs(struct task_struct *tsk, =20
+> > elf_fpxregset_t *xfpu)
+> >  {
+> > Index: linux/arch/x86_64/ia32/ia32_binfmt.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
+> > +++ linux/arch/x86_64/ia32/ia32_binfmt.c
+> > @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
+> >  }
+> >
+> >  #define ELF_CORE_COPY_XFPREGS 1
+> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+> >  static inline int
+> >  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t =20
+> > *xfpu)
+> >  {
+> > Index: linux/fs/binfmt_elf.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/fs/binfmt_elf.c
+> > +++ linux/fs/binfmt_elf.c
+> > @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
+> >
+> >  #ifdef ELF_CORE_COPY_XFPREGS
+> >  	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
+> > -		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
+> > -			  &t->xfpu);
+> > +		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
+> > +			  sizeof(t->xfpu), &t->xfpu);
+> >  		t->num_notes++;
+> >  		sz +=3D notesize(&t->notes[2]);
+> >  	}
+>=20
+> You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
+>=20
+> Also, I'm not a fan of your proposed mechanism to "overload" the =20
+> elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t =20
+> and have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
 
-cu
-Adrian
+He's not overloading it, there is no such thing as an elf_fpxregset_t,
+unless it's typedef'd to something else by the arch code, eg:
 
--- 
+include/asm-i386/elf.h:typedef struct user_fxsr_struct elf_fpxregset_t;
+include/asm-ia64/elf.h:typedef unsigned long elf_fpxregset_t;
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Introducing another typedef would just be another layer of obfuscation
+IMO, and the elf code doesn't need any more of that.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZbF/pTGSW0O73+6a+MeH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHDrJAdSjSd0sB4dIRAjLxAJ4mzBvuCsD43PszkIoCDxrhXK04SACgpjSC
+cIMJvUxlwPO4hqc9dMpHbLA=
+=8e3U
+-----END PGP SIGNATURE-----
+
+--=-ZbF/pTGSW0O73+6a+MeH--
 
