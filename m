@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbXJKOcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbXJKOjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732AbXJKOcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 10:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbXJKOcb
+	id S1757175AbXJKOjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 10:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXJKOjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 10:32:31 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1786 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbXJKOca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 10:32:30 -0400
-Date: Thu, 11 Oct 2007 15:32:16 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: "Mike D. Day" <ncmike@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] fix minor problems in checkpatch.pl-next
-Message-ID: <20071011143216.GD3376@shadowen.org>
-References: <20071011122800.GA10216@silverwood.ncultra.org>
+	Thu, 11 Oct 2007 10:39:42 -0400
+Received: from ns1.q-leap.de ([153.94.51.193]:51427 "EHLO mail.q-leap.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752773AbXJKOjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 10:39:41 -0400
+From: Bernd Schubert <bs@q-leap.de>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 3/3] faster workaround
+Date: Thu, 11 Oct 2007 16:39:37 +0200
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200710081709.18253.bs@q-leap.de> <20071011142628.48272a4a@the-village.bc.nu> <470E30F9.5060705@garzik.org>
+In-Reply-To: <470E30F9.5060705@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071011122800.GA10216@silverwood.ncultra.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+Message-Id: <200710111639.38240.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 08:28:00AM -0400, Mike D. Day wrote:
-> When forming the prefix to output error msgs in gnu gcc format, the
-> lack of a type ($ or @) when referencing ARGV causes error messages.
-> 
-> When invoked to check source files, the linenumber was off by +3 in
-> the gcc format output.
-> 
-> Signed-off-by: Mike D. Day <ncmike@ncultra.org>
-> 
-> --- checkpatch.pl-next	2007-10-11 07:28:41.000000000 -0400
-> +++ /home/mdday/bin/checkpatch	2007-10-11 08:16:07.000000000 -0400
-> @@ -452,7 +452,6 @@
-> 
-> 		my $rawline = $line;
-> 
-> -		$prefix = "ARGV:$linenr: " if ($emacs);
-> 
-> #extract the filename as it passes
-> 		if ($line=~/^\+\+\+\s+(\S+)/) {
-> @@ -517,6 +516,9 @@
-> 		my $herecurr = "$here\n$line\n";
-> 		my $hereprev = "$here\n$prevline\n$line\n";
-> 
-> +		$prefix = "@ARGV:$realline: " if ($emacs && $file);
-> +		$prefix = "@ARGV:$linenr: " if ($emacs && !$file);
-> +
-> #check the patch for a signoff:
-> 		if ($line =~ /^\s*signed-off-by:/i) {
-> 			# This is a signoff, if ugly, so do not double 
-> 			report.
+On Thursday 11 October 2007 16:19:37 Jeff Garzik wrote:
+> 1) Just about the only valid optimization is to ensure that only the
+> write path must be limited to small chunks, not both read- and
+> write-paths.  Tejun had a patch to do this a long time ago, but it's an
+> open question whether the large amount of code is worth it for a rare
+> combination.
 
-Hmmm, dunno how this one ever was visible?  Some error on my part.  That
-line now shows $filename rather than ARGV.  
+How large? This patch is rather small? Where can I find it?
 
-I see you have different line numbers depending on whether this is a
-file or diff.  Would you ever pass in a plain diff in emacs mode, and
-what would the line number mean.
+>
+> 2) Once we identified, over time, the set of drives affected by this
+> 3112 quirk (aka drives that didn't fully comply to SATA spec), the
+> debugging of corruption cases largely shifted to the standard routine:
+> update the BIOS, replace the cables/RAM/power/mainboard/slot/etc. to be
+> certain of problem location.
 
--apw
+Replace this disk or the sata controller maybe, but usually people don't want 
+to replace a big cluster, even if it is already 3 years old, this has to wait 
+at least another 3 years.
+
+The problem came up, when 200GB drives were replaced by *newer* 250GB drives 
+(well maybe not the newest, no idea were they came from).
+
+Anyway, I'm testing for more than 24h already and didn't observe any data 
+corruption as without the patch. I know this is only an obersavation and no 
+definite prove...
+Also, this is with 3114, maybe this chip behaves a bit different than 3112?
+
+Thanks,
+Bernd
+
+
+
+-- 
+Bernd Schubert
+Q-Leap Networks GmbH
