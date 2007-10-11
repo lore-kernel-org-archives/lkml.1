@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbXJLKmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbXJLKqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760171AbXJLKmt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 06:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbXJLKml
+	id S1760236AbXJLKqE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 06:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbXJLKpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 06:42:41 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49746 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbXJLKmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 06:42:40 -0400
-Date: Fri, 12 Oct 2007 12:42:38 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071012104238.GD19237@wotan.suse.de>
-References: <20071004052348.GC15131@wotan.suse.de> <20071012082534.GB1962@ff.dom.local> <20071012085733.GA19237@wotan.suse.de> <20071012095505.GD1962@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 12 Oct 2007 06:45:54 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:42107 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751073AbXJLKpx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 06:45:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Ya7CcXcaCJIUfIsroMuQ11km/nQ5W0lmpNXG943dLIR20DD6DCkzTo2ObBS7V0YKlfwVvP4Xt9ELPsGnCBlweMUlu2ZCKe/0C7xOGbc94y+UFano2YkDxXXfvZvbXZCQKrfoqjWXf82ILinLZNOmsZHMWr4KQqYsKHrBEW2z1e8=  ;
+X-YMail-OSG: 40aM5IMVM1nLZaRlu_NcCub8TOG54KaAK4jMnOLBRb6vJajE
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] mm: avoid dirtying shared mappings on mlock
+Date: Fri, 12 Oct 2007 04:14:10 +1000
+User-Agent: KMail/1.9.5
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
+       hugh <hugh@veritas.com>
+References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org> <200710120257.05960.nickpiggin@yahoo.com.au> <1192185439.27435.19.camel@twins>
+In-Reply-To: <1192185439.27435.19.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071012095505.GD1962@ff.dom.local>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200710120414.11026.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 11:55:05AM +0200, Jarek Poplawski wrote:
-> On Fri, Oct 12, 2007 at 10:57:33AM +0200, Nick Piggin wrote:
-> > 
-> > I don't know quite what you're saying... the CPUs could probably get
-> > performance by having weakly ordered loads, OTOH I think the Intel
-> > ones might already do this speculatively so they appear in order but
-> > essentially have the performance of weak order.
-> 
-> I meant: if there is any reordering possible this should be quite
-> distinctly visible.
+On Friday 12 October 2007 20:37, Peter Zijlstra wrote:
+> On Fri, 2007-10-12 at 02:57 +1000, Nick Piggin wrote:
+> > On Friday 12 October 2007 19:03, Peter Zijlstra wrote:
+> > > Subject: mm: avoid dirtying shared mappings on mlock
+> > >
+> > > Suleiman noticed that shared mappings get dirtied when mlocked.
+> > > Avoid this by teaching make_pages_present about this case.
+> > >
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Acked-by: Suleiman Souhlal <suleiman@google.com>
+> >
+> > Umm, I don't see the other piece of this thread, so I don't
+> > know what the actual problem was.
+> >
+> > But I would really rather not do this. If you do this, then you
+> > now can get random SIGBUSes when you write into the memory if it
+> > can't allocate blocks or ... (some other filesystem specific
+> > condition).
+>
+> I'm not getting this, make_pages_present() only has to ensure all the
+> pages are read from disk and in memory. How is this different from a
+> read-scan?
 
-It's not. Not in the cases where it is explicitly allowed and actively
-exploited (loads passing stores), but most definitely not distinctly
-visible in errata cases that have slipped through all the V&V.
+I guess because we've mlocked a region that has PROT_WRITE access...
+but actually, I suppose mlock doesn't technically require that we
+can write to the memory, only that the page isn't swapped out.
 
-
-> because why would any vendor enable such nasty
-> things if not for performance. But now I start to doubt: of course
-> there is such a possibility someone makes this reordering for some
-> other reasons which could be so rare it's hard to check.
-
-Yes: it isn't the explicitly allowed reorderings that we care
-about here (because obviously we're retaining the barriers for those).
-It would be cases of bugs in the CPUs meaning they don't follow the
-standard. But how far do you take your mistrust of a CPU? You could
-ask gcc to insert locked ops between every load and store operation?
-Or keep it switched off to ensure no bugs ;)
-
-
-> Anyway, it seems any heavy testing such as yours, should give us the
-> same informations years earlier than any vendors manual and then any
-> gain is multiplied by millions of users. Then only still doubtful
-> cases could be treated with additional caution and some debugging
-> code.
-
-Firstly, while it can be possible to write a code to show up reordering,
-it is really hard (ie. impossible) to guarantee no reordering happens. For
-example, it may have only showed up on SMT+SMP P4 CPUs with some obscure
-interactions between threads and cores involving more than 2 threads.
-
-Secondly, even if we were sure that no current implementations reordered
-loads, we don't want to go outside the bounds of the specification
-because we might break on some future CPUs. This isn't a big performance
-win.
+Still, it is nice to be able to have a reasonable guarantee of
+writability.
 
 
-> > All existing processors as far as we know are in-order WRT loads vs
-> > loads and stores vs stores. It was just a matter of getting the docs
-> > clarified, which gives us more confidence that we're correct and a
-> > reasonable guarnatee of forward compatibility.
-> 
-> After reading this Intel's legal information I don't think you should
-> feel so much more forward confident...
+> The pages will still be read-only due to dirty tracking, so the first
+> write will still do page_mkwrite().
 
-Yes, but that's the same way I feel after reading *any* legal "information" ;)
-
+Which can SIGBUS, no?
