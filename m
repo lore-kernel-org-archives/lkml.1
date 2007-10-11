@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJKLYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXJKLbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbXJKLYA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 07:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbXJKLXv
+	id S1755836AbXJKLbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 07:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXJKLbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 07:23:51 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48583 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422AbXJKLXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 07:23:50 -0400
-Date: Thu, 11 Oct 2007 13:25:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: "Andrew Morton <akpm@linux-foundation.org>Andi Kleen" <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64 vDSO linker script cleanup
-Message-ID: <20071011112519.GA8393@uranus.ravnborg.org>
-References: <20070924110417.BD06A4D0325@magilla.localdomain> <20071011074037.9C15C4D026B@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 11 Oct 2007 07:31:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38127
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751236AbXJKLbO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 07:31:14 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+Date: Thu, 11 Oct 2007 06:31:09 -0500
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710110923470.23818@anakin>
+In-Reply-To: <Pine.LNX.4.64.0710110923470.23818@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071011074037.9C15C4D026B@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710110631.09231.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 12:40:37AM -0700, Roland McGrath wrote:
-> This replaces my earlier patch by the same title:
-> x86_64-vdso-linker-script-cleanup.patch
+On Thursday 11 October 2007 2:25:19 am Geert Uytterhoeven wrote:
+> On Wed, 10 Oct 2007, Rob Landley wrote:
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Rip out hardwired cross compiler name assumption that only m68k makes.
+> >
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> > ---
+> > When you cross compile, you have to set the prefix CROSS_COMPILE to your
+> > cross compiler prefix.  You need to do this for all targets (arm, mips,
+> > ppc, x86-64 on x86, etc).  This is not specific to m68k, and this value
+> > is supplied _to_ the build, not supplied _by_ the build.
+> >
+> > The build shouldn't unconditionally overwrite the existing value of this
+> > variable with one it makes up.  It has no idea what I called my cross
+> > compiler.
+>
+> The build does not unconditionally overwrite the existing value of this
+> variable. You can specify the name of your cross compiler like this:
+>
+>     make CROSS_COMPILE=m68k-linux-
 
-Hi Roland.
+I noticed this because you have to specify ARCH for "make headers_install" but 
+don't have to specify a CROSS_COMPILE prefix for that because it doesn't 
+build anything.  Yet the first line it spits out is a complaint that it can't 
+find m68k-linux-gnu-gcc.
 
-I have been through a number of arch linker scripts lately
-introducing a consistent style.
-I decided upon a style matching what we have for c today:
-indent with one tab, nothing after starting {,
-indendt after starting { etc.
+I do note that the error message doesn't stop the build, and seems to be 
+ignored...
 
-Would you mind introducing same style for the vdso linker script?
+> BTW, m68k-linux-gnu- is the default name for a m68k cross compiler.
 
-I could do it just fine but I'm afraid to clash with your work.
+*shrug*  This is the eleventh target I've tried to build, and the first one 
+that has this behavior.  It seemed unnecessary at best.
 
-None of my clean-up patches has hit -linus yet but I
-assume most will do so during the merge window. All arch maintainers
-has accepted the cleanup patches.
-
-Latest in the series was parisc - patch is here:
-http://lists.parisc-linux.org/pipermail/parisc-linux/2007-October/031967.html
-
-	Sam
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
