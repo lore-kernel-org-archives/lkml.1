@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbXJKNun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758222AbXJKNw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbXJKNun (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbXJKNuf
+	id S1758222AbXJKNw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXJKNwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:50:35 -0400
-Received: from smile.2scale.net ([212.12.33.142]:6599 "EHLO smile.2scale.net"
+	Thu, 11 Oct 2007 09:52:51 -0400
+Received: from www.tglx.de ([62.245.132.106]:58280 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684AbXJKNue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:50:34 -0400
-Subject: Re: howto boost write(2) performance?
-From: Michael Stiller <ms@2scale.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <p73odf849rq.fsf@bingen.suse.de>
-References: <1191937817.3641.9.camel@blackberry>
-	 <p73odf849rq.fsf@bingen.suse.de>
-Content-Type: text/plain
-Organization: 2scale GmbH
-Date: Thu, 11 Oct 2007 15:50:17 +0200
-Message-Id: <1192110617.3696.2.camel@blackberry>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1754439AbXJKNwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 09:52:51 -0400
+Date: Thu, 11 Oct 2007 15:51:49 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joerg Roedel <joerg.roedel@amd.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Egger <Christoph.Egger@amd.com>
+Subject: Re: [PATCH 1/2] x86: mce init optimization and signedness fixup
+In-Reply-To: <1192105075473-git-send-email-joerg.roedel@amd.com>
+Message-ID: <alpine.LFD.0.9999.0710111550400.15917@localhost.localdomain>
+References: <11921050742274-git-send-email-joerg.roedel@amd.com> <1192105075473-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-09 at 16:56 +0200, Andi Kleen wrote:
-> Michael Stiller <ms@2scale.net> writes:
-> > 
-> > The write(2) performance is not good enough, the writer threads take to
-> > much time, and i ask you for ideas, howto to boost the write
-> > performance. 
-> 
-> You could use an O_DIRECT write if the data is suitably aligned
-> and your IO sizes are big enough (O_DIRECT is usually a loss
-> on small IOs). It will also be synchronous, but if you do it 
-> from a separate thread anyways that should be fine.
+On Thu, 11 Oct 2007, Joerg Roedel wrote:
+> MCG_CAP never reports a negative count of available error-reporting banks.
+> Therefore, make nr_mce_banks unsigned.
+> Check for MCA/MCE feature bits as early as possible.
 
-Thanks to all who answered and especially to Andi. Using O_DIRECT did
-the trick.
+> +
+> +	if (!cpu_has(c, X86_FEATURE_MCA) || !cpu_has(c, X86_FEATURE_MCE)) {
+> +		printk(KERN_INFO "CPU%i: No machine check support available\n",
+> +			smp_processor_id());
+> +		return;
 
-Cheers,
+This breaks winchip MCE support.
 
-Michael
-
+     tglx
 
