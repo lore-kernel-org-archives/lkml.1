@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJKMq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbXJKMsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXJKMq6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 08:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXJKMqv
+	id S1758386AbXJKMsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 08:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbXJKMsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 08:46:51 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:41299 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754222AbXJKMqt (ORCPT
+	Thu, 11 Oct 2007 08:48:06 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:62386 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753126AbXJKMsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 08:46:49 -0400
-Date: Thu, 11 Oct 2007 14:46:47 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rob Landley <rob@landley.net>, LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-In-Reply-To: <20071011113931.GB8393@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0710111443530.3729@anakin>
-References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710110923470.23818@anakin>
- <20071011113931.GB8393@uranus.ravnborg.org>
+	Thu, 11 Oct 2007 08:48:04 -0400
+Date: Thu, 11 Oct 2007 16:48:21 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: netdev@vger.kernel.org
+Cc: leoli@freescale.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH respin] ucc_geth: fix module removal
+Message-ID: <20071011124821.GA13963@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007, Sam Ravnborg wrote:
-> On Thu, Oct 11, 2007 at 09:25:19AM +0200, Geert Uytterhoeven wrote:
-> > On Wed, 10 Oct 2007, Rob Landley wrote:
-> > > From: Rob Landley <rob@landley.net>
-> > > 
-> > > Rip out hardwired cross compiler name assumption that only m68k makes.
-> > > 
-> > > Signed-off-by: Rob Landley <rob@landley.net>
-> > > ---
-> > > When you cross compile, you have to set the prefix CROSS_COMPILE to your
-> > > cross compiler prefix.  You need to do this for all targets (arm, mips, ppc,
-> > > x86-64 on x86, etc).  This is not specific to m68k, and this value is
-> > > supplied _to_ the build, not supplied _by_ the build.
-> > > 
-> > > The build shouldn't unconditionally overwrite the existing value of this
-> > > variable with one it makes up.  It has no idea what I called my cross compiler.
-> > 
-> > The build does not unconditionally overwrite the existing value of this
-> > variable. You can specify the name of your cross compiler like this:
-> > 
-> >     make CROSS_COMPILE=m68k-linux-
-> > 
-> > BTW, m68k-linux-gnu- is the default name for a m68k cross compiler.
-> 
-> For "make headers_install" this is not good.
-> But I see there is confliting usages here.
-> 1) current functionality makes it easy to build a cross compiled m68k
-> 
-> Btw. if you did:
-> CROSS_COMPILE ?= m68k-linux-
-> 
-> then I could do:
-> export CROSS_COMPILE=my-m68k-linux-
-> make
-> 
-> and still get the expected result.
+- uccf should be set to NULL to not double-free memory on
+  subsequent calls;
+- ind_hash_q and group_hash_q lists should be initialized in the
+  probe() function, instead of struct_init() (called by open()),
+  otherwise there will be an oops if ucc_geth_driver removed
+  prior 'ifconfig ethX up';
+- add unregister_netdev();
+- reorder geth_remove() steps.
 
-That won't work, cfr. http://lkml.org/lkml/2007/5/6/58.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-> 2) suggested functionality makes it easy to do make headers_install
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 7dedc96..18a6f48 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -2080,8 +2080,10 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 	if (!ugeth)
+ 		return;
+ 
+-	if (ugeth->uccf)
++	if (ugeth->uccf) {
+ 		ucc_fast_free(ugeth->uccf);
++		ugeth->uccf = NULL;
++	}
+ 
+ 	if (ugeth->p_thread_data_tx) {
+ 		qe_muram_free(ugeth->thread_dat_tx_offset);
+@@ -2312,10 +2314,6 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	ug_info = ugeth->ug_info;
+ 	uf_info = &ug_info->uf_info;
+ 
+-	/* Create CQs for hash tables */
+-	INIT_LIST_HEAD(&ugeth->group_hash_q);
+-	INIT_LIST_HEAD(&ugeth->ind_hash_q);
+-
+ 	if (!((uf_info->bd_mem_part == MEM_PART_SYSTEM) ||
+ 	      (uf_info->bd_mem_part == MEM_PART_MURAM))) {
+ 		if (netif_msg_probe(ugeth))
+@@ -3949,6 +3947,10 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	ugeth = netdev_priv(dev);
+ 	spin_lock_init(&ugeth->lock);
+ 
++	/* Create CQs for hash tables */
++	INIT_LIST_HEAD(&ugeth->group_hash_q);
++	INIT_LIST_HEAD(&ugeth->ind_hash_q);
++
+ 	dev_set_drvdata(device, dev);
+ 
+ 	/* Set the dev->base_addr to the gfar reg region */
+@@ -4002,9 +4004,10 @@ static int ucc_geth_remove(struct of_device* ofdev)
+ 	struct net_device *dev = dev_get_drvdata(device);
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+-	dev_set_drvdata(device, NULL);
+-	ucc_geth_memclean(ugeth);
++	unregister_netdev(dev);
+ 	free_netdev(dev);
++	ucc_geth_memclean(ugeth);
++	dev_set_drvdata(device, NULL);
+ 
+ 	return 0;
+ }
+-- 
+1.5.0.6
 
-This is something completely different (cfr. the other thread handling
-it). If `make headers_install' doesn't need the cross compiler, it
-should not try to execute it.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
