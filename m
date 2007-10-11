@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbXJKTHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbXJKTJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbXJKTHM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 15:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXJKTG7
+	id S1758177AbXJKTJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 15:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXJKTJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 15:06:59 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:34899 "EHLO havoc.gtf.org"
+	Thu, 11 Oct 2007 15:09:26 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:47358 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752816AbXJKTG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 15:06:57 -0400
-Date: Thu, 11 Oct 2007 15:06:55 -0400
+	id S1752816AbXJKTJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 15:09:24 -0400
+Date: Thu, 11 Oct 2007 15:09:23 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCHes] ISDN simple cleanups - hotplug API prep
-Message-ID: <20071011190655.GA23206@havoc.gtf.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] DMI const-ification
+Message-ID: <20071011190923.GA23595@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,1804 +23,952 @@ User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten,
 
-As I mentioned in previous emails, I would like to send these upstream
-for 2.6.24.  These are the first step in converting the hisax driver
-over to the modular, hotplug-friendly ISA/PNP/PCI APIs.
+This has been in -mm for a while, has been ack'd by many relevant
+parties, and has not received any nak's.
 
-The second step in that conversion is 95% complete (one more driver),
-and is stored in branch 'isdn-pci' of the repository below.
-
-The changes below were posted as patches many weeks ago, without
-comment.  I also propagated these to the 'ALL' branch that gets copied
-into -mm for testing, though some changes have been there longer than
-others.
-
-All these changes are code movement changes, without any changes to the
-logic -- even the existing whitespace funnies were kept in many cases.
-
-Would you mind pulling these, or permitting me to push them upstream?
-
-Thanks,
-
-	Jeff
+I was holding off sending this until the x86 merge, but I suppose git
+can handle all the file movement and stuff.  If you just wanna drop this
+and wait for me to rediff+resend after the x86 merge, that's cool.
 
 
+Please pull from 'dmi-const' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git dmi-const
 
+to receive the following updates:
 
-The 'isdn-cleanups' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git isdn-cleanups
+ arch/i386/kernel/acpi/boot.c                |    8 ++--
+ arch/i386/kernel/acpi/sleep.c               |    2 +-
+ arch/i386/kernel/apm.c                      |   18 ++++----
+ arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c |    4 +-
+ arch/i386/kernel/reboot.c                   |    2 +-
+ arch/i386/kernel/tsc.c                      |    2 +-
+ arch/i386/mach-generic/bigsmp.c             |    4 +-
+ arch/i386/pci/common.c                      |    4 +-
+ arch/i386/pci/irq.c                         |    4 +-
+ drivers/acpi/osl.c                          |    2 +-
+ drivers/acpi/processor_idle.c               |    2 +-
+ drivers/acpi/sleep/main.c                   |    2 +-
+ drivers/acpi/thermal.c                      |    8 ++--
+ drivers/ata/ata_piix.c                      |    4 +-
+ drivers/ata/pata_ali.c                      |    2 +-
+ drivers/ata/pata_cs5530.c                   |    2 +-
+ drivers/ata/pata_via.c                      |    2 +-
+ drivers/char/i8k.c                          |    4 +-
+ drivers/char/ipmi/ipmi_si_intf.c            |    9 ++--
+ drivers/firmware/dmi_scan.c                 |   57 ++++++++++++++------------
+ drivers/hwmon/abituguru.c                   |    2 +-
+ drivers/hwmon/applesmc.c                    |    2 +-
+ drivers/hwmon/hdaps.c                       |    4 +-
+ drivers/ide/pci/alim15x3.c                  |    2 +-
+ drivers/ide/pci/via82cxxx.c                 |    2 +-
+ drivers/input/misc/wistron_btns.c           |    2 +-
+ drivers/input/mouse/lifebook.c              |    6 +-
+ drivers/input/mouse/synaptics.c             |    2 +-
+ drivers/misc/msi-laptop.c                   |    2 +-
+ drivers/misc/sony-laptop.c                  |    4 +-
+ drivers/misc/thinkpad_acpi.c                |    2 +-
+ drivers/pnp/pnpbios/core.c                  |    2 +-
+ drivers/usb/host/uhci-hcd.c                 |    2 +-
+ drivers/video/imacfb.c                      |    2 +-
+ include/linux/dmi.h                         |   22 +++++-----
+ 35 files changed, 103 insertions(+), 97 deletions(-)
 
-contains the following changes:
+Jeff Garzik (1):
+      drivers/firmware: const-ify DMI API and internals
 
-Jeff Garzik (5):
-      [ISDN] Remove CONFIG_PCI ifdefs from 100% PCI source code
-      [ISDN] HiSax avm_pci: split setup into three smaller functions
-      [ISDN] HiSax elsa: split huge setup function into four smaller functions
-      [ISDN] HiSax sedlbauer: move ISAPNP and PCI code into functions of their own
-      [ISDN] HiSax diva: split setup into three smaller functions
-
- drivers/isdn/hisax/avm_pci.c   |  224 ++++++++++-------
- drivers/isdn/hisax/bkm_a8.c    |    8 
- drivers/isdn/hisax/diva.c      |  513 +++++++++++++++++++++++------------------
- drivers/isdn/hisax/elsa.c      |  494 ++++++++++++++++++++++-----------------
- drivers/isdn/hisax/sedlbauer.c |  276 ++++++++++++----------
- drivers/isdn/hisax/telespci.c  |    8 
- drivers/isdn/hisax/w6692.c     |    7 
- 7 files changed, 868 insertions(+), 662 deletions(-)
-
-diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
-index b04a178..f8b7978 100644
---- a/drivers/isdn/hisax/avm_pci.c
-+++ b/drivers/isdn/hisax/avm_pci.c
-@@ -20,7 +20,6 @@
- #include <linux/isapnp.h>
- #include <linux/interrupt.h>
+diff --git a/arch/i386/kernel/acpi/boot.c b/arch/i386/kernel/acpi/boot.c
+index cacdd88..afd2afe 100644
+--- a/arch/i386/kernel/acpi/boot.c
++++ b/arch/i386/kernel/acpi/boot.c
+@@ -907,7 +907,7 @@ static void __init acpi_process_madt(void)
  
--extern const char *CardType[];
- static const char *avm_pci_rev = "$Revision: 1.29.2.4 $";
+ #ifdef __i386__
  
- #define  AVM_FRITZ_PCI		1
-@@ -726,100 +725,15 @@ AVM_card_msg(struct IsdnCardState *cs, int mt, void *arg)
- 	return(0);
- }
- 
--#ifdef CONFIG_PCI
--static struct pci_dev *dev_avm __devinitdata = NULL;
--#endif
--#ifdef __ISAPNP__
--static struct pnp_card *pnp_avm_c __devinitdata = NULL;
--#endif
--
--int __devinit
--setup_avm_pcipnp(struct IsdnCard *card)
-+static int __devinit avm_setup_rest(struct IsdnCardState *cs)
+-static int __init disable_acpi_irq(struct dmi_system_id *d)
++static int __init disable_acpi_irq(const struct dmi_system_id *d)
  {
- 	u_int val, ver;
--	struct IsdnCardState *cs = card->cs;
--	char tmp[64];
- 
--	strcpy(tmp, avm_pci_rev);
--	printk(KERN_INFO "HiSax: AVM PCI driver Rev. %s\n", HiSax_getrev(tmp));
--	if (cs->typ != ISDN_CTYPE_FRITZPCI)
--		return (0);
--	if (card->para[1]) {
--		/* old manual method */
--		cs->hw.avm.cfg_reg = card->para[1];
--		cs->irq = card->para[0];
--		cs->subtyp = AVM_FRITZ_PNP;
--		goto ready;
--	}
--#ifdef __ISAPNP__
--	if (isapnp_present()) {
--		struct pnp_dev *pnp_avm_d = NULL;
--		if ((pnp_avm_c = pnp_find_card(
--			ISAPNP_VENDOR('A', 'V', 'M'),
--			ISAPNP_FUNCTION(0x0900), pnp_avm_c))) {
--			if ((pnp_avm_d = pnp_find_dev(pnp_avm_c,
--				ISAPNP_VENDOR('A', 'V', 'M'),
--				ISAPNP_FUNCTION(0x0900), pnp_avm_d))) {
--				int err;
--
--				pnp_disable_dev(pnp_avm_d);
--				err = pnp_activate_dev(pnp_avm_d);
--				if (err<0) {
--					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--						__FUNCTION__, err);
--					return(0);
--				}
--				cs->hw.avm.cfg_reg =
--					pnp_port_start(pnp_avm_d, 0);
--				cs->irq = pnp_irq(pnp_avm_d, 0);
--				if (!cs->irq) {
--					printk(KERN_ERR "FritzPnP:No IRQ\n");
--					return(0);
--				}
--				if (!cs->hw.avm.cfg_reg) {
--					printk(KERN_ERR "FritzPnP:No IO address\n");
--					return(0);
--				}
--				cs->subtyp = AVM_FRITZ_PNP;
--				goto ready;
--			}
--		}
--	} else {
--		printk(KERN_INFO "FritzPnP: no ISA PnP present\n");
--	}
--#endif
--#ifdef CONFIG_PCI
--	if ((dev_avm = pci_find_device(PCI_VENDOR_ID_AVM,
--		PCI_DEVICE_ID_AVM_A1,  dev_avm))) {
--		if (pci_enable_device(dev_avm))
--			return(0);
--		cs->irq = dev_avm->irq;
--		if (!cs->irq) {
--			printk(KERN_ERR "FritzPCI: No IRQ for PCI card found\n");
--			return(0);
--		}
--		cs->hw.avm.cfg_reg = pci_resource_start(dev_avm, 1);
--		if (!cs->hw.avm.cfg_reg) {
--			printk(KERN_ERR "FritzPCI: No IO-Adr for PCI card found\n");
--			return(0);
--		}
--		cs->subtyp = AVM_FRITZ_PCI;
--	} else {
--		printk(KERN_WARNING "FritzPCI: No PCI card found\n");
--		return(0);
--	}
--	cs->irq_flags |= IRQF_SHARED;
--#else
--	printk(KERN_WARNING "FritzPCI: NO_PCI_BIOS\n");
--	return (0);
--#endif /* CONFIG_PCI */
--ready:
- 	cs->hw.avm.isac = cs->hw.avm.cfg_reg + 0x10;
- 	if (!request_region(cs->hw.avm.cfg_reg, 32,
- 		(cs->subtyp == AVM_FRITZ_PCI) ? "avm PCI" : "avm PnP")) {
- 		printk(KERN_WARNING
--		       "HiSax: %s config port %x-%x already in use\n",
--		       CardType[card->typ],
-+		       "HiSax: Fritz!PCI/PNP config port %x-%x already in use\n",
- 		       cs->hw.avm.cfg_reg,
- 		       cs->hw.avm.cfg_reg + 31);
- 		return (0);
-@@ -860,3 +774,137 @@ ready:
- 	ISACVersion(cs, (cs->subtyp == AVM_FRITZ_PCI) ? "AVM PCI:" : "AVM PnP:");
- 	return (1);
+ 	if (!acpi_force) {
+ 		printk(KERN_NOTICE "%s detected: force use of acpi=noirq\n",
+@@ -917,7 +917,7 @@ static int __init disable_acpi_irq(struct dmi_system_id *d)
+ 	return 0;
  }
-+
-+#ifndef __ISAPNP__
-+
-+static int __devinit avm_pnp_setup(struct IsdnCardState *cs)
-+{
-+	return(1);	/* no-op: success */
-+}
-+
-+#else
-+
-+static struct pnp_card *pnp_avm_c __devinitdata = NULL;
-+
-+static int __devinit avm_pnp_setup(struct IsdnCardState *cs)
-+{
-+	struct pnp_dev *pnp_avm_d = NULL;
-+
-+	if (!isapnp_present())
-+		return(1);	/* no-op: success */
-+
-+	if ((pnp_avm_c = pnp_find_card(
-+		ISAPNP_VENDOR('A', 'V', 'M'),
-+		ISAPNP_FUNCTION(0x0900), pnp_avm_c))) {
-+		if ((pnp_avm_d = pnp_find_dev(pnp_avm_c,
-+			ISAPNP_VENDOR('A', 'V', 'M'),
-+			ISAPNP_FUNCTION(0x0900), pnp_avm_d))) {
-+			int err;
-+
-+			pnp_disable_dev(pnp_avm_d);
-+			err = pnp_activate_dev(pnp_avm_d);
-+			if (err<0) {
-+				printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
-+					__FUNCTION__, err);
-+				return(0);
-+			}
-+			cs->hw.avm.cfg_reg =
-+				pnp_port_start(pnp_avm_d, 0);
-+			cs->irq = pnp_irq(pnp_avm_d, 0);
-+			if (!cs->irq) {
-+				printk(KERN_ERR "FritzPnP:No IRQ\n");
-+				return(0);
-+			}
-+			if (!cs->hw.avm.cfg_reg) {
-+				printk(KERN_ERR "FritzPnP:No IO address\n");
-+				return(0);
-+			}
-+			cs->subtyp = AVM_FRITZ_PNP;
-+
-+			return (2);	/* goto 'ready' label */
-+		}
-+	}
-+
-+	return (1);
-+}
-+
-+#endif /* __ISAPNP__ */
-+
-+#ifndef CONFIG_PCI
-+
-+static int __devinit avm_pci_setup(struct IsdnCardState *cs)
-+{
-+	return(1);	/* no-op: success */
-+}
-+
-+#else
-+
-+static struct pci_dev *dev_avm __devinitdata = NULL;
-+
-+static int __devinit avm_pci_setup(struct IsdnCardState *cs)
-+{
-+	if ((dev_avm = pci_find_device(PCI_VENDOR_ID_AVM,
-+		PCI_DEVICE_ID_AVM_A1, dev_avm))) {
-+
-+		if (pci_enable_device(dev_avm))
-+			return(0);
-+
-+		cs->irq = dev_avm->irq;
-+		if (!cs->irq) {
-+			printk(KERN_ERR "FritzPCI: No IRQ for PCI card found\n");
-+			return(0);
-+		}
-+
-+		cs->hw.avm.cfg_reg = pci_resource_start(dev_avm, 1);
-+		if (!cs->hw.avm.cfg_reg) {
-+			printk(KERN_ERR "FritzPCI: No IO-Adr for PCI card found\n");
-+			return(0);
-+		}
-+
-+		cs->subtyp = AVM_FRITZ_PCI;
-+	} else {
-+		printk(KERN_WARNING "FritzPCI: No PCI card found\n");
-+		return(0);
-+	}
-+
-+	cs->irq_flags |= IRQF_SHARED;
-+
-+	return (1);
-+}
-+
-+#endif /* CONFIG_PCI */
-+
-+int __devinit
-+setup_avm_pcipnp(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	char tmp[64];
-+	int rc;
-+
-+	strcpy(tmp, avm_pci_rev);
-+	printk(KERN_INFO "HiSax: AVM PCI driver Rev. %s\n", HiSax_getrev(tmp));
-+
-+	if (cs->typ != ISDN_CTYPE_FRITZPCI)
-+		return (0);
-+
-+	if (card->para[1]) {
-+		/* old manual method */
-+		cs->hw.avm.cfg_reg = card->para[1];
-+		cs->irq = card->para[0];
-+		cs->subtyp = AVM_FRITZ_PNP;
-+		goto ready;
-+	}
-+
-+	rc = avm_pnp_setup(cs);
-+	if (rc < 1)
-+		return (0);
-+	if (rc == 2)
-+		goto ready;
-+
-+	rc = avm_pci_setup(cs);
-+	if (rc < 1)
-+		return (0);
-+
-+ready:
-+	return avm_setup_rest(cs);
-+}
-diff --git a/drivers/isdn/hisax/bkm_a8.c b/drivers/isdn/hisax/bkm_a8.c
-index 6339bb4..99ef3b4 100644
---- a/drivers/isdn/hisax/bkm_a8.c
-+++ b/drivers/isdn/hisax/bkm_a8.c
-@@ -20,8 +20,6 @@
- #include <linux/pci.h>
- #include "bkm_ax.h"
  
--#ifdef CONFIG_PCI
--
- #define	ATTEMPT_PCI_REMAPPING	/* Required for PLX rev 1 */
- 
- extern const char *CardType[];
-@@ -279,12 +277,9 @@ static u_char pci_bus __devinitdata = 0;
- static u_char pci_device_fn __devinitdata = 0;
- static u_char pci_irq __devinitdata = 0;
- 
--#endif /* CONFIG_PCI */
--
- int __devinit
- setup_sct_quadro(struct IsdnCard *card)
+-static int __init disable_acpi_pci(struct dmi_system_id *d)
++static int __init disable_acpi_pci(const struct dmi_system_id *d)
  {
--#ifdef CONFIG_PCI
- 	struct IsdnCardState *cs = card->cs;
- 	char tmp[64];
- 	u_int found = 0;
-@@ -442,7 +437,4 @@ setup_sct_quadro(struct IsdnCard *card)
- 		sct_quadro_subtypes[cs->subtyp],
- 		readreg(cs->hw.ax.base, cs->hw.ax.data_adr, IPAC_ID));
- 	return (1);
--#else
--	printk(KERN_ERR "HiSax: bkm_a8 only supported on PCI Systems\n");
--#endif /* CONFIG_PCI */
- }
-diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
-index 6eebeb4..8267450 100644
---- a/drivers/isdn/hisax/diva.c
-+++ b/drivers/isdn/hisax/diva.c
-@@ -25,8 +25,6 @@
- #include <linux/pci.h>
- #include <linux/isapnp.h>
- 
--extern const char *CardType[];
--
- static const char *Diva_revision = "$Revision: 1.33.2.6 $";
- 
- #define byteout(addr,val) outb(val,addr)
-@@ -906,225 +904,15 @@ Diva_card_msg(struct IsdnCardState *cs, int mt, void *arg)
- 	return(0);
+ 	if (!acpi_force) {
+ 		printk(KERN_NOTICE "%s detected: force use of pci=noacpi\n",
+@@ -927,7 +927,7 @@ static int __init disable_acpi_pci(struct dmi_system_id *d)
+ 	return 0;
  }
  
--static struct pci_dev *dev_diva __devinitdata = NULL;
--static struct pci_dev *dev_diva_u __devinitdata = NULL;
--static struct pci_dev *dev_diva201 __devinitdata = NULL;
--static struct pci_dev *dev_diva202 __devinitdata = NULL;
--
--#ifdef __ISAPNP__
--static struct isapnp_device_id diva_ids[] __devinitdata = {
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51), 
--	  (unsigned long) "Diva picola" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x51), 
--	  (unsigned long) "Diva picola" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71), 
--	  (unsigned long) "Diva 2.0" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x71), 
--	  (unsigned long) "Diva 2.0" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1), 
--	  (unsigned long) "Diva 2.01" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0xA1), 
--	  (unsigned long) "Diva 2.01" },
--	{ 0, }
--};
--
--static struct isapnp_device_id *ipid __devinitdata = &diva_ids[0];
--static struct pnp_card *pnp_c __devinitdata = NULL;
--#endif
--
--
--int __devinit
--setup_diva(struct IsdnCard *card)
-+static int __devinit setup_diva_common(struct IsdnCardState *cs)
+-static int __init dmi_disable_acpi(struct dmi_system_id *d)
++static int __init dmi_disable_acpi(const struct dmi_system_id *d)
  {
--	int bytecnt = 8;
-+	int bytecnt;
- 	u_char val;
--	struct IsdnCardState *cs = card->cs;
--	char tmp[64];
--
--	strcpy(tmp, Diva_revision);
--	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
--	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
--		return(0);
--	cs->hw.diva.status = 0;
--	if (card->para[1]) {
--		cs->hw.diva.ctrl_reg = 0;
--		cs->hw.diva.cfg_reg = card->para[1];
--		val = readreg(cs->hw.diva.cfg_reg + DIVA_IPAC_ADR,
--			cs->hw.diva.cfg_reg + DIVA_IPAC_DATA, IPAC_ID);
--		printk(KERN_INFO "Diva: IPAC version %x\n", val);
--		if ((val == 1) || (val==2)) {
--			cs->subtyp = DIVA_IPAC_ISA;
--			cs->hw.diva.ctrl = 0;
--			cs->hw.diva.isac = card->para[1] + DIVA_IPAC_DATA;
--			cs->hw.diva.hscx = card->para[1] + DIVA_IPAC_DATA;
--			cs->hw.diva.isac_adr = card->para[1] + DIVA_IPAC_ADR;
--			cs->hw.diva.hscx_adr = card->para[1] + DIVA_IPAC_ADR;
--			test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--		} else {
--			cs->subtyp = DIVA_ISA;
--			cs->hw.diva.ctrl = card->para[1] + DIVA_ISA_CTRL;
--			cs->hw.diva.isac = card->para[1] + DIVA_ISA_ISAC_DATA;
--			cs->hw.diva.hscx = card->para[1] + DIVA_HSCX_DATA;
--			cs->hw.diva.isac_adr = card->para[1] + DIVA_ISA_ISAC_ADR;
--			cs->hw.diva.hscx_adr = card->para[1] + DIVA_HSCX_ADR;
--		}
--		cs->irq = card->para[0];
--	} else {
--#ifdef __ISAPNP__
--		if (isapnp_present()) {
--			struct pnp_dev *pnp_d;
--			while(ipid->card_vendor) {
--				if ((pnp_c = pnp_find_card(ipid->card_vendor,
--					ipid->card_device, pnp_c))) {
--					pnp_d = NULL;
--					if ((pnp_d = pnp_find_dev(pnp_c,
--						ipid->vendor, ipid->function, pnp_d))) {
--						int err;
--
--						printk(KERN_INFO "HiSax: %s detected\n",
--							(char *)ipid->driver_data);
--						pnp_disable_dev(pnp_d);
--						err = pnp_activate_dev(pnp_d);
--						if (err<0) {
--							printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--								__FUNCTION__, err);
--							return(0);
--						}
--						card->para[1] = pnp_port_start(pnp_d, 0);
--						card->para[0] = pnp_irq(pnp_d, 0);
--						if (!card->para[0] || !card->para[1]) {
--							printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
--								card->para[0], card->para[1]);
--							pnp_disable_dev(pnp_d); 
--							return(0);
--						}
--						cs->hw.diva.cfg_reg  = card->para[1];
--						cs->irq = card->para[0];
--						if (ipid->function == ISAPNP_FUNCTION(0xA1)) {
--							cs->subtyp = DIVA_IPAC_ISA;
--							cs->hw.diva.ctrl = 0;
--							cs->hw.diva.isac =
--								card->para[1] + DIVA_IPAC_DATA;
--							cs->hw.diva.hscx =
--								card->para[1] + DIVA_IPAC_DATA;
--							cs->hw.diva.isac_adr =
--								card->para[1] + DIVA_IPAC_ADR;
--							cs->hw.diva.hscx_adr =
--								card->para[1] + DIVA_IPAC_ADR;
--							test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--						} else {
--							cs->subtyp = DIVA_ISA;
--							cs->hw.diva.ctrl =
--								card->para[1] + DIVA_ISA_CTRL;
--							cs->hw.diva.isac =
--								card->para[1] + DIVA_ISA_ISAC_DATA;
--							cs->hw.diva.hscx =
--								card->para[1] + DIVA_HSCX_DATA;
--							cs->hw.diva.isac_adr =
--								card->para[1] + DIVA_ISA_ISAC_ADR;
--							cs->hw.diva.hscx_adr =
--								card->para[1] + DIVA_HSCX_ADR;
--						}
--						goto ready;
--					} else {
--						printk(KERN_ERR "Diva PnP: PnP error card found, no device\n");
--						return(0);
--					}
--				}
--				ipid++;
--				pnp_c=NULL;
--			} 
--			if (!ipid->card_vendor) {
--				printk(KERN_INFO "Diva PnP: no ISAPnP card found\n");
--			}
--		}
--#endif
--#ifdef CONFIG_PCI
--		cs->subtyp = 0;
--		if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
--			PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
--			if (pci_enable_device(dev_diva))
--				return(0);
--			cs->subtyp = DIVA_PCI;
--			cs->irq = dev_diva->irq;
--			cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
--		} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
--			PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
--			if (pci_enable_device(dev_diva_u))
--				return(0);
--			cs->subtyp = DIVA_PCI;
--			cs->irq = dev_diva_u->irq;
--			cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
--		} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
--			PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
--			if (pci_enable_device(dev_diva201))
--				return(0);
--			cs->subtyp = DIVA_IPAC_PCI;
--			cs->irq = dev_diva201->irq;
--			cs->hw.diva.pci_cfg =
--				(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
--			cs->hw.diva.cfg_reg =
--				(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
--		} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
--			PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
--			if (pci_enable_device(dev_diva202))
--				return(0);
--			cs->subtyp = DIVA_IPACX_PCI;
--			cs->irq = dev_diva202->irq;
--			cs->hw.diva.pci_cfg =
--				(ulong) ioremap(pci_resource_start(dev_diva202, 0), 4096);
--			cs->hw.diva.cfg_reg =
--				(ulong) ioremap(pci_resource_start(dev_diva202, 1), 4096);
--		} else {
--			printk(KERN_WARNING "Diva: No PCI card found\n");
--			return(0);
--		}
--
--		if (!cs->irq) {
--			printk(KERN_WARNING "Diva: No IRQ for PCI card found\n");
--			iounmap_diva(cs);
--			return(0);
--		}
--
--		if (!cs->hw.diva.cfg_reg) {
--			printk(KERN_WARNING "Diva: No IO-Adr for PCI card found\n");
--			iounmap_diva(cs);
--			return(0);
--		}
--		cs->irq_flags |= IRQF_SHARED;
--#else
--		printk(KERN_WARNING "Diva: cfgreg 0 and NO_PCI_BIOS\n");
--		printk(KERN_WARNING "Diva: unable to config DIVA PCI\n");
--		return (0);
--#endif /* CONFIG_PCI */
--		if ((cs->subtyp == DIVA_IPAC_PCI) ||
--		    (cs->subtyp == DIVA_IPACX_PCI)   ) {
--			cs->hw.diva.ctrl = 0;
--			cs->hw.diva.isac = 0;
--			cs->hw.diva.hscx = 0;
--			cs->hw.diva.isac_adr = 0;
--			cs->hw.diva.hscx_adr = 0;
--			test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--			bytecnt = 0;
--		} else {
--			cs->hw.diva.ctrl = cs->hw.diva.cfg_reg + DIVA_PCI_CTRL;
--			cs->hw.diva.isac = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_DATA;
--			cs->hw.diva.hscx = cs->hw.diva.cfg_reg + DIVA_HSCX_DATA;
--			cs->hw.diva.isac_adr = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_ADR;
--			cs->hw.diva.hscx_adr = cs->hw.diva.cfg_reg + DIVA_HSCX_ADR;
--			bytecnt = 32;
--		}
--	}
+ 	if (!acpi_force) {
+ 		printk(KERN_NOTICE "%s detected: acpi off\n", d->ident);
+@@ -942,7 +942,7 @@ static int __init dmi_disable_acpi(struct dmi_system_id *d)
+ /*
+  * Limit ACPI to CPU enumeration for HT
+  */
+-static int __init force_acpi_ht(struct dmi_system_id *d)
++static int __init force_acpi_ht(const struct dmi_system_id *d)
+ {
+ 	if (!acpi_force) {
+ 		printk(KERN_NOTICE "%s detected: force use of acpi=ht\n",
+diff --git a/arch/i386/kernel/acpi/sleep.c b/arch/i386/kernel/acpi/sleep.c
+index c42b5ab..1069948 100644
+--- a/arch/i386/kernel/acpi/sleep.c
++++ b/arch/i386/kernel/acpi/sleep.c
+@@ -84,7 +84,7 @@ __setup("acpi_sleep=", acpi_sleep_setup);
  
--#ifdef __ISAPNP__
--ready:
--#endif
-+	if ((cs->subtyp == DIVA_ISA) || (cs->subtyp == DIVA_IPAC_ISA))
-+		bytecnt = 8;
-+	else
-+		bytecnt = 32;
+ /* Ouch, we want to delete this. We already have better version in userspace, in
+    s2ram from suspend.sf.net project */
+-static __init int reset_videomode_after_s3(struct dmi_system_id *d)
++static __init int reset_videomode_after_s3(const struct dmi_system_id *d)
+ {
+ 	acpi_realmode_flags |= 2;
+ 	return 0;
+diff --git a/arch/i386/kernel/apm.c b/arch/i386/kernel/apm.c
+index f02a8ac..32f2365 100644
+--- a/arch/i386/kernel/apm.c
++++ b/arch/i386/kernel/apm.c
+@@ -1869,7 +1869,7 @@ static struct miscdevice apm_device = {
  
- 	printk(KERN_INFO
- 		"Diva: %s card configured at %#lx IRQ %d\n",
-@@ -1145,7 +933,7 @@ ready:
- 		if (!request_region(cs->hw.diva.cfg_reg, bytecnt, "diva isdn")) {
- 			printk(KERN_WARNING
- 			       "HiSax: %s config port %lx-%lx already in use\n",
--			       CardType[card->typ],
-+			       "diva",
- 			       cs->hw.diva.cfg_reg,
- 			       cs->hw.diva.cfg_reg + bytecnt);
- 			iounmap_diva(cs);
-@@ -1206,3 +994,290 @@ ready:
+ 
+ /* Simple "print if true" callback */
+-static int __init print_if_true(struct dmi_system_id *d)
++static int __init print_if_true(const struct dmi_system_id *d)
+ {
+ 	printk("%s\n", d->ident);
+ 	return 0;
+@@ -1879,14 +1879,14 @@ static int __init print_if_true(struct dmi_system_id *d)
+  * Some Bioses enable the PS/2 mouse (touchpad) at resume, even if it was
+  * disabled before the suspend. Linux used to get terribly confused by that.
+  */
+-static int __init broken_ps2_resume(struct dmi_system_id *d)
++static int __init broken_ps2_resume(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_INFO "%s machine detected. Mousepad Resume Bug workaround hopefully not needed.\n", d->ident);
+ 	return 0;
+ }
+ 
+ /* Some bioses have a broken protected mode poweroff and need to use realmode */
+-static int __init set_realmode_power_off(struct dmi_system_id *d)
++static int __init set_realmode_power_off(const struct dmi_system_id *d)
+ {
+ 	if (apm_info.realmode_power_off == 0) {
+ 		apm_info.realmode_power_off = 1;
+@@ -1896,7 +1896,7 @@ static int __init set_realmode_power_off(struct dmi_system_id *d)
+ }
+ 
+ /* Some laptops require interrupts to be enabled during APM calls */
+-static int __init set_apm_ints(struct dmi_system_id *d)
++static int __init set_apm_ints(const struct dmi_system_id *d)
+ {
+ 	if (apm_info.allow_ints == 0) {
+ 		apm_info.allow_ints = 1;
+@@ -1906,7 +1906,7 @@ static int __init set_apm_ints(struct dmi_system_id *d)
+ }
+ 
+ /* Some APM bioses corrupt memory or just plain do not work */
+-static int __init apm_is_horked(struct dmi_system_id *d)
++static int __init apm_is_horked(const struct dmi_system_id *d)
+ {
+ 	if (apm_info.disabled == 0) {
+ 		apm_info.disabled = 1;
+@@ -1915,7 +1915,7 @@ static int __init apm_is_horked(struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
+-static int __init apm_is_horked_d850md(struct dmi_system_id *d)
++static int __init apm_is_horked_d850md(const struct dmi_system_id *d)
+ {
+ 	if (apm_info.disabled == 0) {
+ 		apm_info.disabled = 1;
+@@ -1927,7 +1927,7 @@ static int __init apm_is_horked_d850md(struct dmi_system_id *d)
+ }
+ 
+ /* Some APM bioses hang on APM idle calls */
+-static int __init apm_likes_to_melt(struct dmi_system_id *d)
++static int __init apm_likes_to_melt(const struct dmi_system_id *d)
+ {
+ 	if (apm_info.forbid_idle == 0) {
+ 		apm_info.forbid_idle = 1;
+@@ -1951,7 +1951,7 @@ static int __init apm_likes_to_melt(struct dmi_system_id *d)
+  *	Phoenix A04  08/24/2000 is known bad (Dell Inspiron 5000e)
+  *	Phoenix A07  09/29/2000 is known good (Dell Inspiron 5000)
+  */
+-static int __init broken_apm_power(struct dmi_system_id *d)
++static int __init broken_apm_power(const struct dmi_system_id *d)
+ {
+ 	apm_info.get_power_status_broken = 1;
+ 	printk(KERN_WARNING "BIOS strings suggest APM bugs, disabling power status reporting.\n");
+@@ -1962,7 +1962,7 @@ static int __init broken_apm_power(struct dmi_system_id *d)
+  * This bios swaps the APM minute reporting bytes over (Many sony laptops
+  * have this problem).
+  */
+-static int __init swab_apm_power_in_minutes(struct dmi_system_id *d)
++static int __init swab_apm_power_in_minutes(const struct dmi_system_id *d)
+ {
+ 	apm_info.get_power_status_swabinminutes = 1;
+ 	printk(KERN_WARNING "BIOS strings suggest APM reports battery life in minutes and wrong byte order.\n");
+diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 705e13a..b6434a7 100644
+--- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -533,13 +533,13 @@ static int __init acpi_cpufreq_early_init(void)
+  */
+ static int bios_with_sw_any_bug;
+ 
+-static int sw_any_bug_found(struct dmi_system_id *d)
++static int sw_any_bug_found(const struct dmi_system_id *d)
+ {
+ 	bios_with_sw_any_bug = 1;
+ 	return 0;
+ }
+ 
+-static struct dmi_system_id sw_any_bug_dmi_table[] = {
++static const struct dmi_system_id sw_any_bug_dmi_table[] = {
+ 	{
+ 		.callback = sw_any_bug_found,
+ 		.ident = "Supermicro Server X6DLP",
+diff --git a/arch/i386/kernel/reboot.c b/arch/i386/kernel/reboot.c
+index 0d79624..b37ed22 100644
+--- a/arch/i386/kernel/reboot.c
++++ b/arch/i386/kernel/reboot.c
+@@ -79,7 +79,7 @@ __setup("reboot=", reboot_setup);
+ /*
+  * Some machines require the "reboot=b"  commandline option, this quirk makes that automatic.
+  */
+-static int __init set_bios_reboot(struct dmi_system_id *d)
++static int __init set_bios_reboot(const struct dmi_system_id *d)
+ {
+ 	if (!reboot_thru_bios) {
+ 		reboot_thru_bios = 1;
+diff --git a/arch/i386/kernel/tsc.c b/arch/i386/kernel/tsc.c
+index a39280b..3ed0ae8 100644
+--- a/arch/i386/kernel/tsc.c
++++ b/arch/i386/kernel/tsc.c
+@@ -305,7 +305,7 @@ void mark_tsc_unstable(char *reason)
+ }
+ EXPORT_SYMBOL_GPL(mark_tsc_unstable);
+ 
+-static int __init dmi_mark_tsc_unstable(struct dmi_system_id *d)
++static int __init dmi_mark_tsc_unstable(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_NOTICE "%s detected: marking TSC unstable.\n",
+ 		       d->ident);
+diff --git a/arch/i386/mach-generic/bigsmp.c b/arch/i386/mach-generic/bigsmp.c
+index 58a477b..292a225 100644
+--- a/arch/i386/mach-generic/bigsmp.c
++++ b/arch/i386/mach-generic/bigsmp.c
+@@ -21,7 +21,7 @@
+ 
+ static int dmi_bigsmp; /* can be set by dmi scanners */
+ 
+-static int hp_ht_bigsmp(struct dmi_system_id *d)
++static int hp_ht_bigsmp(const struct dmi_system_id *d)
+ {
+ #ifdef CONFIG_X86_GENERICARCH
+ 	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
+@@ -31,7 +31,7 @@ static int hp_ht_bigsmp(struct dmi_system_id *d)
+ }
+ 
+ 
+-static struct dmi_system_id bigsmp_dmi_table[] = {
++static const struct dmi_system_id bigsmp_dmi_table[] = {
+ 	{ hp_ht_bigsmp, "HP ProLiant DL760 G2", {
+ 		DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
+ 		DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
+diff --git a/arch/i386/pci/common.c b/arch/i386/pci/common.c
+index ebc6f3c..07d5223 100644
+--- a/arch/i386/pci/common.c
++++ b/arch/i386/pci/common.c
+@@ -123,7 +123,7 @@ void __devinit  pcibios_fixup_bus(struct pci_bus *b)
+  * on the kernel command line (which was parsed earlier).
+  */
+ 
+-static int __devinit set_bf_sort(struct dmi_system_id *d)
++static int __devinit set_bf_sort(const struct dmi_system_id *d)
+ {
+ 	if (pci_bf_sort == pci_bf_sort_default) {
+ 		pci_bf_sort = pci_dmi_bf;
+@@ -136,7 +136,7 @@ static int __devinit set_bf_sort(struct dmi_system_id *d)
+  * Enable renumbering of PCI bus# ranges to reach all PCI busses (Cardbus)
+  */
+ #ifdef __i386__
+-static int __devinit assign_all_busses(struct dmi_system_id *d)
++static int __devinit assign_all_busses(const struct dmi_system_id *d)
+ {
+ 	pci_probe |= PCI_ASSIGN_ALL_BUSSES;
+ 	printk(KERN_INFO "%s detected: enabling PCI bus# renumbering"
+diff --git a/arch/i386/pci/irq.c b/arch/i386/pci/irq.c
+index 8434f23..d98c6b0 100644
+--- a/arch/i386/pci/irq.c
++++ b/arch/i386/pci/irq.c
+@@ -1010,7 +1010,7 @@ static void __init pcibios_fixup_irqs(void)
+  * Work around broken HP Pavilion Notebooks which assign USB to
+  * IRQ 9 even though it is actually wired to IRQ 11
+  */
+-static int __init fix_broken_hp_bios_irq9(struct dmi_system_id *d)
++static int __init fix_broken_hp_bios_irq9(const struct dmi_system_id *d)
+ {
+ 	if (!broken_hp_bios_irq9) {
+ 		broken_hp_bios_irq9 = 1;
+@@ -1023,7 +1023,7 @@ static int __init fix_broken_hp_bios_irq9(struct dmi_system_id *d)
+  * Work around broken Acer TravelMate 360 Notebooks which assign
+  * Cardbus to IRQ 11 even though it is actually wired to IRQ 10
+  */
+-static int __init fix_acer_tm360_irqrouting(struct dmi_system_id *d)
++static int __init fix_acer_tm360_irqrouting(const struct dmi_system_id *d)
+ {
+ 	if (!acer_tm360_irqrouting) {
+ 		acer_tm360_irqrouting = 1;
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 12c09fa..352cf81 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -1214,7 +1214,7 @@ acpi_os_validate_address (
+ }
+ 
+ #ifdef CONFIG_DMI
+-static int dmi_osi_linux(struct dmi_system_id *d)
++static int dmi_osi_linux(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_NOTICE "%s detected: enabling _OSI(Linux)\n", d->ident);
+ 	enable_osi_linux(1);
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index f182613..1e8287b 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -92,7 +92,7 @@ module_param(bm_history, uint, 0644);
+  *
+  * To skip this limit, boot/load with a large max_cstate limit.
+  */
+-static int set_max_cstate(struct dmi_system_id *id)
++static int set_max_cstate(const struct dmi_system_id *id)
+ {
+ 	if (max_cstate > ACPI_PROCESSOR_MAX_POWER)
+ 		return 0;
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index 2cbb9aa..5055acf 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -215,7 +215,7 @@ static struct pm_ops acpi_pm_ops = {
+  * Toshiba fails to preserve interrupts over S1, reinitialization
+  * of 8259 is needed after S1 resume.
+  */
+-static int __init init_ints_after_s1(struct dmi_system_id *d)
++static int __init init_ints_after_s1(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_WARNING "%s with broken S1 detected.\n", d->ident);
+ 	init_8259A_after_S1 = 1;
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index bc6d586..ad898e1 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -1360,7 +1360,7 @@ static int acpi_thermal_resume(struct acpi_device *device)
+ }
+ 
+ #ifdef CONFIG_DMI
+-static int thermal_act(struct dmi_system_id *d) {
++static int thermal_act(const struct dmi_system_id *d) {
+ 
+ 	if (act == 0) {
+ 		printk(KERN_NOTICE "ACPI: %s detected: "
+@@ -1369,14 +1369,14 @@ static int thermal_act(struct dmi_system_id *d) {
  	}
- 	return (1);
+ 	return 0;
  }
-+
-+#ifdef CONFIG_ISA
-+
-+static int __devinit setup_diva_isa(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	u_char val;
-+
-+	if (!card->para[1])
-+		return (-1);	/* card not found; continue search */
-+
-+	cs->hw.diva.ctrl_reg = 0;
-+	cs->hw.diva.cfg_reg = card->para[1];
-+	val = readreg(cs->hw.diva.cfg_reg + DIVA_IPAC_ADR,
-+		cs->hw.diva.cfg_reg + DIVA_IPAC_DATA, IPAC_ID);
-+	printk(KERN_INFO "Diva: IPAC version %x\n", val);
-+	if ((val == 1) || (val==2)) {
-+		cs->subtyp = DIVA_IPAC_ISA;
-+		cs->hw.diva.ctrl = 0;
-+		cs->hw.diva.isac = card->para[1] + DIVA_IPAC_DATA;
-+		cs->hw.diva.hscx = card->para[1] + DIVA_IPAC_DATA;
-+		cs->hw.diva.isac_adr = card->para[1] + DIVA_IPAC_ADR;
-+		cs->hw.diva.hscx_adr = card->para[1] + DIVA_IPAC_ADR;
-+		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+	} else {
-+		cs->subtyp = DIVA_ISA;
-+		cs->hw.diva.ctrl = card->para[1] + DIVA_ISA_CTRL;
-+		cs->hw.diva.isac = card->para[1] + DIVA_ISA_ISAC_DATA;
-+		cs->hw.diva.hscx = card->para[1] + DIVA_HSCX_DATA;
-+		cs->hw.diva.isac_adr = card->para[1] + DIVA_ISA_ISAC_ADR;
-+		cs->hw.diva.hscx_adr = card->para[1] + DIVA_HSCX_ADR;
-+	}
-+	cs->irq = card->para[0];
-+
-+	return (1);		/* card found */
-+}
-+
-+#else	/* if !CONFIG_ISA */
-+
-+static int __devinit setup_diva_isa(struct IsdnCard *card)
-+{
-+	return (-1);	/* card not found; continue search */
-+}
-+
-+#endif	/* CONFIG_ISA */
-+
-+#ifdef __ISAPNP__
-+static struct isapnp_device_id diva_ids[] __devinitdata = {
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
-+	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51), 
-+	  (unsigned long) "Diva picola" },
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
-+	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x51), 
-+	  (unsigned long) "Diva picola" },
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
-+	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71), 
-+	  (unsigned long) "Diva 2.0" },
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
-+	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x71), 
-+	  (unsigned long) "Diva 2.0" },
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
-+	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1), 
-+	  (unsigned long) "Diva 2.01" },
-+	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
-+	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0xA1), 
-+	  (unsigned long) "Diva 2.01" },
-+	{ 0, }
-+};
-+
-+static struct isapnp_device_id *ipid __devinitdata = &diva_ids[0];
-+static struct pnp_card *pnp_c __devinitdata = NULL;
-+
-+static int __devinit setup_diva_isapnp(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	struct pnp_dev *pnp_d;
-+
-+	if (!isapnp_present())
-+		return (-1);	/* card not found; continue search */
-+
-+	while(ipid->card_vendor) {
-+		if ((pnp_c = pnp_find_card(ipid->card_vendor,
-+			ipid->card_device, pnp_c))) {
-+			pnp_d = NULL;
-+			if ((pnp_d = pnp_find_dev(pnp_c,
-+				ipid->vendor, ipid->function, pnp_d))) {
-+				int err;
-+
-+				printk(KERN_INFO "HiSax: %s detected\n",
-+					(char *)ipid->driver_data);
-+				pnp_disable_dev(pnp_d);
-+				err = pnp_activate_dev(pnp_d);
-+				if (err<0) {
-+					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
-+						__FUNCTION__, err);
-+					return(0);
-+				}
-+				card->para[1] = pnp_port_start(pnp_d, 0);
-+				card->para[0] = pnp_irq(pnp_d, 0);
-+				if (!card->para[0] || !card->para[1]) {
-+					printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
-+						card->para[0], card->para[1]);
-+					pnp_disable_dev(pnp_d); 
-+					return(0);
-+				}
-+				cs->hw.diva.cfg_reg  = card->para[1];
-+				cs->irq = card->para[0];
-+				if (ipid->function == ISAPNP_FUNCTION(0xA1)) {
-+					cs->subtyp = DIVA_IPAC_ISA;
-+					cs->hw.diva.ctrl = 0;
-+					cs->hw.diva.isac =
-+						card->para[1] + DIVA_IPAC_DATA;
-+					cs->hw.diva.hscx =
-+						card->para[1] + DIVA_IPAC_DATA;
-+					cs->hw.diva.isac_adr =
-+						card->para[1] + DIVA_IPAC_ADR;
-+					cs->hw.diva.hscx_adr =
-+						card->para[1] + DIVA_IPAC_ADR;
-+					test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+				} else {
-+					cs->subtyp = DIVA_ISA;
-+					cs->hw.diva.ctrl =
-+						card->para[1] + DIVA_ISA_CTRL;
-+					cs->hw.diva.isac =
-+						card->para[1] + DIVA_ISA_ISAC_DATA;
-+					cs->hw.diva.hscx =
-+						card->para[1] + DIVA_HSCX_DATA;
-+					cs->hw.diva.isac_adr =
-+						card->para[1] + DIVA_ISA_ISAC_ADR;
-+					cs->hw.diva.hscx_adr =
-+						card->para[1] + DIVA_HSCX_ADR;
-+				}
-+				return (1);		/* card found */
-+			} else {
-+				printk(KERN_ERR "Diva PnP: PnP error card found, no device\n");
-+				return(0);
-+			}
-+		}
-+		ipid++;
-+		pnp_c=NULL;
-+	} 
-+
-+	return (-1);	/* card not found; continue search */
-+}
-+
-+#else	/* if !ISAPNP */
-+
-+static int __devinit setup_diva_isapnp(struct IsdnCard *card)
-+{
-+	return (-1);	/* card not found; continue search */
-+}
-+
-+#endif	/* ISAPNP */
-+
-+#ifdef CONFIG_PCI
-+static struct pci_dev *dev_diva __devinitdata = NULL;
-+static struct pci_dev *dev_diva_u __devinitdata = NULL;
-+static struct pci_dev *dev_diva201 __devinitdata = NULL;
-+static struct pci_dev *dev_diva202 __devinitdata = NULL;
-+
-+static int __devinit setup_diva_pci(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+
-+	cs->subtyp = 0;
-+	if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
-+		PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
-+		if (pci_enable_device(dev_diva))
-+			return(0);
-+		cs->subtyp = DIVA_PCI;
-+		cs->irq = dev_diva->irq;
-+		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
-+	} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
-+		PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
-+		if (pci_enable_device(dev_diva_u))
-+			return(0);
-+		cs->subtyp = DIVA_PCI;
-+		cs->irq = dev_diva_u->irq;
-+		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
-+	} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
-+		PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
-+		if (pci_enable_device(dev_diva201))
-+			return(0);
-+		cs->subtyp = DIVA_IPAC_PCI;
-+		cs->irq = dev_diva201->irq;
-+		cs->hw.diva.pci_cfg =
-+			(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
-+		cs->hw.diva.cfg_reg =
-+			(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
-+	} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
-+		PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
-+		if (pci_enable_device(dev_diva202))
-+			return(0);
-+		cs->subtyp = DIVA_IPACX_PCI;
-+		cs->irq = dev_diva202->irq;
-+		cs->hw.diva.pci_cfg =
-+			(ulong) ioremap(pci_resource_start(dev_diva202, 0), 4096);
-+		cs->hw.diva.cfg_reg =
-+			(ulong) ioremap(pci_resource_start(dev_diva202, 1), 4096);
-+	} else {
-+		return (-1);	/* card not found; continue search */
-+	}
-+
-+	if (!cs->irq) {
-+		printk(KERN_WARNING "Diva: No IRQ for PCI card found\n");
-+		iounmap_diva(cs);
-+		return(0);
-+	}
-+
-+	if (!cs->hw.diva.cfg_reg) {
-+		printk(KERN_WARNING "Diva: No IO-Adr for PCI card found\n");
-+		iounmap_diva(cs);
-+		return(0);
-+	}
-+	cs->irq_flags |= IRQF_SHARED;
-+
-+	if ((cs->subtyp == DIVA_IPAC_PCI) ||
-+	    (cs->subtyp == DIVA_IPACX_PCI)   ) {
-+		cs->hw.diva.ctrl = 0;
-+		cs->hw.diva.isac = 0;
-+		cs->hw.diva.hscx = 0;
-+		cs->hw.diva.isac_adr = 0;
-+		cs->hw.diva.hscx_adr = 0;
-+		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+	} else {
-+		cs->hw.diva.ctrl = cs->hw.diva.cfg_reg + DIVA_PCI_CTRL;
-+		cs->hw.diva.isac = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_DATA;
-+		cs->hw.diva.hscx = cs->hw.diva.cfg_reg + DIVA_HSCX_DATA;
-+		cs->hw.diva.isac_adr = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_ADR;
-+		cs->hw.diva.hscx_adr = cs->hw.diva.cfg_reg + DIVA_HSCX_ADR;
-+	}
-+
-+	return (1);		/* card found */
-+}
-+
-+#else	/* if !CONFIG_PCI */
-+
-+static int __devinit setup_diva_pci(struct IsdnCard *card)
-+{
-+	return (-1);	/* card not found; continue search */
-+}
-+
-+#endif	/* CONFIG_PCI */
-+
-+int __devinit
-+setup_diva(struct IsdnCard *card)
-+{
-+	int rc, have_card = 0;
-+	struct IsdnCardState *cs = card->cs;
-+	char tmp[64];
-+
-+	strcpy(tmp, Diva_revision);
-+	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
-+	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
-+		return(0);
-+	cs->hw.diva.status = 0;
-+
-+	rc = setup_diva_isa(card);
-+	if (!rc)
-+		return rc;
-+	if (rc > 0) {
-+		have_card = 1;
-+		goto ready;
-+	}
-+
-+	rc = setup_diva_isapnp(card);
-+	if (!rc)
-+		return rc;
-+	if (rc > 0) {
-+		have_card = 1;
-+		goto ready;
-+	}
-+
-+	rc = setup_diva_pci(card);
-+	if (!rc)
-+		return rc;
-+	if (rc > 0)
-+		have_card = 1;
-+
-+ready:
-+	if (!have_card) {
-+		printk(KERN_WARNING "Diva: No ISA, ISAPNP or PCI card found\n");
-+		return(0);
-+	}
-+
-+	return setup_diva_common(card->cs);
-+}
-diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
-index fab3e4e..0c1351b 100644
---- a/drivers/isdn/hisax/elsa.c
-+++ b/drivers/isdn/hisax/elsa.c
-@@ -30,8 +30,6 @@
- #include <linux/serial.h>
- #include <linux/serial_reg.h>
+-static int thermal_nocrt(struct dmi_system_id *d) {
++static int thermal_nocrt(const struct dmi_system_id *d) {
  
--extern const char *CardType[];
--
- static const char *Elsa_revision = "$Revision: 2.32.2.4 $";
- static const char *Elsa_Types[] =
- {"None", "PC", "PCC-8", "PCC-16", "PCF", "PCF-Pro",
-@@ -832,8 +830,75 @@ probe_elsa(struct IsdnCardState *cs)
- 	return (CARD_portlist[i]);
+ 	printk(KERN_NOTICE "ACPI: %s detected: "
+ 		"disabling all critical thermal trip point actions.\n", d->ident);
+ 	nocrt = 1;
+ 	return 0;
  }
+-static int thermal_tzp(struct dmi_system_id *d) {
++static int thermal_tzp(const struct dmi_system_id *d) {
  
--static 	struct pci_dev *dev_qs1000 __devinitdata = NULL;
--static 	struct pci_dev *dev_qs3000 __devinitdata = NULL;
-+static int __devinit
-+setup_elsa_isa(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	u_char val;
-+
-+	cs->hw.elsa.base = card->para[0];
-+	printk(KERN_INFO "Elsa: Microlink IO probing\n");
-+	if (cs->hw.elsa.base) {
-+		if (!(cs->subtyp = probe_elsa_adr(cs->hw.elsa.base,
-+						  cs->typ))) {
-+			printk(KERN_WARNING
-+			       "Elsa: no Elsa Microlink at %#lx\n",
-+			       cs->hw.elsa.base);
-+			return (0);
-+		}
-+	} else
-+		cs->hw.elsa.base = probe_elsa(cs);
-+
-+	if (!cs->hw.elsa.base) {
-+		printk(KERN_WARNING
-+		       "No Elsa Microlink found\n");
-+		return (0);
-+	}
-+
-+	cs->hw.elsa.cfg = cs->hw.elsa.base + ELSA_CONFIG;
-+	cs->hw.elsa.ctrl = cs->hw.elsa.base + ELSA_CONTROL;
-+	cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE;
-+	cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC;
-+	cs->hw.elsa.itac = cs->hw.elsa.base + ELSA_ITAC;
-+	cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
-+	cs->hw.elsa.trig = cs->hw.elsa.base + ELSA_TRIG_IRQ;
-+	cs->hw.elsa.timer = cs->hw.elsa.base + ELSA_START_TIMER;
-+	val = bytein(cs->hw.elsa.cfg);
-+	if (cs->subtyp == ELSA_PC) {
-+		const u_char CARD_IrqTab[8] =
-+		{7, 3, 5, 9, 0, 0, 0, 0};
-+		cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX_PC) >> 2];
-+	} else if (cs->subtyp == ELSA_PCC8) {
-+		const u_char CARD_IrqTab[8] =
-+		{7, 3, 5, 9, 0, 0, 0, 0};
-+		cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX_PCC8) >> 4];
-+	} else {
-+		const u_char CARD_IrqTab[8] =
-+		{15, 10, 15, 3, 11, 5, 11, 9};
-+		cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX) >> 3];
-+	}
-+	val = bytein(cs->hw.elsa.ale) & ELSA_HW_RELEASE;
-+	if (val < 3)
-+		val |= 8;
-+	val += 'A' - 3;
-+	if (val == 'B' || val == 'C')
-+		val ^= 1;
-+	if ((cs->subtyp == ELSA_PCFPRO) && (val = 'G'))
-+		val = 'C';
-+	printk(KERN_INFO
-+	       "Elsa: %s found at %#lx Rev.:%c IRQ %d\n",
-+	       Elsa_Types[cs->subtyp],
-+	       cs->hw.elsa.base,
-+	       val, cs->irq);
-+	val = bytein(cs->hw.elsa.ale) & ELSA_S0_POWER_BAD;
-+	if (val) {
-+		printk(KERN_WARNING
-+		   "Elsa: Microlink S0 bus power bad\n");
-+		cs->hw.elsa.status |= ELSA_BAD_PWR;
-+	}
-+
-+	return (1);
-+}
+ 	if (tzp == 0) {
+ 		printk(KERN_NOTICE "ACPI: %s detected: "
+@@ -1385,7 +1385,7 @@ static int thermal_tzp(struct dmi_system_id *d) {
+ 	}
+ 	return 0;
+ }
+-static int thermal_psv(struct dmi_system_id *d) {
++static int thermal_psv(const struct dmi_system_id *d) {
  
- #ifdef __ISAPNP__
- static struct isapnp_device_id elsa_ids[] __devinitdata = {
-@@ -848,233 +913,194 @@ static struct isapnp_device_id elsa_ids[] __devinitdata = {
- 
- static struct isapnp_device_id *ipid __devinitdata = &elsa_ids[0];
- static struct pnp_card *pnp_c __devinitdata = NULL;
--#endif
-+#endif	/* __ISAPNP__ */
- 
--int __devinit
--setup_elsa(struct IsdnCard *card)
-+static int __devinit
-+setup_elsa_isapnp(struct IsdnCard *card)
+ 	if (psv == 0) {
+ 		printk(KERN_NOTICE "ACPI: %s detected: "
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index 6996eb5..92c2d50 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -919,7 +919,7 @@ static void ich_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ #ifdef CONFIG_PM
+ static int piix_broken_suspend(void)
  {
--	int bytecnt;
--	u_char val;
- 	struct IsdnCardState *cs = card->cs;
--	char tmp[64];
+-	static struct dmi_system_id sysids[] = {
++	static const struct dmi_system_id sysids[] = {
+ 		{
+ 			.ident = "TECRA M3",
+ 			.matches = {
+@@ -1183,7 +1183,7 @@ static void __devinit piix_init_sata_map(struct pci_dev *pdev,
  
--	strcpy(tmp, Elsa_revision);
--	printk(KERN_INFO "HiSax: Elsa driver Rev. %s\n", HiSax_getrev(tmp));
--	cs->hw.elsa.ctrl_reg = 0;
--	cs->hw.elsa.status = 0;
--	cs->hw.elsa.MFlag = 0;
--	cs->subtyp = 0;
--	if (cs->typ == ISDN_CTYPE_ELSA) {
--		cs->hw.elsa.base = card->para[0];
--		printk(KERN_INFO "Elsa: Microlink IO probing\n");
--		if (cs->hw.elsa.base) {
--			if (!(cs->subtyp = probe_elsa_adr(cs->hw.elsa.base,
--							  cs->typ))) {
--				printk(KERN_WARNING
--				       "Elsa: no Elsa Microlink at %#lx\n",
--				       cs->hw.elsa.base);
--				return (0);
--			}
--		} else
--			cs->hw.elsa.base = probe_elsa(cs);
--		if (cs->hw.elsa.base) {
--			cs->hw.elsa.cfg = cs->hw.elsa.base + ELSA_CONFIG;
--			cs->hw.elsa.ctrl = cs->hw.elsa.base + ELSA_CONTROL;
--			cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE;
--			cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC;
--			cs->hw.elsa.itac = cs->hw.elsa.base + ELSA_ITAC;
--			cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
--			cs->hw.elsa.trig = cs->hw.elsa.base + ELSA_TRIG_IRQ;
--			cs->hw.elsa.timer = cs->hw.elsa.base + ELSA_START_TIMER;
--			val = bytein(cs->hw.elsa.cfg);
--			if (cs->subtyp == ELSA_PC) {
--				const u_char CARD_IrqTab[8] =
--				{7, 3, 5, 9, 0, 0, 0, 0};
--				cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX_PC) >> 2];
--			} else if (cs->subtyp == ELSA_PCC8) {
--				const u_char CARD_IrqTab[8] =
--				{7, 3, 5, 9, 0, 0, 0, 0};
--				cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX_PCC8) >> 4];
--			} else {
--				const u_char CARD_IrqTab[8] =
--				{15, 10, 15, 3, 11, 5, 11, 9};
--				cs->irq = CARD_IrqTab[(val & ELSA_IRQ_IDX) >> 3];
--			}
--			val = bytein(cs->hw.elsa.ale) & ELSA_HW_RELEASE;
--			if (val < 3)
--				val |= 8;
--			val += 'A' - 3;
--			if (val == 'B' || val == 'C')
--				val ^= 1;
--			if ((cs->subtyp == ELSA_PCFPRO) && (val = 'G'))
--				val = 'C';
--			printk(KERN_INFO
--			       "Elsa: %s found at %#lx Rev.:%c IRQ %d\n",
--			       Elsa_Types[cs->subtyp],
--			       cs->hw.elsa.base,
--			       val, cs->irq);
--			val = bytein(cs->hw.elsa.ale) & ELSA_S0_POWER_BAD;
--			if (val) {
--				printk(KERN_WARNING
--				   "Elsa: Microlink S0 bus power bad\n");
--				cs->hw.elsa.status |= ELSA_BAD_PWR;
--			}
--		} else {
--			printk(KERN_WARNING
--			       "No Elsa Microlink found\n");
--			return (0);
--		}
--	} else if (cs->typ == ISDN_CTYPE_ELSA_PNP) {
- #ifdef __ISAPNP__
--		if (!card->para[1] && isapnp_present()) {
--			struct pnp_dev *pnp_d;
--			while(ipid->card_vendor) {
--				if ((pnp_c = pnp_find_card(ipid->card_vendor,
--					ipid->card_device, pnp_c))) {
--					pnp_d = NULL;
--					if ((pnp_d = pnp_find_dev(pnp_c,
--						ipid->vendor, ipid->function, pnp_d))) {
--						int err;
--
--						printk(KERN_INFO "HiSax: %s detected\n",
--							(char *)ipid->driver_data);
-+	if (!card->para[1] && isapnp_present()) {
-+		struct pnp_dev *pnp_d;
-+		while(ipid->card_vendor) {
-+			if ((pnp_c = pnp_find_card(ipid->card_vendor,
-+				ipid->card_device, pnp_c))) {
-+				pnp_d = NULL;
-+				if ((pnp_d = pnp_find_dev(pnp_c,
-+					ipid->vendor, ipid->function, pnp_d))) {
-+					int err;
-+
-+					printk(KERN_INFO "HiSax: %s detected\n",
-+						(char *)ipid->driver_data);
-+					pnp_disable_dev(pnp_d);
-+					err = pnp_activate_dev(pnp_d);
-+					if (err<0) {
-+						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
-+							__FUNCTION__, err);
-+						return(0);
-+					}
-+					card->para[1] = pnp_port_start(pnp_d, 0);
-+					card->para[0] = pnp_irq(pnp_d, 0);
-+
-+					if (!card->para[0] || !card->para[1]) {
-+						printk(KERN_ERR "Elsa PnP:some resources are missing %ld/%lx\n",
-+							card->para[0], card->para[1]);
- 						pnp_disable_dev(pnp_d);
--						err = pnp_activate_dev(pnp_d);
--						if (err<0) {
--							printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--								__FUNCTION__, err);
--							return(0);
--						}
--						card->para[1] = pnp_port_start(pnp_d, 0);
--						card->para[0] = pnp_irq(pnp_d, 0);
--
--						if (!card->para[0] || !card->para[1]) {
--							printk(KERN_ERR "Elsa PnP:some resources are missing %ld/%lx\n",
--								card->para[0], card->para[1]);
--							pnp_disable_dev(pnp_d);
--							return(0);
--						}
--						if (ipid->function == ISAPNP_FUNCTION(0x133))
--							cs->subtyp = ELSA_QS1000;
--						else
--							cs->subtyp = ELSA_QS3000;
--						break;
--					} else {
--						printk(KERN_ERR "Elsa PnP: PnP error card found, no device\n");
- 						return(0);
- 					}
-+					if (ipid->function == ISAPNP_FUNCTION(0x133))
-+						cs->subtyp = ELSA_QS1000;
-+					else
-+						cs->subtyp = ELSA_QS3000;
-+					break;
-+				} else {
-+					printk(KERN_ERR "Elsa PnP: PnP error card found, no device\n");
-+					return(0);
- 				}
--				ipid++;
--				pnp_c=NULL;
--			} 
--			if (!ipid->card_vendor) {
--				printk(KERN_INFO "Elsa PnP: no ISAPnP card found\n");
--				return(0);
- 			}
-+			ipid++;
-+			pnp_c=NULL;
-+		} 
-+		if (!ipid->card_vendor) {
-+			printk(KERN_INFO "Elsa PnP: no ISAPnP card found\n");
-+			return(0);
- 		}
--#endif
--		if (card->para[1] && card->para[0]) { 
--			cs->hw.elsa.base = card->para[1];
--			cs->irq = card->para[0];
--			if (!cs->subtyp)
--				cs->subtyp = ELSA_QS1000;
--		} else {
--			printk(KERN_ERR "Elsa PnP: no parameter\n");
--		}
--		cs->hw.elsa.cfg = cs->hw.elsa.base + ELSA_CONFIG;
--		cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE;
--		cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC;
--		cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
--		cs->hw.elsa.trig = cs->hw.elsa.base + ELSA_TRIG_IRQ;
--		cs->hw.elsa.timer = cs->hw.elsa.base + ELSA_START_TIMER;
--		cs->hw.elsa.ctrl = cs->hw.elsa.base + ELSA_CONTROL;
--		printk(KERN_INFO
--		       "Elsa: %s defined at %#lx IRQ %d\n",
--		       Elsa_Types[cs->subtyp],
--		       cs->hw.elsa.base,
--		       cs->irq);
--	} else if (cs->typ == ISDN_CTYPE_ELSA_PCMCIA) {
-+	}
-+#endif	/* __ISAPNP__ */
-+
-+	if (card->para[1] && card->para[0]) { 
- 		cs->hw.elsa.base = card->para[1];
- 		cs->irq = card->para[0];
--		val = readreg(cs->hw.elsa.base + 0, cs->hw.elsa.base + 2, IPAC_ID);
--		if ((val == 1) || (val == 2)) { /* IPAC version 1.1/1.2 */
--			cs->subtyp = ELSA_PCMCIA_IPAC;
--			cs->hw.elsa.ale = cs->hw.elsa.base + 0;
--			cs->hw.elsa.isac = cs->hw.elsa.base + 2;
--			cs->hw.elsa.hscx = cs->hw.elsa.base + 2;
--			test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--		} else {
--			cs->subtyp = ELSA_PCMCIA;
--			cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE_PCM;
--			cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC_PCM;
--			cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
--		}
--		cs->hw.elsa.timer = 0;
--		cs->hw.elsa.trig = 0;
--		cs->hw.elsa.ctrl = 0;
--		cs->irq_flags |= IRQF_SHARED;
--		printk(KERN_INFO
--		       "Elsa: %s defined at %#lx IRQ %d\n",
--		       Elsa_Types[cs->subtyp],
--		       cs->hw.elsa.base,
--		       cs->irq);
--	} else if (cs->typ == ISDN_CTYPE_ELSA_PCI) {
-+		if (!cs->subtyp)
-+			cs->subtyp = ELSA_QS1000;
-+	} else {
-+		printk(KERN_ERR "Elsa PnP: no parameter\n");
-+	}
-+	cs->hw.elsa.cfg = cs->hw.elsa.base + ELSA_CONFIG;
-+	cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE;
-+	cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC;
-+	cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
-+	cs->hw.elsa.trig = cs->hw.elsa.base + ELSA_TRIG_IRQ;
-+	cs->hw.elsa.timer = cs->hw.elsa.base + ELSA_START_TIMER;
-+	cs->hw.elsa.ctrl = cs->hw.elsa.base + ELSA_CONTROL;
-+	printk(KERN_INFO
-+	       "Elsa: %s defined at %#lx IRQ %d\n",
-+	       Elsa_Types[cs->subtyp],
-+	       cs->hw.elsa.base,
-+	       cs->irq);
-+
-+	return (1);
-+}
-+
-+static void __devinit
-+setup_elsa_pcmcia(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	u_char val;
-+
-+	cs->hw.elsa.base = card->para[1];
-+	cs->irq = card->para[0];
-+	val = readreg(cs->hw.elsa.base + 0, cs->hw.elsa.base + 2, IPAC_ID);
-+	if ((val == 1) || (val == 2)) { /* IPAC version 1.1/1.2 */
-+		cs->subtyp = ELSA_PCMCIA_IPAC;
-+		cs->hw.elsa.ale = cs->hw.elsa.base + 0;
-+		cs->hw.elsa.isac = cs->hw.elsa.base + 2;
-+		cs->hw.elsa.hscx = cs->hw.elsa.base + 2;
-+		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+	} else {
-+		cs->subtyp = ELSA_PCMCIA;
-+		cs->hw.elsa.ale = cs->hw.elsa.base + ELSA_ALE_PCM;
-+		cs->hw.elsa.isac = cs->hw.elsa.base + ELSA_ISAC_PCM;
-+		cs->hw.elsa.hscx = cs->hw.elsa.base + ELSA_HSCX;
-+	}
-+	cs->hw.elsa.timer = 0;
-+	cs->hw.elsa.trig = 0;
-+	cs->hw.elsa.ctrl = 0;
-+	cs->irq_flags |= IRQF_SHARED;
-+	printk(KERN_INFO
-+	       "Elsa: %s defined at %#lx IRQ %d\n",
-+	       Elsa_Types[cs->subtyp],
-+	       cs->hw.elsa.base,
-+	       cs->irq);
-+}
-+
- #ifdef CONFIG_PCI
--		cs->subtyp = 0;
--		if ((dev_qs1000 = pci_find_device(PCI_VENDOR_ID_ELSA,
--			PCI_DEVICE_ID_ELSA_MICROLINK, dev_qs1000))) {
--			if (pci_enable_device(dev_qs1000))
--				return(0);
--			cs->subtyp = ELSA_QS1000PCI;
--			cs->irq = dev_qs1000->irq;
--			cs->hw.elsa.cfg = pci_resource_start(dev_qs1000, 1);
--			cs->hw.elsa.base = pci_resource_start(dev_qs1000, 3);
--		} else if ((dev_qs3000 = pci_find_device(PCI_VENDOR_ID_ELSA,
--			PCI_DEVICE_ID_ELSA_QS3000, dev_qs3000))) {
--			if (pci_enable_device(dev_qs3000))
--				return(0);
--			cs->subtyp = ELSA_QS3000PCI;
--			cs->irq = dev_qs3000->irq;
--			cs->hw.elsa.cfg = pci_resource_start(dev_qs3000, 1);
--			cs->hw.elsa.base = pci_resource_start(dev_qs3000, 3);
--		} else {
--			printk(KERN_WARNING "Elsa: No PCI card found\n");
-+static 	struct pci_dev *dev_qs1000 __devinitdata = NULL;
-+static 	struct pci_dev *dev_qs3000 __devinitdata = NULL;
-+
-+static int __devinit
-+setup_elsa_pci(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+
-+	cs->subtyp = 0;
-+	if ((dev_qs1000 = pci_find_device(PCI_VENDOR_ID_ELSA,
-+		PCI_DEVICE_ID_ELSA_MICROLINK, dev_qs1000))) {
-+		if (pci_enable_device(dev_qs1000))
- 			return(0);
--		}
--		if (!cs->irq) {
--			printk(KERN_WARNING "Elsa: No IRQ for PCI card found\n");
-+		cs->subtyp = ELSA_QS1000PCI;
-+		cs->irq = dev_qs1000->irq;
-+		cs->hw.elsa.cfg = pci_resource_start(dev_qs1000, 1);
-+		cs->hw.elsa.base = pci_resource_start(dev_qs1000, 3);
-+	} else if ((dev_qs3000 = pci_find_device(PCI_VENDOR_ID_ELSA,
-+		PCI_DEVICE_ID_ELSA_QS3000, dev_qs3000))) {
-+		if (pci_enable_device(dev_qs3000))
- 			return(0);
--		}
-+		cs->subtyp = ELSA_QS3000PCI;
-+		cs->irq = dev_qs3000->irq;
-+		cs->hw.elsa.cfg = pci_resource_start(dev_qs3000, 1);
-+		cs->hw.elsa.base = pci_resource_start(dev_qs3000, 3);
-+	} else {
-+		printk(KERN_WARNING "Elsa: No PCI card found\n");
-+		return(0);
-+	}
-+	if (!cs->irq) {
-+		printk(KERN_WARNING "Elsa: No IRQ for PCI card found\n");
-+		return(0);
-+	}
-+
-+	if (!(cs->hw.elsa.base && cs->hw.elsa.cfg)) {
-+		printk(KERN_WARNING "Elsa: No IO-Adr for PCI card found\n");
-+		return(0);
-+	}
-+	if ((cs->hw.elsa.cfg & 0xff) || (cs->hw.elsa.base & 0xf)) {
-+		printk(KERN_WARNING "Elsa: You may have a wrong PCI bios\n");
-+		printk(KERN_WARNING "Elsa: If your system hangs now, read\n");
-+		printk(KERN_WARNING "Elsa: Documentation/isdn/README.HiSax\n");
-+	}
-+	cs->hw.elsa.ale  = cs->hw.elsa.base;
-+	cs->hw.elsa.isac = cs->hw.elsa.base +1;
-+	cs->hw.elsa.hscx = cs->hw.elsa.base +1; 
-+	test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+	cs->hw.elsa.timer = 0;
-+	cs->hw.elsa.trig  = 0;
-+	cs->irq_flags |= IRQF_SHARED;
-+	printk(KERN_INFO
-+	       "Elsa: %s defined at %#lx/0x%x IRQ %d\n",
-+	       Elsa_Types[cs->subtyp],
-+	       cs->hw.elsa.base,
-+	       cs->hw.elsa.cfg,
-+	       cs->irq);
-+
-+	return (1);
-+}
+ static void piix_iocfg_bit18_quirk(struct pci_dev *pdev)
+ {
+-	static struct dmi_system_id sysids[] = {
++	static const struct dmi_system_id sysids[] = {
+ 		{
+ 			/* Clevo M570U sets IOCFG bit 18 if the cdrom
+ 			 * isn't used to boot the system which
+diff --git a/drivers/ata/pata_ali.c b/drivers/ata/pata_ali.c
+index 71bdc3b..32a10c9 100644
+--- a/drivers/ata/pata_ali.c
++++ b/drivers/ata/pata_ali.c
+@@ -40,7 +40,7 @@
+  *	Cable special cases
+  */
  
--		if (!(cs->hw.elsa.base && cs->hw.elsa.cfg)) {
--			printk(KERN_WARNING "Elsa: No IO-Adr for PCI card found\n");
--			return(0);
--		}
--		if ((cs->hw.elsa.cfg & 0xff) || (cs->hw.elsa.base & 0xf)) {
--			printk(KERN_WARNING "Elsa: You may have a wrong PCI bios\n");
--			printk(KERN_WARNING "Elsa: If your system hangs now, read\n");
--			printk(KERN_WARNING "Elsa: Documentation/isdn/README.HiSax\n");
--		}
--		cs->hw.elsa.ale  = cs->hw.elsa.base;
--		cs->hw.elsa.isac = cs->hw.elsa.base +1;
--		cs->hw.elsa.hscx = cs->hw.elsa.base +1; 
--		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--		cs->hw.elsa.timer = 0;
--		cs->hw.elsa.trig  = 0;
--		cs->irq_flags |= IRQF_SHARED;
--		printk(KERN_INFO
--		       "Elsa: %s defined at %#lx/0x%x IRQ %d\n",
--		       Elsa_Types[cs->subtyp],
--		       cs->hw.elsa.base,
--		       cs->hw.elsa.cfg,
--		       cs->irq);
+-static struct dmi_system_id cable_dmi_table[] = {
++static const struct dmi_system_id cable_dmi_table[] = {
+ 	{
+ 		.ident = "HP Pavilion N5430",
+ 		.matches = {
+diff --git a/drivers/ata/pata_cs5530.c b/drivers/ata/pata_cs5530.c
+index c6066aa..eaaea84 100644
+--- a/drivers/ata/pata_cs5530.c
++++ b/drivers/ata/pata_cs5530.c
+@@ -214,7 +214,7 @@ static struct ata_port_operations cs5530_port_ops = {
+ 	.port_start	= ata_port_start,
+ };
+ 
+-static struct dmi_system_id palmax_dmi_table[] = {
++static const struct dmi_system_id palmax_dmi_table[] = {
+ 	{
+ 		.ident = "Palmax PD1100",
+ 		.matches = {
+diff --git a/drivers/ata/pata_via.c b/drivers/ata/pata_via.c
+index 636c4f1..f143db4 100644
+--- a/drivers/ata/pata_via.c
++++ b/drivers/ata/pata_via.c
+@@ -129,7 +129,7 @@ static const struct via_isa_bridge {
+  *	Cable special cases
+  */
+ 
+-static struct dmi_system_id cable_dmi_table[] = {
++static const struct dmi_system_id cable_dmi_table[] = {
+ 	{
+ 		.ident = "Acer Ferrari 3400",
+ 		.matches = {
+diff --git a/drivers/char/i8k.c b/drivers/char/i8k.c
+index 0289705..cd40641 100644
+--- a/drivers/char/i8k.c
++++ b/drivers/char/i8k.c
+@@ -98,9 +98,9 @@ struct smm_regs {
+ 	unsigned int edi __attribute__ ((packed));
+ };
+ 
+-static inline char *i8k_get_dmi_data(int field)
++static inline const char *i8k_get_dmi_data(int field)
+ {
+-	char *dmi_data = dmi_get_system_info(field);
++	const char *dmi_data = dmi_get_system_info(field);
+ 
+ 	return dmi_data && *dmi_data ? dmi_data : "?";
+ }
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index dd441ff..7901d5f 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -1965,10 +1965,10 @@ struct dmi_ipmi_data
+ 	u8              slave_addr;
+ };
+ 
+-static int __devinit decode_dmi(struct dmi_header *dm,
++static int __devinit decode_dmi(const struct dmi_header *dm,
+ 				struct dmi_ipmi_data *dmi)
+ {
+-	u8              *data = (u8 *)dm;
++	const u8	*data = (const u8 *)dm;
+ 	unsigned long  	base_addr;
+ 	u8		reg_spacing;
+ 	u8              len = dm->length;
+@@ -2091,13 +2091,14 @@ static __devinit void try_init_dmi(struct dmi_ipmi_data *ipmi_data)
+ 
+ static void __devinit dmi_find_bmc(void)
+ {
+-	struct dmi_device    *dev = NULL;
++	const struct dmi_device *dev = NULL;
+ 	struct dmi_ipmi_data data;
+ 	int                  rv;
+ 
+ 	while ((dev = dmi_find_device(DMI_DEV_TYPE_IPMI, NULL, dev))) {
+ 		memset(&data, 0, sizeof(data));
+-		rv = decode_dmi((struct dmi_header *) dev->device_data, &data);
++		rv = decode_dmi((const struct dmi_header *) dev->device_data,
++				&data);
+ 		if (!rv)
+ 			try_init_dmi(&data);
+ 	}
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index f7318b3..0cdadea 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -8,9 +8,9 @@
+ #include <linux/slab.h>
+ #include <asm/dmi.h>
+ 
+-static char * __init dmi_string(struct dmi_header *dm, u8 s)
++static char * __init dmi_string(const struct dmi_header *dm, u8 s)
+ {
+-	u8 *bp = ((u8 *) dm) + dm->length;
++	const u8 *bp = ((u8 *) dm) + dm->length;
+ 	char *str = "";
+ 
+ 	if (s) {
+@@ -37,7 +37,7 @@ static char * __init dmi_string(struct dmi_header *dm, u8 s)
+  *	pointing to completely the wrong place for example
+  */
+ static int __init dmi_table(u32 base, int len, int num,
+-			    void (*decode)(struct dmi_header *))
++			    void (*decode)(const struct dmi_header *))
+ {
+ 	u8 *buf, *data;
+ 	int i = 0;
+@@ -53,7 +53,8 @@ static int __init dmi_table(u32 base, int len, int num,
+ 	 *	OR we run off the end of the table (also happens)
+ 	 */
+ 	while ((i < num) && (data - buf + sizeof(struct dmi_header)) <= len) {
+-		struct dmi_header *dm = (struct dmi_header *)data;
++		const struct dmi_header *dm = (const struct dmi_header *)data;
++
+ 		/*
+ 		 *  We want to know the total length (formated area and strings)
+ 		 *  before decoding to make sure we won't run off the table in
+@@ -71,7 +72,7 @@ static int __init dmi_table(u32 base, int len, int num,
+ 	return 0;
+ }
+ 
+-static int __init dmi_checksum(u8 *buf)
++static int __init dmi_checksum(const u8 *buf)
+ {
+ 	u8 sum = 0;
+ 	int a;
+@@ -89,9 +90,10 @@ int dmi_available;
+ /*
+  *	Save a DMI string
+  */
+-static void __init dmi_save_ident(struct dmi_header *dm, int slot, int string)
++static void __init dmi_save_ident(const struct dmi_header *dm, int slot, int string)
+ {
+-	char *p, *d = (char*) dm;
++	const char *d = (const char*) dm;
++	char *p;
+ 
+ 	if (dmi_ident[slot])
+ 		return;
+@@ -103,9 +105,9 @@ static void __init dmi_save_ident(struct dmi_header *dm, int slot, int string)
+ 	dmi_ident[slot] = p;
+ }
+ 
+-static void __init dmi_save_uuid(struct dmi_header *dm, int slot, int index)
++static void __init dmi_save_uuid(const struct dmi_header *dm, int slot, int index)
+ {
+-	u8 *d = (u8*) dm + index;
++	const u8 *d = (u8*) dm + index;
+ 	char *s;
+ 	int is_ff = 1, is_00 = 1, i;
+ 
+@@ -132,9 +134,9 @@ static void __init dmi_save_uuid(struct dmi_header *dm, int slot, int index)
+         dmi_ident[slot] = s;
+ }
+ 
+-static void __init dmi_save_type(struct dmi_header *dm, int slot, int index)
++static void __init dmi_save_type(const struct dmi_header *dm, int slot, int index)
+ {
+-	u8 *d = (u8*) dm + index;
++	const u8 *d = (u8*) dm + index;
+ 	char *s;
+ 
+ 	if (dmi_ident[slot])
+@@ -148,13 +150,13 @@ static void __init dmi_save_type(struct dmi_header *dm, int slot, int index)
+ 	dmi_ident[slot] = s;
+ }
+ 
+-static void __init dmi_save_devices(struct dmi_header *dm)
++static void __init dmi_save_devices(const struct dmi_header *dm)
+ {
+ 	int i, count = (dm->length - sizeof(struct dmi_header)) / 2;
+ 	struct dmi_device *dev;
+ 
+ 	for (i = 0; i < count; i++) {
+-		char *d = (char *)(dm + 1) + (i * 2);
++		const char *d = (char *)(dm + 1) + (i * 2);
+ 
+ 		/* Skip disabled device */
+ 		if ((*d & 0x80) == 0)
+@@ -173,7 +175,7 @@ static void __init dmi_save_devices(struct dmi_header *dm)
+ 	}
+ }
+ 
+-static void __init dmi_save_oem_strings_devices(struct dmi_header *dm)
++static void __init dmi_save_oem_strings_devices(const struct dmi_header *dm)
+ {
+ 	int i, count = *(u8 *)(dm + 1);
+ 	struct dmi_device *dev;
+@@ -194,7 +196,7 @@ static void __init dmi_save_oem_strings_devices(struct dmi_header *dm)
+ 	}
+ }
+ 
+-static void __init dmi_save_ipmi_device(struct dmi_header *dm)
++static void __init dmi_save_ipmi_device(const struct dmi_header *dm)
+ {
+ 	struct dmi_device *dev;
+ 	void * data;
+@@ -225,7 +227,7 @@ static void __init dmi_save_ipmi_device(struct dmi_header *dm)
+  *	and machine entries. For 2.5 we should pull the smbus controller info
+  *	out of here.
+  */
+-static void __init dmi_decode(struct dmi_header *dm)
++static void __init dmi_decode(const struct dmi_header *dm)
+ {
+ 	switch(dm->type) {
+ 	case 0:		/* BIOS Information */
+@@ -265,9 +267,10 @@ static void __init dmi_decode(struct dmi_header *dm)
+ 	}
+ }
+ 
+-static int __init dmi_present(char __iomem *p)
++static int __init dmi_present(const char __iomem *p)
+ {
+ 	u8 buf[15];
++
+ 	memcpy_fromio(buf, p, 15);
+ 	if ((memcmp(buf, "_DMI_", 5) == 0) && dmi_checksum(buf)) {
+ 		u16 num = (buf[13] << 8) | buf[12];
+@@ -348,10 +351,10 @@ void __init dmi_scan_machine(void)
+  *	returns non zero or we hit the end. Callback function is called for
+  *	each successful match. Returns the number of matches.
+  */
+-int dmi_check_system(struct dmi_system_id *list)
++int dmi_check_system(const struct dmi_system_id *list)
+ {
+ 	int i, count = 0;
+-	struct dmi_system_id *d = list;
++	const struct dmi_system_id *d = list;
+ 
+ 	while (d->ident) {
+ 		for (i = 0; i < ARRAY_SIZE(d->matches); i++) {
+@@ -380,7 +383,7 @@ EXPORT_SYMBOL(dmi_check_system);
+  *	Returns one DMI data value, can be used to perform
+  *	complex DMI data checks.
+  */
+-char *dmi_get_system_info(int field)
++const char *dmi_get_system_info(int field)
+ {
+ 	return dmi_ident[field];
+ }
+@@ -391,7 +394,7 @@ EXPORT_SYMBOL(dmi_get_system_info);
+  *	dmi_name_in_vendors - Check if string is anywhere in the DMI vendor information.
+  *	@str: 	Case sensitive Name
+  */
+-int dmi_name_in_vendors(char *str)
++int dmi_name_in_vendors(const char *str)
+ {
+ 	static int fields[] = { DMI_BIOS_VENDOR, DMI_BIOS_VERSION, DMI_SYS_VENDOR,
+ 				DMI_PRODUCT_NAME, DMI_PRODUCT_VERSION, DMI_BOARD_VENDOR,
+@@ -418,13 +421,15 @@ EXPORT_SYMBOL(dmi_name_in_vendors);
+  *	A new search is initiated by passing %NULL as the @from argument.
+  *	If @from is not %NULL, searches continue from next device.
+  */
+-struct dmi_device * dmi_find_device(int type, const char *name,
+-				    struct dmi_device *from)
++const struct dmi_device * dmi_find_device(int type, const char *name,
++				    const struct dmi_device *from)
+ {
+-	struct list_head *d, *head = from ? &from->list : &dmi_devices;
++	const struct list_head *head = from ? &from->list : &dmi_devices;
++	struct list_head *d;
+ 
+ 	for(d = head->next; d != &dmi_devices; d = d->next) {
+-		struct dmi_device *dev = list_entry(d, struct dmi_device, list);
++		const struct dmi_device *dev =
++			list_entry(d, struct dmi_device, list);
+ 
+ 		if (((type == DMI_DEV_TYPE_ANY) || (dev->type == type)) &&
+ 		    ((name == NULL) || (strcmp(dev->name, name) == 0)))
+@@ -444,7 +449,7 @@ EXPORT_SYMBOL(dmi_find_device);
+ int dmi_get_year(int field)
+ {
+ 	int year;
+-	char *s = dmi_get_system_info(field);
++	const char *s = dmi_get_system_info(field);
+ 
+ 	if (!s)
+ 		return -1;
+diff --git a/drivers/hwmon/abituguru.c b/drivers/hwmon/abituguru.c
+index d575ee9..2317f4b 100644
+--- a/drivers/hwmon/abituguru.c
++++ b/drivers/hwmon/abituguru.c
+@@ -1449,7 +1449,7 @@ static int __init abituguru_init(void)
+ 	struct resource res = { .flags = IORESOURCE_IO };
+ 
+ #ifdef CONFIG_DMI
+-	char *board_vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
++	const char *board_vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
+ 
+ 	/* safety check, refuse to load on non Abit motherboards */
+ 	if (!force && (!board_vendor ||
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index 941729a..56213b7 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -1071,7 +1071,7 @@ static const struct attribute_group temperature_attributes_group =
+ /*
+  * applesmc_dmi_match - found a match.  return one, short-circuiting the hunt.
+  */
+-static int applesmc_dmi_match(struct dmi_system_id *id)
++static int applesmc_dmi_match(const struct dmi_system_id *id)
+ {
+ 	int i = 0;
+ 	struct dmi_match_data* dmi_data = id->driver_data;
+diff --git a/drivers/hwmon/hdaps.c b/drivers/hwmon/hdaps.c
+index e0cf5e6..a7c6d40 100644
+--- a/drivers/hwmon/hdaps.c
++++ b/drivers/hwmon/hdaps.c
+@@ -480,14 +480,14 @@ static struct attribute_group hdaps_attribute_group = {
+ /* Module stuff */
+ 
+ /* hdaps_dmi_match - found a match.  return one, short-circuiting the hunt. */
+-static int __init hdaps_dmi_match(struct dmi_system_id *id)
++static int __init hdaps_dmi_match(const struct dmi_system_id *id)
+ {
+ 	printk(KERN_INFO "hdaps: %s detected.\n", id->ident);
+ 	return 1;
+ }
+ 
+ /* hdaps_dmi_match_invert - found an inverted match. */
+-static int __init hdaps_dmi_match_invert(struct dmi_system_id *id)
++static int __init hdaps_dmi_match_invert(const struct dmi_system_id *id)
+ {
+ 	hdaps_invert = 1;
+ 	printk(KERN_INFO "hdaps: inverting axis readings.\n");
+diff --git a/drivers/ide/pci/alim15x3.c b/drivers/ide/pci/alim15x3.c
+index 11ecb61..20ebe3b 100644
+--- a/drivers/ide/pci/alim15x3.c
++++ b/drivers/ide/pci/alim15x3.c
+@@ -588,7 +588,7 @@ out:
+  *	Cable special cases
+  */
+ 
+-static struct dmi_system_id cable_dmi_table[] = {
++static const struct dmi_system_id cable_dmi_table[] = {
+ 	{
+ 		.ident = "HP Pavilion N5430",
+ 		.matches = {
+diff --git a/drivers/ide/pci/via82cxxx.c b/drivers/ide/pci/via82cxxx.c
+index a7be779..c10203a 100644
+--- a/drivers/ide/pci/via82cxxx.c
++++ b/drivers/ide/pci/via82cxxx.c
+@@ -419,7 +419,7 @@ static unsigned int __devinit init_chipset_via82cxxx(struct pci_dev *dev, const
+  *	Cable special cases
+  */
+ 
+-static struct dmi_system_id cable_dmi_table[] = {
++static const struct dmi_system_id cable_dmi_table[] = {
+ 	{
+ 		.ident = "Acer Ferrari 3400",
+ 		.matches = {
+diff --git a/drivers/input/misc/wistron_btns.c b/drivers/input/misc/wistron_btns.c
+index 60121f1..b438d99 100644
+--- a/drivers/input/misc/wistron_btns.c
++++ b/drivers/input/misc/wistron_btns.c
+@@ -247,7 +247,7 @@ static int have_wifi;
+ static int have_bluetooth;
+ static int have_leds;
+ 
+-static int __init dmi_matched(struct dmi_system_id *dmi)
++static int __init dmi_matched(const struct dmi_system_id *dmi)
+ {
+ 	const struct key_entry *key;
+ 
+diff --git a/drivers/input/mouse/lifebook.c b/drivers/input/mouse/lifebook.c
+index 91109b4..608674d 100644
+--- a/drivers/input/mouse/lifebook.c
++++ b/drivers/input/mouse/lifebook.c
+@@ -27,7 +27,7 @@ struct lifebook_data {
+ 
+ static const char *desired_serio_phys;
+ 
+-static int lifebook_set_serio_phys(struct dmi_system_id *d)
++static int lifebook_set_serio_phys(const struct dmi_system_id *d)
+ {
+ 	desired_serio_phys = d->driver_data;
+ 	return 0;
+@@ -35,13 +35,13 @@ static int lifebook_set_serio_phys(struct dmi_system_id *d)
+ 
+ static unsigned char lifebook_use_6byte_proto;
+ 
+-static int lifebook_set_6byte_proto(struct dmi_system_id *d)
++static int lifebook_set_6byte_proto(const struct dmi_system_id *d)
+ {
+ 	lifebook_use_6byte_proto = 1;
+ 	return 0;
+ }
+ 
+-static struct dmi_system_id lifebook_dmi_table[] = {
++static const struct dmi_system_id lifebook_dmi_table[] = {
+ 	{
+ 		.ident = "FLORA-ie 55mi",
+ 		.matches = {
+diff --git a/drivers/input/mouse/synaptics.c b/drivers/input/mouse/synaptics.c
+index 666ad3a..d349c4a 100644
+--- a/drivers/input/mouse/synaptics.c
++++ b/drivers/input/mouse/synaptics.c
+@@ -602,7 +602,7 @@ static int synaptics_reconnect(struct psmouse *psmouse)
+ 
+ #if defined(__i386__)
+ #include <linux/dmi.h>
+-static struct dmi_system_id toshiba_dmi_table[] = {
++static const struct dmi_system_id toshiba_dmi_table[] = {
+ 	{
+ 		.ident = "Toshiba Satellite",
+ 		.matches = {
+diff --git a/drivers/misc/msi-laptop.c b/drivers/misc/msi-laptop.c
+index 349be93..83679c7 100644
+--- a/drivers/misc/msi-laptop.c
++++ b/drivers/misc/msi-laptop.c
+@@ -283,7 +283,7 @@ static struct platform_device *msipf_device;
+ 
+ /* Initialization */
+ 
+-static int dmi_check_cb(struct dmi_system_id *id)
++static int dmi_check_cb(const struct dmi_system_id *id)
+ {
+         printk("msi-laptop: Identified laptop model '%s'.\n", id->ident);
+         return 0;
+diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
+index d38ddce..e73a71f 100644
+--- a/drivers/misc/sony-laptop.c
++++ b/drivers/misc/sony-laptop.c
+@@ -807,7 +807,7 @@ static struct sony_nc_event *sony_nc_events;
+ /* Vaio C* --maybe also FE*, N* and AR* ?-- special init sequence
+  * for Fn keys
+  */
+-static int sony_nc_C_enable(struct dmi_system_id *id)
++static int sony_nc_C_enable(const struct dmi_system_id *id)
+ {
+ 	int result = 0;
+ 
+@@ -845,7 +845,7 @@ static struct sony_nc_event sony_C_events[] = {
+ };
+ 
+ /* SNC-only model map */
+-static struct dmi_system_id sony_nc_ids[] = {
++static const struct dmi_system_id sony_nc_ids[] = {
+ 		{
+ 			.ident = "Sony Vaio FE Series",
+ 			.callback = sony_nc_C_enable,
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 0222bba..6c0b2f0 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -4448,7 +4448,7 @@ static void ibm_exit(struct ibm_struct *ibm)
+ 
+ static void __init get_thinkpad_model_data(struct thinkpad_id_data *tp)
+ {
+-	struct dmi_device *dev = NULL;
++	const struct dmi_device *dev = NULL;
+ 	char ec_fw_string[18];
+ 
+ 	if (!tp)
+diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
+index 0691f47..4e9fd37 100644
+--- a/drivers/pnp/pnpbios/core.c
++++ b/drivers/pnp/pnpbios/core.c
+@@ -500,7 +500,7 @@ static int __init pnpbios_probe_system(void)
+ 	return 0;
+ }
+ 
+-static int __init exploding_pnp_bios(struct dmi_system_id *d)
++static int __init exploding_pnp_bios(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_WARNING "%s detected. Disabling PnPBIOS\n", d->ident);
+ 	return 0;
+diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
+index 805e5fc..4db17f7 100644
+--- a/drivers/usb/host/uhci-hcd.c
++++ b/drivers/usb/host/uhci-hcd.c
+@@ -237,7 +237,7 @@ static int resume_detect_interrupts_are_broken(struct uhci_hcd *uhci)
+ static int remote_wakeup_is_broken(struct uhci_hcd *uhci)
+ {
+ 	int port;
+-	char *sys_info;
++	const char *sys_info;
+ 	static char bad_Asus_board[] = "A7V8X";
+ 
+ 	/* One of Asus's motherboards has a bug which causes it to
+diff --git a/drivers/video/imacfb.c b/drivers/video/imacfb.c
+index 18ea4a5..6455fd2 100644
+--- a/drivers/video/imacfb.c
++++ b/drivers/video/imacfb.c
+@@ -58,7 +58,7 @@ static int model		= M_UNKNOWN;
+ static int manual_height;
+ static int manual_width;
+ 
+-static int set_system(struct dmi_system_id *id)
++static int set_system(const struct dmi_system_id *id)
+ {
+ 	printk(KERN_INFO "imacfb: %s detected - set system to %ld\n",
+ 		id->ident, (long)id->driver_data);
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index b8ac7b0..00fc7a9 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -54,7 +54,7 @@ struct dmi_strmatch {
+ };
+ 
+ struct dmi_system_id {
+-	int (*callback)(struct dmi_system_id *);
++	int (*callback)(const struct dmi_system_id *);
+ 	const char *ident;
+ 	struct dmi_strmatch matches[4];
+ 	void *driver_data;
+@@ -71,22 +71,22 @@ struct dmi_device {
+ 
+ #ifdef CONFIG_DMI
+ 
+-extern int dmi_check_system(struct dmi_system_id *list);
+-extern char * dmi_get_system_info(int field);
+-extern struct dmi_device * dmi_find_device(int type, const char *name,
+-	struct dmi_device *from);
++extern int dmi_check_system(const struct dmi_system_id *list);
++extern const char * dmi_get_system_info(int field);
++extern const struct dmi_device * dmi_find_device(int type, const char *name,
++	const struct dmi_device *from);
+ extern void dmi_scan_machine(void);
+ extern int dmi_get_year(int field);
+-extern int dmi_name_in_vendors(char *str);
++extern int dmi_name_in_vendors(const char *str);
+ 
  #else
--		printk(KERN_WARNING "Elsa: Elsa PCI and NO_PCI_BIOS\n");
--		printk(KERN_WARNING "Elsa: unable to config Elsa PCI\n");
--		return (0);
-+
-+static void __devinit
-+setup_elsa_pci(struct IsdnCard *card)
-+{
-+	return (1);
-+}
- #endif /* CONFIG_PCI */
--	} else 
--		return (0);
-+
-+static int __devinit
-+setup_elsa_common(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	u_char val;
-+	int bytecnt;
  
- 	switch (cs->subtyp) {
- 		case ELSA_PC:
-@@ -1104,8 +1130,7 @@ setup_elsa(struct IsdnCard *card)
- 	   here, it would fail. */
- 	if (cs->typ != ISDN_CTYPE_ELSA_PCMCIA && !request_region(cs->hw.elsa.base, bytecnt, "elsa isdn")) {
- 		printk(KERN_WARNING
--		       "HiSax: %s config port %#lx-%#lx already in use\n",
--		       CardType[card->typ],
-+		       "HiSax: ELSA config port %#lx-%#lx already in use\n",
- 		       cs->hw.elsa.base,
- 		       cs->hw.elsa.base + bytecnt);
- 		return (0);
-@@ -1113,8 +1138,7 @@ setup_elsa(struct IsdnCard *card)
- 	if ((cs->subtyp == ELSA_QS1000PCI) || (cs->subtyp == ELSA_QS3000PCI)) {
- 		if (!request_region(cs->hw.elsa.cfg, 0x80, "elsa isdn pci")) {
- 			printk(KERN_WARNING
--			       "HiSax: %s pci port %x-%x already in use\n",
--				CardType[card->typ],
-+			       "HiSax: ELSA pci port %x-%x already in use\n",
- 				cs->hw.elsa.cfg,
- 				cs->hw.elsa.cfg + 0x80);
- 			release_region(cs->hw.elsa.base, bytecnt);
-@@ -1186,3 +1210,41 @@ setup_elsa(struct IsdnCard *card)
- 	}
- 	return (1);
- }
-+
-+int __devinit
-+setup_elsa(struct IsdnCard *card)
-+{
-+	int rc;
-+	struct IsdnCardState *cs = card->cs;
-+	char tmp[64];
-+
-+	strcpy(tmp, Elsa_revision);
-+	printk(KERN_INFO "HiSax: Elsa driver Rev. %s\n", HiSax_getrev(tmp));
-+	cs->hw.elsa.ctrl_reg = 0;
-+	cs->hw.elsa.status = 0;
-+	cs->hw.elsa.MFlag = 0;
-+	cs->subtyp = 0;
-+
-+	if (cs->typ == ISDN_CTYPE_ELSA) {
-+		rc = setup_elsa_isa(card);
-+		if (!rc)
-+			return (0);
-+
-+	} else if (cs->typ == ISDN_CTYPE_ELSA_PNP) {
-+		rc = setup_elsa_isapnp(card);
-+		if (!rc)
-+			return (0);
-+
-+	} else if (cs->typ == ISDN_CTYPE_ELSA_PCMCIA)
-+		setup_elsa_pcmcia(card);
-+
-+	else if (cs->typ == ISDN_CTYPE_ELSA_PCI) {
-+		rc = setup_elsa_pci(card);
-+		if (!rc)
-+			return (0);
-+
-+	} else 
-+		return (0);
-+
-+	return setup_elsa_common(card);
-+}
-diff --git a/drivers/isdn/hisax/sedlbauer.c b/drivers/isdn/hisax/sedlbauer.c
-index ad06f3c..03dfc32 100644
---- a/drivers/isdn/hisax/sedlbauer.c
-+++ b/drivers/isdn/hisax/sedlbauer.c
-@@ -518,8 +518,6 @@ Sedl_card_msg(struct IsdnCardState *cs, int mt, void *arg)
- 	return(0);
- }
+-static inline int dmi_check_system(struct dmi_system_id *list) { return 0; }
+-static inline char * dmi_get_system_info(int field) { return NULL; }
+-static inline struct dmi_device * dmi_find_device(int type, const char *name,
+-	struct dmi_device *from) { return NULL; }
++static inline int dmi_check_system(const struct dmi_system_id *list) { return 0; }
++static inline const char * dmi_get_system_info(int field) { return NULL; }
++static inline const struct dmi_device * dmi_find_device(int type, const char *name,
++	const struct dmi_device *from) { return NULL; }
+ static inline int dmi_get_year(int year) { return 0; }
+-static inline int dmi_name_in_vendors(char *s) { return 0; }
++static inline int dmi_name_in_vendors(const char *s) { return 0; }
  
--static struct pci_dev *dev_sedl __devinitdata = NULL;
--
- #ifdef __ISAPNP__
- static struct isapnp_device_id sedl_ids[] __devinitdata = {
- 	{ ISAPNP_VENDOR('S', 'A', 'G'), ISAPNP_FUNCTION(0x01),
-@@ -533,15 +531,158 @@ static struct isapnp_device_id sedl_ids[] __devinitdata = {
- 
- static struct isapnp_device_id *ipid __devinitdata = &sedl_ids[0];
- static struct pnp_card *pnp_c __devinitdata = NULL;
--#endif
-+
-+static int __devinit
-+setup_sedlbauer_isapnp(struct IsdnCard *card, int *bytecnt)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	struct pnp_dev *pnp_d;
-+
-+	if (!isapnp_present())
-+		return -1;
-+
-+	while(ipid->card_vendor) {
-+		if ((pnp_c = pnp_find_card(ipid->card_vendor,
-+			ipid->card_device, pnp_c))) {
-+			pnp_d = NULL;
-+			if ((pnp_d = pnp_find_dev(pnp_c,
-+				ipid->vendor, ipid->function, pnp_d))) {
-+				int err;
-+
-+				printk(KERN_INFO "HiSax: %s detected\n",
-+					(char *)ipid->driver_data);
-+				pnp_disable_dev(pnp_d);
-+				err = pnp_activate_dev(pnp_d);
-+				if (err<0) {
-+					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
-+						__FUNCTION__, err);
-+					return(0);
-+				}
-+				card->para[1] = pnp_port_start(pnp_d, 0);
-+				card->para[0] = pnp_irq(pnp_d, 0);
-+
-+				if (!card->para[0] || !card->para[1]) {
-+					printk(KERN_ERR "Sedlbauer PnP:some resources are missing %ld/%lx\n",
-+						card->para[0], card->para[1]);
-+					pnp_disable_dev(pnp_d);
-+					return(0);
-+				}
-+				cs->hw.sedl.cfg_reg = card->para[1];
-+				cs->irq = card->para[0];
-+				if (ipid->function == ISAPNP_FUNCTION(0x2)) {
-+					cs->subtyp = SEDL_SPEED_FAX;
-+					cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
-+					*bytecnt = 16;
-+				} else {
-+					cs->subtyp = SEDL_SPEED_CARD_WIN;
-+					cs->hw.sedl.chip = SEDL_CHIP_TEST;
-+				}
-+
-+				return (1);
-+			} else {
-+				printk(KERN_ERR "Sedlbauer PnP: PnP error card found, no device\n");
-+				return(0);
-+			}
-+		}
-+		ipid++;
-+		pnp_c = NULL;
-+	} 
-+
-+	printk(KERN_INFO "Sedlbauer PnP: no ISAPnP card found\n");
-+	return -1;
-+}
-+#else
-+
-+static int __devinit
-+setup_sedlbauer_isapnp(struct IsdnCard *card, int *bytecnt)
-+{
-+	return -1;
-+}
-+#endif /* __ISAPNP__ */
-+
-+#ifdef CONFIG_PCI
-+static struct pci_dev *dev_sedl __devinitdata = NULL;
-+
-+static int __devinit
-+setup_sedlbauer_pci(struct IsdnCard *card)
-+{
-+	struct IsdnCardState *cs = card->cs;
-+	u16 sub_vendor_id, sub_id;
-+
-+	if ((dev_sedl = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+			PCI_DEVICE_ID_TIGERJET_100, dev_sedl))) {
-+		if (pci_enable_device(dev_sedl))
-+			return(0);
-+		cs->irq = dev_sedl->irq;
-+		if (!cs->irq) {
-+			printk(KERN_WARNING "Sedlbauer: No IRQ for PCI card found\n");
-+			return(0);
-+		}
-+		cs->hw.sedl.cfg_reg = pci_resource_start(dev_sedl, 0);
-+	} else {
-+		printk(KERN_WARNING "Sedlbauer: No PCI card found\n");
-+		return(0);
-+	}
-+	cs->irq_flags |= IRQF_SHARED;
-+	cs->hw.sedl.bus = SEDL_BUS_PCI;
-+	sub_vendor_id = dev_sedl->subsystem_vendor;
-+	sub_id = dev_sedl->subsystem_device;
-+	printk(KERN_INFO "Sedlbauer: PCI subvendor:%x subid %x\n",
-+		sub_vendor_id, sub_id);
-+	printk(KERN_INFO "Sedlbauer: PCI base adr %#x\n",
-+		cs->hw.sedl.cfg_reg);
-+	if (sub_id != PCI_SUB_ID_SEDLBAUER) {
-+		printk(KERN_ERR "Sedlbauer: unknown sub id %#x\n", sub_id);
-+		return(0);
-+	}
-+	if (sub_vendor_id == PCI_SUBVENDOR_SPEEDFAX_PYRAMID) {
-+		cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
-+		cs->subtyp = SEDL_SPEEDFAX_PYRAMID;
-+	} else if (sub_vendor_id == PCI_SUBVENDOR_SPEEDFAX_PCI) {
-+		cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
-+		cs->subtyp = SEDL_SPEEDFAX_PCI;
-+	} else if (sub_vendor_id == PCI_SUBVENDOR_HST_SAPHIR3) {
-+		cs->hw.sedl.chip = SEDL_CHIP_IPAC;
-+		cs->subtyp = HST_SAPHIR3;
-+	} else if (sub_vendor_id == PCI_SUBVENDOR_SEDLBAUER_PCI) {
-+		cs->hw.sedl.chip = SEDL_CHIP_IPAC;
-+		cs->subtyp = SEDL_SPEED_PCI;
-+	} else {
-+		printk(KERN_ERR "Sedlbauer: unknown sub vendor id %#x\n",
-+			sub_vendor_id);
-+		return(0);
-+	}
-+
-+	cs->hw.sedl.reset_on = SEDL_ISAR_PCI_ISAR_RESET_ON;
-+	cs->hw.sedl.reset_off = SEDL_ISAR_PCI_ISAR_RESET_OFF;
-+	byteout(cs->hw.sedl.cfg_reg, 0xff);
-+	byteout(cs->hw.sedl.cfg_reg, 0x00);
-+	byteout(cs->hw.sedl.cfg_reg+ 2, 0xdd);
-+	byteout(cs->hw.sedl.cfg_reg+ 5, 0); /* disable all IRQ */
-+	byteout(cs->hw.sedl.cfg_reg +3, cs->hw.sedl.reset_on);
-+	mdelay(2);
-+	byteout(cs->hw.sedl.cfg_reg +3, cs->hw.sedl.reset_off);
-+	mdelay(10);
-+
-+	return (1);
-+}
-+
-+#else
-+
-+static int __devinit
-+setup_sedlbauer_pci(struct IsdnCard *card)
-+{
-+	return (1);
-+}
-+
-+#endif /* CONFIG_PCI */
- 
- int __devinit
- setup_sedlbauer(struct IsdnCard *card)
- {
--	int bytecnt, ver, val;
-+	int bytecnt = 8, ver, val, rc;
- 	struct IsdnCardState *cs = card->cs;
- 	char tmp[64];
--	u16 sub_vendor_id, sub_id;
- 
- 	strcpy(tmp, Sedlbauer_revision);
- 	printk(KERN_INFO "HiSax: Sedlbauer driver Rev. %s\n", HiSax_getrev(tmp));
-@@ -569,124 +710,21 @@ setup_sedlbauer(struct IsdnCard *card)
- 			bytecnt = 16;
- 		}
- 	} else {
--#ifdef __ISAPNP__
--		if (isapnp_present()) {
--			struct pnp_dev *pnp_d;
--			while(ipid->card_vendor) {
--				if ((pnp_c = pnp_find_card(ipid->card_vendor,
--					ipid->card_device, pnp_c))) {
--					pnp_d = NULL;
--					if ((pnp_d = pnp_find_dev(pnp_c,
--						ipid->vendor, ipid->function, pnp_d))) {
--						int err;
--
--						printk(KERN_INFO "HiSax: %s detected\n",
--							(char *)ipid->driver_data);
--						pnp_disable_dev(pnp_d);
--						err = pnp_activate_dev(pnp_d);
--						if (err<0) {
--							printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--								__FUNCTION__, err);
--							return(0);
--						}
--						card->para[1] = pnp_port_start(pnp_d, 0);
--						card->para[0] = pnp_irq(pnp_d, 0);
--
--						if (!card->para[0] || !card->para[1]) {
--							printk(KERN_ERR "Sedlbauer PnP:some resources are missing %ld/%lx\n",
--								card->para[0], card->para[1]);
--							pnp_disable_dev(pnp_d);
--							return(0);
--						}
--						cs->hw.sedl.cfg_reg = card->para[1];
--						cs->irq = card->para[0];
--						if (ipid->function == ISAPNP_FUNCTION(0x2)) {
--							cs->subtyp = SEDL_SPEED_FAX;
--							cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
--							bytecnt = 16;
--						} else {
--							cs->subtyp = SEDL_SPEED_CARD_WIN;
--							cs->hw.sedl.chip = SEDL_CHIP_TEST;
--						}
--						goto ready;
--					} else {
--						printk(KERN_ERR "Sedlbauer PnP: PnP error card found, no device\n");
--						return(0);
--					}
--				}
--				ipid++;
--				pnp_c = NULL;
--			} 
--			if (!ipid->card_vendor) {
--				printk(KERN_INFO "Sedlbauer PnP: no ISAPnP card found\n");
--			}
--		}
--#endif
--/* Probe for Sedlbauer speed pci */
--#ifdef CONFIG_PCI
--		if ((dev_sedl = pci_find_device(PCI_VENDOR_ID_TIGERJET,
--				PCI_DEVICE_ID_TIGERJET_100, dev_sedl))) {
--			if (pci_enable_device(dev_sedl))
--				return(0);
--			cs->irq = dev_sedl->irq;
--			if (!cs->irq) {
--				printk(KERN_WARNING "Sedlbauer: No IRQ for PCI card found\n");
--				return(0);
--			}
--			cs->hw.sedl.cfg_reg = pci_resource_start(dev_sedl, 0);
--		} else {
--			printk(KERN_WARNING "Sedlbauer: No PCI card found\n");
--			return(0);
--		}
--		cs->irq_flags |= IRQF_SHARED;
--		cs->hw.sedl.bus = SEDL_BUS_PCI;
--		sub_vendor_id = dev_sedl->subsystem_vendor;
--		sub_id = dev_sedl->subsystem_device;
--		printk(KERN_INFO "Sedlbauer: PCI subvendor:%x subid %x\n",
--			sub_vendor_id, sub_id);
--		printk(KERN_INFO "Sedlbauer: PCI base adr %#x\n",
--			cs->hw.sedl.cfg_reg);
--		if (sub_id != PCI_SUB_ID_SEDLBAUER) {
--			printk(KERN_ERR "Sedlbauer: unknown sub id %#x\n", sub_id);
--			return(0);
--		}
--		if (sub_vendor_id == PCI_SUBVENDOR_SPEEDFAX_PYRAMID) {
--			cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
--			cs->subtyp = SEDL_SPEEDFAX_PYRAMID;
--		} else if (sub_vendor_id == PCI_SUBVENDOR_SPEEDFAX_PCI) {
--			cs->hw.sedl.chip = SEDL_CHIP_ISAC_ISAR;
--			cs->subtyp = SEDL_SPEEDFAX_PCI;
--		} else if (sub_vendor_id == PCI_SUBVENDOR_HST_SAPHIR3) {
--			cs->hw.sedl.chip = SEDL_CHIP_IPAC;
--			cs->subtyp = HST_SAPHIR3;
--		} else if (sub_vendor_id == PCI_SUBVENDOR_SEDLBAUER_PCI) {
--			cs->hw.sedl.chip = SEDL_CHIP_IPAC;
--			cs->subtyp = SEDL_SPEED_PCI;
--		} else {
--			printk(KERN_ERR "Sedlbauer: unknown sub vendor id %#x\n",
--				sub_vendor_id);
--			return(0);
--		}
-+		rc = setup_sedlbauer_isapnp(card, &bytecnt);
-+		if (!rc)
-+			return (0);
-+		if (rc > 0)
-+			goto ready;
-+
-+		/* Probe for Sedlbauer speed pci */
-+		rc = setup_sedlbauer_pci(card);
-+		if (!rc)
-+			return (0);
-+
- 		bytecnt = 256;
--		cs->hw.sedl.reset_on = SEDL_ISAR_PCI_ISAR_RESET_ON;
--		cs->hw.sedl.reset_off = SEDL_ISAR_PCI_ISAR_RESET_OFF;
--		byteout(cs->hw.sedl.cfg_reg, 0xff);
--		byteout(cs->hw.sedl.cfg_reg, 0x00);
--		byteout(cs->hw.sedl.cfg_reg+ 2, 0xdd);
--		byteout(cs->hw.sedl.cfg_reg+ 5, 0); /* disable all IRQ */
--		byteout(cs->hw.sedl.cfg_reg +3, cs->hw.sedl.reset_on);
--		mdelay(2);
--		byteout(cs->hw.sedl.cfg_reg +3, cs->hw.sedl.reset_off);
--		mdelay(10);
--#else
--		printk(KERN_WARNING "Sedlbauer: NO_PCI_BIOS\n");
--		return (0);
--#endif /* CONFIG_PCI */
- 	}	
- 
--#ifdef __ISAPNP__
- ready:	
--#endif
- 
- 	/* In case of the sedlbauer pcmcia card, this region is in use,
- 	 * reserved for us by the card manager. So we do not check it
-diff --git a/drivers/isdn/hisax/telespci.c b/drivers/isdn/hisax/telespci.c
-index d09f6d0..4393003 100644
---- a/drivers/isdn/hisax/telespci.c
-+++ b/drivers/isdn/hisax/telespci.c
-@@ -295,11 +295,12 @@ setup_telespci(struct IsdnCard *card)
- #ifdef __BIG_ENDIAN
- #error "not running on big endian machines now"
  #endif
-+
- 	strcpy(tmp, telespci_revision);
- 	printk(KERN_INFO "HiSax: Teles/PCI driver Rev. %s\n", HiSax_getrev(tmp));
- 	if (cs->typ != ISDN_CTYPE_TELESPCI)
- 		return (0);
--#ifdef CONFIG_PCI
-+
- 	if ((dev_tel = pci_find_device (PCI_VENDOR_ID_ZORAN, PCI_DEVICE_ID_ZORAN_36120, dev_tel))) {
- 		if (pci_enable_device(dev_tel))
- 			return(0);
-@@ -317,11 +318,6 @@ setup_telespci(struct IsdnCard *card)
- 		printk(KERN_WARNING "TelesPCI: No PCI card found\n");
- 		return(0);
- 	}
--#else
--	printk(KERN_WARNING "HiSax: Teles/PCI and NO_PCI_BIOS\n");
--	printk(KERN_WARNING "HiSax: Teles/PCI unable to config\n");
--	return (0);
--#endif /* CONFIG_PCI */
  
- 	/* Initialize Zoran PCI controller */
- 	writel(0x00000000, cs->hw.teles0.membase + 0x28);
-diff --git a/drivers/isdn/hisax/w6692.c b/drivers/isdn/hisax/w6692.c
-index 3aeceaf..39129b9 100644
---- a/drivers/isdn/hisax/w6692.c
-+++ b/drivers/isdn/hisax/w6692.c
-@@ -1009,7 +1009,7 @@ setup_w6692(struct IsdnCard *card)
- 	printk(KERN_INFO "HiSax: W6692 driver Rev. %s\n", HiSax_getrev(tmp));
- 	if (cs->typ != ISDN_CTYPE_W6692)
- 		return (0);
--#ifdef CONFIG_PCI
-+
- 	while (id_list[id_idx].vendor_id) {
- 		dev_w6692 = pci_find_device(id_list[id_idx].vendor_id,
- 					    id_list[id_idx].device_id,
-@@ -1061,11 +1061,6 @@ setup_w6692(struct IsdnCard *card)
- 		       cs->hw.w6692.iobase + 255);
- 		return (0);
- 	}
--#else
--	printk(KERN_WARNING "HiSax: W6692 and NO_PCI_BIOS\n");
--	printk(KERN_WARNING "HiSax: W6692 unable to config\n");
--	return (0);
--#endif				/* CONFIG_PCI */
- 
- 	printk(KERN_INFO
- 	       "HiSax: %s config irq:%d I/O:%x\n",
