@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbXJKQXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbXJKQYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758587AbXJKQXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 12:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbXJKQXc
+	id S1758768AbXJKQYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 12:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXJKQYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 12:23:32 -0400
-Received: from mail.exegy.com ([209.83.156.2]:1788 "EHLO mail.exegy.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752461AbXJKQXb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 12:23:31 -0400
-Thread-Index: AcgMIw+RR7sTX9JgShWJ2xXehXKcNw==
-X-Ninja-AntiSpoofing: spoofed
-Message-ID: <470E4E02.4000504@exegy.com>
-Date: Thu, 11 Oct 2007 11:23:30 -0500
-From: "Mr. Berkley Shands" <bshands@exegy.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>, <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23 spinlock hang in kswapd under heavy disk write loads
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-Content-class: urn:content-classes:message
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4073
-Importance: normal
-X-OriginalArrivalTime: 11 Oct 2007 16:23:30.0357 (UTC) FILETIME=[0F812650:01C80C23]
+	Thu, 11 Oct 2007 12:24:41 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38860 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752516AbXJKQYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 12:24:40 -0400
+Date: Thu, 11 Oct 2007 18:24:58 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rob Landley <rob@landley.net>, LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+Message-ID: <20071011162458.GA10142@uranus.ravnborg.org>
+References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710110923470.23818@anakin> <20071011113931.GB8393@uranus.ravnborg.org> <Pine.LNX.4.64.0710111443530.3729@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710111443530.3729@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With DEBUG_SLAB on, I can run only a very short time under 2.6.23
-before a kernel panic.
+> 
+> > 2) suggested functionality makes it easy to do make headers_install
+> 
+> This is something completely different (cfr. the other thread handling
+> it). If `make headers_install' doesn't need the cross compiler, it
+> should not try to execute it.
 
-[  626.028180] eth0: too many iterations (6) in nv_nic_irq.
-[  626.167583] eth0: too many iterations (6) in nv_nic_irq.
-[  626.206729] eth0: too many iterations (6) in nv_nic_irq.
-[  626.400171] eth0: too many iterations (6) in nv_nic_irq.
-[  626.446374] eth0: too many iterations (6) in nv_nic_irq.
+This is obviously correct.
+It happens that we execute gcc several times for just about any target
+due to the:
+CFLAGS += $(call cc-option, xxx)
 
-followed by the crash at
-forcedeth:nv_nic_irq_optimized+0x89
-handle_IRQ_event+0x25
-handle_edge_IRQ+0xe3
-do_IRQ
+And refactoring the top-level Makefile to avoid this is on my TODO list.
+But it is a major crunch to do correct...
 
-berkley
- 
-This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
+The primary objective to do so is btw not to solve this issue but
+more to get the top-level Makefile off the top-10 list of the most
+ureadable unmaitaninable unhackable code in the kernel.
+
+	Sam
