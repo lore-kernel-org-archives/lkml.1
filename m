@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXJKHLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbXJKHNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbXJKHLg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 03:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbXJKHLT
+	id S1757656AbXJKHNR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 03:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbXJKHNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 03:11:19 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54302 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755730AbXJKHLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 03:11:18 -0400
-Date: Thu, 11 Oct 2007 09:11:08 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: John Zaitseff <J.Zaitseff@zap.org.au>
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: Key codes for Microsoft Natural Ergonomic 4000 USB
- keyboard
-In-Reply-To: <20071010235201.GA12338@zap.org.au>
-Message-ID: <Pine.LNX.4.64.0710110909020.20620@jikos.suse.cz>
-References: <20071010055958.GA25938@zap.org.au> <Pine.LNX.4.64.0710100953050.20620@jikos.suse.cz>
- <20071010235201.GA12338@zap.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 11 Oct 2007 03:13:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36431 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754325AbXJKHNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 03:13:06 -0400
+Date: Thu, 11 Oct 2007 00:13:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Hugh Dickins" <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix printk format strings
+Message-Id: <20071011001300.7682a93b.akpm@linux-foundation.org>
+In-Reply-To: <19f34abd0710110004k78d103fate87558822fb631a3@mail.gmail.com>
+References: <1192085221.26648.31.camel@grianne>
+	<20071010235306.c71afe66.akpm@linux-foundation.org>
+	<19f34abd0710110004k78d103fate87558822fb631a3@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007, John Zaitseff wrote:
+On Thu, 11 Oct 2007 09:04:57 +0200 "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
 
-> Excellent!  However, I don't see the following:
-> * case 0x182: map_key_clear(KEY_FAVORITES);
->   ... in drivers/usb/input/hid-input.c, to handle the My Favorites key
+> > > -     printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n"
+> > > -             " free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+> > > +     printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n",
+> > >               global_page_state(NR_ACTIVE),
+> > >               global_page_state(NR_INACTIVE),
+> > >               global_page_state(NR_FILE_DIRTY),
+> > >               global_page_state(NR_WRITEBACK),
+> > > -             global_page_state(NR_UNSTABLE_NFS),
+> > > +             global_page_state(NR_UNSTABLE_NFS));
+> > > +     printk(" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+> > >               global_page_state(NR_FREE_PAGES),
+> > >               global_page_state(NR_SLAB_RECLAIMABLE) +
+> > >                       global_page_state(NR_SLAB_UNRECLAIMABLE),
+> >
+> > I don't understand the reason for this change.
+> 
+> I'm sorry :). It helps to make one line per call only, since this
+> allows changing the printk internals for the better by reducing some
+> complexity. I believe this is a good thing. I have a patch that
+> changes printk, but it assumes that each format string only contains a
+> single line. Is this a very bad assumption to make? Or maybe I should
+> have sent that change first and made a reference to it?
+> 
+> But don't you also agree, on the grounds of principle, that a single
+> line per call is better style?
 
-There is also a patch queued on top of the patchset you were looking at, 
-which adds support for Natural Ergonomic 6000 Keyboard, which also 
-establishes the mapping of 0x182 to KEY_BOOKMARKS.
+Well we do multiple-lines-per-printk in rather a lot of places and it has
+two advantages:
 
-> * the change to drivers/hid/usbhid/usbkbd.c to enable the "(" and
->   ")" on the right hand side of the keyboard
+- less text size (I expect)
 
-usbkbd.c is not used under normal circumstances (it uses the hid boot 
-protocol), I don't think it is needed to care too much for updating the 
-keymap there.
+- the printk is "atomic" in that the logically-connected output lines
+  won't get tangled up with an intervening printk from another CPU, or from
+  an interrupt handler on this CPU.
 
-Thanks,
+Those are pretty modest advantages and I guess we could live without them
+if we got a significant gain from doing so.  But it'd take quite some
+effort hunting down all the callsites, and preventing new ones from
+occuring.
 
--- 
-Jiri Kosina
-SUSE Labs
