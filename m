@@ -1,81 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbXJKXDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbXJKXQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbXJKXDY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 19:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXJKXDP
+	id S1753671AbXJKXQU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 19:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXJKXQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 19:03:15 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64794 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282AbXJKXDO (ORCPT
+	Thu, 11 Oct 2007 19:16:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50844 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752667AbXJKXQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 19:03:14 -0400
-Date: Thu, 11 Oct 2007 16:02:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
-Subject: Re: TPM driver changes to support multiple locality
-Message-Id: <20071011160221.87f77c61.randy.dunlap@oracle.com>
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD628CB9DD5@scsmsx412.amr.corp.intel.com>
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com>
-	<27383.1192045583@turing-police.cc.vt.edu>
-	<A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com>
-	<20071011115429.92326cbd.randy.dunlap@oracle.com>
-	<A3258B497F1C1441AD36A2E8B45FD628CB9CB2@scsmsx412.amr.corp.intel.com>
-	<20071011143917.0eb75029.randy.dunlap@oracle.com>
-	<A3258B497F1C1441AD36A2E8B45FD628CB9DD5@scsmsx412.amr.corp.intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 11 Oct 2007 19:16:11 -0400
+Date: Thu, 11 Oct 2007 16:15:59 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: menage@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+Message-Id: <20071011161559.378e7766.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
+	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
+	<20071003105817.7adf6516.pj@sgi.com>
+	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
+	<20071003131632.fed4b848.pj@sgi.com>
+	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
+	<20071006012437.c0fd3a8a.pj@sgi.com>
+	<alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
+	<6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
+	<alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
+	<6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
+	<alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 15:46:03 -0700 Agarwal, Lomesh wrote:
-
-> Attached is the patch which resolves all the comments.
-
-Inline patches are preferred so that reviewers can comment on them
-more easily.
-
-What mail client are you using?
-
-The patch has trailing CRs on each line ("DOS mode").
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Just verifying:  this TPM device has interrupts per locality?
-
-+	/* check if interrupt is meant for this locality */
-+	if (check_locality(chip, locality) < 0)
-+		return IRQ_NONE;
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-init_tis() still seems to have some problems.
-
- static int __init init_tis(void)
- {
-+#define DEVNAME_SIZE 10
-+
- 	int rc;
- 
-+	if ((locality < 0) || (locality > 4))
-+		return PTR_ERR(pdev);
-
-pdev hasn't been set (so it's NULL).
-
-+		pdev = platform_device_register_simple(devname, -1, NULL, 0);
-+		if (IS_ERR(pdev))
- 			return PTR_ERR(pdev);
-
-Error path above needs to call driver_unregister().
+David wrote:
+> you could protect the whole thing by sched_hotcpu_mutex, which is 
+> expressly designed for migrations.
+> 
+> Something like this:
+> 
+> 	struct cgroup_iter it;
+> 	struct task_struct *p, **tasks;
+> 	int i = 0;
+> 
+> 	cgroup_iter_start(cs->css.cgroup, &it);
+> 	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+> 		get_task_struct(p);
+> 		tasks[i++] = p;
+> 	}
+> 	cgroup_iter_end(cs->css.cgroup, &it);
+> 
+> 	while (--i >= 0) {
+> 		sched_migrate_task(tasks[i], cs->cpus_allowed);
+> 		put_task_struct(tasks[i]);
+> 	}
+> 
+> kernel/sched.c:
+> 
+> 	void sched_migrate_task(struct task_struct *task,
+> 				cpumask_t cpus_allowed)
+> 	{
+> 		mutex_lock(&sched_hotcpu_mutex);
+> 		set_cpus_allowed(task, cpus_allowed);
+> 		mutex_unlock(&sched_hotcpu_mutex);
+> 	}
 
 
----
-~Randy
+Hmmm ... I hadn't noticed that sched_hotcpu_mutex before.
+
+I wonder what it is guarding?  As best as I can guess, it seems, at
+least in part, to be keeping the following two items consistent:
+ 1) cpu_online_map
+ 2) the per-task cpus_allowed masks
+
+That is, it seems to ensure that a task is allowed to run on some
+online CPU.
+
+If that's approximately true, then shouldn't I take sched_hotcpu_mutex
+around the entire chunk of code that handles updating a cpusets 'cpus',
+from the time it verifies that the requested CPUs are online, until the
+time that every affected task has its cpus_allowed updated?
+
+Furthermore, I should probably guard changes to and verifications
+against the top_cpuset's cpus_allowed with this mutex as well, as it is
+supposed to be a copy of cpu_online_map.
+
+And since all descendent cpusets have to have 'cpus' masks that are
+subsets of their parents, this means guarding other chunks of cpuset
+code that depend on the consistency of various per-cpuset cpus_allowed
+masks and cpu_online_map.
+
+My current intuition is that this expanded use of sched_hotcpu_mutex in
+the cpuset code involving various cpus_allowed masks would be a good
+thing.
+
+In sum, perhaps sched_hotcpu_mutex is guarding the dispersed kernel
+state that depends on what CPUs are online.  This includes the per-task
+and per-cpuset cpus_allowed masks, all of which are supposed to be some
+non-empty subset of the online CPUs.
+
+Taking and dropping the sched_hotcpu_mutex for each task, just around
+the call to set_cpus_allowed(), as you suggested above, doesn't seem to
+accomplish much that I can see, and certainly doesn't seem to guard the
+consistency of cpu_online_map with the tasks cpus_allowed masks.
+
+... lurkers beware ... good chance I haven't a friggin clue ;).
+    In other words: Thirty minutes ago I couldn't even spell
+    sched_hotcpu_mutex, and now I'm pontificating on it ;);).
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
