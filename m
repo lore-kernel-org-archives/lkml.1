@@ -1,135 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXJKKNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbXJKKN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbXJKKNF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbXJKKKz
+	id S1758330AbXJKKN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXJKKK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:10:55 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:41864 "EHLO
+	Thu, 11 Oct 2007 06:10:56 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:23115 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754874AbXJKKKv (ORCPT
+	with ESMTP id S1754759AbXJKKKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:10:51 -0400
+	Thu, 11 Oct 2007 06:10:50 -0400
 X-IronPort-AV: i="4.21,259,1188792000"; 
-   d="scan'208"; a="53762410:sNHT2113095075"
+   d="scan'208"; a="53762407:sNHT27402746"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 7/9] Blackfin SPI driver: Move GPIO config to setup and cleanup
-Date: Thu, 11 Oct 2007 18:10:39 +0800
-Message-Id: <1192097441-24962-8-git-send-email-bryan.wu@analog.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 1/9] Blackfin SPI driver: use new GPIO API and add error handling
+Date: Thu, 11 Oct 2007 18:10:33 +0800
+Message-Id: <1192097441-24962-2-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1192097441-24962-1-git-send-email-bryan.wu@analog.com>
 References: <1192097441-24962-1-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/spi/spi_bfin5xx.c |   52 +++++++++++++++++++++++---------------------
- 1 files changed, 27 insertions(+), 25 deletions(-)
+ drivers/spi/spi_bfin5xx.c                 |   29 +++++++++++++++++++++++------
+ include/asm-blackfin/mach-bf533/portmux.h |    2 +-
+ 2 files changed, 24 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index ecfb7c5..c1516cb 100644
+index 2992ada..8041b89 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -136,7 +136,6 @@ struct chip_data {
- 	u16 flag;
- 
- 	u8 chip_select_num;
--	u8 chip_select_requested;
- 	u8 n_bytes;
- 	u8 width;		/* 0 or 1 */
- 	u8 enable_dma;
-@@ -216,19 +215,7 @@ static int restore_state(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 	int ret = 0;
--	u16 ssel[3][MAX_SPI_SSEL] = {
--		{P_SPI0_SSEL1, P_SPI0_SSEL2, P_SPI0_SSEL3,
--		P_SPI0_SSEL4, P_SPI0_SSEL5,
--		P_SPI0_SSEL6, P_SPI0_SSEL7},
--
--		{P_SPI1_SSEL1, P_SPI1_SSEL2, P_SPI1_SSEL3,
--		P_SPI1_SSEL4, P_SPI1_SSEL5,
--		P_SPI1_SSEL6, P_SPI1_SSEL7},
--
--		{P_SPI2_SSEL1, P_SPI2_SSEL2, P_SPI2_SSEL3,
--		P_SPI2_SSEL4, P_SPI2_SSEL5,
--		P_SPI2_SSEL6, P_SPI2_SSEL7},
--	};
-+
- 	/* Clear status and disable clock */
- 	write_STAT(BIT_STAT_CLR);
- 	bfin_spi_disable(drv_data);
-@@ -239,17 +226,6 @@ static int restore_state(struct driver_data *drv_data)
- 	write_BAUD(chip->baud);
- 	cs_active(chip);
- 
--	if (!chip->chip_select_requested) {
--		int i = chip->chip_select_num;
--
--		dev_dbg(&drv_data->pdev->dev, "chip select number is %d\n", i);
--		if ((i > 0) && (i <= MAX_SPI_SSEL))
--			ret = peripheral_request(
--				ssel[drv_data->master->bus_num][i-1], DRV_NAME);
--
--		chip->chip_select_requested = 1;
--	}
--
- 	if (ret)
- 		dev_dbg(&drv_data->pdev->dev,
- 			": request chip select number %d failed\n",
-@@ -981,6 +957,22 @@ static int transfer(struct spi_device *spi, struct spi_message *msg)
+@@ -1165,6 +1165,22 @@ static inline int destroy_queue(struct driver_data *drv_data)
  	return 0;
  }
  
-+#define MAX_SPI_SSEL	7
++static int setup_pin_mux(int action)
++{
 +
-+static u16 ssel[3][MAX_SPI_SSEL] = {
-+	{P_SPI0_SSEL1, P_SPI0_SSEL2, P_SPI0_SSEL3,
-+	P_SPI0_SSEL4, P_SPI0_SSEL5,
-+	P_SPI0_SSEL6, P_SPI0_SSEL7},
++	u16 pin_req[] = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0};
 +
-+	{P_SPI1_SSEL1, P_SPI1_SSEL2, P_SPI1_SSEL3,
-+	P_SPI1_SSEL4, P_SPI1_SSEL5,
-+	P_SPI1_SSEL6, P_SPI1_SSEL7},
++	if (action) {
++		if (peripheral_request_list(pin_req, DRV_NAME)) {
++			return -EFAULT;
++		}
++	} else {
++		peripheral_free_list(pin_req);
++	}
 +
-+	{P_SPI2_SSEL1, P_SPI2_SSEL2, P_SPI2_SSEL3,
-+	P_SPI2_SSEL4, P_SPI2_SSEL5,
-+	P_SPI2_SSEL6, P_SPI2_SSEL7},
-+};
++	return 0;
++}
 +
- /* first setup for new devices */
- static int setup(struct spi_device *spi)
+ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
  {
-@@ -1109,6 +1101,12 @@ static int setup(struct spi_device *spi)
+ 	struct device *dev = &pdev->dev;
+@@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
  
- 	spi_set_ctldata(spi, chip);
+-	if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
+-		 peripheral_request(P_SPI0_MISO, DRV_NAME) ||
+-		 peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
+-
++	if (setup_pin_mux(1)) {
+ 		dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
+-		goto out_error_queue_alloc;
++		goto out_error;
+ 	}
  
-+	dev_dbg(&spi->dev, "chip select number is %d\n", chip->chip_select_num);
-+	if ((chip->chip_select_num > 0)
-+		&& (chip->chip_select_num <= spi->master->num_chipselect))
-+		peripheral_request(ssel[spi->master->bus_num]
-+			[chip->chip_select_num-1], DRV_NAME);
+ 	drv_data = spi_master_get_devdata(master);
+@@ -1223,9 +1236,11 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
+ 	dev_dbg(&pdev->dev, "controller probe successfully\n");
+ 	return status;
+ 
+-      out_error_queue_alloc:
++out_error_queue_alloc:
+ 	destroy_queue(drv_data);
++out_error:
+ 	spi_master_put(master);
 +
- 	return 0;
+ 	return status;
  }
  
-@@ -1120,6 +1118,10 @@ static void cleanup(struct spi_device *spi)
- {
- 	struct chip_data *chip = spi_get_ctldata(spi);
+@@ -1255,6 +1270,8 @@ static int __devexit bfin5xx_spi_remove(struct platform_device *pdev)
+ 	/* Disconnect from the SPI framework */
+ 	spi_unregister_master(drv_data->master);
  
-+	if ((chip->chip_select_num > 0)
-+		&& (chip->chip_select_num <= spi->master->num_chipselect))
-+		peripheral_free(ssel[spi->master->bus_num][chip->chip_select_num-1]);
++	setup_pin_mux(0);
 +
- 	kfree(chip);
- }
+ 	/* Prevent double remove */
+ 	platform_set_drvdata(pdev, NULL);
  
+diff --git a/include/asm-blackfin/mach-bf533/portmux.h b/include/asm-blackfin/mach-bf533/portmux.h
+index b88d7a0..137f488 100644
+--- a/include/asm-blackfin/mach-bf533/portmux.h
++++ b/include/asm-blackfin/mach-bf533/portmux.h
+@@ -42,7 +42,7 @@
+ #define P_SPORT0_DRPRI	(P_DONTCARE)
+ 
+ #define P_SPI0_MOSI	(P_DONTCARE)
+-#define P_SPI0_MIS0	(P_DONTCARE)
++#define P_SPI0_MISO	(P_DONTCARE)
+ #define P_SPI0_SCK	(P_DONTCARE)
+ #define P_SPI0_SSEL7	(P_DEFINED | P_IDENT(GPIO_PF7))
+ #define P_SPI0_SSEL6	(P_DEFINED | P_IDENT(GPIO_PF6))
 -- 
 1.5.3.4
