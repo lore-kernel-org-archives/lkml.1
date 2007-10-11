@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbXJKMUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbXJKMYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbXJKMUt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 08:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXJKMUj
+	id S1758043AbXJKMYj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 08:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbXJKMYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 08:20:39 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:49764 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801AbXJKMUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 08:20:37 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2/3] Re: sil3114 data corruption
-Date: Thu, 11 Oct 2007 14:20:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200710081709.18253.bs@q-leap.de> <200710111409.56210.bs@q-leap.de> <200710111415.35203.bs@q-leap.de>
-In-Reply-To: <200710111415.35203.bs@q-leap.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710111420.35166.bs@q-leap.de>
+	Thu, 11 Oct 2007 08:24:32 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60828 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbXJKMYb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 08:24:31 -0400
+Date: Thu, 11 Oct 2007 14:24:17 +0200
+From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Linux RT Users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] RT: fix spin_trylock_irq
+Message-ID: <20071011142417.1d965820@bull.net>
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/10/2007 14:30:42,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/10/2007 14:30:43,
+	Serialize complete at 11/10/2007 14:30:43
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will add the sil3114 back to the controllers with the mod15 bug. Without 
-this patch no workaround for this controller is done and people might/will 
-suffer from data corruption.
 
-Also rather trivial, though with a huge effect, the speed for the effected 
-disks will go down from about 45-50MB/s to 20-25MB/s. But better safe than 
-lost data or damaged filesystem.
+  This patch fixes a bug in spin_trylock_irq() where __spin_trylock_irq() is
+picked for regular (non-raw) spinlocks instead of _spin_trylock_irq().
 
-Signed-off-by: Bernd Schubert <bs@q-leap.de>
+  This results in systematic boot hangs and may have been going unnoticed
+for quite some time as it only manifests (aside from a compile warning) when
+booting with a NUMA config or when using the Chelsio T3 (cxgb3) driver as
+these seems to be the sole users.
 
-Index: linux-2.6.23-rc9/drivers/ata/sata_sil.c
+
+Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
+
+---
+ include/linux/spinlock.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.23-rc9-rt2/include/linux/spinlock.h
 ===================================================================
---- linux-2.6.23-rc9.orig/drivers/ata/sata_sil.c	2007-10-11 10:45:02.000000000 
-+0200
-+++ linux-2.6.23-rc9/drivers/ata/sata_sil.c	2007-10-11 10:45:08.000000000 
-+0200
-@@ -241,7 +241,8 @@ static const struct ata_port_info sil_po
- 	},
- 	/* sil_3114 */
- 	{
--		.flags		= SIL_DFL_PORT_FLAGS | SIL_FLAG_RERR_ON_DMA_ACT,
-+		.flags		= SIL_DFL_PORT_FLAGS | SIL_FLAG_RERR_ON_DMA_ACT
-+				| SIL_FLAG_MOD15WRITE,
- 		.pio_mask	= 0x1f,			/* pio0-4 */
- 		.mwdma_mask	= 0x07,			/* mwdma0-2 */
- 		.udma_mask	= ATA_UDMA5,
-
-
-
--- 
-Bernd Schubert
-Q-Leap Networks GmbH
+--- linux-2.6.23-rc9-rt2.orig/include/linux/spinlock.h
++++ linux-2.6.23-rc9-rt2/include/linux/spinlock.h
+@@ -501,7 +501,7 @@ do {									\
+ 
+ #define spin_trylock_irq(lock)	\
+ 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irq,		\
+-		__spin_trylock_irq, lock))
++		_spin_trylock_irq, lock))
+ 
+ #define spin_trylock_irqsave(lock, flags) \
+ 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irqsave, 	\
