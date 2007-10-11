@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXJKPIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbXJKPJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbXJKPIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 11:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbXJKPIL
+	id S1758865AbXJKPJH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 11:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbXJKPI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 11:08:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59819 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753406AbXJKPIK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 11:08:10 -0400
-Date: Thu, 11 Oct 2007 16:11:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Christoph Egger <Christoph.Egger@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] x86: mce init optimization and signedness fixup
-Message-ID: <20071011161157.5a32122e@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.9999.0710111651350.15917@localhost.localdomain>
-References: <11921050742274-git-send-email-joerg.roedel@amd.com>
-	<1192105075473-git-send-email-joerg.roedel@amd.com>
-	<alpine.LFD.0.9999.0710111550400.15917@localhost.localdomain>
-	<200710111601.02630.Christoph.Egger@amd.com>
-	<alpine.LFD.0.9999.0710111651350.15917@localhost.localdomain>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 11:08:56 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32927 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752331AbXJKPIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 11:08:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,260,1188802800"; 
+   d="scan'208";a="169892492"
+Date: Thu, 11 Oct 2007 08:08:04 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org,
+       mark.gross@intel.com
+Subject: Re: pm qos infrastructure and interface
+Message-ID: <20071011150804.GA7293@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071004215139.GA20078@linux.intel.com> <20071010221704.6e438c71.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071010221704.6e438c71.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 16:55:36 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Thu, 11 Oct 2007, Christoph Egger wrote:
+On Wed, Oct 10, 2007 at 10:17:04PM -0700, Andrew Morton wrote:
+> On Thu, 4 Oct 2007 14:51:39 -0700 Mark Gross <mgross@linux.intel.com> wrote:
 > 
-> > On Thursday 11 October 2007 15:51:49 Thomas Gleixner wrote:
-> > > On Thu, 11 Oct 2007, Joerg Roedel wrote:
-> > > > MCG_CAP never reports a negative count of available error-reporting
-> > > > banks. Therefore, make nr_mce_banks unsigned.
-> > > > Check for MCA/MCE feature bits as early as possible.
-> > > >
-> > > > +
-> > > > +	if (!cpu_has(c, X86_FEATURE_MCA) || !cpu_has(c, X86_FEATURE_MCE)) {
-> > > > +		printk(KERN_INFO "CPU%i: No machine check support available\n",
-> > > > +			smp_processor_id());
-> > > > +		return;
-> > >
-> > > This breaks winchip MCE support.
+> > The following patch is a generalization of the latency.c implementation
+> > done by Arjan last year.  It provides infrastructure for more than one
+> > parameter, and exposes a user mode interface for processes to register
+> > pm_qos expectations of processes.
 > > 
-> > First, what is a winchip? It sounds to be something windows specific. ;)
-> > Second, can you explain in which way MCE support gets broken, please?
+> > 
+> > This interface provides a kernel and user mode interface for registering
+> > performance expectations by drivers, subsystems and user space
+> > applications on one of the parameters.
+> > 
+> > Currently we have {cpu_dma_latency, network_latency, network_throughput}
+> > as the initial set of pm_qos parameters.
+> > 
+> > The infrastructure exposes multiple misc device nodes one per
+> > implemented parameter.  The set of parameters implement is defined by
+> > pm_qos_power_init() and pm_qos_params.h.  This is done because having
+> > the available parameters being runtime configurable or changeable from a
+> > driver was seen as too easy to abuse.
 > 
-> First, winchip is the code name of Centaurs early x86 cpus.
-> 
-> Second, those beasts do not have FEATURE_MCA, but they have FEATURE_MCE, 
-> so they support the fatal exception, but not the non fatal check.
+> I'm a bit surprised that this change appears to have no configurability.
+> If one has set CONFIG_PM=n (for example), shouldn't it all go away?
 
-Ditto some of the original Intel Preventium processors which have limited
-MC support hidden in the magic 'Appendix H'
+We considered that as an option but as latency.c didn't offer it I
+didn't either.  
 
-Alan
+I could see the user mode interface portion of the implementation be
+made as a compile time option but the kernel infrastructure will
+continue to be needed by at least cpu-idel, pcm_native.c and ipw2100.
+
+You know it could make sense to have the user mode interface part of the
+patch as configurable or a build time dependent of sysfs and misc device
+support for the linux-tiny guys.  Is it practical to make a linux-tiny
+without the sysfs infrastructure needed to make a misc device?  I'll ask
+on the linux-tiny list.
+
+--mgross
