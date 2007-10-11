@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbXJKSwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbXJKSyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbXJKSwR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 14:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXJKSwH
+	id S1757734AbXJKSyB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 14:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXJKSxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 14:52:07 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:42389 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbXJKSwG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 14:52:06 -0400
-To: haveblue@us.ibm.com
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, hch@infradead.org
-In-reply-to: <1192126616.31114.63.camel@localhost> (message from Dave Hansen
-	on Thu, 11 Oct 2007 11:16:56 -0700)
-Subject: Re: [RFC][PATCH 2/7] get mount write in __dentry_open()
-References: <20071010163439.0F8089F7@kernel>
-	 <20071010163439.9DB7F219@kernel> <E1IfzeX-0007qp-00@dorka.pomaz.szeredi.hu> <1192126616.31114.63.camel@localhost>
-Message-Id: <E1Ig2oN-0007yq-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 11 Oct 2007 20:31:07 +0200
+	Thu, 11 Oct 2007 14:53:54 -0400
+Received: from smtpoutm.mac.com ([17.148.16.74]:52150 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752506AbXJKSxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 14:53:53 -0400
+In-Reply-To: <928423.71088.qm@web36604.mail.mud.yahoo.com>
+References: <928423.71088.qm@web36604.mail.mud.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7BC13842-3D05-4D80-B521-DD738FE4FB36@mac.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Date: Thu, 11 Oct 2007 14:53:17 -0400
+To: casey@schaufler-ca.com
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 2007-10-11 at 17:08 +0200, Miklos Szeredi wrote:
-> > > diff -puN fs/namei.c~get-write-in-__dentry_open fs/namei.c
-> > > --- lxc/fs/namei.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
-> > > +++ lxc-dave/fs/namei.c	2007-10-04 18:02:48.000000000 -0700
-> > > @@ -1621,14 +1621,6 @@ int may_open(struct nameidata *nd, int a
-> > >  			return -EACCES;
-> > >  
-> > >  		flag &= ~O_TRUNC;
-> > > -	} else if (flag & FMODE_WRITE) {
-> > > -		/*
-> > > -		 * effectively: !special_file()
-> > > -		 * balanced by __fput()
-> > > -		 */
-> > > -		error = mnt_want_write(nd->mnt);
-> > > -		if (error)
-> > > -			return error;
-> > >  	}
-> > 
-> > Maybe readonly should still be checked here, so that the order of
-> > error checking doesn't change.  If racing with a read-only remount the
-> > order is irrelevant anyway.  Something like this?
-> > 
-> > 	} else if (flag & FMODE_WRITE && __mnt_is_readonly(nd->mnt)) {
-> > 		return -EROFS
-> > 	}
-> 
-> I think that would be a bug if anything actually managed to trip that
-> code.  all of the may_open() calls should have been covered by the
-> __dentry_open() mnt writer.
+On Oct 11, 2007, at 11:41:34, Casey Schaufler wrote:
+> --- Kyle Moffett <mrmacman_g4@mac.com> wrote:
+>> [snipped]
+>
+> I'm still waiting to see the proposed SELinux policy that does what  
+> Smack does.
 
-AFACIS, __dentry_open() will normally be called later than may_open().
-And we don't want it earlier, because ->open() may have side affects,
-that could be unsafe if done before permission checking.
+That *is* the SELinux policy which does what Smack does.  I keep  
+having bugs in the perl-script I'm writing on account of not having  
+the time to really get around to fixing it, but that is exactly the  
+procedure for generating an SELinux policy from a SMACK policy.
 
-> > And they should be added around do_truncate() as well, since you
-> > remove the protection from may_open().
-> > 
-> > This one introduces an interesting race between ro-remount and
-> > open(O_TRUNC), where the truncate can succeed but the open fail with
-> > EROFS.  Is that a problem?
-> 
-> You're right, this does introduce that race, and it is relatively hard
-> to fix properly.  But, the 'return a filp' patch makes it easy to fix.
-> I've put a temporary kludge in the updated version of this patch, and
-> fixed it properly in that later patch.  
+> I can accept that you don't see anything that can't be implemented  
+> thus, but that's not the point. You've provided some really clear  
+> design notes, and that's great, but it ain't the code. You said  
+> that you could write a 500 line perl script that would do the whole  
+> thing, and that left some people with an impression that Smack is a  
+> subset of SELinux.  Well, I'm already finding myself digging out  
+> from under that missunderstanding, and with people who are assuming  
+> that your policy has been done, "proving" the point.
 
-If you fix this properly, that should take care of the first problem
-as well.
+I'd love to have time to finish the script but unfortunately real  
+life keeps interfering and I'm going to have to go back to lurking on  
+this thread.
 
-Miklos
+Cheers,
+Kyle Moffett
+
