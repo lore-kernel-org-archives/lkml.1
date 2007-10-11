@@ -1,52 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXJKUZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbXJKUkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXJKUZh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 16:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbXJKUZ3
+	id S1756983AbXJKUkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 16:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXJKUkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 16:25:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35361 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753314AbXJKUZ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 16:25:28 -0400
-Date: Thu, 11 Oct 2007 13:24:58 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, heiko.carstens@de.ibm.com,
-       schwidefsky@de.ibm.com
-Subject: [PATCH net-2.6.24] remove bogus qeth type check
-Message-ID: <20071011132458.3b536662@freepuppy.rosehill>
-In-Reply-To: <20071011.024529.112295019.davem@davemloft.net>
-References: <200710110909.l9B99fEM021646@imap1.linux-foundation.org>
-	<20071011.024529.112295019.davem@davemloft.net>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Oct 2007 16:40:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45003 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754704AbXJKUkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 16:40:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeff Garzik <jgarzik@pobox.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ARPM shutdown oops (Re: [stable] [patch 09/12] Fix SMP poweroff hangs)
+Date: Thu, 11 Oct 2007 22:55:55 +0200
+User-Agent: KMail/1.9.5
+Cc: Kevin <spaceman__spiff@cox.net>, Greg KH <greg@kroah.com>,
+       Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk, BDFL <volkerdi@slackware.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+References: <20071008180406.052382073@mini.kroah.org> <alpine.LFD.0.999.0710110818580.20690@woody.linux-foundation.org> <470E6E79.6040908@pobox.com>
+In-Reply-To: <470E6E79.6040908@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710112255.57698.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not sure why this crept in with hard-header-ops change.
-Just kill it. Need to start doing cross-compiles for s390...
+On Thursday, 11 October 2007 20:42, Jeff Garzik wrote:
+> Linus Torvalds wrote:
+> > 
+> > On Wed, 10 Oct 2007, Kevin wrote:
+> >> The last kernel I used was 6.2.22 the "dmesg" the file is attached:
+> >>
+> >> dmesg 2.6.22 line 158 >  apm: overridden by ACPI.
+> >>
+> >> dmesg, APM on, has no line > apm: overridden by ACPI.
+> > 
+> > Ok, this is the real reason. 
+> > 
+> > The APM code does:
+> > 
+> >         if (PM_IS_ACTIVE()) {
+> >                 printk(KERN_NOTICE "apm: overridden by ACPI.\n");
+> >                 apm_info.disabled = 1;
+> >                 return -ENODEV;
+> >         }
+> > 
+> > and in previous kernels that would notice that you have ACPI enabled, and 
+> > APM gets shut out, and you never see your buggy APM BIOS.
+> > 
+> > In 2.6.23, this apparently doesn't happen for some reason.
+> > 
+> > And I think I see the problem: it's a config change. You don't have 
+> > PM_LEGACY enabled. Your config file diff shows:
+> > 
+> > 	-CONFIG_PM_LEGACY=y
+> > 	+# CONFIG_PM_LEGACY is not set
+> > 
+> > I suspect we should make CONFIG_APM either depend on, or select, 
+> > PM_LEGACY. But as far as I can see, nothing has actually changed in this 
+> > area in the kernel, and this bug has been there before - just your config 
+> > change made it appear. 
+> > 
+> > Rafael? Stephen? Opinions? I'd think that making APM depend on 
+> > CONFIG_PM_LEGACY is the right thing to do these days..
+> 
+> Speaking as the author of
+> 
+> 	[PATCH] move pm_register/etc. to CONFIG_PM_LEGACY, pm_legacy.h
+> 
+> I agree.  arch/i386/kernel/apm.c clearly requires 
+> include/linux/pm_legacy.h and the legacy PM API.
+> 
+> I would vote for a dependency rather than select, but don't have any 
+> strong feelings on the matter...
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+I agree and yes, I'd vote for a dependency too.
 
---- a/drivers/s390/net/qeth_main.c	2007-10-10 08:26:48.000000000 -0700
-+++ b/drivers/s390/net/qeth_main.c	2007-10-11 13:21:17.000000000 -0700
-@@ -6581,9 +6581,6 @@ qeth_hard_header_parse(const struct sk_b
- 	const struct qeth_card *card;
- 	const struct ethhdr *eth;
- 
--	if (dev->type != ARPHRD_IEEE802_TR)
--		return 0;
--
- 	card = qeth_get_card_from_dev(skb->dev);
- 	if (card->options.layer2)
- 		goto haveheader;
-
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Greetings,
+Rafael
