@@ -1,154 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXJKPfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXJKPjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbXJKPfI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 11:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbXJKPez
+	id S1758061AbXJKPjl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 11:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXJKPjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 11:34:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43574 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753874AbXJKPex (ORCPT
+	Thu, 11 Oct 2007 11:39:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33889 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752684AbXJKPjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 11:34:53 -0400
-Date: Thu, 11 Oct 2007 17:35:20 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Rob Landley <rob@landley.net>, linux-scsi@vger.kernel.org,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: [2.6 patch] esp_scsi.c: remove __dev{init,exit}
-Message-ID: <20071011153520.GA16424@stusta.de>
-References: <200710110552.49129.rob@landley.net> <20071011110555.GV16424@stusta.de> <200710110817.22344.rob@landley.net> <1192109439.3352.11.camel@localhost.localdomain>
+	Thu, 11 Oct 2007 11:39:33 -0400
+Date: Thu, 11 Oct 2007 08:31:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kevin <spaceman__spiff@cox.net>
+cc: Greg KH <greg@kroah.com>, Olof Johansson <olof@lixom.net>,
+       Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk, BDFL <volkerdi@slackware.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: ARPM shutdown oops (Re: [stable] [patch 09/12] Fix SMP poweroff
+ hangs)
+In-Reply-To: <200710102005.02184.spaceman__spiff@cox.net>
+Message-ID: <alpine.LFD.0.999.0710110818580.20690@woody.linux-foundation.org>
+References: <20071008180406.052382073@mini.kroah.org>
+ <200710092359.47144.spaceman__spiff@cox.net>
+ <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org>
+ <200710102005.02184.spaceman__spiff@cox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1192109439.3352.11.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 08:30:38AM -0500, James Bottomley wrote:
-> On Thu, 2007-10-11 at 08:17 -0500, Rob Landley wrote:
-> > On Thursday 11 October 2007 6:05:55 am Adrian Bunk wrote:
-> > > On Thu, Oct 11, 2007 at 05:52:48AM -0500, Rob Landley wrote:
-> > > > CONFIG_SCSI_SUNESP=y breaks the build in 2.6.23:
-> > > >
-> > > >   LD      vmlinux
-> > > > `scsi_esp_unregister' referenced in section `__ksymtab' of
-> > > > drivers/built-in.o: defined in discarded section `.exit.text' of
-> > > > drivers/built-in.o
-> > > > make: *** [vmlinux] Error 1
-> > > >
-> > > > Do you need my full .config to reproduce this?
-> > >
-> > > Please always attach the .config when reporting errors.
-> > > The few bytes don't matter and it often saves some time.
-> > >
-> > > I have an idea regarding what might be going wrong in this case,
-> > > but it would cost me additional time to look at it because you didn't
-> > > send your .config.
-> > 
-> > *shrug*  That's why I asked.
-> > 
-> > The reason I hesitated is I use miniconfig files rather than big .config 
-> > files, and some people get confused by that.  Drop the attached 
-> > miniconfig-linux in the kernel source directory and go:
-> >   make ARCH=sparc allnoconfig KCONFIG_ALLCONFIG=miniconfig-linux
-> > 
-> > That expands it to a big .config file, and from there "make ARCH=sparc 
-> > CROSS_COMPILE=sparc-" to reproduce the problem.  Assuming you have a sparc 
-> > cross-compiler lying around.
-> > 
-> > Disable CONFIG_SCSI_SUNESP and it builds to the end, (and the result boots but 
-> > won't mount the root filesystem, which is sort of expected).
+
+
+On Wed, 10 Oct 2007, Kevin wrote:
 > 
-> This is a very subtle error.  You're building without hotplug, which
-> causes __devexit to become __exit, so scsi_esp_unregister is placed in
-> the discard section of vmlinux.  Unfortunately, the EXPORT_SYMBOL causes
-> it to be referenced from the symbol export table.
+> The last kernel I used was 6.2.22 the "dmesg" the file is attached:
 > 
-> The fix is probably just to remove the __devexit tag from the function
-> rather than trying to work out how to make the export symbol conditional
-> on the symbol not being discarded.
+> dmesg 2.6.22 line 158 >  apm: overridden by ACPI.
+> 
+> dmesg, APM on, has no line > apm: overridden by ACPI.
 
-You can't make it conditional on that since a built-in esp_scsi could 
-have modular users.
+Ok, this is the real reason. 
 
-scsi_esp_register() is also buggy since it's impossible that the 
-EXPORT_SYMBOL(scsi_esp_register) works in the CONFIG_HOTPLUG=n case when 
-it's __devinit - it will always Oops.
+The APM code does:
 
-Having anything exported __{,dev}{init,exit} is always very likely to be 
-buggy.
+        if (PM_IS_ACTIVE()) {
+                printk(KERN_NOTICE "apm: overridden by ACPI.\n");
+                apm_info.disabled = 1;
+                return -ENODEV;
+        }
 
-Patch below.
+and in previous kernels that would notice that you have ACPI enabled, and 
+APM gets shut out, and you never see your buggy APM BIOS.
 
-> James
+In 2.6.23, this apparently doesn't happen for some reason.
 
-cu
-Adrian
+And I think I see the problem: it's a config change. You don't have 
+PM_LEGACY enabled. Your config file diff shows:
 
+	-CONFIG_PM_LEGACY=y
+	+# CONFIG_PM_LEGACY is not set
 
-<--  snip  -->
+I suspect we should make CONFIG_APM either depend on, or select, 
+PM_LEGACY. But as far as I can see, nothing has actually changed in this 
+area in the kernel, and this bug has been there before - just your config 
+change made it appear. 
 
+Rafael? Stephen? Opinions? I'd think that making APM depend on 
+CONFIG_PM_LEGACY is the right thing to do these days..
 
-Since scsi_esp_{,un}register() are EXPORT_SYMBOL'ed, these functions
-(and the functions they use) can't be __dev{init,exit}.
-
-Based on a bug report by Rob Landley.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- drivers/scsi/esp_scsi.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
---- linux-2.6.23/drivers/scsi/esp_scsi.c.old	2007-10-11 17:29:50.000000000 +0200
-+++ linux-2.6.23/drivers/scsi/esp_scsi.c	2007-10-11 17:31:25.000000000 +0200
-@@ -2138,7 +2138,7 @@
- }
- EXPORT_SYMBOL(scsi_esp_intr);
- 
--static void __devinit esp_get_revision(struct esp *esp)
-+static void esp_get_revision(struct esp *esp)
- {
- 	u8 val;
- 
-@@ -2187,7 +2187,7 @@
- 	}
- }
- 
--static void __devinit esp_init_swstate(struct esp *esp)
-+static void esp_init_swstate(struct esp *esp)
- {
- 	int i;
- 
-@@ -2233,7 +2233,7 @@
- 	esp_read8(ESP_INTRPT);
- }
- 
--static void __devinit esp_set_clock_params(struct esp *esp)
-+static void esp_set_clock_params(struct esp *esp)
- {
- 	int fmhz;
- 	u8 ccf;
-@@ -2306,7 +2306,7 @@
- 
- static struct scsi_transport_template *esp_transport_template;
- 
--int __devinit scsi_esp_register(struct esp *esp, struct device *dev)
-+int scsi_esp_register(struct esp *esp, struct device *dev)
- {
- 	static int instance;
- 	int err;
-@@ -2346,7 +2346,7 @@
- }
- EXPORT_SYMBOL(scsi_esp_register);
- 
--void __devexit scsi_esp_unregister(struct esp *esp)
-+void scsi_esp_unregister(struct esp *esp)
- {
- 	scsi_remove_host(esp->host);
- }
-
+		Linus
