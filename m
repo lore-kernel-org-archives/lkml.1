@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbXJKKwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbXJKKw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbXJKKwM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbXJKKv7
+	id S1757218AbXJKKw3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbXJKKwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:51:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39506 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750906AbXJKKv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:51:58 -0400
+	Thu, 11 Oct 2007 06:52:19 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:33383 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756168AbXJKKwS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 06:52:18 -0400
+Date: Thu, 11 Oct 2007 16:21:23 +0530
+To: mike kravetz <kravetz@us.ibm.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu, peterz@infradead.org,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RT: Fix special-case exception for preempting the local CPU
+Message-ID: <20071011105123.GE6721@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+Mail-Followup-To: Ankita Garg <ankita@in.ibm.com>,
+	mike kravetz <kravetz@us.ibm.com>,
+	Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+	peterz@infradead.org, rostedt@goodmis.org,
+	linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20071010144824.21333.52155.stgit@novell1.haskins.net> <20071010162248.GB5049@monkey.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] core dump: remain dumpable
-In-Reply-To: Oleg Nesterov's message of  Thursday, 11 October 2007 14:49:42 +0400 <20071011104942.GA144@tv-sign.ru>
-References: <20071011062730.19F774D026B@magilla.localdomain>
-	<20071011102507.GA101@tv-sign.ru>
-	<20071011103446.89BCC4D03F7@magilla.localdomain>
-	<20071011104942.GA144@tv-sign.ru>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20071011105122.AB71B4D03F7@magilla.localdomain>
-Date: Thu, 11 Oct 2007 03:51:22 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20071010162248.GB5049@monkey.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: ankita@in.ibm.com (Ankita Garg)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ugh, sorry, I was wrong. coredump_wait() initializes mm->core_done and sets
-> mm->core_startup_done before checking SIGNAL_GROUP_EXIT. This means we have
-> to check ->core_waiters or SIGNAL_GROUP_EXIT before calling coredump_wait().
+On Wed, Oct 10, 2007 at 09:22:48AM -0700, mike kravetz wrote:
+> On Wed, Oct 10, 2007 at 10:49:35AM -0400, Gregory Haskins wrote:
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 3e75c62..b7f7a96 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -1869,7 +1869,8 @@ out_activate:
+> >  		 * extra locking in this particular case, because
+> >  		 * we are on the current CPU.)
+> >  		 */
+> > -		if (TASK_PREEMPTS_CURR(p, this_rq))
+> > +		if (TASK_PREEMPTS_CURR(p, this_rq)
+> > +		    && cpu_isset(this_cpu, p->cpus_allowed))
+> >  			set_tsk_need_resched(this_rq->curr);
+> >  		else
+> >  			/*
+> 
+> I wonder if it might better to explicitly take the rq lock and try to
+> put the task on this_rq in this situation?  Rather than waiting for
+> schedule to pull it from a remote rq as part of balance_rt_tasks.
+> 
+> A question that has passed through my head a few times is:  When waking
+> a RT task is it better to:
+> 1) run on current CPU if possible
+> 2) run on CPU task previously ran on
+> 
+> I think #1 may result in lower latency.  But, if the task has lots of
+> cache warmth the lower wakeup latency may be negated by running on a
+> 'remote' cpu.
 
-Ah.  Checking core_waiters seems like a fine thing to do.  
+Could we use task_hot() routine to find if the task is cache hot? If it
+isn't, if possible, we could run on current CPU, else, if possible, on
+the CPU it last ran on?
 
 
-Thanks,
-Roland
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
