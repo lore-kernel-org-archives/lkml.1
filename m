@@ -1,124 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXJKN11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbXJKN1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbXJKN11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbXJKN1Q
+	id S1758663AbXJKN1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXJKN1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:27:16 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:47774 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754018AbXJKN1O (ORCPT
+	Thu, 11 Oct 2007 09:27:18 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56153
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756972AbXJKN1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:27:14 -0400
-Date: Thu, 11 Oct 2007 09:27:12 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/5] Linux Kernel Markers - Samples
-Message-ID: <20071011132712.GA3580@Krystal>
-References: <20070928142845.795281397@polymtl.ca> <20070928143159.948108939@polymtl.ca> <20071011021355.53302c04.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 11 Oct 2007 09:27:17 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+Date: Thu, 11 Oct 2007 08:27:12 -0500
+User-Agent: KMail/1.9.6
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+References: <200710101722.21126.rob@landley.net> <20071011113931.GB8393@uranus.ravnborg.org> <Pine.LNX.4.64.0710111443530.3729@anakin>
+In-Reply-To: <Pine.LNX.4.64.0710111443530.3729@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071011021355.53302c04.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:07:08 up 73 days, 13:26,  2 users,  load average: 1.45, 1.56, 1.29
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710110827.12631.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Fri, 28 Sep 2007 10:28:49 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Module example showing how to use the Linux Kernel Markers.
-> 
-> s390:
-> 
-> samples/markers/marker-example.c: In function 'my_open':
-> samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't match constraints
-> samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't match constraints
-> samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
-> samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
+On Thursday 11 October 2007 7:46:47 am Geert Uytterhoeven wrote:
+> On Thu, 11 Oct 2007, Sam Ravnborg wrote:
+> > On Thu, Oct 11, 2007 at 09:25:19AM +0200, Geert Uytterhoeven wrote:
+> > > On Wed, 10 Oct 2007, Rob Landley wrote:
+> > > > From: Rob Landley <rob@landley.net>
+> > > >
+> > > > Rip out hardwired cross compiler name assumption that only m68k
+> > > > makes.
+> > > >
+> > > > Signed-off-by: Rob Landley <rob@landley.net>
+> > > > ---
+> > > > When you cross compile, you have to set the prefix CROSS_COMPILE to
+> > > > your cross compiler prefix.  You need to do this for all targets
+> > > > (arm, mips, ppc, x86-64 on x86, etc).  This is not specific to m68k,
+> > > > and this value is supplied _to_ the build, not supplied _by_ the
+> > > > build.
+> > > >
+> > > > The build shouldn't unconditionally overwrite the existing value of
+> > > > this variable with one it makes up.  It has no idea what I called my
+> > > > cross compiler.
+> > >
+> > > The build does not unconditionally overwrite the existing value of this
+> > > variable. You can specify the name of your cross compiler like this:
+> > >
+> > >     make CROSS_COMPILE=m68k-linux-
+> > >
+> > > BTW, m68k-linux-gnu- is the default name for a m68k cross compiler.
+> >
+> > For "make headers_install" this is not good.
+> > But I see there is confliting usages here.
+> > 1) current functionality makes it easy to build a cross compiled m68k
+> >
+> > Btw. if you did:
+> > CROSS_COMPILE ?= m68k-linux-
+> >
+> > then I could do:
+> > export CROSS_COMPILE=my-m68k-linux-
+> > make
+> >
+> > and still get the expected result.
+>
+> That won't work, cfr. http://lkml.org/lkml/2007/5/6/58.
 
-Hrm, I have s390 gcc-4.1.1 here and cannot reproduce the problem with it.
+Reading the patch in that link, recent cross compilers from _where_?  
+Buildroot?  Cross-tools?  Gentoo embedded?  Cross Linux From Scratch?  My 
+Firmware Linux project?
 
-What compiler are you using ?
+You assume they all use the same name, yet your patch changes them from one 
+default name to another default name, presumably due to a gcc version change 
+becoming increasingly political about the GNU/Linux/Dammit thing...
 
-This is clearly caused by the :
-  asm volatile ("" : : "i" (&__mark_##name));
+None of the other targets I've tried attempt to _supply_ a default.  Just like 
+the Linux kernel errors out early in the build if you distclean and then try 
+to run "make" without having run config first.  It doesn't run "defconfig" 
+for you and continue on in that case.  But m68k, uniquely, assumes it knows 
+what you want to do when you didn't tell it.  Other targets do not do this.
 
-It is there to specify that the __mark_##name variable is used. In the
-first implementations, I did not pass it as a parameter to the following
-function call, so I had to find a way to tell gcc that it should not go
-away. I first planned to use a "__used" attribute, but Jeremy said it
-was buggy on some gcc versions. (http://lkml.org/lkml/2006/10/17/235)
-
-He suggested the following:
-  asm volatile("" : : "m" (thing));
-
-But I guess it ended up not working so well, since I changed it for a
-"i" operand. However, if some s390 gccs do not like it, it's better to
-figure out another solution.
-
-Well, as a very very simple solution, let's just remove the asm. It is
-not needed anymore since the pointer is passed as parameter to the
-called function.
-
-The patch follows.
-
-Mathieu
-
-
-Linux Kernel Markers - Remove Unneeded asm
-
-On s390 (with some compiler) :
-
-> samples/markers/marker-example.c: In function 'my_open':
-> samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't
-> match constraints
-> samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't
-> match constraints
-> samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
-> samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
-
-It is there to specify that the __mark_##name variable is used. In the
-first implementations, I did not pass it as a parameter to the following
-function call, so I had to find a way to tell gcc that it should not go
-away. I first planned to use a "__used" attribute, but Jeremy said it
-was buggy on some gcc versions. (http://lkml.org/lkml/2006/10/17/235)
-
-He suggested the following:
-  asm volatile("" : : "m" (thing));
-
-But I guess it ended up not working so well, since I changed it for a
-"i" operand. However, if some s390 gccs do not like it, it's better to
-figure out another solution.
-
-Well, as a very very simple solution, let's just remove the asm. It is
-not needed anymore since the pointer is passed as parameter to the
-called function.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- include/linux/marker.h |    1 -
- 1 file changed, 1 deletion(-)
-
-Index: linux-2.6-lttng/include/linux/marker.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2007-10-11 09:20:04.000000000 -0400
-+++ linux-2.6-lttng/include/linux/marker.h	2007-10-11 09:20:23.000000000 -0400
-@@ -61,7 +61,6 @@ struct marker {
- 		__attribute__((section("__markers"), aligned(8))) =	\
- 		{ __mstrtab_name_##name, __mstrtab_format_##name,	\
- 		0, __mark_empty_function, NULL };			\
--		asm volatile ("" : : "i" (&__mark_##name));		\
- 		__mark_check_format(format, ## args);			\
- 		if (unlikely(__mark_##name.state)) {			\
- 			preempt_disable();				\
+Rob
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
