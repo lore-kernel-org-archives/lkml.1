@@ -1,221 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbXJKXe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbXJKXkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbXJKXe3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 19:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXJKXeW
+	id S1753867AbXJKXkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 19:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXJKXkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 19:34:22 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22267 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752450AbXJKXeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 19:34:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,261,1188802800"; 
-   d="scan'208";a="170124318"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 11 Oct 2007 19:40:13 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:46183 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbXJKXkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 19:40:11 -0400
+Date: Thu, 11 Oct 2007 16:40:10 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: [patch] modpost problem when symbols move from one module to another
+Message-ID: <Pine.LNX.4.58.0710111631350.13556@shell4.speakeasy.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C80C5F.25B8B407"
-Subject: RE: TPM driver changes to support multiple locality
-Date: Thu, 11 Oct 2007 16:33:36 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628CB9E61@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <20071011160221.87f77c61.randy.dunlap@oracle.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: TPM driver changes to support multiple locality
-Thread-Index: AcgMWuayc76pXWlNSleAG87w4tTQvAAAIS6g
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com><27383.1192045583@turing-police.cc.vt.edu><A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com><20071011115429.92326cbd.randy.dunlap@oracle.com><A3258B497F1C1441AD36A2E8B45FD628CB9CB2@scsmsx412.amr.corp.intel.com><20071011143917.0eb75029.randy.dunlap@oracle.com><A3258B497F1C1441AD36A2E8B45FD628CB9DD5@scsmsx412.amr.corp.intel.com> <20071011160221.87f77c61.randy.dunlap@oracle.com>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Oct 2007 23:33:37.0865 (UTC) FILETIME=[25FA5B90:01C80C5F]
+Content-Type: MULTIPART/MIXED; BOUNDARY="289736052-1504327650-1192146010=:13556"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-------_=_NextPart_001_01C80C5F.25B8B407
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--289736052-1504327650-1192146010=:13556
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
+The v4l-dvb tree recently renamed a module and this caused some problems
+with modpost creating incorrect module dependencies.  This patch fixes that
+problem.  It should be explained thoroughly in the patch description.
+--289736052-1504327650-1192146010=:13556
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="modpost.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.58.0710111640100.13556@shell4.speakeasy.net>
+Content-Description: 
+Content-Disposition: attachment; filename="modpost.patch"
 
+bW9kcG9zdDogRml4IHByb2JsZW0gd2l0aCBvdXQgb2YgZGF0ZSBNb2R1bGUu
+c3ltdmVycw0KDQpXaGVuIHBhcnQgb2YgYnVpbGQgYW4gZXh0ZXJuYWwgbW9k
+dWxlIHRyZWUsIG1vZHBvc3QgZmlyc3QgcmVhZHMgaW4gdGhlDQprZXJuZWwn
+cyBhbmQgdGhlbiB0aGUgZXh0ZXJuYWwgdHJlZSdzIE1vZHVsZS5zeW12ZXJz
+IGZpbGVzLiAgRnJvbSB0aGVzZSBmaWxlcw0KaXQgZXN0YWJsaXNoZXMgYSBz
+eW1ib2wgPT4gbW9kdWxlIG1hcHBpbmcuICBXaGVuIGl0IGxhdGVyIHJlYWRz
+IGluIGVhY2ggbW9kdWxlDQpidWlsdCBhbmQgcHJvY2Vzc2VzIHRoZSBzeW1i
+b2xzIGl0IGZpbmRzLCBpdCBkaXNjb3ZlcnMgdGhlIHN5bWJvbD0+bW9kdWxl
+DQptYXBwaW5nIGZyb20gTW9kdWxlLnN5bXZlcnMgYW5kIGxlYXZlcyBpdCBh
+cyBpdCBpcy4NCg0KVGhlIHByb2JsZW0gY29tZXMgd2l0aCBhIG1vZHVsZSBo
+YXMgYmVlbiByZS1uYW1lZCBvciBhIHN5bWJvbCBoYXMgbW92ZWQgZnJvbQ0K
+b25lIG1vZHVsZSB0byBhbm90aGVyLCBzaW5jZSB0aGUgTW9kdWxlLnN5bXZl
+cnMgZmlsZSB3YXMgZ2VuZXJhdGVkLiAgbW9kcG9zdA0KZG9lcyBub3QgdXBk
+YXRlIHRoZSBzeW1ib2w9Pm1vZHVsZSBtYXBwaW5nIHdoZW4gaXQgZmluZHMg
+dGhlIG5ldyBsb2NhdGlvbiBvZg0KdGhlIHN5bWJvbCB3aGVuIHNjYW5uaW5n
+IHRoZSBuZXdseSBidWlsdCBtb2R1bGVzLiAgVGhpcyByZXN1bHRzIGluIHRo
+ZSBtb2R1bGUNCmNvbnRhaW5pbmcgaW5jb3JyZWN0IGRlcGVuZGVuY3kgaW5m
+b3JtYXRpb24gYW5kIHRoZSBuZXcgTW9kdWxlLnN5bXZlcnMgZmlsZQ0Kd3Jp
+dHRlbiBieSBtb2Rwb3N0IHdpbGwgYWxzbyBjb250YWluIHRoZSBpbmNvcnJl
+Y3QgbWFwcGluZ3MsIHBlcnBldHVhdGluZyB0aGUNCnByb2JsZW0gdG8gdGhl
+IG5leHQgYnVpbGQsIGFuZCBzbyBvbi4NCg0KV2hlbiBidWlsZGluZyB0aGUg
+b3V0IG9mIGtlcm5lbCBkZXZlbG9wbWVudCB0cmVlIGZvciBrZXJuZWwgc3Vi
+c3lzdGVtLCBsaWtlDQp2NGwtZHZiIG9yIEFMU0EsIGRlbGV0aW5nIHRoZSBl
+eHRlcm5hbCBNb2R1bGUuc3ltdmVycyBmaWxlIGJlZm9yZSBidWlsZGluZw0K
+KHdoaWNoIHRoZSBrZXJuZWwgYnVpbGQgc3lzdGVtIGRvZXNuJ3QgZG8gYW5k
+IHNob3VsZG4ndCBiZSBuZWNlc3NhcnkgYW55d2F5KSwNCndvbid0IGZpeCB0
+aGUgcHJvYmxlbS4gIG1vZHBvc3Qgc3RpbGwgcmVhZHMgdGhlIGtlcm5lbCdz
+IE1vZHVsZS5zeW12ZXJzLCBhbmQNCnNpbmNlIHdlIGEgYnVpbGRpbmcgYSBr
+ZXJuZWwgc3Vic3lzdGVtLCBpdCB3aWxsIGRlZmluZSB0aGUgc2FtZSBzeW1i
+b2xzIGFzIHRoZQ0KZXh0ZXJuYWwgbW9kdWxlcy4NCg0KU2lnbmVkLW9mZi1i
+eTogVHJlbnQgUGllcGhvIDx4eXp6eUBzcGVha2Vhc3kub3JnPg0KDQpkaWZm
+IC1yIDc5ZjBlYTFlMGU3MCBzY3JpcHRzL21vZC9tb2Rwb3N0LmMNCi0tLSBh
+L3NjcmlwdHMvbW9kL21vZHBvc3QuYwlUdWUgT2N0IDA5IDIxOjAwOjQwIDIw
+MDcgKzAwMDANCisrKyBiL3NjcmlwdHMvbW9kL21vZHBvc3QuYwlUaHUgT2N0
+IDExIDE1OjIwOjAxIDIwMDcgLTA3MDANCkBAIC0yNjgsNiArMjY4LDkgQEAg
+c3RhdGljIHN0cnVjdCBzeW1ib2wgKnN5bV9hZGRfZXhwb3J0ZWQoYw0KIAkJ
+CSAgICAgIndhcyBpbiAlcyVzXG4iLCBtb2QtPm5hbWUsIG5hbWUsDQogCQkJ
+ICAgICBzLT5tb2R1bGUtPm5hbWUsDQogCQkJICAgICBpc192bWxpbnV4KHMt
+Pm1vZHVsZS0+bmFtZSkgPyIiOiIua28iKTsNCisJCX0gZWxzZSB7DQorCQkJ
+LyogSW4gY2FzZSBNb2R1bGVzLnN5bXZlcnMgd2FzIG91dCBvZiBkYXRlICov
+DQorCQkJcy0+bW9kdWxlID0gbW9kOw0KIAkJfQ0KIAl9DQogCXMtPnByZWxv
+YWRlZCA9IDA7DQo=
 
------Original Message-----
-From: Randy Dunlap [mailto:randy.dunlap@oracle.com]=20
-Sent: Thursday, October 11, 2007 4:02 PM
-To: Agarwal, Lomesh
-Cc: Valdis.Kletnieks@vt.edu; linux-kernel@vger.kernel.org
-Subject: Re: TPM driver changes to support multiple locality
-
-On Thu, 11 Oct 2007 15:46:03 -0700 Agarwal, Lomesh wrote:
-
-> Attached is the patch which resolves all the comments.
-
-Inline patches are preferred so that reviewers can comment on them
-more easily.
-
-What mail client are you using?
-[Agarwal, Lomesh] I am using MS Outlook. Earlier you said inline patches
-have problem because of mail client. That's why I sent it as attachment.
-
-The patch has trailing CRs on each line ("DOS mode").
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Just verifying:  this TPM device has interrupts per locality?
-
-+	/* check if interrupt is meant for this locality */
-+	if (check_locality(chip, locality) < 0)
-+		return IRQ_NONE;
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-[Agarwal, Lomesh] TPM device has only one interrupt. so on receiving
-interrupt driver has to make sure that its meant for its locality.
-
-init_tis() still seems to have some problems.
-
- static int __init init_tis(void)
- {
-+#define DEVNAME_SIZE 10
-+
- 	int rc;
-=20
-+	if ((locality < 0) || (locality > 4))
-+		return PTR_ERR(pdev);
-
-pdev hasn't been set (so it's NULL).
-
-+		pdev =3D platform_device_register_simple(devname, -1,
-NULL, 0);
-+		if (IS_ERR(pdev))
- 			return PTR_ERR(pdev);
-
-Error path above needs to call driver_unregister().
-[Agarwal, Lomesh] attached is the new patch.
-
-
----
-~Randy
-
-------_=_NextPart_001_01C80C5F.25B8B407
-Content-Type: application/octet-stream;
-	name="tpm_tis.c.patch"
-Content-Transfer-Encoding: base64
-Content-Description: tpm_tis.c.patch
-Content-Disposition: attachment;
-	filename="tpm_tis.c.patch"
-
-QWRkaW5nIHN1cHBvcnQgZm9yIG11bHRpcGxlIGxvY2FsaXRpZXMgaW4gdHBtIGRyaXZlcgp0aGlz
-IGRyaXZlciBjYW4gYmUgaW5zdGF0aWF0ZWQgd2l0aCBhIGxvY2FsaXR5IHBhcmFtZXRlciBhbmQg
-dGhhdCBpbnN0YW5jZQp3aWxsIG9wZXJhdGUgb24gZ2l2ZW4gbG9jYWxpdHkuCkJ5IGRlZmF1bHQg
-aXQgd29ya3Mgb24gbG9jYWxpdHkgMApTaWduZWQtb2ZmLWJ5OiBMb21lc2ggQWdhcndhbCA8bG9t
-ZXNoLmFnYXJ3YWxAaW50ZWwuY29tPgotLS0KCmRyaXZlcnMvY2hhci90cG0vdHBtX3Rpcy5jIHwg
-ICA4MyArKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQs
-IDU4IGluc2VydGlvbnMoKyksIDI1IGRlbGV0aW9ucygtKQoKLS0tIHByaXN0aW5lLWxpbnV4LTIu
-Ni4xOC9kcml2ZXJzL2NoYXIvdHBtL3RwbV90aXMuYwkyMDA2LTA5LTIwIDExOjQyOjA2LjAwMDAw
-MDAwMCArMDgwMAorKysgbGludXgtMi42LjE4LXhlbi9kcml2ZXJzL2NoYXIvdHBtL3RwbV90aXMu
-YwkyMDA3LTEwLTEyIDA3OjE2OjQyLjAwMDAwMDAwMCArMDgwMApAQCAtNTYsMjkgKzU2LDM3IEBA
-IGVudW0gdGlzX2ludF9mbGFncyB7CiAKIGVudW0gdGlzX2RlZmF1bHRzIHsKIAlUSVNfTUVNX0JB
-U0UgPSAweEZFRDQwMDAwLAotCVRJU19NRU1fTEVOID0gMHg1MDAwLAorCVRJU19MT0NBTElUWV9T
-SElGVCA9IDEyLAorCVRJU19NRU1fTEVOID0gMHgxMDAwLAogCVRJU19TSE9SVF9USU1FT1VUID0g
-NzUwLAkvKiBtcyAqLwogCVRJU19MT05HX1RJTUVPVVQgPSAyMDAwLAkvKiAyIHNlYyAqLwogfTsK
-IAotI2RlZmluZQlUUE1fQUNDRVNTKGwpCQkJKDB4MDAwMCB8ICgobCkgPDwgMTIpKQotI2RlZmlu
-ZQlUUE1fSU5UX0VOQUJMRShsKQkJKDB4MDAwOCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1f
-SU5UX1ZFQ1RPUihsKQkJKDB4MDAwQyB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fSU5UX1NU
-QVRVUyhsKQkJKDB4MDAxMCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fSU5URl9DQVBTKGwp
-CQkoMHgwMDE0IHwgKChsKSA8PCAxMikpCi0jZGVmaW5lCVRQTV9TVFMobCkJCQkoMHgwMDE4IHwg
-KChsKSA8PCAxMikpCi0jZGVmaW5lCVRQTV9EQVRBX0ZJRk8obCkJCSgweDAwMjQgfCAoKGwpIDw8
-IDEyKSkKKyNkZWZpbmUJVFBNX0FDQ0VTUyhsKQkJCSgweDAwMDApCisjZGVmaW5lCVRQTV9JTlRf
-RU5BQkxFKGwpCQkoMHgwMDA4KQorI2RlZmluZQlUUE1fSU5UX1ZFQ1RPUihsKQkJKDB4MDAwQykK
-KyNkZWZpbmUJVFBNX0lOVF9TVEFUVVMobCkJCSgweDAwMTApCisjZGVmaW5lCVRQTV9JTlRGX0NB
-UFMobCkJCSgweDAwMTQpCisjZGVmaW5lCVRQTV9TVFMobCkJCQkoMHgwMDE4KQorI2RlZmluZQlU
-UE1fREFUQV9GSUZPKGwpCQkoMHgwMDI0KQogCi0jZGVmaW5lCVRQTV9ESURfVklEKGwpCQkJKDB4
-MEYwMCB8ICgobCkgPDwgMTIpKQotI2RlZmluZQlUUE1fUklEKGwpCQkJKDB4MEYwNCB8ICgobCkg
-PDwgMTIpKQorI2RlZmluZQlUUE1fRElEX1ZJRChsKQkJCSgweDBGMDApCisjZGVmaW5lCVRQTV9S
-SUQobCkJCQkoMHgwRjA0KQogCiBzdGF0aWMgTElTVF9IRUFEKHRpc19jaGlwcyk7CiBzdGF0aWMg
-REVGSU5FX1NQSU5MT0NLKHRpc19sb2NrKTsKIAogc3RhdGljIGludCBjaGVja19sb2NhbGl0eShz
-dHJ1Y3QgdHBtX2NoaXAgKmNoaXAsIGludCBsKQogewotCWlmICgoaW9yZWFkOChjaGlwLT52ZW5k
-b3IuaW9iYXNlICsgVFBNX0FDQ0VTUyhsKSkgJgotCSAgICAgKFRQTV9BQ0NFU1NfQUNUSVZFX0xP
-Q0FMSVRZIHwgVFBNX0FDQ0VTU19WQUxJRCkpID09CisJdW5zaWduZWQgY2hhciB0cG1fYWNjZXNz
-OworCisJdHBtX2FjY2VzcyA9IGlvcmVhZDgoY2hpcC0+dmVuZG9yLmlvYmFzZSArIFRQTV9BQ0NF
-U1MobCkpOworCisJLyogY2hlY2sgaWYgbG9jYWxpdHkgaXMgY2xvc2VkICovCisJaWYgKHRwbV9h
-Y2Nlc3MgPT0gMHhGRikKKwkJcmV0dXJuIC0xOworCisJaWYgKCh0cG1fYWNjZXNzICYgKFRQTV9B
-Q0NFU1NfQUNUSVZFX0xPQ0FMSVRZIHwgVFBNX0FDQ0VTU19WQUxJRCkpID09CiAJICAgIChUUE1f
-QUNDRVNTX0FDVElWRV9MT0NBTElUWSB8IFRQTV9BQ0NFU1NfVkFMSUQpKQogCQlyZXR1cm4gY2hp
-cC0+dmVuZG9yLmxvY2FsaXR5ID0gbDsKIApAQCAtMjUxLDEwICsyNTksMTQgQEAgc3RhdGljIGlu
-dCB0cG1fdGlzX3JlY3Yoc3RydWN0IHRwbV9jaGlwIAogCiBvdXQ6CiAJdHBtX3Rpc19yZWFkeShj
-aGlwKTsKLQlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMCk7
-CisJcmVsZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3IubG9jYWxpdHksIDEpOwogCXJl
-dHVybiBzaXplOwogfQogCitzdGF0aWMgaW50IGxvY2FsaXR5OworbW9kdWxlX3BhcmFtKGxvY2Fs
-aXR5LCBpbnQsIDA0NDQpOworTU9EVUxFX1BBUk1fREVTQyhsb2NhbGl0eSwgIlRQTSBMb2NhbGl0
-eSBUbyBhY2Nlc3MiKTsKKwogLyoKICAqIElmIGludGVycnVwdHMgYXJlIHVzZWQgKHNpZ25hbGVk
-IGJ5IGFuIGlycSBzZXQgaW4gdGhlIHZlbmRvciBzdHJ1Y3R1cmUpCiAgKiB0cG0uYyBjYW4gc2tp
-cCBwb2xsaW5nIGZvciB0aGUgZGF0YSB0byBiZSBhdmFpbGFibGUgYXMgdGhlIGludGVycnVwdCBp
-cwpAQCAtMjY2LDcgKzI3OCw3IEBAIHN0YXRpYyBpbnQgdHBtX3Rpc19zZW5kKHN0cnVjdCB0cG1f
-Y2hpcCAKIAlzaXplX3QgY291bnQgPSAwOwogCXUzMiBvcmRpbmFsOwogCi0JaWYgKHJlcXVlc3Rf
-bG9jYWxpdHkoY2hpcCwgMCkgPCAwKQorCWlmIChyZXF1ZXN0X2xvY2FsaXR5KGNoaXAsIGxvY2Fs
-aXR5KSA8IDApCiAJCXJldHVybiAtRUJVU1k7CiAKIAlzdGF0dXMgPSB0cG1fdGlzX3N0YXR1cyhj
-aGlwKTsKQEAgLTMyNiw3ICszMzgsNyBAQCBzdGF0aWMgaW50IHRwbV90aXNfc2VuZChzdHJ1Y3Qg
-dHBtX2NoaXAgCiAJcmV0dXJuIGxlbjsKIG91dF9lcnI6CiAJdHBtX3Rpc19yZWFkeShjaGlwKTsK
-LQlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMCk7CisJcmVs
-ZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3IubG9jYWxpdHksIDEpOwogCXJldHVybiBy
-YzsKIH0KIApAQCAtNDAxLDcgKzQxMywxMCBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgdGlzX2ludF9o
-YW5kbGVyKGludCBpCiB7CiAJc3RydWN0IHRwbV9jaGlwICpjaGlwID0gKHN0cnVjdCB0cG1fY2hp
-cCAqKSBkZXZfaWQ7CiAJdTMyIGludGVycnVwdDsKLQlpbnQgaTsKKworCS8qIGNoZWNrIGlmIGlu
-dGVycnVwdCBpcyBtZWFudCBmb3IgdGhpcyBsb2NhbGl0eSAqLworCWlmIChjaGVja19sb2NhbGl0
-eShjaGlwLCBsb2NhbGl0eSkgPCAwKQorCQlyZXR1cm4gSVJRX05PTkU7CiAKIAlpbnRlcnJ1cHQg
-PSBpb3JlYWQzMihjaGlwLT52ZW5kb3IuaW9iYXNlICsKIAkJCSAgICAgVFBNX0lOVF9TVEFUVVMo
-Y2hpcC0+dmVuZG9yLmxvY2FsaXR5KSk7CkBAIC00MTEsMTAgKzQyNiw2IEBAIHN0YXRpYyBpcnFy
-ZXR1cm5fdCB0aXNfaW50X2hhbmRsZXIoaW50IGkKIAogCWlmIChpbnRlcnJ1cHQgJiBUUE1fSU5U
-Rl9EQVRBX0FWQUlMX0lOVCkKIAkJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZjaGlwLT52ZW5kb3Iu
-cmVhZF9xdWV1ZSk7Ci0JaWYgKGludGVycnVwdCAmIFRQTV9JTlRGX0xPQ0FMSVRZX0NIQU5HRV9J
-TlQpCi0JCWZvciAoaSA9IDA7IGkgPCA1OyBpKyspCi0JCQlpZiAoY2hlY2tfbG9jYWxpdHkoY2hp
-cCwgaSkgPj0gMCkKLQkJCQlicmVhazsKIAlpZiAoaW50ZXJydXB0ICYKIAkgICAgKFRQTV9JTlRG
-X0xPQ0FMSVRZX0NIQU5HRV9JTlQgfCBUUE1fSU5URl9TVFNfVkFMSURfSU5UIHwKIAkgICAgIFRQ
-TV9JTlRGX0NNRF9SRUFEWV9JTlQpKQpAQCAtNDQwLDcgKzQ1MSw3IEBAIHN0YXRpYyBpbnQgdHBt
-X3Rpc19pbml0KHN0cnVjdCBkZXZpY2UgKmQKIAlzdHJ1Y3QgdHBtX2NoaXAgKmNoaXA7CiAKIAlp
-ZiAoIXN0YXJ0KQotCQlzdGFydCA9IFRJU19NRU1fQkFTRTsKKwkJc3RhcnQgPSBUSVNfTUVNX0JB
-U0UgfCAobG9jYWxpdHkgPDwgVElTX0xPQ0FMSVRZX1NISUZUKTsKIAlpZiAoIWxlbikKIAkJbGVu
-ID0gVElTX01FTV9MRU47CiAKQEAgLTQ5MCw4ICs1MDEsMTAgQEAgc3RhdGljIGludCB0cG1fdGlz
-X2luaXQoc3RydWN0IGRldmljZSAqZAogCWlmIChpbnRmY2FwcyAmIFRQTV9JTlRGX0RBVEFfQVZB
-SUxfSU5UKQogCQlkZXZfZGJnKGRldiwgIlx0RGF0YSBBdmFpbCBJbnQgU3VwcG9ydFxuIik7CiAK
-LQlpZiAocmVxdWVzdF9sb2NhbGl0eShjaGlwLCAwKSAhPSAwKSB7Ci0JCXJjID0gLUVOT0RFVjsK
-KwlpZiAocmVxdWVzdF9sb2NhbGl0eShjaGlwLCBsb2NhbGl0eSkgPCAwKSB7CisJCXJjID0gLUVC
-VVNZOworCQlwcmludGsoS0VSTl9XQVJOSU5HICJ0cG1fdGlzOiBmYWlsZWQgcmVxdWVzdF9sb2Nh
-bGl0eSAlZFxuIiwKKwkJCWxvY2FsaXR5KTsKIAkJZ290byBvdXRfZXJyOwogCX0KIApAQCAtNTgy
-LDkgKzU5NSwxMSBAQCBzdGF0aWMgaW50IHRwbV90aXNfaW5pdChzdHJ1Y3QgZGV2aWNlICpkCiAK
-IAl0cG1fZ2V0X3RpbWVvdXRzKGNoaXApOwogCXRwbV9jb250aW51ZV9zZWxmdGVzdChjaGlwKTsK
-KwlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMSk7CiAKIAly
-ZXR1cm4gMDsKIG91dF9lcnI6CisJcmVsZWFzZV9sb2NhbGl0eShjaGlwLCBjaGlwLT52ZW5kb3Iu
-bG9jYWxpdHksIDEpOwogCWlmIChjaGlwLT52ZW5kb3IuaW9iYXNlKQogCQlpb3VubWFwKGNoaXAt
-PnZlbmRvci5pb2Jhc2UpOwogCXRwbV9yZW1vdmVfaGFyZHdhcmUoY2hpcC0+ZGV2KTsKQEAgLTYz
-Niw3ICs2NTEsNyBAQCBtb2R1bGVfcGFyYW1fc3RyaW5nKGhpZCwgdHBtX3BucF90YmxbVElTCiBN
-T0RVTEVfUEFSTV9ERVNDKGhpZCwgIlNldCBhZGRpdGlvbmFsIHNwZWNpZmljIEhJRCBmb3IgdGhp
-cyBkcml2ZXIgdG8gcHJvYmUiKTsKIAogc3RhdGljIHN0cnVjdCBkZXZpY2VfZHJpdmVyIHRpc19k
-cnYgPSB7Ci0JLm5hbWUgPSAidHBtX3RpcyIsCisJLm5hbWUgPSAiIiwKIAkuYnVzID0gJnBsYXRm
-b3JtX2J1c190eXBlLAogCS5vd25lciA9IFRISVNfTU9EVUxFLAogCS5zdXNwZW5kID0gdHBtX3Bt
-X3N1c3BlbmQsCkBAIC02NDgsMTkgKzY2MywzNiBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2Rl
-dmljZSAqcGRldjsKIHN0YXRpYyBpbnQgZm9yY2U7CiBtb2R1bGVfcGFyYW0oZm9yY2UsIGJvb2ws
-IDA0NDQpOwogTU9EVUxFX1BBUk1fREVTQyhmb3JjZSwgIkZvcmNlIGRldmljZSBwcm9iZSByYXRo
-ZXIgdGhhbiB1c2luZyBBQ1BJIGVudHJ5Iik7CisKK3N0YXRpYyBjaGFyICpkZXZuYW1lOworCiBz
-dGF0aWMgaW50IF9faW5pdCBpbml0X3Rpcyh2b2lkKQogeworI2RlZmluZSBERVZOQU1FX1NJWkUg
-MTAKKwogCWludCByYzsKIAorCWlmICgobG9jYWxpdHkgPCAwKSB8fCAobG9jYWxpdHkgPiA0KSkK
-KwkJcmV0dXJuIC0xOworCiAJaWYgKGZvcmNlKSB7CisJCWRldm5hbWUgPSBrbWFsbG9jKERFVk5B
-TUVfU0laRSwgR0ZQX0tFUk5FTCk7CisJCXNjbnByaW50ZihkZXZuYW1lLCBERVZOQU1FX1NJWkUs
-ICIlcyVkIiwgInRwbV90aXMiLCBsb2NhbGl0eSk7CisKKwkJdGlzX2Rydi5uYW1lID0gZGV2bmFt
-ZTsKIAkJcmMgPSBkcml2ZXJfcmVnaXN0ZXIoJnRpc19kcnYpOwogCQlpZiAocmMgPCAwKQogCQkJ
-cmV0dXJuIHJjOwotCQlpZiAoSVNfRVJSKHBkZXY9cGxhdGZvcm1fZGV2aWNlX3JlZ2lzdGVyX3Np
-bXBsZSgidHBtX3RpcyIsIC0xLCBOVUxMLCAwKSkpCisKKwkJcGRldiA9IHBsYXRmb3JtX2Rldmlj
-ZV9yZWdpc3Rlcl9zaW1wbGUoZGV2bmFtZSwgLTEsIE5VTEwsIDApOworCQlpZiAoSVNfRVJSKHBk
-ZXYpKSB7CisJCQlkcml2ZXJfdW5yZWdpc3RlcigmdGlzX2Rydik7CiAJCQlyZXR1cm4gUFRSX0VS
-UihwZGV2KTsKKwkJfQogCQlpZigocmM9dHBtX3Rpc19pbml0KCZwZGV2LT5kZXYsIDAsIDApKSAh
-PSAwKSB7CiAJCQlwbGF0Zm9ybV9kZXZpY2VfdW5yZWdpc3RlcihwZGV2KTsKIAkJCWRyaXZlcl91
-bnJlZ2lzdGVyKCZ0aXNfZHJ2KTsKKwkJCWtmcmVlKGRldm5hbWUpOwogCQl9CiAJCXJldHVybiBy
-YzsKIAl9CkBAIC02OTIsNiArNzI0LDcgQEAgc3RhdGljIHZvaWQgX19leGl0IGNsZWFudXBfdGlz
-KHZvaWQpCiAJaWYgKGZvcmNlKSB7CiAJCXBsYXRmb3JtX2RldmljZV91bnJlZ2lzdGVyKHBkZXYp
-OwogCQlkcml2ZXJfdW5yZWdpc3RlcigmdGlzX2Rydik7CisJCWtmcmVlKGRldm5hbWUpOwogCX0g
-ZWxzZQogCQlwbnBfdW5yZWdpc3Rlcl9kcml2ZXIoJnRpc19wbnBfZHJpdmVyKTsKIH0K
-
-------_=_NextPart_001_01C80C5F.25B8B407--
+--289736052-1504327650-1192146010=:13556--
