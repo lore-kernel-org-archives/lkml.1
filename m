@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXJKAYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbXJKA1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbXJKAYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 20:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXJKAYH
+	id S1757607AbXJKA1O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 20:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbXJKA1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 20:24:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:50919 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752249AbXJKAYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 20:24:06 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18189.27936.484657.548537@cargo.ozlabs.ibm.com>
-Date: Thu, 11 Oct 2007 10:24:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Greg KH <greg@kroah.com>,
-       Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
-In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
-References: <20071008180406.052382073@mini.kroah.org>
-	<20071008180633.GJ7627@kroah.com>
-	<20071009151702.GA19209@lixom.net>
-	<20071009222003.GA21228@kroah.com>
-	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
-	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Wed, 10 Oct 2007 20:27:00 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:33235 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756360AbXJKA07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 20:26:59 -0400
+Date: Wed, 10 Oct 2007 18:25:06 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Marvell's 88SE6121 SATA driver in Kernel 2.4
+In-reply-to: <1192034882.346153.169030@19g2000hsx.googlegroups.com>
+To: Mike <mail2mz@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <470D6D62.1020000@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <1192034882.346153.169030@19g2000hsx.googlegroups.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
-
-> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
-> > 
-> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
+Mike wrote:
+> Hello,
 > 
-> Well, the ppc oops seems to be a ppc bug regardless.
+> Anyone know if Kernel2.4 support the Marvell's 88SE6121 SATA
+> controller? Or any other similar SATA controller follows AHCI? Does
+> Kernel2.4 use libata or CAM-ata?
+> 
+> Thanks for any help,
+> 
+> Mike
+> 
 
-Sure.  And Milton and Olof have figured out what the problem is and
-proposed patches to fix it.
+There were some libata backports to 2.4, but I think they are quite out 
+of date now and lacking many bug fixes. It would be far better to 
+upgrade to 2.6 for SATA support.
 
-However, I'm a bit annoyed that a significant change in behaviour like
-that, with a significant likelihood of causing regressions, went in so
-late (after -rc8), in a manner that affects all SMP architectures, and
-without being posted to linux-arch (unless I missed it).
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Paul.
