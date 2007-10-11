@@ -1,43 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbXJKSdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbXJKSfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbXJKSdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 14:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXJKScy
+	id S1757738AbXJKSfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 14:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbXJKSff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 14:32:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37057 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753843AbXJKScx (ORCPT
+	Thu, 11 Oct 2007 14:35:35 -0400
+Received: from mga03.intel.com ([143.182.124.21]:25840 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752816AbXJKSfe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 14:32:53 -0400
-Date: Thu, 11 Oct 2007 11:32:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/5] Linux Kernel Markers - Samples
-Message-Id: <20071011113211.6ec9a8ee.akpm@linux-foundation.org>
-In-Reply-To: <20071011132712.GA3580@Krystal>
-References: <20070928142845.795281397@polymtl.ca>
-	<20070928143159.948108939@polymtl.ca>
-	<20071011021355.53302c04.akpm@linux-foundation.org>
-	<20071011132712.GA3580@Krystal>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 14:35:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,260,1188802800"; 
+   d="scan'208";a="296844824"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: TPM driver changes to support multiple locality
+Date: Thu, 11 Oct 2007 11:33:35 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <27383.1192045583@turing-police.cc.vt.edu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: TPM driver changes to support multiple locality
+Thread-Index: AcgLdklDzSEVWzzDRSifb0a4f9wMMAAvtCIA
+References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com> <27383.1192045583@turing-police.cc.vt.edu>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: <Valdis.Kletnieks@vt.edu>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Oct 2007 18:33:37.0070 (UTC) FILETIME=[3CAB04E0:01C80C35]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 09:27:12 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Below is the patch for TPM driver.
+Comments/suggestions?
 
-> > samples/markers/marker-example.c: In function 'my_open':
-> > samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't match constraints
-> > samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't match constraints
-> > samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
-> > samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
-> 
-> Hrm, I have s390 gcc-4.1.1 here and cannot reproduce the problem with it.
-> 
-> What compiler are you using ?
+--- pristine-linux-2.6.18/drivers/char/tpm/tpm_tis.c	2006-09-19
+20:42:06.000000000 -0700
++++ linux-2.6.18-xen/drivers/char/tpm/tpm_tis.c	2007-10-09
+15:30:49.000000000 -0700
+@@ -56,29 +56,36 @@
+ 
+ enum tis_defaults {
+ 	TIS_MEM_BASE = 0xFED40000,
+-	TIS_MEM_LEN = 0x5000,
++	TIS_MEM_LEN = 0x1000,
+ 	TIS_SHORT_TIMEOUT = 750,	/* ms */
+ 	TIS_LONG_TIMEOUT = 2000,	/* 2 sec */
+ };
+ 
+-#define	TPM_ACCESS(l)			(0x0000 | ((l) << 12))
+-#define	TPM_INT_ENABLE(l)		(0x0008 | ((l) << 12))
+-#define	TPM_INT_VECTOR(l)		(0x000C | ((l) << 12))
+-#define	TPM_INT_STATUS(l)		(0x0010 | ((l) << 12))
+-#define	TPM_INTF_CAPS(l)		(0x0014 | ((l) << 12))
+-#define	TPM_STS(l)			(0x0018 | ((l) << 12))
+-#define	TPM_DATA_FIFO(l)		(0x0024 | ((l) << 12))
++#define	TPM_ACCESS(l)			(0x0000)
++#define	TPM_INT_ENABLE(l)		(0x0008)
++#define	TPM_INT_VECTOR(l)		(0x000C)
++#define	TPM_INT_STATUS(l)		(0x0010)
++#define	TPM_INTF_CAPS(l)		(0x0014)
++#define	TPM_STS(l)			(0x0018)
++#define	TPM_DATA_FIFO(l)		(0x0024)
+ 
+-#define	TPM_DID_VID(l)			(0x0F00 | ((l) << 12))
+-#define	TPM_RID(l)			(0x0F04 | ((l) << 12))
++#define	TPM_DID_VID(l)			(0x0F00)
++#define	TPM_RID(l)			(0x0F04)
+ 
+ static LIST_HEAD(tis_chips);
+ static DEFINE_SPINLOCK(tis_lock);
+ 
+ static int check_locality(struct tpm_chip *chip, int l)
+ {
+-	if ((ioread8(chip->vendor.iobase + TPM_ACCESS(l)) &
+-	     (TPM_ACCESS_ACTIVE_LOCALITY | TPM_ACCESS_VALID)) ==
++    unsigned char tpm_access;
++
++	tpm_access = ioread8(chip->vendor.iobase + TPM_ACCESS(l));
++
++    /* check if locality is closed */
++	if(tpm_access == 0xFF)
++        return -1;
++
++	if((tpm_access & (TPM_ACCESS_ACTIVE_LOCALITY |
+TPM_ACCESS_VALID)) ==
+ 	    (TPM_ACCESS_ACTIVE_LOCALITY | TPM_ACCESS_VALID))
+ 		return chip->vendor.locality = l;
+ 
+@@ -251,10 +258,14 @@
+ 
+ out:
+ 	tpm_tis_ready(chip);
+-	release_locality(chip, chip->vendor.locality, 0);
++	release_locality(chip, chip->vendor.locality, 1);
+ 	return size;
+ }
+ 
++static int locality = 0;
++module_param(locality, int, 0444);
++MODULE_PARM_DESC(locality, "TPM Locality To access");
++
+ /*
+  * If interrupts are used (signaled by an irq set in the vendor
+structure)
+  * tpm.c can skip polling for the data to be available as the interrupt
+is
+@@ -266,7 +277,7 @@
+ 	size_t count = 0;
+ 	u32 ordinal;
+ 
+-	if (request_locality(chip, 0) < 0)
++	if (request_locality(chip, locality) < 0)
+ 		return -EBUSY;
+ 
+ 	status = tpm_tis_status(chip);
+@@ -326,7 +337,7 @@
+ 	return len;
+ out_err:
+ 	tpm_tis_ready(chip);
+-	release_locality(chip, chip->vendor.locality, 0);
++	release_locality(chip, chip->vendor.locality, 1);
+ 	return rc;
+ }
+ 
+@@ -401,7 +412,10 @@
+ {
+ 	struct tpm_chip *chip = (struct tpm_chip *) dev_id;
+ 	u32 interrupt;
+-	int i;
++
++        /* check if interrupt is meant for this locality */
++        if(check_locality(chip, locality) < 0)
++                return IRQ_NONE;
+ 
+ 	interrupt = ioread32(chip->vendor.iobase +
+ 			     TPM_INT_STATUS(chip->vendor.locality));
+@@ -411,10 +425,6 @@
+ 
+ 	if (interrupt & TPM_INTF_DATA_AVAIL_INT)
+ 		wake_up_interruptible(&chip->vendor.read_queue);
+-	if (interrupt & TPM_INTF_LOCALITY_CHANGE_INT)
+-		for (i = 0; i < 5; i++)
+-			if (check_locality(chip, i) >= 0)
+-				break;
+ 	if (interrupt &
+ 	    (TPM_INTF_LOCALITY_CHANGE_INT | TPM_INTF_STS_VALID_INT |
+ 	     TPM_INTF_CMD_READY_INT))
+@@ -440,7 +450,7 @@
+ 	struct tpm_chip *chip;
+ 
+ 	if (!start)
+-		start = TIS_MEM_BASE;
++		start = TIS_MEM_BASE | (locality << 12);
+ 	if (!len)
+ 		len = TIS_MEM_LEN;
+ 
+@@ -490,8 +500,9 @@
+ 	if (intfcaps & TPM_INTF_DATA_AVAIL_INT)
+ 		dev_dbg(dev, "\tData Avail Int Support\n");
+ 
+-	if (request_locality(chip, 0) != 0) {
+-		rc = -ENODEV;
++	if (request_locality(chip, locality) < 0) {
++		rc = -EBUSY;
++		printk("failed request_locality\n");
+ 		goto out_err;
+ 	}
+ 
+@@ -582,9 +593,11 @@
+ 
+ 	tpm_get_timeouts(chip);
+ 	tpm_continue_selftest(chip);
++	release_locality(chip, chip->vendor.locality, 1);
+ 
+ 	return 0;
+ out_err:
++	release_locality(chip, chip->vendor.locality, 1);
+ 	if (chip->vendor.iobase)
+ 		iounmap(chip->vendor.iobase);
+ 	tpm_remove_hardware(chip->dev);
+@@ -636,7 +649,7 @@
+ MODULE_PARM_DESC(hid, "Set additional specific HID for this driver to
+probe");
+ 
+ static struct device_driver tis_drv = {
+-	.name = "tpm_tis",
++	.name = "",
+ 	.bus = &platform_bus_type,
+ 	.owner = THIS_MODULE,
+ 	.suspend = tpm_pm_suspend,
+@@ -648,19 +661,34 @@
+ static int force;
+ module_param(force, bool, 0444);
+ MODULE_PARM_DESC(force, "Force device probe rather than using ACPI
+entry");
++
++static char *devname = NULL;
++
+ static int __init init_tis(void)
+ {
++#define DEVNAME_SIZE 10
++
+ 	int rc;
+ 
++	if ((locality < 0) || (locality > 4)) {
++		return PTR_ERR(pdev);
++	}
++
+ 	if (force) {
++		devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
++        	scnprintf(devname, DEVNAME_SIZE, "%s%d", "tpm_tis",
+locality);
++
++		tis_drv.name = devname;
+ 		rc = driver_register(&tis_drv);
+ 		if (rc < 0)
+ 			return rc;
+-		if
+(IS_ERR(pdev=platform_device_register_simple("tpm_tis", -1, NULL, 0)))
++
++		if (IS_ERR(pdev=platform_device_register_simple(devname,
+-1, NULL, 0)))
+ 			return PTR_ERR(pdev);
+ 		if((rc=tpm_tis_init(&pdev->dev, 0, 0)) != 0) {
+ 			platform_device_unregister(pdev);
+ 			driver_unregister(&tis_drv);
++			kfree(devname);
+ 		}
+ 		return rc;
+ 	}
+@@ -692,7 +720,9 @@
+ 	if (force) {
+ 		platform_device_unregister(pdev);
+ 		driver_unregister(&tis_drv);
+-	} else
++		kfree(devname);
++	}
++	else 
+ 		pnp_unregister_driver(&tis_pnp_driver);
+ }
 
-4.1.0, from http://userweb.kernel.org/~akpm/cross-compilers/s390-cross.tar.gz
+
+-----Original Message-----
+From: Valdis.Kletnieks@vt.edu [mailto:Valdis.Kletnieks@vt.edu] 
+Sent: Wednesday, October 10, 2007 12:46 PM
+To: Agarwal, Lomesh
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: TPM driver changes to support multiple locality
+
+On Tue, 09 Oct 2007 15:51:11 PDT, "Agarwal, Lomesh" said:
+> Current TPM driver supports only locality 0. I am planning to add
+> support so that it can access any locality. Locality parameter will be
+> passed as parameter. Will this change be acceptable? If yes then I
+will
+> modify the driver and send the patch.
+
+Make sure you extend the API in such a way that older userspace programs
+that don't pass the new locality parameter still work correctly.
