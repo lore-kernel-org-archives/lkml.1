@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbXJKIA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbXJKIAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757592AbXJKIA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 04:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXJKIAV
+	id S1758100AbXJKIAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 04:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXJKIAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 04:00:21 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38148 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbXJKIAV (ORCPT
+	Thu, 11 Oct 2007 04:00:34 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1060 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757843AbXJKIAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 04:00:21 -0400
-Date: Thu, 11 Oct 2007 16:38:13 +0900 (JST)
-Message-Id: <20071011.163813.112819403.tshibata@ab.jp.nec.com>
-To: linux-kernel@vger.kernel.org
-Cc: tshibata@ab.jp.nec.com
-Subject: [ANNOUNCE] Linux 2.6 release history in the Google Calendar
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
- =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 04:00:32 -0400
+Date: Thu, 11 Oct 2007 08:59:58 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
+Message-ID: <20071011075958.GK1130@shadowen.org>
+References: <200710091446.38432.mark.langsdorf@amd.com> <p73fy0k3ve8.fsf@bingen.suse.de> <200710091543.21350.mark.langsdorf@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710091543.21350.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
+On Tue, Oct 09, 2007 at 03:43:20PM -0500, Mark Langsdorf wrote:
+> On Tuesday 09 October 2007 15:06, Andi Kleen wrote:
+> > "Mark Langsdorf" <mark.langsdorf@amd.com> writes:
+> > 
+> > > This patch should apply cleanly to the 2.6.22.6 kernel.
+> > 
+> > Isn't that a little old? The earliest this could be merged
+> > is the upcomming 2.6.24 tree. Best you submit it against .23
+> > or better -mm.
+> 
+> Good point.
+> 
+> This patch should apply cleanly to the 2.6.23-rc8-mm2 kernel.  It changes 
+> the powernow-k8 driver code that deals with 3rd generation Opteron, Phenom,
+> and later processors to match the architectual pstate driver described
+> in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18.  The
+> initial implementation of the hardware pstate driver for PowerNow!
+> used some processor-version specific features, and would not be
+> maintainable in the long term as the processor features changed.
+> This architectural driver should work on all future AMD processors.
+> 
+> -Mark Langsdorf
+> Operating System Resarch Center
+> AMD
+> 
+> Signed-off-by <mark.langsdorf@amd.com>
+> Acked-by <andreas.herrmann3@amd.com>
+[...]
+>  	/* get fid did for hardware pstate transition */
+>  	pstate = index & HW_PSTATE_MASK;
+> -	if (pstate > MAX_HW_PSTATE)
+> +	if (pstate > data->max_hw_pstate);
+>  		return 0;
 
-I am working for the project of putting past Linux release-dates into
-the Google calendar.
-This project is gathering each dates from files in the kernel.org for
-Linux-2.6, -mm patch set, -rc and stable releases, and show us the
-Google calendar's view in the Web browser.
+checkpatch picked up this dodgy if.  I suspect that the ';' is wrong
+from the context.
 
-By the Google calendar's feature to share my calendar to everyone, you
-can include my calendar data to your Google calendar.
+> -	fid = (index & HW_FID_INDEX_MASK) >> HW_FID_INDEX_SHIFT;
+> -	did = (index & HW_DID_INDEX_MASK) >> HW_DID_INDEX_SHIFT;
+> -	freqs.old = find_khz_freq_from_fiddid(data->currfid, data->currdid);
+> -	freqs.new = find_khz_freq_from_fiddid(fid, did);
+> +	freqs.old = find_khz_freq_from_pstate(data->powernow_table, data->currpstate);
+> +	freqs.new = find_khz_freq_from_pstate(data->powernow_table, pstate);
 
-Below is operation to do that.
-
-Operations:
------------
-1. Login to the Google calendar
-2. Click "Manage calendars" at most bottom line of left bottom box.
-3. Click "Add calendar" at the bottom of Calendar-Setting-square
-4. You can see Add-Other-Calendar-square then choose "Friends' Calendars" tab
-5. Enter following email address at Contact Email box, and click Add bottom
-
-Share calendar of Linux2.6 release history :linux.release.history@gmail.com
-Share calendar of Linux2.6 RC release  :linux.release.candidate@gmail.com
-Share calendar of Linux2.6 mm patch set :linux.release.mm@gmail.com
-Share calendar of Linux2.6 stable release :linux.release.stable@gmail.com
-
-You should operate above steps (2-5) for each calendars.
-
-Then, You can browse the result of kernel development using calendar view.
-Enjoy!
-
-
-Note: I am finding a machine which is always connecting to the Internet
-to run my cron-scripts for automatic update but now it is running by
-my hand and may have some delay.
-
-Tsugikazu Shibata
+-apw
