@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbXJKMYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbXJKM2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbXJKMYj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 08:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbXJKMYc
+	id S1757755AbXJKM2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 08:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbXJKM2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 08:24:32 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60828 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbXJKMYb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 08:24:31 -0400
-Date: Thu, 11 Oct 2007 14:24:17 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Cc: Linux RT Users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] RT: fix spin_trylock_irq
-Message-ID: <20071011142417.1d965820@bull.net>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/10/2007 14:30:42,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/10/2007 14:30:43,
-	Serialize complete at 11/10/2007 14:30:43
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Thu, 11 Oct 2007 08:28:41 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38264 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753556AbXJKM2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 08:28:40 -0400
+Date: Thu, 11 Oct 2007 08:28:00 -0400
+From: "Mike D. Day" <ncmike@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Whitcroft <apw@shadowen.org>, Erez Zadok <ezk@cs.sunysb.edu>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] fix minor problems in checkpatch.pl-next
+Message-ID: <20071011122800.GA10216@silverwood.ncultra.org>
+Reply-To: ncmike@us.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+X-PGP-Key: http://www.ncultra.org/ncmike/pubkey.asc
+X-PGP-Fingerprint: A2EE D0E6 21B7 0DEC 29B5  D5FD 3B27 3154 452B 7C21
+x-gpg-key: http://www.ncultra.org/ncmike/pubkey.asc
+x-gpg-fingerprint: A2EE D0E6 21B7 0DEC 29B5  D5FD 3B27 3154 452B 7C21
+Organization: IBM Linux Technology Center
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When forming the prefix to output error msgs in gnu gcc format, the
+lack of a type ($ or @) when referencing ARGV causes error messages.
 
-  This patch fixes a bug in spin_trylock_irq() where __spin_trylock_irq() is
-picked for regular (non-raw) spinlocks instead of _spin_trylock_irq().
+When invoked to check source files, the linenumber was off by +3 in
+the gcc format output.
 
-  This results in systematic boot hangs and may have been going unnoticed
-for quite some time as it only manifests (aside from a compile warning) when
-booting with a NUMA config or when using the Chelsio T3 (cxgb3) driver as
-these seems to be the sole users.
+Signed-off-by: Mike D. Day <ncmike@ncultra.org>
 
-
-Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
-
----
- include/linux/spinlock.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.23-rc9-rt2/include/linux/spinlock.h
-===================================================================
---- linux-2.6.23-rc9-rt2.orig/include/linux/spinlock.h
-+++ linux-2.6.23-rc9-rt2/include/linux/spinlock.h
-@@ -501,7 +501,7 @@ do {									\
+--- checkpatch.pl-next	2007-10-11 07:28:41.000000000 -0400
++++ /home/mdday/bin/checkpatch	2007-10-11 08:16:07.000000000 -0400
+@@ -452,7 +452,6 @@
  
- #define spin_trylock_irq(lock)	\
- 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irq,		\
--		__spin_trylock_irq, lock))
-+		_spin_trylock_irq, lock))
+ 		my $rawline = $line;
  
- #define spin_trylock_irqsave(lock, flags) \
- 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irqsave, 	\
+-		$prefix = "ARGV:$linenr: " if ($emacs);
+ 
+ #extract the filename as it passes
+ 		if ($line=~/^\+\+\+\s+(\S+)/) {
+@@ -517,6 +516,9 @@
+ 		my $herecurr = "$here\n$line\n";
+ 		my $hereprev = "$here\n$prevline\n$line\n";
+ 
++		$prefix = "@ARGV:$realline: " if ($emacs && $file);
++		$prefix = "@ARGV:$linenr: " if ($emacs && !$file);
++
+ #check the patch for a signoff:
+ 		if ($line =~ /^\s*signed-off-by:/i) {
+ 			# This is a signoff, if ugly, so do not double report.
+
+-- 
+Mike Day
+http://www.ncultra.org
+AIM: ncmikeday |  Yahoo IM: ultra.runner
+PGP key: http://www.ncultra.org/ncmike/pubkey.asc
