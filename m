@@ -1,86 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbXJKQCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbXJKQH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbXJKQCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 12:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXJKQCq
+	id S1758071AbXJKQH7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 12:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXJKQHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 12:02:46 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:39100 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbXJKQCp (ORCPT
+	Thu, 11 Oct 2007 12:07:52 -0400
+Received: from mlbe2k2.cs.myharris.net ([137.237.90.89]:48512 "EHLO
+	mlbe2k2.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbXJKQHv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 12:02:45 -0400
-Date: Thu, 11 Oct 2007 09:01:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] init: Fix printk format strings
-Message-Id: <20071011090103.5c4bad43.randy.dunlap@oracle.com>
-In-Reply-To: <19f34abd0710110855t58084c62ne3e09227727b7c61@mail.gmail.com>
-References: <1192083422.26648.19.camel@grianne>
-	<20071011084028.2daf0fd9.randy.dunlap@oracle.com>
-	<19f34abd0710110855t58084c62ne3e09227727b7c61@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 11 Oct 2007 12:07:51 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Aggregation in embedded context, is kernel GPL2 prejudiceagainst embedded systems?
+Date: Thu, 11 Oct 2007 12:06:14 -0400
+Message-ID: <E496871456016F4CA8959BE4105D2A890E8D7C@troe2k1.cs.myharris.net>
+In-Reply-To: <20071011151543.GX16424@stusta.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Aggregation in embedded context, is kernel GPL2 prejudiceagainst embedded systems?
+Thread-Index: AcgMGXppR9bNKgCDQUSqjl6p/n7HJAABK8nw
+References: <E496871456016F4CA8959BE4105D2A890E8D76@troe2k1.cs.myharris.net> <20071011151543.GX16424@stusta.de>
+From: "Crane, Matthew" <mcrane03@harris.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Oct 2007 16:06:15.0990 (UTC) FILETIME=[A6F94560:01C80C20]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 17:55:16 +0200 Vegard Nossum wrote:
+Hi, 
 
-> On 10/11/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Thu, 11 Oct 2007 08:17:02 +0200 Vegard Nossum wrote:
-> >
-> > > This makes sure printk format strings are string literals containing no
-> > > more than a single line.
-> >
-> > Each patch needs justification (unless it is blatantly obvious).
-> >
-> >
-> > > Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> > > ---
-> > >  init/calibrate.c        |    4 +++-
-> > >  init/do_mounts_initrd.c |    5 ++++-
-> > >  init/main.c             |    2 +-
-> > >  3 files changed, 8 insertions(+), 3 deletions(-)
-> > >
-> > > diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-> > > index fd4fc12..ad6174c 100644
-> > > --- a/init/do_mounts_initrd.c
-> > > +++ b/init/do_mounts_initrd.c
-> > > @@ -98,7 +98,10 @@ static void __init handle_initrd(void)
-> > >                       error = sys_ioctl(fd, BLKFLSBUF, 0);
-> > >                       sys_close(fd);
-> > >               }
-> > > -             printk(!error ? "okay\n" : "failed\n");
-> > > +             if(error)
-> > > +                     printk("failed\n");
-> > > +             else
-> > > +                     printk("okay\n");
-> > >       }
-> > >  }
-> >
-> > Why this one?
-> > and if it must change, use:
-> >                 if (error)
-> > but I see little need for the change.
-> 
-> Oops about the space. And it's to make the format string a constant
-> literal. If it isn't, you are going to run into trouble with options
-> to remove printks at compile-time based on log-level token. I realize
-> it's not really an issue at this point in time, but I assume that it
-> will eventually make its way into the kernel in some way or another.
+I wasn't sure how to describe what the people and groups with the
+mandate to defend open source software.  There are people and groups
+with such a mandate.
 
-so would this be OK?
+I'm asking if in a legal sense the grayness is affected by the
+constraints of the hw the kernel is being run on, and some attempt to
+quantify how the grayness is affected.  Of course it is not black and
+white and ultimately up to a judge. 
 
-		printk("%s\n", error ? "failed" : "okay");
+I realize similar questions have been asked for more then a decade.
+What is generally practiced and accepted does change, and any judge
+weighing a case wrt these issues would consider that.
+
+Matt
 
 
----
-~Randy
+
+-----Original Message-----
+From: Adrian Bunk [mailto:bunk@kernel.org] 
+Sent: Thursday, October 11, 2007 11:16 AM
+To: Crane, Matthew
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Aggregation in embedded context, is kernel GPL2
+prejudiceagainst embedded systems?
+
+On Thu, Oct 11, 2007 at 10:33:28AM -0400, Crane, Matthew wrote:
+> Hi,
+
+Hi Matthew,
+
+>... 
+> If that is what is normal for embedded systems, wouldn't the
+expectation
+> of what is reasonable for "mere aggregation" be similarly different?
+> I've read much FUD about how anything linked statically is instantly a
+> derived work.   I do not think it is so black and white.  To me this
+> seems to pre-suppose that the option to load modules dynamically
+always
+> exists.   I do believe that if it does exist, it should be taken, and
+> that the interface boundaries always need to be respected regardless,
+to
+> the point of not using kernel headers and limiting the number of calls
+> to EXPORT_SYMBOL functions to the absolute minimum.
+
+even for dynamically linking including non-GPL code is not white but 
+already dark grey.
+
+> So would the persons responsible for defending the kernel GPL make
+> allowance for the minimal options for separation in a system so
+resource
+> constrained that it makes sense only to link statically?  I am trying
+to
+> make a case that this is ok because that is what systems similar in hw
+> specs generally due to save resources, and that many examples of an
+> "embedded" style of aggregation exist.
+>...
+
+There are no "persons responsible for defending the kernel GPL", there 
+are just a few hundreds or thousands copyright holders of the kernel,
+and each of them has the right to sue you if he thinks you distribute 
+something that violates his copyright. Jurisdiction and applicable 
+copyright law depends on things like where the copyright holder lives 
+and where you distribute it.
+
+> Matt
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
