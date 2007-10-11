@@ -1,116 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbXJKKN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbXJKKNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758330AbXJKKN0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXJKKK4
+	id S1758493AbXJKKNk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbXJKKK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:10:56 -0400
+	Thu, 11 Oct 2007 06:10:57 -0400
 Received: from nwd2mail10.analog.com ([137.71.25.55]:23115 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754759AbXJKKKu (ORCPT
+	with ESMTP id S1755099AbXJKKKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:10:50 -0400
+	Thu, 11 Oct 2007 06:10:51 -0400
 X-IronPort-AV: i="4.21,259,1188792000"; 
-   d="scan'208"; a="53762407:sNHT27402746"
+   d="scan'208"; a="53762412:sNHT53186651"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 1/9] Blackfin SPI driver: use new GPIO API and add error handling
-Date: Thu, 11 Oct 2007 18:10:33 +0800
-Message-Id: <1192097441-24962-2-git-send-email-bryan.wu@analog.com>
+Cc: Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 9/9] Blackfin SPI driver: Clean up useless wait in bfin SPI driver
+Date: Thu, 11 Oct 2007 18:10:41 +0800
+Message-Id: <1192097441-24962-10-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1192097441-24962-1-git-send-email-bryan.wu@analog.com>
 References: <1192097441-24962-1-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/spi/spi_bfin5xx.c                 |   29 +++++++++++++++++++++++------
- include/asm-blackfin/mach-bf533/portmux.h |    2 +-
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ drivers/spi/spi_bfin5xx.c |   84 ++++++++++++++++++++++++++++-----------------
+ 1 files changed, 52 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 2992ada..8041b89 100644
+index 0cdfc2b..bfeaa7c 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -1165,6 +1165,22 @@ static inline int destroy_queue(struct driver_data *drv_data)
- 	return 0;
- }
+@@ -276,22 +276,26 @@ static void u8_writer(struct driver_data *drv_data)
+ 	dev_dbg(&drv_data->pdev->dev,
+ 		"cr8-s is 0x%x\n", read_STAT());
  
-+static int setup_pin_mux(int action)
-+{
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
 +
-+	u16 pin_req[] = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0};
-+
-+	if (action) {
-+		if (peripheral_request_list(pin_req, DRV_NAME)) {
-+			return -EFAULT;
-+		}
-+	} else {
-+		peripheral_free_list(pin_req);
-+	}
-+
-+	return 0;
-+}
-+
- static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+ 		while (read_STAT() & BIT_STAT_TXS)
+ 			continue;
+ 		++drv_data->tx;
  	}
- 
--	if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
--		 peripheral_request(P_SPI0_MISO, DRV_NAME) ||
--		 peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
 -
-+	if (setup_pin_mux(1)) {
- 		dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
--		goto out_error_queue_alloc;
-+		goto out_error;
- 	}
- 
- 	drv_data = spi_master_get_devdata(master);
-@@ -1223,9 +1236,11 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 	dev_dbg(&pdev->dev, "controller probe successfully\n");
- 	return status;
- 
--      out_error_queue_alloc:
-+out_error_queue_alloc:
- 	destroy_queue(drv_data);
-+out_error:
- 	spi_master_put(master);
-+
- 	return status;
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
  }
  
-@@ -1255,6 +1270,8 @@ static int __devexit bfin5xx_spi_remove(struct platform_device *pdev)
- 	/* Disconnect from the SPI framework */
- 	spi_unregister_master(drv_data->master);
+ static void u8_cs_chg_writer(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
  
-+	setup_pin_mux(0);
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
 +
- 	/* Prevent double remove */
- 	platform_set_drvdata(pdev, NULL);
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		cs_active(chip);
  
-diff --git a/include/asm-blackfin/mach-bf533/portmux.h b/include/asm-blackfin/mach-bf533/portmux.h
-index b88d7a0..137f488 100644
---- a/include/asm-blackfin/mach-bf533/portmux.h
-+++ b/include/asm-blackfin/mach-bf533/portmux.h
-@@ -42,7 +42,7 @@
- #define P_SPORT0_DRPRI	(P_DONTCARE)
+@@ -304,10 +308,6 @@ static void u8_cs_chg_writer(struct driver_data *drv_data)
+ 			udelay(chip->cs_chg_udelay);
+ 		++drv_data->tx;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
  
- #define P_SPI0_MOSI	(P_DONTCARE)
--#define P_SPI0_MIS0	(P_DONTCARE)
-+#define P_SPI0_MISO	(P_DONTCARE)
- #define P_SPI0_SCK	(P_DONTCARE)
- #define P_SPI0_SSEL7	(P_DEFINED | P_IDENT(GPIO_PF7))
- #define P_SPI0_SSEL6	(P_DEFINED | P_IDENT(GPIO_PF6))
+ static void u8_reader(struct driver_data *drv_data)
+@@ -315,6 +315,10 @@ static void u8_reader(struct driver_data *drv_data)
+ 	dev_dbg(&drv_data->pdev->dev,
+ 		"cr-8 is 0x%x\n", read_STAT());
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* clear TDBR buffer before read(else it will be shifted out) */
+ 	write_TDBR(0xFFFF);
+ 
+@@ -337,6 +341,10 @@ static void u8_cs_chg_reader(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* clear TDBR buffer before read(else it will be shifted out) */
+ 	write_TDBR(0xFFFF);
+ 
+@@ -365,6 +373,10 @@ static void u8_cs_chg_reader(struct driver_data *drv_data)
+ 
+ static void u8_duplex(struct driver_data *drv_data)
+ {
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* in duplex mode, clk is triggered by writing of TDBR */
+ 	while (drv_data->rx < drv_data->rx_end) {
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+@@ -376,16 +388,16 @@ static void u8_duplex(struct driver_data *drv_data)
+ 		++drv_data->rx;
+ 		++drv_data->tx;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ static void u8_cs_chg_duplex(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	while (drv_data->rx < drv_data->rx_end) {
+ 		cs_active(chip);
+ 
+@@ -402,10 +414,6 @@ static void u8_cs_chg_duplex(struct driver_data *drv_data)
+ 		++drv_data->rx;
+ 		++drv_data->tx;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ static void u16_writer(struct driver_data *drv_data)
+@@ -413,22 +421,26 @@ static void u16_writer(struct driver_data *drv_data)
+ 	dev_dbg(&drv_data->pdev->dev,
+ 		"cr16 is 0x%x\n", read_STAT());
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+ 		while ((read_STAT() & BIT_STAT_TXS))
+ 			continue;
+ 		drv_data->tx += 2;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ static void u16_cs_chg_writer(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		cs_active(chip);
+ 
+@@ -441,10 +453,6 @@ static void u16_cs_chg_writer(struct driver_data *drv_data)
+ 			udelay(chip->cs_chg_udelay);
+ 		drv_data->tx += 2;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ static void u16_reader(struct driver_data *drv_data)
+@@ -452,6 +460,10 @@ static void u16_reader(struct driver_data *drv_data)
+ 	dev_dbg(&drv_data->pdev->dev,
+ 		"cr-16 is 0x%x\n", read_STAT());
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* clear TDBR buffer before read(else it will be shifted out) */
+ 	write_TDBR(0xFFFF);
+ 
+@@ -474,6 +486,10 @@ static void u16_cs_chg_reader(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* clear TDBR buffer before read(else it will be shifted out) */
+ 	write_TDBR(0xFFFF);
+ 
+@@ -502,6 +518,10 @@ static void u16_cs_chg_reader(struct driver_data *drv_data)
+ 
+ static void u16_duplex(struct driver_data *drv_data)
+ {
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	/* in duplex mode, clk is triggered by writing of TDBR */
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+@@ -513,16 +533,16 @@ static void u16_duplex(struct driver_data *drv_data)
+ 		drv_data->rx += 2;
+ 		drv_data->tx += 2;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ static void u16_cs_chg_duplex(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
++	/* poll for SPI completion before start */
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
++
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		cs_active(chip);
+ 
+@@ -539,10 +559,6 @@ static void u16_cs_chg_duplex(struct driver_data *drv_data)
+ 		drv_data->rx += 2;
+ 		drv_data->tx += 2;
+ 	}
+-
+-	/* poll for SPI completion before returning */
+-	while (!(read_STAT() & BIT_STAT_SPIF))
+-		continue;
+ }
+ 
+ /* test if ther is more transfer to be done */
+@@ -765,6 +781,10 @@ static void pump_transfers(unsigned long data)
+ 			dma_width = WDSIZE_8;
+ 		}
+ 
++		/* poll for SPI completion before start */
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
++
+ 		/* dirty hack for autobuffer DMA mode */
+ 		if (drv_data->tx_dma == 0xFFFF) {
+ 			dev_dbg(&drv_data->pdev->dev,
 -- 
 1.5.3.4
