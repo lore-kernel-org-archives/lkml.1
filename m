@@ -1,100 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXJKNWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbXJKNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbXJKNWO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXJKNV4
+	id S1757925AbXJKNXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbXJKNXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:21:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55546 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752307AbXJKNVz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:21:55 -0400
-Date: Thu, 11 Oct 2007 14:26:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] faster workaround
-Message-ID: <20071011142628.48272a4a@the-village.bc.nu>
-In-Reply-To: <200710111433.23833.bs@q-leap.de>
-References: <200710081709.18253.bs@q-leap.de>
-	<200710101112.20448.bs@q-leap.de>
-	<200710111409.56210.bs@q-leap.de>
-	<200710111433.23833.bs@q-leap.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 09:23:08 -0400
+Received: from hall.aurel32.net ([88.191.38.19]:53485 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752924AbXJKNXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 09:23:06 -0400
+Message-ID: <470E23A0.5050500@aurel32.net>
+Date: Thu, 11 Oct 2007 15:22:40 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Markus Rechberger <mrechberger@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB changes for 2.6.24
+References: <1192053794.15601.47.camel@gaivota>	 <d9def9db0710101600m79bd52e5s210d28630469b1c9@mail.gmail.com>	 <alpine.LFD.0.999.0710101639550.20690@woody.linux-foundation.org>	 <d9def9db0710102150l3aa0626es90184c24875bc2e9@mail.gmail.com>	 <470DBDC7.8000304@aurel32.net> <d9def9db0710102331h68e1d9b0rf3095bd9e261ec21@mail.gmail.com>
+In-Reply-To: <d9def9db0710102331h68e1d9b0rf3095bd9e261ec21@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -static void ata_fill_sg(struct ata_queued_cmd *qc)
-> +void ata_fill_sg(struct ata_queued_cmd *qc)
->  {
->  	struct ata_port *ap = qc->ap;
->  	struct scatterlist *sg;
-> @@ -4217,10 +4217,15 @@ int ata_check_atapi_dma(struct ata_queue
->   */
->  void ata_qc_prep(struct ata_queued_cmd *qc)
->  {
-> +	struct ata_port *ap = qc->ap;
-> +
->  	if (!(qc->flags & ATA_QCFLAG_DMAMAP))
->  		return;
->  
-> -	ata_fill_sg(qc);
-> +	if (ap->ops->fill_sg)
-> +		ap->ops->fill_sg(qc);
-> +	else
-> +		ata_fill_sg(qc);
->  }
+Markus Rechberger a écrit :
+> On 10/11/07, Aurelien Jarno <aurelien@aurel32.net> wrote:
+>> Markus Rechberger a écrit :
+>>> On 10/11/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>>> As such, the old and decrepit em28xx driver seems more useful to people,
+>>>> since at least it supports the limited set of hardware on its own.
+>>> it does not since it's broken and feature limited. On the other side
+>> I have a device which works perfectly with it if you add the vendor and
+>> product ID to the list. I don't really call that broken. And it doesn't
+>> need a firmware.
+>>
+> 
+> Aurelien,
+> 
+> the device you're using is around 2 years old. You're one of the lucky
+> ones, I have tonns of support mails in my mail account from people who
+> own almost a similar device but with different videodecoders which are
+> not fully supported in the kernel or which worked and got broken
+> during the time.
+> It took me around 4 hours to debug such an issue last years remotly
+> with an enduser (which includes that noone cared to ask me if I'm fine
+> with such an update, neither did someone ask people who own such
+> devices that they should test the changes).
+> Please also take other devices and upcoming devices into account,
+> since i'm willing to spend that time and since I'm in contact with
+> various companies who provide several components of those devices.
+> 
 
-Its probably better to simply make your own sil_qc_prep function for this
-case rather than touch the core code.
+I agree I am lucky, but the fact is that the in-kernel driver supports
+*some* devices, and *works* correctly for them. On the other side, your
+driver supports more devices, but it is and *out-of-tree* driver.
 
-> -	.sg_tablesize		= LIBATA_MAX_PRD,
-> +	.sg_tablesize		= 120, /* max 15 kiB sectors ? */
+Please either work to get your change merged, or stop complaining about
+changes done to the in-kernel driver.
 
-If you are just fiddling with the way the data is split then
-LIBATA_MAX_PRD - 1 should be totally safe)
+Moreover if you get a closer look at v4l-dvb git, you will see that the
+changes proposed by Mauro are not em28xx specific, and is actually the
+same change done on a lot of of v4l/dvb drivers.
 
->  	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
->  	.emulated		= ATA_SHT_EMULATED,
-> -	.use_clustering		= ATA_SHT_USE_CLUSTERING,
-> +	.use_clustering		= 1,
-
-Un-needed
-
->  	.proc_name		= DRV_NAME,
-> -	.dma_boundary		= ATA_DMA_BOUNDARY,
-> +	.dma_boundary		= 0x1fff,
-
-Ok
-
->  	.slave_configure	= ata_scsi_slave_config,
->  	.slave_destroy		= ata_scsi_slave_destroy,
->  	.bios_param		= ata_std_bios_param,
-
-> +	/* Errata workaround: if last segment is exactly 8K, split
-> +	 * into 7.5K and 512b pieces.
-> +	 */
-> +	len = le32_to_cpu(ap->prd[idx].flags_len) & 0xffff;
-> +	if (len == 8192) {
-> +		addr = le32_to_cpu(ap->prd[idx].addr);
-> +		ap->prd[idx].flags_len = cpu_to_le32(15 * 512);
-> +
-> +		idx++;
-> +		ap->prd[idx].addr = cpu_to_le32(addr + (15 * 512));
-> +		ap->prd[idx].flags_len = cpu_to_le32(512 | ATA_PRD_EOT);
-> +	}
-> +}
-
-And since in this approach we are merely splitting the last PRD entry in
-some obscure cases we might as well do it by default as it should have no
-performance impact of any note done this way.
-
-
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
