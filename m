@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbXJKKCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbXJKKE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbXJKKCj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXJKKCb
+	id S1756982AbXJKKE3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbXJKKEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:02:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42760 "EHLO ogre.sisk.pl"
+	Thu, 11 Oct 2007 06:04:22 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:47196 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXJKKCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:02:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
-Date: Thu, 11 Oct 2007 12:17:57 +0200
-User-Agent: KMail/1.9.5
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1192068833.27482.13.camel@caritas-dev.intel.com>
-In-Reply-To: <1192068833.27482.13.camel@caritas-dev.intel.com>
+	id S1752781AbXJKKEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 06:04:21 -0400
+Date: Thu, 11 Oct 2007 12:04:16 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: vojtech@suse.cz, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc4: oops in evdev_disconnect
+In-Reply-To: <470E1272.2030300@gmail.com>
+Message-ID: <Pine.LNX.4.64.0710111201130.25413@twin.jikos.cz>
+References: <470E1272.2030300@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710111217.58473.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
-> Kexec base hibernation has some potential advantages over uswsusp and
-> TuxOnIce (suspend2). Some most obvious advantages are:
+On Thu, 11 Oct 2007, Jiri Slaby wrote:
 
-Well, I have some doubts as far as the obviousness is concerned.
+> after unplugging usb logitech mouse I got:
+> input: Logitech Logitech USB Optical Mouse as
+> /devices/pci0000:00/0000:00:1d.3/usb5/5-2/5-2:1.0/input/input10
+> input: USB HID v1.11 Mouse [Logitech Logitech USB Optical Mouse] on
+> usb-0000:00:1d.3-2
+> usb 5-2: USB disconnect, address 6
+> Unable to handle kernel paging request at 0000000000100100 RIP:
+>  [<ffffffff803b6ac4>] evdev_disconnect+0xb4/0xf0
 
-> 1. The hibernation image size can exceed half of memory size easily.
+Could you by any chance try to reproduce this when Dmitry's patches 
+implementing proper locking in the input subsystem are applied? Andrew's 
+tree has them pulled through git-input.patch for example.
 
-This is also possible with TuxOnIce.
+Thanks,
 
-> 2. The hibernation image can be written to and read from almost
->    anywhere, such as USB disk, NFS.
-
-This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
-
-> 3. It is possible to eliminate freezer from kexec based hibernation
->    implementation.
-
-This isn't true as long as we have not changed the handling of devices
-(which is in the works, but will take time).
-
-> 4. Based on kexec/kdump implementation, the kernel code needed is
->    less.
-
-Well, maybe.
-
-Greetings,
-Rafael
+-- 
+Jiri Kosina
