@@ -1,123 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbXJKFuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbXJKFwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbXJKFuW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 01:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXJKFuJ
+	id S1756865AbXJKFwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 01:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXJKFwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 01:50:09 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:31270 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753204AbXJKFuH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 01:50:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G8MPaZEpRcJN4muXL11anmSEhe444Cg3EA/CsB8nZb8Xx75zkRbBrn9srLFCitME0+FrMc11o3xaI3hADbcboVXLTj1PkWRtzpCLZBOtxeND0lml1/rx2/0lqsbT1uDK0v8HzdCA0g/P3zGTZ8jROtOfpdNPBIJv96+WHjIiiA4=
-Message-ID: <d9def9db0710102250wc813813p18fd73c52594db8e@mail.gmail.com>
-Date: Thu, 11 Oct 2007 07:50:07 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB changes for 2.6.24
-Cc: mchehab@infradead.org, torvalds@linux-foundation.org,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071010223222.27799eef.akpm@linux-foundation.org>
+	Thu, 11 Oct 2007 01:52:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:45665 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbXJKFwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 01:52:11 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192053794.15601.47.camel@gaivota>
-	 <d9def9db0710101600m79bd52e5s210d28630469b1c9@mail.gmail.com>
-	 <20071010163625.b4b438ec.akpm@linux-foundation.org>
-	 <d9def9db0710102209g1cc905a7w5565f1ecda720ea4@mail.gmail.com>
-	 <20071010223222.27799eef.akpm@linux-foundation.org>
+Message-ID: <18189.47620.466515.645055@cargo.ozlabs.ibm.com>
+Date: Thu, 11 Oct 2007 15:52:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Olof Johansson <olof@lixom.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>, linuxppc-dev@ozlabs.org,
+       tgall.foo@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Subject: Re: [PATCH v2] powerpc: don't enable cpu hotplug on mpic-based pseries
+In-Reply-To: <20071010003824.GA8477@lixom.net>
+References: <20071008180406.052382073@mini.kroah.org>
+	<20071008180633.GJ7627@kroah.com>
+	<20071009151702.GA19209@lixom.net>
+	<20071009222003.GA21228@kroah.com>
+	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
+	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+	<20071010000815.GB7875@lixom.net>
+	<20071010101826.186f1f24.sfr@canb.auug.org.au>
+	<20071010003824.GA8477@lixom.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 11 Oct 2007 07:09:47 +0200 "Markus Rechberger"
-> <mrechberger@gmail.com> wrote:
->
-> > On 10/11/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Thu, 11 Oct 2007 01:00:39 +0200
-> > > "Markus Rechberger" <mrechberger@gmail.com> wrote:
-> > >
-> > > Please don't send 900 line emails to which you have added only an
-> additional
-> > > paragraph.
-> > >
-> > > > >  drivers/media/video/em28xx/em28xx-core.c           |    1 -
-> > > > >  drivers/media/video/em28xx/em28xx-input.c          |    1 -
-> > > > >  drivers/media/video/em28xx/em28xx-video.c          |    6 +-
-> > > >
-> > > > not accepted
-> > >
-> > > Until your attempt to get the userspace-driver work merged into the
-> kernel
-> > > is successful (and from my reading of last month's discussion it is
-> nowhere
-> > > near that), we should continue to maintain the present driver.
-> > >
-> > > If you choose to not participate in that maintenance then others will
-> need
-> > > to do their best in this regard.
-> > >
-> > > What we should not and will not do is to permit the current driver to be
-> > > held hostage to your attempt to force a controversial and apparently
-> > > unwelcome change into the tree.
-> > >
-> >
-> > It makes no sense to keep the kernel driver uptodate,
->
-> It makes heaps of sense to keep the in-tree driver up to date if the
-> out-of-tree driver is unmergeable, which appears to be the case.
->
+Olof Johansson writes:
 
-what is unmergeable?
+> Don't allow cpu hotplug on systems lacking XICS interrupt controller,
+> since current code is hardcoded for it.
+...
+> +	for (np = NULL; (np = of_find_node_by_name(np,
+> +						   "interrupt-controller"));) {
 
-> > it would make
-> > more sense to support the latest driver (which some people are
-> > supporting).
->
-> But that ignores all of last month's discussion and the various
-> reservations which various people have expressed.
->
+Looks like for_each_node_by_name would be nicer here.
 
-There were discussions since the beginning of 2006 which lead nowhere.
-It finally turned out to be a personal issue between developers and to
-stop those useless discussions and to not having to rely on an
-incomplete API and not having to strip off the sample drivers the
-alternative way was developed.
+If you agree, I'll hand-edit your patch to do that and apply it.  Of
+course, ultimately we should implement the necessary mpic bits to
+support cpu hotplug.
 
-> Please take my advise, based upon my experience in kernel development: I
-> don't expect that we'll be merging the mcentral.de driver in anything like
-> its present form.
->
-> So we must continue to maintain and evolve the kernel.org driver.
->
-> > I just had a look at the driver downloads it makes around 600
-> > downloads for september for this driver. If someone's interested in
-> > those stats I can give access to it privatly.
-> > The current option for people who own such a device is to take the
-> > driver from mcentral.de.
->
-> Well that's a shame.  But we have n,000 drivers in-tree which work OK
-> without doing unusual and disturbing user/kernel splits.
->
-
-ahm, there are more problems than you might think about...
-* broken drivers (eg saa7115, incomplete driver tvp5150)
-* limited API which is managed by a few (DVB/V4L)
-* having to deal with people who disagree alot
-
-I submitted the patches RFCs and didn't get proper comments back then
-this doesn't motivate me in any way to continue the work and spend any
-efforts in getting companies to release their sample drivers.
-
-As pointed out it's possible to release the complete driver in
-userland even as binary driver if someone wants to, unless someone
-kicks out usbfs. But the conversion would take a while. And regarding
-the plans of the other drivers I pointed out what my plans are.
-
-Markus
+Paul.
