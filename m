@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbXJLJZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbXJLJZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932925AbXJLJZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbXJLJSa
+	id S1761195AbXJLJZz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933011AbXJLJT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:18:30 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:59625 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932600AbXJLJS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:18:27 -0400
-Message-ID: <470F3BE0.4050807@free.fr>
-Date: Fri, 12 Oct 2007 11:18:24 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Fri, 12 Oct 2007 05:19:58 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:45075 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933006AbXJLJT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:19:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ttUxoOPAMxmLJL4C8HjAIfOzC9L+OzftQYU0cTyLHoPDzVG1fV5q5V706CQ0yO5n2MvMxijnSC/hXWAFtr0thkd4Zf4PMKPf5SDKG0gyp5zNga77iBMNSVOFOu6eXHZTm/gp85au3VgFD/8mEGwyP4k/EjTLBzMIodwpjrz5LjY=  ;
+X-YMail-OSG: A48_f6kVM1l3Gd819ZAqWQ67wPoBKL5EWAEpipAlP1MZOOd.fDRt8xoxSTO.yteoEdxZPSqiPA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 00/31] Remove iget() and read_inode() [try #4]
+Date: Fri, 12 Oct 2007 02:48:05 +1000
+User-Agent: KMail/1.9.5
+Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: NMI watchdog
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710120248.05506.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Friday 12 October 2007 19:07, David Howells wrote:
+> Hi Linus,
+>
+> Here's a set of patches that remove all calls to iget() and all
+> read_inode() functions.  They should be removed for two reasons: firstly
+> they don't lend themselves to good error handling, and secondly their
+> presence is a temptation for code outside a filesystem to call iget() to
+> access inodes within that filesystem.
 
-I'm experiencing a full system lockup. I'm using an out-of-tree driver 
-which I suspect is responsible. I'm trying to enable the NMI watchdog.
-
-# cat /proc/version
-Linux version 2.6.22.1-rt9 (gcc version 3.4.6) #1 PREEMPT RT Tue Oct 9 
-12:25:47 CEST 2007
-
-# cat /proc/cmdline
-ro root=/dev/hdc1 console=ttyS0,57600n8 console=tty0 panic=3 apic=debug 
-nmi_watchdog=2
-
-However, after boot, the NMI count does not change.
-
-# cat /proc/interrupts ; sleep 10 ; cat /proc/interrupts
-            CPU0
-   0:         99   IO-APIC-edge      timer
-   4:       3822   IO-APIC-edge      serial
-   8:          1   IO-APIC-edge      rtc
-   9:          0   IO-APIC-fasteoi   acpi
-  15:      16443   IO-APIC-edge      ide1
-  16:       2166   IO-APIC-fasteoi   eth0
-  17:        840   IO-APIC-fasteoi   eth1
-  18:        840   IO-APIC-fasteoi   eth2
-  19:        840   IO-APIC-fasteoi   eth3
-  20:          0   IO-APIC-fasteoi   Dta1xx
-  21:          0   IO-APIC-fasteoi   Dta1xx
-NMI:       2895
-LOC:     168445
-ERR:          0
-MIS:          0
-
-            CPU0
-   0:         99   IO-APIC-edge      timer
-   4:       3822   IO-APIC-edge      serial
-   8:          1   IO-APIC-edge      rtc
-   9:          0   IO-APIC-fasteoi   acpi
-  15:      16467   IO-APIC-edge      ide1
-  16:       2173   IO-APIC-fasteoi   eth0
-  17:        845   IO-APIC-fasteoi   eth1
-  18:        845   IO-APIC-fasteoi   eth2
-  19:        845   IO-APIC-fasteoi   eth3
-  20:          0   IO-APIC-fasteoi   Dta1xx
-  21:          0   IO-APIC-fasteoi   Dta1xx
-NMI:       2895
-LOC:     169448
-ERR:          0
-MIS:          0
-
-Does this mean the NMI watchdog is not working correctly on my system?
-
-# dmesg | grep NMI
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-Testing NMI watchdog ... OK.
-
-Regards.
+Is there any particular reason not to push these through -mm?
