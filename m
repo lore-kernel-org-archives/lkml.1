@@ -1,133 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbXJKMtC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbXJKMwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbXJKMtC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 08:49:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXJKMst
+	id S1758503AbXJKMwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 08:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXJKMwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 08:48:49 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:62412 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754869AbXJKMss (ORCPT
+	Thu, 11 Oct 2007 08:52:16 -0400
+Received: from static-71-246-207-116.washdc.fios.verizon.net ([71.246.207.116]:43082
+	"EHLO mail.gnupooh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752520AbXJKMwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 08:48:48 -0400
-Date: Thu, 11 Oct 2007 16:49:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH respin] phy: implement release function
-Message-ID: <20071011124905.GC13963@localhost.localdomain>
+	Thu, 11 Oct 2007 08:52:15 -0400
+Message-ID: <470E1C42.1040600@gnupooh.org>
+Date: Thu, 11 Oct 2007 08:51:14 -0400
+From: Rick Niles <fniles@gnupooh.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Help with rtc to hpet conversion of OSGPS driver
+References: <470E109C.6020903@gnupooh.org> <Pine.LNX.4.64.0710111437040.32234@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710111437040.32234@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lately I've got this nice badness on mdio bus removal:
+Maybe I'm way off here, but that seems to be the function to register a 
+RTC hardware chip with the kernel.  I want to use a real-time clock 
+interrupt to wake up my driver and service the GPS correlator, about 
+every 500ms.  Please let me know if I'm misunderstanding.
 
-Device 'e0103120:06' does not have a release() function, it is broken and must be fixed.
-------------[ cut here ]------------
-Badness at drivers/base/core.c:107
-NIP: c015c1a8 LR: c015c1a8 CTR: c0157488
-REGS: c34bdcf0 TRAP: 0700   Not tainted  (2.6.23-rc5-g9ebadfbb-dirty)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 24088422  XER: 00000000
-...
-[c34bdda0] [c015c1a8] device_release+0x78/0x80 (unreliable)
-[c34bddb0] [c01354cc] kobject_cleanup+0x80/0xbc
-[c34bddd0] [c01365f0] kref_put+0x54/0x6c
-[c34bdde0] [c013543c] kobject_put+0x24/0x34
-[c34bddf0] [c015c384] put_device+0x1c/0x2c
-[c34bde00] [c0180e84] mdiobus_unregister+0x2c/0x58
-...
+Jan Engelhardt wrote:
+> On Oct 11 2007 08:01, Rick Niles wrote:
+>   
+>> I've been trying to make the driver work with
+>> Fedora 7 and the 2.6.22 kernel, but the rtc_register() and other RTC functions
+>> seems to have been removed.
+>>     
+>
+> grep -r rtc_device_register drivers/rtc/
+>
+> Does that help?
+>
+>   
+>> I see they've been replaced by the corresponding
+>> HPET functions, which is great. However, hpet_register() always returns -16
+>> (EBUSY).  This could be because I lack the correct hardware (I'm running 32-bit
+>> Linux on a Athlon64 with an NVIDIA chipset) or some other reason.
+>>     
 
-Though actually there is nothing broken, it just device
-subsystem core expects another "pattern" of resource managment.
-
-This patch implement phy device's release function, thus
-we're getting rid of this badness.
-
-Also small hidden bug fixed, hope none other introduced. ;-)
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: Andy Fleming <afleming@freescale.com>
----
- drivers/net/phy/mdio_bus.c   |    9 +++++----
- drivers/net/phy/phy_device.c |   13 +++++++++++++
- include/linux/phy.h          |    1 +
- 3 files changed, 19 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index fc2f0e6..c30196d 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -91,9 +91,12 @@ int mdiobus_register(struct mii_bus *bus)
- 
- 			err = device_register(&phydev->dev);
- 
--			if (err)
-+			if (err) {
- 				printk(KERN_ERR "phy %d failed to register\n",
- 						i);
-+				phy_device_free(phydev);
-+				phydev = NULL;
-+			}
- 		}
- 
- 		bus->phy_map[i] = phydev;
-@@ -110,10 +113,8 @@ void mdiobus_unregister(struct mii_bus *bus)
- 	int i;
- 
- 	for (i = 0; i < PHY_MAX_ADDR; i++) {
--		if (bus->phy_map[i]) {
-+		if (bus->phy_map[i])
- 			device_unregister(&bus->phy_map[i]->dev);
--			kfree(bus->phy_map[i]);
--		}
- 	}
- }
- EXPORT_SYMBOL(mdiobus_unregister);
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 49328e0..8e25bf7 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -44,6 +44,17 @@ static struct phy_driver genphy_driver;
- extern int mdio_bus_init(void);
- extern void mdio_bus_exit(void);
- 
-+void phy_device_free(struct phy_device *phydev)
-+{
-+	kfree(phydev);
-+}
-+EXPORT_SYMBOL(phy_device_free);
-+
-+static void phy_device_release(struct device *dev)
-+{
-+	phy_device_free(to_phy_device(dev));
-+}
-+
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- {
- 	struct phy_device *dev;
-@@ -54,6 +65,8 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- 	if (NULL == dev)
- 		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
- 
-+	dev->dev.release = phy_device_release;
-+
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 2a65978..9ec1363 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -398,6 +398,7 @@ int phy_mii_ioctl(struct phy_device *phydev,
- int phy_start_interrupts(struct phy_device *phydev);
- void phy_print_status(struct phy_device *phydev);
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
-+void phy_device_free(struct phy_device *phydev);
- 
- extern struct bus_type mdio_bus_type;
- #endif /* __PHY_H */
--- 
-1.5.0.6
