@@ -1,110 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbXJKRTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXJKRU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbXJKRTp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 13:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXJKRTi
+	id S1756904AbXJKRU7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 13:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXJKRUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 13:19:38 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:3212 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752816AbXJKRTh (ORCPT
+	Thu, 11 Oct 2007 13:20:51 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:50139 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbXJKRUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 13:19:37 -0400
-Subject: [RFC] mm - background_writeout exits when pages_skipped ?
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain
-Date: Thu, 11 Oct 2007 18:19:34 +0100
-Message-Id: <1192123174.3082.41.camel@castor.rsk.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Oct 2007 13:20:51 -0400
+Date: Thu, 11 Oct 2007 13:20:48 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Olof Johansson <olof@lixom.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, paulus@ozlabs.org,
+       lethal@linux-sh.org, kyle@parisc-linux.org, grundler@parisc-linux.org
+Subject: Re: [PATCH 1/2] bug.h: Introduce HAVE_ARCH_WARN
+Message-ID: <20071011172048.GA18097@fattire.cabal.ca>
+References: <20071011171211.GB10877@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071011171211.GB10877@lixom.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When background_writeout() (mm/page-writeback.c) finds any pages_skipped
-in writeback_inodes() and it didn't meet any congestion, it exits even
-when it hasn't written enough pages yet.
+On Thu, Oct 11, 2007 at 12:12:11PM -0500, Olof Johansson wrote:
+> HAVE_ARCH_WARN is used to determine if an arch already has a __WARN()
+> macro, or if a generic one is needed.
+> 
+> With this, some of the arch-specific WARN_ON() implementations can be
+> made common instead (see follow-up patch for powerpc).
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
 
-Performing 2 ( or more) concurrent copies of a large file, often creates
-lots of skipped pages (1000+) making background_writeout exit and so
-pages don't get written out until we reach dirty_ratio.
+ack parisc hunk (obviously :)
 
-I added some instrumentation to fs/buffer.c in
-__block_write_full_page(..) and all the skipped pages come from here :-
-
-done:
-	if (nr_underway == 0) {
-		/*
-		 * The page was marked dirty, but the buffers were
-		 * clean.  Someone wrote them back by hand with
-		 * ll_rw_block/submit_bh.  A rare case.
-		 */
-		end_page_writeback(page);
-
-		/*
-		 * The page and buffer_heads can be released at any time from
-		 * here on.
-		 */
-		wbc->pages_skipped++;	/* We didn't write this page */
-
-maybe not such a rare case! :)
-
-I've been testing 2.6.23 on an AMD64x2.
-
-Here's a quick patch for background_writeout to ignore pages_skipped. It
-helps keep nr_dirty between dirty_background_ratio & dirty_ratio, and
-once the copies have finish nr_dirty quickly drops back to
-dirty_background_ratio.
-
-Without the patch during the copy nr_dirty stays around dirty_ratio and
-takes a long time to drop after it finishes.   
-
-It seems that this patch tackles the problem, but is there a better way
-to fix it? 
-And is there a good reason to abandon this writeout loop if a page gets
-skipped for any other reason? 
-
-thanks
-richard
-
-
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 4472036..5a6747b 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -371,6 +371,7 @@ static void background_writeout(unsigned long _min_pages)
- 		.nr_to_write	= 0,
- 		.nonblocking	= 1,
- 		.range_cyclic	= 1,
-+		.encountered_congestion = 0,
- 	};
- 
- 	for ( ; ; ) {
-@@ -382,17 +383,16 @@ static void background_writeout(unsigned long _min_pages)
- 			global_page_state(NR_UNSTABLE_NFS) < background_thresh
- 				&& min_pages <= 0)
- 			break;
--		wbc.encountered_congestion = 0;
-+		if (wbc.encountered_congestion) {
-+			congestion_wait(WRITE, HZ/10);
-+			wbc.encountered_congestion = 0;
-+		}
- 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
- 		wbc.pages_skipped = 0;
- 		writeback_inodes(&wbc);
- 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
--		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
--			/* Wrote less than expected */
--			congestion_wait(WRITE, HZ/10);
--			if (!wbc.encountered_congestion)
--				break;
--		}
-+		if (wbc.nr_to_write > 0 && !wbc.encountered_congestion)
-+			break;
- 	}
- }
- 
-
-
+cheers,
+	kyle
