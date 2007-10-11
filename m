@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbXJKQun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbXJKQy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbXJKQun (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 12:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXJKQuZ
+	id S1756816AbXJKQy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 12:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXJKQyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 12:50:25 -0400
-Received: from mlbe2k2.cs.myharris.net ([137.237.90.89]:21365 "EHLO
-	mlbe2k2.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869AbXJKQuY convert rfc822-to-8bit (ORCPT
+	Thu, 11 Oct 2007 12:54:21 -0400
+Received: from loopy.telegraphics.com.au ([202.45.126.152]:33417 "EHLO
+	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbXJKQyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 12:50:24 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 11 Oct 2007 12:54:20 -0400
+X-Greylist: delayed 1691 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Oct 2007 12:54:20 EDT
+Date: Fri, 12 Oct 2007 02:26:07 +1000 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Rob Landley <rob@landley.net>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+In-Reply-To: <Pine.LNX.4.64.0710111707270.3729@anakin>
+Message-ID: <Pine.LNX.4.64.0710120211130.4083@loopy.telegraphics.com.au>
+References: <200710101722.21126.rob@landley.net> <20071011113931.GB8393@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0710111443530.3729@anakin> <200710110827.12631.rob@landley.net>
+ <Pine.LNX.4.64.0710111707270.3729@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Aggregation in embedded context, is kernel GPL2prejudiceagainst embedded systems?
-Date: Thu, 11 Oct 2007 12:49:42 -0400
-Message-ID: <E496871456016F4CA8959BE4105D2A890E8D7E@troe2k1.cs.myharris.net>
-In-Reply-To: <20071011162219.GI10759@thunk.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Aggregation in embedded context, is kernel GPL2prejudiceagainst embedded systems?
-Thread-Index: AcgMItdAZH2pKeDYTrisB+eSJ+JjpgAArfyQ
-References: <E496871456016F4CA8959BE4105D2A890E8D76@troe2k1.cs.myharris.net> <20071011151543.GX16424@stusta.de> <E496871456016F4CA8959BE4105D2A890E8D7C@troe2k1.cs.myharris.net> <20071011162219.GI10759@thunk.org>
-From: "Crane, Matthew" <mcrane03@harris.com>
-To: "Theodore Tso" <tytso@mit.edu>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Oct 2007 16:49:44.0235 (UTC) FILETIME=[B99BDFB0:01C80C26]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
-
-So really, the only way for a company to know if they are ok would be to
-sue themselves in a test case and force the issue.  This would at least
-set some precedent and help remove some of the FUD around the issue.  I
-have no idea about the details, but it seems that those groups who have
-pursued GPL cases may have avoided setting precedents lest it reduce the
-grayness.  I can easily imagine constructing a generic system that can
-be used as a solid test and provide technical and legal reference for
-others, once it has been ruled on in one or more courts.
-
-Matt
 
 
------Original Message-----
-From: Theodore Tso [mailto:tytso@mit.edu] 
-Sent: Thursday, October 11, 2007 12:22 PM
-To: Crane, Matthew
-Cc: Adrian Bunk; linux-kernel@vger.kernel.org
-Subject: Re: Aggregation in embedded context, is kernel
-GPL2prejudiceagainst embedded systems?
+On Thu, 11 Oct 2007, Geert Uytterhoeven wrote:
 
-On Thu, Oct 11, 2007 at 12:06:14PM -0400, Crane, Matthew wrote:
-> I wasn't sure how to describe what the people and groups with the
-> mandate to defend open source software.  There are people and groups
-> with such a mandate.
+> > Reading the patch in that link, recent cross compilers from _where_?  
+> > Buildroot?  Cross-tools?  Gentoo embedded?  Cross Linux From Scratch?  
+> > My Firmware Linux project?
+> >
+> > You assume they all use the same name, yet your patch changes them 
+> > from one default name to another default name, presumably due to a gcc 
+> > version change becoming increasingly political about the 
+> > GNU/Linux/Dammit thing...
+> 
+> Compilers build from the only remaining distribution that supports (sort 
+> of) m68k: Debian.
 
-There is no such thing as "mandate".  If you are a copyright owner,
-and you elect to be a hard*ss about enforcing the GPL, you can choose
-to do so.  If you are not a copyright owner, all you can do is
-pontificate with FAQ's about GPL....
+Maybe. I use an old Cross LFS build, as well as Debian (does Debian 
+officially support m68k?), and there also exists an unofficial Gentoo 
+port.
 
-> I'm asking if in a legal sense the grayness is affected by the
-> constraints of the hw the kernel is being run on, and some attempt to
-> quantify how the grayness is affected.  Of course it is not black and
-> white and ultimately up to a judge. 
+> If you cross compile for m68k and don't specify a toolchain, you get a 
+> default one: the one the m68k developers use.
+> 
+> On some other architectures, you always have to specify the toolchain. 
+> What's wrong with providing a default?
 
-At the end of the day it all boils down to what is a derived work.  If
-an object file which is designed to link into a kernel is a derived
-work, then the GPL claims that it will infect across to that derived
-work.  Whether or not it this is a case is a matter of much debate,
-and as far as I know, no court has ever ruled on point regarding the
-question of object files, dynamical linking, and whether or not that
-would be a derived work or not.  It seems likely that the answer may
-vary from one legal jurisdiction to another.  Hence, the only answer
-that we can give which is useful is, "Take this off of LKML, and go
-ask a lawyer."
+Nothing, except that uniformity across platforms follows the principal of 
+least suprise. That generally makes life easier downstream.
 
-Best regards,
+I personally have created and used m68k cross toolchains as "m68k-linux", 
+"m68k-linux-gnu" and "m68k-unknown-linux-gnu". AFAIK it's quite arbitrary.
 
-						- Ted
+This wasn't an issue before we came to depend on cross compilers. Since we 
+tend to need them more as compilation becomes more expensive, IMHO we 
+should follow the practice of the embedded architectures.
+
+-f
+
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
