@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbXJKVnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbXJKVoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbXJKVnR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 17:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbXJKVnG
+	id S1757505AbXJKVoy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 17:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbXJKVor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 17:43:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48716 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbXJKVnF (ORCPT
+	Thu, 11 Oct 2007 17:44:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58126
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755612AbXJKVoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 17:43:05 -0400
-Date: Thu, 11 Oct 2007 14:41:12 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
-Subject: Re: TPM driver changes to support multiple locality
-Message-ID: <20071011144112.0e408dce@laptopd505.fenrus.org>
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com>
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com>
-	<27383.1192045583@turing-police.cc.vt.edu>
-	<A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+	Thu, 11 Oct 2007 17:44:46 -0400
+Date: Thu, 11 Oct 2007 14:44:34 -0700 (PDT)
+Message-Id: <20071011.144434.18296694.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, heiko.carstens@de.ibm.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [PATCH net-2.6.24] remove bogus qeth type check
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071011132458.3b536662@freepuppy.rosehill>
+References: <200710110909.l9B99fEM021646@imap1.linux-foundation.org>
+	<20071011.024529.112295019.davem@davemloft.net>
+	<20071011132458.3b536662@freepuppy.rosehill>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 11:33:35 -0700
-"Agarwal, Lomesh" <lomesh.agarwal@intel.com> wrote:
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Thu, 11 Oct 2007 13:24:58 -0700
 
-> Below is the patch for TPM driver.
-> Comments/suggestions?
-
-please don't top post
-
+> Not sure why this crept in with hard-header-ops change.
+> Just kill it. Need to start doing cross-compiles for s390...
 > 
-> --- pristine-linux-2.6.18/drivers/char/tpm/tpm_tis.c	2006-09-19
-> 20:42:06.000000000 -0700
-> +++ linux-2.6.18-xen/drivers/char/tpm/tpm_tis.c	2007-10-09
-> 15:30:49.000000000 -0700
+> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-or send word wrapped patches ....
-
-.. or patches against 2 year old kernels for that matter ;)
-
->  enum tis_defaults {
->  	TIS_MEM_BASE = 0xFED40000,
-> -	TIS_MEM_LEN = 0x5000,
-> +	TIS_MEM_LEN = 0x1000,
-
-hmmm/// why
+I commited Andrews's fix for this more than 12 hours before you
+posted this.
