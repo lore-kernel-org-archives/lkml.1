@@ -1,151 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXJKCfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbXJKChA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbXJKCfe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 22:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXJKCf1
+	id S1757936AbXJKChA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 22:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbXJKCgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 22:35:27 -0400
-Received: from mga05.intel.com ([192.55.52.89]:51367 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755570AbXJKCf0 (ORCPT
+	Wed, 10 Oct 2007 22:36:53 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38896 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756011AbXJKCgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 22:35:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,256,1188802800"; 
-   d="scan'208";a="341863498"
-Subject: Re: Linux 2.6.23
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 10 Oct 2007 22:36:52 -0400
+Date: Wed, 10 Oct 2007 19:37:23 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071010101452.GA25433@elte.hu>
-References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
-	 <1191996740.8694.7.camel@entropy>  <20071010101452.GA25433@elte.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 11 Oct 2007 10:34:17 +0800
-Message-Id: <1192070057.3019.17.camel@ymzhang>
+Subject: Re: -rt more realtime scheduling issues
+Message-ID: <20071011023723.GI5049@monkey.ibm.com>
+References: <20071006021548.GE4587@monkey.ibm.com> <20071008184523.GA29656@monkey.ibm.com> <20071009030412.GB12915@goodmis.org> <20071009184953.GA3285@monkey.ibm.com> <20071010115052.GA21391@goodmis.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071010115052.GA21391@goodmis.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-10 at 12:14 +0200, Ingo Molnar wrote:
-> * Nicholas Miell <nmiell@comcast.net> wrote:
+On Wed, Oct 10, 2007 at 07:50:52AM -0400, Steven Rostedt wrote:
+> On Tue, Oct 09, 2007 at 11:49:53AM -0700, Mike Kravetz wrote:
+> > The more I try understand the IPI handling the more confused I get. :(
+> > At fist I was concerned about an IPI happening in the middle of the
+> > __schedule routine.  But, then it occurred to me that interrupts are
+> > disabled when in this routine (when holding the runqueue lock).  So, IPIs
+> > are not delivered during __schedule processing.  Right?
+> > 
+> > But, if this is case then I don't understand the following code in
+> > schedule():
+> > 
+> >         local_irq_disable();
+> > 
+> >         do {
+> >                 __schedule();
+> >         } while (unlikely(test_thread_flag(TIF_NEED_RESCHED) ||
+> >                           test_thread_flag(TIF_NEED_RESCHED_DELAYED)));
+> > 
+> >         local_irq_enable();
+> > 
+> > How can the reschedule flags possibly be set AFTER running __schedule.
+> > Especially when the call is explicitly surrounded by local_irq_disable/
+> > local_irq_enable.
+> > 
+> > Can someone help me?
+> > 
 > 
-> > Does CFS still generate the following sysbench graphs with 2.6.23, or 
-> > did that get fixed?
-> >
-> > http://people.freebsd.org/~kris/scaling/linux-pgsql.png 
-> > http://people.freebsd.org/~kris/scaling/linux-mysql.png
-I also captured the same issue on a couple of machines.
+> Sure, another CPU can set the tasks NEED_RESCHED flag. In try_to_wake_up,
+> if the process that is waking up is on a runqueue on another CPU and it
+> is of higher priority than the current running task, the process that is
+> doing the waking will set the NEED_RESCHED flag for that task.
 
-> 
-> as far as my testsystem goes, v2.6.23 beats v2.6.22.9 in sysbench:
-> 
->     http://redhat.com/~mingo/misc/sysbench.jpg
-> 
-> As you can see it in the graph, v2.6.23 schedules much more consistently 
-> too. [ v2.6.22 has a small (but potentially statistically insignificant) 
-> edge at 4-6 clients, and CFS has a slightly better peak (which is 
-> statistically insignificant). ]
-> 
-> ( Config is at http://redhat.com/~mingo/misc/config, system is Core2Duo
->   1.83 GHz, mysql-5.0.45, glibc-2.6. Nothing fancy either in the config
->   nor in the setup - everything is pretty close to the defaults. )
-I used FedoraCore 8 Test2 distribution, so glibc-2.6.90-13 already fixed
-the old malloc scalability issue. Cpu is 2.66GHZ quad core, 2 physical
-processor, totally 8 cores. The regression is about 28%.
-
-
-> 
-> i'm aware of a 2.6.21 vs. 2.6.23 sysbench regression report, and it 
-> apparently got resolved after various changes to the test environment:
-> 
->    http://jeffr-tech.livejournal.com/10103.html
-> 
->  " [<CFS>] has virtually no dropoff and performs better under load than
->    the default 2.6.21 scheduler. " (paraphrased)
-> 
-> (The new link you posted, just a few hours after the release of v2.6.23, 
-> has not been reported to lkml before AFAICS - when did you become aware 
-> of it? If you learned about it before v2.6.23 it might have been useful 
-> to report it to the v2.6.23 regression list.)
-I tested it in 2.6.22 and all 2.6.23-rc kernels. All 2.6.23-rc kernel has
-the same regression. The testing result is stable.
-
-> At a quick glance there are no .configs or other testing details at or 
-> around that URL that i could use to reproduce their result precisely, so 
-> at least a minimal bugreport would be nice.
-Commandline to run testing:
-#sysbench --test=oltp --mysql-user=root --mysql-db=mysql --max-time=120
---max-requests=0 --oltp-read-only=on --num-threads=16 run
-
-> In any case, here are a few general comments about sysbench numbers:
-> 
-> Sysbench is a pretty 'batched' workload: it benefits most from batchy 
-> scheduling: the client doing as much work as it can, then server doing 
-> as much work as it can - and so on. The longer the client can work the 
-> more cache-efficient the workload is. Any round-trip to the server due 
-> to pesky preemption only blows up the cache footprint of the workload 
-> and gives lower throughput.
-> 
-> This kind of workload would probably run best on DOS or Windows 3.11, 
-> with no preemptive scheduling done at all. In other words: run both 
-> mysqld and the client as SCHED_FIFO to get the best performance out of 
-> it. So in that sense the workload is a bit similar to dbench.
-> 
-> The other thing is that mysqld does _tons_ of sys_time() calls, so GTOD 
-> differences between .22 and .23 might cause extra overhead - especially 
-> with 8 CPUs/cores. Does the sys_time() scalability patch below improve 
-> sysbench performance for you? (i'm not sure about psqld)
-> 
-> If it's indeed due to batched vs. well-spread-out scheduling behavior 
-> (which is possible), there are a few things you could do to make 
-> scheduling more batched:
-> 
-> 1) start the DB daemon up as SCHED_BATCH:
-> 
->      schedtool -B -e service mysqld restart
-> 
->    (and do the same with the client-side commands as well)
-> 
->    or:
-> 
->        schedtool -B $$
-> 
->    to mark the parent shell as SCHED_BATCH - then start up the DB and 
->    start the client workload. (All other tasks not started from this 
->    shell will still be SCHED_OTHER, so only your mysql workload will be 
->    affected.) For example "beagled" already runs under SCHED_BATCH by 
->    default.
-> 
->    SCHED_BATCH will cause the scheduler to batch up the workload more. 
->    You basically tell the scheduler: "this workload really wants
->    throughput above all", and the scheduler takes that hint and acts 
->    upon it. (it's still not as drastic as SCHED_FIFO, it's somewhere 
->    between SCHED_OTHER and SCHED_FIFO, in terms of batching. Start up 
->    your DB and your client as SCHED_FIFO via "schedtool -F -p 10 ..." to 
->    establish the best-case batching win.)
-> 
-> 2) check out the v22 CFS backport patch which has the latest & greatest 
->    scheduler code, from http://people.redhat.com/mingo/cfs-scheduler/ . 
->    Does performance go up for you with it? It's somewhat less
->    preemption-eager, which might as well make the crutial difference for
->    sysbench.
-> 
-> 3) if it's enabled, disable CONFIG_PREEMPT=y. CONFIG_PREEMPT can cause
->    unwanted overscheduling and cache-trashing under overload.
-Below is PREMPT config in my kernel config file.
-
-CONFIG_SCHED_SMT=y
-CONFIG_SCHED_MC=y
-# CONFIG_PREEMPT_NONE is not set
-CONFIG_PREEMPT_VOLUNTARY=y
-# CONFIG_PREEMPT is not set
-CONFIG_PREEMPT_BKL=y
-# CONFIG_NUMA is not set
+Yes right.  I guess I spent too much time thinking about the 'broadcast
+IPI' case where NEED_RESCHED is only set by the handler.  In the case
+where we 'reschedule' on a specific CPU the flag is set and IPI sent.
 
 
--yanmin
+> So to prevent a race where we have called schedule and after getting to
+> the new running task, a higher priority process just got scheduled in,
+> we will catch that here.
+> 
+> Now if this is really needed? I don't know. It seems that it just wants
+> to check here so we don't need to jump to the interrupt and then
+> schedule while coming back out of the interrupt handler as a preemption
+> schedule. This way we just schedule again and save a little overhead
+> from doing that through the interrupt.
+
+One more thing.  test_thread_flag() uses thread info of the current
+thread.  But, if __schedule() did a context switch then it is possible
+the NEED_RESCHED flag was set in the previous task, instead of current.
+Does that make sense?  The resched flags get cleared at the begining
+of __schedule (as they should).  But, if we really want that loop to
+be valid shouldn't the flags be copied to the current task.  Something
+like the following after the context switch:
+
+	if (test_and_clear_tsk_thread_flag(prev, TIF_NEED_RESCHED))
+		set_tsk_need_resched(current);
+	if (test_and_clear_tsk_thread_flag(prev, TIF_NEED_RESCHED_DELAYED))
+		set_tsk_need_resched_delayed(current);
+
+Don't we also need to worry about the flags being left set in the
+previous task?  That is why I think a test_and_clear would make sense.
+
+But, your argument about axing the loop altogether makes sense as well.
+
+> But this brings up an interesting point. Since the IRQ handlers are run
+> as threads, and the interrupt is what will wake them, this seems to add
+> a bit of latency to interrupts.
+> 
+> For example:
+> 
+>   We schedule in process A of prio 1
+> 
+>   before exiting __schedule process B is woken up on that same rq
+>   with a prio of 2 and sets A's NEED_RESCHED flag.
+> 
+>   Also an interrupt goes off and sent to this CPU. But since interrupts
+>   are disabled, we wait.
+> 
+>   leaving __schedule() we see that A's NEED_RESCHED flag is set, so we
+>   continue the do while loop and call __schedule again.
+> 
+>   We schedule in B of prio 2.
+> 
+>   Leave __schedule as well as the do while loop and then enable
+>   interrupts.
+> 
+>   The interrupt that was pending is now triggered.
+> 
+>   Wakes up the handler of prio 90 and since it is higher in priority
+>   than process B of prio 2 it sets B's NEED_RESCHED flag.
+> 
+>   On return from the interrupt we call schedule again.
+> 
+> This seems strange. I can imagine on a large # of CPUs box that this can
+> happen quite often, and have the interrupts disabled for several rounds
+> through schedule.
+> 
+> I say we ax that while loop.
+> 
+> Ingo?
+> 
+> -- Steve
+
+-- 
+Mike
