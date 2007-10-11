@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbXJKJD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXJKJOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbXJKJD5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 05:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbXJKJDu
+	id S1757457AbXJKJOo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 05:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbXJKJOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 05:03:50 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:42923 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbXJKJDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 05:03:49 -0400
-X-Greylist: delayed 1679 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Oct 2007 05:03:49 EDT
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: linux-kernel@vger.kernel.org
-Subject: "mount --bind" with user/group/mode definition?
-Date: Thu, 11 Oct 2007 10:35:37 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 11 Oct 2007 05:14:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54988 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751694AbXJKJOf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 05:14:35 -0400
+Date: Thu, 11 Oct 2007 02:13:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/5] Linux Kernel Markers - Samples
+Message-Id: <20071011021355.53302c04.akpm@linux-foundation.org>
+In-Reply-To: <20070928143159.948108939@polymtl.ca>
+References: <20070928142845.795281397@polymtl.ca>
+	<20070928143159.948108939@polymtl.ca>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710111035.38644.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+On Fri, 28 Sep 2007 10:28:49 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-is there some way to duplicate a directory somewhere else (like 
-with "mount --bind"), but having different owner/group/mode bits?
+> Module example showing how to use the Linux Kernel Markers.
 
-I'd like to mount a directory I have no control over (think NFS, or 
-floppy, ...) with clearly defined rights - like root:<some group>, mode 0550 
-for all directories, and 0440 for all files.
-(Here I want to have full *read* control, regardless of the original 
-permissions).
-[ I know that this special case can be (mostly) done by a read-only binding
-  mount; the part that is missing is eg. files with a different owner being
-  0700. ]
+s390:
 
-I know that something like this is possible for eg. VFAT, which has no right 
-descriptors for itself; but I'd need that for arbitrary directory trees, who 
-themselves *have* permissions set.
-
-
-Is there some way to achieve that?
-
-
-Regards,
-
-Phil
+samples/markers/marker-example.c: In function 'my_open':
+samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't match constraints
+samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't match constraints
+samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
+samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
