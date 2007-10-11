@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbXJKKZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbXJKK2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757147AbXJKKZa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbXJKKYD
+	id S1758121AbXJKK2X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXJKK2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:24:03 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:5607 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756107AbXJKKX4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:23:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:mime-version:content-type:content-transfer-encoding:x-mailer:in-reply-to:references:message-id;
-        b=agwh0Pou6G/FxptpgxQ9uB/M+TNxW8eX25tXN7syts3ST8gMAa2h3Dj0u/mDSZ+z7b4esjjNDsH9Z8KvA3myuBVo38Xap1hbJjYKHvt5wesIBobilCsoBeCg8SUiupKea5XUbNdBd7T/duE8kguO5y8NxOM1opV3zPwwsX0ZPPs=
-From: Ken Sugawara <sugaken.r3@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: wim@iguana.be, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] softdog - panic instead of reboot, kernel 2.6.22.9
-Date: Thu, 11 Oct 2007 19:25:11 +0900
+	Thu, 11 Oct 2007 06:28:14 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10712 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbXJKK2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 06:28:13 -0400
+Date: Thu, 11 Oct 2007 12:28:40 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+Message-ID: <20071011102840.GG5142@kernel.dk>
+References: <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com> <20071003163804.GR19691@waste.org> <64bb37e0710032232o71225bf6k8a0d493687eb80bd@mail.gmail.com> <20071004170536.GY19691@waste.org> <64bb37e0710042306s6c629163gde7bc5c93973153e@mail.gmail.com> <64bb37e0710070144m6bc2c844oc96ef715b53b9819@mail.gmail.com> <64bb37e0710070739s67805d72x6d675cb2af2e8b24@mail.gmail.com> <470D97BD.4020300@gmail.com> <20071011082604.GB5142@kernel.dk> <470DE09D.7080508@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Mailer: HidemaruMail 4.69 (WinNT,501)
-In-Reply-To: <20071010131543.7da15e67@the-village.bc.nu>
-References: <7DC80B08BC13EBsugaken.r3@gmail.com> <20071010131543.7da15e67@the-village.bc.nu>
-Message-Id: <81C80BF10115AEsugaken.r3@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <470DE09D.7080508@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->> analysis.  Provided that timer interrupts are not blocked, this patch 
->> might enable them to get a crash dump in such a situation by activating 
->> softdog.
->
->You want the NMI based anti lockup stuff for that. If the box locks up
->then generally softdog will fail. The NMI based debug
->(CONFIG_DETECT_SOFTLOCKUP) is the option you want.
+On Thu, Oct 11 2007, Tejun Heo wrote:
+> Jens Axboe wrote:
+> > This is the old ata_sg_is_last:
+> > 
+> > static inline int
+> > ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+> > {
+> >         if (sg == &qc->pad_sgent)
+> >                 return 1;
+> >         if (qc->pad_len)
+> >                 return 0;
+> >         if (((sg - qc->__sg) + 1) == qc->n_elem)
+> >                 return 1;
+> >         return 0;
+> > }
+> > 
+> > and the new one:
+> > 
+> > static inline int
+> > ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+> > {
+> >         if (sg == &qc->pad_sgent)
+> >                 return 1;
+> >         if (qc->pad_len)
+> >                 return 0;
+> >         if (qc->n_iter == qc->n_elem)
+> >                 return 1; 
+> >         return 0;
+> > }
+> > 
+> > ->n_iter is how ata_qc_next_sg() walks over the sglist, I don't
+> > understand your reference to why depending on that during iteration
+> > would be bad?
+> 
+> Because that makes ata_sg iterator macros have hidden side effects
+> (nothing in the interface suggests it can't be nested and when somebody
+> actually nests it, finding what went wrong can be pretty difficult).  I
+> think it would be better to have explicit ata_sg_iter passed around if
+> sg itself isn't enough to walk the sg list.
 
-Thanks for your comment.  I'll look into it, but unfortunately, most of 
-our customers are running much older kernels (e.g. 2.6.9-based from 
-RHEL4.x) which don't have the option, and some non-negligible number of 
-them are running on non-IA platforms, whereas right now the option seems 
-to be implemented only in i386 and x86_64 (correct me if I'm wrong).
+I think it's implicit in the interface, since you don't pass an sgtable
+in. But it's not a big deal to me, if you want it changed, go ahead :-)
 
-Anyways, I'll try to look for a way to manually trigger NMI on their non
--IA boxes, preferably without any additional hardware.
+> > So we could add a test for sg_last() there, but that would turn sg table
+> > iteration into an O(N^2) operation for those drivers that use
+> > ata_sg_is_last() with chained sg tables. I'd much rather just get rid of
+> > ata_sg_is_last(), it's only used to mark end-of-table entries for
+> > hardware. That logic can be performed cheaper.
+> 
+> Yeap, it can be removed but having "is this the last one?" test is just
+> nicer to low level drivers.  With ata_sg_iter, I think we can do it in
+> O(N) by looking up and caching the next entry.
 
-Regards,
+Sure, of you could just lookup sg_last() in the beginning of the loop.
+Still seems a bit silly to me just to keep the ata_sg_is_last()
+interface, since it can be done for free basically by maintaining an
+sglast element in the loop that you then use when the loop is done to
+set your SG_END marker (or whatever the driver needs).
 
-Ken
+-- 
+Jens Axboe
+
