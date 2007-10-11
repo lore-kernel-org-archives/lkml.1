@@ -1,123 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbXJKXQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbXJKXQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbXJKXQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 19:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXJKXQM
+	id S1754096AbXJKXQd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 19:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXJKXQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 19:16:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50844 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752667AbXJKXQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 19:16:11 -0400
-Date: Thu, 11 Oct 2007 16:15:59 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: menage@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-Message-Id: <20071011161559.378e7766.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	<20071003105817.7adf6516.pj@sgi.com>
-	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
-	<20071003131632.fed4b848.pj@sgi.com>
-	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
-	<20071006012437.c0fd3a8a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-	<6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
-	<alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com>
-	<6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com>
-	<alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Oct 2007 19:16:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45508 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753631AbXJKXQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 19:16:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Leun <ml@newton.leun.net>
+Subject: Re: solved: 2.6.23 && fglrx && s2ram
+Date: Fri, 12 Oct 2007 01:31:17 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20071012000722.3cbf17b6@elektra.leun.net>
+In-Reply-To: <20071012000722.3cbf17b6@elektra.leun.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710120131.17897.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> you could protect the whole thing by sched_hotcpu_mutex, which is 
-> expressly designed for migrations.
+Hi,
+
+On Friday, 12 October 2007 00:07, Michael Leun wrote:
+> Hello,
 > 
-> Something like this:
+> (please, don't blame me for using the binary only driver, I will
+> happily switch to a open source one once it properly runs mplayer,
+> e.g.).
 > 
-> 	struct cgroup_iter it;
-> 	struct task_struct *p, **tasks;
-> 	int i = 0;
+> Renaming the config options for suspend/sleep broke fglrx power
+> management.
+
+It looks like your patch is against the fglrx driver, isn't it?
+
+> --- firegl_public.h.orig	2007-10-11 23:43:26.000000000 +0200
+> +++ firegl_public.h	2007-10-11 23:53:08.000000000 +0200
+> @@ -172,7 +172,7 @@
+>  #endif
+>  
+>  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+> -#if !defined(CONFIG_SMP) || defined(CONFIG_SUSPEND_SMP) // ACPI not working on older SMP kernel (prior to 2.6.13) 
+> +#if !defined(CONFIG_SMP) || defined(CONFIG_PM_SLEEP_SMP) // ACPI not working on older SMP kernel (prior to 2.6.13) 
+>  #define FIREGL_POWER_MANAGEMENT
+>  #endif
+>  #endif
+>  
 > 
-> 	cgroup_iter_start(cs->css.cgroup, &it);
-> 	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
-> 		get_task_struct(p);
-> 		tasks[i++] = p;
-> 	}
-> 	cgroup_iter_end(cs->css.cgroup, &it);
-> 
-> 	while (--i >= 0) {
-> 		sched_migrate_task(tasks[i], cs->cpus_allowed);
-> 		put_task_struct(tasks[i]);
-> 	}
-> 
-> kernel/sched.c:
-> 
-> 	void sched_migrate_task(struct task_struct *task,
-> 				cpumask_t cpus_allowed)
-> 	{
-> 		mutex_lock(&sched_hotcpu_mutex);
-> 		set_cpus_allowed(task, cpus_allowed);
-> 		mutex_unlock(&sched_hotcpu_mutex);
-> 	}
 
-
-Hmmm ... I hadn't noticed that sched_hotcpu_mutex before.
-
-I wonder what it is guarding?  As best as I can guess, it seems, at
-least in part, to be keeping the following two items consistent:
- 1) cpu_online_map
- 2) the per-task cpus_allowed masks
-
-That is, it seems to ensure that a task is allowed to run on some
-online CPU.
-
-If that's approximately true, then shouldn't I take sched_hotcpu_mutex
-around the entire chunk of code that handles updating a cpusets 'cpus',
-from the time it verifies that the requested CPUs are online, until the
-time that every affected task has its cpus_allowed updated?
-
-Furthermore, I should probably guard changes to and verifications
-against the top_cpuset's cpus_allowed with this mutex as well, as it is
-supposed to be a copy of cpu_online_map.
-
-And since all descendent cpusets have to have 'cpus' masks that are
-subsets of their parents, this means guarding other chunks of cpuset
-code that depend on the consistency of various per-cpuset cpus_allowed
-masks and cpu_online_map.
-
-My current intuition is that this expanded use of sched_hotcpu_mutex in
-the cpuset code involving various cpus_allowed masks would be a good
-thing.
-
-In sum, perhaps sched_hotcpu_mutex is guarding the dispersed kernel
-state that depends on what CPUs are online.  This includes the per-task
-and per-cpuset cpus_allowed masks, all of which are supposed to be some
-non-empty subset of the online CPUs.
-
-Taking and dropping the sched_hotcpu_mutex for each task, just around
-the call to set_cpus_allowed(), as you suggested above, doesn't seem to
-accomplish much that I can see, and certainly doesn't seem to guard the
-consistency of cpu_online_map with the tasks cpus_allowed masks.
-
-... lurkers beware ... good chance I haven't a friggin clue ;).
-    In other words: Thirty minutes ago I couldn't even spell
-    sched_hotcpu_mutex, and now I'm pontificating on it ;);).
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Greetings,
+Rafael
