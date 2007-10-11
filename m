@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJKVVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbXJKVWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXJKVVI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 17:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXJKVU5
+	id S1758864AbXJKVWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 17:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXJKVWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 17:20:57 -0400
-Received: from thunk.org ([69.25.196.29]:36492 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbXJKVU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 17:20:56 -0400
-Date: Thu, 11 Oct 2007 17:20:50 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Schwartz <davids@webmaster.com>
-Cc: "Crane, Matthew" <mcrane03@harris.com>, linux-kernel@vger.kernel.org
-Subject: Re: Aggregation in embedded context, is kernel GPL2
-	prejudiceagainst embedded systems?
-Message-ID: <20071011212049.GL10759@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Schwartz <davids@webmaster.com>,
-	"Crane, Matthew" <mcrane03@harris.com>,
-	linux-kernel@vger.kernel.org
-References: <20071011151543.GX16424@stusta.de> <MDEHLPKNGKAHNMBLJOLKAEHKHGAC.davids@webmaster.com>
+	Thu, 11 Oct 2007 17:22:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40182 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831AbXJKVWW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 17:22:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <470E93D3.5050707@s5r6.in-berlin.de>
+Date: Thu, 11 Oct 2007 23:21:23 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEHKHGAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Documentation/patch-tags v3
+References: <30616.1192133818@lwn.net> <1192135811.7899.25.camel@heimdal.trondhjem.org>
+In-Reply-To: <1192135811.7899.25.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 01:49:03PM -0700, David Schwartz wrote:
-> Adrian Bunk wrote:
-> 
-> > even for dynamically linking including non-GPL code is not white but 
-> > already dark grey.
-> 
-> IANAL, but personally, I think it's perfectly black and white.
-> 
-> No mechanical combination (that means compressing, linking, tarring,
-> compiling, or whatever) can create a work for copyright purposes. It
-> can only convert the original work into a new form or aggregate
-> works.
-> 
-> There are a few exceptions to this by statute. For example,
-> translation (by explicit law) can create a derivative
-> work. Presumably this was because nobody ever imagined an automated
-> process that could translate a work. It was assumed such a process
-> must always be creative.
-> 
-> To create a 'derivative work', you must create a new *work*, and a
-> compiler and linker can't do that. Under copyright law, the creation
-> of a work requires creative input. Compilers and linkers are not
-> creative.
+Trond Myklebust wrote:
+> Does 'Reviewed-by' also imply 'Signed-off-by'?
 
-This may (or may not) be true in the US.  But whether or not it is
-true in another legal jurisdiction, or whether there is code in the
-form of inline functions in header files getting dragged in at
-compilation time (and thus forming part of the driver object file),
-are all reasons why the only valid answer is TALK TO A LAWYER, NOT
-LKML.
+Does a technical review include a review of licensing and copyright
+issues?  (It doesn't seem to be a big issue though if the submitter
+signed off on it, like he should.)
 
-						- Ted
+> In other words, who is actually supposed to add this tag?
+> 
+> Is it the reviewer who passes on an officially 'reviewed' patch to the
+> maintainer, or is it the patch author him/herself who is responsible for
+> soliciting reviews and adding the tag?
+
+Anybody in the patch forwarding chain (author, maintainers... usually
+the latter) can add Acked-by and Tested-by, based on incoming feedback.
+The feedback may have explicitly stated an Acked-by or Tested-by or may
+have said something equivalent.  (In case of Tested-by, an appropriate
+description of how was tested should have been sent.  An explicit
+Tested-by from the tester himself is moot then.)
+
+Reviewed-by is a different beast.  If Jon's definition of Reviewed-by
+(or another definition) is "officially" adopted, people in the patch
+forwarding chain should only add this tag if the reviewer sent it
+explicitly in his response.  Unlike with Acked-by and Tested-by, we must
+not guess whether a reviewer wants to have his Reviewed-by added.
+
+[...]
+>> + (c) While there may be things that could be improved with this submission,
+>> +     I believe that it is, at this time, (1) a worthwhile modification to
+>> +     the kernel, and (2) free of known issues which would argue against its
+>> +     inclusion.
+>> +
+>> + (d) While I have reviewed the patch and believe it to be sound, I do not
+>> +     (unless explicitly stated elsewhere) make any warranties or guarantees
+>> +     that it will achieve its stated purpose or function properly in any
+>> +     given situation.
+> 
+> I'm confused about how to reconcile (c) and (d) here. If you are not
+> sure about whether or not the patch will achieve its stated purpose, why
+> would you be arguing that it is a worthwhile modification?
+
+Being sure of something and making guarantees are different things.
+-- 
+Stefan Richter
+-=====-=-=== =-=- -=-==
+http://arcgraph.de/sr/
