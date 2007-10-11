@@ -1,598 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbXJKN1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXJKN11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758622AbXJKN1A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXJKN0v
+	id S1758726AbXJKN11 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbXJKN1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:26:51 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:58525 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753944AbXJKN0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:26:49 -0400
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Cc: chrisw@sous-sol.org
-Subject: [TOMOYO #4 02/13] Data structures and prototypes definition.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200710112225.HGI87594.FVLFOFMJtHSOQO@I-love.SAKURA.ne.jp>
-In-Reply-To: <200710112225.HGI87594.FVLFOFMJtHSOQO@I-love.SAKURA.ne.jp>
-Message-Id: <200710112226.EFB87083.HFMOOVFSQJLOFt@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 11 Oct 2007 22:26:46 +0900
+	Thu, 11 Oct 2007 09:27:16 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:47774 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754018AbXJKN1O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 09:27:14 -0400
+Date: Thu, 11 Oct 2007 09:27:12 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/5] Linux Kernel Markers - Samples
+Message-ID: <20071011132712.GA3580@Krystal>
+References: <20070928142845.795281397@polymtl.ca> <20070928143159.948108939@polymtl.ca> <20071011021355.53302c04.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071011021355.53302c04.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:07:08 up 73 days, 13:26,  2 users,  load average: 1.45, 1.56, 1.29
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Data structures and prototype defitions for TOMOYO Linux.
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Fri, 28 Sep 2007 10:28:49 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > Module example showing how to use the Linux Kernel Markers.
+> 
+> s390:
+> 
+> samples/markers/marker-example.c: In function 'my_open':
+> samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't match constraints
+> samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't match constraints
+> samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
+> samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Hrm, I have s390 gcc-4.1.1 here and cannot reproduce the problem with it.
+
+What compiler are you using ?
+
+This is clearly caused by the :
+  asm volatile ("" : : "i" (&__mark_##name));
+
+It is there to specify that the __mark_##name variable is used. In the
+first implementations, I did not pass it as a parameter to the following
+function call, so I had to find a way to tell gcc that it should not go
+away. I first planned to use a "__used" attribute, but Jeremy said it
+was buggy on some gcc versions. (http://lkml.org/lkml/2006/10/17/235)
+
+He suggested the following:
+  asm volatile("" : : "m" (thing));
+
+But I guess it ended up not working so well, since I changed it for a
+"i" operand. However, if some s390 gccs do not like it, it's better to
+figure out another solution.
+
+Well, as a very very simple solution, let's just remove the asm. It is
+not needed anymore since the pointer is passed as parameter to the
+called function.
+
+The patch follows.
+
+Mathieu
+
+
+Linux Kernel Markers - Remove Unneeded asm
+
+On s390 (with some compiler) :
+
+> samples/markers/marker-example.c: In function 'my_open':
+> samples/markers/marker-example.c:22: warning: asm operand 0 probably doesn't
+> match constraints
+> samples/markers/marker-example.c:24: warning: asm operand 0 probably doesn't
+> match constraints
+> samples/markers/marker-example.c:22: error: impossible constraint in 'asm'
+> samples/markers/marker-example.c:24: error: impossible constraint in 'asm'
+
+It is there to specify that the __mark_##name variable is used. In the
+first implementations, I did not pass it as a parameter to the following
+function call, so I had to find a way to tell gcc that it should not go
+away. I first planned to use a "__used" attribute, but Jeremy said it
+was buggy on some gcc versions. (http://lkml.org/lkml/2006/10/17/235)
+
+He suggested the following:
+  asm volatile("" : : "m" (thing));
+
+But I guess it ended up not working so well, since I changed it for a
+"i" operand. However, if some s390 gccs do not like it, it's better to
+figure out another solution.
+
+Well, as a very very simple solution, let's just remove the asm. It is
+not needed anymore since the pointer is passed as parameter to the
+called function.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- security/tomoyo/include/realpath.h |   43 +++
- security/tomoyo/include/tomoyo.h   |  513 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 556 insertions(+)
+ include/linux/marker.h |    1 -
+ 1 file changed, 1 deletion(-)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/include/realpath.h	2007-10-11 15:53:12.000000000 +0900
-@@ -0,0 +1,43 @@
-+/*
-+ * security/tomoyo/include/realpath.h
-+ *
-+ * Get the canonicalized absolute pathnames.
-+ * The basis for TOMOYO.
-+ */
-+
-+#ifndef _TMY_REALPATH_H
-+#define _TMY_REALPATH_H
-+
-+struct path_info;
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+int tmy_realpath_dentry2(struct dentry *dentry,
-+			 struct vfsmount *mnt,
-+			 char *newname,
-+			 int newname_len);
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+/* These functions use tmy_alloc(), so caller must tmy_free() */
-+/* if these functions didn't return NULL. */
-+char *tmy_realpath(const char *pathname);
-+char *tmy_realpath_nofollow(const char *pathname);
-+char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt);
-+
-+/* Allocate memory for structures. */
-+/* The RAM is chunked, so NEVER try to kfree() the returned pointer. */
-+void *tmy_alloc_element(const unsigned int size);
-+
-+/* Get used RAM size for tmy_alloc_elements(). */
-+unsigned int tmy_get_memory_used_for_elements(void);
-+
-+/* Keep the given name on the RAM. */
-+/* The RAM is shared, so NEVER try to modify or kfree() the returned name. */
-+const struct path_info *tmy_save_name(const char *name);
-+
-+/* Get used RAM size for tmy_save_name(). */
-+unsigned int tmy_get_memory_used_for_save_name(void);
-+
-+unsigned int tmy_get_memory_used_for_dynamic(void);
-+char *sysctlpath_from_table(struct ctl_table *table);
-+
-+#endif
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/include/tomoyo.h	2007-10-11 16:09:13.000000000 +0900
-@@ -0,0 +1,513 @@
-+/*
-+ * security/tomoyo/include/tomoyo.h
-+ *
-+ * Header for TOMOYO Linux.
-+ */
-+
-+#ifndef _TOMOYO_H
-+#define _TOMOYO_H
-+
-+#define TOMOYO_VERSION_CODE "2.1.0-lkml-4"
-+
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/utime.h>
-+#include <linux/file.h>
-+#include <linux/smp_lock.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/poll.h>
-+#include <linux/uaccess.h>
-+#include <stdarg.h>
-+#include <linux/delay.h>
-+
-+extern struct rw_semaphore namespace_sem;
-+extern struct mutex domain_acl_lock;
-+extern int sbin_init_started;
-+
-+struct tmy_security {
-+	struct domain_info *domain;
-+	struct domain_info *prev_domain;
-+	u32 flags;
-+};
-+
-+#define TMY_SECURITY ((struct tmy_security *) current->security)
-+
-+struct path_info {
-+	const char *name;
-+	u32 hash;        /* = full_name_hash(name, strlen(name)) */
-+	u16 total_len;   /* = strlen(name)                       */
-+	u16 const_len;   /* = tmy_const_part_length(name)        */
-+	u8 is_dir;       /* = tmy_strendswith(name, "/")         */
-+	u8 is_patterned; /* = PathContainsPattern(name)          */
-+	u16 depth;       /* = tmy_path_depth(name)               */
-+};
-+
-+#define TMY_MAX_PATHNAME_LEN 4000
-+
-+struct path_group_member {
-+	struct list_head list;
-+	const struct path_info *member_name;
-+	u8 is_deleted;
-+};
-+
-+struct path_group_entry {
-+	struct list_head list;
-+	const struct path_info *group_name;
-+	struct list_head path_group_member_list;
-+};
-+
-+struct mini_stat {
-+	uid_t uid;
-+	gid_t gid;
-+	ino_t ino;
-+};
-+struct dentry;
-+struct vfsmount;
-+struct obj_info {
-+	u8 validate_done;
-+	u8 path1_valid;
-+	u8 path1_parent_valid;
-+	u8 path2_parent_valid;
-+	struct dentry *path1_dentry;
-+	struct vfsmount *path1_vfsmnt;
-+	struct dentry *path2_dentry;
-+	struct vfsmount *path2_vfsmnt;
-+	struct mini_stat path1_stat;
-+	/* I don't handle path2_stat for rename operation. */
-+	struct mini_stat path1_parent_stat;
-+	struct mini_stat path2_parent_stat;
-+};
-+struct condition_list;
-+
-+struct linux_binprm;
-+struct pt_regs;
-+
-+/*
-+ *  TOMOYO uses the following structures.
-+ *  Memory allocated for these structures are never kfree()ed.
-+ *  Since no locks are used for reading,
-+ *  assignment must be performed atomically.
-+ */
-+
-+/************************  The structure for domains.  ************************/
-+
-+struct acl_info {
-+	struct list_head list;
-+	const struct condition_list *cond;
-+	u8 type;
-+	u8 is_deleted;
-+} __attribute__((__packed__));
-+
-+struct domain_info {
-+	struct list_head list;
-+	struct list_head acl_info_list;
-+	const struct path_info *domainname; /* Never NULL.   */
-+	u8 profile;
-+	u8 is_deleted;
-+	u8 quota_warned;
-+};
-+
-+#define TMY_MAX_PROFILES 256
-+
-+struct file_acl {
-+	/* type = TMY_TYPE_FILE_ACL */
-+	struct acl_info head;
-+	u8 perm;
-+	u8 u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct path_group_entry *group;
-+	} u;
-+};
-+
-+struct argv0_acl {
-+	/* type = TMY_TYPE_ARGV0_ACL */
-+	struct acl_info head;
-+	const struct path_info *filename; /* Pointer to single pathname. */
-+	const struct path_info *argv0;    /* strrchr(argv[0], '/') + 1   */
-+};
-+
-+struct single_acl {
-+	/* type = TMY_TYPE_* */
-+	struct acl_info head;
-+	u8 u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct path_group_entry *group;
-+	} u;
-+};
-+
-+struct double_acl {
-+	/* type = TMY_TYPE_RENAME_ACL or TMY_TYPE_LINK_ACL */
-+	struct acl_info head;
-+	u8 u1_is_group;
-+	u8 u2_is_group;
-+	union {
-+		const struct path_info *filename1;
-+		const struct path_group_entry *group1;
-+	} u1;
-+	union {
-+		const struct path_info *filename2;
-+		const struct path_group_entry *group2;
-+	} u2;
-+};
-+
-+struct addr_group_member {
-+	struct list_head list;
-+	union {
-+		u32 ipv4;    /* Host byte order    */
-+		u16 ipv6[8]; /* Network byte order */
-+	} min, max;
-+	u8 is_deleted;
-+	u8 is_ipv6;
-+};
-+
-+struct addr_group_entry {
-+	struct list_head list;
-+	const struct path_info *group_name;
-+	struct list_head addr_group_member_list;
-+};
-+
-+#define TMY_TYPE_ADDRESS_GROUP 0
-+#define TMY_TYPE_IPv4          1
-+#define TMY_TYPE_IPv6          2
-+
-+struct net_acl {
-+	/* type = TYPE_IP_NETWORK_ACL */
-+	struct acl_info head;
-+	u8 operation_type;
-+	u8 record_type;
-+	union {
-+		struct {
-+			u32 min;
-+			u32 max;
-+		} ipv4;
-+		struct {
-+			u16 min[8];
-+			u16 max[8];
-+		} ipv6;
-+		const struct addr_group_entry *group;
-+	} u;
-+	u16 min_port;           /* Start of port number range. */
-+	u16 max_port;           /* End of port number range.   */
-+};
-+
-+struct signal_acl {
-+	/* type = TYPE_SIGNAL_ACL */
-+	struct acl_info head;
-+	u16 sig;
-+	/* Pointer to destination pattern.            */
-+	const struct path_info *domainname;
-+};
-+
-+/*************************  Keywords for ACLs.  *************************/
-+
-+#define TMY_AGGREGATOR               	"aggregator "
-+#define TMY_AGGREGATOR_LEN           	(sizeof(TMY_AGGREGATOR) - 1)
-+#define TMY_ALIAS                    	"alias "
-+#define TMY_ALIAS_LEN                	(sizeof(TMY_ALIAS) - 1)
-+#define TMY_ALLOW_READ               	"allow_read "
-+#define TMY_ALLOW_READ_LEN           	(sizeof(TMY_ALLOW_READ) - 1)
-+#define TMY_DELETE                   	"delete "
-+#define TMY_DELETE_LEN               	(sizeof(TMY_DELETE) - 1)
-+#define TMY_DENY_REWRITE             	"deny_rewrite "
-+#define TMY_DENY_REWRITE_LEN         	(sizeof(TMY_DENY_REWRITE) - 1)
-+#define TMY_FILE_PATTERN             	"file_pattern "
-+#define TMY_FILE_PATTERN_LEN         	(sizeof(TMY_FILE_PATTERN) - 1)
-+#define TMY_INITIALIZE_DOMAIN        	"initialize_domain "
-+#define TMY_INITIALIZE_DOMAIN_LEN    	(sizeof(TMY_INITIALIZE_DOMAIN) - 1)
-+#define TMY_KEEP_DOMAIN              	"keep_domain "
-+#define TMY_KEEP_DOMAIN_LEN          	(sizeof(TMY_KEEP_DOMAIN) - 1)
-+#define TMY_NO_INITIALIZE_DOMAIN     	"no_initialize_domain "
-+#define TMY_NO_INITIALIZE_DOMAIN_LEN 	(sizeof(TMY_NO_INITIALIZE_DOMAIN) - 1)
-+#define TMY_NO_KEEP_DOMAIN           	"no_keep_domain "
-+#define TMY_NO_KEEP_DOMAIN_LEN       	(sizeof(TMY_NO_KEEP_DOMAIN) - 1)
-+#define TMY_PATH_GROUP               	"path_group "
-+#define TMY_PATH_GROUP_LEN           	(sizeof(TMY_PATH_GROUP) - 1)
-+#define TMY_SELECT                   	"select "
-+#define TMY_SELECT_LEN               	(sizeof(TMY_SELECT) - 1)
-+#define TMY_UNDELETE                 	"undelete "
-+#define TMY_UNDELETE_LEN             	(sizeof(TMY_UNDELETE) - 1)
-+
-+#define TMY_ALLOW_MOUNT                 "allow_mount "
-+#define TMY_ALLOW_MOUNT_LEN             (sizeof(TMY_ALLOW_MOUNT) - 1)
-+#define TMY_DENY_UNMOUNT                "deny_unmount "
-+#define TMY_DENY_UNMOUNT_LEN            (sizeof(TMY_DENY_UNMOUNT) - 1)
-+#define TMY_ALLOW_PIVOT_ROOT            "allow_pivot_root "
-+#define TMY_ALLOW_PIVOT_ROOT_LEN        (sizeof(TMY_ALLOW_PIVOT_ROOT) - 1)
-+
-+#define TMY_USE_PROFILE "use_profile "
-+
-+#define TMY_ROOT_NAME 		"<kernel>"
-+#define TMY_ROOT_NAME_LEN 	(sizeof(TMY_ROOT_NAME) - 1)
-+
-+#define TMY_ALLOW_ARGV0         "allow_argv0 "
-+#define TMY_ALLOW_ARGV0_LEN     (sizeof(TMY_ALLOW_ARGV0) - 1)
-+
-+#define TMY_ADDRESS_GROUP       "address_group "
-+#define TMY_ADDRESS_GROUP_LEN   (sizeof(TMY_ADDRESS_GROUP) - 1)
-+#define TMY_ALLOW_NETWORK       "allow_network "
-+#define TMY_ALLOW_NETWORK_LEN   (sizeof(TMY_ALLOW_NETWORK) - 1)
-+
-+#define TMY_ALLOW_SIGNAL        "allow_signal "
-+#define TMY_ALLOW_SIGNAL_LEN    (sizeof(TMY_ALLOW_SIGNAL) - 1)
-+
-+/********************  Index numbers for Access Controls.  ********************/
-+
-+#define TMY_COMMENT              0
-+#define TMY_MAC_FOR_FILE         1
-+#define TMY_MAC_FOR_ARGV0        2
-+#define TMY_MAC_FOR_NETWORK      3
-+#define TMY_DENY_CONCEAL_MOUNT   4
-+#define TMY_RESTRICT_MOUNT       5
-+#define TMY_RESTRICT_UMOUNT      6
-+#define TMY_RESTRICT_PIVOT_ROOT  7
-+#define TMY_MAX_ACCEPT_ENTRY     8
-+#define TMY_AUDIT_GRANT          9
-+#define TMY_AUDIT_REJECT        10
-+#define TMY_ALLOW_ENFORCE_GRACE 11
-+#define TMY_MAX_CONTROL_INDEX   12
-+
-+#define TMY_NETWORK_ACL_UDP_BIND    0
-+#define TMY_NETWORK_ACL_UDP_CONNECT 1
-+#define TMY_NETWORK_ACL_TCP_BIND    2
-+#define TMY_NETWORK_ACL_TCP_LISTEN  3
-+#define TMY_NETWORK_ACL_TCP_CONNECT 4
-+#define TMY_NETWORK_ACL_TCP_ACCEPT  5
-+#define TMY_NETWORK_ACL_RAW_BIND    6
-+#define TMY_NETWORK_ACL_RAW_CONNECT 7
-+
-+/********************  Index numbers for updates counter.  ********************/
-+
-+#define TMY_UPDATE_DOMAINPOLICY    0
-+#define TMY_UPDATE_SYSTEMPOLICY    1
-+#define TMY_UPDATE_EXCEPTIONPOLICY 2
-+#define TMY_UPDATE_PROFILE         3
-+#define TMY_UPDATE_QUERY           4
-+#define TMY_UPDATE_MANAGER         5
-+#define TMY_MAX_UPDATES_COUNTER    6
-+
-+/***********************  Indexes for /proc interfaces.  **********************/
-+
-+#define TMY_POLICY_DOMAINPOLICY     0
-+#define TMY_POLICY_SYSTEMPOLICY     1
-+#define TMY_POLICY_EXCEPTIONPOLICY  2
-+#define TMY_POLICY_DOMAIN_STATUS    3
-+#define TMY_INFO_PROCESS_STATUS     4
-+#define TMY_INFO_MEMINFO            5
-+#define TMY_INFO_SELFDOMAIN         6
-+#define TMY_PROFILE                 7
-+#define TMY_POLICY_QUERY            8
-+#define TMY_POLICY_MANAGER          9
-+#define TMY_INFO_UPDATESCOUNTER    10
-+#define TMY_VERSION                11
-+
-+/********************  The structure for /proc interfaces.  *******************/
-+
-+struct io_buffer {
-+	int (*read) (struct io_buffer *);
-+	struct mutex read_sem;        /* Lock for reading.                    */
-+	int (*write) (struct io_buffer *);
-+	struct mutex write_sem;       /* Lock for writing.                    */
-+	int (*poll) (struct file *file, poll_table *wait);
-+	void *read_var1;              /* The position currently reading from. */
-+	void *read_var2;              /* Extra variables for reading.         */
-+	struct domain_info *write_var1;	 /* The position currently writing to.*/
-+	int read_step;                /* The step for reading.                */
-+	char *read_buf;               /* Buffer for reading.                  */
-+	int read_eof;                 /* EOF flag for reading.                */
-+	int read_avail;               /* Bytes available for reading.         */
-+	int readbuf_size;             /* Size of read buffer.                 */
-+	char *write_buf;              /* Buffer for writing.                  */
-+	int write_avail;              /* Bytes available for writing.         */
-+	int writebuf_size;            /* Size of write buffer.                */
-+};
-+
-+/*************************  PROTOTYPES  *************************/
-+
-+char *tmy_find_condition_part(char *data);
-+const struct condition_list *tmy_assign_condition(const char *condition);
-+int tmy_check_condition(const struct condition_list *ptr,
-+	struct obj_info *obj);
-+int tmy_dump_condition(struct io_buffer *head,
-+	const struct condition_list *ptr);
-+const char *tmy_get_exe(void);
-+const char *tmy_acltype2keyword(const unsigned int acl_type);
-+
-+int tmy_mount_perm(char *dev_name,
-+		   char *dir_name,
-+		   char *type,
-+		   unsigned long flags);
-+int tmy_conceal_mount(struct nameidata *nd);
-+int tmy_umount_perm(struct vfsmount *mnt);
-+int tmy_add_mount_policy(char *data, const u8 is_delete);
-+int tmy_read_mount_policy(struct io_buffer *head);
-+int tmy_add_no_umount_policy(char *data, const u8 is_delete);
-+int tmy_read_no_umount_policy(struct io_buffer *head);
-+int tmy_pivot_root_perm(struct nameidata *old_nd,
-+			struct nameidata *new_nd);
-+int tmy_add_pivot_root_policy(char *data, const u8 is_delete);
-+int tmy_read_pivot_root_policy(struct io_buffer *head);
-+
-+int tmy_add_aggregator_policy(char *data, const u8 is_delete);
-+int tmy_add_addr_group_policy(char *data, const u8 is_delete);
-+int tmy_add_alias_policy(char *data, const u8 is_delete);
-+int tmy_add_argv0_policy(char *data,
-+			 struct domain_info *domain,
-+			 const struct condition_list *cond,
-+			 const u8 is_delete);
-+int tmy_add_acl(struct domain_info *domain, struct acl_info *acl);
-+int tmy_add_domain_initializer_policy(char *data,
-+				      const u8 is_not,
-+				      const u8 is_delete);
-+int tmy_add_domain_keeper_policy(char *data,
-+				 const u8 is_not,
-+				 const u8 is_delete);
-+int tmy_file_perm(const char *filename0, const u8 perm, const char *operation);
-+int tmy_add_file_policy(char *data,
-+			struct domain_info *domain,
-+			const struct condition_list *cond,
-+			const u8 is_delete);
-+int tmy_add_globally_readable_policy(char *data, const u8 is_delete);
-+int tmy_add_group_policy(char *data, const u8 is_delete);
-+int tmy_add_network_policy(char *data,
-+			   struct domain_info *domain,
-+			   const struct condition_list *cond,
-+			   const u8 is_delete);
-+int tmy_add_no_rewrite_policy(char *pattern, const u8 is_delete);
-+int tmy_add_pattern_policy(char *data, const u8 is_delete);
-+int tmy_supervisor(const char *fmt, ...)
-+	__attribute__((format(printf, 1, 2)));
-+
-+int tmy_del_acl(struct acl_info *ptr);
-+int tmy_delete_domain(char *data);
-+int tmy_is_correct_domain(const unsigned char *domainname,
-+			  const char *function);
-+int tmy_correct_path(const char *filename,
-+		     const int start_type,
-+		     const int pattern_type,
-+		     const int end_type,
-+		     const char *function);
-+int tmy_is_domain_def(const unsigned char *buffer);
-+int tmy_path_match(const struct path_info *pathname0,
-+		   const struct path_info *pattern0);
-+int tmy_read_aggregator_policy(struct io_buffer *head);
-+int tmy_read_alias_policy(struct io_buffer *head);
-+int tmy_read_domain_initializer_policy(struct io_buffer *head);
-+int tmy_read_domain_keeper_policy(struct io_buffer *head);
-+int tmy_read_globally_readable_policy(struct io_buffer *head);
-+int tmy_read_path_group_policy(struct io_buffer *head);
-+int tmy_read_no_rewrite_policy(struct io_buffer *head);
-+int tmy_read_pattern_policy(struct io_buffer *head);
-+int tmy_read_addr_group_policy(struct io_buffer *head);
-+int tmy_argv0_perm(const struct path_info *filename, const char *argv0);
-+int tmy_network_listen_acl(const u8 is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_connect_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_bind_acl(const u8 is_ipv6,
-+			 const int sock_type,
-+			 const u8 *address,
-+			 const u16 port);
-+int tmy_network_sendmsg_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_accept_acl(const u8 is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_recvmsg_acl(const u8 is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+
-+int tmy_signal_acl(int sig, int pid);
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const u8 is_delete);
-+
-+char *tmy_init_audit_log(int *len);
-+int tmy_write_audit_log(char *log, const u8 is_granted, const u8 is_enforce);
-+int tmy_acltype2paths(const unsigned int acl_type);
-+int tmy_io_printf(struct io_buffer *head, const char *fmt, ...)
-+	__attribute__((format(printf, 2, 3)));
-+struct domain_info *tmy_find_domain(const char *domainname);
-+struct domain_info *tmy_new_domain(const char *domainname, const u8 profile);
-+struct domain_info *tmy_undelete_domain(const char *domainname0);
-+u8 tmy_accept(const unsigned int index,
-+	      struct domain_info * const domain);
-+u8 tmy_enforce(const unsigned int index);
-+unsigned int tmy_flags(const unsigned int index);
-+unsigned int tmy_audit_grant(void);
-+unsigned int tmy_audit_reject(void);
-+void tmy_update_counter(const unsigned char index);
-+void *tmy_alloc(const size_t size);
-+void tmy_free(const void *p);
-+void tmy_fill_path_info(struct path_info *ptr);
-+
-+static inline int tmy_pathcmp(const struct path_info *a,
-+			      const struct path_info *b)
-+{
-+	return a->hash != b->hash || strcmp(a->name, b->name);
-+}
-+
-+extern struct domain_info KERNEL_DOMAIN;
-+extern struct list_head domain_list;
-+void tmy_load_policy(const char *filename);
-+int tmy_find_next_domain(struct linux_binprm *,
-+			 struct domain_info **);
-+
-+struct path_info;
-+
-+int tmy_exec_perm(const struct path_info *filename, struct file *filp);
-+/* Check whether the given dentry is allowed to read/write/execute. */
-+int tmy_open_perm(struct dentry *dentry, struct vfsmount *mnt, const int flag);
-+/* Check whether the given dentry is allowed to write. */
-+int tmy_single_write_perm(const unsigned int operation,
-+			  struct dentry *dentry,
-+			  struct vfsmount *mnt);
-+int tmy_double_write_perm(const unsigned int operation,
-+			  struct dentry *dentry1,
-+			  struct vfsmount *mnt1,
-+			  struct dentry *dentry2,
-+			  struct vfsmount *mnt2);
-+int tmy_rewrite_perm(struct file *filp);
-+
-+struct inode;
-+
-+/********************  Index numbers for Access Controls.  ********************/
-+
-+#define TMY_TYPE_CREATE_ACL       0
-+#define TMY_TYPE_UNLINK_ACL       1
-+#define TMY_TYPE_MKDIR_ACL        2
-+#define TMY_TYPE_RMDIR_ACL        3
-+#define TMY_TYPE_MKFIFO_ACL       4
-+#define TMY_TYPE_MKSOCK_ACL       5
-+#define TMY_TYPE_MKBLOCK_ACL      6
-+#define TMY_TYPE_MKCHAR_ACL       7
-+#define TMY_TYPE_TRUNCATE_ACL     8
-+#define TMY_TYPE_SYMLINK_ACL      9
-+#define TMY_TYPE_LINK_ACL        10
-+#define TMY_TYPE_RENAME_ACL      11
-+#define TMY_TYPE_REWRITE_ACL     12
-+
-+#define TMY_TYPE_FILE_ACL    	100
-+#define TMY_TYPE_ARGV0_ACL      101
-+#define TMY_TYPE_IP_NETWORK_ACL 103
-+#define TMY_TYPE_SIGNAL_ACL     104
-+
-+#define TMY_CHECK_READ_FOR_OPEN_EXEC 1
-+
-+char *tmy_print_ipv6(char *buffer, const int buffer_len, const u16 *ip);
-+const char *tmy_network2keyword(const unsigned int operation);
-+
-+/* to check "if task.parent.pid" condition. */
-+extern asmlinkage long sys_getppid(void);
-+
-+#endif
-
+Index: linux-2.6-lttng/include/linux/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/marker.h	2007-10-11 09:20:04.000000000 -0400
++++ linux-2.6-lttng/include/linux/marker.h	2007-10-11 09:20:23.000000000 -0400
+@@ -61,7 +61,6 @@ struct marker {
+ 		__attribute__((section("__markers"), aligned(8))) =	\
+ 		{ __mstrtab_name_##name, __mstrtab_format_##name,	\
+ 		0, __mark_empty_function, NULL };			\
+-		asm volatile ("" : : "i" (&__mark_##name));		\
+ 		__mark_check_format(format, ## args);			\
+ 		if (unlikely(__mark_##name.state)) {			\
+ 			preempt_disable();				\
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
