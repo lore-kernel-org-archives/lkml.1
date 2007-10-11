@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXJKTYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbXJKTcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbXJKTYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 15:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXJKTYk
+	id S1756543AbXJKTcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 15:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXJKTcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 15:24:40 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48062 "EHLO e4.ny.us.ibm.com"
+	Thu, 11 Oct 2007 15:32:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50815 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752373AbXJKTYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 15:24:40 -0400
-Subject: Re: [RFC][PATCH 2/7] get mount write in __dentry_open()
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <E1Ig2oN-0007yq-00@dorka.pomaz.szeredi.hu>
-References: <20071010163439.0F8089F7@kernel>
-	 <20071010163439.9DB7F219@kernel> <E1IfzeX-0007qp-00@dorka.pomaz.szeredi.hu>
-	 <1192126616.31114.63.camel@localhost>
-	 <E1Ig2oN-0007yq-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 11 Oct 2007 12:24:01 -0700
-Message-Id: <1192130641.20859.30.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1751632AbXJKTcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 15:32:13 -0400
+Date: Thu, 11 Oct 2007 15:19:17 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin <spaceman__spiff@cox.net>, Greg KH <greg@kroah.com>,
+       Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk,
+       BDFL <volkerdi@slackware.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: ARPM shutdown oops (Re: [stable] [patch 09/12] Fix SMP
+	poweroff hangs)
+Message-ID: <20071011191917.GA11732@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeff Garzik <jgarzik@pobox.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Kevin <spaceman__spiff@cox.net>, Greg KH <greg@kroah.com>,
+	Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Theodore Ts'o <tytso@mit.edu>,
+	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+	Justin Forbes <jmforbes@linuxtx.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Chris Wedgwood <reviews@ml.cw.f00f.org>,
+	Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Michael Krufky <mkrufky@linuxtv.org>,
+	Chuck Ebbert <cebbert@redhat.com>, akpm@linux-foundation.org,
+	Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+	alan@lxorguk.ukuu.org.uk, BDFL <volkerdi@slackware.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+References: <20071008180406.052382073@mini.kroah.org> <200710092359.47144.spaceman__spiff@cox.net> <alpine.LFD.0.999.0710100747120.3838@woody.linux-foundation.org> <200710102005.02184.spaceman__spiff@cox.net> <alpine.LFD.0.999.0710110818580.20690@woody.linux-foundation.org> <470E6E79.6040908@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <470E6E79.6040908@pobox.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-11 at 20:31 +0200, Miklos Szeredi wrote:
-> > On Thu, 2007-10-11 at 17:08 +0200, Miklos Szeredi wrote:
-> > > > diff -puN fs/namei.c~get-write-in-__dentry_open fs/namei.c
-> > > > --- lxc/fs/namei.c~get-write-in-__dentry_open	2007-10-03 14:44:52.000000000 -0700
-> > > > +++ lxc-dave/fs/namei.c	2007-10-04 18:02:48.000000000 -0700
-> > > > @@ -1621,14 +1621,6 @@ int may_open(struct nameidata *nd, int a
-> > > >  			return -EACCES;
-> > > >  
-> > > >  		flag &= ~O_TRUNC;
-> > > > -	} else if (flag & FMODE_WRITE) {
-> > > > -		/*
-> > > > -		 * effectively: !special_file()
-> > > > -		 * balanced by __fput()
-> > > > -		 */
-> > > > -		error = mnt_want_write(nd->mnt);
-> > > > -		if (error)
-> > > > -			return error;
-> > > >  	}
-> > > 
-> > > Maybe readonly should still be checked here, so that the order of
-> > > error checking doesn't change.  If racing with a read-only remount the
-> > > order is irrelevant anyway.  Something like this?
-> > > 
-> > > 	} else if (flag & FMODE_WRITE && __mnt_is_readonly(nd->mnt)) {
-> > > 		return -EROFS
-> > > 	}
-> > 
-> > I think that would be a bug if anything actually managed to trip that
-> > code.  all of the may_open() calls should have been covered by the
-> > __dentry_open() mnt writer.
-> 
-> AFACIS, __dentry_open() will normally be called later than may_open().
-> And we don't want it earlier, because ->open() may have side affects,
-> that could be unsafe if done before permission checking.
+On Thu, Oct 11, 2007 at 02:42:01PM -0400, Jeff Garzik wrote:
+ > Linus Torvalds wrote:
+ > > 
+ > > And I think I see the problem: it's a config change. You don't have 
+ > > PM_LEGACY enabled. Your config file diff shows:
+ > > 
+ > > 	-CONFIG_PM_LEGACY=y
+ > > 	+# CONFIG_PM_LEGACY is not set
+ > > 
+ > > I suspect we should make CONFIG_APM either depend on, or select, 
+ > > PM_LEGACY. But as far as I can see, nothing has actually changed in this 
+ > > area in the kernel, and this bug has been there before - just your config 
+ > > change made it appear. 
+ > > 
+ > > Rafael? Stephen? Opinions? I'd think that making APM depend on 
+ > > CONFIG_PM_LEGACY is the right thing to do these days..
+ > 
+ > Speaking as the author of
+ > 
+ > 	[PATCH] move pm_register/etc. to CONFIG_PM_LEGACY, pm_legacy.h
+ > 
+ > I agree.  arch/i386/kernel/apm.c clearly requires 
+ > include/linux/pm_legacy.h and the legacy PM API.
+ > 
+ > I would vote for a dependency rather than select, but don't have any 
+ > strong feelings on the matter...
 
-I actually check the mount write count before the ->open() in
-__dentry_open().  The truncates are also definitely wrapped in their own
-mnt_want_write() calls now.
+gti revert 987d4613e52e4f655278265aabbcc69237018b1d
+should do the trick.
 
-> > > And they should be added around do_truncate() as well, since you
-> > > remove the protection from may_open().
-> > > 
-> > > This one introduces an interesting race between ro-remount and
-> > > open(O_TRUNC), where the truncate can succeed but the open fail with
-> > > EROFS.  Is that a problem?
-> > 
-> > You're right, this does introduce that race, and it is relatively hard
-> > to fix properly.  But, the 'return a filp' patch makes it easy to fix.
-> > I've put a temporary kludge in the updated version of this patch, and
-> > fixed it properly in that later patch.  
-> 
-> If you fix this properly, that should take care of the first problem
-> as well.
+	Dave
 
-Yup.  New series coming up. 
-
--- Dave
-
+-- 
+http://www.codemonkey.org.uk
