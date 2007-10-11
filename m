@@ -1,33 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbXJKARy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXJKAYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbXJKARy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 20:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbXJKARs
+	id S1757447AbXJKAYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 20:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXJKAYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 20:17:48 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41839 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744AbXJKARr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 20:17:47 -0400
-Date: Thu, 11 Oct 2007 02:17:46 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Russ Dill <Russ.Dill@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [OT] Argument with an OS professor over profile=3
-In-Reply-To: <loom.20071011T001229-285@post.gmane.org>
-Message-ID: <Pine.LNX.4.64.0710110217140.26305@fbirervta.pbzchgretzou.qr>
-References: <f9d2a5e10710101708l707eb619l6446f2e648ee016e@mail.gmail.com>
- <loom.20071011T001229-285@post.gmane.org>
+	Wed, 10 Oct 2007 20:24:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:50919 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbXJKAYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Oct 2007 20:24:06 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18189.27936.484657.548537@cargo.ozlabs.ibm.com>
+Date: Thu, 11 Oct 2007 10:24:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Greg KH <greg@kroah.com>,
+       Olof Johansson <olof@lixom.net>, Greg KH <gregkh@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Mark Lord <mlord@pobox.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+References: <20071008180406.052382073@mini.kroah.org>
+	<20071008180633.GJ7627@kroah.com>
+	<20071009151702.GA19209@lixom.net>
+	<20071009222003.GA21228@kroah.com>
+	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
+	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds writes:
 
-On Oct 11 2007 00:13, Russ Dill wrote:
->
->                /* only text is profiled */
->>                 prof_len = (unsigned *) &_etext - (unsigned *) &_stext;
+> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
+> > 
+> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
+> 
+> Well, the ppc oops seems to be a ppc bug regardless.
 
-Uh, that's some evil pointer arithmetic :)
+Sure.  And Milton and Olof have figured out what the problem is and
+proposed patches to fix it.
+
+However, I'm a bit annoyed that a significant change in behaviour like
+that, with a significant likelihood of causing regressions, went in so
+late (after -rc8), in a manner that affects all SMP architectures, and
+without being posted to linux-arch (unless I missed it).
+
+Paul.
