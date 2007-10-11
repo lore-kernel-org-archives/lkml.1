@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXJKIKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbXJKIOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbXJKIKb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 04:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXJKIKP
+	id S1757548AbXJKIOK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 04:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXJKIN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 04:10:15 -0400
-Received: from m-04.th.seeweb.it ([217.64.195.227]:59579 "EHLO
-	m-04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755529AbXJKIKN (ORCPT
+	Thu, 11 Oct 2007 04:13:57 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43998 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbXJKIN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 04:10:13 -0400
-Message-ID: <470DD906.9090504@users.sourceforge.net>
-Date: Thu, 11 Oct 2007 10:04:22 +0200
-From: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070908)
+	Thu, 11 Oct 2007 04:13:56 -0400
+Message-ID: <470DDCAC.4040302@bull.net>
+Date: Thu, 11 Oct 2007 10:19:56 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Laptop keyboard unusable when ACPI is active was Re: [2.6.22] i8042,
- ACPI, ipw2100 and issues reported by psmouse.c atkbd.c
-References: <47001841.1000107@users.sourceforge.net>
-In-Reply-To: <47001841.1000107@users.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
+To: Pierre Peiffer <Pierre.Peiffer@bull.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm] IPC: fix error checking in all new xxx_lock()
+ functions
+References: <20071011100348.abc31218.Pierre.Peiffer@bull.net>
+In-Reply-To: <20071011100348.abc31218.Pierre.Peiffer@bull.net>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/10/2007 10:20:14,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/10/2007 10:20:16,
+	Serialize complete at 11/10/2007 10:20:16
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-legolas558@users.sourceforge.net ha scritto:
-> Kernel: 2.6.22-r5
-> Kernel option: i8042.nomux=1
-I am now using kernel 2.6.22-r8 (Gentoo) and the following kernel options:
+Pierre Peiffer wrote:
+> In the new implementation of the [sem|shm|msg]_lock[_check]() routines,
+> we use the return value of ipc_lock() in container_of() without any check.
+> But ipc_lock may return a errcode. The use of this errcode in container_of()
+> may alter this errcode, and we don't want this.
+> 
+> Today, there is no problem because the member used in these container_of()
+> is the first member of its container (offset == 0), the errcode isn't changed
+> then. But in the general case, we can't count on this assumption and this
+> may lead later to a real bug if we don't correct this.
+> 
+> In fact, the proposed solution is simple and correct. But it has the drawback
+> of adding one more check ('if' statement) in the chain: we do a first check in
+> ipc_lock(), now in xxx_lock() and then one later in the caller of xxx_lock()
+> That's why I send this as RFC, may be another approach could be considered.
+> 
 
-i8042.nomux=1 acpi=off
+This is really what disturbs me this solution: the same check will be 
+done several times. But is true that we have to do something.
+So why not simply adding a BIG COMMENT before the msg_queue, sem_array 
+and shmid_ds stating that the kern_ipc_perm should stay at the beinnign 
+of the structure?
 
-I have tried kernel 2.6.23-rc9 but the problem is still there.
-
-> The problem which still remains, and I can't fix or work it around, is
-> witnessed by the below dmesg lines:
-> -----
-> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
-> isa0060/serio0).
-> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
-> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
-> isa0060/serio0).
-> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
-> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
-> isa0060/serio0).
-> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
-> -----
-> The release event for some keys is never caught, so all sorts of
-> troubles happen if for example I use the Del key and it stucks, or if
-> I use the Ctrl key and it never gets released...pushing again the
-> stuck key brings back the key in the proper status.
-With acpi=off the problem is totally worked around.
-
-> Can somebody please give me some clues about this issue, and possible
-> solutions? I have been searching the web for a couple of weeks and
-> seems like it is a common trouble of notebook users, but nobody has
-> yet published a solution.
-I am trying to find a path myself in this issue - which dates back to at
-least 2005 and has never been resolved.
-
-I would now try some other kernel parameter in order to preserve ACPI
-functionality and possibly prevent ACPI from messing up the keyboard IRQs.
-Can somebody please give me istructions regarding the correct tests
-(regarding kernel parameters and/or anything else) to perform in order
-to better isolate the issue?
-
-Related Gentoo bug tracker item:
-http://bugs.gentoo.org/show_bug.cgi?id=194781
-
-Other messages about the same kernel bug (many more can be found
-googling around, and no solution yet):
-https://lists.linux-foundation.org/pipermail/bugme-new/2005-January/011736.html
-http://dev.laptop.org/ticket/2401
+Will try to look for another solution.
 
 Regards,
---
-  Daniele C.
+Nadia
 
