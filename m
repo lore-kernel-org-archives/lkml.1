@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXJKKuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbXJKKwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbXJKKuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 06:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXJKKuK
+	id S1756648AbXJKKwM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 06:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbXJKKv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 06:50:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:36033 "EHLO ciao.gmane.org"
+	Thu, 11 Oct 2007 06:51:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39506 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbXJKKuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 06:50:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stefan Scheler <stefan@scheler.com>
-Subject: Regression from 2.6.21 to 2.6.22 and above
-Date: Thu, 11 Oct 2007 12:41:11 +0200
-Message-ID: <fekuk7$kpl$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1750906AbXJKKv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 06:51:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: dslb-088-066-206-166.pools.arcor-ip.net
-User-Agent: Mutt/1.5.11
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] core dump: remain dumpable
+In-Reply-To: Oleg Nesterov's message of  Thursday, 11 October 2007 14:49:42 +0400 <20071011104942.GA144@tv-sign.ru>
+References: <20071011062730.19F774D026B@magilla.localdomain>
+	<20071011102507.GA101@tv-sign.ru>
+	<20071011103446.89BCC4D03F7@magilla.localdomain>
+	<20071011104942.GA144@tv-sign.ru>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20071011105122.AB71B4D03F7@magilla.localdomain>
+Date: Thu, 11 Oct 2007 03:51:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> Ugh, sorry, I was wrong. coredump_wait() initializes mm->core_done and sets
+> mm->core_startup_done before checking SIGNAL_GROUP_EXIT. This means we have
+> to check ->core_waiters or SIGNAL_GROUP_EXIT before calling coredump_wait().
 
-my Kobil KAAN Professional (USB variant) smartcard reader stopped
-working when upgrading from 2.6.21 to 2.6.22 (and 2.6.23). Not working
-means that the latest libct.so supplied from Kobil is segfaulting when
-trying to access the device. But as far as I can see the kobil_sct
-driver itself didn't change from 2.6.21 to 2.6.22. Any ideas what is
-going on here?
+Ah.  Checking core_waiters seems like a fine thing to do.  
 
-Thanks in advance. I will provide additional information if needed.
 
--- 
-Stefan Scheler
-
+Thanks,
+Roland
