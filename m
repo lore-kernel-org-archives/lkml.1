@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbXJKQVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbXJKQWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbXJKQVM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 12:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXJKQU7
+	id S1758075AbXJKQWc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 12:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbXJKQWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 12:20:59 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51622 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbXJKQU6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 12:20:58 -0400
-Date: Thu, 11 Oct 2007 09:20:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] init: Fix printk format strings
-Message-Id: <20071011092035.17a85008.randy.dunlap@oracle.com>
-In-Reply-To: <19f34abd0710110909o2665fc1dsdd32e4c9a2285bc0@mail.gmail.com>
-References: <1192083422.26648.19.camel@grianne>
-	<20071011084028.2daf0fd9.randy.dunlap@oracle.com>
-	<19f34abd0710110855t58084c62ne3e09227727b7c61@mail.gmail.com>
-	<20071011090103.5c4bad43.randy.dunlap@oracle.com>
-	<19f34abd0710110909o2665fc1dsdd32e4c9a2285bc0@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 11 Oct 2007 12:22:24 -0400
+Received: from thunk.org ([69.25.196.29]:39502 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752009AbXJKQWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 12:22:23 -0400
+Date: Thu, 11 Oct 2007 12:22:19 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Crane, Matthew" <mcrane03@harris.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Aggregation in embedded context, is kernel GPL2
+	prejudiceagainst embedded systems?
+Message-ID: <20071011162219.GI10759@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Crane, Matthew" <mcrane03@harris.com>,
+	Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+References: <E496871456016F4CA8959BE4105D2A890E8D76@troe2k1.cs.myharris.net> <20071011151543.GX16424@stusta.de> <E496871456016F4CA8959BE4105D2A890E8D7C@troe2k1.cs.myharris.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E496871456016F4CA8959BE4105D2A890E8D7C@troe2k1.cs.myharris.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 18:09:47 +0200 Vegard Nossum wrote:
+On Thu, Oct 11, 2007 at 12:06:14PM -0400, Crane, Matthew wrote:
+> I wasn't sure how to describe what the people and groups with the
+> mandate to defend open source software.  There are people and groups
+> with such a mandate.
 
-> On 10/11/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Thu, 11 Oct 2007 17:55:16 +0200 Vegard Nossum wrote:
-> >
-> > > On 10/11/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > > On Thu, 11 Oct 2007 08:17:02 +0200 Vegard Nossum wrote:
-> > > >
-> > > > > This makes sure printk format strings are string literals containing no
-> > > > > more than a single line.
-> > > >
-> > > > Each patch needs justification (unless it is blatantly obvious).
-> > > >
-> > > >
-> > > > > Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> > > > > ---
-> > > > >  init/calibrate.c        |    4 +++-
-> > > > >  init/do_mounts_initrd.c |    5 ++++-
-> > > > >  init/main.c             |    2 +-
-> > > > >  3 files changed, 8 insertions(+), 3 deletions(-)
-> > > > >
-> > > > > diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-> > > > > index fd4fc12..ad6174c 100644
-> > > > > --- a/init/do_mounts_initrd.c
-> > > > > +++ b/init/do_mounts_initrd.c
-> > > > > @@ -98,7 +98,10 @@ static void __init handle_initrd(void)
-> > > > >                       error = sys_ioctl(fd, BLKFLSBUF, 0);
-> > > > >                       sys_close(fd);
-> > > > >               }
-> > > > > -             printk(!error ? "okay\n" : "failed\n");
-> > > > > +             if(error)
-> > > > > +                     printk("failed\n");
-> > > > > +             else
-> > > > > +                     printk("okay\n");
-> > > > >       }
-> > > > >  }
-> > > >
-> > > > Why this one?
-> > > > and if it must change, use:
-> > > >                 if (error)
-> > > > but I see little need for the change.
-> > >
-> > > Oops about the space. And it's to make the format string a constant
-> > > literal. If it isn't, you are going to run into trouble with options
-> > > to remove printks at compile-time based on log-level token. I realize
-> > > it's not really an issue at this point in time, but I assume that it
-> > > will eventually make its way into the kernel in some way or another.
-> >
-> > so would this be OK?
-> >
-> >                 printk("%s\n", error ? "failed" : "okay");
-> 
-> It helps the filtering, but it doesn't help localisation very much, I
-> think. Since for that, you'd only translate the format string, which
-> in this case isn't much to translate. (I do realize that this is a
-> very, very tiny part of the kernel and probably hundreds of other
-> call-sites have much worse problems -- but every little helps, and now
-> that you're at it... :-))
+There is no such thing as "mandate".  If you are a copyright owner,
+and you elect to be a hard*ss about enforcing the GPL, you can choose
+to do so.  If you are not a copyright owner, all you can do is
+pontificate with FAQ's about GPL....
 
-Oh well.
+> I'm asking if in a legal sense the grayness is affected by the
+> constraints of the hw the kernel is being run on, and some attempt to
+> quantify how the grayness is affected.  Of course it is not black and
+> white and ultimately up to a judge. 
 
-I find the proposed changes too restrictive, practically changing
-a stream-oriented output into a variable-length block-oriented output.
+At the end of the day it all boils down to what is a derived work.  If
+an object file which is designed to link into a kernel is a derived
+work, then the GPL claims that it will infect across to that derived
+work.  Whether or not it this is a case is a matter of much debate,
+and as far as I know, no court has ever ruled on point regarding the
+question of object files, dynamical linking, and whether or not that
+would be a derived work or not.  It seems likely that the answer may
+vary from one legal jurisdiction to another.  Hence, the only answer
+that we can give which is useful is, "Take this off of LKML, and go
+ask a lawyer."
 
+Best regards,
 
----
-~Randy
+						- Ted
