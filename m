@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbXJKBDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXJKBU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757650AbXJKBDq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Oct 2007 21:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757232AbXJKBDj
+	id S1757497AbXJKBU4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Oct 2007 21:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbXJKBUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Oct 2007 21:03:39 -0400
-Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:45926 "HELO
-	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757225AbXJKBDi (ORCPT
+	Wed, 10 Oct 2007 21:20:48 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:39014 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbXJKBUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Oct 2007 21:03:38 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Oct 2007 21:03:38 EDT
-X-YMail-OSG: IbGU7lgVM1nq7R3mP3Ri725_BITnnfRYDS1F8b1yptVx94BD_u4pBnajNFjsJe4G464DmNbv3w--
-Message-ID: <470EC64C.10402@cse.wustl.edu>
-Date: Thu, 11 Oct 2007 19:56:44 -0500
-From: Berkley Shands <berkley@cse.wustl.edu>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23 spinlock hang in kswapd under heavy disk write loads
-References: <20071010153332.71479CECBD@tamarack.cse.wustl.edu> <200710101531.26944.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710101531.26944.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 10 Oct 2007 21:20:47 -0400
+Subject: Re: Linux 2.6.23
+From: Nicholas Miell <nmiell@comcast.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071010101452.GA25433@elte.hu>
+References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org>
+	 <1191996740.8694.7.camel@entropy>  <20071010101452.GA25433@elte.hu>
+Content-Type: text/plain
+Date: Wed, 10 Oct 2007 18:20:42 -0700
+Message-Id: <1192065642.2695.9.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7.0.njm.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-100% reproducible on the two motherboards in question.
-Does not happen on any other motherboard I have in my possession
-(not tyan, not uniwide, not socket 940...)
+On Wed, 2007-10-10 at 12:14 +0200, Ingo Molnar wrote:
+> * Nicholas Miell <nmiell@comcast.net> wrote:
+> 
+> > Does CFS still generate the following sysbench graphs with 2.6.23, or 
+> > did that get fixed?
+> >
+> > http://people.freebsd.org/~kris/scaling/linux-pgsql.png 
+> > http://people.freebsd.org/~kris/scaling/linux-mysql.png
+> 
+> as far as my testsystem goes, v2.6.23 beats v2.6.22.9 in sysbench:
+> 
+>     http://redhat.com/~mingo/misc/sysbench.jpg
 
-No errors, no dmesg, nothing with debug_spinlock set.
-<sysrq> shows lots (when it works), but by then too many things are
-locked up to be of much use. I can get into KDB and look around
-(2.6.22 for kdb - it hangs there too). Even access to the local disk is 
-blocked.
-Processes in core and running remain there (iostat, top, ...).
-I personally think the bios are suspect on the PCIe, as symptoms change with
-the bios rev. I did a major paper on SAS performance with one H8DMi,
-but it got a bios rev, and now crashes. Missed interrupt? APIC sending
-an interrupt to multiple cpus? I don't know.
+That's nice to know. Note that I'm not actually involved in any of these
+tests, just a somewhat interested bystander.
 
-Tell me what to look at, and I can get you the info. It usually takes 20 
-seconds
-to go bang, using either the LSI8888ELP or the rocket raid 2340. Other 
-controllers
-are too slow. 2.6.20 does not lock up. It is also 200MB/Sec slower in 
-writing :-)
+> 
+> As you can see it in the graph, v2.6.23 schedules much more consistently 
+> too. [ v2.6.22 has a small (but potentially statistically insignificant) 
+> edge at 4-6 clients, and CFS has a slightly better peak (which is 
+> statistically insignificant). ]
+> 
+> ( Config is at http://redhat.com/~mingo/misc/config, system is Core2Duo
+>   1.83 GHz, mysql-5.0.45, glibc-2.6. Nothing fancy either in the config
+>   nor in the setup - everything is pretty close to the defaults. )
+> 
+> i'm aware of a 2.6.21 vs. 2.6.23 sysbench regression report, and it 
+> apparently got resolved after various changes to the test environment:
+> 
+>    http://jeffr-tech.livejournal.com/10103.html
+> 
+>  " [<CFS>] has virtually no dropoff and performs better under load than
+>    the default 2.6.21 scheduler. " (paraphrased)
+> 
+> (The new link you posted, just a few hours after the release of v2.6.23, 
+> has not been reported to lkml before AFAICS - when did you become aware 
+> of it? If you learned about it before v2.6.23 it might have been useful 
+> to report it to the v2.6.23 regression list.)
 
-thanks for the response.
+According to my IRC logs, Jeffr pasted the URL at Oct 09 22:53:56 PDT.
+He says he tried to contact you early in CFS's development, but got no
+reply.
 
-berkley
+> At a quick glance there are no .configs or other testing details at or 
+> around that URL that i could use to reproduce their result precisely, so 
+> at least a minimal bugreport would be nice.
+> 
 
+AFAICT, the configuration is described in
+http://people.freebsd.org/~kris/scaling/mysql.html
+
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
