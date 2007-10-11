@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbXJKRCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXJKRG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbXJKRCc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 13:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXJKRCZ
+	id S1756179AbXJKRG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 13:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXJKRGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 13:02:25 -0400
-Received: from client062.sevenl.net ([66.241.137.62]:4806 "EHLO pcburn.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754776AbXJKRCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 13:02:24 -0400
-Message-ID: <470E5714.4040303@pcburn.com>
-Date: Thu, 11 Oct 2007 13:02:12 -0400
-From: Chris Bergeron <chris@pcburn.com>
-Reply-To: chris@pcburn.com
-Organization: PCBurn Media
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Thu, 11 Oct 2007 13:06:49 -0400
+Received: from lixom.net ([66.141.50.11]:57993 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753437AbXJKRGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 13:06:49 -0400
+Date: Thu, 11 Oct 2007 12:12:11 -0500
+From: Olof Johansson <olof@lixom.net>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, paulus@ozlabs.org, lethal@linux-sh.org,
+       kyle@parisc-linux.org, grundler@parisc-linux.org
+Subject: [PATCH 1/2] bug.h: Introduce HAVE_ARCH_WARN
+Message-ID: <20071011171211.GB10877@lixom.net>
 MIME-Version: 1.0
-To: Chris Bergeron <chris@pcburn.com>, linux-kernel@vger.kernel.org
-Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
-References: <4706AD19.4040605@pcburn.com> <20071010095432.GC30345@pazke.donpac.ru>
-In-Reply-To: <20071010095432.GC30345@pazke.donpac.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Panin wrote:
-> On 278, 10 05, 2007 at 05:31:05PM -0400, Chris Bergeron wrote:
->   
->> Hello all,
->>
->> I've just installed a multiport serial card released by an outfit called 
->> Syba.  This is an 8 port serial-only card with an Octopus style breakout 
->> cable.  The main chipset on it is an ITE IT8871F.
->>     
->
-> Are you sure ? IIRC IT887x are PCI-ISA bridges with additional periphery
-> and your lspci shows PLX chip. Can you send complete lspci -vv output ?
-> Output of dmesg could be useful too.
->
->
->   
-I'm sure that's what it says on the largest chip on the PCI card.  It 
-could be that the other two chips are more relevant... the numbers from 
-them are included below.
+HAVE_ARCH_WARN is used to determine if an arch already has a __WARN()
+macro, or if a generic one is needed.
 
-I've posted up a quick text only page with the diagnostic information 
-from the system (full dmesg, lspci, etc) plus links to pictures of the 
-board (since others might see something important that I'm not aware 
-of).  You can access that at 
-http://pcburn.com/files/Syba_serial_controller/index.html
+With this, some of the arch-specific WARN_ON() implementations can be
+made common instead (see follow-up patch for powerpc).
 
-One chip has "ITE IT8871F 0641-AYS ZF1M04L" written on it, and the other 
-two have  a stylized celtic knot looking "T" followed by "TG16C554CJG 
-FTA6M-001 0620-B".
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+index d56fedb..c6b8386 100644
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -31,14 +31,19 @@ struct bug_entry {
+ #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
+ #endif
+ 
++#ifndef HAVE_ARCH_WARN
++#define __WARN() do {							\
++	printk("WARNING: at %s:%d %s()\n", __FILE__,			\
++		__LINE__, __FUNCTION__);				\
++	dump_stack();							\
++} while (0)
++#endif
++
+ #ifndef HAVE_ARCH_WARN_ON
+ #define WARN_ON(condition) ({						\
+ 	int __ret_warn_on = !!(condition);				\
+-	if (unlikely(__ret_warn_on)) {					\
+-		printk("WARNING: at %s:%d %s()\n", __FILE__,		\
+-			__LINE__, __FUNCTION__);			\
+-		dump_stack();						\
+-	}								\
++	if (unlikely(__ret_warn_on))					\
++		__WARN();						\
+ 	unlikely(__ret_warn_on);					\
+ })
+ #endif
+diff --git a/include/asm-parisc/bug.h b/include/asm-parisc/bug.h
+index 8cfc553..3f68100 100644
+--- a/include/asm-parisc/bug.h
++++ b/include/asm-parisc/bug.h
+@@ -8,6 +8,7 @@
+ 
+ #ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
++#define HAVE_ARCH_WARN
+ #define HAVE_ARCH_WARN_ON
+ 
+ /* the break instruction is used as BUG() marker.  */
+diff --git a/include/asm-powerpc/bug.h b/include/asm-powerpc/bug.h
+index e55d1f6..02e171c 100644
+--- a/include/asm-powerpc/bug.h
++++ b/include/asm-powerpc/bug.h
+@@ -110,6 +110,7 @@
+ })
+ 
+ #define HAVE_ARCH_BUG
++#define HAVE_ARCH_WARN
+ #define HAVE_ARCH_BUG_ON
+ #define HAVE_ARCH_WARN_ON
+ #endif /* __ASSEMBLY __ */
+diff --git a/include/asm-sh/bug.h b/include/asm-sh/bug.h
+index a78d482..4ea415b 100644
+--- a/include/asm-sh/bug.h
++++ b/include/asm-sh/bug.h
+@@ -5,6 +5,7 @@
+ 
+ #ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
++#define HAVE_ARCH_WARN
+ #define HAVE_ARCH_WARN_ON
+ 
+ /**
