@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbXJKG0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbXJKG1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbXJKG0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 02:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXJKG0g
+	id S1757175AbXJKG1s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 02:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbXJKG1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 02:26:36 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:21166 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbXJKG0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 02:26:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=CMgY1wRqDvmVBBGLxyfpMdSh1lk/cxiX84eNFuqFwqE69yZ/BS/U7DrNrSbKK1zojO57WN2GR4jjE8RkNTxzvGKjy3lai2kS/ofhw0IDzw6E5OSHu4KWYUBd7iwpDldHr8MFPnqhv7uhQE74LzSGiO/Rk7mmpsrQaHnF+CSj7J4=
-Message-ID: <470DC213.5080307@gmail.com>
-Date: Thu, 11 Oct 2007 15:26:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 11 Oct 2007 02:27:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54051 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754061AbXJKG1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 02:27:39 -0400
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-References: <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>	 <64bb37e0710030821u56157ad1s6252ee01e050c7d5@mail.gmail.com>	 <64bb37e0710030855t360f2216mb4c38cfab6d88f37@mail.gmail.com>	 <20071003163804.GR19691@waste.org>	 <64bb37e0710032232o71225bf6k8a0d493687eb80bd@mail.gmail.com>	 <20071004170536.GY19691@waste.org>	 <64bb37e0710042306s6c629163gde7bc5c93973153e@mail.gmail.com>	 <64bb37e0710070144m6bc2c844oc96ef715b53b9819@mail.gmail.com>	 <64bb37e0710070739s67805d72x6d675cb2af2e8b24@mail.gmail.com>	 <470D97BD.4020300@gmail.com> <64bb37e0710102254n60e22338t4baf75a47b93ac14@mail.gmail.com>
-In-Reply-To: <64bb37e0710102254n60e22338t4baf75a47b93ac14@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH] core dump: remain dumpable
+X-Fcc: ~/Mail/linus
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20071011062730.19F774D026B@magilla.localdomain>
+Date: Wed, 10 Oct 2007 23:27:30 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torsten Kaiser wrote:
->>> That missing +1 would explain, why the SGE_TRM never gets set.
->> Thanks a lot for tracking this down.  Does changing the above code fix
->> your problem?
-> 
-> I did not try it.
-> I'm not an libata expert and while this change looks suspicios, I
-> can't be 100% sure if that change was intended.
-> And I did not want to experiment this deep in the code and risk
-> corrupting the hole drive.
 
-I don't think you would risk too much by changing that bit of code.
-Please try it.
+The coredump code always calls set_dumpable(0) when it starts (even
+if RLIMIT_CORE prevents any core from being dumped).  The effect of
+this (via task_dumpable) is to make /proc/pid/* files owned by root
+instead of the user, so the user can no longer examine his own
+process--in a case where there was never any privileged data to
+protect.  This affects e.g. auxv, environ, fd; in Fedora (execshield)
+kernels, also maps.  In practice, you can only notice this when a
+debugger has requested PTRACE_EVENT_EXIT tracing.
 
->>> But I'm still not understanding, how the kernel could only fail
->>> sometimes at bootup, but after that working without any visible
->>> errors? Is the sil-chip rather intelligent about detecting corrupted
->>> sglists and silently ignoring them?
->> I have no idea why it fails only sometimes.
-> 
-> And that is, why I'm so unsure.
-> The error looks to serious to only cause random failures on one of two
-> drives on bootup.
-> I never had trouble with the remaining drive on the SiI-chip or both
-> drives if one got killed during booting.
-> 
-> I'm guessing that leaving the computer powered down long enough fills
-> the RAM with a special pattern that really hangs the drive, while
-> normaly it would just reject the invalid data. (I have ECC-RAM, does
-> this matter?)
-> 
-> Another guess might be that most of the time the Sil-chip correctly
-> terminates after the transfer-length is reached, even if SGE_TRM is
-> missing...
+As far as I know, set_dumpable was only used in do_coredump for
+synchronization and not intended for any security purpose.
+(It doesn't secure anything that wasn't already unsecured when a
+process dies by SIGTERM instead of SIGQUIT.)
 
-I have no idea either.  We'll probably need a PCI bus tracer to tell
-exactly what's going on.
+This changes do_coredump to use a separate bit for its
+synchronization, so the "dumpable" bits remain the same.
 
-Thanks.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ fs/exec.c             |    4 ++--
+ include/linux/sched.h |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
--- 
-tejun
+diff --git a/fs/exec.c b/fs/exec.c
+index 073b0b8..7f1e355 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1727,7 +1727,8 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+ 	if (!binfmt || !binfmt->core_dump)
+ 		goto fail;
+ 	down_write(&mm->mmap_sem);
+-	if (!get_dumpable(mm)) {
++	if (!get_dumpable(mm) ||
++	    test_and_set_bit(MMF_DUMP_STARTED, &mm->flags)) {
+ 		up_write(&mm->mmap_sem);
+ 		goto fail;
+ 	}
+@@ -1741,7 +1742,6 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+ 		flag = O_EXCL;		/* Stop rewrite attacks */
+ 		current->fsuid = 0;	/* Dump root private */
+ 	}
+-	set_dumpable(mm, 0);
+ 
+ 	retval = coredump_wait(exit_code);
+ 	if (retval < 0)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 1f274c2..33676ad 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -367,6 +367,8 @@ extern int get_dumpable(struct mm_struct *mm);
+ #define MMF_DUMP_FILTER_DEFAULT \
+ 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
+ 
++#define MMF_DUMP_STARTED	16 /* some thread entered do_coredump already */
++
+ struct mm_struct {
+ 	struct vm_area_struct * mmap;		/* list of VMAs */
+ 	struct rb_root mm_rb;
