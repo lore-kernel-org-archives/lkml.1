@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbXJKUtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbXJKUtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbXJKUtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 16:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbXJKUtK
+	id S1758613AbXJKUtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 16:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbXJKUtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 16:49:10 -0400
-Received: from client062.sevenl.net ([66.241.137.62]:1389 "EHLO pcburn.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbXJKUtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 16:49:09 -0400
-Message-ID: <470E8C35.2010608@pcburn.com>
-Date: Thu, 11 Oct 2007 16:48:53 -0400
-From: Chris Bergeron <chris@pcburn.com>
-Reply-To: chris@pcburn.com
-Organization: PCBurn Media
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Thu, 11 Oct 2007 16:49:15 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3331 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755602AbXJKUtN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 16:49:13 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Crane, Matthew" <mcrane03@harris.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: Aggregation in embedded context, is kernel GPL2 prejudiceagainst embedded systems?
+Date: Thu, 11 Oct 2007 13:49:03 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEHKHGAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
-References: <4706AD19.4040605@pcburn.com> <20071010095432.GC30345@pazke.donpac.ru> <470E5714.4040303@pcburn.com> <20071011190117.GH4003@csclub.uwaterloo.ca>
-In-Reply-To: <20071011190117.GH4003@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20071011151543.GX16424@stusta.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 11 Oct 2007 13:49:41 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 11 Oct 2007 13:49:41 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Thu, Oct 11, 2007 at 01:02:12PM -0400, Chris Bergeron wrote:
->   
->> One chip has "ITE IT8871F 0641-AYS ZF1M04L" written on it, and the other 
->> two have  a stylized celtic knot looking "T" followed by "TG16C554CJG 
->> FTA6M-001 0620-B".
->>     
->
-> The 8871 is a single PCI parallel port, so certainly somehow they are
-> controlling the two serial to parallel chips through that pci parallel
-> port.
->
-> I included the diff of the files you had on your web page and the
-> originals founds in 2.4.20 (which is what they claim they replace).
->
-> I can't really tell if there is any code there to deal with their quad
-> uart chip or not.
->   
-I'll see if I can compile up the appropriate kernel and test it with 
-that code to see if it includes something to drive the card then, for 
-starters.
 
--- Chris
+Adrian Bunk wrote:
+
+> even for dynamically linking including non-GPL code is not white but 
+> already dark grey.
+
+IANAL, but personally, I think it's perfectly black and white.
+
+No mechanical combination (that means compressing, linking, tarring, compiling, or whatever) can create a work for copyright purposes. It can only convert the original work into a new form or aggregate works.
+
+There are a few exceptions to this by statute. For example, translation (by explicit law) can create a derivative work. Presumably this was because nobody ever imagined an automated process that could translate a work. It was assumed such a process must always be creative.
+
+To create a 'derivative work', you must create a new *work*, and a compiler and linker can't do that. Under copyright law, the creation of a work requires creative input. Compilers and linkers are not creative.
+
+If you link two works together, the result is an aggregate of those two works (and possibly the linker). This must be the case because there is no creative combination, and without creativity, a new work (for copyright purposes) cannot be formed.
+
+No amount of mechanical automated combination of works can create a new work for copyright purposes. If you feed A and B into a linker, all you can get out is A, B, and perhaps the linker.
+
+This doesn't mean that the result isn't a derivative work of one of the inputs. But this can only happen if one of the input works was a derivative to begin with.
+
+"Mere aggregation" must mean as opposed to creative combination. Think about a tar/gzip. Bits of each work are mixed into the other as the subsequent work has elements in common to the previous work compressed out. This is just as much mixing as a linker does, perhaps arguably more. The key is that no creativity is used, and thus no *new* work (and a derivative work is a new work) is created.
+
+DS
+
+
