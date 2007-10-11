@@ -1,242 +1,1302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbXJKN2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbXJKN24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758583AbXJKN2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 09:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXJKN2H
+	id S1759157AbXJKN24 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 09:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbXJKN22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 09:28:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:16123 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758687AbXJKN16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 09:27:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d/JhwRzQSKrcUoj44tF5CUpV3mlV7UwDnZuslOLp3z0yAND/zXyXhrdtyc399rrC1efKIE/PCtA+efisvrMVjy8P+Hn4rybTN1l66lvgoRFN3tMVhkEhNQSJSwBnny785AZN4SBS0AFM2SHNRUN2JpDsSqt4qXyjl+Vm4y38mBE=
-Message-ID: <d120d5000710110627x625476ccl6802cf5e97aa8533@mail.gmail.com>
-Date: Thu, 11 Oct 2007 09:27:55 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Bryan Wu" <bryan.wu@analog.com>,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-Subject: Re: [PATCH 2/3] Input/Touchscreen Driver: add support AD7877 touchscreen driver
-Cc: linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1192098220-25828-3-git-send-email-bryan.wu@analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192098220-25828-1-git-send-email-bryan.wu@analog.com>
-	 <1192098220-25828-3-git-send-email-bryan.wu@analog.com>
+	Thu, 11 Oct 2007 09:28:28 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:52221 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758861AbXJKN2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 09:28:23 -0400
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Cc: chrisw@sous-sol.org
+Subject: [TOMOYO #4 05/13] Domain transition handler functions.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200710112225.HGI87594.FVLFOFMJtHSOQO@I-love.SAKURA.ne.jp>
+In-Reply-To: <200710112225.HGI87594.FVLFOFMJtHSOQO@I-love.SAKURA.ne.jp>
+Message-Id: <200710112228.EGE82823.QLSFVMFtOHFJOO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 11 Oct 2007 22:28:21 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan, Michael,
+Domain transition functions for TOMOYO Linux.
+Every process belongs to a domain in TOMOYO Linux.
+Domain transition occurs when execve(2) is called
+and the domain is expressed as 'process invocation history',
+such as '<kernel> /sbin/init /etc/init.d/rc'.
+Domain information is stored in task_struct->security.
 
-On 10/11/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> +
-> +static int gpio3 = 0;
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/domain.c | 1259 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1259 insertions(+)
 
-No need to initialize.
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/security/tomoyo/domain.c	2007-10-11 15:53:12.000000000 +0900
+@@ -0,0 +1,1259 @@
++/*
++ * security/tomoyo/domain.c
++ *
++ * Domain transition functions for TOMOYO Linux.
++ */
++
++#include "tomoyo.h"
++#include "realpath.h"
++#include <linux/highmem.h>
++#include <linux/binfmts.h>
++
++/*************************  VARIABLES  *************************/
++
++struct domain_info KERNEL_DOMAIN;
++
++/* Lock for appending domain's ACL. */
++DEFINE_MUTEX(domain_acl_lock);
++
++/* Domain creation lock. */
++static DEFINE_MUTEX(new_domain_assign_lock);
++
++/***** The structure for program files to force domain reconstruction. *****/
++
++struct domain_initializer_entry {
++	struct list_head list;
++	const struct path_info *domainname;    /* This may be NULL */
++	const struct path_info *program;
++	u8 is_deleted;
++	u8 is_not;
++	u8 is_last_name;
++};
++
++/***** The structure for domains to not to transit domains. *****/
++
++struct domain_keeper_entry {
++	struct list_head list;
++	const struct path_info *domainname;
++	const struct path_info *program;       /* This may be NULL */
++	u8 is_deleted;
++	u8 is_not;
++	u8 is_last_name;
++};
++
++/***** The structure for program files that should be aggregated. *****/
++
++struct aggregator_entry {
++	struct list_head list;
++	const struct path_info *original_name;
++	const struct path_info *aggregated_name;
++	u8 is_deleted;
++};
++
++/***** The structure for program files that should be aliased. *****/
++
++struct alias_entry {
++	struct list_head list;
++	const struct path_info *original_name;
++	const struct path_info *aliased_name;
++	u8 is_deleted;
++};
++
++/*************************  UTILITY FUNCTIONS  *************************/
++
++/**
++ * tmy_is_domain_def - check if the line is likely a domain definition.
++ * @buffer: the line to check.
++ *
++ * Returns nonzero if @buffer is likely a domain definition.
++ * Returns zero otherwise.
++ *
++ * For complete validation check, use tmy_is_correct_domain().
++ */
++int tmy_is_domain_def(const unsigned char *buffer)
++{
++	return strncmp(buffer, TMY_ROOT_NAME, TMY_ROOT_NAME_LEN) == 0;
++}
++
++/**
++ * tmy_add_acl - add an entry to a domain.
++ * @domain: pointer to "struct domain_info".
++ * @acl: pointer to "struct acl_info" to add.
++ *
++ * Returns zero.
++ */
++int tmy_add_acl(struct domain_info *domain, struct acl_info *acl)
++{
++	INIT_LIST_HEAD(&acl->list);
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by domain_acl_lock. */
++	list_add_tail_rcu(&acl->list, &domain->acl_info_list);
++	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
++	return 0;
++}
++
++/**
++ * tmy_del_acl - remove an entry from a domain
++ * @ptr: pointer to "struct acl_info" to remove.
++ *
++ * Returns zero.
++ *
++ * TOMOYO Linux doesn't free memory used by policy because policies are not
++ * so frequently changed after entring into enforcing mode.
++ */
++int tmy_del_acl(struct acl_info *ptr)
++{
++	ptr->is_deleted = 1;
++	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
++	return 0;
++}
++
++/************************  DOMAIN INITIALIZER HANDLER  ************************/
++
++static LIST_HEAD(domain_initializer_list);
++
++/* Update domain initializer list. */
++static int tmy_add_domain_initializer_entry(const char *domainname,
++					    const char *program,
++					    const u8 is_not,
++					    const u8 is_delete)
++{
++	struct domain_initializer_entry *new_entry;
++	struct domain_initializer_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved_program;
++	const struct path_info *saved_domainname = NULL;
++	int error = -ENOMEM;
++	u8 is_last_name = 0;
++
++	if (!tmy_correct_path(program, 1, -1, -1, __FUNCTION__))
++		return -EINVAL; /* No patterns allowed. */
++
++	if (domainname) {
++		if (!tmy_is_domain_def(domainname) &&
++		    tmy_correct_path(domainname, 1, -1, -1, __FUNCTION__))
++			is_last_name = 1;
++
++		else if (!tmy_is_correct_domain(domainname, __FUNCTION__))
++			return -EINVAL;
++
++		saved_domainname = tmy_save_name(domainname);
++		if (!saved_domainname)
++			return -ENOMEM;
++	}
++
++	saved_program = tmy_save_name(program);
++	if (!saved_program)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &domain_initializer_list, list) {
++		if (ptr->is_not != is_not ||
++		    ptr->domainname != saved_domainname ||
++		    ptr->program != saved_program)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		break;
++	}
++	rcu_read_unlock();
++	if (!error)
++		goto out;
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->domainname = saved_domainname;
++	new_entry->program = saved_program;
++	new_entry->is_not = is_not;
++	new_entry->is_last_name = is_last_name;
++
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by mutex. */
++	list_add_tail_rcu(&new_entry->list, &domain_initializer_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++/**
++ * tmy_read_domain_initializer_policy - read domain initializer policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_domain_initializer_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	int error = -ENOMEM;
++
++	rcu_read_lock();
++	pos = head->read_var2;
++	if (!pos)
++		pos = &domain_initializer_list;
++	list_for_each_continue_rcu(pos, &domain_initializer_list) {
++		struct domain_initializer_entry *ptr;
++		ptr = list_entry(pos, struct domain_initializer_entry, list);
++		head->read_var2 = pos->prev;
++		if (ptr->is_deleted)
++			continue;
++		if (ptr->domainname) {
++			if (tmy_io_printf(head, "%s" TMY_INITIALIZE_DOMAIN
++					  "%s from %s\n",
++					  ptr->is_not ? "no_" : "",
++					  ptr->program->name,
++					  ptr->domainname->name))
++				goto out;
++		} else {
++			if (tmy_io_printf(head, "%s" TMY_INITIALIZE_DOMAIN
++					  "%s\n",
++					  ptr->is_not ? "no_" : "",
++					  ptr->program->name))
++				goto out;
++		}
++	}
++	error = 0;
++out: ;
++	rcu_read_unlock();
++	return error;
++}
++
++/**
++ * tmy_add_domain_initializer_policy - add domain initializer policy
++ * @data:      a line to parse.
++ * @is_not:    is this overriding?
++ * @is_delete: is this remove request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * This function adds or removes a domain initializer entry.
++ */
++int tmy_add_domain_initializer_policy(char *data,
++				      const u8 is_not,
++				      const u8 is_delete)
++{
++	char *cp = strstr(data, " from ");
++
++	if (cp) {
++		*cp = '\0';
++		return tmy_add_domain_initializer_entry(cp + 6,	data, is_not,
++							is_delete);
++	}
++
++	return tmy_add_domain_initializer_entry(NULL, data, is_not, is_delete);
++}
++
++/* Should I transit to a domain under "<kernel>" domain? */
++static int tmy_is_domain_initializer(const struct path_info *domainname,
++				     const struct path_info *program,
++				     const struct path_info *last_name)
++{
++	struct domain_initializer_entry *ptr;
++	int flag = 0;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &domain_initializer_list, list) {
++		if (ptr->is_deleted)
++			continue;
++
++		if (ptr->domainname) {
++			if (!ptr->is_last_name) {
++				if (ptr->domainname != domainname)
++					continue;
++			} else {
++				if (tmy_pathcmp(ptr->domainname, last_name))
++					continue;
++			}
++		}
++
++		if (tmy_pathcmp(ptr->program, program))
++			continue;
++		if (ptr->is_not) {
++			flag = 0;
++			break;
++		}
++		flag = 1;
++	}
++	rcu_read_unlock();
++	return flag;
++}
++
++/*************************  DOMAIN KEEPER HANDLER  *************************/
++
++static LIST_HEAD(domain_keeper_list);
++
++/* Update domain keeper list. */
++static int tmy_add_domain_keeper_entry(const char *domainname,
++				       const char *program,
++				       const u8 is_not,
++				       const u8 is_delete)
++{
++	struct domain_keeper_entry *new_entry;
++	struct domain_keeper_entry *ptr;
++	const struct path_info *saved_domainname;
++	const struct path_info *saved_program = NULL;
++	static DEFINE_MUTEX(mutex);
++	int error = -ENOMEM;
++	u8 is_last_name = 0;
++
++	if (!tmy_is_domain_def(domainname) &&
++	    tmy_correct_path(domainname, 1, -1, -1, __FUNCTION__))
++		is_last_name = 1;
++
++	else if (!tmy_is_correct_domain(domainname, __FUNCTION__))
++		return -EINVAL;
++
++	if (program) {
++		if (!tmy_correct_path(program, 1, -1, -1, __FUNCTION__))
++			return -EINVAL;
++
++		saved_program = tmy_save_name(program);
++		if (!saved_program)
++			return -ENOMEM;
++	}
++
++	saved_domainname = tmy_save_name(domainname);
++	if (!saved_domainname)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &domain_keeper_list, list) {
++		if (ptr->is_not != is_not ||
++		    ptr->domainname != saved_domainname ||
++		    ptr->program != saved_program)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		break;
++	}
++	rcu_read_unlock();
++	if (!error)
++		goto out;
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->domainname = saved_domainname;
++	new_entry->program = saved_program;
++	new_entry->is_not = is_not;
++	new_entry->is_last_name = is_last_name;
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by mutex. */
++	list_add_tail_rcu(&new_entry->list, &domain_keeper_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++/**
++ * tmy_add_domain_keeper_policy - add domain keeper policy.
++ * @data:      a line to parse.
++ * @is_not:    is this overriding?
++ * @is_delete: is this remove request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * This function adds or removes a domain keeper entry.
++ *
++ */
++int tmy_add_domain_keeper_policy(char *data,
++				 const u8 is_not,
++				 const u8 is_delete)
++{
++	char *cp = strstr(data, " from ");
++
++	if (cp) {
++		*cp = '\0';
++		return tmy_add_domain_keeper_entry(cp + 6, data,
++						   is_not, is_delete);
++	}
++
++	return tmy_add_domain_keeper_entry(data, NULL, is_not, is_delete);
++}
++
++/**
++ * tmy_read_domain_keeper_policy - read domain keeper policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_domain_keeper_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	int error = -ENOMEM;
++
++	rcu_read_lock();
++	pos = head->read_var2;
++	if (!pos)
++		pos = &domain_keeper_list;
++	list_for_each_continue_rcu(pos, &domain_keeper_list) {
++		struct domain_keeper_entry *ptr;
++		ptr = list_entry(pos, struct domain_keeper_entry, list);
++		head->read_var2 = pos->prev;
++		if (ptr->is_deleted)
++			continue;
++		if (ptr->program) {
++			if (tmy_io_printf(head,
++					  "%s" TMY_KEEP_DOMAIN
++					  "%s from %s\n",
++					  ptr->is_not ? "no_" : "",
++					  ptr->program->name,
++					  ptr->domainname->name))
++				goto out;
++		} else {
++			if (tmy_io_printf(head,
++					  "%s" TMY_KEEP_DOMAIN
++					  "%s\n",
++					  ptr->is_not ? "no_" : "",
++					  ptr->domainname->name))
++				goto out;
++		}
++	}
++	error = 0;
++out: ;
++	rcu_read_unlock();
++	return error;
++}
++
++/* Should I remain in current domain? */
++static int tmy_is_domain_keeper(const struct path_info *domainname,
++				const struct path_info *program,
++				const struct path_info *last_name)
++{
++	struct domain_keeper_entry *ptr;
++	int flag = 0;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &domain_keeper_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!ptr->is_last_name) {
++			if (ptr->domainname != domainname)
++				continue;
++		} else {
++			if (tmy_pathcmp(ptr->domainname, last_name))
++				continue;
++		}
++		if (ptr->program && tmy_pathcmp(ptr->program, program))
++			continue;
++		if (ptr->is_not) {
++			flag = 0;
++			break;
++		}
++		flag = 1;
++	}
++	rcu_read_unlock();
++	return flag;
++}
++
++/*********************  SYMBOLIC LINKED PROGRAM HANDLER  *********************/
++
++static LIST_HEAD(alias_list);
++
++/* Update alias list. */
++static int tmy_add_alias_entry(const char *original_name,
++			       const char *aliased_name,
++			       const u8 is_delete)
++{
++	struct alias_entry *new_entry;
++	struct alias_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved_original_name;
++	const struct path_info *saved_aliased_name;
++	int error = -ENOMEM;
++
++	if (!tmy_correct_path(original_name, 1, -1, -1, __FUNCTION__) ||
++	    !tmy_correct_path(aliased_name, 1, -1, -1, __FUNCTION__))
++		return -EINVAL; /* No patterns allowed. */
++
++	saved_original_name = tmy_save_name(original_name);
++	saved_aliased_name = tmy_save_name(aliased_name);
++	if (!saved_original_name || !saved_aliased_name)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &alias_list, list) {
++		if (ptr->original_name != saved_original_name ||
++		    ptr->aliased_name != saved_aliased_name)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		break;
++	}
++	rcu_read_unlock();
++	if (!error)
++		goto out;
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->original_name = saved_original_name;
++	new_entry->aliased_name = saved_aliased_name;
++
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by mutex. */
++	list_add_tail_rcu(&new_entry->list, &alias_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++/**
++ * tmy_read_alias_policy - read alias policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_alias_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	int error = -ENOMEM;
++
++	rcu_read_lock();
++	pos = head->read_var2;
++	if (!pos)
++		pos = &alias_list;
++	list_for_each_continue_rcu(pos, &alias_list) {
++		struct alias_entry *ptr;
++		ptr = list_entry(pos, struct alias_entry, list);
++		head->read_var2 = pos->prev;
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head,
++				  TMY_ALIAS "%s %s\n",
++				  ptr->original_name->name,
++				  ptr->aliased_name->name))
++			goto out;
++	}
++	error = 0;
++out: ;
++	rcu_read_unlock();
++	return error;
++}
++
++/**
++ * tmy_add_alias_policy - add alias policy.
++ * @data:      a line to parse.
++ * @is_delete: is this remove request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * This function adds or removes an alias entry.
++ */
++int tmy_add_alias_policy(char *data, const u8 is_delete)
++{
++	char *cp = strchr(data, ' ');
++
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++
++	return tmy_add_alias_entry(data, cp, is_delete);
++}
++
++/************************  DOMAIN AGGREGATOR HANDLER  ************************/
++
++static LIST_HEAD(aggregator_list);
++
++/* Update aggregator list. */
++static int tmy_add_aggregator_entry(const char *original_name,
++				    const char *aggregated_name,
++				    const u8 is_delete)
++{
++	struct aggregator_entry *new_entry;
++	struct aggregator_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved_original_name;
++	const struct path_info *saved_aggregated_name;
++	int error = -ENOMEM;
++
++	if (!tmy_correct_path(original_name, 1, 0, -1, __FUNCTION__) ||
++	    !tmy_correct_path(aggregated_name, 1, -1, -1, __FUNCTION__))
++		return -EINVAL;
++
++	saved_original_name = tmy_save_name(original_name);
++	saved_aggregated_name = tmy_save_name(aggregated_name);
++	if (!saved_original_name || !saved_aggregated_name)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ptr, &aggregator_list, list) {
++		if (ptr->original_name != saved_original_name ||
++		    ptr->aggregated_name != saved_aggregated_name)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		break;
++	}
++	rcu_read_unlock();
++	if (!error)
++		goto out;
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->original_name = saved_original_name;
++	new_entry->aggregated_name = saved_aggregated_name;
++
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by mutex. */
++	list_add_tail_rcu(&new_entry->list, &aggregator_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++/**
++ * tmy_read_aggregator_policy - read aggregator policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_aggregator_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	int error = -ENOMEM;
++
++	rcu_read_lock();
++	pos = head->read_var2;
++	if (!pos)
++		pos = &aggregator_list;
++	list_for_each_continue_rcu(pos, &aggregator_list) {
++		struct aggregator_entry *ptr;
++		ptr = list_entry(pos, struct aggregator_entry, list);
++		head->read_var2 = pos->prev;
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head,
++				  TMY_AGGREGATOR "%s %s\n",
++				  ptr->original_name->name,
++				  ptr->aggregated_name->name))
++			goto out;
++	}
++	error = 0;
++out: ;
++	rcu_read_unlock();
++	return error;
++}
++
++/**
++ * tmy_add_aggregator_policy - add aggregator policy.
++ * @data:      a line to parse.
++ * @is_delete: is this remove request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * This function adds or removes an aggregator entry.
++ */
++int tmy_add_aggregator_policy(char *data, const u8 is_delete)
++{
++	char *cp = strchr(data, ' ');
++
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++
++	return tmy_add_aggregator_entry(data, cp, is_delete);
++}
++
++/*************************  DOMAIN DELETION HANDLER  *************************/
++
++/**
++ * tmy_delete_domain - delete a domain.
++ * @domainname0: domainname to delete.
++ *
++ * Returns zero.
++ *
++ * This function deletes domains.
++ * The behavior of deleting domain is like deleting files on Linux's
++ * filesystem. A process transits to different domain upon do_execve(),
++ * and the process can refer the deleted domains after the domain is deleted,
++ * like a process opens a file and the process can read()/write() the deleted
++ * file after the file is deleted.
++ * This avoids processes from crashing due to referring non-existent domains.
++ * Administrator manually terminates processes thet are referring deleted
++ * domains after deleting domains.
++ * Also, undeleting domains is supported. See tmy_undelete_domain().
++ */
++int tmy_delete_domain(char *domainname0)
++{
++	struct domain_info *domain;
++	struct domain_info *domain2;
++	struct path_info domainname;
++
++	domainname.name = domainname0;
++	tmy_fill_path_info(&domainname);
++
++	mutex_lock(&new_domain_assign_lock);
++	/* Is there an active domain? */
++	rcu_read_lock();
++	list_for_each_entry_rcu(domain, &domain_list, list) {
++		/* Never delete KERNEL_DOMAIN */
++		if (domain == &KERNEL_DOMAIN || domain->is_deleted ||
++		    tmy_pathcmp(domain->domainname, &domainname))
++			continue;
++		/* Mark already deleted domains as non undeletable. */
++		list_for_each_entry_rcu(domain2, &domain_list, list) {
++			if (!domain2->is_deleted ||
++			    tmy_pathcmp(domain2->domainname, &domainname))
++				continue;
++			domain2->is_deleted = 255;
++		}
++		/* Delete and mark active domain as undeletable. */
++		domain->is_deleted = 1;
++		break;
++	}
++	rcu_read_unlock();
++	mutex_unlock(&new_domain_assign_lock);
++
++	return 0;
++}
++
++/**
++ * tmy_undelete_domain - undelete a domain.
++ * @domainname0: domainname to undelete.
++ *
++ * Returns pointer to undeleted "struct domain_info" on success.
++ * Returns NULL on failure.
++ *
++ * This function undeletes domains.
++ * Not only the domain previously deleted by tmy_delete_domain()
++ * but also all domains deleted by tmy_delete_domain() are undeletable.
++ * If there is no deleted domain named @domainname0 or
++ * a not-yet-deleted domain named @domainname0 exists, undelete fails.
++ * Otherwise, previously deleted domain named @domainname0 is undeleted.
++ */
++struct domain_info *tmy_undelete_domain(const char *domainname0)
++{
++	struct domain_info *domain;
++	struct domain_info *candidate_domain = NULL;
++	struct path_info domainname;
++
++	domainname.name = domainname0;
++	tmy_fill_path_info(&domainname);
++
++	mutex_lock(&new_domain_assign_lock);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(domain, &domain_list, list) {
++		if (tmy_pathcmp(&domainname, domain->domainname))
++			continue;
++
++		if (!domain->is_deleted) {
++			/* This domain is active. I can't undelete. */
++			candidate_domain = NULL;
++			break;
++		}
++
++		/* Is this domain undeletable? */
++		if (domain->is_deleted == 1)
++			candidate_domain = domain;
++	}
++	if (candidate_domain)
++		candidate_domain->is_deleted = 0;
++	rcu_read_unlock();
++	mutex_unlock(&new_domain_assign_lock);
++
++	return candidate_domain;
++}
++
++/************************  DOMAIN TRANSITION HANDLER  ************************/
++
++/**
++ * tmy_find_domain - find a domain with given domainname.
++ * @domainname0: the domainname to find.
++ *
++ * Returns pointer to "struct domain_info" on success.
++ * Returns NULL on failure.
++ *
++ * This function does not create a new domain
++ * if a domain named @domainname0 does not exist.
++ */
++struct domain_info *tmy_find_domain(const char *domainname0)
++{
++	struct domain_info *domain;
++	struct domain_info *found = NULL;
++	struct path_info domainname;
++
++	domainname.name = domainname0;
++	tmy_fill_path_info(&domainname);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(domain, &domain_list, list) {
++		if (domain->is_deleted ||
++		    tmy_pathcmp(&domainname, domain->domainname))
++			continue;
++		found = domain;
++		break;
++	}
++	rcu_read_unlock();
++	return found;
++}
++
++/**
++ * tmy_new_domain - find or assign a domain with given domainname.
++ * @domainname: the domainname to find.
++ * @profile:    profile number to assign if newly created.
++ *
++ * Returns pointer to "struct domain_info" on success.
++ * Returns NULL on failure.
++ *
++ * This function creates a new domain if a domain named @domainname0
++ * does not exist.
++ */
++struct domain_info *tmy_new_domain(const char *domainname,
++				   const u8 profile)
++{
++	struct domain_info *domain = NULL;
++	const struct path_info *saved_domainname;
++	int error = -ENOMEM;
++
++	mutex_lock(&new_domain_assign_lock);
++
++	domain = tmy_find_domain(domainname);
++	if (domain)
++		goto out;
++
++	if (!tmy_is_correct_domain(domainname, __FUNCTION__))
++		goto out;
++
++	saved_domainname = tmy_save_name(domainname);
++	if (!saved_domainname)
++		goto out;
++
++	/* Can I reuse memory of deleted domain? */
++	rcu_read_lock();
++	list_for_each_entry_rcu(domain, &domain_list, list) {
++		struct task_struct *p;
++		struct acl_info *ptr;
++		int flag;
++
++		if (!domain->is_deleted ||
++		    domain->domainname != saved_domainname)
++			continue;
++		flag = 0;
++
++		/***** CRITICAL SECTION START *****/
++		read_lock(&tasklist_lock);
++		for_each_process(p) {
++			/* "struct task_struct"->security is not NULL. */
++			if (((struct tmy_security *) p->security)->domain
++			    == domain) {
++				flag = 1;
++				break;
++			}
++		}
++		read_unlock(&tasklist_lock);
++		/***** CRITICAL SECTION END *****/
++
++		/* Somebody is still referring this deleted domain. */
++		if (flag)
++			continue;
++
++		/* OK. Let's reuse memory for this deleted domain. */
++
++		/* Delete all entries in this deleted domain. */
++		list_for_each_entry_rcu(ptr, &domain->acl_info_list, list)
++			ptr->is_deleted = 1;
++
++		domain->profile = profile;
++		domain->quota_warned = 0;
++
++		mb(); /* Avoid out-of-order execution. */
++		/* Undelete this deleted domain. */
++		domain->is_deleted = 0;
++		error = 0;
++		break;
++	}
++	rcu_read_unlock();
++	if (!error)
++		goto out;
++
++	/* No memory reusable. Create using new memory. */
++	domain = tmy_alloc_element(sizeof(*domain));
++	if (!domain)
++		goto out;
++
++	INIT_LIST_HEAD(&domain->list);
++	INIT_LIST_HEAD(&domain->acl_info_list);
++	domain->domainname = saved_domainname;
++	domain->profile = profile;
++	mb(); /* Avoid out-of-order execution. */
++	/* RCU: Protected by new_domain_assign_lock. */
++	list_add_tail_rcu(&domain->list, &domain_list);
++out: ;
++	mutex_unlock(&new_domain_assign_lock);
++
++	return domain;
++}
++
++/* Convert non ASCII printable characters to ASCII printable characters. */
++static int tmy_escape(char *dest, const char *src, int dest_len)
++{
++	while (*src) {
++		const unsigned char c = *(const unsigned char *) src;
++
++		if (c == '\\') {
++			dest_len -= 2;
++			if (dest_len <= 0)
++				goto out;
++			*dest++ = '\\';
++			*dest++ = '\\';
++		} else if (c > ' ' && c < 127) {
++			if (--dest_len <= 0)
++				goto out;
++			*dest++ = c;
++		} else {
++			dest_len -= 4;
++			if (dest_len <= 0)
++				goto out;
++			*dest++ = '\\';
++			*dest++ = (c >> 6) + '0';
++			*dest++ = ((c >> 3) & 7) + '0';
++			*dest++ = (c & 7) + '0';
++		}
++		src++;
++	}
++
++	if (--dest_len <= 0)
++		goto out;
++	*dest = '\0';
++
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/* Get argv[0] of "struct linux_binprm". */
++static char *tmy_get_argv0(struct linux_binprm *bprm)
++{
++	char *arg_ptr;
++	int arg_len = 0;
++	unsigned long pos = bprm->p;
++	int i = pos / PAGE_SIZE;
++	int offset = pos % PAGE_SIZE;
++
++	if (bprm->argc <= 0)
++		return NULL;
++
++	arg_ptr = tmy_alloc(PAGE_SIZE);
++
++	if (!arg_ptr)
++		goto out;
++
++	while (1) {
++		struct page *page;
++		const char *kaddr;
++		char *tmp_arg;
++
++#ifdef CONFIG_MMU
++		if (get_user_pages(current, bprm->mm, pos,
++				   1, 0, 1, &page, NULL) <= 0)
++			goto out;
++#else
++		page = bprm->page[i];
++#endif
++		kaddr = kmap(page);
++		if (!kaddr) { /* Mapping failed. */
++#ifdef CONFIG_MMU
++			put_page(page);
++#endif
++			goto out;
++		}
++
++		memmove(arg_ptr + arg_len, kaddr + offset, PAGE_SIZE - offset);
++		kunmap(page);
++
++#ifdef CONFIG_MMU
++		put_page(page);
++		pos += PAGE_SIZE - offset;
++#endif
++
++		arg_len += PAGE_SIZE - offset;
++
++		if (memchr(arg_ptr, '\0', arg_len))
++			break;
++
++		tmp_arg = tmy_alloc(arg_len + PAGE_SIZE);
++		if (!tmp_arg)
++			goto out;
++
++		memmove(tmp_arg, arg_ptr, arg_len);
++		tmy_free(arg_ptr);
++		arg_ptr = tmp_arg;
++		i++;
++		offset = 0;
++	}
++	return arg_ptr;
++out: ;
++	tmy_free(arg_ptr);
++
++	return NULL;
++}
++
++/**
++ * tmy_find_next_domain - find a domain to transit to if do_execve() succeeds.
++ * @bprm:        pointer to "struct linux_binprm".
++ * @next_domain: pointer to pointer to "struct domain_info".
++ *
++ * Returns zero if success. @next_domain receives new domain to transit to.
++ * Returns nonzero on failure.
++ *
++ * This function handles TOMOYO Linux's domain transition.
++ * New domains are automatically created unless the domain the caller process
++ * belongs to is assigned a profile for enforcing mode.
++ */
++int tmy_find_next_domain(struct linux_binprm *bprm,
++			 struct domain_info **next_domain)
++{
++	/* This function assumes that the size of buffer returned */
++	/* by tmy_realpath() = TMY_MAX_PATHNAME_LEN. */
++	struct domain_info *old_domain = TMY_SECURITY->domain;
++	struct domain_info *domain = NULL;
++	const char *old_domain_name = old_domain->domainname->name;
++	const char *original_name = bprm->filename;
++	struct file *filp = bprm->file;
++	char *new_domain_name = NULL;
++	char *real_program_name = NULL;
++	char *symlink_program_name = NULL;
++	const u8 is_enforce = tmy_enforce(TMY_MAC_FOR_FILE);
++	int retval;
++	struct path_info r;
++	struct path_info s;
++	struct path_info l;
++
++	/*
++	 * Built-in initializers.
++	 * This is needed because policies are not loaded
++	 * until starting /sbin/init .
++	 */
++	static int first = 1;
++	if (first) {
++		tmy_add_domain_initializer_entry(NULL, "/sbin/hotplug", 0, 0);
++		tmy_add_domain_initializer_entry(NULL, "/sbin/modprobe", 0, 0);
++		tmy_add_domain_initializer_entry(NULL, "/sbin/udevd", 0, 0);
++		first = 0;
++	}
++
++	/* Get realpath of program. */
++	/* I hope tmy_realpath() won't fail with -ENOMEM. */
++	retval = -ENOENT;
++	real_program_name = tmy_realpath(original_name);
++
++	if (!real_program_name)
++		goto out;
++
++	/* Get realpath of symbolic link. */
++	symlink_program_name = tmy_realpath_nofollow(original_name);
++	if (!symlink_program_name)
++		goto out;
++
++	r.name = real_program_name;
++	tmy_fill_path_info(&r);
++	s.name = symlink_program_name;
++	tmy_fill_path_info(&s);
++	l.name = strrchr(old_domain_name, ' ');
++
++	if (l.name)
++		l.name++;
++	else
++		l.name = old_domain_name;
++	tmy_fill_path_info(&l);
++
++	/* Check 'alias' directive. */
++	if (tmy_pathcmp(&r, &s)) {
++		struct alias_entry *ptr;
++
++		/* Is this program allowed to be called via symbolic links? */
++		rcu_read_lock();
++		list_for_each_entry_rcu(ptr, &alias_list, list) {
++			if (ptr->is_deleted ||
++			    tmy_pathcmp(&r, ptr->original_name) ||
++			    tmy_pathcmp(&s, ptr->aliased_name))
++				continue;
++			memset(real_program_name, 0, TMY_MAX_PATHNAME_LEN);
++			strncpy(real_program_name,
++				ptr->aliased_name->name,
++				TMY_MAX_PATHNAME_LEN - 1);
++			tmy_fill_path_info(&r);
++			break;
++		}
++		rcu_read_unlock();
++	}
++
++	/* Compare basename of real_program_name and argv[0] */
++	if (bprm->argc > 0 && tmy_flags(TMY_MAC_FOR_ARGV0)) {
++
++		char *org_argv0 = tmy_get_argv0(bprm);
++
++		retval = -ENOMEM;
++		if (org_argv0) {
++
++			const int len = strlen(org_argv0);
++			char *printable_argv0 = tmy_alloc(len * 4 + 8);
++
++			if (printable_argv0 &&
++			    !tmy_escape(printable_argv0, org_argv0,
++					len * 4 + 8)) {
++				const char *base_argv0;
++				const char *base_filename;
++
++				base_argv0 = strrchr(printable_argv0, '/');
++				if (!base_argv0)
++					base_argv0 = printable_argv0;
++				else
++					base_argv0++;
++
++				base_filename = strrchr(real_program_name, '/');
++				if (!base_filename)
++					base_filename = real_program_name;
++				else
++					base_filename++;
++
++				if (strcmp(base_argv0, base_filename))
++					retval = tmy_argv0_perm(&r, base_argv0);
++				else
++					retval = 0;
++			}
++
++			tmy_free(printable_argv0);
++			tmy_free(org_argv0);
++		}
++
++		if (retval)
++			goto out;
++
++	}
++
++
++	/* Check 'aggregator' directive. */
++	{
++		struct aggregator_entry *ptr;
++
++		/* Is this program allowed to be aggregated? */
++		rcu_read_lock();
++		list_for_each_entry_rcu(ptr, &aggregator_list, list) {
++			if (ptr->is_deleted ||
++			    !tmy_path_match(&r, ptr->original_name))
++				continue;
++			memset(real_program_name, 0, TMY_MAX_PATHNAME_LEN);
++			strncpy(real_program_name,
++				ptr->aggregated_name->name,
++				TMY_MAX_PATHNAME_LEN - 1);
++			tmy_fill_path_info(&r);
++			break;
++		}
++		rcu_read_unlock();
++	}
++
++	/* Check execute permission. */
++	retval = tmy_exec_perm(&r, filp);
++	if (retval < 0)
++		goto out;
++
++	/* Allocate memory for calcurating domain name. */
++	retval = -ENOMEM;
++	new_domain_name = tmy_alloc(TMY_MAX_PATHNAME_LEN + 16);
++	if (!new_domain_name)
++		goto out;
++
++	if (tmy_is_domain_initializer(old_domain->domainname, &r, &l))
++		/* Transit to the child of KERNEL_DOMAIN domain. */
++		snprintf(new_domain_name, TMY_MAX_PATHNAME_LEN + 1,
++			 TMY_ROOT_NAME " " "%s", real_program_name);
++	else if (old_domain == &KERNEL_DOMAIN && !sbin_init_started)
++		/*
++		 * Needn't to transit from kernel domain
++		 * before starting /sbin/init .
++		 * But transit from kernel domain if executing initializers,
++		 * for they might start before /sbin/init .
++		 */
++		domain = old_domain;
++	else if (tmy_is_domain_keeper(old_domain->domainname, &r, &l))
++		/* Keep current domain. */
++		domain = old_domain;
++	else
++		/* Normal domain transition. */
++		snprintf(new_domain_name,
++			 TMY_MAX_PATHNAME_LEN + 1,
++			 "%s %s",
++			 old_domain_name,
++			 real_program_name);
++
++	if (domain || strlen(new_domain_name) >= TMY_MAX_PATHNAME_LEN)
++		goto ok;
++
++	if (is_enforce) {
++		domain = tmy_find_domain(new_domain_name);
++		if (!domain &&
++		    tmy_supervisor("#Need to create domain\n%s\n",
++				   new_domain_name) == 0) {
++			const u8 profile = TMY_SECURITY->domain->profile;
++			domain = tmy_new_domain(new_domain_name, profile);
++		}
++	} else {
++		const u8 profile = TMY_SECURITY->domain->profile;
++		domain = tmy_new_domain(new_domain_name, profile);
++	}
++
++ok: ;
++
++	if (!domain) {
++		printk(KERN_INFO "TOMOYO-ERROR: Domain '%s' not defined.\n",
++		       new_domain_name);
++		if (is_enforce)
++			retval = -EPERM;
++	} else
++		retval = 0;
++out: ;
++
++	tmy_free(new_domain_name);
++	tmy_free(real_program_name);
++	tmy_free(symlink_program_name);
++	*next_domain = domain ? domain : old_domain;
++
++	return retval;
++}
 
-> +
-> +static int ad7877_read(struct device *dev, u16 reg)
-> +{
-> +       struct spi_device       *spi = to_spi_device(dev);
-> +       struct ser_req          *req = kzalloc(sizeof *req, GFP_KERNEL);
-
-How many reads can happen at once? Maybe allocate 1 ser_req per
-touchcsreen when creating it?
-
-> +
-> +       if (likely(x && z1 && !device_suspended(&ts->spi->dev))) {
-> +               /* compute touch pressure resistance using equation #2 */
-> +               Rt = z2;
-> +               Rt -= z1;
-> +               Rt *= x;
-> +               Rt *= ts->x_plate_ohms;
-> +               Rt /= z1;
-> +               Rt = (Rt + 2047) >> 12;
-> +       } else
-> +               Rt = 0;
-> +
-> +       if (Rt) {
-> +               input_report_abs(input_dev, ABS_X, x);
-> +               input_report_abs(input_dev, ABS_Y, y);
-> +               sync = 1;
-> +       }
-> +
-> +       if (sync) {
-> +               input_report_abs(input_dev, ABS_PRESSURE, Rt);
-> +               input_sync(input_dev);
-> +       }
-
-Confused about the logic - you set sync only if Rt != 0 so why don't
-fold second "if" into the first one?
-
-> +/* Must be called with ts->lock held */
-> +static void ad7877_disable(struct ad7877 *ts)
-> +{
-> +       if (ts->disabled)
-> +               return;
-> +
-> +       ts->disabled = 1;
-> +
-> +       if (!ts->pending) {
-> +               ts->irq_disabled = 1;
-> +               disable_irq(ts->spi->irq);
-> +       } else {
-> +               /* the kthread will run at least once more, and
-> +                * leave everything in a clean state, IRQ disabled
-> +                */
-> +               while (ts->pending) {
-> +                       spin_unlock_irq(&ts->lock);
-> +                       msleep(1);
-> +                       spin_lock_irq(&ts->lock);
-> +               }
-> +       }
-> +
-> +       /* we know the chip's in lowpower mode since we always
-> +        * leave it that way after every request
-> +        */
-> +
-> +}
-
-This looks scary. Can you try moving locking inside ad7877_enable and
-ad7877_disable?
-
-> +
-> +static int __devinit ad7877_probe(struct spi_device *spi)
-> +{
-> +       struct ad7877                   *ts;
-> +       struct input_dev                *input_dev;
-> +       struct ad7877_platform_data     *pdata = spi->dev.platform_data;
-> +       struct spi_message              *m;
-> +       int                             err;
-> +       u16                             verify;
-> +
-> +
-> +       if (!spi->irq) {
-> +               dev_dbg(&spi->dev, "no IRQ?\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +
-> +       if (!pdata) {
-> +               dev_dbg(&spi->dev, "no platform data?\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +
-> +       /* don't exceed max specified SPI CLK frequency */
-> +       if (spi->max_speed_hz > MAX_SPI_FREQ_HZ) {
-> +               dev_dbg(&spi->dev, "SPI CLK %d Hz?\n",spi->max_speed_hz);
-> +               return -EINVAL;
-> +       }
-> +
-> +       ts = kzalloc(sizeof(struct ad7877), GFP_KERNEL);
-> +       input_dev = input_allocate_device();
-> +       if (!ts || !input_dev) {
-> +               err = -ENOMEM;
-> +               goto err_free_mem;
-> +       }
-> +
-> +
-> +       dev_set_drvdata(&spi->dev, ts);
-> +       spi->dev.power.power_state = PMSG_ON;
-> +
-> +       ts->spi = spi;
-> +       ts->input = input_dev;
-> +       ts->intr_flag = 0;
-> +       init_timer(&ts->timer);
-> +       ts->timer.data = (unsigned long) ts;
-> +       ts->timer.function = ad7877_timer;
-> +
-> +       spin_lock_init(&ts->lock);
-> +
-> +       ts->model = pdata->model ? : 7877;
-> +       ts->vref_delay_usecs = pdata->vref_delay_usecs ? : 100;
-> +       ts->x_plate_ohms = pdata->x_plate_ohms ? : 400;
-> +       ts->pressure_max = pdata->pressure_max ? : ~0;
-> +
-> +
-> +       ts->stopacq_polarity = pdata->stopacq_polarity;
-> +       ts->first_conversion_delay = pdata->first_conversion_delay;
-> +       ts->acquisition_time = pdata->acquisition_time;
-> +       ts->averaging = pdata->averaging;
-> +       ts->pen_down_acc_interval = pdata->pen_down_acc_interval;
-> +
-> +       snprintf(ts->phys, sizeof(ts->phys), "%s/input0", spi->dev.bus_id);
-> +
-> +       input_dev->name = "AD7877 Touchscreen";
-> +       input_dev->phys = ts->phys;
-> +       input_dev->cdev.dev = &spi->dev;
-
-Please use input_dev->dev.parent, i will kill 'cdev' soon.
-
-> +
-> +       err = input_register_device(input_dev);
-> +       if (err)
-> +               goto err_remove_attr;
-> +
-> +       ts->intr_flag = 0;
-> +
-> +       ad7877_task = kthread_run(ad7877_thread, ts, "ad7877_ktsd");
-> +
-> +        if (IS_ERR(ad7877_task)) {
-> +                printk(KERN_ERR "ts: Failed to start ad7877_task\n");
-> +                goto err_remove_attr;
-
-You shoudl use input_unregister_device() once it was registered. So
-you need something like
-             goto err_unregister_idev;
-...
-err_unregister_idev:
-        input_unregister_device(input_dev);
-        input-dve = NULL; /* so we don't try to free it later */
-err_remove_attr:
-...
-
-> +        }
-> +
-> +       return 0;
-> +
-> + err_remove_attr:
-> +
-> +       sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
-> +
-> +       if(gpio3)
-> +               device_remove_file(&spi->dev, &dev_attr_gpio3);
-> +       else
-> +               device_remove_file(&spi->dev, &dev_attr_aux3);
-> +
-> +
-> +       free_irq(spi->irq, ts);
-> + err_free_mem:
-> +       input_free_device(input_dev);
-> +       kfree(ts);
-> +       return err;
-> +}
-> +
-> +static int __devexit ad7877_remove(struct spi_device *spi)
-> +{
-> +       struct ad7877           *ts = dev_get_drvdata(&spi->dev);
-> +
-> +       input_unregister_device(ts->input);
-> +
-> +       ad7877_suspend(spi, PMSG_SUSPEND);
-> +
-> +       kthread_stop(ad7877_task);
-
-You don't want to unregister device before stopping
-interrupts/kthread. Otherwise there is a chance you will try to use
-just freed device to send event through.
-
-The driver also contains some indenting damage, please re-check.
-
-Thanks!
-
--- 
-Dmitry
