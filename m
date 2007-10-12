@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbXJLHxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760058AbXJLHyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbXJLHxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 03:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbXJLHxQ
+	id S1760058AbXJLHyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 03:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXJLHye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 03:53:16 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:51681 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbXJLHxP (ORCPT
+	Fri, 12 Oct 2007 03:54:34 -0400
+Received: from loopy.telegraphics.com.au ([202.45.126.152]:51203 "EHLO
+	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbXJLHyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 03:53:15 -0400
-X-Greylist: delayed 3114 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Oct 2007 03:53:14 EDT
-Message-Id: <200710120701.l9C71Jx6038998@www262.sakura.ne.jp>
-Subject: How to find slab\'s usage?
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: linux-kernel@vger.kernel.org
+	Fri, 12 Oct 2007 03:54:32 -0400
+Date: Fri, 12 Oct 2007 17:54:30 +1000 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Rob Landley <rob@landley.net>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+In-Reply-To: <Pine.LNX.4.64.0710120849480.11634@anakin>
+Message-ID: <Pine.LNX.4.64.0710121731110.17887@loopy.telegraphics.com.au>
+References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710111707270.3729@anakin>
+ <Pine.LNX.4.64.0710120211130.4083@loopy.telegraphics.com.au>
+ <200710111614.39879.rob@landley.net> <Pine.LNX.4.64.0710120849480.11634@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 12 Oct 2007 16:01:19 +0900
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-I was compiling Ubuntu 7.10's kernel and I encountered OOM-killer.
-
-I saw /proc/meminfo and it seems to me that slab is leaking memory.
-But /usr/bin/slabtop claims /proc/slabinfo is missing.
-
-I couldn't continue the compilation before reboot.
-I could continue the compilation after reboot.
-So, I think this is a memory leak.
-How can I find slab that uses so much memory?
-
-Regards.
 
 
+> 
+> If your cross-compiler is called differently than the default on in 
+> arch/*/Makefile,
 
-# cat /proc/version
-Linux version 2.6.22-14-server (buildd@vernadsky) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #1 SMP Wed Oct 10 06:35:59 GMT 2007
+Part of the problem is that there is no compelling default. The name of 
+the cross-compiler can vary depending on the chosen executable prefix or 
+the chosen target tuple.
 
-# cat /proc/meminfo
-MemTotal:       515756 kB
-MemFree:         24628 kB
-Buffers:          1372 kB
-Cached:          15324 kB
-SwapCached:          0 kB
-Active:          15140 kB
-Inactive:         5936 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:       515756 kB
-LowFree:         24628 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:              12 kB
-Writeback:           8 kB
-AnonPages:        4396 kB
-Mapped:           1076 kB
-Slab:           311236 kB
-SReclaimable:    11268 kB
-SUnreclaim:     299968 kB
-PageTables:        264 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:    257876 kB
-Committed_AS:     7780 kB
-VmallocTotal:   511992 kB
-VmallocUsed:      2204 kB
-VmallocChunk:   509364 kB
+Let's say I create new cross toolchains for both m68k and powerpc. I use 
+the "m68k-linux-gnu" to follow the m68k default, but let's assume powerpc 
+users prefer their default "powerpc-linux" so I follow that too. The 
+result is that I now have gcc's -B option working (or not working) in 
+suprising ways too.
+
+Uniformity is more helpful downstream than a different arbitrary default 
+for each architecture. Debian should patch their default into their kernel 
+source packages if they've standardised on cross compiler prefixes.
+
+> what's the problem with calling?
+> 
+>     make ARCH=myarch CROSS_COMPILE=my-cross-compile-prefx-
+> 
+> This has been working for +10 years on all non-ia32 platforms I ever worked on.
+
+But there is no problem with calling that (?). Rob's patch doesn't change 
+this.
+
+-f
+
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
