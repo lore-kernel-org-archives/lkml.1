@@ -1,262 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbXJLWNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbXJLWQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760563AbXJLWNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbXJLWNK
+	id S1760411AbXJLWQs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXJLWQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:13:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39911 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757773AbXJLWNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:13:09 -0400
-Date: Fri, 12 Oct 2007 18:12:53 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: arch merge fallout.
-Message-ID: <20071012221253.GB4290@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20071012035743.GA12897@redhat.com> <alpine.LFD.0.999.0710112103240.6887@woody.linux-foundation.org> <20071012182504.GA9222@redhat.com> <alpine.LFD.0.999.0710121457230.6887@woody.linux-foundation.org>
+	Fri, 12 Oct 2007 18:16:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:65212 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757428AbXJLWQi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:16:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [2.6.24 PATCH 02/25] dm io:ctl use constant struct size
+Date: Sat, 13 Oct 2007 00:16:29 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
+       Guido Guenther <agx@sigxcpu.org>, Kevin Corry <kevcorry@us.ibm.com>,
+       stable@kernel.org
+References: <20071012170509.GM24157@agk.fab.redhat.com>
+In-Reply-To: <20071012170509.GM24157@agk.fab.redhat.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.999.0710121457230.6887@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200710130016.29937.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+keEXFnrH3xr1o3hWD+zvmYgqYciOMPVgH3M0
+ 4qgaXtsAd3STbYsloVG5L7t7E6a7Y5+PMNPyw1Unz7oUxu5CIk
+ MH093BuogJ9CfD1WM+gaw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 02:58:24PM -0700, Linus Torvalds wrote:
- > 
- > 
- > On Fri, 12 Oct 2007, Dave Jones wrote:
- > > 
- > > The git on master.kernel.org (1.5.3.4) is pretty recent, so I don't think
- > > that's the problem, is it?
- > 
- > It may be that the "renamelimit" thing didn't go into the stable branch at 
- > all. If you build your git from the current HEAD, it should work.
- > 
- > Or just point me to the thing, and I'll see if I can merge it.
+On Friday 12 October 2007, Alasdair G Kergon wrote:
+> Make size of dm_ioctl struct always 312 bytes on all supported
+> architectures.
+> 
+> This change retains compatibility with already-compiled code because
+> it uses an embedded offset to locate the payload that follows the
+> structure.
+> 
+> On 64-bit architectures there is no change at all; on 32-bit
+> we are increasing the size of dm-ioctl from 308 to 312 bytes.
+> 
+> Currently with 32-bit userspace / 64-bit kernel on x86_64
+> some ioctls (including rename, message) are incorrectly rejected
+> by the comparison against 'param + 1'. †This breaks userspace
+> lvrename and multipath 'fail_if_no_path' changes, for example.
+> 
+> (BTW Device-mapper uses its own versioning and ignores the ioctl
+> size bits. †Only the generic ioctl compat code on mixed arches
+> checks them, and that will continue to accept both sizes for now,
+> but we intend to list 308 as deprecated and eventually remove it.)
+> 
+> Signed-off-by: Milan Broz <mbroz@redhat.com>
+> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+> Cc: Guido Guenther <agx@sigxcpu.org>
+> Cc: Kevin Corry <kevcorry@us.ibm.com>
+> Cc: stable@kernel.org
+> 
 
-pull req below.  If it turns out to be more trouble than its worth,
-let me know, and I'll fix up the patches by hand, and generate
-a new git tree. (If it comes to that, I understand Thomas has a script
-that may help).
+This change seems rather bogus, you're changing the ABI just to work
+around a bug in the compat_ioctl layer. Why not just do the compat
+code the right way, like the patch below?
 
-	Dave
+	Arnd <><
 
+---
+dm: move compat_ioctl handling to dm-ioctl.c
 
+Device mapper ioctl numbers use a variable size field
 
-
-Please pull from ..
-master.kernel.org:/pub/scm/linux/kernel/git/davej/cpufreq.git/ 
-
- arch/arm/mach-imx/cpufreq.c                       |    1 -
- arch/arm/mach-sa1100/cpu-sa1110.c                 |    1 -
- arch/arm/plat-omap/cpu-omap.c                     |    1 -
- arch/blackfin/mach-bf533/cpu.c                    |    2 -
- arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c       |    1 -
- arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c    |    1 -
- arch/i386/kernel/cpu/cpufreq/e_powersaver.c       |    1 -
- arch/i386/kernel/cpu/cpufreq/elanfreq.c           |    1 -
- arch/i386/kernel/cpu/cpufreq/gx-suspmod.c         |    1 -
- arch/i386/kernel/cpu/cpufreq/longhaul.c           |    5 ++-
- arch/i386/kernel/cpu/cpufreq/p4-clockmod.c        |    1 -
- arch/i386/kernel/cpu/cpufreq/powernow-k6.c        |    1 -
- arch/i386/kernel/cpu/cpufreq/powernow-k7.c        |    2 -
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c        |   13 +++----
- arch/i386/kernel/cpu/cpufreq/sc520_freq.c         |    1 -
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    1 -
- arch/i386/kernel/cpu/cpufreq/speedstep-ich.c      |    1 -
- arch/i386/kernel/cpu/cpufreq/speedstep-smi.c      |    1 -
- arch/ia64/kernel/cpufreq/acpi-cpufreq.c           |    2 -
- arch/powerpc/platforms/cell/cbe_cpufreq.c         |    2 -
- arch/powerpc/platforms/pasemi/cpufreq.c           |    2 -
- arch/powerpc/platforms/powermac/cpufreq_32.c      |    1 -
- arch/powerpc/platforms/powermac/cpufreq_64.c      |    1 -
- arch/sh/kernel/cpufreq.c                          |    1 -
- arch/sparc64/kernel/us2e_cpufreq.c                |    1 -
- drivers/cpufreq/Kconfig                           |   27 ++++++++++++--
- drivers/cpufreq/cpufreq.c                         |   34 +++++++++++++++---
- drivers/cpufreq/cpufreq_conservative.c            |   19 +++++-----
- drivers/cpufreq/cpufreq_ondemand.c                |   22 +++++-------
- drivers/cpufreq/cpufreq_stats.c                   |   18 ++++-----
- include/linux/cpufreq.h                           |   39 +++++++++++++++++---
- 31 files changed, 119 insertions(+), 86 deletions(-)
-
-commit 9eb59573d4b86f347e6cd04f47a4c2082009fa58
-Author: Andi Kleen <ak@suse.de>
-Date:   Wed Oct 10 02:18:27 2007 +0200
-
-    [CPUFREQ] Don't take semaphore in cpufreq_quick_get()
-    
-    I don't see any reason to take an expensive lock in cpufreq_quick_get()
-    Reading policy->cur is a single atomic operation and after
-    the lock is dropped again the state could change any time anyways.
-    
-    So don't take the lock in the first place.
-    
-    This also makes this function interrupt safe which is useful
-    for some code of mine.
-    
-    Signed-off-by: Andi Kleen <ak@suse.de>
-    Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 562d94d98f7032bdc4a99d9124a78a543dbea225
-Author: Mark Langsdorf <mark.langsdorf@amd.com>
-Date:   Fri Aug 3 14:09:05 2007 -0500
-
-    [CPUFREQ] Support different families in fid/did to frequency conversion
-    
-    The equation to find the frequency given the fid and did is family dependant.
-    
-    Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-    Signed-off-by: Joachim Deguara <joachim.deguara@amd.com>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 55395ae72b6e5ae614d28df74158c47454652583
-Author: Satyam Sharma <satyam@infradead.org>
-Date:   Tue Oct 2 13:28:15 2007 -0700
-
-    [CPUFREQ] cpufreq_stats: misc cpuinit section annotations
-    
-    * Stop referencing the callback directly from the __init and __exit
-      functions of this driver, and instead explicitly call
-      cpufreq_update_policy() et al. This enables the callback function
-      to be marked as __cpuinit (and the notifier_block __cpuinitdata),
-      thereby saving space when HOTPLUG_CPU=n. This also enables us to
-      use other tricks to replace __cpuinit{data} in future.
-    
-    * cpufreq_stats_free_table() is only called from __cpuinit or __exit
-      marked functions, making it an ideal candidate for __cpuexit.
-    
-    * Fix missing space in the module description
-    
-    Signed-off-by: Satyam Sharma <satyam@infradead.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 6070b5de50ab5e3f810628a9cbb04deecf30a85f
-Author: Satyam Sharma <satyam@infradead.org>
-Date:   Tue Oct 2 13:28:15 2007 -0700
-
-    [CPUFREQ] implement !CONFIG_CPU_FREQ stub for  cpufreq_unregister_notifier()
-    
-    Callsites such as arch/powerpc/oprofile/op_model_cell.c are having to
-    open-code #ifdef CONFIG_CPU_FREQ only to be able to get at the full definition
-    of cpufreq_unregister_notifier(), because no empty stub is available for the
-    !CONFIG_CPU_FREQ case.  Let's provide one, to be able to remove such #ifdef's
-    from the rest of the kernel tree -- those will come in a subsequent patch.
-    
-    Signed-off-by: Satyam Sharma <satyam@infradead.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit dd184a01b8ece6bac2f7a63de99a4a4d29552746
-Author: Satyam Sharma <satyam@infradead.org>
-Date:   Tue Oct 2 13:28:14 2007 -0700
-
-    [CPUFREQ] mark hotplug notifier callback as __cpuinit
-    
-    The notifier_block is already __cpuinitdata, thereby allowing us to safely
-    mark the callback function as __cpuinit also, thereby saving space when
-    HOTPLUG_CPU=n.
-    
-    Signed-off-by: Satyam Sharma <satyam@infradead.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 6afde10c3f58cc3ac593f5b4505b8b1cf719f5d6
-Author: Thomas Renninger <trenn@suse.de>
-Date:   Tue Oct 2 13:28:13 2007 -0700
-
-    [CPUFREQ] Only check for transition latency on problematic governors (kconfig fix)
-    
-    Cc: Adrian Bunk <bunk@stusta.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 1c2562459faedc35927546cfa5273ec6c2884cce
-Author: Thomas Renninger <trenn@suse.de>
-Date:   Tue Oct 2 13:28:12 2007 -0700
-
-    [CPUFREQ] allow ondemand and conservative cpufreq governors to be used as default
-    
-    Depending on the transition latency of the HW for cpufreq switches, the
-    ondemand or conservative governor cannot be used with certain cpufreq
-    drivers.  Still the ondemand should be the default governor on a wide range
-    of systems.  This patch allows this and lets the governor fallback to the
-    performance governor at cpufreq driver load time, if the driver does not
-    support fast enough frequency switching.
-    
-    Main benefit is that on e.g.  installation or other systems without
-    userspace support a working dynamic cpufreq support can be achieved on most
-    systems by simply loading the cpufreq driver.  This is especially essential
-    for recent x86(_64) laptop hardware which may rely on working dynamic
-    cpufreq OS support.
-    
-    Signed-off-by: Thomas Renninger <trenn@suse.de>
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Cc: Russell King <rmk@arm.linux.org.uk>
-    Cc: Bryan Wu <bryan.wu@analog.com>
-    Cc: Andi Kleen <ak@suse.de>
-    Cc: "Luck, Tony" <tony.luck@intel.com>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Cc: Paul Mundt <lethal@linux-sh.org>
-    Cc: "David S. Miller" <davem@davemloft.net>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit 8122c6cea033e8034e99d3b10a4e3f377ce23994
-Author: Thomas Renninger <trenn@suse.de>
-Date:   Tue Oct 2 13:28:09 2007 -0700
-
-    [CPUFREQ] move policy's governor initialisation out of low-level drivers into cpufreq core
-    
-    Signed-off-by: Thomas Renninger <trenn@suse.de>
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Cc: Russell King <rmk@arm.linux.org.uk>
-    Cc: Bryan Wu <bryan.wu@analog.com>
-    Cc: Andi Kleen <ak@suse.de>
-    Cc: "Luck, Tony" <tony.luck@intel.com>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Cc: Paul Mundt <lethal@linux-sh.org>
-    Cc: "David S. Miller" <davem@davemloft.net>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit a09d60a622ea4a3592dc6836e709d4a7a4ed4025
-Author: Rafa≈Ç Bilski <rafalbilski@interia.pl>
-Date:   Wed Sep 26 17:08:14 2007 +0200
-
-    [CPUFREQ] Longhaul - Add support for PM133 northbridge
-    
-    Add support for PM133 northbridge. Tested by Sylvain Ferrand.
-    
-    Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit c925401b6dc2229adbb15b2f3c9f0f2d9253a5d5
-Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Date:   Wed Aug 22 18:44:20 2007 -0700
-
-    [CPUFREQ] x86: use num_online_nodes to get physical cpus numbers for
-    powernow_k8
-    
-    [PATCH] x86: use num_online_nodes to get physical cpus numbers for powernow_k8
-    
-    For opteron based system, don't assume all physical cpus have the same booted cpus even same cores. esp for downcore case.
-    
-    Signed-off-by: Yinghai Lu <yinghai.sun.com>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
--- 
-http://www.codemonkey.org.uk
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+diff --git a/drivers/md/dm-ioctl.c b/drivers/md/dm-ioctl.c
+index b441d82..a662279 100644
+--- a/drivers/md/dm-ioctl.c
++++ b/drivers/md/dm-ioctl.c
+@@ -700,7 +700,7 @@ static int dev_rename(struct dm_ioctl *param, size_t param_size)
+ 	int r;
+ 	char *new_name = (char *) param + param->data_start;
+ 
+-	if (new_name < (char *) (param + 1) ||
++	if (new_name < (char *)param + param->data_size ||
+ 	    invalid_str(new_name, (void *) param + param_size)) {
+ 		DMWARN("Invalid new logical volume name supplied.");
+ 		return -EINVAL;
+@@ -726,7 +726,7 @@ static int dev_set_geometry(struct dm_ioctl *param, size_t param_size)
+ 	if (!md)
+ 		return -ENXIO;
+ 
+-	if (geostr < (char *) (param + 1) ||
++	if (geostr < (char *)param + param->data_size ||
+ 	    invalid_str(geostr, (void *) param + param_size)) {
+ 		DMWARN("Invalid geometry supplied.");
+ 		goto out;
+@@ -1233,7 +1233,7 @@ static int target_message(struct dm_ioctl *param, size_t param_size)
+ 	if (r)
+ 		goto out;
+ 
+-	if (tmsg < (struct dm_target_msg *) (param + 1) ||
++	if (tmsg < (struct dm_target_msg *) ((char *)param + param->data_size) ||
+ 	    invalid_str(tmsg->message, (void *) param + param_size)) {
+ 		DMWARN("Invalid target message parameters.");
+ 		r = -EINVAL;
+@@ -1348,11 +1348,11 @@ static void free_params(struct dm_ioctl *param)
+ 	vfree(param);
+ }
+ 
+-static int copy_params(struct dm_ioctl __user *user, struct dm_ioctl **param)
++static int copy_params(struct dm_ioctl __user *user, struct dm_ioctl **param, uint ulen)
+ {
+ 	struct dm_ioctl tmp, *dmi;
+ 
+-	if (copy_from_user(&tmp, user, sizeof(tmp)))
++	if (copy_from_user(&tmp, user, ulen))
+ 		return -EFAULT;
+ 
+ 	if (tmp.data_size < sizeof(tmp))
+@@ -1399,13 +1399,11 @@ static int validate_params(uint cmd, struct dm_ioctl *param)
+ 	return 0;
+ }
+ 
+-static int ctl_ioctl(struct inode *inode, struct file *file,
+-		     uint command, ulong u)
++static int ctl_ioctl(uint command, struct dm_ioctl __user *user, uint ulen)
+ {
+ 	int r = 0;
+ 	unsigned int cmd;
+ 	struct dm_ioctl *param;
+-	struct dm_ioctl __user *user = (struct dm_ioctl __user *) u;
+ 	ioctl_fn fn = NULL;
+ 	size_t param_size;
+ 
+@@ -1447,7 +1445,7 @@ static int ctl_ioctl(struct inode *inode, struct file *file,
+ 	/*
+ 	 * Copy the parameters into kernel space.
+ 	 */
+-	r = copy_params(user, &param);
++	r = copy_params(user, &param, ulen);
+ 
+ 	current->flags &= ~PF_MEMALLOC;
+ 
+@@ -1459,7 +1457,7 @@ static int ctl_ioctl(struct inode *inode, struct file *file,
+ 		goto out;
+ 
+ 	param_size = param->data_size;
+-	param->data_size = sizeof(*param);
++	param->data_size = ulen;
+ 	r = fn(param, param_size);
+ 
+ 	/*
+@@ -1473,8 +1471,64 @@ static int ctl_ioctl(struct inode *inode, struct file *file,
+ 	return r;
+ }
+ 
++static int ctl_ioctl(struct inode *inode, struct file *file,
++		     uint command, ulong u)
++{
++	return ctl_do_ioctl(command, (void __user *)u, sizeof (struct dm_ioctl));
++}
++
++#ifdef CONFIG_COMPAT
++struct compat_dm_ioctl {
++	/*
++	 * The version number is made up of three parts:
++	 * major - no backward or forward compatibility,
++	 * minor - only backwards compatible,
++	 * patch - both backwards and forwards compatible.
++	 *
++	 * All clients of the ioctl interface should fill in the
++	 * version number of the interface that they were
++	 * compiled with.
++	 *
++	 * All recognised ioctl commands (ie. those that don't
++	 * return -ENOTTY) fill out this field, even if the
++	 * command failed.
++	 */
++	uint32_t version[3];	/* in/out */
++	uint32_t data_size;	/* total size of data passed in
++				 * including this struct */
++
++	uint32_t data_start;	/* offset to start of data
++				 * relative to start of this struct */
++
++	uint32_t target_count;	/* in/out */
++	int32_t open_count;	/* out */
++	uint32_t flags;		/* in/out */
++	uint32_t event_nr;	/* in/out */
++	uint32_t padding;
++
++	compat_u64 dev;		/* in/out */
++
++	char name[DM_NAME_LEN];	/* device name */
++	char uuid[DM_UUID_LEN];	/* unique identifier for
++				 * the block device */
++};
++
++static int compat_ctl_ioctl(struct inode *inode, struct file *file,
++		     uint command, ulong u)
++{
++	int ret = 0;
++	lock_kernel();
++	ret = ctl_do_ioctl(command, compat_ptr(u), sizeof(struct compat_dm_ioctl));
++	unlock_kernel();
++	return ret;
++}
++#else
++#define compat_ctl_ioctl NULL
++#endif
++
+ static const struct file_operations _ctl_fops = {
+ 	.ioctl	 = ctl_ioctl,
++	.compat_ioctl = compat_ctl_ioctl,
+ 	.owner	 = THIS_MODULE,
+ };
+ 
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -76,7 +76,6 @@
+ #include <linux/mii.h>
+ #include <linux/if_bonding.h>
+ #include <linux/watchdog.h>
+-#include <linux/dm-ioctl.h>
+ 
+ #include <linux/soundcard.h>
+ #include <linux/lp.h>
+@@ -1986,39 +1985,6 @@ COMPATIBLE_IOCTL(STOP_ARRAY_RO)
+ COMPATIBLE_IOCTL(RESTART_ARRAY_RW)
+ COMPATIBLE_IOCTL(GET_BITMAP_FILE)
+ ULONG_IOCTL(SET_BITMAP_FILE)
+-/* DM */
+-COMPATIBLE_IOCTL(DM_VERSION_32)
+-COMPATIBLE_IOCTL(DM_REMOVE_ALL_32)
+-COMPATIBLE_IOCTL(DM_LIST_DEVICES_32)
+-COMPATIBLE_IOCTL(DM_DEV_CREATE_32)
+-COMPATIBLE_IOCTL(DM_DEV_REMOVE_32)
+-COMPATIBLE_IOCTL(DM_DEV_RENAME_32)
+-COMPATIBLE_IOCTL(DM_DEV_SUSPEND_32)
+-COMPATIBLE_IOCTL(DM_DEV_STATUS_32)
+-COMPATIBLE_IOCTL(DM_DEV_WAIT_32)
+-COMPATIBLE_IOCTL(DM_TABLE_LOAD_32)
+-COMPATIBLE_IOCTL(DM_TABLE_CLEAR_32)
+-COMPATIBLE_IOCTL(DM_TABLE_DEPS_32)
+-COMPATIBLE_IOCTL(DM_TABLE_STATUS_32)
+-COMPATIBLE_IOCTL(DM_LIST_VERSIONS_32)
+-COMPATIBLE_IOCTL(DM_TARGET_MSG_32)
+-COMPATIBLE_IOCTL(DM_DEV_SET_GEOMETRY_32)
+-COMPATIBLE_IOCTL(DM_VERSION)
+-COMPATIBLE_IOCTL(DM_REMOVE_ALL)
+-COMPATIBLE_IOCTL(DM_LIST_DEVICES)
+-COMPATIBLE_IOCTL(DM_DEV_CREATE)
+-COMPATIBLE_IOCTL(DM_DEV_REMOVE)
+-COMPATIBLE_IOCTL(DM_DEV_RENAME)
+-COMPATIBLE_IOCTL(DM_DEV_SUSPEND)
+-COMPATIBLE_IOCTL(DM_DEV_STATUS)
+-COMPATIBLE_IOCTL(DM_DEV_WAIT)
+-COMPATIBLE_IOCTL(DM_TABLE_LOAD)
+-COMPATIBLE_IOCTL(DM_TABLE_CLEAR)
+-COMPATIBLE_IOCTL(DM_TABLE_DEPS)
+-COMPATIBLE_IOCTL(DM_TABLE_STATUS)
+-COMPATIBLE_IOCTL(DM_LIST_VERSIONS)
+-COMPATIBLE_IOCTL(DM_TARGET_MSG)
+-COMPATIBLE_IOCTL(DM_DEV_SET_GEOMETRY)
+ /* Big K */
+ COMPATIBLE_IOCTL(PIO_FONT)
+ COMPATIBLE_IOCTL(GIO_FONT)
