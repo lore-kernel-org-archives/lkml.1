@@ -1,105 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbXJLRSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbXJLRSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762546AbXJLRSS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbXJLRRv
+	id S1762194AbXJLRSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762424AbXJLRSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:17:51 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:21582 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760631AbXJLRRu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:17:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=n+cdDTsbcCFzGRKmd0p7LWc8iJ92iQTPe8GCaY92Ylio8F13rQRY/3zRlu7RzwTlee5yrGyfrPRQK/e6tq+BIMCNN7VPeA+1/HyKJsBzTvX0hJ50D8pzcKSybyQLTmPCRTaSo5p3vERDOZUgoMCU23803tvzU1d/RmNk7AtyIto=  ;
-X-YMail-OSG: JwkcWpYVM1mqeSqX_wQsyXO4Kes624g5vx6ehz6zkEU4FAIraLiuXmzxY_cYqwf1bNbFfEWUtj0q7CZq0SJ.hmJlfa7ZPdFaDwMhTkqBDV26UW24h0q4.QPOH7gK
-From: David Brownell <david-b@pacbell.net>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH 02/10] Blackfin SPI driver: use new GPIO API and add error handling
-Date: Fri, 12 Oct 2007 10:17:47 -0700
-User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-References: <1192158304-8277-1-git-send-email-bryan.wu@analog.com> <200710112326.34500.david-b@pacbell.net> <1192172077.6247.15.camel@roc-laptop>
-In-Reply-To: <1192172077.6247.15.camel@roc-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Oct 2007 13:18:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48992 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760072AbXJLRSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:18:10 -0400
+Date: Fri, 12 Oct 2007 18:18:05 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Milan Broz <mbroz@redhat.com>
+Subject: [2.6.24 PATCH 12/25] dm: tidy bio_io_error usage
+Message-ID: <20071012171805.GW24157@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Milan Broz <mbroz@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710121017.47645.david-b@pacbell.net>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 October 2007, Bryan Wu wrote:
-> On Thu, 2007-10-11 at 23:26 -0700, David Brownell wrote:
-> > On Thursday 11 October 2007, Bryan Wu wrote:
-> > > @@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
-> > >                 return -ENOMEM;
-> > >         }
-> > >  
-> > > -       if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
-> > > -                peripheral_request(P_SPI0_MISO, DRV_NAME) ||
-> > > -                peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
-> > > -
-> > > +       if (setup_pin_mux(1)) {
-> > >                 dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
-> > > -               goto out_error_queue_alloc;
-> > > +               goto out_error;
-> > >         }
-> > >  
-> > >         drv_data = spi_master_get_devdata(master);
-> > > 
-> > 
-> > Still doesn't apply ... what tree are you generating this series against??
-> 
-> I apply this patch on Linus git tree at 2.6.23 tag
+From: Milan Broz <mbroz@redhat.com>
 
-Then why don't my copies of that tree have the lines flagged
-above with "-" ??
+Use bio_io_error() in only two places and tidy the code,
+preparing for later patches.
 
-In fact, if I look at the kernel.org GIT tree, it doesn't have
-them either.  Your tree must have somehow gotten a bunch of
-private changes.
+There is no functional change in this patch.
 
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+---
+ drivers/md/dm.c |   37 ++++++++++++++++++-------------------
+ 1 files changed, 18 insertions(+), 19 deletions(-)
 
-> git-request-pull output:
-> ---
-> The following changes since commit bbf25010f1a6b761914430f5fca081ec8c7accd1:
->   Linus Torvalds (1):
->         Linux 2.6.23
-> 
-> Bryan Wu (4):
->       Blackfin SPI driver: Initial supporting BF54x in SPI driver
->       Blackfin SPI driver: add error handing
->       Blackfin SPI driver: Blackfin SPI driver does not respect the per-transfer cs_change field
->       Blackfin SPI driver: update spi driver to support multi-ports
-> 
-> Michael Hennerich (1):
->       Blackfin SPI driver: use new GPIO API and add error handling
-> 
-> Mike Frysinger (1):
->       Blackfin SPI driver: prevent people from setting bits in ctl_reg
-> 
-> Sonic Zhang (4):
->       Blackfin SPI driver: Add SPI master controller platform device 1
->       Blackfin SPI driver: Move GPIO config to setup and cleanup
->       Blackfin SPI driver: Fix SPI driver to work with SPI flash ST25P16 on bf548
->       Blackfin SPI driver: Clean up useless wait in bfin SPI driver
-> 
->  drivers/spi/spi_bfin5xx.c                       |  586 ++++++++++++++---------
->  include/asm-blackfin/mach-bf533/portmux.h       |    2 +-
->  include/asm-blackfin/mach-bf548/defBF54x_base.h |   17 +
->  3 files changed, 373 insertions(+), 232 deletions(-)
-> 
-> ---
-> Need I send out just one SPI patch.
-> 
-> Thanks
-> -Bryan Wu
-> 
-
-
+Index: linux-2.6.23/drivers/md/dm.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm.c	2007-10-12 13:15:35.000000000 +0100
++++ linux-2.6.23/drivers/md/dm.c	2007-10-12 13:18:04.000000000 +0100
+@@ -751,15 +751,13 @@ static void __clone_and_map(struct clone
+ /*
+  * Split the bio into several clones.
+  */
+-static void __split_bio(struct mapped_device *md, struct bio *bio)
++static int __split_bio(struct mapped_device *md, struct bio *bio)
+ {
+ 	struct clone_info ci;
+ 
+ 	ci.map = dm_get_table(md);
+-	if (!ci.map) {
+-		bio_io_error(bio);
+-		return;
+-	}
++	if (unlikely(!ci.map))
++		return -EIO;
+ 
+ 	ci.md = md;
+ 	ci.bio = bio;
+@@ -779,6 +777,8 @@ static void __split_bio(struct mapped_de
+ 	/* drop the extra reference count */
+ 	dec_pending(ci.io, 0);
+ 	dm_table_put(ci.map);
++
++	return 0;
+ }
+ /*-----------------------------------------------------------------
+  * CRUD END
+@@ -790,7 +790,7 @@ static void __split_bio(struct mapped_de
+  */
+ static int dm_request(struct request_queue *q, struct bio *bio)
+ {
+-	int r;
++	int r = -EIO;
+ 	int rw = bio_data_dir(bio);
+ 	struct mapped_device *md = q->queuedata;
+ 
+@@ -815,18 +815,11 @@ static int dm_request(struct request_que
+ 	while (test_bit(DMF_BLOCK_IO, &md->flags)) {
+ 		up_read(&md->io_lock);
+ 
+-		if (bio_rw(bio) == READA) {
+-			bio_io_error(bio);
+-			return 0;
+-		}
+-
+-		r = queue_io(md, bio);
+-		if (r < 0) {
+-			bio_io_error(bio);
+-			return 0;
++		if (bio_rw(bio) != READA)
++			r = queue_io(md, bio);
+ 
+-		} else if (r == 0)
+-			return 0;	/* deferred successfully */
++		if (r <= 0)
++			goto out_req;
+ 
+ 		/*
+ 		 * We're in a while loop, because someone could suspend
+@@ -835,8 +828,13 @@ static int dm_request(struct request_que
+ 		down_read(&md->io_lock);
+ 	}
+ 
+-	__split_bio(md, bio);
++	r = __split_bio(md, bio);
+ 	up_read(&md->io_lock);
++
++out_req:
++	if (r < 0)
++		bio_io_error(bio);
++
+ 	return 0;
+ }
+ 
+@@ -1251,7 +1249,8 @@ static void __flush_deferred_io(struct m
+ 	while (c) {
+ 		n = c->bi_next;
+ 		c->bi_next = NULL;
+-		__split_bio(md, c);
++		if (__split_bio(md, c))
++			bio_io_error(c);
+ 		c = n;
+ 	}
+ }
