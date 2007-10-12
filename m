@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXJLQ0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbXJLQ1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857AbXJLQ0k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760511AbXJLQIx
+	id S932558AbXJLQ1E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760558AbXJLQJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:08:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43977 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 12:09:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43989 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760496AbXJLQIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:08:50 -0400
+	id S1760544AbXJLQI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:08:57 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 40/52] CRED: Give the lookup() inode op a credentials pointer
+Subject: [PATCH 41/52] CRED: Pass credentials through d_revalidate()
 To: viro@ftp.linux.org.uk
 Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 12 Oct 2007 17:08:44 +0100
-Message-ID: <20071012160843.15119.22583.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 17:08:49 +0100
+Message-ID: <20071012160849.15119.18308.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,440 +29,566 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give the lookup() inode op a credentials pointer.
+Pass credentials through d_revalidate().
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/dir.c            |    4 ++--
- fs/afs/mntpt.c          |    6 ++++--
- fs/autofs4/root.c       |    6 ++++--
- fs/bad_inode.c          |    3 ++-
- fs/ext3/namei.c         |    4 ++--
- fs/libfs.c              |    3 ++-
- fs/namei.c              |    6 ++++--
- fs/nfs/dir.c            |   18 +++++++++++-------
- fs/proc/base.c          |   23 +++++++++++++++++------
- fs/proc/generic.c       |    3 ++-
- fs/proc/proc_net.c      |    4 ++--
- fs/proc/proc_sysctl.c   |    2 +-
- fs/proc/root.c          |    6 +++---
- fs/sysfs/dir.c          |    2 +-
- fs/vfat/namei.c         |    2 +-
- include/linux/fs.h      |    6 ++++--
- include/linux/proc_fs.h |    3 ++-
- 17 files changed, 64 insertions(+), 37 deletions(-)
+ fs/afs/dir.c            |    6 ++-
+ fs/autofs4/root.c       |    8 +++-
+ fs/namei.c              |    7 +++-
+ fs/nfs/dir.c            |   13 ++++---
+ fs/proc/base.c          |   88 +++++++++++++++++++++++++++++------------------
+ fs/proc/proc_sysctl.c   |    3 +-
+ fs/proc/root.c          |    2 +
+ fs/vfat/namei.c         |    3 +-
+ include/linux/dcache.h  |    3 +-
+ include/linux/proc_fs.h |    3 +-
+ 10 files changed, 84 insertions(+), 52 deletions(-)
 
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index 745c8cb..b7bd368 100644
+index b7bd368..d998075 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
-@@ -20,7 +20,7 @@
- #include "internal.h"
- 
- static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
--				 struct nameidata *nd);
-+				 struct nameidata *nd, struct cred *cred);
+@@ -23,7 +23,8 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
+ 				 struct nameidata *nd, struct cred *cred);
  static int afs_dir_open(struct inode *inode, struct file *file);
  static int afs_readdir(struct file *file, void *dirent, filldir_t filldir);
- static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd);
-@@ -488,7 +488,7 @@ static int afs_do_lookup(struct inode *dir, struct dentry *dentry,
-  * look up an entry in a directory
+-static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd);
++static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd,
++			    struct cred *cred);
+ static int afs_d_delete(struct dentry *dentry);
+ static void afs_d_release(struct dentry *dentry);
+ static int afs_lookup_filldir(void *_cookie, const char *name, int nlen,
+@@ -564,7 +565,8 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
+  * - NOTE! the hit can be a negative hit too, so we can't assume we have an
+  *   inode
   */
- static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
--				 struct nameidata *nd)
-+				 struct nameidata *nd, struct cred *cred)
+-static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd,
++			    struct cred *cred)
  {
- 	struct afs_vnode *vnode;
+ 	struct afs_vnode *vnode, *dir;
  	struct afs_fid fid;
-diff --git a/fs/afs/mntpt.c b/fs/afs/mntpt.c
-index 6f8c96f..21a04c0 100644
---- a/fs/afs/mntpt.c
-+++ b/fs/afs/mntpt.c
-@@ -23,7 +23,8 @@
- 
- static struct dentry *afs_mntpt_lookup(struct inode *dir,
- 				       struct dentry *dentry,
--				       struct nameidata *nd);
-+				       struct nameidata *nd,
-+				       struct cred *cred);
- static int afs_mntpt_open(struct inode *inode, struct file *file);
- static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd);
- static void afs_mntpt_expiry_timed_out(struct work_struct *work);
-@@ -103,7 +104,8 @@ out:
-  */
- static struct dentry *afs_mntpt_lookup(struct inode *dir,
- 				       struct dentry *dentry,
--				       struct nameidata *nd)
-+				       struct nameidata *nd,
-+				       struct cred *cred)
- {
- 	_enter("%p,%p{%p{%s},%s}",
- 	       dir,
 diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index 50c0ec7..bef0396 100644
+index bef0396..fd22c05 100644
 --- a/fs/autofs4/root.c
 +++ b/fs/autofs4/root.c
-@@ -29,7 +29,8 @@ static int autofs4_dir_open(struct inode *inode, struct file *file);
- static int autofs4_dir_close(struct inode *inode, struct file *file);
- static int autofs4_dir_readdir(struct file * filp, void * dirent, filldir_t filldir);
- static int autofs4_root_readdir(struct file * filp, void * dirent, filldir_t filldir);
--static struct dentry *autofs4_lookup(struct inode *,struct dentry *, struct nameidata *);
-+static struct dentry *autofs4_lookup(struct inode *,struct dentry *,
-+				     struct nameidata *, struct cred *);
- static void *autofs4_follow_link(struct dentry *, struct nameidata *);
- 
- const struct file_operations autofs4_root_operations = {
-@@ -566,7 +567,8 @@ next:
- }
- 
- /* Lookups in the root directory */
--static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
-+static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry,
-+				     struct nameidata *nd, struct cred *cred)
+@@ -98,6 +98,7 @@ static int autofs4_dir_open(struct inode *inode, struct file *file)
  {
- 	struct autofs_sb_info *sbi;
- 	struct dentry *unhashed;
-diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index 2e25bfe..e77a80d 100644
---- a/fs/bad_inode.c
-+++ b/fs/bad_inode.c
-@@ -192,7 +192,8 @@ static int bad_inode_create (struct inode *dir, struct dentry *dentry,
- }
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	struct vfsmount *mnt = file->f_path.mnt;
++	struct cred *cred = file->f_cred;
+ 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+ 	struct dentry *cursor;
+ 	int status;
+@@ -136,7 +137,7 @@ static int autofs4_dir_open(struct inode *inode, struct file *file)
+ 			d_invalidate(dentry);
  
- static struct dentry *bad_inode_lookup(struct inode *dir,
--			struct dentry *dentry, struct nameidata *nd)
-+			struct dentry *dentry, struct nameidata *nd,
-+			struct cred *cred)
- {
- 	return ERR_PTR(-EIO);
- }
-diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index aa741bb..3b17b59 100644
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -1044,9 +1044,9 @@ errout:
- }
- #endif
+ 		nd.flags = LOOKUP_DIRECTORY;
+-		ret = (dentry->d_op->d_revalidate)(dentry, &nd);
++		ret = (dentry->d_op->d_revalidate)(dentry, &nd, cred);
  
--static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
-+static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry,
-+				  struct nameidata *nd, struct cred *cred)
- {
--	struct cred *cred = current->cred;
- 	struct inode * inode;
- 	struct ext3_dir_entry_2 * de;
- 	struct buffer_head * bh;
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 6b41090..107412e 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -41,7 +41,8 @@ static int simple_delete_dentry(struct dentry *dentry)
-  * Lookup the data. This is trivial - if the dentry didn't already
-  * exist, we know it is negative.  Set d_op to delete negative dentries.
+ 		if (ret <= 0) {
+ 			if (ret < 0)
+@@ -394,7 +395,8 @@ out_error:
+  * yet completely filled in, and revalidate has to delay such
+  * lookups..
   */
--struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
-+struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
-+			     struct nameidata *nd, struct cred *cred)
+-static int autofs4_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int autofs4_revalidate(struct dentry *dentry, struct nameidata *nd,
++			      struct cred *cred)
  {
- 	static struct dentry_operations simple_dentry_operations = {
- 		.d_delete = simple_delete_dentry,
+ 	struct inode *dir = dentry->d_parent->d_inode;
+ 	struct autofs_sb_info *sbi = autofs4_sbi(dir->i_sb);
+@@ -633,7 +635,7 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry,
+ 
+ 	if (dentry->d_op && dentry->d_op->d_revalidate) {
+ 		mutex_unlock(&dir->i_mutex);
+-		(dentry->d_op->d_revalidate)(dentry, nd);
++		(dentry->d_op->d_revalidate)(dentry, nd, cred);
+ 		mutex_lock(&dir->i_mutex);
+ 	}
+ 
 diff --git a/fs/namei.c b/fs/namei.c
-index 9439e6e..cac57e2 100644
+index cac57e2..e9e45ac 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -469,6 +469,7 @@ ok:
+@@ -378,7 +378,8 @@ void release_open_intent(struct nameidata *nd)
+ static inline struct dentry *
+ do_revalidate(struct dentry *dentry, struct nameidata *nd)
+ {
+-	int status = dentry->d_op->d_revalidate(dentry, nd);
++	struct cred *cred = current->cred;
++	int status = dentry->d_op->d_revalidate(dentry, nd, cred);
+ 	if (unlikely(status <= 0)) {
+ 		/*
+ 		 * The dentry failed validation.
+@@ -811,6 +812,7 @@ fail:
   */
- static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
+ static fastcall int __link_path_walk(const char * name, struct nameidata *nd)
  {
 +	struct cred *cred = current->cred;
- 	struct dentry * result;
- 	struct inode *dir = parent->d_inode;
- 
-@@ -492,7 +493,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- 		struct dentry * dentry = d_alloc(parent, name);
- 		result = ERR_PTR(-ENOMEM);
- 		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
-+			result = dir->i_op->lookup(dir, dentry, nd, cred);
- 			if (result)
- 				dput(dentry);
- 			else
-@@ -1275,6 +1276,7 @@ int __user_path_lookup_open(const char __user *name, unsigned int lookup_flags,
- 
- static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry *base, struct nameidata *nd)
- {
-+	struct cred *cred = current->cred;
- 	struct dentry *dentry;
+ 	struct path next;
  	struct inode *inode;
  	int err;
-@@ -1298,7 +1300,7 @@ static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry
- 		dentry = ERR_PTR(-ENOMEM);
- 		if (!new)
- 			goto out;
--		dentry = inode->i_op->lookup(inode, new, nd);
-+		dentry = inode->i_op->lookup(inode, new, nd, cred);
- 		if (!dentry)
- 			dentry = new;
- 		else
+@@ -980,7 +982,8 @@ return_reval:
+ 		    (nd->dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT)) {
+ 			err = -ESTALE;
+ 			/* Note: we do not d_invalidate() */
+-			if (!nd->dentry->d_op->d_revalidate(nd->dentry, nd))
++			if (!nd->dentry->d_op->d_revalidate(nd->dentry, nd,
++							    cred))
+ 				break;
+ 		}
+ return_base:
 diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 0dda7bb..11dae6d 100644
+index 11dae6d..48a8935 100644
 --- a/fs/nfs/dir.c
 +++ b/fs/nfs/dir.c
-@@ -43,7 +43,8 @@
- 
- static int nfs_opendir(struct inode *, struct file *);
- static int nfs_readdir(struct file *, void *, filldir_t);
--static struct dentry *nfs_lookup(struct inode *, struct dentry *, struct nameidata *);
-+static struct dentry *nfs_lookup(struct inode *, struct dentry *,
-+				 struct nameidata *, struct cred *);
- static int nfs_create(struct inode *, struct dentry *, int, struct nameidata *,
- 		      struct cred *);
- static int nfs_mkdir(struct inode *, struct dentry *, int, struct cred *);
-@@ -107,7 +108,8 @@ const struct inode_operations nfs3_dir_inode_operations = {
+@@ -762,9 +762,9 @@ int nfs_neg_need_reval(struct inode *dir, struct dentry *dentry,
+  * If the parent directory is seen to have changed, we throw out the
+  * cached dentry and do a new lookup.
+  */
+-static int nfs_lookup_revalidate(struct dentry * dentry, struct nameidata *nd)
++static int nfs_lookup_revalidate(struct dentry * dentry, struct nameidata *nd,
++				 struct cred *acred)
+ {
+-	struct cred *acred = current->cred;
+ 	struct inode *dir;
+ 	struct inode *inode;
+ 	struct dentry *parent;
+@@ -993,7 +993,8 @@ out:
+ }
  
  #ifdef CONFIG_NFS_V4
+-static int nfs_open_revalidate(struct dentry *, struct nameidata *);
++static int nfs_open_revalidate(struct dentry *, struct nameidata *,
++			       struct cred *);
  
--static struct dentry *nfs_atomic_lookup(struct inode *, struct dentry *, struct nameidata *);
-+static struct dentry *nfs_atomic_lookup(struct inode *, struct dentry *,
-+					struct nameidata *, struct cred *);
- const struct inode_operations nfs4_dir_inode_operations = {
- 	.create		= nfs_create,
- 	.lookup		= nfs_atomic_lookup,
-@@ -919,9 +921,9 @@ static inline int nfs_reval_fsid(struct inode *dir, const struct nfs_fattr *fatt
- 	return 0;
+ struct dentry_operations nfs4_dentry_operations = {
+ 	.d_revalidate	= nfs_open_revalidate,
+@@ -1090,9 +1091,9 @@ no_open:
+ 	return nfs_lookup(dir, dentry, nd, acred);
  }
  
--static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
-+static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry,
-+				 struct nameidata *nd, struct cred *acred)
+-static int nfs_open_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int nfs_open_revalidate(struct dentry *dentry, struct nameidata *nd,
++			       struct cred *acred)
  {
 -	struct cred *acred = current->cred;
- 	struct dentry *res;
- 	struct inode *inode = NULL;
- 	int error;
-@@ -1016,9 +1018,11 @@ static int is_atomic_open(struct inode *dir, struct nameidata *nd)
- 	return 1;
+ 	struct dentry *parent = NULL;
+ 	struct inode *inode = dentry->d_inode;
+ 	struct inode *dir;
+@@ -1138,7 +1139,7 @@ no_open:
+ 	dput(parent);
+ 	if (inode != NULL && nfs_have_delegation(inode, FMODE_READ))
+ 		return 1;
+-	return nfs_lookup_revalidate(dentry, nd);
++	return nfs_lookup_revalidate(dentry, nd, acred);
  }
+ #endif /* CONFIG_NFSV4 */
  
--static struct dentry *nfs_atomic_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
-+static struct dentry *nfs_atomic_lookup(struct inode *dir,
-+					struct dentry *dentry,
-+					struct nameidata *nd,
-+					struct cred *acred)
- {
--	struct cred *acred = current->cred;
- 	struct dentry *res = NULL;
- 	int error;
- 
-@@ -1083,7 +1087,7 @@ static struct dentry *nfs_atomic_lookup(struct inode *dir, struct dentry *dentry
- out:
- 	return res;
- no_open:
--	return nfs_lookup(dir, dentry, nd);
-+	return nfs_lookup(dir, dentry, nd, acred);
- }
- 
- static int nfs_open_revalidate(struct dentry *dentry, struct nameidata *nd)
 diff --git a/fs/proc/base.c b/fs/proc/base.c
-index c7f9940..26f27e5 100644
+index 26f27e5..3034e02 100644
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -1445,7 +1445,7 @@ out_no_task:
+@@ -1101,7 +1101,8 @@ static int pid_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat
+  * made this apply to all per process world readable and executable
+  * directories.
+  */
+-static int pid_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int pid_revalidate(struct dentry *dentry, struct nameidata *nd,
++			  struct cred *cred)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *task = get_proc_task(inode);
+@@ -1141,7 +1142,8 @@ static struct dentry_operations pid_dentry_operations =
+ /* Lookups */
+ 
+ typedef struct dentry *instantiate_t(struct inode *, struct dentry *,
+-				struct task_struct *, const void *);
++				struct task_struct *, const void *,
++				struct cred *);
+ 
+ /*
+  * Fill a directory entry.
+@@ -1174,7 +1176,8 @@ static int proc_fill_cache(struct file *filp, void *dirent, filldir_t filldir,
+ 		struct dentry *new;
+ 		new = d_alloc(dir, &qname);
+ 		if (new) {
+-			child = instantiate(dir->d_inode, new, task, ptr);
++			child = instantiate(dir->d_inode, new, task, ptr,
++					    filp->f_cred);
+ 			if (child)
+ 				dput(new);
+ 			else
+@@ -1267,7 +1270,8 @@ static int proc_fd_link(struct inode *inode, struct dentry **dentry,
+ 	return proc_fd_info(inode, dentry, mnt, NULL);
  }
  
- static struct dentry *proc_lookupfd(struct inode *dir, struct dentry *dentry,
--				    struct nameidata *nd)
-+				    struct nameidata *nd, struct cred *cred)
+-static int tid_fd_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int tid_fd_revalidate(struct dentry *dentry, struct nameidata *nd,
++			     struct cred *cred)
  {
- 	return proc_lookupfd_common(dir, dentry, proc_fd_instantiate);
- }
-@@ -1528,7 +1528,8 @@ static struct dentry *proc_fdinfo_instantiate(struct inode *dir,
- 
- static struct dentry *proc_lookupfdinfo(struct inode *dir,
- 					struct dentry *dentry,
--					struct nameidata *nd)
-+					struct nameidata *nd,
-+					struct cred *cred)
- {
- 	return proc_lookupfd_common(dir, dentry, proc_fdinfo_instantiate);
- }
-@@ -1773,7 +1774,8 @@ static const struct file_operations proc_attr_dir_operations = {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *task = get_proc_task(inode);
+@@ -1309,7 +1313,8 @@ static struct dentry_operations tid_fd_dentry_operations =
  };
  
- static struct dentry *proc_attr_dir_lookup(struct inode *dir,
--				struct dentry *dentry, struct nameidata *nd)
-+				struct dentry *dentry, struct nameidata *nd,
+ static struct dentry *proc_fd_instantiate(struct inode *dir,
+-	struct dentry *dentry, struct task_struct *task, const void *ptr)
++	struct dentry *dentry, struct task_struct *task, const void *ptr,
++	struct cred *cred)
+ {
+ 	unsigned fd = *(const unsigned *)ptr;
+ 	struct file *file;
+@@ -1349,7 +1354,7 @@ static struct dentry *proc_fd_instantiate(struct inode *dir,
+ 	dentry->d_op = &tid_fd_dentry_operations;
+ 	d_add(dentry, inode);
+ 	/* Close the race of the process dying before we return the dentry */
+-	if (tid_fd_revalidate(dentry, NULL))
++	if (tid_fd_revalidate(dentry, NULL, cred))
+ 		error = NULL;
+ 
+  out:
+@@ -1364,7 +1369,8 @@ out_iput:
+ 
+ static struct dentry *proc_lookupfd_common(struct inode *dir,
+ 					   struct dentry *dentry,
+-					   instantiate_t instantiate)
++					   instantiate_t instantiate,
++					   struct cred *cred)
+ {
+ 	struct task_struct *task = get_proc_task(dir);
+ 	unsigned fd = name_to_int(dentry);
+@@ -1375,7 +1381,7 @@ static struct dentry *proc_lookupfd_common(struct inode *dir,
+ 	if (fd == ~0U)
+ 		goto out;
+ 
+-	result = instantiate(dir, dentry, task, &fd);
++	result = instantiate(dir, dentry, task, &fd, cred);
+ out:
+ 	put_task_struct(task);
+ out_no_task:
+@@ -1447,7 +1453,7 @@ out_no_task:
+ static struct dentry *proc_lookupfd(struct inode *dir, struct dentry *dentry,
+ 				    struct nameidata *nd, struct cred *cred)
+ {
+-	return proc_lookupfd_common(dir, dentry, proc_fd_instantiate);
++	return proc_lookupfd_common(dir, dentry, proc_fd_instantiate, cred);
+ }
+ 
+ static int proc_readfd(struct file *filp, void *dirent, filldir_t filldir)
+@@ -1502,7 +1508,8 @@ static const struct inode_operations proc_fd_inode_operations = {
+ };
+ 
+ static struct dentry *proc_fdinfo_instantiate(struct inode *dir,
+-	struct dentry *dentry, struct task_struct *task, const void *ptr)
++	struct dentry *dentry, struct task_struct *task, const void *ptr,
++	struct cred *cred)
+ {
+ 	unsigned fd = *(unsigned *)ptr;
+  	struct inode *inode;
+@@ -1519,7 +1526,7 @@ static struct dentry *proc_fdinfo_instantiate(struct inode *dir,
+ 	dentry->d_op = &tid_fd_dentry_operations;
+ 	d_add(dentry, inode);
+ 	/* Close the race of the process dying before we return the dentry */
+-	if (tid_fd_revalidate(dentry, NULL))
++	if (tid_fd_revalidate(dentry, NULL, cred))
+ 		error = NULL;
+ 
+  out:
+@@ -1531,7 +1538,7 @@ static struct dentry *proc_lookupfdinfo(struct inode *dir,
+ 					struct nameidata *nd,
+ 					struct cred *cred)
+ {
+-	return proc_lookupfd_common(dir, dentry, proc_fdinfo_instantiate);
++	return proc_lookupfd_common(dir, dentry, proc_fdinfo_instantiate, cred);
+ }
+ 
+ static int proc_readfdinfo(struct file *filp, void *dirent, filldir_t filldir)
+@@ -1555,7 +1562,8 @@ static const struct inode_operations proc_fdinfo_inode_operations = {
+ 
+ 
+ static struct dentry *proc_pident_instantiate(struct inode *dir,
+-	struct dentry *dentry, struct task_struct *task, const void *ptr)
++	struct dentry *dentry, struct task_struct *task, const void *ptr,
++	struct cred *cred)
+ {
+ 	const struct pid_entry *p = ptr;
+ 	struct inode *inode;
+@@ -1578,7 +1586,7 @@ static struct dentry *proc_pident_instantiate(struct inode *dir,
+ 	dentry->d_op = &pid_dentry_operations;
+ 	d_add(dentry, inode);
+ 	/* Close the race of the process dying before we return the dentry */
+-	if (pid_revalidate(dentry, NULL))
++	if (pid_revalidate(dentry, NULL, cred))
+ 		error = NULL;
+ out:
+ 	return error;
+@@ -1587,7 +1595,8 @@ out:
+ static struct dentry *proc_pident_lookup(struct inode *dir, 
+ 					 struct dentry *dentry,
+ 					 const struct pid_entry *ents,
+-					 unsigned int nents)
++					 unsigned int nents,
++					 struct cred *cred)
+ {
+ 	struct inode *inode;
+ 	struct dentry *error;
+@@ -1614,7 +1623,7 @@ static struct dentry *proc_pident_lookup(struct inode *dir,
+ 	if (p > last)
+ 		goto out;
+ 
+-	error = proc_pident_instantiate(dir, dentry, task, p);
++	error = proc_pident_instantiate(dir, dentry, task, p, cred);
+ out:
+ 	put_task_struct(task);
+ out_no_task:
+@@ -1672,7 +1681,8 @@ static int proc_pident_readdir(struct file *filp,
+ 		p = ents + i;
+ 		last = &ents[nents - 1];
+ 		while (p <= last) {
+-			if (proc_pident_fill_cache(filp, dirent, filldir, task, p) < 0)
++			if (proc_pident_fill_cache(filp, dirent, filldir, task,
++						   p) < 0)
+ 				goto out;
+ 			filp->f_pos++;
+ 			p++;
+@@ -1762,7 +1772,7 @@ static const struct pid_entry attr_dir_stuff[] = {
+ };
+ 
+ static int proc_attr_dir_readdir(struct file * filp,
+-			     void * dirent, filldir_t filldir)
++			    void * dirent, filldir_t filldir)
+ {
+ 	return proc_pident_readdir(filp,dirent,filldir,
+ 				   attr_dir_stuff,ARRAY_SIZE(attr_dir_stuff));
+@@ -1778,7 +1788,8 @@ static struct dentry *proc_attr_dir_lookup(struct inode *dir,
+ 				struct cred *cred)
+ {
+ 	return proc_pident_lookup(dir, dentry,
+-				  attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff));
++				  attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff),
++				  cred);
+ }
+ 
+ static const struct inode_operations proc_attr_dir_inode_operations = {
+@@ -1914,7 +1925,8 @@ static const struct pid_entry proc_base_stuff[] = {
+  * directory. In this case, however, we can do it - no aliasing problems
+  * due to the way we treat inodes.
+  */
+-static int proc_base_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int proc_base_revalidate(struct dentry *dentry, struct nameidata *nd,
 +				struct cred *cred)
  {
- 	return proc_pident_lookup(dir, dentry,
- 				  attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff));
-@@ -2112,7 +2114,11 @@ static const struct file_operations proc_tgid_base_operations = {
- 	.readdir	= proc_tgid_base_readdir,
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *task = get_proc_task(inode);
+@@ -1933,7 +1945,8 @@ static struct dentry_operations proc_base_dentry_operations =
  };
  
--static struct dentry *proc_tgid_base_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd){
-+static struct dentry *proc_tgid_base_lookup(struct inode *dir,
-+					    struct dentry *dentry,
-+					    struct nameidata *nd,
-+					    struct cred *cred)
-+{
- 	return proc_pident_lookup(dir, dentry,
- 				  tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff));
- }
-@@ -2387,7 +2393,11 @@ static int proc_tid_base_readdir(struct file * filp,
- 				   tid_base_stuff,ARRAY_SIZE(tid_base_stuff));
+ static struct dentry *proc_base_instantiate(struct inode *dir,
+-	struct dentry *dentry, struct task_struct *task, const void *ptr)
++	struct dentry *dentry, struct task_struct *task, const void *ptr,
++	struct cred *cred)
+ {
+ 	const struct pid_entry *p = ptr;
+ 	struct inode *inode;
+@@ -1979,7 +1992,8 @@ out_iput:
+ 	goto out;
  }
  
--static struct dentry *proc_tid_base_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd){
-+static struct dentry *proc_tid_base_lookup(struct inode *dir,
-+					   struct dentry *dentry,
-+					   struct nameidata *nd,
-+					   struct cred *cred)
-+{
+-static struct dentry *proc_base_lookup(struct inode *dir, struct dentry *dentry)
++static struct dentry *proc_base_lookup(struct inode *dir, struct dentry *dentry,
++				       struct cred *cred)
+ {
+ 	struct dentry *error;
+ 	struct task_struct *task = get_proc_task(dir);
+@@ -2001,7 +2015,7 @@ static struct dentry *proc_base_lookup(struct inode *dir, struct dentry *dentry)
+ 	if (p > last)
+ 		goto out;
+ 
+-	error = proc_base_instantiate(dir, dentry, task, p);
++	error = proc_base_instantiate(dir, dentry, task, p, cred);
+ 
+ out:
+ 	put_task_struct(task);
+@@ -2103,7 +2117,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ };
+ 
+ static int proc_tgid_base_readdir(struct file * filp,
+-			     void * dirent, filldir_t filldir)
++			    void * dirent, filldir_t filldir)
+ {
+ 	return proc_pident_readdir(filp,dirent,filldir,
+ 				   tgid_base_stuff,ARRAY_SIZE(tgid_base_stuff));
+@@ -2120,7 +2134,8 @@ static struct dentry *proc_tgid_base_lookup(struct inode *dir,
+ 					    struct cred *cred)
+ {
  	return proc_pident_lookup(dir, dentry,
- 				  tid_base_stuff, ARRAY_SIZE(tid_base_stuff));
+-				  tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff));
++				  tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff),
++				  cred);
  }
-@@ -2431,7 +2441,8 @@ out:
+ 
+ static const struct inode_operations proc_tgid_base_inode_operations = {
+@@ -2198,7 +2213,9 @@ out:
+ 
+ static struct dentry *proc_pid_instantiate(struct inode *dir,
+ 					   struct dentry * dentry,
+-					   struct task_struct *task, const void *ptr)
++					   struct task_struct *task,
++					   const void *ptr,
++					   struct cred *cred)
+ {
+ 	struct dentry *error = ERR_PTR(-ENOENT);
+ 	struct inode *inode;
+@@ -2220,19 +2237,20 @@ static struct dentry *proc_pid_instantiate(struct inode *dir,
+ 
+ 	d_add(dentry, inode);
+ 	/* Close the race of the process dying before we return the dentry */
+-	if (pid_revalidate(dentry, NULL))
++	if (pid_revalidate(dentry, NULL, cred))
+ 		error = NULL;
+ out:
  	return error;
  }
  
--static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
-+static struct dentry *proc_task_lookup(struct inode *dir, struct dentry *dentry,
-+				       struct nameidata *nd, struct cred *cred)
+-struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
++struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry,
++			       struct nameidata *nd, struct cred *cred)
  {
  	struct dentry *result = ERR_PTR(-ENOENT);
  	struct task_struct *task;
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 00a2192..ef5fb3a 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -384,7 +384,8 @@ static struct dentry_operations proc_dentry_operations =
-  * Don't create negative dentries here, return -ENOENT by hand
-  * instead.
-  */
--struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
-+struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry,
-+			   struct nameidata *nd, struct cred *cred)
+ 	unsigned tgid;
+ 
+-	result = proc_base_lookup(dir, dentry);
++	result = proc_base_lookup(dir, dentry, cred);
+ 	if (!IS_ERR(result) || PTR_ERR(result) != -ENOENT)
+ 		goto out;
+ 
+@@ -2248,7 +2266,7 @@ struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct
+ 	if (!task)
+ 		goto out;
+ 
+-	result = proc_pid_instantiate(dir, dentry, task, NULL);
++	result = proc_pid_instantiate(dir, dentry, task, NULL, cred);
+ 	put_task_struct(task);
+ out:
+ 	return result;
+@@ -2399,7 +2417,8 @@ static struct dentry *proc_tid_base_lookup(struct inode *dir,
+ 					   struct cred *cred)
  {
- 	struct inode *inode = NULL;
- 	struct proc_dir_entry * de;
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 3011c08..a1a2fa9 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -101,7 +101,7 @@ static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd)
+ 	return proc_pident_lookup(dir, dentry,
+-				  tid_base_stuff, ARRAY_SIZE(tid_base_stuff));
++				  tid_base_stuff, ARRAY_SIZE(tid_base_stuff),
++				  cred);
  }
  
- static struct dentry *proc_net_lookup(struct inode *dir, struct dentry *dentry,
--				      struct nameidata *nd)
-+				      struct nameidata *nd, struct cred *cred)
+ static const struct file_operations proc_tid_base_operations = {
+@@ -2414,7 +2433,8 @@ static const struct inode_operations proc_tid_base_inode_operations = {
+ };
+ 
+ static struct dentry *proc_task_instantiate(struct inode *dir,
+-	struct dentry *dentry, struct task_struct *task, const void *ptr)
++	struct dentry *dentry, struct task_struct *task, const void *ptr,
++	struct cred *cred)
  {
- 	struct net *net = current->nsproxy->net_ns;
- 	struct dentry *shadow;
-@@ -113,7 +113,7 @@ static struct dentry *proc_net_lookup(struct inode *dir, struct dentry *dentry,
- 	dput(nd->dentry);
- 	nd->dentry = shadow;
+ 	struct dentry *error = ERR_PTR(-ENOENT);
+ 	struct inode *inode;
+@@ -2435,7 +2455,7 @@ static struct dentry *proc_task_instantiate(struct inode *dir,
  
--	return shadow->d_inode->i_op->lookup(shadow->d_inode, dentry, nd);
-+	return shadow->d_inode->i_op->lookup(shadow->d_inode, dentry, nd, cred);
- }
+ 	d_add(dentry, inode);
+ 	/* Close the race of the process dying before we return the dentry */
+-	if (pid_revalidate(dentry, NULL))
++	if (pid_revalidate(dentry, NULL, cred))
+ 		error = NULL;
+ out:
+ 	return error;
+@@ -2466,7 +2486,7 @@ static struct dentry *proc_task_lookup(struct inode *dir, struct dentry *dentry,
+ 	if (leader->tgid != task->tgid)
+ 		goto out_drop_task;
  
- static int proc_net_setattr(struct dentry *dentry, struct iattr *iattr,
+-	result = proc_task_instantiate(dir, dentry, task, NULL);
++	result = proc_task_instantiate(dir, dentry, task, NULL, cred);
+ out_drop_task:
+ 	put_task_struct(task);
+ out:
 diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index 4db895c..b1507e0 100644
+index b1507e0..e1de8ae 100644
 --- a/fs/proc/proc_sysctl.c
 +++ b/fs/proc/proc_sysctl.c
-@@ -139,7 +139,7 @@ static struct ctl_table *do_proc_sys_lookup(struct dentry *parent,
- }
+@@ -451,7 +451,8 @@ static struct inode_operations proc_sys_inode_operations = {
+ 	.setattr	= proc_sys_setattr,
+ };
  
- static struct dentry *proc_sys_lookup(struct inode *dir, struct dentry *dentry,
--					struct nameidata *nd)
-+				      struct nameidata *nd, struct cred *cred)
+-static int proc_sys_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int proc_sys_revalidate(struct dentry *dentry, struct nameidata *nd,
++			       struct cred *cred)
  {
  	struct ctl_table_header *head;
- 	struct inode *inode;
+ 	struct ctl_table *table;
 diff --git a/fs/proc/root.c b/fs/proc/root.c
-index 03bfde1..1693a60 100644
+index 1693a60..4e3a6c7 100644
 --- a/fs/proc/root.c
 +++ b/fs/proc/root.c
-@@ -91,11 +91,11 @@ static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct
- 	return 0;
- }
- 
--static struct dentry *proc_root_lookup(struct inode * dir, struct dentry * dentry, struct nameidata *nd)
-+static struct dentry *proc_root_lookup(struct inode * dir, struct dentry * dentry,
-+				       struct nameidata *nd, struct cred *cred)
- {
--	if (!proc_lookup(dir, dentry, nd)) {
-+	if (!proc_lookup(dir, dentry, nd, cred))
+@@ -97,7 +97,7 @@ static struct dentry *proc_root_lookup(struct inode * dir, struct dentry * dentr
+ 	if (!proc_lookup(dir, dentry, nd, cred))
  		return NULL;
--	}
  	
- 	return proc_pid_lookup(dir, dentry, nd);
- }
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 83e76b3..6a4bfb0 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -760,7 +760,7 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
+-	return proc_pid_lookup(dir, dentry, nd);
++	return proc_pid_lookup(dir, dentry, nd, cred);
  }
  
- static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
--				struct nameidata *nd)
-+				struct nameidata *nd, struct cred *cred)
- {
- 	struct dentry *ret = NULL;
- 	struct sysfs_dirent * parent_sd = dentry->d_parent->d_fsdata;
+ static int proc_root_readdir(struct file * filp,
 diff --git a/fs/vfat/namei.c b/fs/vfat/namei.c
-index 78a6854..2fb53fa 100644
+index 2fb53fa..c26c94f 100644
 --- a/fs/vfat/namei.c
 +++ b/fs/vfat/namei.c
-@@ -684,7 +684,7 @@ static int vfat_find(struct inode *dir, struct qstr *qname,
- }
+@@ -25,7 +25,8 @@
+ #include <linux/buffer_head.h>
+ #include <linux/namei.h>
  
- static struct dentry *vfat_lookup(struct inode *dir, struct dentry *dentry,
--				  struct nameidata *nd)
-+				  struct nameidata *nd, struct cred *cred)
+-static int vfat_revalidate(struct dentry *dentry, struct nameidata *nd)
++static int vfat_revalidate(struct dentry *dentry, struct nameidata *nd,
++			   struct cred *cred)
  {
- 	struct super_block *sb = dir->i_sb;
- 	struct fat_slot_info sinfo;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 88f9e49..8d64b1e 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1137,7 +1137,8 @@ struct file_operations {
- struct inode_operations {
- 	int (*create) (struct inode *,struct dentry *,int, struct nameidata *,
- 		       struct cred *);
--	struct dentry * (*lookup) (struct inode *,struct dentry *, struct nameidata *);
-+	struct dentry * (*lookup) (struct inode *,struct dentry *,
-+				   struct nameidata *, struct cred *);
- 	int (*link) (struct dentry *,struct inode *,struct dentry *,
- 		     struct cred *);
- 	int (*unlink) (struct inode *,struct dentry *, struct cred *);
-@@ -1814,7 +1815,8 @@ extern int simple_prepare_write(struct file *file, struct page *page,
- extern int simple_commit_write(struct file *file, struct page *page,
- 				unsigned offset, unsigned to);
+ 	int ret = 1;
  
--extern struct dentry *simple_lookup(struct inode *, struct dentry *, struct nameidata *);
-+extern struct dentry *simple_lookup(struct inode *, struct dentry *,
-+				    struct nameidata *, struct cred *);
- extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
- extern const struct file_operations simple_dir_operations;
- extern const struct inode_operations simple_dir_inode_operations;
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index aab53df..804c662 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -11,6 +11,7 @@
+ 
+ struct nameidata;
+ struct vfsmount;
++struct cred;
+ 
+ /*
+  * linux/include/linux/dcache.h
+@@ -127,7 +128,7 @@ enum dentry_d_lock_class
+ };
+ 
+ struct dentry_operations {
+-	int (*d_revalidate)(struct dentry *, struct nameidata *);
++	int (*d_revalidate)(struct dentry *, struct nameidata *, struct cred *);
+ 	int (*d_hash) (struct dentry *, struct qstr *);
+ 	int (*d_compare) (struct dentry *, struct qstr *, struct qstr *);
+ 	int (*d_delete)(struct dentry *);
 diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index a297a65..906c416 100644
+index 906c416..d15dd5e 100644
 --- a/include/linux/proc_fs.h
 +++ b/include/linux/proc_fs.h
-@@ -136,7 +136,8 @@ extern struct inode *proc_get_inode(struct super_block *, unsigned int, struct p
-  * of the /proc/<pid> subdirectories.
-  */
- extern int proc_readdir(struct file *, void *, filldir_t);
--extern struct dentry *proc_lookup(struct inode *, struct dentry *, struct nameidata *);
-+extern struct dentry *proc_lookup(struct inode *, struct dentry *,
-+				  struct nameidata *, struct cred *);
+@@ -110,7 +110,8 @@ extern void proc_misc_init(void);
+ struct mm_struct;
  
- extern const struct file_operations proc_kcore_operations;
- extern const struct file_operations proc_kmsg_operations;
+ void proc_flush_task(struct task_struct *task);
+-struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
++struct dentry *proc_pid_lookup(struct inode *, struct dentry *,
++			       struct nameidata *, struct cred *);
+ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
+ unsigned long task_vsize(struct mm_struct *);
+ int task_statm(struct mm_struct *, int *, int *, int *, int *);
 
