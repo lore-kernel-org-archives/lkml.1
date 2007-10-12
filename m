@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbXJLRpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbXJLRwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760837AbXJLRpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbXJLRpg
+	id S1760605AbXJLRwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXJLRwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:45:36 -0400
-Received: from elvis.mu.org ([192.203.228.196]:58824 "EHLO elvis.mu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756244AbXJLRpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:45:35 -0400
-In-Reply-To: <1192201105.27435.41.camel@twins>
-References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org> <200710120257.05960.nickpiggin@yahoo.com.au> <1192185439.27435.19.camel@twins> <200710120414.11026.nickpiggin@yahoo.com.au> <1192186222.27435.22.camel@twins> <20071012075317.591212ef@laptopd505.fenrus.org> <1192201105.27435.41.camel@twins>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DC1BA0F9-59D4-41AE-BB90-55E325F602F2@freebsd.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
-       hugh <hugh@veritas.com>
-Content-Transfer-Encoding: 7bit
-From: Suleiman Souhlal <ssouhlal@freebsd.org>
-Subject: Re: [PATCH] mm: avoid dirtying shared mappings on mlock
-Date: Fri, 12 Oct 2007 10:45:17 -0700
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-X-Mailer: Apple Mail (2.752.3)
+	Fri, 12 Oct 2007 13:52:15 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:50380 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757876AbXJLRwO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:52:14 -0400
+Date: Fri, 12 Oct 2007 18:52:10 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Franck Bui-Huu <vagabon.xyz@gmail.com>, linux-arch@vger.kernel.org,
+       linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Discardable strings for init and exit sections
+Message-ID: <20071012175209.GA1110@linux-mips.org>
+References: <Pine.LNX.4.64N.0710121711120.21684@blysk.ds.pg.gda.pl> <20071012171938.GB6476@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071012171938.GB6476@stusta.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 12, 2007 at 07:19:38PM +0200, Adrian Bunk wrote:
 
-On Oct 12, 2007, at 7:58 AM, Peter Zijlstra wrote:
+> I have an objection against this approach:
+> 
+> Our __*init*/__*exit* annotations are already a constant source of bugs, 
+> and adding more pifalls (e.g. forgotten removal of _i()/_e() when a 
+> function is no longer __*init*/__*exit*) doesn't sound like a good plan.
+> 
+> Shouldn't it be possible to automatically determine where to put the 
+> strings? I don't know enough gcc/ld voodoo for being able to tell 
+> whether it is currently possible, and if yes how, but doing it 
+> automatically sounds like the only solution that wouldn't result in an
+> unmaintainable mess.
 
-> On Fri, 2007-10-12 at 07:53 -0700, Arjan van de Ven wrote:
->> On Fri, 12 Oct 2007 12:50:22 +0200
->>>>> The pages will still be read-only due to dirty tracking, so the
->>>>> first write will still do page_mkwrite().
->>>>
->>>> Which can SIGBUS, no?
->>>
->>> Sure, but that is no different than any other mmap'ed write. I'm not
->>> seeing how an mlocked region is special here.
->>>
->>> I agree it would be nice if mmap'ed writes would have better error
->>> reporting than SIGBUS, but such is life.
->>
->> well... there's another consideration
->> people use mlock() in cases where they don't want to go to the
->> filesystem for paging and stuff as well (think the various iscsi
->> daemons and other things that get in trouble).. those kind of uses
->> really use mlock to avoid
->> 1) IO to the filesystem
->> 2) Needing memory allocations for pagefault like things
->> at least for the more "hidden" cases...
->>
->> prefaulting everything ready pretty much gives them that... letting
->> things fault on demand... nicely breaks that.
->
-> Non of that is changed. So I'm a little puzzled as to which side you
-> argue.
+gcc tends to place data such as strings or jump tables generated from
+switches not into a place were it would be easily discardable.  The
+latter is the reason that on MIPS we can't discard __exit functions
+at all - a switch table in .rodata might be referencing discarded code
+in .exit.text which makes ld fail.  When I discussed this with some gcc
+people a while ago nobody really had a good suggestion to solve this.
 
-I think this might change the behavior in case you mlock sparse files.
-I guess currently the holes disappear when you mlock them, but with  
-the patch the blocks wouldn't get allocated until they get written to.
-
--- Suleiman
+  Ralf
