@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbXJLWzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbXJLWzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761632AbXJLWzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbXJLWWa
+	id S1761582AbXJLWzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbXJLWWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:22:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53551 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:22:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49996 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932684AbXJLWW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:27 -0400
+	id S932772AbXJLWWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:22:31 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 62/75] sysfs: open code sysfs_attach_dentry()
-Date: Fri, 12 Oct 2007 15:17:06 -0700
-Message-Id: <1192227731677-git-send-email-gregkh@suse.de>
+Subject: [PATCH 63/75] sysfs: make sysfs_root a regular directory dirent
+Date: Fri, 12 Oct 2007 15:17:07 -0700
+Message-Id: <11922277364080-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277261501-git-send-email-gregkh@suse.de>
+In-Reply-To: <1192227731677-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -79,60 +79,77 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922277181565-git-send-email-gregkh@suse.de>
  <11922277222714-git-send-email-gregkh@suse.de>
  <11922277261501-git-send-email-gregkh@suse.de>
+ <1192227731677-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-sysfs_attach_dentry() now has only one caller and isn't doing much
-other than obfuscating the code.  Open code and kill it.
+sysfs_root is different from a regular directory dirent in that it's
+of type SYSFS_ROOT and doesn't have a name.  These differences aren't
+used by anybody and only adds to complexity.  Make sysfs_root a
+regular directory dirent.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |   20 ++++----------------
- 1 files changed, 4 insertions(+), 16 deletions(-)
+ fs/sysfs/inode.c |    5 -----
+ fs/sysfs/mount.c |    3 ++-
+ fs/sysfs/sysfs.h |    9 ++++-----
+ 3 files changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 6ee76a8..48a3ed4 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -332,21 +332,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 	return NULL;
- }
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index b6ac4e6..c40fb9f 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -157,11 +157,6 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
  
--/**
-- *	sysfs_attach_dentry - associate sysfs_dirent with dentry
-- *	@sd: target sysfs_dirent
-- *	@dentry: dentry to associate
-- *
-- *	LOCKING:
-- *	mutex_lock(sysfs_mutex)
-- */
--static void sysfs_attach_dentry(struct sysfs_dirent *sd, struct dentry *dentry)
--{
--	dentry->d_op = &sysfs_dentry_ops;
--	dentry->d_fsdata = sysfs_get(sd);
--	d_rehash(dentry);
--}
--
- static int sysfs_ilookup_test(struct inode *inode, void *arg)
- {
- 	struct sysfs_dirent *sd = arg;
-@@ -696,8 +681,11 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 		goto out_unlock;
- 	}
+ 	/* initialize inode according to type */
+ 	switch (sysfs_type(sd)) {
+-	case SYSFS_ROOT:
+-		inode->i_op = &sysfs_dir_inode_operations;
+-		inode->i_fop = &sysfs_dir_operations;
+-		inc_nlink(inode); /* directory, account for "." */
+-		break;
+ 	case SYSFS_DIR:
+ 		inode->i_op = &sysfs_dir_inode_operations;
+ 		inode->i_fop = &sysfs_dir_operations;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 28bf359..465902c 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -24,8 +24,9 @@ static const struct super_operations sysfs_ops = {
+ };
  
-+	/* instantiate and hash dentry */
-+	dentry->d_op = &sysfs_dentry_ops;
-+	dentry->d_fsdata = sysfs_get(sd);
- 	d_instantiate(dentry, inode);
--	sysfs_attach_dentry(sd, dentry);
-+	d_rehash(dentry);
+ struct sysfs_dirent sysfs_root = {
++	.s_name		= "",
+ 	.s_count	= ATOMIC_INIT(1),
+-	.s_flags	= SYSFS_ROOT,
++	.s_flags	= SYSFS_DIR,
+ 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
+ 	.s_ino		= 1,
+ };
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 2a68bfa..60405a6 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -48,11 +48,10 @@ struct sysfs_dirent {
+ #define SD_DEACTIVATED_BIAS		INT_MIN
  
-  out_unlock:
- 	mutex_unlock(&sysfs_mutex);
+ #define SYSFS_TYPE_MASK			0x00ff
+-#define SYSFS_ROOT			0x0001
+-#define SYSFS_DIR			0x0002
+-#define SYSFS_KOBJ_ATTR			0x0004
+-#define SYSFS_KOBJ_BIN_ATTR		0x0008
+-#define SYSFS_KOBJ_LINK			0x0020
++#define SYSFS_DIR			0x0001
++#define SYSFS_KOBJ_ATTR			0x0002
++#define SYSFS_KOBJ_BIN_ATTR		0x0004
++#define SYSFS_KOBJ_LINK			0x0008
+ #define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
+ 
+ #define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
 -- 
 1.5.3.4
 
