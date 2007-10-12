@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbXJLVtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbXJLVtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbXJLVtW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbXJLVoq
+	id S1761457AbXJLVtr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbXJLVpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:44:46 -0400
-Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42276 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760525AbXJLVon (ORCPT
+	Fri, 12 Oct 2007 17:45:51 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:47685 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760300AbXJLVpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:44:43 -0400
-Message-Id: <20071012211147.666677000@goop.org>
-References: <20071012211132.198718000@goop.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 12 Oct 2007 14:11:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 01/10] remove dead code in pgtable_cache_init
-Content-Disposition: inline; filename=x86-mminit-remove-dead-code.patch
+	Fri, 12 Oct 2007 17:45:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=COj8IzTg60YZn2+7+aUZ0IXLTYZ2QYtXCnl+H/R57nd9ag/LDAFJyRxUvMVYJRMcDc6rkRhkLCwfqA8e4BdnAjLjq7OOSrDscrQ7l3OMnC9hQtxr9DvqkzpCtPPcW8a/G80zhTJZv2mvzL7gMunQJNBuYyckzJGMv59zIkTc0qE=
+Message-ID: <84144f020710121445p23fcc21am18482e01856cdc35@mail.gmail.com>
+Date: Sat, 13 Oct 2007 00:45:48 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
+Cc: "Ryan Finnie" <ryan@finnie.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Erez Zadok" <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0710120129080.16588@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200710071920.l97JKJX5018871@agora.fsl.cs.sunysb.edu>
+	 <20071011144740.136b31a8.akpm@linux-foundation.org>
+	 <cfa94dc20710111512j9b6c038qf89c516ecd605411@mail.gmail.com>
+	 <Pine.LNX.4.64.0710120129080.16588@blonde.wat.veritas.com>
+X-Google-Sender-Auth: 5e3e3e8d36160be5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The conversion from using a slab cache to quicklist left some residual
-dead code.
+Hi Hugh,
 
-I note that in the conversion it now always allocates a whole page for
-the pgd, rather than the 32 bytes needed for a PAE pgd.  Was this
-intended?
+On 10/12/07, Hugh Dickins <hugh@veritas.com> wrote:
+> But I keep suspecting that the answer might be the patch below (which
+> rather follows what drivers/block/rd.c is doing).  I'm especially
+> worried that, rather than just AOP_WRITEPAGE_ACTIVATE being returned
+> to userspace, bad enough in itself, you might be liable to hit that
+> BUG_ON(page_mapped(page)).  shmem_writepage does not expect to be
+> called by anyone outside mm/vmscan.c, but unionfs can now get to it?
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Doesn't msync(2) get to it via mm/page-writeback.c:write_cache_pages()
+without unionfs even?
 
----
- arch/i386/mm/init.c |   22 +++++-----------------
- 1 file changed, 5 insertions(+), 17 deletions(-)
-
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -746,24 +746,12 @@ struct kmem_cache *pmd_cache;
- 
- void __init pgtable_cache_init(void)
- {
--	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
--
--	if (PTRS_PER_PMD > 1) {
-+	if (PTRS_PER_PMD > 1)
- 		pmd_cache = kmem_cache_create("pmd",
--					PTRS_PER_PMD*sizeof(pmd_t),
--					PTRS_PER_PMD*sizeof(pmd_t),
--					SLAB_PANIC,
--					pmd_ctor);
--		if (!SHARED_KERNEL_PMD) {
--			/* If we're in PAE mode and have a non-shared
--			   kernel pmd, then the pgd size must be a
--			   page size.  This is because the pgd_list
--			   links through the page structure, so there
--			   can only be one pgd per page for this to
--			   work. */
--			pgd_size = PAGE_SIZE;
--		}
--	}
-+					      PTRS_PER_PMD*sizeof(pmd_t),
-+					      PTRS_PER_PMD*sizeof(pmd_t),
-+					      SLAB_PANIC,
-+					      pmd_ctor);
- }
- 
- /*
-
--- 
-
+                                       Pekka
