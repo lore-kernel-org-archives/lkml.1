@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXJLW2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXJLW2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbXJLW2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbXJLWTA
+	id S933015AbXJLW2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760899AbXJLWTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:19:00 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53170 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:19:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49670 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932367AbXJLWS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:18:58 -0400
+	id S932397AbXJLWTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:19:04 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Dave Young <hidave.darkstar@gmail.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 18/75] sysfs/file.c - use mutex instead of semaphore
-Date: Fri, 12 Oct 2007 15:16:22 -0700
-Message-Id: <11922275221643-git-send-email-gregkh@suse.de>
+Subject: [PATCH 19/75] sysfs: cleanup semaphore.h
+Date: Fri, 12 Oct 2007 15:16:23 -0700
+Message-Id: <1192227527856-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275181138-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922275221643-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -36,85 +36,102 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922275074080-git-send-email-gregkh@suse.de>
  <11922275121763-git-send-email-gregkh@suse.de>
  <11922275181138-git-send-email-gregkh@suse.de>
+ <11922275221643-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Dave Young <hidave.darkstar@gmail.com>
 
-Use mutex instead of semaphore in sysfs/file.c : sys_buffer.
+Cleanup semaphore.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/file.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ fs/sysfs/bin.c     |    2 +-
+ fs/sysfs/dir.c     |    2 +-
+ fs/sysfs/group.c   |    1 -
+ fs/sysfs/inode.c   |    1 -
+ fs/sysfs/mount.c   |    1 -
+ fs/sysfs/symlink.c |    2 +-
+ 6 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 3e1cc06..b21d11b 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -8,8 +8,8 @@
- #include <linux/namei.h>
- #include <linux/poll.h>
- #include <linux/list.h>
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 5afe2a2..a819a7e 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -14,9 +14,9 @@
+ #include <linux/kobject.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
 +#include <linux/mutex.h>
+ 
  #include <asm/uaccess.h>
 -#include <asm/semaphore.h>
  
  #include "sysfs.h"
  
-@@ -55,7 +55,7 @@ struct sysfs_buffer {
- 	loff_t			pos;
- 	char			* page;
- 	struct sysfs_ops	* ops;
--	struct semaphore	sem;
-+	struct mutex		mutex;
- 	int			needs_read_fill;
- 	int			event;
- };
-@@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t retval = 0;
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index ea33b66..86d75e0 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -11,7 +11,7 @@
+ #include <linux/namei.h>
+ #include <linux/idr.h>
+ #include <linux/completion.h>
+-#include <asm/semaphore.h>
++#include <linux/mutex.h>
+ #include "sysfs.h"
  
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	if (buffer->needs_read_fill) {
- 		retval = fill_read_buffer(file->f_path.dentry,buffer);
- 		if (retval)
-@@ -139,7 +139,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	retval = simple_read_from_buffer(buf, count, ppos, buffer->page,
- 					 buffer->count);
- out:
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return retval;
- }
+ DEFINE_MUTEX(sysfs_mutex);
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index f318b73..e6b904d 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -14,7 +14,6 @@
+ #include <linux/namei.h>
+ #include <linux/err.h>
+ #include <linux/fs.h>
+-#include <asm/semaphore.h>
+ #include "sysfs.h"
  
-@@ -228,13 +228,13 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t len;
  
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	len = fill_write_buffer(buffer, buf, count);
- 	if (len > 0)
- 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
- 	if (len > 0)
- 		*ppos += len;
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return len;
- }
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 10d1b52..aecb6e7 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -14,7 +14,6 @@
+ #include <linux/capability.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+-#include <asm/semaphore.h>
+ #include "sysfs.h"
  
-@@ -294,7 +294,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	if (!buffer)
- 		goto err_out;
+ extern struct super_block * sysfs_sb;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index fbc7b65..69a73ae 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -8,7 +8,6 @@
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
+-#include <asm/semaphore.h>
  
--	init_MUTEX(&buffer->sem);
-+	mutex_init(&buffer->mutex);
- 	buffer->needs_read_fill = 1;
- 	buffer->ops = ops;
- 	file->private_data = buffer;
+ #include "sysfs.h"
+ 
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 4ce687f..9048453 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -7,7 +7,7 @@
+ #include <linux/module.h>
+ #include <linux/kobject.h>
+ #include <linux/namei.h>
+-#include <asm/semaphore.h>
++#include <linux/mutex.h>
+ 
+ #include "sysfs.h"
+ 
 -- 
 1.5.3.4
 
