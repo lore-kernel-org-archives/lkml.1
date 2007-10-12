@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760827AbXJLM5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXJLM5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760827AbXJLM5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXJLM5J
+	id S1760984AbXJLM5m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXJLM5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:57:09 -0400
-Received: from n1.cetrtapot.si ([89.212.80.162]:56510 "EHLO n1.cetrtapot.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbXJLM5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:57:08 -0400
-X-Greylist: delayed 1187 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Oct 2007 08:57:07 EDT
-Message-ID: <470F6EFB.6010704@cetrtapot.si>
-Date: Fri, 12 Oct 2007 14:56:27 +0200
-From: "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 12 Oct 2007 08:57:35 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:38798 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbXJLM5e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 08:57:34 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] USB subsystem merge plans
+Date: Fri, 12 Oct 2007 14:57:28 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       linux-kernel@vger.kernel.org
+References: <470F6C57.4020108@kingswood-consulting.co.uk>
+In-Reply-To: <470F6C57.4020108@kingswood-consulting.co.uk>
 MIME-Version: 1.0
-To: irda-users@lists.sourceforge.net
-Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] irlmp_unregister_link needs to free lsaps hashbin
-Content-Type: multipart/mixed;
- boundary="------------010705050709040507050405"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710121457.29357.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010705050709040507050405
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Am Freitag 12 Oktober 2007 schrieb Frank Kingswood:
+> Hallo!
+> 
+> I haven't seen anything on linux.kernel about what the merge plans are 
+> for the USB subsystem going into 2.6.24.
+> 
+> Should I be submitting my driver as a patch to linux.kernel or are Alan 
+> or Greg going to push their changes?
 
-Hi,
+Please submit your patches to Greg and the USB development list.
+Greg has a directory on kernel.org where the scheduled patches are stored.
 
-While testing the mcs7780 based IrDA USB dongle I've stumbled upon
-memory leak in irlmp_unregister_link(). Hashbin for lsaps is created in
-irlmp_register_link and should probably be freed in irlmp_unregister_link().
-
-Signed-off-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
-
-Best regards,
-Hinko
-
-----
-
-
-
---------------010705050709040507050405
-Content-Type: text/plain;
- name="irlmp-delete-lsaps-hashbin.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="irlmp-delete-lsaps-hashbin.diff"
-
-LS0tIGxpbnV4LTIuNi4yMy9uZXQvaXJkYS9pcmxtcC5jLm9yaWcJMjAwNy0xMC0xMiAxNDow
-NToxNy4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yMy9uZXQvaXJkYS9pcmxtcC5j
-CTIwMDctMTAtMTIgMTQ6MDU6NDEuMDAwMDAwMDAwICswMjAwCkBAIC0zNTMsNiArMzUzLDcg
-QEAgdm9pZCBpcmxtcF91bnJlZ2lzdGVyX2xpbmsoX191MzIgc2FkZHIpCiAJCS8qIEZpbmFs
-IGNsZWFudXAgKi8KIAkJZGVsX3RpbWVyKCZsaW5rLT5pZGxlX3RpbWVyKTsKIAkJbGluay0+
-bWFnaWMgPSAwOworCQloYXNoYmluX2RlbGV0ZShsaW5rLT5sc2FwcywgKEZSRUVfRlVOQykg
-a2ZyZWUpOwogCQlrZnJlZShsaW5rKTsKIAl9CiB9Cg==
---------------010705050709040507050405--
+	Regards
+		Oliver
