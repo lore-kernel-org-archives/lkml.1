@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbXJLQ3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761146AbXJLQaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761387AbXJLQ3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760308AbXJLQJX
+	id S1761146AbXJLQaR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXJLQJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:09:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44036 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 12:09:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44043 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760599AbXJLQJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:09:21 -0400
+	id S1760500AbXJLQJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:09:26 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 46/52] CRED: Pass credentials through the setxattr() inode op
+Subject: [PATCH 47/52] CRED: Pass credentials through the xattr get() handler
 To: viro@ftp.linux.org.uk
 Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 12 Oct 2007 17:09:14 +0100
-Message-ID: <20071012160914.15119.43637.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 17:09:19 +0100
+Message-ID: <20071012160919.15119.40974.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,151 +29,149 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass credentials through the setxattr() inode operation.
+Pass credentials through the xattr get() handler.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/bad_inode.c         |    2 +-
- fs/nfs/nfs3acl.c       |    3 +--
- fs/nfs/nfs4_fs.h       |    3 ++-
- fs/nfs/nfs4proc.c      |    3 +--
- fs/xattr.c             |    8 +++++---
- include/linux/fs.h     |    3 ++-
- include/linux/nfs_fs.h |    2 +-
- include/linux/xattr.h  |    3 ++-
- 8 files changed, 15 insertions(+), 12 deletions(-)
+ fs/ext3/acl.c            |    4 ++--
+ fs/ext3/xattr_security.c |    2 +-
+ fs/ext3/xattr_trusted.c  |    2 +-
+ fs/ext3/xattr_user.c     |    2 +-
+ fs/xattr.c               |    3 ++-
+ include/linux/xattr.h    |    2 +-
+ mm/shmem.c               |    3 ++-
+ mm/shmem_acl.c           |    4 ++--
+ 8 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index a891eaa..d82d101 100644
---- a/fs/bad_inode.c
-+++ b/fs/bad_inode.c
-@@ -266,7 +266,7 @@ static int bad_inode_setattr(struct dentry *direntry, struct iattr *attrs,
- }
+diff --git a/fs/ext3/acl.c b/fs/ext3/acl.c
+index 0f7fd74..0ce1d87 100644
+--- a/fs/ext3/acl.c
++++ b/fs/ext3/acl.c
+@@ -466,7 +466,7 @@ ext3_xattr_get_acl(struct inode *inode, int type, void *buffer, size_t size)
  
- static int bad_inode_setxattr(struct dentry *dentry, const char *name,
--		const void *value, size_t size, int flags)
-+		const void *value, size_t size, int flags, struct cred *cred)
+ static int
+ ext3_xattr_get_acl_access(struct inode *inode, const char *name,
+-			  void *buffer, size_t size)
++			  void *buffer, size_t size, struct cred *cred)
  {
- 	return -EIO;
- }
-diff --git a/fs/nfs/nfs3acl.c b/fs/nfs/nfs3acl.c
-index 0fefed1..c09da17 100644
---- a/fs/nfs/nfs3acl.c
-+++ b/fs/nfs/nfs3acl.c
-@@ -78,9 +78,8 @@ ssize_t nfs3_getxattr(struct dentry *dentry, const char *name,
- }
+ 	if (strcmp(name, "") != 0)
+ 		return -EINVAL;
+@@ -475,7 +475,7 @@ ext3_xattr_get_acl_access(struct inode *inode, const char *name,
  
- int nfs3_setxattr(struct dentry *dentry, const char *name,
--	     const void *value, size_t size, int flags)
-+	     const void *value, size_t size, int flags, struct cred *acred)
+ static int
+ ext3_xattr_get_acl_default(struct inode *inode, const char *name,
+-			   void *buffer, size_t size)
++			   void *buffer, size_t size, struct cred *cred)
  {
--	struct cred *acred = current->cred;
- 	struct inode *inode = dentry->d_inode;
- 	struct posix_acl *acl;
- 	int type, error;
-diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
-index 007329e..ac7c050 100644
---- a/fs/nfs/nfs4_fs.h
-+++ b/fs/nfs/nfs4_fs.h
-@@ -168,7 +168,8 @@ extern const struct inode_operations nfs4_dir_inode_operations;
+ 	if (strcmp(name, "") != 0)
+ 		return -EINVAL;
+diff --git a/fs/ext3/xattr_security.c b/fs/ext3/xattr_security.c
+index 351bbb8..7d01840 100644
+--- a/fs/ext3/xattr_security.c
++++ b/fs/ext3/xattr_security.c
+@@ -29,7 +29,7 @@ ext3_xattr_security_list(struct inode *inode, char *list, size_t list_size,
  
- /* inode.c */
- extern ssize_t nfs4_getxattr(struct dentry *, const char *, void *, size_t);
--extern int nfs4_setxattr(struct dentry *, const char *, const void *, size_t, int);
-+extern int nfs4_setxattr(struct dentry *, const char *, const void *, size_t,
-+			 int, struct cred *);
- extern ssize_t nfs4_listxattr(struct dentry *, char *, size_t);
- 
- 
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index c10f3de..a9a88eb 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -3717,9 +3717,8 @@ out:
- #define XATTR_NAME_NFSV4_ACL "system.nfs4_acl"
- 
- int nfs4_setxattr(struct dentry *dentry, const char *key, const void *buf,
--		size_t buflen, int flags)
-+		size_t buflen, int flags, struct cred *acred)
+ static int
+ ext3_xattr_security_get(struct inode *inode, const char *name,
+-		       void *buffer, size_t size)
++			void *buffer, size_t size, struct cred *cred)
  {
--	struct cred *acred = current->cred;
- 	struct inode *inode = dentry->d_inode;
+ 	if (strcmp(name, "") == 0)
+ 		return -EINVAL;
+diff --git a/fs/ext3/xattr_trusted.c b/fs/ext3/xattr_trusted.c
+index d086115..6073729 100644
+--- a/fs/ext3/xattr_trusted.c
++++ b/fs/ext3/xattr_trusted.c
+@@ -35,7 +35,7 @@ ext3_xattr_trusted_list(struct inode *inode, char *list, size_t list_size,
  
- 	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
+ static int
+ ext3_xattr_trusted_get(struct inode *inode, const char *name,
+-		       void *buffer, size_t size)
++		       void *buffer, size_t size, struct cred *cred)
+ {
+ 	if (strcmp(name, "") == 0)
+ 		return -EINVAL;
+diff --git a/fs/ext3/xattr_user.c b/fs/ext3/xattr_user.c
+index afbfc4d..f8a7663 100644
+--- a/fs/ext3/xattr_user.c
++++ b/fs/ext3/xattr_user.c
+@@ -34,7 +34,7 @@ ext3_xattr_user_list(struct inode *inode, char *list, size_t list_size,
+ 
+ static int
+ ext3_xattr_user_get(struct inode *inode, const char *name,
+-		    void *buffer, size_t size)
++		    void *buffer, size_t size, struct cred *cred)
+ {
+ 	if (strcmp(name, "") == 0)
+ 		return -EINVAL;
 diff --git a/fs/xattr.c b/fs/xattr.c
-index 7917579..257305e 100644
+index 257305e..634f0b1 100644
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -71,6 +71,7 @@ int
- vfs_setxattr(struct dentry *dentry, char *name, void *value,
- 		size_t size, int flags)
+@@ -545,13 +545,14 @@ xattr_resolve_name(struct xattr_handler **handlers, const char **name)
+ ssize_t
+ generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size)
  {
 +	struct cred *cred = current->cred;
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
-@@ -84,7 +85,8 @@ vfs_setxattr(struct dentry *dentry, char *name, void *value,
- 		goto out;
- 	error = -EOPNOTSUPP;
- 	if (inode->i_op->setxattr) {
--		error = inode->i_op->setxattr(dentry, name, value, size, flags);
-+		error = inode->i_op->setxattr(dentry, name, value, size, flags,
-+					      cred);
- 		if (!error) {
- 			fsnotify_xattr(dentry);
- 			security_inode_post_setxattr(dentry, name, value,
-@@ -585,9 +587,9 @@ generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size)
-  * Find the handler for the prefix and dispatch its set() operation.
-  */
- int
--generic_setxattr(struct dentry *dentry, const char *name, const void *value, size_t size, int flags)
-+generic_setxattr(struct dentry *dentry, const char *name, const void *value,
-+		 size_t size, int flags, struct cred *cred)
- {
--	struct cred *cred = current->cred;
  	struct xattr_handler *handler;
  	struct inode *inode = dentry->d_inode;
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 395b272..598006c 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1160,7 +1160,8 @@ struct inode_operations {
- 	int (*setattr) (struct dentry *, struct iattr *, struct cred *);
- 	int (*getattr) (struct vfsmount *, struct dentry *, struct kstat *,
- 			struct cred *);
--	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int);
-+	int (*setxattr) (struct dentry *, const char *,const void *, size_t,
-+			 int, struct cred *);
- 	ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t);
- 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
- 	int (*removexattr) (struct dentry *, const char *);
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index d26fd56..fbd1af5 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -356,7 +356,7 @@ static inline struct rpc_cred *nfs_file_cred(struct file *file)
- extern ssize_t nfs3_listxattr(struct dentry *, char *, size_t);
- extern ssize_t nfs3_getxattr(struct dentry *, const char *, void *, size_t);
- extern int nfs3_setxattr(struct dentry *, const char *,
--			const void *, size_t, int);
-+			const void *, size_t, int, struct cred *);
- extern int nfs3_removexattr (struct dentry *, const char *name);
- #else
- # define nfs3_listxattr NULL
+ 	handler = xattr_resolve_name(inode->i_sb->s_xattr, &name);
+ 	if (!handler)
+ 		return -EOPNOTSUPP;
+-	return handler->get(inode, name, buffer, size);
++	return handler->get(inode, name, buffer, size, cred);
+ }
+ 
+ /*
 diff --git a/include/linux/xattr.h b/include/linux/xattr.h
-index 50c35d9..dd98be1 100644
+index dd98be1..a5002eb 100644
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
-@@ -53,7 +53,8 @@ int vfs_removexattr(struct dentry *, char *);
+@@ -41,7 +41,7 @@ struct xattr_handler {
+ 	size_t (*list)(struct inode *inode, char *list, size_t list_size,
+ 		       const char *name, size_t name_len);
+ 	int (*get)(struct inode *inode, const char *name, void *buffer,
+-		   size_t size);
++		   size_t size, struct cred *cred);
+ 	int (*set)(struct inode *inode, const char *name, const void *buffer,
+ 		   size_t size, int flags, struct cred *cred);
+ };
+diff --git a/mm/shmem.c b/mm/shmem.c
+index a3c2007..45cc69e 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1967,7 +1967,8 @@ static size_t shmem_xattr_security_list(struct inode *inode, char *list,
+ }
  
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
- ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
--int generic_setxattr(struct dentry *dentry, const char *name, const void *value, size_t size, int flags);
-+int generic_setxattr(struct dentry *dentry, const char *name, const void *value,
-+		     size_t size, int flags, struct cred *cred);
- int generic_removexattr(struct dentry *dentry, const char *name);
+ static int shmem_xattr_security_get(struct inode *inode, const char *name,
+-				    void *buffer, size_t size)
++				    void *buffer, size_t size,
++				    struct cred *cred)
+ {
+ 	if (strcmp(name, "") == 0)
+ 		return -EINVAL;
+diff --git a/mm/shmem_acl.c b/mm/shmem_acl.c
+index f78720f..7685a67 100644
+--- a/mm/shmem_acl.c
++++ b/mm/shmem_acl.c
+@@ -79,7 +79,7 @@ shmem_list_acl_access(struct inode *inode, char *list, size_t list_size,
  
- #endif  /*  __KERNEL__  */
+ static int
+ shmem_get_acl_access(struct inode *inode, const char *name, void *buffer,
+-		     size_t size)
++		     size_t size, struct cred *cred)
+ {
+ 	if (strcmp(name, "") != 0)
+ 		return -EINVAL;
+@@ -120,7 +120,7 @@ shmem_list_acl_default(struct inode *inode, char *list, size_t list_size,
+ 
+ static int
+ shmem_get_acl_default(struct inode *inode, const char *name, void *buffer,
+-		      size_t size)
++		      size_t size, struct cred *cred)
+ {
+ 	if (strcmp(name, "") != 0)
+ 		return -EINVAL;
 
