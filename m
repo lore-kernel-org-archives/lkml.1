@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXJLJYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbXJLJZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933051AbXJLJYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760602AbXJLJOM
+	id S932925AbXJLJZS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbXJLJSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:14:12 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:56032 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760107AbXJLJOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:14:10 -0400
-Message-ID: <470F3ADB.2000704@tiscali.nl>
-Date: Fri, 12 Oct 2007 11:14:03 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 12 Oct 2007 05:18:30 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:59625 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932600AbXJLJS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:18:27 -0400
+Message-ID: <470F3BE0.4050807@free.fr>
+Date: Fri, 12 Oct 2007 11:18:24 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: bryan.wu@analog.com
-CC: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH try #2] Input/Joystick Driver: add support AD7142 joystick
- driver
-References: <1192174727.6247.20.camel@roc-laptop>
-In-Reply-To: <1192174727.6247.20.camel@roc-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: NMI watchdog
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
-> +static int ad7142_i2c_read(struct i2c_client *client, unsigned short offset,
-> +		unsigned short *data, unsigned int len)
-> +{
-> +	int ret = -1;
-> +	int i;
-> +	u8 block_data[32];
-> +
-> +	if (len < 1 && len > 16) {
+Hello,
 
-you want || here
+I'm experiencing a full system lockup. I'm using an out-of-tree driver 
+which I suspect is responsible. I'm trying to enable the NMI watchdog.
 
-> +		printk(KERN_ERR "AD7142: read data length error\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Do raw I2C, not smbus compatible */
-> +	block_data[0] = (offset & 0xFF00) >> 8;
-> +	block_data[1] = (offset & 0x00FF);
-> +
-> +	ret = i2c_master_send(client, block_data, 2);
-> +	if (ret < 0) {
-> +		printk(KERN_ERR "AD7142: I2C read error\n");
-> +		return ret;
-> +	}
-> +
-> +	ret = i2c_master_recv(client, block_data, len * 2);
-> +	if (ret < 0) {
-> +		printk(KERN_ERR "AD7142: I2C transfer error\n");
-> +		return ret;
-> +	}
-> +
-> +	for (i = 0; i < len; i++) {
-> +		unsigned short temp;
-> +		temp = block_data[2 * i];
-> +		temp = (temp << 8) & 0xFF00;
-> +		*data++ = temp | block_data[2 * i + 1];
-> +	}
-> +
-> +	return ret;
-> +}
+# cat /proc/version
+Linux version 2.6.22.1-rt9 (gcc version 3.4.6) #1 PREEMPT RT Tue Oct 9 
+12:25:47 CEST 2007
 
+# cat /proc/cmdline
+ro root=/dev/hdc1 console=ttyS0,57600n8 console=tty0 panic=3 apic=debug 
+nmi_watchdog=2
 
+However, after boot, the NMI count does not change.
+
+# cat /proc/interrupts ; sleep 10 ; cat /proc/interrupts
+            CPU0
+   0:         99   IO-APIC-edge      timer
+   4:       3822   IO-APIC-edge      serial
+   8:          1   IO-APIC-edge      rtc
+   9:          0   IO-APIC-fasteoi   acpi
+  15:      16443   IO-APIC-edge      ide1
+  16:       2166   IO-APIC-fasteoi   eth0
+  17:        840   IO-APIC-fasteoi   eth1
+  18:        840   IO-APIC-fasteoi   eth2
+  19:        840   IO-APIC-fasteoi   eth3
+  20:          0   IO-APIC-fasteoi   Dta1xx
+  21:          0   IO-APIC-fasteoi   Dta1xx
+NMI:       2895
+LOC:     168445
+ERR:          0
+MIS:          0
+
+            CPU0
+   0:         99   IO-APIC-edge      timer
+   4:       3822   IO-APIC-edge      serial
+   8:          1   IO-APIC-edge      rtc
+   9:          0   IO-APIC-fasteoi   acpi
+  15:      16467   IO-APIC-edge      ide1
+  16:       2173   IO-APIC-fasteoi   eth0
+  17:        845   IO-APIC-fasteoi   eth1
+  18:        845   IO-APIC-fasteoi   eth2
+  19:        845   IO-APIC-fasteoi   eth3
+  20:          0   IO-APIC-fasteoi   Dta1xx
+  21:          0   IO-APIC-fasteoi   Dta1xx
+NMI:       2895
+LOC:     169448
+ERR:          0
+MIS:          0
+
+Does this mean the NMI watchdog is not working correctly on my system?
+
+# dmesg | grep NMI
+ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+Testing NMI watchdog ... OK.
+
+Regards.
