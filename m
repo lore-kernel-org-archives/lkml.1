@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932735AbXJLRIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbXJLRJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932735AbXJLRIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761090AbXJLRHn
+	id S933237AbXJLRJM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbXJLRHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:07:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36532 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:07:54 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32889 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932717AbXJLRHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:07:41 -0400
-Date: Fri, 12 Oct 2007 18:07:36 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Dmitry Monakhov <dmonakhov@openvz.org>, Milan Broz <mbroz@redhat.com>
-Subject: [2.6.24 PATCH 06/25] dm delay: fix ctr error paths
-Message-ID: <20071012170736.GQ24157@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Dmitry Monakhov <dmonakhov@openvz.org>,
-	Milan Broz <mbroz@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	id S932670AbXJLRHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:07:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,267,1188802800"; 
+   d="scan'208";a="245516640"
+Message-ID: <470FA9D3.2050701@intel.com>
+Date: Fri, 12 Oct 2007 10:07:31 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Vitaliy Gusev <vgusev@openvz.org>
+CC: Greg KH <greg@kroah.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PCI: Fix boot-time hang on G31/G33 PC
+References: <20070826015556.GC14130@parisc-linux.org> <46FBF830.9000704@intel.com> <20070927231344.GD869@kroah.com> <200710121826.54405.vgusev@openvz.org>
+In-Reply-To: <200710121826.54405.vgusev@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Oct 2007 17:07:49.0280 (UTC) FILETIME=[6AC25A00:01C80CF2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Monakhov <dmonakhov@openvz.org>
+Vitaliy Gusev wrote:
+> On the 28 September 2007 03:13 Greg KH, wrote:
+>> On Thu, Sep 27, 2007 at 11:36:32AM -0700, Kok, Auke wrote:
+>>> Ivan Kokshaysky wrote:
+>>>> On Wed, Sep 26, 2007 at 03:20:40PM -0700, Jesse Barnes wrote:
+>>>>> Ivan, your concern is about disabling things like interrupt
+>>>>> controllers and power management chips during probe right?  You're
+>>>>> right that doing that could cause problems if we get and interrupt or
+>>>>> PMU event at just the wrong time, but that could just as easily happen
+>>>>> if decode was still enabled but the BAR had a bogus address programmed
+>>>>> (as it would during probing).
+>>>> Yes, nobody is arguing that moving the BAR around is unsafe, but
+>>>> generally it's the less of two evils.
+>>>>
+>>>> The major problem here is that with IO and MEM bits cleared in the
+>>>> command register you disable *all* address decoders on the device, not
+>>>> just ranges that have respective BARs. At least this behaviour is
+>>>> required by PCI spec. Examples:
+>>>> - legacy VGA IO and memory (no corresponding BARs);
+>>>> - base/limit registers of P2P bridge;
+>>>> - PMU and SMBus registers (sort of normal BARs, but hidden elsewhere
+>>>>   in the config space);
+>>>> - IDE legacy mode registers;
+>>>> - IO-APIC registers (typically sort of read-only BAR).
+>>>>
+>>>> For all of these address ranges our current BAR probe is effectively
+>>>> a no-op, but disable/re-enable clearly isn't.
+>>>>
+>>>>> Ultimately, I don't care much one way or another as long as we can get
+>>>>> the desktop platforms fixed somehow.  I think disabling decode is the
+>>>>> most correct way of doing this, but I'm open to other solutions (this
+>>>>> is the only patch I've seen though that's been tested to solve the
+>>>>> problem).
+>>>> There are two other solutions: one is to disable decode selectively,
+>>>> only on devices or systems where it's necessary and known to be safe.
+>>>> I've posted a patch which introduces "disable_while_probe" pci_dev
+>>>> field for that purpose.
+>>>> Another one is to delay mmconfig probe until after the PCI probe is
+>>>> done, as Matthew suggested, and Robert confirmed that it's feasible.
+>>> for everyone who's using this quirk or has the same boot issue: I just
+>>> confirmed that the new dg33tl bios update v0287 (released 9/20) fixes the
+>>> boot issue for my systems. I encourage everyone to update their BIOS
+>>> image and see if this works.
+> 
+> No, it still doesn't work even with a latest BIOS verstion. I have a computer 
+> with Intel DQ35MP motherboard. I upgraded BIOS to rev. 0696, released 
+> Oct 1. But kernel (2.6.22.5) still hangs up. Kernel with this fix patch boots 
+> and works fine.
 
-Add missing 'dm_put_device' to dm-delay target constructor.
+please note that your BIOS is completely different than the one posted above. This
+may be a clue.
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
- drivers/md/dm-delay.c |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
+interestingly enough I can attest (somewhat) to this. After the BIOS upgrade
+2.6.22 booted just fine without pci=nommconf, but I've had several boot lockups
+with 2.6.23-rc8.
 
-Index: linux-2.6.23/drivers/md/dm-delay.c
-===================================================================
---- linux-2.6.23.orig/drivers/md/dm-delay.c	2007-10-12 13:15:18.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-delay.c	2007-10-12 13:15:33.000000000 +0100
-@@ -163,34 +163,32 @@ static int delay_ctr(struct dm_target *t
- 		goto bad;
- 	}
- 
--	if (argc == 3) {
--		dc->dev_write = NULL;
-+	dc->dev_write = NULL;
-+	if (argc == 3)
- 		goto out;
--	}
- 
- 	if (sscanf(argv[4], "%llu", &tmpll) != 1) {
- 		ti->error = "Invalid write device sector";
--		goto bad;
-+		goto bad_dev_read;
- 	}
- 	dc->start_write = tmpll;
- 
- 	if (sscanf(argv[5], "%u", &dc->write_delay) != 1) {
- 		ti->error = "Invalid write delay";
--		goto bad;
-+		goto bad_dev_read;
- 	}
- 
- 	if (dm_get_device(ti, argv[3], dc->start_write, ti->len,
- 			  dm_table_get_mode(ti->table), &dc->dev_write)) {
- 		ti->error = "Write device lookup failed";
--		dm_put_device(ti, dc->dev_read);
--		goto bad;
-+		goto bad_dev_read;
- 	}
- 
- out:
- 	dc->delayed_pool = mempool_create_slab_pool(128, delayed_cache);
- 	if (!dc->delayed_pool) {
- 		DMERR("Couldn't create delayed bio pool.");
--		goto bad;
-+		goto bad_dev_write;
- 	}
- 
- 	setup_timer(&dc->delay_timer, handle_delayed_timer, (unsigned long)dc);
-@@ -203,6 +201,11 @@ out:
- 	ti->private = dc;
- 	return 0;
- 
-+bad_dev_write:
-+	if (dc->dev_write)
-+		dm_put_device(ti, dc->dev_write);
-+bad_dev_read:
-+	dm_put_device(ti, dc->dev_read);
- bad:
- 	kfree(dc);
- 	return -EINVAL;
+So, the issue is still open and Matthew/Jesse's suggested fix becomes much more
+attractive to me now.
+
+Greg, I suggest putting this patch back in the "grey" zone
+
+Auke
