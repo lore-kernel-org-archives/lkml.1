@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934423AbXJLWtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXJLWtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934423AbXJLWtG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932695AbXJLWVo
+	id S933285AbXJLWtv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbXJLWVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:21:44 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49941 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:21:49 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53455 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932688AbXJLWVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:21:42 -0400
+	id S932784AbXJLWVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:21:47 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 52/75] sysfs: spit a warning to users when they try to create a duplicate sysfs file
-Date: Fri, 12 Oct 2007 15:16:56 -0700
-Message-Id: <11922276862914-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 53/75] sysfs: fix comments of sysfs_add/remove_one()
+Date: Fri, 12 Oct 2007 15:16:57 -0700
+Message-Id: <11922276913288-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192227681926-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276862914-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -69,36 +69,50 @@ References: \<20071012221251.GB4559@kroah.com\>
  <1192227671143-git-send-email-gregkh@suse.de>
  <11922276763650-git-send-email-gregkh@suse.de>
  <1192227681926-git-send-email-gregkh@suse.de>
+ <11922276862914-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want to let people know when we create a duplicate sysfs file, as
-they need to fix up their code.
+From: Tejun Heo <htejun@gmail.com>
 
+sysfs_add/remove_one() now link and unlink the target dirent into and
+from the children list.  Update comments accordingly.
 
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ fs/sysfs/dir.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index da4bb66..5d95aa8 100644
+index 5d95aa8..fc615ee 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -428,8 +428,12 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
-  */
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
--	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
-+	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
-+		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-+		       "can not be created\n", sd->s_name);
-+		WARN_ON(1);
- 		return -EEXIST;
-+	}
- 
- 	sd->s_parent = sysfs_get(acxt->parent_sd);
- 
+@@ -410,10 +410,8 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+  *	@sd: sysfs_dirent to be added
+  *
+  *	Get @acxt->parent_sd and set sd->s_parent to it and increment
+- *	nlink of parent inode if @sd is a directory.  @sd is NOT
+- *	linked into the children list of the parent.  The caller
+- *	should invoke sysfs_link_sibling() after this function
+- *	completes if @sd needs to be on the children list.
++ *	nlink of parent inode if @sd is a directory and link into the
++ *	children list of the parent.
+  *
+  *	This function should be called between calls to
+  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
+@@ -453,9 +451,7 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+  *	@sd: sysfs_dirent to be added
+  *
+  *	Mark @sd removed and drop nlink of parent inode if @sd is a
+- *	directory.  @sd is NOT unlinked from the children list of the
+- *	parent.  The caller is repsonsible for removing @sd from the
+- *	children list before calling this function.
++ *	directory.  @sd is unlinked from the children list.
+  *
+  *	This function should be called between calls to
+  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
 -- 
 1.5.3.4
 
