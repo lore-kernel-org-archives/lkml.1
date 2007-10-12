@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760487AbXJLMYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbXJLMZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760487AbXJLMYq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbXJLMYh
+	id S1760518AbXJLMZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXJLMZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:24:37 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33743 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755986AbXJLMYg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:24:36 -0400
-Message-ID: <470F68EC.6040809@bull.net>
-Date: Fri, 12 Oct 2007 14:30:36 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Fri, 12 Oct 2007 08:25:46 -0400
+Received: from [212.12.190.126] ([212.12.190.126]:35641 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753991AbXJLMZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 08:25:45 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
+Date: Fri, 12 Oct 2007 15:25:44 +0300
+User-Agent: KMail/1.5
+Cc: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200710120031.42805.a1426z@gawab.com> <200710120837.18152.a1426z@gawab.com> <470F5F19.70606@trash.net>
+In-Reply-To: <470F5F19.70606@trash.net>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what is the rationale for "TAINT_USER"?
-References: <Pine.LNX.4.64.0710120801380.20049@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0710120801380.20049@localhost.localdomain>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 12/10/2007 14:30:54,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 12/10/2007 14:30:55,
-	Serialize complete at 12/10/2007 14:30:55
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Message-Id: <200710121525.44510.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   i can see what the theoretical purpose for it is here:
-> 
-> http://kerneltrap.org/node/6656
-> 
-> but it's not clear how it can possibly be set from userland given
-> that:
-> 
-> $ grep -r TAINT_USER *
-> include/linux/kernel.h:#define TAINT_USER                       (1<<6)
-> kernel/panic.c:                 tainted & TAINT_USER ? 'U' : ' ',
-> $
-> 
->   am i missing something screamingly obvious?
-> 
-> rday
+Patrick McHardy wrote:
+> Al Boldi wrote:
+> > Patrick McHardy wrote:
+> >>Please send mails discussing netfilter to netfilter-devel.
+> >
+> > Ok.  I just found out this changed to vger.  But
+> > netfilter-devel@vger.kernel.org is bouncing me.
+>
+> Seems to work, I got your mail on netfilter-devel.
 
-#ifdef CONFIG_PROC_SYSCTL
-         {
-                 .ctl_name       = KERN_TAINTED,
-                 .procname       = "tainted",
-                 .data           = &tainted,
-                 .maxlen         = sizeof(int),
-                 .mode           = 0644,
-                 .proc_handler   = &proc_dointvec_taint,
-         },
-#endif
+Looks like it works sometimes.  Added lkml as a backup...
+
+> >>Al Boldi wrote:
+> >>>With the existence of the mangle table, how useful is the filter table?
+> >>>
+> >>>Other than requiring the REJECT target to be ported to the mangle
+> >>> table, is the filter table faster than the mangle table?
+> >>
+> >>There are some minor differences in ordering (mangle comes before
+> >>DNAT, filter afterwards), but for most rulesets thats completely
+> >>irrelevant. The only difference that really matters is that mangle
+> >>performs rerouting in LOCAL_OUT for packets that had their routing
+> >>key changed, so its really a superset of the filter table. If you
+> >>want to use REJECT in the mangle table, you just need to remove the
+> >>restriction to filter, it works fine. I would prefer to also remove
+> >>the restriction of MARK, CONNMARK etc. to mangle, they're used for
+> >>more than just routing today so that restriction also doesn't make
+> >>much sense. Patches for this are welcome.
+> >
+> > Something like this (untested):
+> >
+> > --- ipt_REJECT.bak.c    2007-10-12 08:25:17.000000000 +0300
+> > +++ ipt_REJECT.c        2007-10-12 08:31:44.000000000 +0300
+> > @@ -165,6 +165,7 @@ static void send_reset(struct sk_buff *o
+> >
+> >  static inline void send_unreach(struct sk_buff *skb_in, int code)
+> >  {
+> > +       if (!skb_in->dst) ip_route_me_harder(&skb_in, RTN_UNSPEC);
+> >         icmp_send(skb_in, ICMP_DEST_UNREACH, code, 0);
+> >  }
+> >
+> > @@ -245,9 +246,6 @@ static struct xt_target ipt_reject_reg =
+> >         .family         = AF_INET,
+> >         .target         = reject,
+> >         .targetsize     = sizeof(struct ipt_reject_info),
+> > -       .table          = "filter",
+> > -       .hooks          = (1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD) |
+> > -                         (1 << NF_IP_LOCAL_OUT),
+> >         .checkentry     = check,
+> >         .me             = THIS_MODULE,
+> >  };
+>
+> That includes an unrelated change, I meant to simply remove the filter
+> table restriction.
+>
+> >>>If not, then shouldn't the filter table be obsoleted to avoid
+> >>> confusion?
+> >>
+> >>That would probably confuse people. Just don't use it if you don't
+> >>need to.
+> >
+> > The problem is that people think they are safe with the filter table,
+> > when in fact they need the prerouting chain to seal things.  Right now
+> > this is only possible in the mangle table.
+>
+> Why do they need PREROUTING?
+
+Well, for example to stop any transient packets being forwarded.  You could 
+probably hack around this using mark's, but you can't stop the implied route 
+lookup, unless you stop it in prerouting.
 
 
-Regards,
-Nadia
+Thanks!
+
+--
+Al
+
