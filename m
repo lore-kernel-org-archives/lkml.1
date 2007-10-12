@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXJLMLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXJLMOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbXJLMLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbXJLMLN
+	id S1760068AbXJLMOw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbXJLMOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:11:13 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53772 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXJLMLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:11:12 -0400
-Date: Fri, 12 Oct 2007 08:10:50 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/7] RT: Only consider online CPUs when pushing rt tasks
-In-Reply-To: <20071011215959.27097.71140.stgit@novell1.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710120809490.8900@gandalf.stny.rr.com>
-References: <20071011213916.27097.42597.stgit@novell1.haskins.net>
- <20071011215959.27097.71140.stgit@novell1.haskins.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Oct 2007 08:14:43 -0400
+Received: from main.gmane.org ([80.91.229.2]:38313 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753839AbXJLMOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 08:14:42 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Linux 2.6.23
+Date: Fri, 12 Oct 2007 08:21:59 -0400
+Message-ID: <470F66E7.7010509@tmr.com>
+References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org> <1191996740.8694.7.camel@entropy> <20071010101452.GA25433@elte.hu> <200710111916.23633.nickpiggin@yahoo.com.au> <20071012054615.GA22256@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+X-Gmane-NNTP-Posting-Host: pool-70-109-100-63.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20071012054615.GA22256@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+>> ;) I think you snipped the important bit:
+>>
+>> "the peak is terrible but it has virtually no dropoff and performs 
+>> better under load than the default 2.6.21 scheduler." (verbatim)
+> 
+> hm, i understood that peak remark to be in reference to FreeBSD's 
+> scheduler (which the FreeBSD guys are primarily interested in 
+> obviously), not v2.6.21 - but i could be wrong.
+> 
+> In any case, there is indeed a regression with sysbench and a low number 
+> of threads, and it's being fixed. The peak got improved visibly in 
+> sched-devel:
+> 
+>   http://people.redhat.com/mingo/misc/sysbench-sched-devel.jpg
+> 
+> but there is still some peak regression left, i'm testing a patch for 
+> that.
+> 
+There's one important bit missing from that graph, the 
+2.6.23-SCHED_BATCH values. Without that we can't tell how much 
+improvement is from sched-devel and how much from SCHED_BATCH. Clearly 
+2.6.23 is better than 2.6.22.any in this test, the locking issues seem 
+to dominate that difference to the point that nothing else would be 
+informative.
 
---
+This weekend I have to do some building of kernels for various machines, 
+so I intend to run some builds SCHED_BATCH and some will just run. If I 
+find anything interesting I'll report.
 
-On Thu, 11 Oct 2007, Gregory Haskins wrote:
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-> task->cpus_allowed can have bit positions that are set for CPUs that are
-> not currently online.  So we optimze our search by ANDing against the online
-> set.
->
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
->
->  kernel/sched.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 24b38b4..0ca3905 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1510,10 +1510,14 @@ static int push_rt_task(struct rq *this_rq)
->
->  	/* Only try this algorithm three times */
->  	for (tries = 0; tries < 3; tries++) {
-> +		cpumask_t mask;
-> +
-> +		cpus_and(mask, cpu_online_map, next_task->cpus_allowed);
-> +
-
-Gag! I definitely sent you an old patch. I fixed this a while ago :-(
-
--- Steve
-
->  		/*
->  		 * Scan each rq for the lowest prio.
->  		 */
-> -		for_each_cpu_mask(cpu, next_task->cpus_allowed) {
-> +		for_each_cpu_mask(cpu, mask) {
->  			struct rq *rq = &per_cpu(runqueues, cpu);
->
->  			if (cpu == smp_processor_id())
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
