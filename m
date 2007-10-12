@@ -1,145 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbXJLPJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXJLPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbXJLPJY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 11:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbXJLPJQ
+	id S1757511AbXJLPOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXJLPOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 11:09:16 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:25950 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbXJLPJP convert rfc822-to-8bit (ORCPT
+	Fri, 12 Oct 2007 11:14:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48709 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750845AbXJLPOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 11:09:15 -0400
-X-IronPort-AV: i="4.21,267,1188792000"; 
-   d="scan'208"; a="53871541:sNHT32584433"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 12 Oct 2007 11:14:08 -0400
+Date: Fri, 12 Oct 2007 08:13:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jarek Poplawski <jarkao2@o2.pl>
+cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+In-Reply-To: <20071012082534.GB1962@ff.dom.local>
+Message-ID: <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org>
+References: <20071012082534.GB1962@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH try #3] Blackfin BF54x Input Keypad controller driver
-Date: Fri, 12 Oct 2007 16:09:10 +0100
-Message-ID: <600D5CB4DFD93545BF61FF01473D11AC0F1960A2@limkexm2.ad.analog.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH try #3] Blackfin BF54x Input Keypad controller driver
-Thread-Index: AcgMQQiIDuOIS8v4TXynkm+V3Zg4fAAn/ahg
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: <bryan.wu@analog.com>, <linux-input@atrey.karlin.mff.cuni.cz>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       <uclinux-dist-devel@blackfin.uclinux.org>
-X-OriginalArrivalTime: 12 Oct 2007 15:09:13.0994 (UTC) FILETIME=[D9B7DEA0:01C80CE1]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Dmitry,
 
->From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
->Sent: Donnerstag, 11. Oktober 2007 21:58
->To: Hennerich, Michael
->Cc: bryan.wu@analog.com; linux-input@atrey.karlin.mff.cuni.cz; Linux
->Kernel; uclinux-dist-devel@blackfin.uclinux.org
->Subject: Re: [PATCH try #3] Blackfin BF54x Input Keypad controller
-driver
->
->Hi Michael,
->
->On 10/11/07, Hennerich, Michael <Michael.Hennerich@analog.com> wrote:
->> >From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
->> >Sent: Donnerstag, 11. Oktober 2007 19:27
->> >To: bryan.wu@analog.com
->> >Cc: Michael Hennerich; linux-input@atrey.karlin.mff.cuni.cz; Linux
->> Kernel;
->> >uclinux-dist-devel@blackfin.uclinux.org
->> >Subject: Re: [PATCH try #3] Blackfin BF54x Input Keypad controller
->> driver
->> >
->> >On Thursday 11 October 2007, Bryan Wu wrote:
->> >> From: Michael Hennerich <michael.hennerich@analog.com>
->> >> Date: Fri, 12 Oct 2007 00:20:19 +0800
->> >> Subject: [PATCH] Blackfin BF54x Input Keypad controller driver
->> >>
->> >> [try #2] Changelog:
->> >>  - Coding style issue fixes
->> >>  - using a temp variable for bf54x_kpad->input
->> >>  - Other updates according to Dmitry's review
->> >>
->> >> [try #3] Changelog:
->> >>  - Coding style cleanups
->> >>  - Use local copy of keymap
->> >>  - Remove empty PM functions
->> >>  - Use input_set_drvdata() since input->private is going away
->> >
->> >
->> >This looks very good, thank youvery much. I have only 1 more
-suggestion
->> >(and I can make the changes locally, you don't need to resubmit) -
->> >since it is highly unlikely that we will have a keycode > 65535 do
-you
->> >think we could change keymap to unsigned short. It would save you a
->> >couple of bytes. I am also going to change "input->cdev.dev =
->> &pdev->dev;"
->> >to "input_dev->dev.parent = &pdev->dev;". Please let me know if you
-are
->> >OK with it.
->>
->> Hi Dmitry,
->>
->> Thanks for your excellent feedback and support.
->>
->> We do a pretty similar thing like the omap keypad driver.
->> Our keycodes do not exceed KEY_MAX but we encode the ROW and COL into
->> the keycode matrix, in order simplify things in a "normal use case"?
-.
->> What we store is u32, 16-bit for the keycode and the upper for
-private
->> use. My understanding is that we then have to set input->keycodesize
->> also being u32.
->>
->> Otherwise the generic input layer might get screwed up?!
->>
->> Am I wrong here, or do I miss something?
->> Either this is a valid use case or I was inspired by a bad example.
->>
->
->Thank you very much for alerting me of omap case, I missed it.
->
->Drivers that use complex values in their keymap tables should not use
->input->keycode, keycodesize and keycodemax. These fields are only used
->by input core if the driver relies on default implementation of
->getkeycode() and setkeycode() for manipulations with its keymap. But
->this will not work in your case (nor with omap) because your keymap
->table does not contain "pure" input keycodes.
->
->Well, I guess the easiest is just not set these fields (and remove the
->per-device map allocationand copying) and say that the driver does not
->support altering keymaps. After all, like you said, it is an embedded
->platform and it is unlikely that users will want to alter keymaps.
->
->However, if you think that this is a nice feature, then you either
->need to rethink how you handle your keymap of implement custom
->getkeycode and setkeycode methods in your driver. The coice is yours,
->I will gladly accept either version of drver.
+On Fri, 12 Oct 2007, Jarek Poplawski wrote:
+> 
+> First it looks like a really great thing that it's revealed at last.
+> But then... there is probably some confusion: did we have to use
+> ineffective code for so long?
 
-Well it's a nice feature - 
+I think the chip manufacturers really wanted to keep their options open.
 
-I changed following:
+Having the option to re-order loads in architecturally visible ways was 
+something that they probably felt they really wanted to have. On the other 
+hand:
 
-- Change keymapsize to u16
-- Copy privately used LUT behind keycodemax in keycode table.
-This is more cache friendly when doing the tablewalk, and goes totally
-unnoticed be the input device layer. 
-- Change Input_dev->cdev.dev to input_dev->dev.parent
+ - I bet they had noticed that things break, and some applications depend 
+   on fairly strong ordering (not necessarily in Linux-land, but..)
 
-Bryan is going to send you an updated patch soon.
+   I suspect hw manufacturers go through life hoping that "software 
+   improves". They probably thought that getting rid of the old 16-bit 
+   windows would mean that less people depended on undefined behaviour. 
 
-Thanks and best regards,
-Michael
+   And I suspect that they started noticing that no, with threads and 
+   JVM's and things, *more* people started depending on fairly strong 
+   memory ordering.
 
->
->--
->Dmitry
+ - I suspect Intel in particular noticed that they can do a lot of very 
+   aggressive re-ordering at a microarchitectural level, but can still 
+   guarantee that *architecturally* they never show it (dynamic detection 
+   of reordered loads being replayed on cache dirty events etc).
+
+IOW, I suspect that both Intel and AMD noticed that while they had wanted 
+to keep their options open, those options weren't really realistic, and 
+not something that the market wanted (aggressive use of threading wants 
+*stricter* memory ordering, not looser), and they could work well enough 
+with a fairly strict memory model.
+
+> So, maybe linux needs something like this, instead of waiting few
+> years with each new model for vendors goodwill? IMHO, even for less
+> popular processors, this could be checked under some debugging option
+> at the system start (after disabling suspicios barrier for a while
+> plus some WARN_ONs).
+
+Quite frankly, even *within* Intel and AMD, there are damn few people who 
+understand exactly what the memory ordering requirements and guarantees 
+are and historically were for the different CPU's.
+
+I would bet that had you asked a random (but still competent) Intel/AMD 
+engineer that wasn't really intimately involved with the actual design of 
+the cache protocols and memory pipelines, they would absolutely not have 
+been able to tell you how the CPU actually worked.
+
+So no, there's no way a software person could have afforded to say "it 
+seems to work on my setup even without the barrier". On a dual-socket 
+setup with s shared bus, that says absolutely *nothing* about the 
+behaviour of the exact same CPU when used with a multi-bus chipset. Not to 
+mention another revisions of the same CPU - much less a whole other 
+microarchitecture.
+
+So yes, I've personally been aware for about a year that the memory 
+ordering was going to likely be documented, but no way was I going to 
+depend on it until Intel and AMD were ready to state so *publicly*. 
+Because before that happens, they may have noticed errata etc that made it 
+not work out.
+
+Also, please note that we didn't even just change the barriers immediately 
+when the docs came out. I want to do it soon - still *early* in the 2.6.24 
+development cycle - exactly because bugs happen, and if somebody notices 
+something strange, we'll have more time to perhaps decide that "oops, 
+there's something bad going on, let's undo this for the real 2.6.24 
+release until we can figure out the exact pattern".
+
+		Linus
