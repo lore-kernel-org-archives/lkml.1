@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbXJLMSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbXJLMWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760119AbXJLMSg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbXJLMS2
+	id S1759493AbXJLMWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXJLMWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:18:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:36584 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423AbXJLMS1 (ORCPT
+	Fri, 12 Oct 2007 08:22:46 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:40237 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752492AbXJLMWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:18:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ToGTnNKHFPZxXVfN6HerajEBT5dokiKBAYa/G1QpIk40rWLlG5IRb/dVP10HQ4auDayAN/lySfeRqkWA0GH53teo+vXIofw9gYCTqu98W4ply8VYFrDE9ldub14SC+7ezgYy1oHcE3Y7CYmBjoAMjGGt+z92VYohi5LqmQ9zzC8=
-Message-ID: <3ae72650710120518p6132e459q7ee234d640ad0a1c@mail.gmail.com>
-Date: Fri, 12 Oct 2007 14:18:26 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: [GIT PULL] MMC updates
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-In-Reply-To: <20071012074556.574584db@poseidon.drzeus.cx>
+	Fri, 12 Oct 2007 08:22:45 -0400
+X-Originating-Ip: 99.236.101.138
+Date: Fri, 12 Oct 2007 08:18:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what is the rationale for "TAINT_USER"?
+In-Reply-To: <Pine.LNX.4.64.0710120801380.20049@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0710120814050.21625@localhost.localdomain>
+References: <Pine.LNX.4.64.0710120801380.20049@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071010212149.0073ee08@poseidon.drzeus.cx>
-	 <alpine.LFD.0.999.0710112228200.6887@woody.linux-foundation.org>
-	 <20071012074556.574584db@poseidon.drzeus.cx>
-X-Google-Sender-Auth: e8dc1b9862795ee0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/07, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> On Thu, 11 Oct 2007 22:30:41 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> >
-> > There seems to be some breakage here:
-> >
-> >       drivers/mmc/core/host.c: In function 'mmc_remove_host':
-> >       drivers/mmc/core/host.c:146: error: implicit declaration of
-> > function 'led_trigger_unregister' drivers/mmc/core/host.c:146: error:
-> > 'struct mmc_host' has no member named 'led'
-> >
-> > this was after doing a few "make randconfig" runs, a habit I'm trying
-> > to encourage (and do myself occasionally too).
-> >
->
-> How embarrassing. I'll have a look at it and reping you when I've
-> solved it.
+On Fri, 12 Oct 2007, Robert P. J. Day wrote:
 
-I see the same here. MMC needs a dependency on LEDS_TRIGGERS, I guess.
+>
+>   i can see what the theoretical purpose for it is here:
+>
+> http://kerneltrap.org/node/6656
+>
+> but it's not clear how it can possibly be set from userland given
+> that:
+>
+> $ grep -r TAINT_USER *
+> include/linux/kernel.h:#define TAINT_USER                       (1<<6)
+> kernel/panic.c:                 tainted & TAINT_USER ? 'U' : ' ',
+> $
+>
+>   am i missing something screamingly obvious?
 
-Kay
+whoops, never mind -- if i read correctly, that particular flag bit
+must be set *explicitly* when writing to /proc/sys/kernel/tainted.  i
+originally thought it would be set by kernel code simply by the act of
+writing to /proc/sys/kernel/tainted, and i couldn't see where that was
+happening.  carry on.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
