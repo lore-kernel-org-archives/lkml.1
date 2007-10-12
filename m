@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXJLMqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbXJLMqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760573AbXJLMqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXJLMq0
+	id S1757550AbXJLMqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760597AbXJLMqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:46:26 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53349 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753430AbXJLMqZ (ORCPT
+	Fri, 12 Oct 2007 08:46:35 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:36514 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760381AbXJLMqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:46:25 -0400
-Date: Fri, 12 Oct 2007 14:46:54 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Michael Leun <ml@newton.leun.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: solved: 2.6.23 && fglrx && s2ram
-Message-ID: <20071012124654.GG3620@stusta.de>
-References: <20071012000722.3cbf17b6@elektra.leun.net> <200710120131.17897.rjw@sisk.pl> <20071012014907.0005aab7@elektra.leun.net> <20071012000634.GC3620@stusta.de> <470F698A.2020200@tmr.com>
+	Fri, 12 Oct 2007 08:46:33 -0400
+Message-ID: <470F6C43.4090905@aitel.hist.no>
+Date: Fri, 12 Oct 2007 14:44:51 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <470F698A.2020200@tmr.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jarek Poplawski <jarkao2@o2.pl>
+CC: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no> <20071012091213.GC1962@ff.dom.local>
+In-Reply-To: <20071012091213.GC1962@ff.dom.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 08:33:14AM -0400, Bill Davidsen wrote:
-> Adrian Bunk wrote:
->> On Fri, Oct 12, 2007 at 01:49:07AM +0200, Michael Leun wrote:
->>> On Fri, 12 Oct 2007 01:31:17 +0200
->>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Jarek Poplawski wrote:
+> On Fri, Oct 12, 2007 at 10:42:34AM +0200, Helge Hafting wrote:
+>   
+>> Jarek Poplawski wrote:
+>>     
+>>> On 04-10-2007 07:23, Nick Piggin wrote:
+>>>  
+>>>       
+>>>> According to latest memory ordering specification documents from Intel and
+>>>> AMD, both manufacturers are committed to in-order loads from cacheable 
+>>>> memory
+>>>> for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+>>>>    
+>>>>         
+>>> ...
 >>>
->>>> Hi,
->>>>
->>>> On Friday, 12 October 2007 00:07, Michael Leun wrote:
->>>>> Hello,
->>>>>
->>>>> (please, don't blame me for using the binary only driver, I will
->>>>> happily switch to a open source one once it properly runs mplayer,
->>>>> e.g.).
->>>>>
->>>>> Renaming the config options for suspend/sleep broke fglrx power
->>>>> management.
->>>> It looks like your patch is against the fglrx driver, isn't it?
->>> It is - I should have mentioned that, sorry.
->> This makes it 100% off-topic for linux-kernel - please send patches for 
->> illegal modules to the vendors of these modules and not here.
-> Which would help the actual users of the module not one whit. Whereas 
-> putting the patch here helps the people who need it and allows multiple 
-> people to complain to the vendor.
->...
+>>> Great news!
+>>>
+>>> First it looks like a really great thing that it's revealed at last.
+>>> But then... there is probably some confusion: did we have to use
+>>> ineffective code for so long?
+>>>  
+>>>       
+>> You could have tried the optimization before, and
+>> gotten better performance. But if without solid knowledge that
+>> the optimization is _valid_, you risk having a kernel
+>> that performs great but suffer the occational glitch and
+>> therefore is unstable and crash the machine "now and then".
+>> This sort of thing can't really be figured out by experimentation, because
+>> the bad cases might happen only with some processors, some
+>> combinations of memory/chipsets, or with some minimum
+>> number of processors.  Such problems can be very hard
+>> to find, especially considering that other plain bugs also
+>> cause crashes.
+>>
+>> Therefore, the "ineffective code" was used because it was
+>> the only safe alternative. Now we know, so now we may optimize.
+>>     
+>
+> Sorry, I don't understand this logic at all. Since bad cases
+> happen independently from any specifications and Intel doesn't
+> take any legal responsibility for such information, it seems we
+> should better still not optimize?
+>   
+The point is that we _trust_ intel when they says "this will work".
+Therefore, we can use the optimizations. It was never about
+legal matters. If we didn't trust intel, then we couldn't
+use their processors at all.
 
-The vendor has his own forums and support channels.
-That's what the term "off-topic" describes.
+We couldn't take the chance before. It was not documented
+to work, verification by testing would not be trivial at all for
+this case.
+Linux is about "stability first, then performance".
+Now we _know_ that we can have this optimization without
+compromising stability. Nobody knew before!
 
-And what's worst is that people on this list might become tainted 
-by seeing part of the fglrx source code.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Helge Hafting
