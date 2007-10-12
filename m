@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbXJLWx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761507AbXJLWx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbXJLWx0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXJLWWR
+	id S1761507AbXJLWx5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932782AbXJLWWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:22:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49977 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:22:20 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49986 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932688AbXJLWWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:14 -0400
+	id S932588AbXJLWWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:22:18 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 59/75] sysfs: kill unnecessary NULL pointer check in sysfs_release()
-Date: Fri, 12 Oct 2007 15:17:03 -0700
-Message-Id: <11922277181565-git-send-email-gregkh@suse.de>
+Subject: [PATCH 60/75] sysfs: make bin attr open get active reference of parent too
+Date: Fri, 12 Oct 2007 15:17:04 -0700
+Message-Id: <11922277222714-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277133374-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922277181565-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -76,42 +76,55 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922277041450-git-send-email-gregkh@suse.de>
  <11922277091389-git-send-email-gregkh@suse.de>
  <11922277133374-git-send-email-gregkh@suse.de>
+ <11922277181565-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-In sysfs_release(), sysfs_buffer pointed to by filp->private_data is
-guaranteed to exist.  Kill the unnecessary NULL check.  This also
-makes the code more consistent with the counterpart in fs/sysfs/bin.c.
+All bin attr operations require active references of itself and its
+parent.  There's no reason to allow open when its parent has been
+deactivated and allowing it is inconsistent with regular sysfs file.
+Use sysfs_get_active_two() in bin attribute open function.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/file.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ fs/sysfs/bin.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 73333dc..8f1ebd8 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -311,11 +311,10 @@ static int sysfs_release(struct inode * inode, struct file * filp)
- {
- 	struct sysfs_buffer *buffer = filp->private_data;
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index e93fe5e..9c8f882 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -171,8 +171,8 @@ static int open(struct inode * inode, struct file * file)
+ 	struct bin_buffer *bb = NULL;
+ 	int error;
  
--	if (buffer) {
--		if (buffer->page)
--			free_page((unsigned long)buffer->page);
--		kfree(buffer);
--	}
-+	if (buffer->page)
-+		free_page((unsigned long)buffer->page);
-+	kfree(buffer);
-+
+-	/* need attr_sd for attr */
+-	if (!sysfs_get_active(attr_sd))
++	/* binary file operations requires both @sd and its parent */
++	if (!sysfs_get_active_two(attr_sd))
+ 		return -ENODEV;
+ 
+ 	error = -EACCES;
+@@ -193,12 +193,12 @@ static int open(struct inode * inode, struct file * file)
+ 	mutex_init(&bb->mutex);
+ 	file->private_data = bb;
+ 
+-	/* open succeeded, put active reference */
+-	sysfs_put_active(attr_sd);
++	/* open succeeded, put active references */
++	sysfs_put_active_two(attr_sd);
  	return 0;
- }
  
+  err_out:
+-	sysfs_put_active(attr_sd);
++	sysfs_put_active_two(attr_sd);
+ 	kfree(bb);
+ 	return error;
+ }
 -- 
 1.5.3.4
 
