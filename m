@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXJLEPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbXJLESu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758433AbXJLEPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXJLEPY
+	id S1759498AbXJLESu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 00:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXJLESl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:15:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55344 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbXJLEPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:15:23 -0400
-Date: Fri, 12 Oct 2007 06:16:53 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] kbuild updates
-Message-ID: <20071012041653.GA16142@uranus.ravnborg.org>
-References: <20071010194434.GA2791@uranus.ravnborg.org> <alpine.LFD.0.999.0710111905420.6887@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710111905420.6887@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 12 Oct 2007 00:18:41 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:44726 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751639AbXJLESk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 00:18:40 -0400
+Date: Thu, 11 Oct 2007 22:18:15 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: ioremap_nocache and mem= parameter with k 2.6.18
+In-reply-to: <1192116465.689041.176900@57g2000hsv.googlegroups.com>
+To: mirco_cremasco@hotmail.com, linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <470EF587.3000204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <1192116465.689041.176900@57g2000hsv.googlegroups.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 07:08:53PM -0700, Linus Torvalds wrote:
+mirco_cremasco@hotmail.com wrote:
+> Hi,
+> I'm using a driver for a framegrabber device that needs to alloc a
+> huge buffer of ram for dma transfers....
+> So it works:
+> 1) Having 2GB of ram installed, boot the kernel with mem=1024M
+> parameter
+> 2) remap the unmapped memory above first GB using ioremap_nocache
+> function, using PAGE_ALIGN().
 > 
+> This works fine with kernel 2.6.9 but it doesn't with newer ones
+> 2.6.18, 2.6.20, 2.6.22.
+> With newer kernel ioremap returns 0.
+> It seems like memory above 1G has been marked reserved, IMHO.
 > 
-> On Wed, 10 Oct 2007, Sam Ravnborg wrote:
-> > 
-> > This set of commits are the kbuild stuff that does not
-> > conflict with the pending x86 merge.
-> 
-> Hmm. It does for me, actually.
-I did not try it out obviously - I just removed everything touching x86_64/i386.
-This is the SRCARCH changes in top-level Makefile.
+> What changes in the mm?
+> I'm not the driver's developer, but I'd like to understand and
+> possibly find a workaround...
 
-> 
-> I fixed up the trivial conflict in the main Makefile, but that seems to 
-> leave $(ARCH) entirely undefined in my case, so the end result doesn't 
-> work. That seems to have nothing to do with my conflict fixup, but is 
-> something else.
-> 
-> It also gets a trivial conflict with the 'mmc' pull I just did, but that 
-> didn't seem problematic (mmc added a new case to scripts/mod/file2alias.c, 
-> and you added a free, both at the end of the same function) - but the x86 
-> merge conflict means that I decided that I'll let you sort it out. It's 
-> probably really trivial, but I'll merge the other stuff I have pending 
-> instead.
+It doesn't make sense to use ioremap_nocache on RAM. It's only meant for 
+mapping MMIO memory regions on a device.
 
-As Andrew has an issue with my geneius "save ARCH & CROSS_COMPILE" patch
-this is perfect. I will sort out the conflicts and Andrew's use-case and
-submit a new pull request.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-	Sam
