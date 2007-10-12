@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933256AbXJLWn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933919AbXJLWn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933256AbXJLWn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932640AbXJLWU5
+	id S933919AbXJLWn6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbXJLWVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:57 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49851 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:21:01 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49856 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760582AbXJLWUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:55 -0400
+	id S932659AbXJLWU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:59 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 42/75] sysfs: Make sysfs_mount static
-Date: Fri, 12 Oct 2007 15:16:46 -0700
-Message-Id: <11922276392200-git-send-email-gregkh@suse.de>
+Subject: [PATCH 43/75] sysfs: In sysfs_lookup don't open code sysfs_find_dirent
+Date: Fri, 12 Oct 2007 15:16:47 -0700
+Message-Id: <11922276433594-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192227634772-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276392200-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -61,88 +61,38 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276254051-git-send-email-gregkh@suse.de>
  <11922276302338-git-send-email-gregkh@suse.de>
  <1192227634772-git-send-email-gregkh@suse.de>
+ <11922276392200-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch modifies the users of sysfs_mount to use sysfs_root
-instead (which is what they are looking for).  It then
-makes sysfs_mount static to keep people from using it
-by accident.
-
-The net result is slightly faster and cleaner code.
+This is a small cleanup patch that makes the code just
+a little bit cleaner.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c     |    4 +---
- fs/sysfs/mount.c   |    2 +-
- fs/sysfs/symlink.c |    7 +++----
- fs/sysfs/sysfs.h   |    1 -
- 4 files changed, 5 insertions(+), 9 deletions(-)
+ fs/sysfs/dir.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 739dda1..7f4abe1 100644
+index 7f4abe1..b72b42e 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -737,10 +737,8 @@ int sysfs_create_dir(struct kobject * kobj)
+@@ -756,9 +756,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
  
- 	if (kobj->parent)
- 		parent_sd = kobj->parent->sd;
--	else if (sysfs_mount && sysfs_mount->mnt_sb)
--		parent_sd = sysfs_mount->mnt_sb->s_root->d_fsdata;
- 	else
--		return -EFAULT;
-+		parent_sd = &sysfs_root;
+ 	mutex_lock(&sysfs_mutex);
  
- 	error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
- 	if (!error)
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index ac76256..8989cbb 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -14,7 +14,7 @@
- /* Random magic number */
- #define SYSFS_MAGIC 0x62656572
+-	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
+-		if (sysfs_type(sd) && !strcmp(sd->s_name, dentry->d_name.name))
+-			break;
++	sd = sysfs_find_dirent(parent_sd, dentry->d_name.name);
  
--struct vfsmount *sysfs_mount;
-+static struct vfsmount *sysfs_mount;
- struct super_block * sysfs_sb = NULL;
- struct kmem_cache *sysfs_dir_cachep;
- 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index a6b13f1..8ad38bc 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -60,10 +60,9 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
- 
- 	BUG_ON(!name);
- 
--	if (!kobj) {
--		if (sysfs_mount && sysfs_mount->mnt_sb)
--			parent_sd = sysfs_mount->mnt_sb->s_root->d_fsdata;
--	} else
-+	if (!kobj)
-+		parent_sd = &sysfs_root;
-+	else
- 		parent_sd = kobj->sd;
- 
- 	error = -EFAULT;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 8a0aea1..77253aa 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -51,7 +51,6 @@ struct sysfs_addrm_cxt {
- 	int			cnt;
- };
- 
--extern struct vfsmount * sysfs_mount;
- extern struct sysfs_dirent sysfs_root;
- extern struct kmem_cache *sysfs_dir_cachep;
- 
+ 	/* no such entry */
+ 	if (!sd)
 -- 
 1.5.3.4
 
