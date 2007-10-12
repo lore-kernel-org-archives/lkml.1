@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXJLMl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXJLMqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbXJLMl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXJLMlS
+	id S1760573AbXJLMqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXJLMq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:41:18 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41373 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760592AbXJLMlR (ORCPT
+	Fri, 12 Oct 2007 08:46:26 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53349 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753430AbXJLMqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:41:17 -0400
-X-Originating-Ip: 99.236.101.138
-Date: Fri, 12 Oct 2007 08:37:04 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what is the rationale for "TAINT_USER"?
-In-Reply-To: <20071012122719.GB30350@atjola.homenet>
-Message-ID: <Pine.LNX.4.64.0710120832350.22555@localhost.localdomain>
-References: <Pine.LNX.4.64.0710120801380.20049@localhost.localdomain>
- <20071012122719.GB30350@atjola.homenet>
+	Fri, 12 Oct 2007 08:46:25 -0400
+Date: Fri, 12 Oct 2007 14:46:54 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Michael Leun <ml@newton.leun.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: solved: 2.6.23 && fglrx && s2ram
+Message-ID: <20071012124654.GG3620@stusta.de>
+References: <20071012000722.3cbf17b6@elektra.leun.net> <200710120131.17897.rjw@sisk.pl> <20071012014907.0005aab7@elektra.leun.net> <20071012000634.GC3620@stusta.de> <470F698A.2020200@tmr.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2046103468-1192192624=:22555"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <470F698A.2020200@tmr.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Oct 12, 2007 at 08:33:14AM -0400, Bill Davidsen wrote:
+> Adrian Bunk wrote:
+>> On Fri, Oct 12, 2007 at 01:49:07AM +0200, Michael Leun wrote:
+>>> On Fri, 12 Oct 2007 01:31:17 +0200
+>>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> On Friday, 12 October 2007 00:07, Michael Leun wrote:
+>>>>> Hello,
+>>>>>
+>>>>> (please, don't blame me for using the binary only driver, I will
+>>>>> happily switch to a open source one once it properly runs mplayer,
+>>>>> e.g.).
+>>>>>
+>>>>> Renaming the config options for suspend/sleep broke fglrx power
+>>>>> management.
+>>>> It looks like your patch is against the fglrx driver, isn't it?
+>>> It is - I should have mentioned that, sorry.
+>> This makes it 100% off-topic for linux-kernel - please send patches for 
+>> illegal modules to the vendors of these modules and not here.
+> Which would help the actual users of the module not one whit. Whereas 
+> putting the patch here helps the people who need it and allows multiple 
+> people to complain to the vendor.
+>...
 
---8323328-2046103468-1192192624=:22555
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+The vendor has his own forums and support channels.
+That's what the term "off-topic" describes.
 
-On Fri, 12 Oct 2007, Björn Steinbrink wrote:
+And what's worst is that people on this list might become tainted 
+by seeing part of the fglrx source code.
 
-> On 2007.10.12 08:04:20 -0400, Robert P. J. Day wrote:
-> >
-> >   i can see what the theoretical purpose for it is here:
-> >
-> > http://kerneltrap.org/node/6656
-> >
-> > but it's not clear how it can possibly be set from userland given
-> > that:
-> >
-> > $ grep -r TAINT_USER *
-> > include/linux/kernel.h:#define TAINT_USER                       (1<<6)
-> > kernel/panic.c:                 tainted & TAINT_USER ? 'U' : ' ',
-> > $
-> >
-> >   am i missing something screamingly obvious?
->
-> Grepping for "tainted" leads me to:
->
-> echo 32 > /proc/sys/kernel/tainted
+cu
+Adrian
 
-???.  i have no idea what you were grepping through to find that
-phrase, but TAINT_USER would seem to be equivalent to echo 64, not
-echo 32, anyway, no?
-
-in any event, as i posted in a followup, i'm assuming that that
-particular bit is meant to be set explicitly from user space using
-something like:
-
-  # echo 64 > /proc/sys/kernel/tainted
-
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://crashcourse.ca
-========================================================================
---8323328-2046103468-1192192624=:22555--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
