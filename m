@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbXJLQVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXJLQVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932789AbXJLQVN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760089AbXJLQIB
+	id S932905AbXJLQVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbXJLQIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:08:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43907 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 12:08:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43914 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760266AbXJLQH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:07:59 -0400
+	id S1760266AbXJLQIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:08:04 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 30/52] CRED: Give the rmdir() inode op a credentials pointer
+Subject: [PATCH 31/52] CRED: Give the rename() inode op a credentials pointer
 To: viro@ftp.linux.org.uk
 Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 12 Oct 2007 17:07:52 +0100
-Message-ID: <20071012160752.15119.58526.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 17:07:57 +0100
+Message-ID: <20071012160757.15119.85145.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,252 +29,218 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give the rmdir() inode op a credentials pointer.
+Give the rename() inode op a credentials pointer.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/dir.c          |    6 ++++--
- fs/autofs4/root.c     |    5 +++--
- fs/bad_inode.c        |    3 ++-
- fs/ext3/namei.c       |    4 ++--
- fs/libfs.c            |    4 +---
- fs/namei.c            |    3 ++-
- fs/nfs/dir.c          |    6 +++---
- fs/vfat/namei.c       |    3 ++-
- include/linux/fs.h    |    4 ++--
- mm/shmem.c            |    4 ++--
- net/sunrpc/rpc_pipe.c |    6 ++++--
- security/inode.c      |    2 +-
- 12 files changed, 28 insertions(+), 22 deletions(-)
+ fs/afs/dir.c       |    6 ++++--
+ fs/bad_inode.c     |    3 ++-
+ fs/ext3/namei.c    |    4 ++--
+ fs/libfs.c         |    5 ++---
+ fs/namei.c         |    8 ++++++--
+ fs/nfs/dir.c       |    6 +++---
+ fs/vfat/namei.c    |    3 ++-
+ include/linux/fs.h |    6 ++++--
+ mm/shmem.c         |    5 +++--
+ 9 files changed, 28 insertions(+), 18 deletions(-)
 
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index b6d5abb..9f2c214 100644
+index 9f2c214..5f4ac2e 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
-@@ -32,7 +32,8 @@ static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
- 		      struct nameidata *nd, struct cred *cred);
- static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
- 		     struct cred *cred);
--static int afs_rmdir(struct inode *dir, struct dentry *dentry);
-+static int afs_rmdir(struct inode *dir, struct dentry *dentry,
-+		     struct cred *cred);
- static int afs_unlink(struct inode *dir, struct dentry *dentry,
- 		      struct cred *cred);
- static int afs_link(struct dentry *from, struct inode *dir,
-@@ -794,7 +795,8 @@ error:
- /*
-  * remove a directory from an AFS filesystem
+@@ -41,7 +41,8 @@ static int afs_link(struct dentry *from, struct inode *dir,
+ static int afs_symlink(struct inode *dir, struct dentry *dentry,
+ 		       const char *content);
+ static int afs_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		      struct inode *new_dir, struct dentry *new_dentry);
++		      struct inode *new_dir, struct dentry *new_dentry,
++		      struct cred *cred);
+ 
+ const struct file_operations afs_dir_file_operations = {
+ 	.open		= afs_dir_open,
+@@ -1103,7 +1104,8 @@ error:
+  * rename a file in an AFS filesystem and/or move it between directories
   */
--static int afs_rmdir(struct inode *dir, struct dentry *dentry)
-+static int afs_rmdir(struct inode *dir, struct dentry *dentry,
-+		     struct cred *cred)
+ static int afs_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		      struct inode *new_dir, struct dentry *new_dentry)
++		      struct inode *new_dir, struct dentry *new_dentry,
++		      struct cred *cred)
  {
- 	struct afs_vnode *dvnode, *vnode;
+ 	struct afs_vnode *orig_dvnode, *new_dvnode, *vnode;
  	struct key *key;
-diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index 747a51f..1743d38 100644
---- a/fs/autofs4/root.c
-+++ b/fs/autofs4/root.c
-@@ -21,7 +21,7 @@
- 
- static int autofs4_dir_symlink(struct inode *,struct dentry *,const char *);
- static int autofs4_dir_unlink(struct inode *,struct dentry *, struct cred *);
--static int autofs4_dir_rmdir(struct inode *,struct dentry *);
-+static int autofs4_dir_rmdir(struct inode *,struct dentry *, struct cred *);
- static int autofs4_dir_mkdir(struct inode *,struct dentry *,int, struct cred *);
- static int autofs4_root_ioctl(struct inode *, struct file *,unsigned int,unsigned long);
- static int autofs4_dir_open(struct inode *inode, struct file *file);
-@@ -790,7 +790,8 @@ static int autofs4_dir_unlink(struct inode *dir, struct dentry *dentry,
- 	return 0;
- }
- 
--static int autofs4_dir_rmdir(struct inode *dir, struct dentry *dentry)
-+static int autofs4_dir_rmdir(struct inode *dir, struct dentry *dentry,
-+			     struct cred *cred)
- {
- 	struct autofs_sb_info *sbi = autofs4_sbi(dir->i_sb);
- 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
 diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index 0b0a787..79d8856 100644
+index 79d8856..2511f29 100644
 --- a/fs/bad_inode.c
 +++ b/fs/bad_inode.c
-@@ -221,7 +221,8 @@ static int bad_inode_mkdir(struct inode *dir, struct dentry *dentry,
- 	return -EIO;
+@@ -234,7 +234,8 @@ static int bad_inode_mknod (struct inode *dir, struct dentry *dentry,
  }
  
--static int bad_inode_rmdir (struct inode *dir, struct dentry *dentry)
-+static int bad_inode_rmdir (struct inode *dir, struct dentry *dentry,
-+			    struct cred *cred)
+ static int bad_inode_rename (struct inode *old_dir, struct dentry *old_dentry,
+-		struct inode *new_dir, struct dentry *new_dentry)
++			     struct inode *new_dir, struct dentry *new_dentry,
++			     struct cred *cred)
  {
  	return -EIO;
  }
 diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index f0e3303..b54b60a 100644
+index b54b60a..d682786 100644
 --- a/fs/ext3/namei.c
 +++ b/fs/ext3/namei.c
-@@ -2080,9 +2080,9 @@ out_brelse:
- 	goto out_err;
- }
- 
--static int ext3_rmdir (struct inode * dir, struct dentry *dentry)
-+static int ext3_rmdir (struct inode * dir, struct dentry *dentry,
-+		       struct cred *cred)
+@@ -2299,9 +2299,9 @@ retry:
+  * higher-level routines.
+  */
+ static int ext3_rename (struct inode * old_dir, struct dentry *old_dentry,
+-			   struct inode * new_dir,struct dentry *new_dentry)
++			struct inode * new_dir, struct dentry *new_dentry,
++			struct cred *cred)
  {
 -	struct cred *cred = current->cred;
- 	int retval;
- 	struct inode * inode;
- 	struct buffer_head * bh;
+ 	handle_t *handle;
+ 	struct inode * old_inode, * new_inode;
+ 	struct buffer_head * old_bh, * new_bh, * dir_bh;
 diff --git a/fs/libfs.c b/fs/libfs.c
-index d4cab7a..f237ef3 100644
+index f237ef3..6b41090 100644
 --- a/fs/libfs.c
 +++ b/fs/libfs.c
-@@ -294,10 +294,8 @@ int simple_unlink(struct inode *dir, struct dentry *dentry, struct cred *cred)
- 	return 0;
+@@ -8,7 +8,6 @@
+ #include <linux/mount.h>
+ #include <linux/vfs.h>
+ #include <linux/mutex.h>
+-#include <linux/sched.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -306,9 +305,9 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry, struct cred *cred)
  }
  
--int simple_rmdir(struct inode *dir, struct dentry *dentry)
-+int simple_rmdir(struct inode *dir, struct dentry *dentry, struct cred *cred)
+ int simple_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		struct inode *new_dir, struct dentry *new_dentry)
++		  struct inode *new_dir, struct dentry *new_dentry,
++		  struct cred *cred)
  {
 -	struct cred *cred = current->cred;
--
- 	if (!simple_empty(dentry))
- 		return -ENOTEMPTY;
+ 	struct inode *inode = old_dentry->d_inode;
+ 	int they_are_dirs = S_ISDIR(old_dentry->d_inode->i_mode);
  
 diff --git a/fs/namei.c b/fs/namei.c
-index fe94ef5..b991b32 100644
+index b991b32..4af97fd 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2058,6 +2058,7 @@ void dentry_unhash(struct dentry *dentry)
- 
- int vfs_rmdir(struct inode *dir, struct dentry *dentry)
+@@ -2433,6 +2433,7 @@ asmlinkage long sys_link(const char __user *oldname, const char __user *newname)
+ static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
+ 			  struct inode *new_dir, struct dentry *new_dentry)
  {
 +	struct cred *cred = current->cred;
- 	int error = may_delete(dir, dentry, 1);
+ 	int error = 0;
+ 	struct inode *target;
  
- 	if (error)
-@@ -2075,7 +2076,7 @@ int vfs_rmdir(struct inode *dir, struct dentry *dentry)
- 	else {
- 		error = security_inode_rmdir(dir, dentry);
- 		if (!error) {
--			error = dir->i_op->rmdir(dir, dentry);
-+			error = dir->i_op->rmdir(dir, dentry, cred);
- 			if (!error)
- 				dentry->d_inode->i_flags |= S_DEAD;
- 		}
+@@ -2458,7 +2459,8 @@ static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
+ 	if (d_mountpoint(old_dentry)||d_mountpoint(new_dentry))
+ 		error = -EBUSY;
+ 	else 
+-		error = old_dir->i_op->rename(old_dir, old_dentry, new_dir, new_dentry);
++		error = old_dir->i_op->rename(old_dir, old_dentry,
++					      new_dir, new_dentry, cred);
+ 	if (target) {
+ 		if (!error)
+ 			target->i_flags |= S_DEAD;
+@@ -2476,6 +2478,7 @@ static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
+ static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
+ 			    struct inode *new_dir, struct dentry *new_dentry)
+ {
++	struct cred *cred = current->cred;
+ 	struct inode *target;
+ 	int error;
+ 
+@@ -2490,7 +2493,8 @@ static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
+ 	if (d_mountpoint(old_dentry)||d_mountpoint(new_dentry))
+ 		error = -EBUSY;
+ 	else
+-		error = old_dir->i_op->rename(old_dir, old_dentry, new_dir, new_dentry);
++		error = old_dir->i_op->rename(old_dir, old_dentry,
++					      new_dir, new_dentry, cred);
+ 	if (!error) {
+ 		if (!(old_dir->i_sb->s_type->fs_flags & FS_RENAME_DOES_D_MOVE))
+ 			d_move(old_dentry, new_dentry);
 diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 5c1f1d4..447a364 100644
+index 447a364..18cea2c 100644
 --- a/fs/nfs/dir.c
 +++ b/fs/nfs/dir.c
-@@ -47,7 +47,7 @@ static struct dentry *nfs_lookup(struct inode *, struct dentry *, struct nameida
- static int nfs_create(struct inode *, struct dentry *, int, struct nameidata *,
- 		      struct cred *);
- static int nfs_mkdir(struct inode *, struct dentry *, int, struct cred *);
--static int nfs_rmdir(struct inode *, struct dentry *);
-+static int nfs_rmdir(struct inode *, struct dentry *, struct cred *);
- static int nfs_unlink(struct inode *, struct dentry *, struct cred *);
- static int nfs_symlink(struct inode *, struct dentry *, const char *);
- static int nfs_link(struct dentry *, struct inode *, struct dentry *,
-@@ -1348,9 +1348,9 @@ out_err:
- 	return error;
- }
+@@ -55,7 +55,7 @@ static int nfs_link(struct dentry *, struct inode *, struct dentry *,
+ static int nfs_mknod(struct inode *, struct dentry *, int, dev_t,
+ 		     struct cred *);
+ static int nfs_rename(struct inode *, struct dentry *,
+-		      struct inode *, struct dentry *);
++		      struct inode *, struct dentry *, struct cred *);
+ static int nfs_fsync_dir(struct file *, struct dentry *, int);
+ static loff_t nfs_llseek_dir(struct file *, loff_t, int);
  
--static int nfs_rmdir(struct inode *dir, struct dentry *dentry)
-+static int nfs_rmdir(struct inode *dir, struct dentry *dentry,
-+		     struct cred *acred)
+@@ -1654,9 +1654,9 @@ nfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry,
+  * the rename.
+  */
+ static int nfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		      struct inode *new_dir, struct dentry *new_dentry)
++		      struct inode *new_dir, struct dentry *new_dentry,
++		      struct cred *acred)
  {
 -	struct cred *acred = current->cred;
- 	int error;
- 
- 	dfprintk(VFS, "NFS: rmdir(%s/%ld), %s\n",
+ 	struct inode *old_inode = old_dentry->d_inode;
+ 	struct inode *new_inode = new_dentry->d_inode;
+ 	struct dentry *dentry = NULL, *rehash = NULL;
 diff --git a/fs/vfat/namei.c b/fs/vfat/namei.c
-index 434ffdf..f4bab9d 100644
+index f4bab9d..0502bb3 100644
 --- a/fs/vfat/namei.c
 +++ b/fs/vfat/namei.c
-@@ -764,7 +764,8 @@ out:
- 	return err;
+@@ -868,7 +868,8 @@ out:
  }
  
--static int vfat_rmdir(struct inode *dir, struct dentry *dentry)
-+static int vfat_rmdir(struct inode *dir, struct dentry *dentry,
-+		      struct cred *cred)
- {
- 	struct inode *inode = dentry->d_inode;
- 	struct fat_slot_info sinfo;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 62df85a..f7838e9 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1143,7 +1143,7 @@ struct inode_operations {
- 	int (*unlink) (struct inode *,struct dentry *, struct cred *);
- 	int (*symlink) (struct inode *,struct dentry *,const char *);
- 	int (*mkdir) (struct inode *,struct dentry *,int, struct cred *);
--	int (*rmdir) (struct inode *,struct dentry *);
-+	int (*rmdir) (struct inode *,struct dentry *, struct cred *);
- 	int (*mknod) (struct inode *,struct dentry *,int,dev_t, struct cred *);
- 	int (*rename) (struct inode *, struct dentry *,
- 			struct inode *, struct dentry *);
-@@ -1798,7 +1798,7 @@ extern int simple_statfs(struct dentry *, struct kstatfs *);
- extern int simple_link(struct dentry *, struct inode *, struct dentry *,
- 		       struct cred *);
- extern int simple_unlink(struct inode *, struct dentry *, struct cred *);
--extern int simple_rmdir(struct inode *, struct dentry *);
-+extern int simple_rmdir(struct inode *, struct dentry *, struct cred *);
- extern int simple_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
- extern int simple_sync_file(struct file *, struct dentry *, int);
- extern int simple_empty(struct dentry *);
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 1e3c4e7..d0e2db8 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1811,9 +1811,9 @@ static int shmem_unlink(struct inode *dir, struct dentry *dentry,
- 	return 0;
- }
- 
--static int shmem_rmdir(struct inode *dir, struct dentry *dentry)
-+static int shmem_rmdir(struct inode *dir, struct dentry *dentry,
+ static int vfat_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		       struct inode *new_dir, struct dentry *new_dentry)
++		       struct inode *new_dir, struct dentry *new_dentry,
 +		       struct cred *cred)
  {
--	struct cred *cred = current->cred;
- 	if (!simple_empty(dentry))
- 		return -ENOTEMPTY;
- 
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index 1906ee1..c38cc0d 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -547,7 +547,7 @@ repeat:
- 			if (S_ISREG(dentry->d_inode->i_mode))
- 				simple_unlink(dir, dentry, cred);
- 			else if (S_ISDIR(dentry->d_inode->i_mode))
--				simple_rmdir(dir, dentry);
-+				simple_rmdir(dir, dentry, cred);
- 			d_delete(dentry);
- 			dput(dentry);
- 		} while (n);
-@@ -618,8 +618,10 @@ out_err:
- static int
- __rpc_rmdir(struct inode *dir, struct dentry *dentry)
+ 	struct buffer_head *dotdot_bh;
+ 	struct msdos_dir_entry *dotdot_de;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index f7838e9..7fe8921 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1146,7 +1146,8 @@ struct inode_operations {
+ 	int (*rmdir) (struct inode *,struct dentry *, struct cred *);
+ 	int (*mknod) (struct inode *,struct dentry *,int,dev_t, struct cred *);
+ 	int (*rename) (struct inode *, struct dentry *,
+-			struct inode *, struct dentry *);
++		       struct inode *, struct dentry *,
++		       struct cred *);
+ 	int (*readlink) (struct dentry *, char __user *,int);
+ 	void * (*follow_link) (struct dentry *, struct nameidata *);
+ 	void (*put_link) (struct dentry *, struct nameidata *, void *);
+@@ -1799,7 +1800,8 @@ extern int simple_link(struct dentry *, struct inode *, struct dentry *,
+ 		       struct cred *);
+ extern int simple_unlink(struct inode *, struct dentry *, struct cred *);
+ extern int simple_rmdir(struct inode *, struct dentry *, struct cred *);
+-extern int simple_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
++extern int simple_rename(struct inode *, struct dentry *,
++			 struct inode *, struct dentry *, struct cred *);
+ extern int simple_sync_file(struct file *, struct dentry *, int);
+ extern int simple_empty(struct dentry *);
+ extern int simple_readpage(struct file *file, struct page *page);
+diff --git a/mm/shmem.c b/mm/shmem.c
+index d0e2db8..9d2ebe2 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1828,9 +1828,10 @@ static int shmem_rmdir(struct inode *dir, struct dentry *dentry,
+  * it exists so that the VFS layer correctly free's it when it
+  * gets overwritten.
+  */
+-static int shmem_rename(struct inode *old_dir, struct dentry *old_dentry, struct inode *new_dir, struct dentry *new_dentry)
++static int shmem_rename(struct inode *old_dir, struct dentry *old_dentry,
++			struct inode *new_dir, struct dentry *new_dentry,
++			struct cred *cred)
  {
-+	struct cred *cred = current->cred;
- 	int error;
--	error = simple_rmdir(dir, dentry);
-+
-+	error = simple_rmdir(dir, dentry, cred);
- 	if (!error)
- 		d_delete(dentry);
- 	return error;
-diff --git a/security/inode.c b/security/inode.c
-index 1eaaf3d..0ea9f41 100644
---- a/security/inode.c
-+++ b/security/inode.c
-@@ -305,7 +305,7 @@ void securityfs_remove(struct dentry *dentry)
- 	if (positive(dentry)) {
- 		if (dentry->d_inode) {
- 			if (S_ISDIR(dentry->d_inode->i_mode))
--				simple_rmdir(parent->d_inode, dentry);
-+				simple_rmdir(parent->d_inode, dentry, cred);
- 			else
- 				simple_unlink(parent->d_inode, dentry, cred);
- 			dput(dentry);
+-	struct cred *cred = current->cred;
+ 	struct inode *inode = old_dentry->d_inode;
+ 	int they_are_dirs = S_ISDIR(inode->i_mode);
+ 
 
