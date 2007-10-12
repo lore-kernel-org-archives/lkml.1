@@ -1,37 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbXJLRLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbXJLRPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbXJLRLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXJLRLC
+	id S1761387AbXJLRPY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXJLRPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:11:02 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:36670 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755686AbXJLRLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:11:00 -0400
-Subject: [ANNOUNCE] ketchup-0.9.8-rt1
-From: Steven Rostedt <rostedt@goodmis.org>
-To: RT <linux-rt-users@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Fri, 12 Oct 2007 13:10:34 -0400
-Message-Id: <1192209034.13739.5.camel@localhost.localdomain>
+	Fri, 12 Oct 2007 13:15:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48865 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755592AbXJLRPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:15:09 -0400
+Date: Fri, 12 Oct 2007 18:14:55 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Milan Broz <mbroz@redhat.com>, stable@kernel.org
+Subject: [2.6.24 PATCH 07/25] dm delay: fix status
+Message-ID: <20071012171455.GR24157@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Milan Broz <mbroz@redhat.com>, stable@kernel.org
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seeing that Matt is a bit busy lately, and hasn't updated his ketchup
-repo, I put my changes for downloading the RT kernel into Matt's latest
-ketchup and posting it here.
+From: Milan Broz <mbroz@redhat.com>
 
-  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt1
+Fix missing space in dm-delay target status output
+if separate read and write delay are configured.
 
-For those that would still like to use ketchup with the RT patch.
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
--- Steve
+---
+ drivers/md/dm-delay.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-
+Index: linux-2.6.23/drivers/md/dm-delay.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-delay.c	2007-10-12 13:15:33.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-delay.c	2007-10-12 13:15:34.000000000 +0100
+@@ -308,7 +308,7 @@ static int delay_status(struct dm_target
+ 		       (unsigned long long) dc->start_read,
+ 		       dc->read_delay);
+ 		if (dc->dev_write)
+-			DMEMIT("%s %llu %u", dc->dev_write->name,
++			DMEMIT(" %s %llu %u", dc->dev_write->name,
+ 			       (unsigned long long) dc->start_write,
+ 			       dc->write_delay);
+ 		break;
