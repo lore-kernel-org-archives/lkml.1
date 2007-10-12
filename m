@@ -1,152 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXJLWRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760850AbXJLWSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbXJLWRu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbXJLWRi
+	id S1760850AbXJLWSZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760757AbXJLWRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:17:38 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49570 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:17:44 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49579 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758407AbXJLWRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:17:37 -0400
+	id S1760051AbXJLWRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:17:43 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, David Brownell <david-b@pacbell.net>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>, stable <stable@kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 01/75] platform: prefix MODALIAS with "platform:"
-Date: Fri, 12 Oct 2007 15:16:05 -0700
-Message-Id: <11922274393667-git-send-email-gregkh@suse.de>
+Subject: [PATCH 02/75] HOWTO: update ja_JP/HOWTO with latest changes
+Date: Fri, 12 Oct 2007 15:16:06 -0700
+Message-Id: <11922274441634-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: \<20071012221251.GB4559@kroah.com\>
+In-Reply-To: <11922274393667-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
+ <11922274393667-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
 
-Prefix platform modalias strings with "platform:", which
-modprobe config to blacklist alias resolving if userspace
-configures it.
+Here is another sync patch of Documentation/ja_JP/HOWTO
 
-Send uevents for all platform devices.
+Japanese developer sent me some cosmetic changes and also follow
+changes of HOWTO
+    Cross reference URL (sosdg.org/qiyong/lxr)
+    known_regression explanations on kernel dev. process
 
-Add MODULE_ALIAS's to: pxa2xx_pcmcia, ds1742 and pcspkr to trigger
-module autoloading by userspace.
-
-  $ modinfo pcspkr
-  alias:          platform:pcspkr
-  license:        GPL
-  description:    PC Speaker beeper driver
-  ...
-
-  $ modprobe -n -v platform:pcspkr
-  insmod /lib/modules/2.6.23-rc3-g28e8351a-dirty/kernel/drivers/input/misc/pcspkr.ko
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Signed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c           |   15 ++-------------
- drivers/input/misc/pcspkr.c       |    1 +
- drivers/pcmcia/pxa2xx_mainstone.c |    2 +-
- drivers/pcmcia/pxa2xx_sharpsl.c   |    2 +-
- 4 files changed, 5 insertions(+), 15 deletions(-)
+ Documentation/ja_JP/HOWTO |   84 ++++++++++++++++++++++++---------------------
+ 1 files changed, 45 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 869ff8c..9bfc434 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -160,11 +160,6 @@ static void platform_device_release(struct device *dev)
-  *
-  *	Create a platform device object which can have other objects attached
-  *	to it, and which will have attached objects freed when it is released.
-- *
-- *	This device will be marked as not supporting hotpluggable drivers; no
-- *	device add/remove uevents will be generated.  In the unusual case that
-- *	the device isn't being dynamically allocated as a legacy "probe the
-- *	hardware" driver, infrastructure code should reverse this marking.
-  */
- struct platform_device *platform_device_alloc(const char *name, unsigned int id)
- {
-@@ -177,12 +172,6 @@ struct platform_device *platform_device_alloc(const char *name, unsigned int id)
- 		pa->pdev.id = id;
- 		device_initialize(&pa->pdev.dev);
- 		pa->pdev.dev.release = platform_device_release;
--
--		/* prevent hotplug "modprobe $(MODALIAS)" from causing trouble in
--		 * legacy probe-the-hardware drivers, which don't properly split
--		 * out device enumeration logic from drivers.
--		 */
--		pa->pdev.dev.uevent_suppress = 1;
- 	}
+diff --git a/Documentation/ja_JP/HOWTO b/Documentation/ja_JP/HOWTO
+index 9f08dab..d9d832c 100644
+--- a/Documentation/ja_JP/HOWTO
++++ b/Documentation/ja_JP/HOWTO
+@@ -1,4 +1,4 @@
+-﻿NOTE:
++NOTE:
+ This is a version of Documentation/HOWTO translated into Japanese.
+ This document is maintained by Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+ and the JF Project team <www.linux.or.jp/JF>.
+@@ -11,14 +11,14 @@ for non English (read: Japanese) speakers and is not intended as a
+ fork. So if you have any comments or updates for this file, please try
+ to update the original English file first.
  
- 	return pa ? &pa->pdev : NULL;
-@@ -530,7 +519,7 @@ static ssize_t
- modalias_show(struct device *dev, struct device_attribute *a, char *buf)
- {
- 	struct platform_device	*pdev = to_platform_device(dev);
--	int len = snprintf(buf, PAGE_SIZE, "%s\n", pdev->name);
-+	int len = snprintf(buf, PAGE_SIZE, "platform:%s\n", pdev->name);
+-Last Updated: 2007/07/18
++Last Updated: 2007/09/23
+ ==================================
+ これは、
+-linux-2.6.22/Documentation/HOWTO
++linux-2.6.23/Documentation/HOWTO
+ の和訳です。
  
- 	return (len >= PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
- }
-@@ -546,7 +535,7 @@ static int platform_uevent(struct device *dev, char **envp, int num_envp,
- 	struct platform_device	*pdev = to_platform_device(dev);
+ 翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
+-翻訳日： 2007/07/16
++翻訳日： 2007/09/19
+ 翻訳者： Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
+ 校正者： 松倉さん <nbh--mats at nifty dot com>
+          小林 雅典さん (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
+@@ -27,6 +27,7 @@ linux-2.6.22/Documentation/HOWTO
+          野口さん (Kenji Noguchi) <tokyo246 at gmail dot com>
+          河内さん (Takayoshi Kochi) <t-kochi at bq dot jp dot nec dot com>
+          岩本さん (iwamoto) <iwamoto.kn at ncos dot nec dot co dot jp>
++         内田さん (Satoshi Uchida) <s-uchida at ap dot jp dot nec dot com>
+ ==================================
  
- 	envp[0] = buffer;
--	snprintf(buffer, buffer_size, "MODALIAS=%s", pdev->name);
-+	snprintf(buffer, buffer_size, "MODALIAS=platform:%s", pdev->name);
- 	return 0;
- }
+ Linux カーネル開発のやり方
+@@ -40,7 +41,7 @@ Linux カーネル開発コミュニティと共に活動するやり方を学�
+ 手助けになります。
  
-diff --git a/drivers/input/misc/pcspkr.c b/drivers/input/misc/pcspkr.c
-index 906bf5e..e1a4402 100644
---- a/drivers/input/misc/pcspkr.c
-+++ b/drivers/input/misc/pcspkr.c
-@@ -23,6 +23,7 @@
- MODULE_AUTHOR("Vojtech Pavlik <vojtech@ucw.cz>");
- MODULE_DESCRIPTION("PC Speaker beeper driver");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pcspkr");
+ もし、このドキュメントのどこかが古くなっていた場合には、このドキュメン
+-トの最後にリストしたメンテナーにパッチを送ってください。
++トの最後にリストしたメンテナにパッチを送ってください。
  
- #ifdef CONFIG_X86
- /* Use the global PIT lock ! */
-diff --git a/drivers/pcmcia/pxa2xx_mainstone.c b/drivers/pcmcia/pxa2xx_mainstone.c
-index 383107b..f6722ba 100644
---- a/drivers/pcmcia/pxa2xx_mainstone.c
-+++ b/drivers/pcmcia/pxa2xx_mainstone.c
-@@ -175,7 +175,6 @@ static int __init mst_pcmcia_init(void)
- 	if (!mst_pcmcia_device)
- 		return -ENOMEM;
+ はじめに
+ ---------
+@@ -59,7 +60,7 @@ Linux カーネル開発コミュニティと共に活動するやり方を学�
+ ネル開発者には必要です。アーキテクチャ向けの低レベル部分の開発をするの
+ でなければ、(どんなアーキテクチャでも)アセンブリ(訳注: 言語)は必要あり
+ ません。以下の本は、C 言語の十分な知識や何年もの経験に取って代わるもの
+-ではありませんが、少なくともリファレンスとしてはいい本です。
++ではありませんが、少なくともリファレンスとしては良い本です。
+  - "The C Programming Language" by Kernighan and Ritchie [Prentice Hall]
+  -『プログラミング言語Ｃ第2版』(B.W. カーニハン/D.M. リッチー著 石田晴久訳) [共立出版]
+  - "Practical C Programming" by Steve Oualline [O'Reilly]
+@@ -76,7 +77,7 @@ Linux カーネル開発コミュニティと共に活動するやり方を学�
+ ときどき、カーネルがツールチェインや C 言語拡張に置いている前提がどう
+ なっているのかわかりにくいことがあり、また、残念なことに決定的なリファ
+ レンスは存在しません。情報を得るには、gcc の info ページ( info gcc )を
+-みてください。
++見てください。
  
--	mst_pcmcia_device->dev.uevent_suppress = 0;
- 	mst_pcmcia_device->dev.platform_data = &mst_pcmcia_ops;
+ あなたは既存の開発コミュニティと一緒に作業する方法を学ぼうとしているこ
+ とに留意してください。そのコミュニティは、コーディング、スタイル、
+@@ -92,7 +93,7 @@ Linux カーネル開発コミュニティと共に活動するやり方を学�
  
- 	ret = platform_device_add(mst_pcmcia_device);
-@@ -195,3 +194,4 @@ fs_initcall(mst_pcmcia_init);
- module_exit(mst_pcmcia_exit);
+ Linux カーネルのソースコードは GPL ライセンスの下でリリースされていま
+ す。ライセンスの詳細については、ソースツリーのメインディレクトリに存在
+-する、COPYING のファイルをみてください。もしライセンスについてさらに質
++する、COPYING のファイルを見てください。もしライセンスについてさらに質
+ 問があれば、Linux Kernel メーリングリストに質問するのではなく、どうぞ
+ 法律家に相談してください。メーリングリストの人達は法律家ではなく、法的
+ 問題については彼らの声明はあてにするべきではありません。
+@@ -109,7 +110,8 @@ Linux カーネルソースツリーは幅広い範囲のドキュメントを�
+ 新しいドキュメントファイルも追加することを勧めます。
+ カーネルの変更が、カーネルがユーザ空間に公開しているインターフェイスの
+ 変更を引き起こす場合、その変更を説明するマニュアルページのパッチや情報
+-をマニュアルページのメンテナ mtk-manpages@gmx.net に送ることを勧めます。
++をマニュアルページのメンテナ mtk-manpages@gmx.net に送ることを勧めま
++す。
  
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pxa2xx-pcmcia");
-diff --git a/drivers/pcmcia/pxa2xx_sharpsl.c b/drivers/pcmcia/pxa2xx_sharpsl.c
-index a2daa3f..d5c33bd 100644
---- a/drivers/pcmcia/pxa2xx_sharpsl.c
-+++ b/drivers/pcmcia/pxa2xx_sharpsl.c
-@@ -261,7 +261,6 @@ static int __init sharpsl_pcmcia_init(void)
- 	if (!sharpsl_pcmcia_device)
- 		return -ENOMEM;
+ 以下はカーネルソースツリーに含まれている読んでおくべきファイルの一覧で
+ す-
+@@ -117,7 +119,7 @@ Linux カーネルソースツリーは幅広い範囲のドキュメントを�
+   README
+     このファイルは Linuxカーネルの簡単な背景とカーネルを設定(訳注
+     configure )し、生成(訳注 build )するために必要なことは何かが書かれ
+-    ています。カーネルに関して初めての人はここからスタートするとよいで
++    ています。カーネルに関して初めての人はここからスタートすると良いで
+     しょう。
  
--	sharpsl_pcmcia_device->dev.uevent_suppress = 0;
- 	sharpsl_pcmcia_device->dev.platform_data = &sharpsl_pcmcia_ops;
- 	sharpsl_pcmcia_device->dev.parent = platform_scoop_config->devs[0].dev;
+   Documentation/Changes
+@@ -128,7 +130,7 @@ Linux カーネルソースツリーは幅広い範囲のドキュメントを�
+   Documentation/CodingStyle
+     これは Linux カーネルのコーディングスタイルと背景にある理由を記述
+     しています。全ての新しいコードはこのドキュメントにあるガイドライン
+-    に従っていることを期待されています。大部分のメンテナーはこれらのルー
++    に従っていることを期待されています。大部分のメンテナはこれらのルー
+     ルに従っているものだけを受け付け、多くの人は正しいスタイルのコード
+     だけをレビューします。
  
-@@ -284,3 +283,4 @@ module_exit(sharpsl_pcmcia_exit);
+@@ -168,16 +170,16 @@ Linux カーネルソースツリーは幅広い範囲のドキュメントを�
+     支援してください。
  
- MODULE_DESCRIPTION("Sharp SL Series PCMCIA Support");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pxa2xx-pcmcia");
+   Documentation/ManagementStyle
+-    このドキュメントは Linux カーネルのメンテナー達がどう行動するか、
++    このドキュメントは Linux カーネルのメンテナ達がどう行動するか、
+     彼らの手法の背景にある共有されている精神について記述しています。こ
+     れはカーネル開発の初心者なら（もしくは、単に興味があるだけの人でも）
+-    重要です。なぜならこのドキュメントは、カーネルメンテナー達の独特な
++    重要です。なぜならこのドキュメントは、カーネルメンテナ達の独特な
+     行動についての多くの誤解や混乱を解消するからです。
+ 
+   Documentation/stable_kernel_rules.txt
+     このファイルはどのように stable カーネルのリリースが行われるかのルー
+     ルが記述されています。そしてこれらのリリースの中のどこかで変更を取
+-    り入れてもらいたい場合に何をすればいいかが示されています。
++    り入れてもらいたい場合に何をすれば良いかが示されています。
+ 
+   Documentation/kernel-docs.txt
+ 　　カーネル開発に付随する外部ドキュメントのリストです。もしあなたが
+@@ -218,9 +220,9 @@ web サイトには、コードの構成、サブシステム、現在存在す�
+ ここには、また、カーネルのコンパイルのやり方やパッチの当て方などの間接
+ 的な基本情報も記述されています。
+ 
+-あなたがどこからスタートしてよいかわからないが、Linux カーネル開発コミュ
++あなたがどこからスタートして良いかわからないが、Linux カーネル開発コミュ
+ ニティに参加して何かすることをさがしている場合には、Linux kernel
+-Janitor's プロジェクトにいけばよいでしょう -
++Janitor's プロジェクトにいけば良いでしょう -
+ 	http://janitor.kernelnewbies.org/
+ ここはそのようなスタートをするのにうってつけの場所です。ここには、
+ Linux カーネルソースツリーの中に含まれる、きれいにし、修正しなければな
+@@ -243,7 +245,7 @@ Linux カーネルソースツリーの中に含まれる、きれいにし、�
+ 自己参照方式で、索引がついた web 形式で、ソースコードを参照することが
+ できます。この最新の素晴しいカーネルコードのリポジトリは以下で見つかり
+ ます-
+-	http://sosdg.org/~coywolf/lxr/
++	http://sosdg.org/~qiyong/lxr/
+ 
+ 開発プロセス
+ -----------------------
+@@ -265,9 +267,9 @@ Linux カーネルの開発プロセスは現在幾つかの異なるメイン�
+ 以下のとおり-
+ 
+   - 新しいカーネルがリリースされた直後に、2週間の特別期間が設けられ、
+-    この期間中に、メンテナー達は Linus に大きな差分を送ることができま
+-    す。このような差分は通常 -mm カーネルに数週間含まれてきたパッチで
+-    す。 大きな変更は git(カーネルのソース管理ツール、詳細は
++    この期間中に、メンテナ達は Linus に大きな差分を送ることができます。
++    このような差分は通常 -mm カーネルに数週間含まれてきたパッチです。
++    大きな変更は git(カーネルのソース管理ツール、詳細は
+     http://git.or.cz/  参照) を使って送るのが好ましいやり方ですが、パッ
+     チファイルの形式のまま送るのでも十分です。
+ 
+@@ -285,6 +287,10 @@ Linux カーネルの開発プロセスは現在幾つかの異なるメイン�
+     に安定した状態にあると判断したときにリリースされます。目標は毎週新
+     しい -rc カーネルをリリースすることです。
+ 
++   - 以下の URL で各 -rc リリースに存在する既知の後戻り問題のリスト
++     が追跡されます-
++     http://kernelnewbies.org/known_regressions
++
+   - このプロセスはカーネルが 「準備ができた」と考えられるまで継続しま
+     す。このプロセスはだいたい 6週間継続します。
+ 
+@@ -331,8 +337,8 @@ Andrew は個別のサブシステムカーネルツリーとパッチを全て�
+ linux-kernel メーリングリストで収集された多数のパッチと同時に一つにま
+ とめます。
+ このツリーは新機能とパッチが検証される場となります。ある期間の間パッチ
+-が -mm に入って価値を証明されたら、Andrew やサブシステムメンテナが、メ
+-インラインへ入れるように Linus にプッシュします。
++が -mm に入って価値を証明されたら、Andrew やサブシステムメンテナが、
++メインラインへ入れるように Linus にプッシュします。
+ 
+ メインカーネルツリーに含めるために Linus に送る前に、すべての新しいパッ
+ チが -mm ツリーでテストされることが強く推奨されます。
+@@ -460,7 +466,7 @@ MAINTAINERS ファイルにリストがありますので参照してくださ�
+ せん-
+ 彼らはあなたのパッチの行毎にコメントを入れたいので、そのためにはそうす
+ るしかありません。あなたのメールプログラムが空白やタブを圧縮しないよう
+-に確認した方がいいです。最初の良いテストとしては、自分にメールを送って
++に確認した方が良いです。最初の良いテストとしては、自分にメールを送って
+ みて、そのパッチを自分で当ててみることです。もしそれがうまく行かないな
+ ら、あなたのメールプログラムを直してもらうか、正しく動くように変えるべ
+ きです。
+@@ -507,14 +513,14 @@ MAINTAINERS ファイルにリストがありますので参照してくださ�
+ とも普通のことです。これはあなたのパッチが受け入れられないということで
+ は *ありません*、そしてあなた自身に反対することを意味するのでも *ありま
+ せん*。単に自分のパッチに対して指摘された問題を全て修正して再送すれば
+-いいのです。
++良いのです。
+ 
+ 
+ カーネルコミュニティと企業組織のちがい
+ -----------------------------------------------------------------
+ 
+ カーネルコミュニティは大部分の伝統的な会社の開発環境とは異ったやり方で
+-動いています。以下は問題を避けるためにできるとよいことののリストです-
++動いています。以下は問題を避けるためにできると良いことのリストです-
+ 
+   あなたの提案する変更について言うときのうまい言い方：
+ 
+@@ -525,7 +531,7 @@ MAINTAINERS ファイルにリストがありますので参照してくださ�
+     - "以下は一連の小さなパッチ群ですが..."
+     - "これは典型的なマシンでの性能を向上させます.."
+ 
+-  やめた方がいい悪い言い方：
++  やめた方が良い悪い言い方：
+ 
+     - このやり方で AIX/ptx/Solaris ではできたので、できるはずだ
+     - 私はこれを20年もの間やってきた、だから
+@@ -575,10 +581,10 @@ Linux カーネルコミュニティは、一度に大量のコードの塊を�
+ 
+ 1) 小さいパッチはあなたのパッチが適用される見込みを大きくします、カー
+    ネルの人達はパッチが正しいかどうかを確認する時間や労力をかけないか
+-   らです。5行のパッチはメンテナがたった1秒見るだけで適用できます。し
+-   かし、500行のパッチは、正しいことをレビューするのに数時間かかるかも
+-   しれません(時間はパッチのサイズなどにより指数関数に比例してかかりま
+-   す)
++   らです。5行のパッチはメンテナがたった1秒見るだけで適用できます。
++   しかし、500行のパッチは、正しいことをレビューするのに数時間かかるか
++   もしれません(時間はパッチのサイズなどにより指数関数に比例してかかり
++   ます)
+ 
+    小さいパッチは何かあったときにデバッグもとても簡単になります。パッ
+    チを1個1個取り除くのは、とても大きなパッチを当てた後に(かつ、何かお
+@@ -587,23 +593,23 @@ Linux カーネルコミュニティは、一度に大量のコードの塊を�
+ 2) 小さいパッチを送るだけでなく、送るまえに、書き直して、シンプルにす
+    る(もしくは、単に順番を変えるだけでも)ことも、とても重要です。
+ 
+-以下はカーネル開発者の Al Viro のたとえ話しです：
++以下はカーネル開発者の Al Viro のたとえ話です：
+ 
+         "生徒の数学の宿題を採点する先生のことを考えてみてください、先
+-        生は生徒が解に到達するまでの試行錯誤をみたいとは思わないでしょ
+-        う。先生は簡潔な最高の解をみたいのです。良い生徒はこれを知って
++        生は生徒が解に到達するまでの試行錯誤を見たいとは思わないでしょ
++        う。先生は簡潔な最高の解を見たいのです。良い生徒はこれを知って
+         おり、そして最終解の前の中間作業を提出することは決してないので
+         す"
+ 
+-        カーネル開発でもこれは同じです。メンテナー達とレビューア達は、
+-        問題を解決する解の背後になる思考プロセスをみたいとは思いません。
+-        彼らは単純であざやかな解決方法をみたいのです。
++        カーネル開発でもこれは同じです。メンテナ達とレビューア達は、
++        問題を解決する解の背後になる思考プロセスを見たいとは思いません。
++        彼らは単純であざやかな解決方法を見たいのです。
+ 
+ あざやかな解を説明するのと、コミュニティと共に仕事をし、未解決の仕事を
+ 議論することのバランスをキープするのは難しいかもしれません。
+ ですから、開発プロセスの早期段階で改善のためのフィードバックをもらうよ
+-うにするのもいいですが、変更点を小さい部分に分割して全体ではまだ完成し
+-ていない仕事を(部分的に)取り込んでもらえるようにすることもいいことです。
++うにするのも良いですが、変更点を小さい部分に分割して全体ではまだ完成し
++ていない仕事を(部分的に)取り込んでもらえるようにすることも良いことです。
+ 
+ また、でき上がっていないものや、"将来直す" ようなパッチを、本流に含め
+ てもらうように送っても、それは受け付けられないことを理解してください。
+@@ -629,7 +635,7 @@ Linux カーネルコミュニティは、一度に大量のコードの塊を�
+   - テスト結果
+ 
+ これについて全てがどのようにあるべきかについての詳細は、以下のドキュメ
+-ントの ChangeLog セクションをみてください-
++ントの ChangeLog セクションを見てください-
+   "The Perfect Patch"
+       http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+ 
 -- 
 1.5.3.4
 
