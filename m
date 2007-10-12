@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbXJLRQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762322AbXJLRQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761632AbXJLRQK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbXJLRPy
+	id S1762322AbXJLRQu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760447AbXJLRQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:15:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48886 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:16:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48932 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756449AbXJLRPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:15:53 -0400
-Date: Fri, 12 Oct 2007 18:15:25 +0100
+	id S1761725AbXJLRQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:16:33 -0400
+Date: Fri, 12 Oct 2007 18:16:28 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>, stable@kernel.org
-Subject: [2.6.24 PATCH 08/25] dm: fix thaw_bdev
-Message-ID: <20071012171525.GS24157@agk.fab.redhat.com>
+       Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: [2.6.24 PATCH 10/25] dm: use kzalloc
+Message-ID: <20071012171628.GU24157@agk.fab.redhat.com>
 Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>, stable@kernel.org
+	Dmitry Monakhov <dmonakhov@openvz.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,82 +27,111 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+From: Dmitry Monakhov <dmonakhov@openvz.org>
 
-This patch fixes a bd_mount_sem counter corruption bug in device-mapper.
+Convert kmalloc() + memset() to kzalloc().
 
-thaw_bdev() should be called only when freeze_bdev() was called for the
-device.
-Otherwise, thaw_bdev() will up bd_mount_sem and corrupt the semaphore counter.
-struct block_device with the corrupted semaphore may remain in slab cache
-and be reused later.
-
-Attached patch will fix it by calling unlock_fs() instead.
-unlock_fs() will determine whether it should call thaw_bdev()
-by checking the device is frozen or not.
-
-Easy reproducer is:
-  #!/bin/sh
-  while [ 1 ]; do
-     dmsetup --notable create a
-     dmsetup --nolockfs suspend a
-     dmsetup remove a
-  done
-
-It's not easy to see the effect of corrupted semaphore.
-So I have tested with putting printk below in bdev_alloc_inode():
-        if (atomic_read(&ei->bdev.bd_mount_sem.count) != 1)
-                printk(KERN_DEBUG "Incorrect semaphore count = %d (%p)\n",
-                        atomic_read(&ei->bdev.bd_mount_sem.count),
-                        &ei->bdev);
-
-Without the patch, I saw something like:
- Incorrect semaphore count = 17 (f2ab91c0)
-
-With the patch, the message didn't appear.
-
-The bug was introduced in 2.6.16 with this bug fix:
-
-commit d9dde59ba03095e526640988c0fedd75e93bc8b7
-Date:   Fri Feb 24 13:04:24 2006 -0800
-
-    [PATCH] dm: missing bdput/thaw_bdev at removal
-    
-    Need to unfreeze and release bdev otherwise the bdev inode with
-    inconsistent state is reused later and cause problem.
-    
-and backported to 2.6.15.5.
-
-It occurs only in free_dev(), which is called only when the dm device is
-removed.  The buggy code is executed only if md->suspended_bdev is
-non-NULL and that can happen only when the device was suspended without
-noflush.
-
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-Cc: stable@kernel.org
-
 ---
- drivers/md/dm.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletion(-)
+ drivers/md/dm-emc.c           |    6 ++----
+ drivers/md/dm-hw-handler.c    |    6 ++----
+ drivers/md/dm-path-selector.c |    6 ++----
+ drivers/md/dm-table.c         |    3 +--
+ drivers/md/dm-target.c        |    6 ++----
+ 5 files changed, 9 insertions(+), 18 deletions(-)
 
-Index: linux-2.6.23/drivers/md/dm.c
+Index: linux-2.6.23/drivers/md/dm-emc.c
 ===================================================================
---- linux-2.6.23.orig/drivers/md/dm.c	2007-10-12 13:14:40.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm.c	2007-10-12 13:15:35.000000000 +0100
-@@ -1060,12 +1060,14 @@ static struct mapped_device *alloc_dev(i
- 	return NULL;
- }
+--- linux-2.6.23.orig/drivers/md/dm-emc.c	2007-10-12 13:14:40.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-emc.c	2007-10-12 13:15:40.000000000 +0100
+@@ -213,12 +213,10 @@ fail_path:
  
-+static void unlock_fs(struct mapped_device *md);
-+
- static void free_dev(struct mapped_device *md)
+ static struct emc_handler *alloc_emc_handler(void)
  {
- 	int minor = md->disk->first_minor;
+-	struct emc_handler *h = kmalloc(sizeof(*h), GFP_KERNEL);
++	struct emc_handler *h = kzalloc(sizeof(*h), GFP_KERNEL);
  
- 	if (md->suspended_bdev) {
--		thaw_bdev(md->suspended_bdev, NULL);
-+		unlock_fs(md);
- 		bdput(md->suspended_bdev);
- 	}
- 	mempool_destroy(md->tio_pool);
+-	if (h) {
+-		memset(h, 0, sizeof(*h));
++	if (h)
+ 		spin_lock_init(&h->lock);
+-	}
+ 
+ 	return h;
+ }
+Index: linux-2.6.23/drivers/md/dm-hw-handler.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-hw-handler.c	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-hw-handler.c	2007-10-12 13:15:40.000000000 +0100
+@@ -91,12 +91,10 @@ void dm_put_hw_handler(struct hw_handler
+ 
+ static struct hwh_internal *_alloc_hw_handler(struct hw_handler_type *hwht)
+ {
+-	struct hwh_internal *hwhi = kmalloc(sizeof(*hwhi), GFP_KERNEL);
++	struct hwh_internal *hwhi = kzalloc(sizeof(*hwhi), GFP_KERNEL);
+ 
+-	if (hwhi) {
+-		memset(hwhi, 0, sizeof(*hwhi));
++	if (hwhi)
+ 		hwhi->hwht = *hwht;
+-	}
+ 
+ 	return hwhi;
+ }
+Index: linux-2.6.23/drivers/md/dm-path-selector.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-path-selector.c	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-path-selector.c	2007-10-12 13:15:40.000000000 +0100
+@@ -94,12 +94,10 @@ out:
+ 
+ static struct ps_internal *_alloc_path_selector(struct path_selector_type *pst)
+ {
+-	struct ps_internal *psi = kmalloc(sizeof(*psi), GFP_KERNEL);
++	struct ps_internal *psi = kzalloc(sizeof(*psi), GFP_KERNEL);
+ 
+-	if (psi) {
+-		memset(psi, 0, sizeof(*psi));
++	if (psi)
+ 		psi->pst = *pst;
+-	}
+ 
+ 	return psi;
+ }
+Index: linux-2.6.23/drivers/md/dm-table.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-table.c	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-table.c	2007-10-12 13:15:40.000000000 +0100
+@@ -213,12 +213,11 @@ static int alloc_targets(struct dm_table
+ int dm_table_create(struct dm_table **result, int mode,
+ 		    unsigned num_targets, struct mapped_device *md)
+ {
+-	struct dm_table *t = kmalloc(sizeof(*t), GFP_KERNEL);
++	struct dm_table *t = kzalloc(sizeof(*t), GFP_KERNEL);
+ 
+ 	if (!t)
+ 		return -ENOMEM;
+ 
+-	memset(t, 0, sizeof(*t));
+ 	INIT_LIST_HEAD(&t->devices);
+ 	atomic_set(&t->holders, 1);
+ 
+Index: linux-2.6.23/drivers/md/dm-target.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-target.c	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-target.c	2007-10-12 13:15:40.000000000 +0100
+@@ -88,12 +88,10 @@ void dm_put_target_type(struct target_ty
+ 
+ static struct tt_internal *alloc_target(struct target_type *t)
+ {
+-	struct tt_internal *ti = kmalloc(sizeof(*ti), GFP_KERNEL);
++	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
+ 
+-	if (ti) {
+-		memset(ti, 0, sizeof(*ti));
++	if (ti)
+ 		ti->tt = *t;
+-	}
+ 
+ 	return ti;
+ }
