@@ -1,155 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761657AbXJLW5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXJLW6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761657AbXJLW5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbXJLWW4
+	id S1762098AbXJLW6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760712AbXJLWW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:22:56 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53587 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760264AbXJLWWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:53 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
+	Fri, 12 Oct 2007 18:22:58 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:54902 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760622AbXJLWW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:22:57 -0400
+Date: Fri, 12 Oct 2007 14:42:27 -0700
+From: Kees Cook <kees@ubuntu.com>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 67/75] driver core: remove subsystem_init()
-Date: Fri, 12 Oct 2007 15:17:11 -0700
-Message-Id: <11922277571933-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277493627-git-send-email-gregkh@suse.de>
-References: \<20071012221251.GB4559@kroah.com\>
- <11922274393667-git-send-email-gregkh@suse.de>
- <11922274441634-git-send-email-gregkh@suse.de>
- <11922274503271-git-send-email-gregkh@suse.de>
- <11922274543490-git-send-email-gregkh@suse.de>
- <11922274643370-git-send-email-gregkh@suse.de>
- <11922274682487-git-send-email-gregkh@suse.de>
- <11922274732211-git-send-email-gregkh@suse.de>
- <11922274772578-git-send-email-gregkh@suse.de>
- <1192227481691-git-send-email-gregkh@suse.de>
- <11922274853108-git-send-email-gregkh@suse.de>
- <11922274901810-git-send-email-gregkh@suse.de>
- <11922274941588-git-send-email-gregkh@suse.de>
- <11922274993462-git-send-email-gregkh@suse.de>
- <11922275031518-git-send-email-gregkh@suse.de>
- <11922275074080-git-send-email-gregkh@suse.de>
- <11922275121763-git-send-email-gregkh@suse.de>
- <11922275181138-git-send-email-gregkh@suse.de>
- <11922275221643-git-send-email-gregkh@suse.de>
- <1192227527856-git-send-email-gregkh@suse.de>
- <11922275312531-git-send-email-gregkh@suse.de>
- <11922275371856-git-send-email-gregkh@suse.de>
- <11922275413548-git-send-email-gregkh@suse.de>
- <11922275462233-git-send-email-gregkh@suse.de>
- <1192227551156-git-send-email-gregkh@suse.de>
- <11922275552558-git-send-email-gregkh@suse.de>
- <119222756066-git-send-email-gregkh@suse.de>
- <11922275642378-git-send-email-gregkh@suse.de>
- <11922275693989-git-send-email-gregkh@suse.de>
- <1192227574129-git-send-email-gregkh@suse.de>
- <11922275781508-git-send-email-gregkh@suse.de>
- <11922275843236-git-send-email-gregkh@suse.de>
- <1192227589276-git-send-email-gregkh@suse.de>
- <1192227593813-git-send-email-gregkh@suse.de>
- <1192227598106-git-send-email-gregkh@suse.de>
- <1192227603335-git-send-email-gregkh@suse.de>
- <1192227611369-git-send-email-gregkh@suse.de>
- <11922276163147-git-send-email-gregkh@suse.de>
- <11922276201219-git-send-email-gregkh@suse.de>
- <11922276254051-git-send-email-gregkh@suse.de>
- <11922276302338-git-send-email-gregkh@suse.de>
- <1192227634772-git-send-email-gregkh@suse.de>
- <11922276392200-git-send-email-gregkh@suse.de>
- <11922276433594-git-send-email-gregkh@suse.de>
- <11922276471365-git-send-email-gregkh@suse.de>
- <1192227653165-git-send-email-gregkh@suse.de>
- <11922276572176-git-send-email-gregkh@suse.de>
- <11922276622731-git-send-email-gregkh@suse.de>
- <11922276672660-git-send-email-gregkh@suse.de>
- <1192227671143-git-send-email-gregkh@suse.de>
- <11922276763650-git-send-email-gregkh@suse.de>
- <1192227681926-git-send-email-gregkh@suse.de>
- <11922276862914-git-send-email-gregkh@suse.de>
- <11922276913288-git-send-email-gregkh@suse.de>
- <1192227695547-git-send-email-gregkh@suse.de>
- <11922276993289-git-send-email-gregkh@suse.de>
- <11922277041450-git-send-email-gregkh@suse.de>
- <11922277091389-git-send-email-gregkh@suse.de>
- <11922277133374-git-send-email-gregkh@suse.de>
- <11922277181565-git-send-email-gregkh@suse.de>
- <11922277222714-git-send-email-gregkh@suse.de>
- <11922277261501-git-send-email-gregkh@suse.de>
- <1192227731677-git-send-email-gregkh@suse.de>
- <11922277364080-git-send-email-gregkh@suse.de>
- <11922277403355-git-send-email-gregkh@suse.de>
- <11922277441791-git-send-email-gregkh@suse.de>
- <11922277493627-git-send-email-gregkh@suse.de>
+Subject: static LSM objection
+Message-ID: <20071012214227.GY10703@outflux.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Outflux
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is only one user of it, and it is only a wrapper for kset_init().
+Hi,
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- Documentation/kobject.txt |    1 -
- drivers/base/class.c      |    2 +-
- include/linux/kobject.h   |    1 -
- lib/kobject.c             |    5 -----
- 4 files changed, 1 insertions(+), 8 deletions(-)
+I just wanted to voice my opinion about the static LSM changes.
+(I apologize about being late[1] to the discussion[2] -- I'd only recently
+become aware of it.)  I'm personally really against this.  For example,
+I want to give people choice about their security protections in Ubuntu,
+and I'd like to let them pick the MAC that suits their needs.
 
-diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
-index 5e7aca2..ca86a88 100644
---- a/Documentation/kobject.txt
-+++ b/Documentation/kobject.txt
-@@ -238,7 +238,6 @@ kobj_set_kset_s(obj,subsys)
- - Assumes that obj->kobj exists, and is a struct kobject.
- - Sets the kset of that kobject to the kset <subsys>.
- 
--void subsystem_init(struct kset *s);
- int subsystem_register(struct kset *s);
- void subsystem_unregister(struct kset *s);
- 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 3e9b04c..5b9cf06 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -861,7 +861,7 @@ int __init classes_init(void)
- 
- 	/* ick, this is ugly, the things we go through to keep from showing up
- 	 * in sysfs... */
--	subsystem_init(&class_obj_subsys);
-+	kset_init(&class_obj_subsys);
- 	if (!class_obj_subsys.kobj.parent)
- 		class_obj_subsys.kobj.parent = &class_obj_subsys.kobj;
- 	return 0;
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index a8a84fc..05cc5b2 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -217,7 +217,6 @@ extern struct kset hypervisor_subsys;
- #define kobj_set_kset_s(obj,subsys) \
- 	(obj)->kobj.kset = &(subsys)
- 
--extern void subsystem_init(struct kset *);
- extern int __must_check subsystem_register(struct kset *);
- extern void subsystem_unregister(struct kset *);
- 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index fc6db6b..b7e0646 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -617,11 +617,6 @@ struct kobject * kset_find_obj(struct kset * kset, const char * name)
- 	return ret;
- }
- 
--void subsystem_init(struct kset *s)
--{
--	kset_init(s);
--}
--
- int subsystem_register(struct kset *s)
- {
- 	return kset_register(s);
+Some people want SELinux, some people want AppArmor.  (Yes, I know
+AppArmor isn't in mainline yet, but it does seem they're getting closer --
+three distros are shipping AppArmor.  The static changes feel motivated
+by political rather than technical reason -- though it of course have
+technical merit.)  Considering things like SMACK and TOMOYO, it is going
+to be very troublesome for distros to have to start building multiple
+kernels to support each given MAC that their users want to use.
+
+So, unless this is just re-hashing and you can point me to discussion
+points I missed, can someone help me understand the technical issues
+around this change?  It sounds like the primary reason for making it
+non-modular is performance loss due to call overhead.  Aren't there
+other ways to solve this without removing the boot-time module choice?
+(Make it unloadable?)
+
+I'm not convinced that the advantages of making it static out-weigh the
+benefit of having it as a choice at boot-time.  (I don't really mind
+needing a reboot to switch MAC implementations, as long as there is some
+benefit from making them unloadable, though it sounds like there are
+people would are against making LSMs unloadable too.)
+
+Thanks,
+
+-Kees
+
+/me pops the safety off his fire extinguisher
+
+[1] http://lkml.org/lkml/2007/7/19/228
+[2] http://lkml.org/lkml/2007/7/14/91
+
 -- 
-1.5.3.4
-
+Kees Cook
