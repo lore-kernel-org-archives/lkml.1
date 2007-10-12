@@ -1,76 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXJLBY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbXJLBjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbXJLBY0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 21:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbXJLBYI
+	id S1754699AbXJLBjE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 21:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXJLBiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 21:24:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57515 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754403AbXJLBYG (ORCPT
+	Thu, 11 Oct 2007 21:38:54 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:51429 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753874AbXJLBix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 21:24:06 -0400
-Date: Thu, 11 Oct 2007 18:23:59 -0700
-From: Paul Jackson <pj@sgi.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: menage@google.com, rientjes@google.com, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl, serue@us.ibm.com,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
-       xemul@openvz.org, containers@lists.osdl.org, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
- cpusets
-Message-Id: <20071011182359.7d069143.pj@sgi.com>
-In-Reply-To: <m13awhb5mc.fsf@ebiederm.dsl.xmission.com>
-References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com>
-	<6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com>
-	<20071003105817.7adf6516.pj@sgi.com>
-	<6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com>
-	<20071003131632.fed4b848.pj@sgi.com>
-	<6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com>
-	<20071006012437.c0fd3a8a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com>
-	<20071006125904.a26ed99f.pj@sgi.com>
-	<6599ad830710061409p2dcaa1c8u8c6864beaaafb149@mail.gmail.com>
-	<20071011150315.78c4f45f.pj@sgi.com>
-	<m13awhb5mc.fsf@ebiederm.dsl.xmission.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Oct 2007 21:38:53 -0400
+Message-ID: <470ECFF7.9040008@au1.ibm.com>
+Date: Fri, 12 Oct 2007 11:37:59 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070809)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
+References: <20071011071558.676463639@au1.ibm.com> <20071011072208.075979098@au1.ibm.com> <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+In-Reply-To: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Since we know that the tasks are not running, and that we have
-> exclusive access to the tasks in the control group we can take action
-> as if we were the actual tasks themselves.  Which should simplify
-> locking.
+Kumar Gala wrote:
+> 
+> On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
+> 
+>> Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code which
+>> allows for more flexibility in the note type for the state of 'extended
+>> floating point' implementations in coredumps. New note types can now be
+>> added with an appropriate #define.
+>>
+>> #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
+>> there's are no change in behaviour.
+> 
+> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled to
+> the x86 specific name?
+> 
+>>
+>> Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+>> ---
+>>  arch/ia64/ia32/elfcore32.h     |    1 +
+>>  arch/x86_64/ia32/ia32_binfmt.c |    1 +
+>>  fs/binfmt_elf.c                |    4 ++--
+>>  include/asm-i386/elf.h         |    1 +
+>>  4 files changed, 5 insertions(+), 2 deletions(-)
+>>
+>> Index: linux/arch/ia64/ia32/elfcore32.h
+>> ===================================================================
+>> --- linux.orig/arch/ia64/ia32/elfcore32.h
+>> +++ linux/arch/ia64/ia32/elfcore32.h
+>> @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
+>>  }
+>>
+>>  #define ELF_CORE_COPY_XFPREGS 1
+>> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+>>  static inline int
+>>  elf_core_copy_task_xfpregs(struct task_struct *tsk, elf_fpxregset_t
+>> *xfpu)
+>>  {
+>> Index: linux/arch/x86_64/ia32/ia32_binfmt.c
+>> ===================================================================
+>> --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
+>> +++ linux/arch/x86_64/ia32/ia32_binfmt.c
+>> @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
+>>  }
+>>
+>>  #define ELF_CORE_COPY_XFPREGS 1
+>> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+>>  static inline int
+>>  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t *xfpu)
+>>  {
+>> Index: linux/fs/binfmt_elf.c
+>> ===================================================================
+>> --- linux.orig/fs/binfmt_elf.c
+>> +++ linux/fs/binfmt_elf.c
+>> @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
+>>
+>>  #ifdef ELF_CORE_COPY_XFPREGS
+>>      if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
+>> -        fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
+>> -              &t->xfpu);
+>> +        fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
+>> +              sizeof(t->xfpu), &t->xfpu);
+>>          t->num_notes++;
+>>          sz += notesize(&t->notes[2]);
+>>      }
+> 
+> You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
 
-The Big Kernel Lock (BKL), born again, as a Medium Sized Cgroup Lock ?
+Ooops... Right you are - very good pickup :) Fixed in a new version (will send promptly).
 
-This only simplifies things if it enables us to remove finer grain
-locking, but some finer grain locking is essential for performance on
-higher processor count systems (which if Intel and AMD have their way,
-will be just about any system bigger than a cell phone.)
 
-There is no escaping actually having to think about these things, and
-clearly understand and document what locks what.  Locks don't just
-guard code sections, and they don't just guard particular data items.
+Thanks!
 
-Rather, in my view, they ensure certain invariants on your data.
-Non-atomic code sections that depend on, or modify, data subject to
-such invariants must be done while holding the appropriate lock.
-One is guaranteed not to see the invariant violated while holding
-the lock, nor to expose others to temporary violations of the invariant
-done while locked.
+Mark.
 
-In this case, we have multiple copies of cpumasks in task structs and
-cpusets that must honor the invariant that they are equal or subsets
-of, cpu_online_map.  Changes to the set of online CPUs must hold some
-lock, apparently sched_hotcpu_mutex, until all those cpumasks are
-adjusted to once again honor, this invariant.
+> 
+> Also, I'm not a fan of your proposed mechanism to "overload" the
+> elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t and
+> have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
+> 
+>> Index: linux/include/asm-i386/elf.h
+>> ===================================================================
+>> --- linux.orig/include/asm-i386/elf.h
+>> +++ linux/include/asm-i386/elf.h
+>> @@ -129,6 +129,7 @@ extern int dump_task_extended_fpu (struc
+>>  #define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk,
+>> elf_regs)
+>>  #define ELF_CORE_COPY_FPREGS(tsk, elf_fpregs) dump_task_fpu(tsk,
+>> elf_fpregs)
+>>  #define ELF_CORE_COPY_XFPREGS(tsk, elf_xfpregs)
+>> dump_task_extended_fpu(tsk, elf_xfpregs)
+>> +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+>>
+>>  #define VDSO_HIGH_BASE        (__fix_to_virt(FIX_VDSO))
+>>  #define VDSO_CURRENT_BASE    ((unsigned long)current->mm->context.vdso)
+>>
+>> -- 
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
