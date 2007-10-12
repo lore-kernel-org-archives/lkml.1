@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbXJLJjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbXJLJoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbXJLJjs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759615AbXJLJjY
+	id S1760378AbXJLJoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbXJLJoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:39:24 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:28909 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759820AbXJLJjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:39:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FsTAvTUY7DK2XSw2Lbsm8YNa7GRtIl81zeLks1UG72zZtMwD/eKNewYLP5k0VAJFkC8l8GzHU9AfJwEHCo3DJkEfzdD+rAEsd4cbgqWkjqS0qThfaW5jHPvfWbNDb20fUWViN+SBM6yNbyD2rtLQSCBEeonvdd1pxCojI67uXpc=  ;
-X-YMail-OSG: HgH_ApQVM1lhz3s3BE4cJ.L7lAFfXRGQmThgPGOAZi0wmWtdzHsP98DOJb8mb0.886_YUx8eVA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] mm: avoid dirtying shared mappings on mlock
-Date: Fri, 12 Oct 2007 03:07:40 +1000
-User-Agent: KMail/1.9.5
-Cc: Suleiman Souhlal <ssouhlal@freebsd.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
-       hugh <hugh@veritas.com>
-References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org> <1192179805.27435.6.camel@twins> <200710120257.05960.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710120257.05960.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Oct 2007 05:44:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:45283 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753204AbXJLJo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:44:29 -0400
+Date: Fri, 12 Oct 2007 11:44:27 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071012094427.GC19237@wotan.suse.de>
+References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no> <20071012091213.GC1962@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710120307.40303.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071012091213.GC1962@ff.dom.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 October 2007 02:57, Nick Piggin wrote:
-> On Friday 12 October 2007 19:03, Peter Zijlstra wrote:
-> > Subject: mm: avoid dirtying shared mappings on mlock
-> >
-> > Suleiman noticed that shared mappings get dirtied when mlocked.
-> > Avoid this by teaching make_pages_present about this case.
-> >
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Acked-by: Suleiman Souhlal <suleiman@google.com>
->
-> Umm, I don't see the other piece of this thread, so I don't
-> know what the actual problem was.
+On Fri, Oct 12, 2007 at 11:12:13AM +0200, Jarek Poplawski wrote:
+> On Fri, Oct 12, 2007 at 10:42:34AM +0200, Helge Hafting wrote:
+> > Jarek Poplawski wrote:
+> > >On 04-10-2007 07:23, Nick Piggin wrote:
+> > >  
+> > >>According to latest memory ordering specification documents from Intel and
+> > >>AMD, both manufacturers are committed to in-order loads from cacheable 
+> > >>memory
+> > >>for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+> > >>    
+> > >...
+> > >
+> > >Great news!
+> > >
+> > >First it looks like a really great thing that it's revealed at last.
+> > >But then... there is probably some confusion: did we have to use
+> > >ineffective code for so long?
+> > >  
+> > You could have tried the optimization before, and
+> > gotten better performance. But if without solid knowledge that
+> > the optimization is _valid_, you risk having a kernel
+> > that performs great but suffer the occational glitch and
+> > therefore is unstable and crash the machine "now and then".
+> > This sort of thing can't really be figured out by experimentation, because
+> > the bad cases might happen only with some processors, some
+> > combinations of memory/chipsets, or with some minimum
+> > number of processors.  Such problems can be very hard
+> > to find, especially considering that other plain bugs also
+> > cause crashes.
+> > 
+> > Therefore, the "ineffective code" was used because it was
+> > the only safe alternative. Now we know, so now we may optimize.
+> 
+> Sorry, I don't understand this logic at all. Since bad cases
+> happen independently from any specifications and Intel doesn't
+> take any legal responsibility for such information, it seems we
+> should better still not optimize?
 
-Found it, but no more clues. Presumably it's some horrible
-google workload... they're pretty happy to carry these kinds
-of patches internally, right? ;)
+We already do in probably more critical and lible to be problematic
+cases (notably, spin_unlock).
 
+So unless there is reasonable information for us to believe this
+will be a problem, IMO the best thing to do is stick with the
+specs. Intel is pretty reasonable with documenting errata I think.
 
-> But I would really rather not do this. If you do this, then you
-> now can get random SIGBUSes when you write into the memory if it
-> can't allocate blocks or ... (some other filesystem specific
-> condition).
->
-> I agree it feels suboptimal, but we've _always_ done this, right?
-> Is it suddenly a problem? Unless a really nice general way is
-> made to solve this, optimising it like this makes it harder to
-> ensure good semantics for all corner cases I think (and then once
-> the optimisation is in place, it's a lot harder to remove it).
+With memory barriers specifically, I'm sure we have many more bugs
+in the kernel than AMD or Intel have in their chips ;)
 
-Yeah, I really would rather not do this. If we actually go
-through the whole fault path in mlock, then it doesn't
-really matter what future baggage we attach to fault handlers...
-(OK, we still technically have some problems with invalidations,
-but mostly they're avoidable unless doing something silly).
-
-How about just doing another PROT_READ mmap, and mlocking that?
-(I was going to suggest another syscall, but that's probably
-overkill).
