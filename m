@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933582AbXJLWkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbXJLWko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933582AbXJLWkT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932598AbXJLWUf
+	id S933886AbXJLWko (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXJLWUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:35 -0400
-Received: from ns.suse.de ([195.135.220.2]:53336 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:20:39 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49819 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932582AbXJLWUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:32 -0400
+	id S932602AbXJLWUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:36 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 37/75] Driver core: Make platform_device.id an int
-Date: Fri, 12 Oct 2007 15:16:41 -0700
-Message-Id: <11922276163147-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 38/75] sysfs: fix i_mutex locking in sysfs_get_dentry()
+Date: Fri, 12 Oct 2007 15:16:42 -0700
+Message-Id: <11922276201219-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192227611369-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276163147-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -54,81 +56,40 @@ References: \<20071012221251.GB4559@kroah.com\>
  <1192227598106-git-send-email-gregkh@suse.de>
  <1192227603335-git-send-email-gregkh@suse.de>
  <1192227611369-git-send-email-gregkh@suse.de>
+ <11922276163147-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Tejun Heo <htejun@gmail.com>
 
-While platform_device.id is a u32, platform_device_add() handles "-1"
-as a special id value. This has potential for confusion and bugs.
-Making it an int instead should prevent problems from happening in
-the future.
+lookup_one_len_kern() should be called with the parent's i_mutex
+locked.  Fix it.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Spotted by Eric W. Biederman.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c         |    7 ++++---
- include/linux/platform_device.h |    7 ++++---
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ fs/sysfs/dir.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index a2e3910..fb56092 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -161,7 +161,7 @@ static void platform_device_release(struct device *dev)
-  *	Create a platform device object which can have other objects attached
-  *	to it, and which will have attached objects freed when it is released.
-  */
--struct platform_device *platform_device_alloc(const char *name, unsigned int id)
-+struct platform_device *platform_device_alloc(const char *name, int id)
- {
- 	struct platform_object *pa;
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index a0da2b0..54ca4bc 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -130,8 +130,10 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
  
-@@ -245,7 +245,8 @@ int platform_device_add(struct platform_device *pdev)
- 	pdev->dev.bus = &platform_bus_type;
+ 		/* look it up */
+ 		parent_dentry = dentry;
++		mutex_lock(&parent_dentry->d_inode->i_mutex);
+ 		dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
+ 					     strlen(cur->s_name));
++		mutex_unlock(&parent_dentry->d_inode->i_mutex);
+ 		dput(parent_dentry);
  
- 	if (pdev->id != -1)
--		snprintf(pdev->dev.bus_id, BUS_ID_SIZE, "%s.%u", pdev->name, pdev->id);
-+		snprintf(pdev->dev.bus_id, BUS_ID_SIZE, "%s.%d", pdev->name,
-+			 pdev->id);
- 	else
- 		strlcpy(pdev->dev.bus_id, pdev->name, BUS_ID_SIZE);
- 
-@@ -359,7 +360,7 @@ EXPORT_SYMBOL_GPL(platform_device_unregister);
-  *	the Linux driver model.  In particular, when such drivers are built
-  *	as modules, they can't be "hotplugged".
-  */
--struct platform_device *platform_device_register_simple(char *name, unsigned int id,
-+struct platform_device *platform_device_register_simple(char *name, int id,
- 							struct resource *res, unsigned int num)
- {
- 	struct platform_device *pdev;
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index 8bbd459..e808043 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -15,7 +15,7 @@
- 
- struct platform_device {
- 	const char	* name;
--	u32		id;
-+	int		id;
- 	struct device	dev;
- 	u32		num_resources;
- 	struct resource	* resource;
-@@ -35,9 +35,10 @@ extern struct resource *platform_get_resource_byname(struct platform_device *, u
- extern int platform_get_irq_byname(struct platform_device *, char *);
- extern int platform_add_devices(struct platform_device **, int);
- 
--extern struct platform_device *platform_device_register_simple(char *, unsigned int, struct resource *, unsigned int);
-+extern struct platform_device *platform_device_register_simple(char *, int id,
-+					struct resource *, unsigned int);
- 
--extern struct platform_device *platform_device_alloc(const char *name, unsigned int id);
-+extern struct platform_device *platform_device_alloc(const char *name, int id);
- extern int platform_device_add_resources(struct platform_device *pdev, struct resource *res, unsigned int num);
- extern int platform_device_add_data(struct platform_device *pdev, const void *data, size_t size);
- extern int platform_device_add(struct platform_device *pdev);
+ 		if (IS_ERR(dentry)) {
 -- 
 1.5.3.4
 
