@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbXJLWg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXJLWgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760898AbXJLWg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760083AbXJLWUD
+	id S1761313AbXJLWgu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXJLWUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:03 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49738 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:20:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53284 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932559AbXJLWUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:00 -0400
+	id S1760445AbXJLWUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:05 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 31/75] Driver core: add uevent file for bus and driver
-Date: Fri, 12 Oct 2007 15:16:35 -0700
-Message-Id: <11922275843236-git-send-email-gregkh@suse.de>
+Subject: [PATCH 32/75] Driver core: kerneldoc - kobject_uevent_env is not "usually KOBJ_MOVE"
+Date: Fri, 12 Oct 2007 15:16:36 -0700
+Message-Id: <1192227589276-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275781508-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922275843236-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -48,107 +48,52 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922275693989-git-send-email-gregkh@suse.de>
  <1192227574129-git-send-email-gregkh@suse.de>
  <11922275781508-git-send-email-gregkh@suse.de>
+ <11922275843236-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-This has been in the SuSE kernels for some time now.
-
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/bus.c |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+ lib/kobject_uevent.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 0a8d075..6768a01 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -610,6 +610,17 @@ static inline int add_probe_files(struct bus_type *bus) { return 0; }
- static inline void remove_probe_files(struct bus_type *bus) {}
- #endif
- 
-+static ssize_t driver_uevent_store(struct device_driver *drv,
-+				   const char *buf, size_t count)
-+{
-+	enum kobject_action action;
-+
-+	if (kobject_action_type(buf, count, &action) == 0)
-+		kobject_uevent(&drv->kobj, action);
-+	return count;
-+}
-+static DRIVER_ATTR(uevent, S_IWUSR, NULL, driver_uevent_store);
-+
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index a8efb48..2e4eae5 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -77,7 +77,7 @@ out:
  /**
-  *	bus_add_driver - Add a driver to the bus.
-  *	@drv:	driver.
-@@ -640,6 +651,11 @@ int bus_add_driver(struct device_driver *drv)
- 	klist_add_tail(&drv->knode_bus, &bus->klist_drivers);
- 	module_add_driver(drv->owner, drv);
+  * kobject_uevent_env - send an uevent with environmental data
+  *
+- * @action: action that is happening (usually KOBJ_MOVE)
++ * @action: action that is happening
+  * @kobj: struct kobject that the action is happening to
+  * @envp_ext: pointer to environmental data
+  *
+@@ -102,9 +102,9 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
  
-+	error = driver_create_file(drv, &driver_attr_uevent);
-+	if (error) {
-+		printk(KERN_ERR "%s: uevent attr (%s) failed\n",
-+			__FUNCTION__, drv->name);
-+	}
- 	error = driver_add_attrs(bus, drv);
- 	if (error) {
- 		/* How the hell do we get out of this pickle? Give up */
-@@ -677,6 +693,7 @@ void bus_remove_driver(struct device_driver * drv)
- 
- 	remove_bind_files(drv);
- 	driver_remove_attrs(drv->bus, drv);
-+	driver_remove_file(drv, &driver_attr_uevent);
- 	klist_remove(&drv->knode_bus);
- 	pr_debug("bus %s: remove driver %s\n", drv->bus->name, drv->name);
- 	driver_detach(drv);
-@@ -804,6 +821,17 @@ static void klist_devices_put(struct klist_node *n)
- 	put_device(dev);
- }
- 
-+static ssize_t bus_uevent_store(struct bus_type *bus,
-+				const char *buf, size_t count)
-+{
-+	enum kobject_action action;
+ 	/* search the kset we belong to */
+ 	top_kobj = kobj;
+-	while (!top_kobj->kset && top_kobj->parent) {
++	while (!top_kobj->kset && top_kobj->parent)
+ 		top_kobj = top_kobj->parent;
+-	}
 +
-+	if (kobject_action_type(buf, count, &action) == 0)
-+		kobject_uevent(&bus->subsys.kobj, action);
-+	return count;
-+}
-+static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
-+
+ 	if (!top_kobj->kset) {
+ 		pr_debug("kobject attempted to send uevent without kset!\n");
+ 		return -EINVAL;
+@@ -237,7 +237,7 @@ EXPORT_SYMBOL_GPL(kobject_uevent_env);
  /**
-  *	bus_register - register a bus with the system.
-  *	@bus:	bus.
-@@ -828,6 +856,10 @@ int bus_register(struct bus_type * bus)
- 	if (retval)
- 		goto out;
- 
-+	retval = bus_create_file(bus, &bus_attr_uevent);
-+	if (retval)
-+		goto bus_uevent_fail;
-+
- 	kobject_set_name(&bus->devices.kobj, "devices");
- 	bus->devices.kobj.parent = &bus->subsys.kobj;
- 	retval = kset_register(&bus->devices);
-@@ -863,6 +895,8 @@ bus_probe_files_fail:
- bus_drivers_fail:
- 	kset_unregister(&bus->devices);
- bus_devices_fail:
-+	bus_remove_file(bus, &bus_attr_uevent);
-+bus_uevent_fail:
- 	subsystem_unregister(&bus->subsys);
- out:
- 	return retval;
-@@ -882,6 +916,7 @@ void bus_unregister(struct bus_type * bus)
- 	remove_probe_files(bus);
- 	kset_unregister(&bus->drivers);
- 	kset_unregister(&bus->devices);
-+	bus_remove_file(bus, &bus_attr_uevent);
- 	subsystem_unregister(&bus->subsys);
- }
- 
+  * kobject_uevent - notify userspace by ending an uevent
+  *
+- * @action: action that is happening (usually KOBJ_ADD and KOBJ_REMOVE)
++ * @action: action that is happening
+  * @kobj: struct kobject that the action is happening to
+  *
+  * Returns 0 if kobject_uevent() is completed with success or the
 -- 
 1.5.3.4
 
