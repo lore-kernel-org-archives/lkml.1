@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbXJLQ2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXJLQ3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761938AbXJLQ2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760367AbXJLQJP
+	id S933125AbXJLQ3N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760462AbXJLQJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:09:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44025 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 12:09:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44032 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760583AbXJLQJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:09:12 -0400
+	id S1760449AbXJLQJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:09:16 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 44/52] CRED: Pass credentials through the follow_link() inode
-	op
+Subject: [PATCH 45/52] CRED: Pass credentials through the getattr() inode op
 To: viro@ftp.linux.org.uk
 Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 12 Oct 2007 17:09:04 +0100
-Message-ID: <20071012160904.15119.43864.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 17:09:09 +0100
+Message-ID: <20071012160909.15119.2820.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,339 +29,231 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass credentials through the follow_link() inode operation.
+Pass credentials through the getattr() inode operation.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/mntpt.c        |    6 ++++--
- fs/autofs4/root.c     |    6 ++++--
- fs/autofs4/symlink.c  |    3 ++-
- fs/ext3/symlink.c     |    3 ++-
- fs/namei.c            |    9 ++++++---
- fs/nfs/namespace.c    |    5 +++--
- fs/nfs/symlink.c      |    4 ++--
- fs/proc/base.c        |    6 ++++--
- fs/proc/generic.c     |    3 ++-
- fs/proc/proc_net.c    |    3 ++-
- fs/sysfs/dir.c        |    2 +-
- fs/sysfs/symlink.c    |    3 ++-
- include/linux/fs.h    |    6 ++++--
- include/linux/sysfs.h |    6 ++++--
- mm/shmem.c            |    7 +++++--
- 15 files changed, 47 insertions(+), 25 deletions(-)
+ fs/afs/inode.c           |    2 +-
+ fs/afs/internal.h        |    3 ++-
+ fs/bad_inode.c           |    2 +-
+ fs/fat/file.c            |    3 ++-
+ fs/libfs.c               |    2 +-
+ fs/nfs/inode.c           |    4 ++--
+ fs/proc/base.c           |    6 ++++--
+ fs/proc/generic.c        |    2 +-
+ fs/proc/root.c           |    4 ++--
+ fs/stat.c                |    3 ++-
+ include/linux/fs.h       |    6 ++++--
+ include/linux/msdos_fs.h |    2 +-
+ include/linux/nfs_fs.h   |    3 ++-
+ 13 files changed, 25 insertions(+), 17 deletions(-)
 
-diff --git a/fs/afs/mntpt.c b/fs/afs/mntpt.c
-index 21a04c0..864255e 100644
---- a/fs/afs/mntpt.c
-+++ b/fs/afs/mntpt.c
-@@ -26,7 +26,8 @@ static struct dentry *afs_mntpt_lookup(struct inode *dir,
- 				       struct nameidata *nd,
- 				       struct cred *cred);
- static int afs_mntpt_open(struct inode *inode, struct file *file);
--static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd);
-+static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				   struct cred *cred);
- static void afs_mntpt_expiry_timed_out(struct work_struct *work);
- 
- const struct file_operations afs_mntpt_file_operations = {
-@@ -212,7 +213,8 @@ error:
- /*
-  * follow a link from a mountpoint directory, thus causing it to be mounted
+diff --git a/fs/afs/inode.c b/fs/afs/inode.c
+index f6e4dc1..75f8a8f 100644
+--- a/fs/afs/inode.c
++++ b/fs/afs/inode.c
+@@ -292,7 +292,7 @@ error_unlock:
+  * read the attributes of an inode
   */
--static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				   struct cred *cred)
+ int afs_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-		      struct kstat *stat)
++		struct kstat *stat, struct cred *cred)
  {
- 	struct vfsmount *newmnt;
- 	int err;
-diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index fd22c05..5ee7e2d 100644
---- a/fs/autofs4/root.c
-+++ b/fs/autofs4/root.c
-@@ -31,7 +31,8 @@ static int autofs4_dir_readdir(struct file * filp, void * dirent, filldir_t fill
- static int autofs4_root_readdir(struct file * filp, void * dirent, filldir_t filldir);
- static struct dentry *autofs4_lookup(struct inode *,struct dentry *,
- 				     struct nameidata *, struct cred *);
--static void *autofs4_follow_link(struct dentry *, struct nameidata *);
-+static void *autofs4_follow_link(struct dentry *, struct nameidata *,
-+				 struct cred *);
+ 	struct inode *inode;
  
- const struct file_operations autofs4_root_operations = {
- 	.open		= dcache_dir_open,
-@@ -325,7 +326,8 @@ static int try_to_fill_dentry(struct dentry *dentry, int flags)
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 09b440e..1b2eeef 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -546,7 +546,8 @@ extern struct inode *afs_iget(struct super_block *, struct key *,
+ 			      struct afs_callback *);
+ extern void afs_zap_data(struct afs_vnode *);
+ extern int afs_validate(struct afs_vnode *, struct key *);
+-extern int afs_getattr(struct vfsmount *, struct dentry *, struct kstat *);
++extern int afs_getattr(struct vfsmount *, struct dentry *, struct kstat *,
++		       struct cred *);
+ extern int afs_setattr(struct dentry *, struct iattr *, struct cred *);
+ extern void afs_clear_inode(struct inode *);
+ 
+diff --git a/fs/bad_inode.c b/fs/bad_inode.c
+index 93c6283..a891eaa 100644
+--- a/fs/bad_inode.c
++++ b/fs/bad_inode.c
+@@ -254,7 +254,7 @@ static int bad_inode_permission(struct inode *inode, int mask,
  }
  
- /* For autofs direct mounts the follow link triggers the mount */
--static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				 struct cred *cred)
+ static int bad_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-			struct kstat *stat)
++			struct kstat *stat, struct cred *cred)
  {
- 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
- 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
-diff --git a/fs/autofs4/symlink.c b/fs/autofs4/symlink.c
-index b4ea829..767d760 100644
---- a/fs/autofs4/symlink.c
-+++ b/fs/autofs4/symlink.c
-@@ -12,7 +12,8 @@
- 
- #include "autofs_i.h"
- 
--static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				 struct cred *cred)
- {
- 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
- 	nd_set_link(nd, (char *)ino->u.symlink);
-diff --git a/fs/ext3/symlink.c b/fs/ext3/symlink.c
-index ff7b4cc..b56a509 100644
---- a/fs/ext3/symlink.c
-+++ b/fs/ext3/symlink.c
-@@ -23,7 +23,8 @@
- #include <linux/namei.h>
- #include "xattr.h"
- 
--static void * ext3_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void * ext3_follow_link(struct dentry *dentry, struct nameidata *nd,
-+			       struct cred *cred)
- {
- 	struct ext3_inode_info *ei = EXT3_I(dentry->d_inode);
- 	nd_set_link(nd, (char*)ei->i_data);
-diff --git a/fs/namei.c b/fs/namei.c
-index 1703fd0..d77e045 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -595,6 +595,7 @@ static inline void path_to_nameidata(struct path *path, struct nameidata *nd)
- 
- static __always_inline int __do_follow_link(struct path *path, struct nameidata *nd)
- {
-+	struct cred *cred = current->cred;
- 	int error;
- 	void *cookie;
- 	struct dentry *dentry = path->dentry;
-@@ -607,7 +608,7 @@ static __always_inline int __do_follow_link(struct path *path, struct nameidata
- 		dget(dentry);
- 	}
- 	mntget(path->mnt);
--	cookie = dentry->d_inode->i_op->follow_link(dentry, nd);
-+	cookie = dentry->d_inode->i_op->follow_link(dentry, nd, cred);
- 	error = PTR_ERR(cookie);
- 	if (!IS_ERR(cookie)) {
- 		char *s = nd_get_link(nd);
-@@ -2682,11 +2683,12 @@ out:
-  */
- int generic_readlink(struct dentry *dentry, char __user *buffer, int buflen)
- {
-+	struct cred *cred = current->cred;
- 	struct nameidata nd;
- 	void *cookie;
- 
- 	nd.depth = 0;
--	cookie = dentry->d_inode->i_op->follow_link(dentry, &nd);
-+	cookie = dentry->d_inode->i_op->follow_link(dentry, &nd, cred);
- 	if (!IS_ERR(cookie)) {
- 		int res = vfs_readlink(dentry, buffer, buflen, nd_get_link(&nd));
- 		if (dentry->d_inode->i_op->put_link)
-@@ -2725,7 +2727,8 @@ int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
- 	return res;
- }
- 
--void *page_follow_link_light(struct dentry *dentry, struct nameidata *nd)
-+void *page_follow_link_light(struct dentry *dentry, struct nameidata *nd,
-+			     struct cred *cred)
- {
- 	struct page *page = NULL;
- 	nd_set_link(nd, page_getlink(dentry, &page));
-diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
-index b8d3576..72f305f 100644
---- a/fs/nfs/namespace.c
-+++ b/fs/nfs/namespace.c
-@@ -85,6 +85,7 @@ Elong:
-  * nfs_follow_mountpoint - handle crossing a mountpoint on the server
-  * @dentry - dentry of mountpoint
-  * @nd - nameidata info
-+ * @acred - the credentials to use
-  *
-  * When we encounter a mountpoint on the server, we want to set up
-  * a mountpoint on the client too, to prevent inode numbers from
-@@ -94,9 +95,9 @@ Elong:
-  * situation, and that different filesystems may want to use
-  * different security flavours.
-  */
--static void * nfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
-+static void * nfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd,
-+				    struct cred *acred)
- {
--	struct cred *acred = current->cred;
- 	struct vfsmount *mnt;
- 	struct nfs_server *server = NFS_SERVER(dentry->d_inode);
- 	struct dentry *parent;
-diff --git a/fs/nfs/symlink.c b/fs/nfs/symlink.c
-index cd1df31..1186339 100644
---- a/fs/nfs/symlink.c
-+++ b/fs/nfs/symlink.c
-@@ -53,10 +53,10 @@ error:
  	return -EIO;
  }
+diff --git a/fs/fat/file.c b/fs/fat/file.c
+index f0b3faa..6e62dd6 100644
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -304,7 +304,8 @@ void fat_truncate(struct inode *inode, struct cred *cred)
+ 	fat_flush_inodes(inode->i_sb, inode, NULL);
+ }
  
--static void *nfs_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *nfs_follow_link(struct dentry *dentry, struct nameidata *nd,
-+			     struct cred *acred)
+-int fat_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
++int fat_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat,
++		struct cred *cred)
  {
  	struct inode *inode = dentry->d_inode;
--	struct cred *acred = current->cred;
- 	struct page *page;
- 	void *err;
+ 	generic_fillattr(inode, stat);
+diff --git a/fs/libfs.c b/fs/libfs.c
+index e214329..1699b79 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -12,7 +12,7 @@
+ #include <asm/uaccess.h>
  
+ int simple_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-		   struct kstat *stat)
++		   struct kstat *stat, struct cred *cred)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	generic_fillattr(inode, stat);
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 178979c..b55f803 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -425,9 +425,9 @@ static void nfs_wake_up_inode(struct inode *inode)
+ 	wake_up_bit(&nfsi->flags, NFS_INO_REVALIDATING);
+ }
+ 
+-int nfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
++int nfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat,
++		struct cred *acred)
+ {
+-	struct cred *acred = current->cred;
+ 	struct inode *inode = dentry->d_inode;
+ 	int need_atime = NFS_I(inode)->cache_validity & NFS_INO_INVALID_ATIME;
+ 	int err;
 diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 9262681..d26cf33 100644
+index d26cf33..3a53ceb 100644
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -933,7 +933,8 @@ static const struct file_operations proc_pid_sched_operations = {
+@@ -1064,7 +1064,8 @@ out_unlock:
+ 	return NULL;
+ }
  
- #endif
- 
--static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				  struct cred *cred)
+-static int pid_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
++static int pid_getattr(struct vfsmount *mnt, struct dentry *dentry,
++		       struct kstat *stat, struct cred *cred)
  {
  	struct inode *inode = dentry->d_inode;
- 	int error = -EACCES;
-@@ -1896,7 +1897,8 @@ static int proc_self_readlink(struct dentry *dentry, char __user *buffer,
- 	return vfs_readlink(dentry,buffer,buflen,tmp);
+ 	struct task_struct *task;
+@@ -2640,7 +2641,8 @@ out_no_task:
+ 	return retval;
  }
  
--static void *proc_self_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *proc_self_follow_link(struct dentry *dentry, struct nameidata *nd,
-+				   struct cred *cred)
+-static int proc_task_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
++static int proc_task_getattr(struct vfsmount *mnt, struct dentry *dentry,
++			     struct kstat *stat, struct cred *cred)
  {
- 	char tmp[PROC_NUMBUF];
- 	sprintf(tmp, "%d", current->tgid);
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *p = get_proc_task(inode);
 diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index ef5fb3a..ea67aac 100644
+index ea67aac..afbba93 100644
 --- a/fs/proc/generic.c
 +++ b/fs/proc/generic.c
-@@ -353,7 +353,8 @@ static void release_inode_number(unsigned int inum)
- 	spin_unlock(&proc_inum_lock);
+@@ -256,7 +256,7 @@ out:
  }
  
--static void *proc_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *proc_follow_link(struct dentry *dentry, struct nameidata *nd,
-+			      struct cred *cred)
+ static int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-			struct kstat *stat)
++			struct kstat *stat, struct cred *cred)
  {
- 	nd_set_link(nd, PDE(dentry->d_inode)->data);
- 	return NULL;
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index a1a2fa9..7062644 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -84,7 +84,8 @@ out_de_put:
- 	goto out;
+ 	struct inode *inode = dentry->d_inode;
+ 	struct proc_dir_entry *de = PROC_I(inode)->pde;
+diff --git a/fs/proc/root.c b/fs/proc/root.c
+index 4e3a6c7..6025b9d 100644
+--- a/fs/proc/root.c
++++ b/fs/proc/root.c
+@@ -83,8 +83,8 @@ void __init proc_root_init(void)
+ 	proc_sys_init();
  }
  
--static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd)
-+static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd,
-+				  struct cred *cred)
+-static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat
+-)
++static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry,
++			     struct kstat *stat, struct cred *cred)
  {
- 	struct net *net = current->nsproxy->net_ns;
- 	struct dentry *shadow;
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 6a4bfb0..96e2fd8 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -1199,7 +1199,7 @@ static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
-  */
+ 	generic_fillattr(dentry->d_inode, stat);
+ 	stat->nlink = proc_root.nlink + nr_processes();
+diff --git a/fs/stat.c b/fs/stat.c
+index 6851006..0d71257 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -39,6 +39,7 @@ EXPORT_SYMBOL(generic_fillattr);
  
- int sysfs_make_shadowed_dir(struct kobject *kobj,
--	void * (*follow_link)(struct dentry *, struct nameidata *))
-+			    sysfs_follow_link_t follow_link)
+ int vfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
  {
- 	struct dentry *dentry;
- 	struct inode *inode;
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 4ce687f..34e0e08 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -158,7 +158,8 @@ static int sysfs_getlink(struct dentry *dentry, char * path)
- 	return error;
- }
++	struct cred *cred = current->cred;
+ 	struct inode *inode = dentry->d_inode;
+ 	int retval;
  
--static void *sysfs_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *sysfs_follow_link(struct dentry *dentry, struct nameidata *nd,
-+			       struct cred *cred)
- {
- 	int error = -ENOMEM;
- 	unsigned long page = get_zeroed_page(GFP_KERNEL);
+@@ -47,7 +48,7 @@ int vfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
+ 		return retval;
+ 
+ 	if (inode->i_op->getattr)
+-		return inode->i_op->getattr(mnt, dentry, stat);
++		return inode->i_op->getattr(mnt, dentry, stat, cred);
+ 
+ 	generic_fillattr(inode, stat);
+ 	return 0;
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 2fec09a..9e7ac7c 100644
+index 9e7ac7c..395b272 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1151,7 +1151,8 @@ struct inode_operations {
- 		       struct inode *, struct dentry *,
- 		       struct cred *);
- 	int (*readlink) (struct dentry *, char __user *,int);
--	void * (*follow_link) (struct dentry *, struct nameidata *);
-+	void * (*follow_link) (struct dentry *, struct nameidata *,
-+			       struct cred *);
- 	void (*put_link) (struct dentry *, struct nameidata *, void *);
- 	void (*truncate) (struct inode *, struct cred *);
+@@ -1158,7 +1158,8 @@ struct inode_operations {
  	int (*permission) (struct inode *, int, struct nameidata *,
-@@ -1767,7 +1768,8 @@ extern const struct file_operations generic_ro_fops;
- extern int vfs_readlink(struct dentry *, char __user *, int, const char *);
- extern int vfs_follow_link(struct nameidata *, const char *);
- extern int page_readlink(struct dentry *, char __user *, int);
--extern void *page_follow_link_light(struct dentry *, struct nameidata *);
-+extern void *page_follow_link_light(struct dentry *, struct nameidata *,
-+				    struct cred *);
- extern void page_put_link(struct dentry *, struct nameidata *, void *);
- extern int __page_symlink(struct inode *inode, const char *symname, int len,
- 		gfp_t gfp_mask);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index be8228e..d84c82b 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -20,6 +20,7 @@ struct module;
- struct nameidata;
- struct dentry;
- struct sysfs_dirent;
-+struct cred;
+ 			   struct cred *);
+ 	int (*setattr) (struct dentry *, struct iattr *, struct cred *);
+-	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
++	int (*getattr) (struct vfsmount *, struct dentry *, struct kstat *,
++			struct cred *);
+ 	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int);
+ 	ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t);
+ 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
+@@ -1802,7 +1803,8 @@ extern int dcache_dir_open(struct inode *, struct file *);
+ extern int dcache_dir_close(struct inode *, struct file *);
+ extern loff_t dcache_dir_lseek(struct file *, loff_t, int);
+ extern int dcache_readdir(struct file *, void *, filldir_t);
+-extern int simple_getattr(struct vfsmount *, struct dentry *, struct kstat *);
++extern int simple_getattr(struct vfsmount *, struct dentry *, struct kstat *,
++			  struct cred *);
+ extern int simple_statfs(struct dentry *, struct kstatfs *, struct cred *);
+ extern int simple_link(struct dentry *, struct inode *, struct dentry *,
+ 		       struct cred *);
+diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
+index 63a3efc..2276346 100644
+--- a/include/linux/msdos_fs.h
++++ b/include/linux/msdos_fs.h
+@@ -405,7 +405,7 @@ extern int fat_notify_change(struct dentry * dentry, struct iattr * attr,
+ 			     struct cred *cred);
+ extern void fat_truncate(struct inode *inode, struct cred *cred);
+ extern int fat_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-		       struct kstat *stat);
++		       struct kstat *statm, struct cred *cred);
  
- /* FIXME
-  * The *owner field is no longer used, but leave around
-@@ -138,9 +139,10 @@ void sysfs_remove_file_from_group(struct kobject *kobj,
- 
- void sysfs_notify(struct kobject * k, char *dir, char *attr);
- 
--
-+typedef void *(*sysfs_follow_link_t)(struct dentry *, struct nameidata *,
-+				     struct cred *);
- extern int sysfs_make_shadowed_dir(struct kobject *kobj,
--	void * (*follow_link)(struct dentry *, struct nameidata *));
-+				   sysfs_follow_link_t follow_link);
- extern struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj);
- extern void sysfs_remove_shadow_dir(struct sysfs_dirent *shadow_sd);
- 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 432f023..a3c2007 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1912,13 +1912,16 @@ static int shmem_symlink(struct inode *dir, struct dentry *dentry,
- 	return 0;
- }
- 
--static void *shmem_follow_link_inline(struct dentry *dentry, struct nameidata *nd)
-+static void *shmem_follow_link_inline(struct dentry *dentry,
-+				      struct nameidata *nd,
-+				      struct cred *cred)
- {
- 	nd_set_link(nd, (char *)SHMEM_I(dentry->d_inode));
- 	return NULL;
- }
- 
--static void *shmem_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *shmem_follow_link(struct dentry *dentry, struct nameidata *nd,
-+			       struct cred *cred)
- {
- 	struct page *page = NULL;
- 	int res = shmem_getpage(dentry->d_inode, 0, &page, SGP_READ, NULL);
+ /* fat/inode.c */
+ extern void fat_attach(struct inode *inode, loff_t i_pos);
+diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+index 333abc5..d26fd56 100644
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -288,7 +288,8 @@ extern struct inode *nfs_fhget(struct super_block *, struct nfs_fh *,
+ 				struct nfs_fattr *);
+ extern int nfs_refresh_inode(struct inode *, struct nfs_fattr *);
+ extern int nfs_post_op_update_inode(struct inode *inode, struct nfs_fattr *fattr);
+-extern int nfs_getattr(struct vfsmount *, struct dentry *, struct kstat *);
++extern int nfs_getattr(struct vfsmount *, struct dentry *, struct kstat *,
++		       struct cred *);
+ extern int nfs_permission(struct inode *, int, struct nameidata *,
+ 			  struct cred *);
+ extern int nfs_access_get_cached(struct inode *, struct rpc_cred *, struct nfs_access_entry *);
 
