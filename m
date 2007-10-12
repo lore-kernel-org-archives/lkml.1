@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933075AbXJLW0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbXJLW06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933075AbXJLW0f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758442AbXJLWSp
+	id S933082AbXJLW06 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761302AbXJLWSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:18:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49641 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:18:50 -0400
+Received: from mail.suse.de ([195.135.220.2]:53158 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761212AbXJLWSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:18:43 -0400
+	id S1761297AbXJLWSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:18:49 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 15/75] kobject: remove the static array for the name
-Date: Fri, 12 Oct 2007 15:16:19 -0700
-Message-Id: <11922275074080-git-send-email-gregkh@suse.de>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 16/75] Driver core: clean up removed functions from the documentation
+Date: Fri, 12 Oct 2007 15:16:20 -0700
+Message-Id: <11922275121763-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275031518-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922275074080-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -32,31 +33,23 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922274941588-git-send-email-gregkh@suse.de>
  <11922274993462-git-send-email-gregkh@suse.de>
  <11922275031518-git-send-email-gregkh@suse.de>
+ <11922275074080-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to historical reasons, struct kobject contained a static array for
-the name, and a dynamic pointer in case the name got bigger than the
-array.  That's just dumb, as people didn't always know which variable to
-reference, even with the accessor for the kobject name.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-This patch removes the static array, potentially saving a lot of memory
-as the majority of kobjects do not have a very long name.
-
-Thanks to Kay for the idea to do this.
-
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kobject.h |    7 ++--
- lib/kobject.c           |   79 +++++++++++++++++++++++------------------------
- 2 files changed, 42 insertions(+), 44 deletions(-)
+ Documentation/kobject.txt |   21 ++-------------------
+ 1 files changed, 2 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index c0fb535..8b45946 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -63,7 +63,6 @@ extern const char *kobject_actions[];
+diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+index 8ee49ee..5e7aca2 100644
+--- a/Documentation/kobject.txt
++++ b/Documentation/kobject.txt
+@@ -54,7 +54,6 @@ embedded in larger data structures and replace fields they duplicate.
  
  struct kobject {
  	const char		* k_name;
@@ -64,156 +57,50 @@ index c0fb535..8b45946 100644
  	struct kref		kref;
  	struct list_head	entry;
  	struct kobject		* parent;
-@@ -188,18 +187,18 @@ extern struct kobject * kset_find_obj(struct kset *, const char *);
-  * Use this when initializing an embedded kset with no other 
-  * fields to initialize.
-  */
--#define set_kset_name(str)	.kset = { .kobj = { .name = str } }
-+#define set_kset_name(str)	.kset = { .kobj = { .k_name = str } }
+@@ -223,18 +222,15 @@ decl_subsys(devices, &ktype_device, &device_uevent_ops);
+ is equivalent to doing:
  
- 
- #define decl_subsys(_name,_type,_uevent_ops) \
- struct kset _name##_subsys = { \
--	.kobj = { .name = __stringify(_name) }, \
-+	.kobj = { .k_name = __stringify(_name) }, \
- 	.ktype = _type, \
- 	.uevent_ops =_uevent_ops, \
- }
- #define decl_subsys_name(_varname,_name,_type,_uevent_ops) \
- struct kset _varname##_subsys = { \
--	.kobj = { .name = __stringify(_name) }, \
-+	.kobj = { .k_name = __stringify(_name) }, \
- 	.ktype = _type, \
- 	.uevent_ops =_uevent_ops, \
- }
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 1326041..10ae2eb 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -170,7 +170,7 @@ int kobject_shadow_add(struct kobject *kobj, struct sysfs_dirent *shadow_parent)
- 	if (!(kobj = kobject_get(kobj)))
- 		return -ENOENT;
- 	if (!kobj->k_name)
--		kobj->k_name = kobj->name;
-+		kobject_set_name(kobj, "NO_NAME");
- 	if (!*kobj->k_name) {
- 		pr_debug("kobject attempted to be registered with no name!\n");
- 		WARN_ON(1);
-@@ -181,7 +181,7 @@ int kobject_shadow_add(struct kobject *kobj, struct sysfs_dirent *shadow_parent)
- 
- 	pr_debug("kobject %s: registering. parent: %s, set: %s\n",
- 		 kobject_name(kobj), parent ? kobject_name(parent) : "<NULL>", 
--		 kobj->kset ? kobj->kset->kobj.name : "<NULL>" );
-+		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
- 
- 	if (kobj->kset) {
- 		spin_lock(&kobj->kset->list_lock);
-@@ -255,54 +255,50 @@ int kobject_register(struct kobject * kobj)
- int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
- {
- 	int error = 0;
--	int limit = KOBJ_NAME_LEN;
-+	int limit;
- 	int need;
- 	va_list args;
--	char * name;
-+	char *name;
- 
--	/* 
--	 * First, try the static array 
--	 */
--	va_start(args,fmt);
--	need = vsnprintf(kobj->name,limit,fmt,args);
-+	/* find out how big a buffer we need */
-+	name = kmalloc(1024, GFP_KERNEL);
-+	if (!name) {
-+		error = -ENOMEM;
-+		goto done;
-+	}
-+	va_start(args, fmt);
-+	need = vsnprintf(name, 1024, fmt, args);
- 	va_end(args);
--	if (need < limit) 
--		name = kobj->name;
--	else {
--		/* 
--		 * Need more space? Allocate it and try again 
--		 */
--		limit = need + 1;
--		name = kmalloc(limit,GFP_KERNEL);
--		if (!name) {
--			error = -ENOMEM;
--			goto Done;
--		}
--		va_start(args,fmt);
--		need = vsnprintf(name,limit,fmt,args);
--		va_end(args);
+ struct kset devices_subsys = {
+-     .kobj = {
+-	   .name = "devices",
+-     },
+      .ktype = &ktype_devices,
+      .uevent_ops = &device_uevent_ops,
+ };
 -
--		/* Still? Give up. */
--		if (need >= limit) {
--			kfree(name);
--			error = -EFAULT;
--			goto Done;
--		}
-+	kfree(name);
-+
-+	/* Allocate the new space and copy the string in */
-+	limit = need + 1;
-+	name = kmalloc(limit, GFP_KERNEL);
-+	if (!name) {
-+		error = -ENOMEM;
-+		goto done;
-+	}
-+	va_start(args, fmt);
-+	need = vsnprintf(name, limit, fmt, args);
-+	va_end(args);
-+
-+	/* something wrong with the string we copied? */
-+	if (need >= limit) {
-+		kfree(name);
-+		error = -EFAULT;
-+		goto done;
- 	}
++kobject_set_name(&devices_subsys, name);
  
- 	/* Free the old name, if necessary. */
--	if (kobj->k_name && kobj->k_name != kobj->name)
--		kfree(kobj->k_name);
-+	kfree(kobj->k_name);
+ The objects that are registered with a subsystem that use the
+ subsystem's default list must have their kset ptr set properly. These
+ objects may have embedded kobjects or ksets. The
+-following helpers make setting the kset easier:
++following helper makes setting the kset easier:
  
- 	/* Now, set the new name */
- 	kobj->k_name = name;
-- Done:
-+done:
- 	return error;
- }
--
- EXPORT_SYMBOL(kobject_set_name);
+ 
+ kobj_set_kset_s(obj,subsys)
+@@ -242,22 +238,9 @@ kobj_set_kset_s(obj,subsys)
+ - Assumes that obj->kobj exists, and is a struct kobject.
+ - Sets the kset of that kobject to the kset <subsys>.
  
 -
- /**
-  *	kobject_rename - change the name of an object
-  *	@kobj:	object in question.
-@@ -477,13 +473,16 @@ void kobject_cleanup(struct kobject * kobj)
- 	struct kobj_type * t = get_ktype(kobj);
- 	struct kset * s = kobj->kset;
- 	struct kobject * parent = kobj->parent;
-+	const char *name = kobj->k_name;
+-kset_set_kset_s(obj,subsys)
+-
+-- Assumes that obj->kset exists, and is a struct kset.
+-- Sets the kset of the embedded kobject to the kset <subsys>.
+-
+-subsys_set_kset(obj,subsys)
+-
+-- Assumes obj->subsys exists, and is a struct subsystem.
+-- Sets obj->subsys.kset.kobj.kset to the subsystem's embedded kset.
+-
+ void subsystem_init(struct kset *s);
+ int subsystem_register(struct kset *s);
+ void subsystem_unregister(struct kset *s);
+-struct kset *subsys_get(struct kset *s);
+-void kset_put(struct kset *s);
  
- 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
--	if (kobj->k_name != kobj->name)
--		kfree(kobj->k_name);
--	kobj->k_name = NULL;
--	if (t && t->release)
-+	if (t && t->release) {
- 		t->release(kobj);
-+		/* If we have a release function, we can guess that this was
-+		 * not a statically allocated kobject, so we should be safe to
-+		 * free the name */
-+		kfree(name);
-+	}
- 	if (s)
- 		kset_put(s);
- 	kobject_put(parent);
+ These are just wrappers around the respective kset_* functions.
+ 
 -- 
 1.5.3.4
 
