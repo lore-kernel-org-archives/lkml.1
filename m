@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbXJLTV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXJLTVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758129AbXJLTV3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 15:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbXJLTVV
+	id S1756370AbXJLTVr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 15:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbXJLTVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 15:21:21 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40532 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755670AbXJLTVU (ORCPT
+	Fri, 12 Oct 2007 15:21:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:19933 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758328AbXJLTVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 15:21:20 -0400
-Date: Fri, 12 Oct 2007 12:21:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: josh@freedesktop.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Dipankar Sarma <dipankar@in.ibm.com>,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] Use raw_smp_processor_id() in rcu_random()
-Message-ID: <20071012192116.GD8420@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071012092044.GA1138@in.ibm.com>
+	Fri, 12 Oct 2007 15:21:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Sqn1xAc3vuGh2HbNCJFWpaHjr165PnPUTgvLUSfOU2x7zn1ASov4HLji6vMzmDyw0QzZzhYKT1VP6rq79ZTLgXk6Lu3N4hitdg2XXecRoodI7rUjfCPGMdBSeHnFI35x9d2U5/ZizC66HF8Pl9fulUg01NAW1JTAaPRtwMP6hX0=
+Date: Fri, 12 Oct 2007 21:21:11 +0200
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Bryan Wu <bryan.wu@analog.com>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH try #2] Input/Joystick Driver: add support AD7142 joystick driver
+Message-ID: <20071012192111.GB12559@Ahmed>
+References: <1192174727.6247.20.camel@roc-laptop> <20071012164131.GA12559@Ahmed> <d120d5000710121029q400d05d8s38ae8769f2f44b15@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071012092044.GA1138@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <d120d5000710121029q400d05d8s38ae8769f2f44b15@mail.gmail.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 02:50:44PM +0530, Gautham R Shenoy wrote:
+On Fri, Oct 12, 2007 at 01:29:31PM -0400, Dmitry Torokhov wrote:
+> Hi Ahmed,
 > 
-> With CONFIG_PREEMPT=y on 2.6.23-rc8-mm2, rcu_random() calls 
-> smp_processor_id() from a preemptible context, triggering the
-> following kernel error.
-> 
-> BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5155
-> caller is rcu_random+0x16/0x39 [rcutorture]
->  [<c010612f>] dump_trace+0x68/0x1d2
->  [<c01062b1>] show_trace_log_lvl+0x18/0x2c
->  [<c0106c23>] show_trace+0xf/0x11
->  [<c0106d33>] dump_stack+0x12/0x14
->  [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
->  [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
->  [<f8870cdf>] <3>BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5156
-> rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
->  [<c0139b32>] caller is rcu_random+0x16/0x39 [rcutorture]
-> kthread+0x38/0x5e
->  [<c0105ca7>] kernel_thread_helper+0x7/0x10
->  =======================
->  [<c010612f>] dump_trace+0x68/0x1d2
->  [<c01062b1>] show_trace_log_lvl+0x18/0x2c
->  [<c0106c23>] show_trace+0xf/0x11
->  [<c0106d33>] dump_stack+0x12/0x14
->  [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
->  [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
->  [<f8870cdf>] rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
-> 
-> rcu_random() can do with raw_smp_processor_id() as a parameter to cpu_clock()
-> in this particular context.
 
-Good catch!!!
+Hi :),
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> On 10/12/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> > On Fri, Oct 12, 2007 at 03:38:47PM +0800, Bryan Wu wrote:
+> > >
+> > > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > > ---
+> >
+> > Hi Bryan,
+> >
+> > Why creating module's own kthread to call ad7142_decode and process keycodes
+> > instead of using a tasklet ?
+> >
+> 
+> Yo can't access i2c from a tasklet context.
+> 
+> > Isn't disabling device interrupts from the begining of the ISR "ad7142_interrupt"
+> > till the kthread "ad7142_thread" got waked-up and scheduled a long time,
+> > espicially if there's a high load on the userspace side ?
+> >
+> 
+> It is OK - you disable a specific interrupt line preventing it from
+> raising any more IRQs until current one is serviced. 
 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Won't this affect system responsiveness if the IRQ line was shared ?
+
+>
+> This is different from disabling interrupts on CPU.
 > 
-> ---
->  kernel/rcutorture.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23-rc8/kernel/rcutorture.c
-> ===================================================================
-> --- linux-2.6.23-rc8.orig/kernel/rcutorture.c
-> +++ linux-2.6.23-rc8/kernel/rcutorture.c
-> @@ -170,7 +170,8 @@ static unsigned long
->  rcu_random(struct rcu_random_state *rrsp)
->  {
->  	if (--rrsp->rrs_count < 0) {
-> -		rrsp->rrs_state += (unsigned long)cpu_clock(smp_processor_id());
-> +		rrsp->rrs_state +=
-> +			(unsigned long)cpu_clock(raw_smp_processor_id());
->  		rrsp->rrs_count = RCU_RANDOM_REFRESH;
->  	}
->  	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
-> -- 
-> Gautham R Shenoy
-> Linux Technology Center
-> IBM India.
-> "Freedom comes with a price tag of responsibility, which is still a bargain,
-> because Freedom is priceless!"
+
+mm, Why disabling interrupts in general. Doesn't IRQ hanlers of the same kind got
+executed in a serialized fashion even on SMPs ?. If so, why not just wakeup our
+custom-thread or use workqueues and let them do their business ?
+
+It's the first time for me to read others' patches carefully and kindly ask about
+some explanations. I hope I'm not bothering people with my misunderstandings!
+(till I get more experienced).
+
+
+Thanks,
+
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
