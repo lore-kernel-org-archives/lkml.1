@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXJLWtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933398AbXJLWud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbXJLWtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbXJLWVt
+	id S933398AbXJLWud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932626AbXJLWVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:21:49 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53455 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:21:52 -0400
+Received: from ns.suse.de ([195.135.220.2]:53465 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932784AbXJLWVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:21:47 -0400
+	id S932804AbXJLWVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:21:51 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 53/75] sysfs: fix comments of sysfs_add/remove_one()
-Date: Fri, 12 Oct 2007 15:16:57 -0700
-Message-Id: <11922276913288-git-send-email-gregkh@suse.de>
+Subject: [PATCH 54/75] sysfs: fix sysfs_chmod_file() such that it updates sd->s_mode too
+Date: Fri, 12 Oct 2007 15:16:58 -0700
+Message-Id: <1192227695547-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922276862914-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276913288-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -70,49 +70,48 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276763650-git-send-email-gregkh@suse.de>
  <1192227681926-git-send-email-gregkh@suse.de>
  <11922276862914-git-send-email-gregkh@suse.de>
+ <11922276913288-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-sysfs_add/remove_one() now link and unlink the target dirent into and
-from the children list.  Update comments accordingly.
+sysfs_chmod_file() looked and updated only inode of the target file.
+Dentry and inode are reclaimable and the update mode data will go away
+when the inode is reclaimed.  This patch makes sysfs_chmod_file()
+update sd->s_mode too such that the change is permanent.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+ fs/sysfs/file.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 5d95aa8..fc615ee 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -410,10 +410,8 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
-  *	@sd: sysfs_dirent to be added
-  *
-  *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-- *	nlink of parent inode if @sd is a directory.  @sd is NOT
-- *	linked into the children list of the parent.  The caller
-- *	should invoke sysfs_link_sibling() after this function
-- *	completes if @sd needs to be on the children list.
-+ *	nlink of parent inode if @sd is a directory and link into the
-+ *	children list of the parent.
-  *
-  *	This function should be called between calls to
-  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-@@ -453,9 +451,7 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-  *	@sd: sysfs_dirent to be added
-  *
-  *	Mark @sd removed and drop nlink of parent inode if @sd is a
-- *	directory.  @sd is NOT unlinked from the children list of the
-- *	parent.  The caller is repsonsible for removing @sd from the
-- *	children list before calling this function.
-+ *	directory.  @sd is unlinked from the children list.
-  *
-  *	This function should be called between calls to
-  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index ff93c92..9fdf8da 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -521,10 +521,19 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
+ 	}
+ 
+ 	inode = victim->d_inode;
++
+ 	mutex_lock(&inode->i_mutex);
++
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	rc = notify_change(victim, &newattrs);
++
++	if (rc == 0) {
++		mutex_lock(&sysfs_mutex);
++		victim_sd->s_mode = newattrs.ia_mode;
++		mutex_unlock(&sysfs_mutex);
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+  out:
+ 	dput(victim);
 -- 
 1.5.3.4
 
