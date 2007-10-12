@@ -1,58 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbXJLEU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbXJLEZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759726AbXJLEU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbXJLEUu
+	id S1759609AbXJLEZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 00:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXJLEZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:20:50 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64054 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371AbXJLEUt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:20:49 -0400
-Date: Thu, 11 Oct 2007 22:20:18 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Help with rtc to hpet conversion of OSGPS driver
-In-reply-to: <fa.nKddWg8u6TJNw86Rid83rey2q6Q@ifi.uio.no>
-To: Rick Niles <fniles@gnupooh.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <470EF602.40404@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.nKddWg8u6TJNw86Rid83rey2q6Q@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 12 Oct 2007 00:25:18 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:51150 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752097AbXJLEZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 00:25:16 -0400
+Date: Fri, 12 Oct 2007 00:25:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: [git patch] libata critical fix
+Message-ID: <20071012042515.GA17066@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Niles wrote:
-> I'm the Linux maintainer for the OSGPS (open source GPS) project.  Our 
-> last release version was based off Fedora 5 and since we have had some 
-> hardware issues with our on board interrupt line I was using the RTC 
-> interrupt to service the tracking loops.  I've been trying to make the 
-> driver work with Fedora 7 and the 2.6.22 kernel, but the rtc_register() 
-> and other RTC functions seems to have been removed. I see they've been 
-> replaced by the corresponding HPET functions, which is great. However, 
-> hpet_register() always returns -16 (EBUSY).  This could be because I 
-> lack the correct hardware (I'm running 32-bit Linux on a Athlon64 with 
-> an NVIDIA chipset) or some other reason.
-> 
-> I'm looking for any help here.   The RTC version of the code can be 
-> viewed at:
-> http://osgps.cvs.sourceforge.net/osgps/osgps/linuxmod.c?revision=1.12&view=markup 
-> 
-> 
-> Can device drivers still use the real-time clock at all?  Does the 
-> tickless kernel effect this at all?
-> 
-> Thanks for any help you can lend,
-> Rick Niles.
 
-Am I missing why you can't just use a normal kernel timer for this? You 
-shouldn't have to mess with the RTC or HPET directly..
+There is a lingering corruption in sata_mv that took me several days to
+narrow down...  the failure to mask off the lower 16 bits of the S/G
+length was leading to corruption, because this stomped on other
+important bits in that S/G entry.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+This should fix it (stable aka 2.6.23.1 needs this too):
 
+Please pull from 'upstream-fixes' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-fixes
+
+to receive the following updates:
+
+ drivers/ata/sata_mv.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
+
+commit 6c08772e49622e90d39903e7ff0be1a0f463ac86
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Fri Oct 12 00:16:23 2007 -0400
+
+    [libata] sata_mv: more S/G fixes
+    
+    * corruption fix: we only want the lower 16 bits of length (0 == 64kb)
+    
+    * ditto: the upper layer sets max-phys-segments to LIBATA_MAX_PRD,
+      so we must reset it to own hw-specific length.
+    
+    * delete unused mv_fill_sg() return value
+    
+    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index cb7dec9..d9832e2 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -69,10 +69,11 @@
+ #include <linux/device.h>
+ #include <scsi/scsi_host.h>
+ #include <scsi/scsi_cmnd.h>
++#include <scsi/scsi_device.h>
+ #include <linux/libata.h>
+ 
+ #define DRV_NAME	"sata_mv"
+-#define DRV_VERSION	"1.0"
++#define DRV_VERSION	"1.01"
+ 
+ enum {
+ 	/* BAR's are enumerated in terms of pci_resource_start() terms */
+@@ -420,6 +421,7 @@ static void mv_error_handler(struct ata_port *ap);
+ static void mv_post_int_cmd(struct ata_queued_cmd *qc);
+ static void mv_eh_freeze(struct ata_port *ap);
+ static void mv_eh_thaw(struct ata_port *ap);
++static int mv_slave_config(struct scsi_device *sdev);
+ static int mv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
+ 
+ static void mv5_phy_errata(struct mv_host_priv *hpriv, void __iomem *mmio,
+@@ -457,7 +459,7 @@ static struct scsi_host_template mv5_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= ata_scsi_slave_config,
++	.slave_configure	= mv_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
+ };
+@@ -475,7 +477,7 @@ static struct scsi_host_template mv6_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= ata_scsi_slave_config,
++	.slave_configure	= mv_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
+ };
+@@ -763,6 +765,17 @@ static void mv_irq_clear(struct ata_port *ap)
+ {
+ }
+ 
++static int mv_slave_config(struct scsi_device *sdev)
++{
++	int rc = ata_scsi_slave_config(sdev);
++	if (rc)
++		return rc;
++
++	blk_queue_max_phys_segments(sdev->request_queue, MV_MAX_SG_CT / 2);
++
++	return 0;	/* scsi layer doesn't check return value, sigh */
++}
++
+ static void mv_set_edma_ptrs(void __iomem *port_mmio,
+ 			     struct mv_host_priv *hpriv,
+ 			     struct mv_port_priv *pp)
+@@ -1130,10 +1143,9 @@ static void mv_port_stop(struct ata_port *ap)
+  *      LOCKING:
+  *      Inherited from caller.
+  */
+-static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
++static void mv_fill_sg(struct ata_queued_cmd *qc)
+ {
+ 	struct mv_port_priv *pp = qc->ap->private_data;
+-	unsigned int n_sg = 0;
+ 	struct scatterlist *sg;
+ 	struct mv_sg *mv_sg;
+ 
+@@ -1151,7 +1163,7 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
+ 
+ 			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
+ 			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
+-			mv_sg->flags_size = cpu_to_le32(len);
++			mv_sg->flags_size = cpu_to_le32(len & 0xffff);
+ 
+ 			sg_len -= len;
+ 			addr += len;
+@@ -1160,12 +1172,9 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
+ 				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
+ 
+ 			mv_sg++;
+-			n_sg++;
+ 		}
+ 
+ 	}
+-
+-	return n_sg;
+ }
+ 
+ static inline void mv_crqb_pack_cmd(__le16 *cmdw, u8 data, u8 addr, unsigned last)
