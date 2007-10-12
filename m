@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbXJLPu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbXJLP66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbXJLPu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 11:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbXJLPuR
+	id S1757963AbXJLP66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 11:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXJLP6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 11:50:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:57233 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801AbXJLPuP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 11:50:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QsZUtKfy9g71BargZNCzZvy4/V24RMIYMwiMoHdpdCLKVFYV0wIeg0gA+o3s2Pqo4q7f97pu0qrTQ4I/dAJ23BrsFU+RbP5tzeWoWikpVaeeAY6q+Pwc1L3SYu1DUFvCpu5H/rHnB1uFQTsWl2I+seZyXq7Ym+uAwvshPrt7/BE=
-Message-ID: <d120d5000710120850p64aae40ep95f98cfcee7d8d6f@mail.gmail.com>
-Date: Fri, 12 Oct 2007 11:50:12 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH try #2] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <1192203593.7089.4.camel@roc-laptop>
+	Fri, 12 Oct 2007 11:58:51 -0400
+Received: from mx1.suse.de ([195.135.220.2]:52914 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbXJLP6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 11:58:50 -0400
+Date: Fri, 12 Oct 2007 17:58:49 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: [PATCH] VFS: Remove lives_below_in_same_fs()
+Message-ID: <20071012155849.GG8471@hasse.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1192174727.6247.20.camel@roc-laptop>
-	 <d120d5000710120749o2505dd7aq42559c35298f05d0@mail.gmail.com>
-	 <1192203593.7089.4.camel@roc-laptop>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> On Fri, 2007-10-12 at 10:49 -0400, Dmitry Torokhov wrote:
-> > Hi Bryan,
-> >
-> > On 10/12/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > > +
-> [snip]
-> > > +
-> > > +static void ad7142_close(struct input_dev *dev)
-> > > +{
-> > > +       free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
-> > > +       kthread_stop(ad7142_task);
-> >
-> > Don't you need to write something over i2c to shut the devoce off?
-> > What stops it from continuing to generate interrupts?
-> >
-> Actually, I am going to use "completion" to replace the whole
-> wait_interrupt_xxx and intr_flag things which original from Aubrey. How
-> do you think of that?
->
+This is another cleanup which removes lives_below_in_same_fs() since
+is_subdir() from fs/dcache.c is providing the same functionality and is more
+widespreadly used.
 
-I don't think it is a very good idea - for me completion is one-time
-deal. You use it and then you are done. How about firing a work from
-interrupt and either rely on the default workqueue (keventd) or create
-your own to execute it?
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+---
+ fs/namespace.c |   13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-Thank you.
-
--- 
-Dmitry
+Index: b/fs/namespace.c
+===================================================================
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1036,17 +1036,6 @@ static bool permit_mount(struct nameidat
+ 	return true;
+ }
+ 
+-static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
+-{
+-	while (1) {
+-		if (d == dentry)
+-			return 1;
+-		if (d == NULL || d == d->d_parent)
+-			return 0;
+-		d = d->d_parent;
+-	}
+-}
+-
+ struct vfsmount *copy_tree(struct vfsmount *mnt, struct dentry *dentry,
+ 					int flag, uid_t owner)
+ {
+@@ -1063,7 +1052,7 @@ struct vfsmount *copy_tree(struct vfsmou
+ 
+ 	p = mnt;
+ 	list_for_each_entry(r, &mnt->mnt_mounts, mnt_child) {
+-		if (!lives_below_in_same_fs(r->mnt_mountpoint, dentry))
++		if (!is_subdir(r->mnt_mountpoint, dentry))
+ 			continue;
+ 
+ 		for (s = r; s; s = next_mnt(s, r)) {
