@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXJLW6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934081AbXJLXAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933327AbXJLW6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760758AbXJLWXA
+	id S934081AbXJLXAL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932711AbXJLWXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:23:00 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50030 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:23:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50053 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760680AbXJLWW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:58 -0400
+	id S932511AbXJLWXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:23:04 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 68/75] Driver core: rename ktype_class
-Date: Fri, 12 Oct 2007 15:17:12 -0700
-Message-Id: <119222776277-git-send-email-gregkh@suse.de>
+Subject: [PATCH 69/75] Driver core: rename ktype_device
+Date: Fri, 12 Oct 2007 15:17:13 -0700
+Message-Id: <11922277663827-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277571933-git-send-email-gregkh@suse.de>
+In-Reply-To: <119222776277-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -85,6 +85,7 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922277441791-git-send-email-gregkh@suse.de>
  <11922277493627-git-send-email-gregkh@suse.de>
  <11922277571933-git-send-email-gregkh@suse.de>
+ <119222776277-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -96,56 +97,40 @@ Based on a larger patch from Kay Sievers
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/class.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/base/core.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 5b9cf06..a863bb0 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -65,13 +65,13 @@ static struct sysfs_ops class_sysfs_ops = {
- 	.store	= class_attr_store,
- };
- 
--static struct kobj_type ktype_class = {
-+static struct kobj_type class_ktype = {
- 	.sysfs_ops	= &class_sysfs_ops,
- 	.release	= class_release,
- };
- 
- /* Hotplug events for classes go to the class_obj subsys */
--static decl_subsys(class, &ktype_class, NULL);
-+static decl_subsys(class, &class_ktype, NULL);
- 
- 
- int class_create_file(struct class * cls, const struct class_attribute * attr)
-@@ -323,7 +323,7 @@ static void class_dev_release(struct kobject * kobj)
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 65de221..c134341 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -108,7 +108,7 @@ static void device_release(struct kobject * kobj)
  	}
  }
  
--static struct kobj_type ktype_class_device = {
-+static struct kobj_type class_device_ktype = {
- 	.sysfs_ops	= &class_dev_sysfs_ops,
- 	.release	= class_dev_release,
+-static struct kobj_type ktype_device = {
++static struct kobj_type device_ktype = {
+ 	.release	= device_release,
+ 	.sysfs_ops	= &dev_sysfs_ops,
  };
-@@ -332,7 +332,7 @@ static int class_uevent_filter(struct kset *kset, struct kobject *kobj)
+@@ -118,7 +118,7 @@ static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
  {
  	struct kobj_type *ktype = get_ktype(kobj);
  
--	if (ktype == &ktype_class_device) {
-+	if (ktype == &class_device_ktype) {
- 		struct class_device *class_dev = to_class_dev(kobj);
- 		if (class_dev->class)
- 			return 1;
-@@ -452,7 +452,7 @@ static struct kset_uevent_ops class_uevent_ops = {
- 	.uevent =	class_uevent,
- };
+-	if (ktype == &ktype_device) {
++	if (ktype == &device_ktype) {
+ 		struct device *dev = to_dev(kobj);
+ 		if (dev->uevent_suppress)
+ 			return 0;
+@@ -405,7 +405,7 @@ static struct device_attribute devt_attr =
+  *	devices_subsys - structure to be registered with kobject core.
+  */
  
--static decl_subsys(class_obj, &ktype_class_device, &class_uevent_ops);
-+static decl_subsys(class_obj, &class_device_ktype, &class_uevent_ops);
+-decl_subsys(devices, &ktype_device, &device_uevent_ops);
++decl_subsys(devices, &device_ktype, &device_uevent_ops);
  
  
- static int class_device_add_attrs(struct class_device * cd)
+ /**
 -- 
 1.5.3.4
 
