@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbXJLWwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbXJLWx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbXJLWwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbXJLWWN
+	id S1757568AbXJLWx0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXJLWWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:22:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49972 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:22:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49977 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932774AbXJLWWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:09 -0400
+	id S932688AbXJLWWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:22:14 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 58/75] sysfs: kill unnecessary sysfs_get() in open paths
-Date: Fri, 12 Oct 2007 15:17:02 -0700
-Message-Id: <11922277133374-git-send-email-gregkh@suse.de>
+Subject: [PATCH 59/75] sysfs: kill unnecessary NULL pointer check in sysfs_release()
+Date: Fri, 12 Oct 2007 15:17:03 -0700
+Message-Id: <11922277181565-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277091389-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922277133374-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -75,75 +75,43 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276993289-git-send-email-gregkh@suse.de>
  <11922277041450-git-send-email-gregkh@suse.de>
  <11922277091389-git-send-email-gregkh@suse.de>
+ <11922277133374-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-There's no reason to get an extra reference to sysfs_dirent for an
-open file.  Open file has a reference to the dentry which in turn has
-a reference to sysfs_dirent.  This is fairly obvious as otherwise open
-itself won't be able to access the sysfs_dirent.  Kill the extra
-sysfs_get() and matching sysfs_put().
+In sysfs_release(), sysfs_buffer pointed to by filp->private_data is
+guaranteed to exist.  Kill the unnecessary NULL check.  This also
+makes the code more consistent with the counterpart in fs/sysfs/bin.c.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/bin.c  |    4 +---
- fs/sysfs/file.c |    6 +-----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+ fs/sysfs/file.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index a819a7e..e93fe5e 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -193,9 +193,8 @@ static int open(struct inode * inode, struct file * file)
- 	mutex_init(&bb->mutex);
- 	file->private_data = bb;
- 
--	/* open succeeded, put active reference and pin attr_sd */
-+	/* open succeeded, put active reference */
- 	sysfs_put_active(attr_sd);
--	sysfs_get(attr_sd);
- 	return 0;
- 
-  err_out:
-@@ -211,7 +210,6 @@ static int release(struct inode * inode, struct file * file)
- 
- 	if (bb->mmapped)
- 		sysfs_put_active_two(attr_sd);
--	sysfs_put(attr_sd);
- 	kfree(bb->buffer);
- 	kfree(bb);
- 	return 0;
 diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 61a8c19..73333dc 100644
+index 73333dc..8f1ebd8 100644
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -298,9 +298,8 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	buffer->ops = ops;
- 	file->private_data = buffer;
- 
--	/* open succeeded, put active references and pin attr_sd */
-+	/* open succeeded, put active references */
- 	sysfs_put_active_two(attr_sd);
--	sysfs_get(attr_sd);
- 	return 0;
- 
-  err_out:
-@@ -310,11 +309,8 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 
- static int sysfs_release(struct inode * inode, struct file * filp)
+@@ -311,11 +311,10 @@ static int sysfs_release(struct inode * inode, struct file * filp)
  {
--	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
  	struct sysfs_buffer *buffer = filp->private_data;
  
--	sysfs_put(attr_sd);
--
- 	if (buffer) {
- 		if (buffer->page)
- 			free_page((unsigned long)buffer->page);
+-	if (buffer) {
+-		if (buffer->page)
+-			free_page((unsigned long)buffer->page);
+-		kfree(buffer);
+-	}
++	if (buffer->page)
++		free_page((unsigned long)buffer->page);
++	kfree(buffer);
++
+ 	return 0;
+ }
+ 
 -- 
 1.5.3.4
 
