@@ -1,67 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbXJLCVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbXJLCVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbXJLCVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 22:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbXJLCVK
+	id S1754208AbXJLCVi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 22:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbXJLCVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 22:21:10 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:16655 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753956AbXJLCVI (ORCPT
+	Thu, 11 Oct 2007 22:21:25 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60646 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755157AbXJLCVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 22:21:08 -0400
-X-IronPort-AV: E=Sophos;i="4.21,263,1188802800"; 
-   d="scan'208";a="235279450"
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git for-linus
-X-Message-Flag: Warning: May contain useful information
-References: <aday7e9b0m3.fsf@cisco.com>
-	<20071011.181719.78707713.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 11 Oct 2007 19:21:06 -0700
-In-Reply-To: <20071011.181719.78707713.davem@davemloft.net> (David Miller's message of "Thu, 11 Oct 2007 18:17:19 -0700 (PDT)")
-Message-ID: <adatzoxax9p.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 11 Oct 2007 22:21:23 -0400
+Date: Fri, 12 Oct 2007 11:20:02 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [Patch 001/002] Make description of memory hotplug notifier in document
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20071012111008.B995.Y-GOTO@jp.fujitsu.com>
+References: <20071012111008.B995.Y-GOTO@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071012111830.B997.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Oct 2007 02:21:06.0813 (UTC) FILETIME=[8B9E22D0:01C80C76]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > This will get the batch of changes queued up for the 2.6.24 merge
- > > window (although I still have a few more things to merge later, once
- > > Dave Miller's networking tree has landed too):
- > 
- > Roland are you absolutely sure this won't create merge conflicts with
- > my 8MB net-2.6 merge, inside of which there are many infiniband
- > driver changes?
 
-I'm not absolutely sure of anything but I have merged our two git
-trees quite a few times during the 2.6.23 cycle and I have not seen
-any conflicts.  Unless you've added some more IB changes very recently
-I don't think there should be any problem.
+Add description about event notification callback routine to the document.
 
- > I really wish you would submit your inifiniband work through normal
- > network driver channels, such as Jeff Garzik.  Jeff has been syncing
- > on almost a daily basis with me so that I wouldn't have to worry about
- > changes coming out of left field and adding additional merge issues
- > for an already difficult merge.
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-I'm not sure what you mean.  During the 2.6.23 cycle I've been sending
-any patches that potentially could conflict with the net-2.6 tree to
-you and Jeff so that you can merge them upstream via your tree.  Or do
-you mean Jeff should become the maintainer of drivers/infiniband??
+---
+ Documentation/memory-hotplug.txt |   56 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 53 insertions(+), 3 deletions(-)
 
-Can't you guys just keep the networking stuff contained in its little
-box so it doesn't create maintenance problems for InfiniBand stuff?
+Index: current/Documentation/memory-hotplug.txt
+===================================================================
+--- current.orig/Documentation/memory-hotplug.txt
++++ current/Documentation/memory-hotplug.txt
+@@ -2,7 +2,8 @@
+ Memory Hotplug
+ ==============
+ 
+-Last Updated: Jul 28 2007
++Created:					Jul 28 2007
++Add description of notifier of memory hotplug	Oct 11 2007
+ 
+ This document is about memory hotplug including how-to-use and current status.
+ Because Memory Hotplug is still under development, contents of this text will
+@@ -24,7 +25,8 @@ be changed often.
+   6.1 Memory offline and ZONE_MOVABLE
+   6.2. How to offline memory
+ 7. Physical memory remove
+-8. Future Work List
++8. Memory hotplug event notifier
++9. Future Work List
+ 
+ Note(1): x86_64's has special implementation for memory hotplug.
+          This text does not describe it.
+@@ -307,8 +309,68 @@ Need more implementation yet....
+  - Notification completion of remove works by OS to firmware.
+  - Guard from remove if not yet.
+ 
++--------------------------------
++8. Memory hotplug event notifier
++--------------------------------
++Memory hotplug has event notifer. There are 6 types of notification.
++
++MEMORY_GOING_ONLINE
++  This is notified before memory online. If some structures must be prepared
++  for new memory, it should be done at this event's callback.
++  The new onlining memory can't be used yet.
++  
++MEMORY_CANCEL_ONLINE
++  If memory online fails, this event is notified for rollback of setting at
++  MEMORY_GOING_ONLINE.
++  (Currently, this event is notified only the case which a callback routine
++   of MEMORY_GOING_ONLINE fails).
++
++MEMORY_ONLINE
++  This event is called when memory online is completed. The page allocator uses
++  new memory area before this notification. In other words, callback routine
++  use new memory area via page allocator.
++  The failures of callbacks of this notification will be ignored.
++
++MEMORY_GOING_OFFLINE
++  This is notified on halfway of memory offline. The offlining pages are
++  isolated. In other words, the page allocater doesn't allocate new pages from
++  offlining memory area at this time. If callback routine freed some pages,
++  they are not used by the page allocator.
++  This is good place for shrinking cache. (If possible, it is desirable to
++  migrate to other area.)
++
++MEMORY_CANCEL_OFFLINE
++  If memory offline fails, this event is notified for rollback against
++  MEMORY_GOING_OFFLINE. The page allocator will use target memory area after
++  this callback again.
++
++MEMORY_OFFLINE
++  This is notified after memory offline completed. The failures of callbacks
++  of this notification will be ignored. Callback routine can return structures
++  for offlined memory.
++  If the node which has offlined memory,
++	
++A callback routine can be registered by 
++  hotplug_memory_notifier(callback_func, priority).
++
++The second argument of callback function (action) is event types of above.
++The third argument is passed by pointer of struct memory_notify.
++
++struct memory_notify {
++	unsigned long start_pfn;
++	unsigned long nr_pages;
++	int status_change_nid;
++};
++start_pfn is start pfn of online/offline memory.
++nr_pages is # of pages of online/offline memory.
++status_change_nid is set node id when N_HIGH_MEMORY of nodemask is (will be)
++set/clear. It means a new(memoryless) node gets new memory by online and a
++node lose all memory. If this is -1, then nodemask status is not changed.
++If status_changed_nid >= 0, callback should create/discard structures for the
++node if necessary.
++
+ --------------
+-8. Future Work
++9. Future Work
+ --------------
+   - allowing memory hot-add to ZONE_MOVABLE. maybe we need some switch like
+     sysctl or new control file.
 
- > Even if you're confident there won't be merge issues, could you just
- > wait for the net-2.6 stuff to go in first?
+-- 
+Yasunori Goto 
 
-I don't mind waiting but I guess it's up to Linus really.
 
- - R.
