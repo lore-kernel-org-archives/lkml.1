@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXJLAGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbXJLAMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbXJLAGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 20:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXJLAGG
+	id S1754178AbXJLAMq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 20:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXJLAMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 20:06:06 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55686 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753947AbXJLAGF (ORCPT
+	Thu, 11 Oct 2007 20:12:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39681 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbXJLAMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 20:06:05 -0400
-Date: Fri, 12 Oct 2007 02:06:34 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Leun <ml@newton.leun.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: solved: 2.6.23 && fglrx && s2ram
-Message-ID: <20071012000634.GC3620@stusta.de>
-References: <20071012000722.3cbf17b6@elektra.leun.net> <200710120131.17897.rjw@sisk.pl> <20071012014907.0005aab7@elektra.leun.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071012014907.0005aab7@elektra.leun.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 11 Oct 2007 20:12:34 -0400
+Date: Thu, 11 Oct 2007 17:10:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Rob Landley <rob@landley.net>, linux-scsi@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Scsi on sparc build break in 2.6.23.
+Message-Id: <20071011171042.582a22d4.randy.dunlap@oracle.com>
+In-Reply-To: <20071011235659.GB3620@stusta.de>
+References: <200710110552.49129.rob@landley.net>
+	<200710110817.22344.rob@landley.net>
+	<20071011152149.GZ16424@stusta.de>
+	<200710111737.30420.rob@landley.net>
+	<20071011235659.GB3620@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 01:49:07AM +0200, Michael Leun wrote:
-> On Fri, 12 Oct 2007 01:31:17 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Hi,
+On Fri, 12 Oct 2007 01:56:59 +0200 Adrian Bunk wrote:
+
+> On Thu, Oct 11, 2007 at 05:37:30PM -0500, Rob Landley wrote:
+> > On Thursday 11 October 2007 10:21:49 am Adrian Bunk wrote:
+> > > I assume you have the full .config in your build directory, and could
+> > > have taken it from there?
 > > 
-> > On Friday, 12 October 2007 00:07, Michael Leun wrote:
-> > > Hello,
-> > > 
-> > > (please, don't blame me for using the binary only driver, I will
-> > > happily switch to a open source one once it properly runs mplayer,
-> > > e.g.).
-> > > 
-> > > Renaming the config options for suspend/sleep broke fglrx power
-> > > management.
-> > 
-> > It looks like your patch is against the fglrx driver, isn't it?
+> > Actually I don't.  (The extracted source tree is in a temporary directory 
+> > which the script deletes afterwards unless I tell it not to.  I just followed 
+> > my own instructions to create the .config and attach it, but I see that James 
+> > Bottomley already diagnosed it and you came up with a patch.  Off to try 
+> > it...)
 > 
-> It is - I should have mentioned that, sorry.
-
-This makes it 100% off-topic for linux-kernel - please send patches for 
-illegal modules to the vendors of these modules and not here.
-
-> MfG,
+> I was able to follow your instructions for generating it.
 > 
-> Michael Leun
+> But I hope you got my point that it's much easier to debug such issues 
+> when you generate the .config yourself and attach it when sending the 
+> bug report.
 
-cu
-Adrian
+I use the mini-config method quite a bit (probably not as much
+as Rob does), but I agree with Adrian, it should have just been
+included here in full (not mini).
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+---
+~Randy
