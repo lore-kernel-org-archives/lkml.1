@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXJLQeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXJLQev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXJLQeZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbXJLQM7
+	id S932825AbXJLQev (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbXJLQOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:12:59 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:34566 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761223AbXJLQM5 (ORCPT
+	Fri, 12 Oct 2007 12:14:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:45900 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761379AbXJLQOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:12:57 -0400
-Date: Fri, 12 Oct 2007 12:12:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: John Sigler <linux.kernel@free.fr>
-cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: NMI watchdog
-In-Reply-To: <470F7620.6040705@free.fr>
-Message-ID: <Pine.LNX.4.58.0710121210210.12663@gandalf.stny.rr.com>
-References: <470F3BE0.4050807@free.fr> <Pine.LNX.4.58.0710120625380.8208@gandalf.stny.rr.com>
- <470F7620.6040705@free.fr>
+	Fri, 12 Oct 2007 12:14:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A1XtBlp06W5ztqC2lF7pM8M+i5J02Rdh/loMvnw6nBi/pLcT1Iz+rufb7ZwyI/vanm7OVw03QkTmF4y4CSpze1EASJXjShLaih5qRGcp4KsdvrzlbWvtAUrFCvu+CaVB4OY42ECCy/HEm/IvVRMU9Qx/tOkf4Xk0MLgdW7Isqz0=
+Message-ID: <d120d5000710120914n79c78e61ia3de6c8ce418eb61@mail.gmail.com>
+Date: Fri, 12 Oct 2007 12:14:28 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: bryan.wu@analog.com
+Subject: Re: [PATCH try #2] Input/Joystick Driver: add support AD7142 joystick driver
+Cc: linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1192204757.7089.9.camel@roc-laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192174727.6247.20.camel@roc-laptop>
+	 <d120d5000710120749o2505dd7aq42559c35298f05d0@mail.gmail.com>
+	 <1192203593.7089.4.camel@roc-laptop>
+	 <d120d5000710120850p64aae40ep95f98cfcee7d8d6f@mail.gmail.com>
+	 <1192204757.7089.9.camel@roc-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---
-On Fri, 12 Oct 2007, John Sigler wrote:
-> Steven Rostedt wrote:
+On 10/12/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> On Fri, 2007-10-12 at 11:50 -0400, Dmitry Torokhov wrote:
+> > On 10/12/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > > On Fri, 2007-10-12 at 10:49 -0400, Dmitry Torokhov wrote:
+> > > > Hi Bryan,
+> > > >
+> > > > On 10/12/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > > > > +
+> > > [snip]
+> > > > > +
+> > > > > +static void ad7142_close(struct input_dev *dev)
+> > > > > +{
+> > > > > +       free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
+> > > > > +       kthread_stop(ad7142_task);
+> > > >
+> > > > Don't you need to write something over i2c to shut the devoce off?
+> > > > What stops it from continuing to generate interrupts?
+> > > >
+> > > Actually, I am going to use "completion" to replace the whole
+> > > wait_interrupt_xxx and intr_flag things which original from Aubrey. How
+> > > do you think of that?
+> > >
+> >
+> > I don't think it is a very good idea - for me completion is one-time
+> > deal. You use it and then you are done. How about firing a work from
+> > interrupt and either rely on the default workqueue (keventd) or create
+> > your own to execute it?
+> >
 >
-> > John Sigler wrote:
->  > APIC timer registered as dummy, due to nmi_watchdog=1!
-> 213a216,217
->  > Clockevents: could not switch to one-shot mode: lapic is not functional.
->  > Could not switch to high resolution mode on CPU 0
+> completion is a wrapper of workqueue and simpler to use.
+> my method:
+> 1. In kthread:
+> do {
+> |_______|_______wait_for_completion(&ad7142_completion);
+> |_______|_______ad7142_decode();
+> |_______|_______enable_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX);
+> |_______} while (!kthread_should_stop());
 >
-> Do you know why nmi_watchdog=1 disables high-resolution timers?
+> 2. In irq handler will fire "complete(&ad7142_completion);"
 >
-> And why nmi_watchdog=1 implies APIC timer registered as dummy?
+> This is simpler and understand easier
+>
 
-Crap, I forgot about that. Thomas explained why to me once, and I forgot.
+You also need to re-initialize completion every time you done
+processing in kthread otherwise you will be constantly doing
+ad7142_decode(). Plus, how are you going to stop kthread (completion
+may not be signalled for a long time if nobody touches the joystick).
 
-Does it still crash? If not, does it crash if you turn off highres?
-
-Or better yet, try turning off dynamic-ticks. We had a bug once before
-that had a problem with the new RCU code and dynamic ticks.
-
--- Steve
+-- 
+Dmitry
