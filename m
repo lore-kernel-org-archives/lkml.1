@@ -1,106 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbXJLMZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbXJLM0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760518AbXJLMZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 08:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXJLMZq
+	id S1760405AbXJLM0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 08:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbXJLMZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 08:25:46 -0400
-Received: from [212.12.190.126] ([212.12.190.126]:35641 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753991AbXJLMZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 08:25:45 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
-Date: Fri, 12 Oct 2007 15:25:44 +0300
-User-Agent: KMail/1.5
-Cc: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200710120031.42805.a1426z@gawab.com> <200710120837.18152.a1426z@gawab.com> <470F5F19.70606@trash.net>
-In-Reply-To: <470F5F19.70606@trash.net>
+	Fri, 12 Oct 2007 08:25:59 -0400
+Received: from mail.tmr.com ([64.65.253.246]:45543 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760583AbXJLMZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 08:25:59 -0400
+Message-ID: <470F698A.2020200@tmr.com>
+Date: Fri, 12 Oct 2007 08:33:14 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Michael Leun <ml@newton.leun.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: solved: 2.6.23 && fglrx && s2ram
+References: <20071012000722.3cbf17b6@elektra.leun.net> <200710120131.17897.rjw@sisk.pl> <20071012014907.0005aab7@elektra.leun.net> <20071012000634.GC3620@stusta.de>
+In-Reply-To: <20071012000634.GC3620@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710121525.44510.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Al Boldi wrote:
-> > Patrick McHardy wrote:
-> >>Please send mails discussing netfilter to netfilter-devel.
-> >
-> > Ok.  I just found out this changed to vger.  But
-> > netfilter-devel@vger.kernel.org is bouncing me.
->
-> Seems to work, I got your mail on netfilter-devel.
+Adrian Bunk wrote:
+> On Fri, Oct 12, 2007 at 01:49:07AM +0200, Michael Leun wrote:
+>> On Fri, 12 Oct 2007 01:31:17 +0200
+>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>>
+>>> Hi,
+>>>
+>>> On Friday, 12 October 2007 00:07, Michael Leun wrote:
+>>>> Hello,
+>>>>
+>>>> (please, don't blame me for using the binary only driver, I will
+>>>> happily switch to a open source one once it properly runs mplayer,
+>>>> e.g.).
+>>>>
+>>>> Renaming the config options for suspend/sleep broke fglrx power
+>>>> management.
+>>> It looks like your patch is against the fglrx driver, isn't it?
+>> It is - I should have mentioned that, sorry.
+> 
+> This makes it 100% off-topic for linux-kernel - please send patches for 
+> illegal modules to the vendors of these modules and not here.
+> 
+Which would help the actual users of the module not one whit. Whereas 
+putting the patch here helps the people who need it and allows multiple 
+people to complain to the vendor.
 
-Looks like it works sometimes.  Added lkml as a backup...
+If this module violates some law you should report it to the appropriate 
+authorities rather than posting it here, otherwise you should probably 
+should not use the term illegal casually.
 
-> >>Al Boldi wrote:
-> >>>With the existence of the mangle table, how useful is the filter table?
-> >>>
-> >>>Other than requiring the REJECT target to be ported to the mangle
-> >>> table, is the filter table faster than the mangle table?
-> >>
-> >>There are some minor differences in ordering (mangle comes before
-> >>DNAT, filter afterwards), but for most rulesets thats completely
-> >>irrelevant. The only difference that really matters is that mangle
-> >>performs rerouting in LOCAL_OUT for packets that had their routing
-> >>key changed, so its really a superset of the filter table. If you
-> >>want to use REJECT in the mangle table, you just need to remove the
-> >>restriction to filter, it works fine. I would prefer to also remove
-> >>the restriction of MARK, CONNMARK etc. to mangle, they're used for
-> >>more than just routing today so that restriction also doesn't make
-> >>much sense. Patches for this are welcome.
-> >
-> > Something like this (untested):
-> >
-> > --- ipt_REJECT.bak.c    2007-10-12 08:25:17.000000000 +0300
-> > +++ ipt_REJECT.c        2007-10-12 08:31:44.000000000 +0300
-> > @@ -165,6 +165,7 @@ static void send_reset(struct sk_buff *o
-> >
-> >  static inline void send_unreach(struct sk_buff *skb_in, int code)
-> >  {
-> > +       if (!skb_in->dst) ip_route_me_harder(&skb_in, RTN_UNSPEC);
-> >         icmp_send(skb_in, ICMP_DEST_UNREACH, code, 0);
-> >  }
-> >
-> > @@ -245,9 +246,6 @@ static struct xt_target ipt_reject_reg =
-> >         .family         = AF_INET,
-> >         .target         = reject,
-> >         .targetsize     = sizeof(struct ipt_reject_info),
-> > -       .table          = "filter",
-> > -       .hooks          = (1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD) |
-> > -                         (1 << NF_IP_LOCAL_OUT),
-> >         .checkentry     = check,
-> >         .me             = THIS_MODULE,
-> >  };
->
-> That includes an unrelated change, I meant to simply remove the filter
-> table restriction.
->
-> >>>If not, then shouldn't the filter table be obsoleted to avoid
-> >>> confusion?
-> >>
-> >>That would probably confuse people. Just don't use it if you don't
-> >>need to.
-> >
-> > The problem is that people think they are safe with the filter table,
-> > when in fact they need the prerouting chain to seal things.  Right now
-> > this is only possible in the mangle table.
->
-> Why do they need PREROUTING?
-
-Well, for example to stop any transient packets being forwarded.  You could 
-probably hack around this using mark's, but you can't stop the implied route 
-lookup, unless you stop it in prerouting.
-
-
-Thanks!
-
---
-Al
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
