@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXJLI6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbXJLJDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759789AbXJLI6F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 04:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXJLI5k
+	id S1759556AbXJLJDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXJLJDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 04:57:40 -0400
-Received: from ns1.suse.de ([195.135.220.2]:40777 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754148AbXJLI5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 04:57:35 -0400
-Date: Fri, 12 Oct 2007 10:57:33 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071012085733.GA19237@wotan.suse.de>
-References: <20071004052348.GC15131@wotan.suse.de> <20071012082534.GB1962@ff.dom.local>
+	Fri, 12 Oct 2007 05:03:30 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:64937 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753563AbXJLJD3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:03:29 -0400
+Subject: [PATCH] mm: avoid dirtying shared mappings on mlock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Suleiman Souhlal <ssouhlal@FreeBSD.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
+       hugh <hugh@veritas.com>
+In-Reply-To: <69AF9B2A-6AA7-4078-B0A2-BE3D4914AEDC@FreeBSD.org>
+References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org>
+	 <20070726172330.d3409b57.akpm@linux-foundation.org>
+	 <1185518010.15205.36.camel@lappy>
+	 <69AF9B2A-6AA7-4078-B0A2-BE3D4914AEDC@FreeBSD.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-wiKc4oSMgthoYDncv+YZ"
+Date: Fri, 12 Oct 2007 11:03:25 +0200
+Message-Id: <1192179805.27435.6.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071012082534.GB1962@ff.dom.local>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 10:25:34AM +0200, Jarek Poplawski wrote:
-> On 04-10-2007 07:23, Nick Piggin wrote:
-> > According to latest memory ordering specification documents from Intel and
-> > AMD, both manufacturers are committed to in-order loads from cacheable memory
-> > for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
-> ...
-> 
-> Great news!
-> 
-> First it looks like a really great thing that it's revealed at last.
-> But then... there is probably some confusion: did we have to use
-> ineffective code for so long?
 
-I'm not sure exactly what the situation is with the manufacturers,
-but maybe they (at least Intel) wanted to keep their options open
-WRT their barrier semantics, even if current implementations were
-not taking full liberty of them.
+--=-wiKc4oSMgthoYDncv+YZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- 
-> First again, we could try to blame Intel etc. But then, wait a minute:
-> is it such a mystery knowledge? If this reordering is done there are
-> some easy rules broken (just like in examples from these manuals). And
-> if somebody cared to do this for optimization, then this is probably
-> noticeable optimization, let's say 5 or 10%. Then any test shouldn't
-> need to take very long to tell the truth in less than 100 loops!
+Subject: mm: avoid dirtying shared mappings on mlock
 
-I don't know quite what you're saying... the CPUs could probably get
-performance by having weakly ordered loads, OTOH I think the Intel
-ones might already do this speculatively so they appear in order but
-essentially have the performance of weak order.
+Suleiman noticed that shared mappings get dirtied when mlocked.
+Avoid this by teaching make_pages_present about this case.
 
-If you're just talking about this patch, then it probably isn't much
-performance gain. I'm guessing you'd be lucky to measure it from
-userspace.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Suleiman Souhlal <suleiman@google.com>
+---
+ mm/memory.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/mm/memory.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -2719,7 +2719,12 @@ int make_pages_present(unsigned long add
+ 	vma =3D find_vma(current->mm, addr);
+ 	if (!vma)
+ 		return -1;
+-	write =3D (vma->vm_flags & VM_WRITE) !=3D 0;
++	/*
++	 * We want to touch writable mappings with a write fault in order
++	 * to break COW, except for shared mappings because these don't COW
++	 * and we would not want to dirty them for nothing.
++	 */
++	write =3D (vma->vm_flags & (VM_WRITE|VM_SHARED)) =3D=3D VM_WRITE;
+ 	BUG_ON(addr >=3D end);
+ 	BUG_ON(end > vma->vm_end);
+ 	len =3D DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
 
 
-> So, maybe linux needs something like this, instead of waiting few
-> years with each new model for vendors goodwill? IMHO, even for less
-> popular processors, this could be checked under some debugging option
-> at the system start (after disabling suspicios barrier for a while
-> plus some WARN_ONs).
+--=-wiKc4oSMgthoYDncv+YZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-I don't know if that would be worthwhile. It actually isn't always
-trivial to trigger reordering. For example, on my dual-core core2,
-in order to see reads pass writes, I have to do work on a set that
-exceeds the cache size and does a huge amount of work to ensure it
-is going to trigger that. If you can actually come up with a test
-case that triggers load/load or store/store reordering, I'm sure
-Intel / AMD would like to see it ;)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-All existing processors as far as we know are in-order WRT loads vs
-loads and stores vs stores. It was just a matter of getting the docs
-clarified, which gives us more confidence that we're correct and a
-reasonable guarnatee of forward compatibility.
+iD8DBQBHDzhdXA2jU0ANEf4RAn8rAJ9khXjsR7JcWWTW2jb4djrhInvFkACdEQ3a
+LKTBRB+oYBWtkLOYtEu9TtM=
+=bub7
+-----END PGP SIGNATURE-----
 
-So, I think the plan is just to merge these 3 patches during the
-current window.
+--=-wiKc4oSMgthoYDncv+YZ--
 
