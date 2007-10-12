@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934726AbXJLXTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934832AbXJLXTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934726AbXJLXTM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 19:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934553AbXJLXOS
+	id S934832AbXJLXTq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933381AbXJLXPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 19:14:18 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41865 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934024AbXJLXON (ORCPT
+	Fri, 12 Oct 2007 19:15:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58295 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933944AbXJLXPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 19:14:13 -0400
-Date: Fri, 12 Oct 2007 16:13:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sebastian Siewior <sebastian@breakpoint.cc>
-Cc: linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [PATCH] [mmc] fix compile without LED Triggers
-Message-Id: <20071012161300.ff4f6e0b.randy.dunlap@oracle.com>
-In-Reply-To: <E1IgSxy-0003pj-Ik@Chamillionaire.breakpoint.cc>
-References: <E1IgSxy-0003pj-Ik@Chamillionaire.breakpoint.cc>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 12 Oct 2007 19:15:48 -0400
+Date: Fri, 12 Oct 2007 16:14:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: arch merge fallout.
+In-Reply-To: <20071012225222.GD4290@redhat.com>
+Message-ID: <alpine.LFD.0.999.0710121608460.6887@woody.linux-foundation.org>
+References: <20071012035743.GA12897@redhat.com>
+ <alpine.LFD.0.999.0710112103240.6887@woody.linux-foundation.org>
+ <20071012182504.GA9222@redhat.com> <alpine.LFD.0.999.0710121457230.6887@woody.linux-foundation.org>
+ <20071012221253.GB4290@redhat.com> <alpine.LFD.0.999.0710121542030.6887@woody.linux-foundation.org>
+ <20071012225222.GD4290@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 00:25:15 +0200 Sebastian Siewior wrote:
 
-> drivers/mmc/core/host.c: In function 'mmc_remove_host':
-> drivers/mmc/core/host.c:146: error: implicit declaration of function 'led_trigger_unregister'
-> drivers/mmc/core/host.c:146: error: 'struct mmc_host' has no member named 'led'
+
+On Fri, 12 Oct 2007, Dave Jones wrote:
+>
+> Something I find useful is to just do for eg..
 > 
-> Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-> ---
->  include/linux/leds.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> git log arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 > 
-> diff --git a/include/linux/leds.h b/include/linux/leds.h
-> index dc1178f..24c4830 100644
-> --- a/include/linux/leds.h
-> +++ b/include/linux/leds.h
-> @@ -98,6 +98,7 @@ extern void led_trigger_event(struct led_trigger *trigger,
->  #define DEFINE_LED_TRIGGER_GLOBAL(x)
->  #define led_trigger_register_simple(x, y) do {} while(0)
->  #define led_trigger_unregister_simple(x) do {} while(0)
-> +#define led_trigger_unregister(x) do {} while(0)
->  #define led_trigger_event(x, y) do {} while(0)
->  
->  #endif
+> from time to time, to figure out when certain changes happened,
+> or even to grep for something in a changelog.
+> With that file moved, git refuses to tell me about the log
+> of a file that doesn't exist, and the log of the moved
+> file in arch/x86 just has a single commit, detailing the move.
+> 
+> Is there an easy way to get the complete log of a file?
 
-or this patch that was posted earlier:
-http://lkml.org/lkml/2007/10/12/380
+The "--follow" flag will follow renames when doing a log, so a simple
 
----
-~Randy
+	git log --follow arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+
+will do it.
+
+[ Although I actually introduced a bug in that last week, so if it gives 
+  empty output for you, add a "--stat" to get a diffstat (or "-p" to get 
+  the whole patch) to work around a stupid mistake. That bug is in both 
+  1.5.3.3 and 1.5.3.4 - and Junio happens to be away for two weeks, so 
+  it's not fixed in any release yet. I have a trivial patch for it if you 
+  care, but the "use -p" workaround is usually what you want to do anyway, 
+  which is probably why  nobody even noticed it was broken! ]
+
+			Linus
