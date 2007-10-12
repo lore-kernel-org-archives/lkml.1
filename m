@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXJLDKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbXJLDRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXJLDKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 23:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbXJLDFn
+	id S1758504AbXJLDRx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 23:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbXJLDRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 23:05:43 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:16087 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755975AbXJLDFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 23:05:13 -0400
-X-IronPort-AV: i="4.21,263,1188792000"; 
-   d="scan'208"; a="41596817:sNHT57921948"
-From: Bryan Wu <bryan.wu@analog.com>
-To: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 02/10] Blackfin SPI driver: use new GPIO API and add error handling
-Date: Fri, 12 Oct 2007 11:04:56 +0800
-Message-Id: <1192158304-8277-3-git-send-email-bryan.wu@analog.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192158304-8277-1-git-send-email-bryan.wu@analog.com>
-References: <1192158304-8277-1-git-send-email-bryan.wu@analog.com>
+	Thu, 11 Oct 2007 23:17:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:4663 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758214AbXJLDRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 23:17:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,263,1188802800"; 
+   d="scan'208";a="297117904"
+Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <200710111217.58473.rjw@sisk.pl>
+References: <1192068833.27482.13.camel@caritas-dev.intel.com>
+	 <200710111217.58473.rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 12 Oct 2007 11:19:32 +0800
+Message-Id: <1192159172.17539.26.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 12 Oct 2007 03:17:28.0867 (UTC) FILETIME=[6B7A9F30:01C80C7E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Thu, 2007-10-11 at 12:17 +0200, Rafael J. Wysocki wrote:
+> On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
+> > Kexec base hibernation has some potential advantages over uswsusp and
+> > TuxOnIce (suspend2). Some most obvious advantages are:
+> 
+> Well, I have some doubts as far as the obviousness is concerned.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/spi/spi_bfin5xx.c                 |   29 +++++++++++++++++++++++------
- include/asm-blackfin/mach-bf533/portmux.h |    2 +-
- 2 files changed, 24 insertions(+), 7 deletions(-)
+OK, I will remove the "obvious".
 
-diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 2992ada..8041b89 100644
---- a/drivers/spi/spi_bfin5xx.c
-+++ b/drivers/spi/spi_bfin5xx.c
-@@ -1165,6 +1165,22 @@ static inline int destroy_queue(struct driver_data *drv_data)
- 	return 0;
- }
- 
-+static int setup_pin_mux(int action)
-+{
-+
-+	u16 pin_req[] = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0};
-+
-+	if (action) {
-+		if (peripheral_request_list(pin_req, DRV_NAME)) {
-+			return -EFAULT;
-+		}
-+	} else {
-+		peripheral_free_list(pin_req);
-+	}
-+
-+	return 0;
-+}
-+
- static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
--		 peripheral_request(P_SPI0_MISO, DRV_NAME) ||
--		 peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
--
-+	if (setup_pin_mux(1)) {
- 		dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
--		goto out_error_queue_alloc;
-+		goto out_error;
- 	}
- 
- 	drv_data = spi_master_get_devdata(master);
-@@ -1223,9 +1236,11 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 	dev_dbg(&pdev->dev, "controller probe successfully\n");
- 	return status;
- 
--      out_error_queue_alloc:
-+out_error_queue_alloc:
- 	destroy_queue(drv_data);
-+out_error:
- 	spi_master_put(master);
-+
- 	return status;
- }
- 
-@@ -1255,6 +1270,8 @@ static int __devexit bfin5xx_spi_remove(struct platform_device *pdev)
- 	/* Disconnect from the SPI framework */
- 	spi_unregister_master(drv_data->master);
- 
-+	setup_pin_mux(0);
-+
- 	/* Prevent double remove */
- 	platform_set_drvdata(pdev, NULL);
- 
-diff --git a/include/asm-blackfin/mach-bf533/portmux.h b/include/asm-blackfin/mach-bf533/portmux.h
-index b88d7a0..137f488 100644
---- a/include/asm-blackfin/mach-bf533/portmux.h
-+++ b/include/asm-blackfin/mach-bf533/portmux.h
-@@ -42,7 +42,7 @@
- #define P_SPORT0_DRPRI	(P_DONTCARE)
- 
- #define P_SPI0_MOSI	(P_DONTCARE)
--#define P_SPI0_MIS0	(P_DONTCARE)
-+#define P_SPI0_MISO	(P_DONTCARE)
- #define P_SPI0_SCK	(P_DONTCARE)
- #define P_SPI0_SSEL7	(P_DEFINED | P_IDENT(GPIO_PF7))
- #define P_SPI0_SSEL6	(P_DEFINED | P_IDENT(GPIO_PF6))
--- 
-1.5.3.4
+> > 1. The hibernation image size can exceed half of memory size easily.
+> 
+> This is also possible with TuxOnIce.
+
+I will add detail description about this. It is possible with TuxOnIce,
+and hard with u/swsusp.
+
+> 
+> > 2. The hibernation image can be written to and read from almost
+> >    anywhere, such as USB disk, NFS.
+> 
+> This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
+
+I will remove this.
+
+> > 3. It is possible to eliminate freezer from kexec based hibernation
+> >    implementation.
+> 
+> This isn't true as long as we have not changed the handling of devices
+> (which is in the works, but will take time).
+
+I know it has not been implemented yet. I just say that it is possible
+for khibernation and it is almost impossible for u/swsusp and TuxOnIce.
+
+> > 4. Based on kexec/kdump implementation, the kernel code needed is
+> >    less.
+> 
+> Well, maybe.
+> 
+
+Best Regards,
+Huang Ying
