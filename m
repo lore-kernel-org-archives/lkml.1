@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbXJLNaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbXJLNbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130AbXJLNaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 09:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXJLNar
+	id S1760131AbXJLNbZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 09:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759618AbXJLNbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 09:30:47 -0400
-Received: from rtr.ca ([76.10.145.34]:3899 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842AbXJLNar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 09:30:47 -0400
-Message-ID: <470F7705.3@rtr.ca>
-Date: Fri, 12 Oct 2007 09:30:45 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 12 Oct 2007 09:31:06 -0400
+Received: from [212.12.190.221] ([212.12.190.221]:54855 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753331AbXJLNbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 09:31:02 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
+Date: Fri, 12 Oct 2007 16:30:29 +0300
+User-Agent: KMail/1.5
+Cc: Netfilter Developer Mailing List 
+	<netfilter-devel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kaber@trash.net
+References: <200710120031.42805.a1426z@gawab.com> <Pine.LNX.4.64.0710121449370.23981@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710121449370.23981@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: crash@treysoft.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: hdparm standby timeout not working for WD raptors?
-References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>	 <470E7B90.5060203@rtr.ca> <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>
-In-Reply-To: <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710121630.29151.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Weber wrote:
+Jan Engelhardt wrote:
+> On Oct 12 2007 00:31, Al Boldi wrote:
+> >With the existence of the mangle table, how useful is the filter table?
 >
-> # hdparm -S1 -C /dev/sda; sleep 6; hdparm -C /dev/sda
-> 
-> /dev/sda:
->  setting standby to 1 (5 seconds)
->  drive state is:  active/idle
-> 
-> /dev/sda:
->  drive state is:  active/idle
+> A similar discussion was back in March 2007.
+> http://marc.info/?l=netfilter-devel&m=117394977210823&w=2
+> http://marc.info/?l=netfilter-devel&m=117400063907706&w=2
+>
+> in the end, my proposal was something like
+> http://jengelh.hopto.org/GFX0/nf_proposal2.svg
 
-That's interesting.
+Any chance you could publish this as something readable like text/html?
 
-So, either something is regularly accessing/polling the drive,
-or it just doesn't work with the standby timer.
 
-Are there any interesting kernel messages being generated
-during execution of those commands?
+Thanks!
 
--ml
+--
+Al
