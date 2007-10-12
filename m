@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXJLEJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXJLEPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbXJLEJf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXJLEJQ
+	id S1758433AbXJLEPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 00:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXJLEPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:09:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36819 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753154AbXJLEJP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:09:15 -0400
-Date: Thu, 11 Oct 2007 21:09:14 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-cc: Andrew Morton <akpm@osdl.org>,
-       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [Patch 001/002] extract kmem_cache_shrink
-In-Reply-To: <20071012112648.B99F.Y-GOTO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0710112054220.1882@schroedinger.engr.sgi.com>
-References: <20071012111008.B995.Y-GOTO@jp.fujitsu.com>
- <20071012112236.B99B.Y-GOTO@jp.fujitsu.com> <20071012112648.B99F.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Oct 2007 00:15:24 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55344 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751776AbXJLEPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 00:15:23 -0400
+Date: Fri, 12 Oct 2007 06:16:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] kbuild updates
+Message-ID: <20071012041653.GA16142@uranus.ravnborg.org>
+References: <20071010194434.GA2791@uranus.ravnborg.org> <alpine.LFD.0.999.0710111905420.6887@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710111905420.6887@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007, Yasunori Goto wrote:
+On Thu, Oct 11, 2007 at 07:08:53PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 10 Oct 2007, Sam Ravnborg wrote:
+> > 
+> > This set of commits are the kbuild stuff that does not
+> > conflict with the pending x86 merge.
+> 
+> Hmm. It does for me, actually.
+I did not try it out obviously - I just removed everything touching x86_64/i386.
+This is the SRCARCH changes in top-level Makefile.
 
-> Make kmem_cache_shrink_node() for callback routine of memory hotplug
-> notifier. This is just extract a part of kmem_cache_shrink().
+> 
+> I fixed up the trivial conflict in the main Makefile, but that seems to 
+> leave $(ARCH) entirely undefined in my case, so the end result doesn't 
+> work. That seems to have nothing to do with my conflict fixup, but is 
+> something else.
+> 
+> It also gets a trivial conflict with the 'mmc' pull I just did, but that 
+> didn't seem problematic (mmc added a new case to scripts/mod/file2alias.c, 
+> and you added a free, both at the end of the same function) - but the x86 
+> merge conflict means that I decided that I'll let you sort it out. It's 
+> probably really trivial, but I'll merge the other stuff I have pending 
+> instead.
 
-Could we just call kmem_cache_shrink? It will do the shrink on every node 
-but memory hotplug is rare?
+As Andrew has an issue with my geneius "save ARCH & CROSS_COMPILE" patch
+this is perfect. I will sort out the conflicts and Andrew's use-case and
+submit a new pull request.
+
+	Sam
