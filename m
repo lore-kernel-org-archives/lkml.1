@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbXJLWrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933422AbXJLWsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934277AbXJLWrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbXJLWVa
+	id S933422AbXJLWsF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbXJLWVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:21:30 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49918 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:21:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49924 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932725AbXJLWV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:21:28 -0400
+	id S932614AbXJLWVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:21:32 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 49/75] sysfs: Rewrite rename in terms of sysfs dirents
-Date: Fri, 12 Oct 2007 15:16:53 -0700
-Message-Id: <1192227671143-git-send-email-gregkh@suse.de>
+Subject: [PATCH 50/75] sysfs: Rewrite sysfs_move_dir in terms of sysfs dirents
+Date: Fri, 12 Oct 2007 15:16:54 -0700
+Message-Id: <11922276763650-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922276672660-git-send-email-gregkh@suse.de>
+In-Reply-To: <1192227671143-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -68,119 +68,105 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276572176-git-send-email-gregkh@suse.de>
  <11922276622731-git-send-email-gregkh@suse.de>
  <11922276672660-git-send-email-gregkh@suse.de>
+ <1192227671143-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch rewrites sysfs_rename_dir to perform it's checks
+This patch rewrites sysfs_move_dir to perform it's checks
 as much as possible on the underlying sysfs_dirents instead
-of the contents of the dcache.  It turns out that this version
-is a little simpler, and a little more like the rest of
-the sysfs directory modification code.
-
-tj: fixed double locking of sysfs_mutex
+of the contents of the dcache, making sysfs_move_dir
+more like the rest of the sysfs directory modification
+code.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |   38 ++++++++++++++++----------------------
- 1 files changed, 16 insertions(+), 22 deletions(-)
+ fs/sysfs/dir.c |   34 ++++++++++++++++++----------------
+ 1 files changed, 18 insertions(+), 16 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 36b6c79..463c5e3 100644
+index 463c5e3..da4bb66 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -770,7 +770,7 @@ void sysfs_remove_dir(struct kobject * kobj)
- 
- int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- {
--	struct sysfs_dirent *sd;
-+	struct sysfs_dirent *sd = kobj->sd;
- 	struct dentry *parent = NULL;
- 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
- 	const char *dup_name = NULL;
-@@ -778,63 +778,57 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 
- 	mutex_lock(&sysfs_rename_mutex);
+@@ -845,56 +845,58 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ 	BUG_ON(!sd->s_parent);
+ 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
  
 +	error = 0;
-+	if (strcmp(sd->s_name, new_name) == 0)
-+		goto out;	/* nothing to rename */
++	if (sd->s_parent == new_parent_sd)
++		goto out;	/* nothing to move */
 +
- 	/* get the original dentry */
--	sd = kobj->sd;
+ 	/* get dentries */
  	old_dentry = sysfs_get_dentry(sd);
  	if (IS_ERR(old_dentry)) {
  		error = PTR_ERR(old_dentry);
 -		goto out_dput;
 +		goto out;
  	}
+ 	old_parent = old_dentry->d_parent;
  
- 	parent = old_dentry->d_parent;
+ 	new_parent = sysfs_get_dentry(new_parent_sd);
+ 	if (IS_ERR(new_parent)) {
+ 		error = PTR_ERR(new_parent);
+-		goto out_dput;
++		goto out;
+ 	}
  
- 	/* lock parent and get dentry for new name */
- 	mutex_lock(&parent->d_inode->i_mutex);
+-	if (old_parent->d_inode == new_parent->d_inode) {
+-		error = 0;
+-		goto out_dput;	/* nothing to move */
+-	}
+ again:
+ 	mutex_lock(&old_parent->d_inode->i_mutex);
+ 	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
+ 		mutex_unlock(&old_parent->d_inode->i_mutex);
+ 		goto again;
+ 	}
 +	mutex_lock(&sysfs_mutex);
  
--	new_dentry = lookup_one_len(new_name, parent, strlen(new_name));
+-	new_dentry = lookup_one_len(kobject_name(kobj), new_parent, strlen(kobject_name(kobj)));
 -	if (IS_ERR(new_dentry)) {
 -		error = PTR_ERR(new_dentry);
--		goto out_unlock;
--	}
--
--	error = -EINVAL;
--	if (old_dentry == new_dentry)
 +	error = -EEXIST;
-+	if (sysfs_find_dirent(sd->s_parent, new_name))
++	if (sysfs_find_dirent(new_parent_sd, sd->s_name))
  		goto out_unlock;
- 
--	error = -EEXIST;
--	if (new_dentry->d_inode)
+-	} else
+-		error = 0;
++
 +	error = -ENOMEM;
-+	new_dentry = d_alloc_name(parent, new_name);
++	new_dentry = d_alloc_name(new_parent, sd->s_name);
 +	if (!new_dentry)
- 		goto out_unlock;
- 
- 	/* rename kobject and sysfs_dirent */
- 	error = -ENOMEM;
- 	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
- 	if (!new_name)
--		goto out_drop;
 +		goto out_unlock;
- 
- 	error = kobject_set_name(kobj, "%s", new_name);
- 	if (error)
--		goto out_drop;
-+		goto out_unlock;
- 
--	mutex_lock(&sysfs_mutex);
- 	dup_name = sd->s_name;
- 	sd->s_name = new_name;
--	mutex_unlock(&sysfs_mutex);
- 
- 	/* rename */
++
++	error = 0;
  	d_add(new_dentry, NULL);
  	d_move(old_dentry, new_dentry);
+ 	dput(new_dentry);
  
- 	error = 0;
--	goto out_unlock;
+ 	/* Remove from old parent's list and insert into new parent's list. */
+-	mutex_lock(&sysfs_mutex);
 -
-- out_drop:
--	d_drop(new_dentry);
+ 	sysfs_unlink_sibling(sd);
+ 	sysfs_get(new_parent_sd);
+ 	sysfs_put(sd->s_parent);
+ 	sd->s_parent = new_parent_sd;
+ 	sysfs_link_sibling(sd);
+ 
+-	mutex_unlock(&sysfs_mutex);
+-
   out_unlock:
 +	mutex_unlock(&sysfs_mutex);
- 	mutex_unlock(&parent->d_inode->i_mutex);
+ 	mutex_unlock(&new_parent->d_inode->i_mutex);
+ 	mutex_unlock(&old_parent->d_inode->i_mutex);
 - out_dput:
- 	kfree(dup_name);
++ out:
+ 	dput(new_parent);
  	dput(old_dentry);
  	dput(new_dentry);
-+ out:
- 	mutex_unlock(&sysfs_rename_mutex);
- 	return error;
- }
 -- 
 1.5.3.4
 
