@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbXJLEtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXJLFBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbXJLEtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXJLEtE
+	id S1759941AbXJLFBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 01:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbXJLFBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:49:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49107 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752010AbXJLEtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:49:01 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+FgUVgFiyFzRr8o97pPOHwZezJ8BjKltYxM6eR0R
-	BKI00bDbAA8JUn
-Subject: 2.6.23.git build error
-From: Mike Galbraith <efault@gmx.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 12 Oct 2007 06:48:58 +0200
-Message-Id: <1192164538.10413.3.camel@Homer.simpson.net>
+	Fri, 12 Oct 2007 01:01:10 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34082 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759488AbXJLFBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 01:01:08 -0400
+Date: Fri, 12 Oct 2007 14:03:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1
+Message-Id: <20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+On Thu, 11 Oct 2007 21:31:26 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Freshly pulled 2.6.23.git failed to build:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> 
+> - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+>   to stabilise things for the 2.6.23 merge.
+> 
+On RHEL5/x86_64 environment,
 
-make[1]: *** No rule to make target `arch/x86/kernel/asm-offsets.c', needed by `arch/x86/kernel/asm-offsets.s'.  Stop.
-make: *** [prepare0] Error 2
-make: *** Waiting for unfinished jobs....
+==
+[kamezawa@hannibal ref-2.6.23-mm1]$ make menuconfig
+Makefile:456: /home/kamezawa/ref-2.6.23-mm1/arch//Makefile: No such file or directory
+make: *** No rule to make target `/home/kamezawa/ref-2.6.23-mm1/arch//Makefile'.  Stop.
+==
 
-	-Mike
+$(ARCH) cannot be detected automatically...
+
+What information is useful for fixing this ?
+
+Thanks,
+-Kame
 
