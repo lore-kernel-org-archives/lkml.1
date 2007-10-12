@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbXJLWZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933075AbXJLW0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbXJLWZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761164AbXJLWSl
+	id S933075AbXJLW0f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758442AbXJLWSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:18:41 -0400
-Received: from mx1.suse.de ([195.135.220.2]:53150 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:18:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49641 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761099AbXJLWSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:18:39 -0400
+	id S1761212AbXJLWSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:18:43 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 14/75] Drivers: clean up direct setting of the name of a kset
-Date: Fri, 12 Oct 2007 15:16:18 -0700
-Message-Id: <11922275031518-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 15/75] kobject: remove the static array for the name
+Date: Fri, 12 Oct 2007 15:16:19 -0700
+Message-Id: <11922275074080-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922274993462-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922275031518-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -31,152 +31,189 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922274901810-git-send-email-gregkh@suse.de>
  <11922274941588-git-send-email-gregkh@suse.de>
  <11922274993462-git-send-email-gregkh@suse.de>
+ <11922275031518-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A kset should not have its name set directly, so dynamically set the
-name at runtime.
+Due to historical reasons, struct kobject contained a static array for
+the name, and a dynamic pointer in case the name got bigger than the
+array.  That's just dumb, as people didn't always know which variable to
+reference, even with the accessor for the kobject name.
 
-This is needed to remove the static array in the kobject structure which
-will be changed in a future patch.
+This patch removes the static array, potentially saving a lot of memory
+as the majority of kobjects do not have a very long name.
 
+Thanks to Kay for the idea to do this.
+
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/edac/edac_mc_sysfs.c         |    3 ++-
- drivers/pci/hotplug/rpadlpar_sysfs.c |    6 +++---
- fs/dlm/lockspace.c                   |    2 +-
- fs/gfs2/locking/dlm/sysfs.c          |    2 +-
- fs/gfs2/sys.c                        |    2 +-
- fs/ocfs2/cluster/masklog.c           |    3 ++-
- 6 files changed, 10 insertions(+), 8 deletions(-)
+ include/linux/kobject.h |    7 ++--
+ lib/kobject.c           |   79 +++++++++++++++++++++++------------------------
+ 2 files changed, 42 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/edac/edac_mc_sysfs.c b/drivers/edac/edac_mc_sysfs.c
-index 4a0576b..3706b2b 100644
---- a/drivers/edac/edac_mc_sysfs.c
-+++ b/drivers/edac/edac_mc_sysfs.c
-@@ -743,7 +743,7 @@ static struct kobj_type ktype_mc_set_attribs = {
-  *	/sys/devices/system/edac/mc
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index c0fb535..8b45946 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -63,7 +63,6 @@ extern const char *kobject_actions[];
+ 
+ struct kobject {
+ 	const char		* k_name;
+-	char			name[KOBJ_NAME_LEN];
+ 	struct kref		kref;
+ 	struct list_head	entry;
+ 	struct kobject		* parent;
+@@ -188,18 +187,18 @@ extern struct kobject * kset_find_obj(struct kset *, const char *);
+  * Use this when initializing an embedded kset with no other 
+  * fields to initialize.
   */
- static struct kset mc_kset = {
--	.kobj = {.name = "mc", .ktype = &ktype_mc_set_attribs },
-+	.kobj = {.ktype = &ktype_mc_set_attribs },
- 	.ktype = &ktype_mci,
- };
+-#define set_kset_name(str)	.kset = { .kobj = { .name = str } }
++#define set_kset_name(str)	.kset = { .kobj = { .k_name = str } }
  
-@@ -1010,6 +1010,7 @@ int edac_sysfs_setup_mc_kset(void)
- 	}
  
- 	/* Init the MC's kobject */
-+	kobject_set_name(&mc_kset.kobj, "mc");
- 	mc_kset.kobj.parent = &edac_class->kset.kobj;
- 
- 	/* register the mc_kset */
-diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/rpadlpar_sysfs.c
-index df07606..a080fed 100644
---- a/drivers/pci/hotplug/rpadlpar_sysfs.c
-+++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
-@@ -129,17 +129,17 @@ struct kobj_type ktype_dlpar_io = {
- };
- 
- struct kset dlpar_io_kset = {
--	.kobj = {.name = DLPAR_KOBJ_NAME,
--		 .ktype = &ktype_dlpar_io,
-+	.kobj = {.ktype = &ktype_dlpar_io,
- 		 .parent = &pci_hotplug_slots_subsys.kobj},
- 	.ktype = &ktype_dlpar_io,
- };
- 
- int dlpar_sysfs_init(void)
- {
-+	kobject_set_name(&dlpar_io_kset.kobj, DLPAR_KOBJ_NAME);
- 	if (kset_register(&dlpar_io_kset)) {
- 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
--				dlpar_io_kset.kobj.name);
-+				kobject_name(&dlpar_io_kset.kobj));
- 		return -EINVAL;
- 	}
- 
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index 1dc7210..f88f88f 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -167,7 +167,6 @@ static struct kobj_type dlm_ktype = {
- };
- 
- static struct kset dlm_kset = {
--	.kobj   = {.name = "dlm",},
- 	.ktype  = &dlm_ktype,
- };
- 
-@@ -228,6 +227,7 @@ int dlm_lockspace_init(void)
- 	INIT_LIST_HEAD(&lslist);
- 	spin_lock_init(&lslist_lock);
- 
-+	kobject_set_name(&dlm_kset.kobj, "dlm");
- 	kobj_set_kset_s(&dlm_kset, kernel_subsys);
- 	error = kset_register(&dlm_kset);
- 	if (error)
-diff --git a/fs/gfs2/locking/dlm/sysfs.c b/fs/gfs2/locking/dlm/sysfs.c
-index d9fe3ca..ae9e6a2 100644
---- a/fs/gfs2/locking/dlm/sysfs.c
-+++ b/fs/gfs2/locking/dlm/sysfs.c
-@@ -190,7 +190,6 @@ static struct kobj_type gdlm_ktype = {
- };
- 
- static struct kset gdlm_kset = {
--	.kobj   = {.name = "lock_dlm",},
- 	.ktype  = &gdlm_ktype,
- };
- 
-@@ -224,6 +223,7 @@ int gdlm_sysfs_init(void)
- {
- 	int error;
- 
-+	kobject_set_name(&gdlm_kset.kobj, "lock_dlm");
- 	kobj_set_kset_s(&gdlm_kset, kernel_subsys);
- 	error = kset_register(&gdlm_kset);
- 	if (error)
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index c26c21b..640cb6a 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -222,7 +222,6 @@ static struct kobj_type gfs2_ktype = {
- };
- 
- static struct kset gfs2_kset = {
--	.kobj   = {.name = "gfs2"},
- 	.ktype  = &gfs2_ktype,
- };
- 
-@@ -553,6 +552,7 @@ int gfs2_sys_init(void)
- {
- 	gfs2_sys_margs = NULL;
- 	spin_lock_init(&gfs2_sys_margs_lock);
-+	kobject_set_name(&gfs2_kset.kobj, "gfs2");
- 	kobj_set_kset_s(&gfs2_kset, fs_subsys);
- 	return kset_register(&gfs2_kset);
+ #define decl_subsys(_name,_type,_uevent_ops) \
+ struct kset _name##_subsys = { \
+-	.kobj = { .name = __stringify(_name) }, \
++	.kobj = { .k_name = __stringify(_name) }, \
+ 	.ktype = _type, \
+ 	.uevent_ops =_uevent_ops, \
  }
-diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
-index e9e042b..a4882c8 100644
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -143,7 +143,7 @@ static struct kobj_type mlog_ktype = {
- };
- 
- static struct kset mlog_kset = {
--	.kobj   = {.name = "logmask", .ktype = &mlog_ktype},
-+	.kobj   = {.ktype = &mlog_ktype},
- };
- 
- int mlog_sys_init(struct kset *o2cb_subsys)
-@@ -156,6 +156,7 @@ int mlog_sys_init(struct kset *o2cb_subsys)
- 	}
- 	mlog_attr_ptrs[i] = NULL;
- 
-+	kobject_set_name(&mlog_kset.kobj, "logmask");
- 	kobj_set_kset_s(&mlog_kset, *o2cb_subsys);
- 	return kset_register(&mlog_kset);
+ #define decl_subsys_name(_varname,_name,_type,_uevent_ops) \
+ struct kset _varname##_subsys = { \
+-	.kobj = { .name = __stringify(_name) }, \
++	.kobj = { .k_name = __stringify(_name) }, \
+ 	.ktype = _type, \
+ 	.uevent_ops =_uevent_ops, \
  }
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 1326041..10ae2eb 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -170,7 +170,7 @@ int kobject_shadow_add(struct kobject *kobj, struct sysfs_dirent *shadow_parent)
+ 	if (!(kobj = kobject_get(kobj)))
+ 		return -ENOENT;
+ 	if (!kobj->k_name)
+-		kobj->k_name = kobj->name;
++		kobject_set_name(kobj, "NO_NAME");
+ 	if (!*kobj->k_name) {
+ 		pr_debug("kobject attempted to be registered with no name!\n");
+ 		WARN_ON(1);
+@@ -181,7 +181,7 @@ int kobject_shadow_add(struct kobject *kobj, struct sysfs_dirent *shadow_parent)
+ 
+ 	pr_debug("kobject %s: registering. parent: %s, set: %s\n",
+ 		 kobject_name(kobj), parent ? kobject_name(parent) : "<NULL>", 
+-		 kobj->kset ? kobj->kset->kobj.name : "<NULL>" );
++		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
+ 
+ 	if (kobj->kset) {
+ 		spin_lock(&kobj->kset->list_lock);
+@@ -255,54 +255,50 @@ int kobject_register(struct kobject * kobj)
+ int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
+ {
+ 	int error = 0;
+-	int limit = KOBJ_NAME_LEN;
++	int limit;
+ 	int need;
+ 	va_list args;
+-	char * name;
++	char *name;
+ 
+-	/* 
+-	 * First, try the static array 
+-	 */
+-	va_start(args,fmt);
+-	need = vsnprintf(kobj->name,limit,fmt,args);
++	/* find out how big a buffer we need */
++	name = kmalloc(1024, GFP_KERNEL);
++	if (!name) {
++		error = -ENOMEM;
++		goto done;
++	}
++	va_start(args, fmt);
++	need = vsnprintf(name, 1024, fmt, args);
+ 	va_end(args);
+-	if (need < limit) 
+-		name = kobj->name;
+-	else {
+-		/* 
+-		 * Need more space? Allocate it and try again 
+-		 */
+-		limit = need + 1;
+-		name = kmalloc(limit,GFP_KERNEL);
+-		if (!name) {
+-			error = -ENOMEM;
+-			goto Done;
+-		}
+-		va_start(args,fmt);
+-		need = vsnprintf(name,limit,fmt,args);
+-		va_end(args);
+-
+-		/* Still? Give up. */
+-		if (need >= limit) {
+-			kfree(name);
+-			error = -EFAULT;
+-			goto Done;
+-		}
++	kfree(name);
++
++	/* Allocate the new space and copy the string in */
++	limit = need + 1;
++	name = kmalloc(limit, GFP_KERNEL);
++	if (!name) {
++		error = -ENOMEM;
++		goto done;
++	}
++	va_start(args, fmt);
++	need = vsnprintf(name, limit, fmt, args);
++	va_end(args);
++
++	/* something wrong with the string we copied? */
++	if (need >= limit) {
++		kfree(name);
++		error = -EFAULT;
++		goto done;
+ 	}
+ 
+ 	/* Free the old name, if necessary. */
+-	if (kobj->k_name && kobj->k_name != kobj->name)
+-		kfree(kobj->k_name);
++	kfree(kobj->k_name);
+ 
+ 	/* Now, set the new name */
+ 	kobj->k_name = name;
+- Done:
++done:
+ 	return error;
+ }
+-
+ EXPORT_SYMBOL(kobject_set_name);
+ 
+-
+ /**
+  *	kobject_rename - change the name of an object
+  *	@kobj:	object in question.
+@@ -477,13 +473,16 @@ void kobject_cleanup(struct kobject * kobj)
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+ 	struct kobject * parent = kobj->parent;
++	const char *name = kobj->k_name;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+-	if (kobj->k_name != kobj->name)
+-		kfree(kobj->k_name);
+-	kobj->k_name = NULL;
+-	if (t && t->release)
++	if (t && t->release) {
+ 		t->release(kobj);
++		/* If we have a release function, we can guess that this was
++		 * not a statically allocated kobject, so we should be safe to
++		 * free the name */
++		kfree(name);
++	}
+ 	if (s)
+ 		kset_put(s);
+ 	kobject_put(parent);
 -- 
 1.5.3.4
 
