@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761854AbXJLW4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761766AbXJLW4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761854AbXJLW4P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXJLWWj
+	id S1761766AbXJLW4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932690AbXJLWWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:22:39 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50003 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:22:44 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53568 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932847AbXJLWWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:22:36 -0400
+	id S932847AbXJLWWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:22:41 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 64/75] sysfs: move sysfs_dirent->s_children into sysfs_dirent->s_dir
-Date: Fri, 12 Oct 2007 15:17:08 -0700
-Message-Id: <11922277403355-git-send-email-gregkh@suse.de>
+Subject: [PATCH 65/75] sysfs: implement sysfs_open_dirent
+Date: Fri, 12 Oct 2007 15:17:09 -0700
+Message-Id: <11922277441791-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277364080-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922277403355-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -81,129 +81,199 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922277261501-git-send-email-gregkh@suse.de>
  <1192227731677-git-send-email-gregkh@suse.de>
  <11922277364080-git-send-email-gregkh@suse.de>
+ <11922277403355-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <htejun@gmail.com>
 
-Children list head is only meaninful for directory nodes.  Move it
-into s_dir.  This doesn't save any space currently but it will with
-further changes.
+Implement sysfs_open_dirent which represents an open file (attribute)
+sysfs_dirent.  A file sysfs_dirent with one or more open files have
+one sysfs_dirent and all sysfs_buffers (one for each open instance)
+are linked to it.
+
+sysfs_open_dirent doesn't actually do anything yet but will be used to
+off-load things which are specific for open file sysfs_dirent from it.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |   17 +++++++++--------
- fs/sysfs/inode.c |    2 +-
- fs/sysfs/sysfs.h |    3 ++-
- 3 files changed, 12 insertions(+), 10 deletions(-)
+ fs/sysfs/file.c  |  109 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/sysfs/sysfs.h |    3 +
+ 2 files changed, 111 insertions(+), 1 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 48a3ed4..4ad9422 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -26,7 +26,7 @@ static DEFINE_IDA(sysfs_ino_ida);
-  *	@sd: sysfs_dirent of interest
-  *
-  *	Link @sd into its sibling list which starts from
-- *	sd->s_parent->s_children.
-+ *	sd->s_parent->s_dir.children.
-  *
-  *	Locking:
-  *	mutex_lock(sysfs_mutex)
-@@ -40,9 +40,9 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 3c91a57..b13ba94 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -49,6 +49,22 @@ static struct sysfs_ops subsys_sysfs_ops = {
+ 	.store	= subsys_attr_store,
+ };
  
- 	/* Store directory entries in order by ino.  This allows
- 	 * readdir to properly restart without having to add a
--	 * cursor into the s_children list.
-+	 * cursor into the s_dir.children list.
- 	 */
--	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
-+	for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
- 		if (sd->s_ino < (*pos)->s_ino)
- 			break;
- 	}
-@@ -55,7 +55,7 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
-  *	@sd: sysfs_dirent of interest
-  *
-  *	Unlink @sd from its sibling list which starts from
-- *	sd->s_parent->s_children.
-+ *	sd->s_parent->s_dir.children.
-  *
-  *	Locking:
-  *	mutex_lock(sysfs_mutex)
-@@ -64,7 +64,8 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
++/*
++ * There's one sysfs_buffer for each open file and one
++ * sysfs_open_dirent for each sysfs_dirent with one or more open
++ * files.
++ *
++ * filp->private_data points to sysfs_buffer and
++ * sysfs_dirent->s_attr.open points to sysfs_open_dirent.  s_attr.open
++ * is protected by sysfs_open_dirent_lock.
++ */
++static spinlock_t sysfs_open_dirent_lock = SPIN_LOCK_UNLOCKED;
++
++struct sysfs_open_dirent {
++	atomic_t		refcnt;
++	struct list_head	buffers; /* goes through sysfs_buffer.list */
++};
++
+ struct sysfs_buffer {
+ 	size_t			count;
+ 	loff_t			pos;
+@@ -57,6 +73,7 @@ struct sysfs_buffer {
+ 	struct mutex		mutex;
+ 	int			needs_read_fill;
+ 	int			event;
++	struct list_head	list;
+ };
+ 
+ /**
+@@ -237,6 +254,86 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
+ 	return len;
+ }
+ 
++/**
++ *	sysfs_get_open_dirent - get or create sysfs_open_dirent
++ *	@sd: target sysfs_dirent
++ *	@buffer: sysfs_buffer for this instance of open
++ *
++ *	If @sd->s_attr.open exists, increment its reference count;
++ *	otherwise, create one.  @buffer is chained to the buffers
++ *	list.
++ *
++ *	LOCKING:
++ *	Kernel thread context (may sleep).
++ *
++ *	RETURNS:
++ *	0 on success, -errno on failure.
++ */
++static int sysfs_get_open_dirent(struct sysfs_dirent *sd,
++				 struct sysfs_buffer *buffer)
++{
++	struct sysfs_open_dirent *od, *new_od = NULL;
++
++ retry:
++	spin_lock(&sysfs_open_dirent_lock);
++
++	if (!sd->s_attr.open && new_od) {
++		sd->s_attr.open = new_od;
++		new_od = NULL;
++	}
++
++	od = sd->s_attr.open;
++	if (od) {
++		atomic_inc(&od->refcnt);
++		list_add_tail(&buffer->list, &od->buffers);
++	}
++
++	spin_unlock(&sysfs_open_dirent_lock);
++
++	if (od) {
++		kfree(new_od);
++		return 0;
++	}
++
++	/* not there, initialize a new one and retry */
++	new_od = kmalloc(sizeof(*new_od), GFP_KERNEL);
++	if (!new_od)
++		return -ENOMEM;
++
++	atomic_set(&new_od->refcnt, 0);
++	INIT_LIST_HEAD(&new_od->buffers);
++	goto retry;
++}
++
++/**
++ *	sysfs_put_open_dirent - put sysfs_open_dirent
++ *	@sd: target sysfs_dirent
++ *	@buffer: associated sysfs_buffer
++ *
++ *	Put @sd->s_attr.open and unlink @buffer from the buffers list.
++ *	If reference count reaches zero, disassociate and free it.
++ *
++ *	LOCKING:
++ *	None.
++ */
++static void sysfs_put_open_dirent(struct sysfs_dirent *sd,
++				  struct sysfs_buffer *buffer)
++{
++	struct sysfs_open_dirent *od = sd->s_attr.open;
++
++	spin_lock(&sysfs_open_dirent_lock);
++
++	list_del(&buffer->list);
++	if (atomic_dec_and_test(&od->refcnt))
++		sd->s_attr.open = NULL;
++	else
++		od = NULL;
++
++	spin_unlock(&sysfs_open_dirent_lock);
++
++	kfree(od);
++}
++
+ static int sysfs_open_file(struct inode *inode, struct file *file)
  {
- 	struct sysfs_dirent **pos;
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+@@ -298,19 +395,29 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	buffer->ops = ops;
+ 	file->private_data = buffer;
  
--	for (pos = &sd->s_parent->s_children; *pos; pos = &(*pos)->s_sibling) {
-+	for (pos = &sd->s_parent->s_dir.children; *pos;
-+	     pos = &(*pos)->s_sibling) {
- 		if (*pos == sd) {
- 			*pos = sd->s_sibling;
- 			sd->s_sibling = NULL;
-@@ -570,7 +571,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
++	/* make sure we have open dirent struct */
++	error = sysfs_get_open_dirent(attr_sd, buffer);
++	if (error)
++		goto err_free;
++
+ 	/* open succeeded, put active references */
+ 	sysfs_put_active_two(attr_sd);
+ 	return 0;
+ 
++ err_free:
++	kfree(buffer);
+  err_out:
+ 	sysfs_put_active_two(attr_sd);
+ 	return error;
+ }
+ 
+-static int sysfs_release(struct inode * inode, struct file * filp)
++static int sysfs_release(struct inode *inode, struct file *filp)
  {
- 	struct sysfs_dirent *sd;
++	struct sysfs_dirent *sd = filp->f_path.dentry->d_fsdata;
+ 	struct sysfs_buffer *buffer = filp->private_data;
  
--	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
-+	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling)
- 		if (!strcmp(sd->s_name, name))
- 			return sd;
- 	return NULL;
-@@ -722,7 +723,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
- 
- 	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
- 	sysfs_addrm_start(&acxt, dir_sd);
--	pos = &dir_sd->s_children;
-+	pos = &dir_sd->s_dir.children;
- 	while (*pos) {
- 		struct sysfs_dirent *sd = *pos;
- 
-@@ -922,7 +923,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 		mutex_lock(&sysfs_mutex);
- 
- 		/* Skip the dentries we have already reported */
--		pos = parent_sd->s_children;
-+		pos = parent_sd->s_dir.children;
- 		while (pos && (filp->f_pos > pos->s_ino))
- 			pos = pos->s_sibling;
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index c40fb9f..2210cf0 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -127,7 +127,7 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
- 	struct sysfs_dirent *child;
- 	int nr = 0;
- 
--	for (child = sd->s_children; child; child = child->s_sibling)
-+	for (child = sd->s_dir.children; child; child = child->s_sibling)
- 		if (sysfs_type(child) == SYSFS_DIR)
- 			nr++;
- 
++	sysfs_put_open_dirent(sd, buffer);
++
+ 	if (buffer->page)
+ 		free_page((unsigned long)buffer->page);
+ 	kfree(buffer);
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 60405a6..42b0327 100644
+index 42b0327..3adce7d 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -1,6 +1,8 @@
+@@ -1,3 +1,5 @@
++struct sysfs_open_dirent;
++
  /* type-specific structures for sysfs_dirent->s_* union members */
  struct sysfs_elem_dir {
  	struct kobject		*kobj;
-+	/* children list starts here and goes through sd->s_sibling */
-+	struct sysfs_dirent	*children;
+@@ -11,6 +13,7 @@ struct sysfs_elem_symlink {
+ 
+ struct sysfs_elem_attr {
+ 	struct attribute	*attr;
++	struct sysfs_open_dirent *open;
  };
  
- struct sysfs_elem_symlink {
-@@ -28,7 +30,6 @@ struct sysfs_dirent {
- 	atomic_t		s_active;
- 	struct sysfs_dirent	*s_parent;
- 	struct sysfs_dirent	*s_sibling;
--	struct sysfs_dirent	*s_children;
- 	const char		*s_name;
- 
- 	union {
+ struct sysfs_elem_bin_attr {
 -- 
 1.5.3.4
 
