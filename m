@@ -1,128 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbXJLRUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762611AbXJLRVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762789AbXJLRUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762258AbXJLRTe
+	id S1762611AbXJLRVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762449AbXJLRTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:19:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46463 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762714AbXJLRTc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:19:32 -0400
-Date: Fri, 12 Oct 2007 10:19:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-cc: Andrew Morton <akpm@osdl.org>,
-       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [Patch 002/002] Create/delete kmem_cache_node for SLUB on memory
- online callback
-In-Reply-To: <20071012133336.B9A5.Y-GOTO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0710121014430.8605@schroedinger.engr.sgi.com>
-References: <20071012112801.B9A1.Y-GOTO@jp.fujitsu.com>
- <Pine.LNX.4.64.0710112056300.1882@schroedinger.engr.sgi.com>
- <20071012133336.B9A5.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Oct 2007 13:19:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49047 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761297AbXJLRTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:19:36 -0400
+Date: Fri, 12 Oct 2007 18:19:28 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: [2.6.24 PATCH 14/25] dm: bio_list macro renaming
+Message-ID: <20071012171928.GZ24157@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007, Yasunori Goto wrote:
+From: Alasdair G Kergon <agk@redhat.com>
 
-> > > +	down_read(&slub_lock);
-> > > +	list_for_each_entry(s, &slab_caches, list) {
-> > > +		local_node = page_to_nid(virt_to_page(s));
-> > > +		if (local_node == offline_node)
-> > > +			/* This slub is on the offline node. */
-> > > +			return -EBUSY;
-> > > +	}
-> > > +	up_read(&slub_lock);
-> > 
-> > So this checks if the any kmem_cache structure is on the offlined node? If
-> > so then we cannot offline the node?
-> 
-> Right. If slabs' migration is possible, here would be good place for
-> doing it. But, it is not possible (at least now).
+Remove BIO_LIST and DEFINE_BIO_LIST macros that gain us nothing
+since contents are initialised to NULL.
 
-I think you can avoid this check. The kmem_cache structures are allocated 
-from the kmalloc array. The check if the kmalloc slabs are empty will fail 
-if kmem_cache structures still exist on the node.
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
-> > > +			 * because the node is used by slub yet.
-> > > +			 */
-> > 
-> > It may be clearer to say:
-> > 
-> > "If nr_slabs > 0 then slabs still exist on the node that is going down.
-> > We were unable to free them so we must fail."
-> 
-> Again. If nr_slabs > 0, offline_pages must be fail due to slabs
-> remaining on the node before. So, this callback isn't called.
+---
+ drivers/md/dm-bio-list.h |    5 -----
+ drivers/md/dm-delay.c    |    2 +-
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-Ok then we can remove these checks?
-
-> > > +static int slab_mem_going_online_callback(void *arg)
-> > > +{
-> > > +	struct kmem_cache_node *n;
-> > > +	struct kmem_cache *s;
-> > > +	struct memory_notify *marg = arg;
-> > > +	int nid = marg->status_change_nid;
-> > > +
-> > > +	/* If the node already has memory, then nothing is necessary. */
-> > > +	if (nid < 0)
-> > > +		return 0;
-> > 
-> > The node must have memory????  Or we have already brought up the code?
-> 
-> kmem_cache_node is created at boot time if the node has memory.
-> (Or, it is created by this callback on first added memory on the node).
-> 
-> When nid = - 1, kmem_cache_node is created before this node due to
-> node has memory. 
-
-So the function can be called for a node that is already online?
-
-> > > +	 * New memory will be onlined on the node which has no memory so far.
-> > > +	 * New kmem_cache_node is necssary for it.
-> > 
-> > "We are bringing a node online. No memory is available yet. We must 
-> > allocate a kmem_cache_node structure in order to bring the node online." ?
-> 
-> Your mention might be ok.
-> But. I would like to prefer to define status of node hotplug for
-> exactitude like followings
-> 
-> 
-> A)Node online -- pgdat is created and can be accessed for this node.
->                  but there are no gurantee that cpu or memory is onlined.
->                  This status is very close from memory-less node.
->                  But this might be halfway status for node hotplug.
->                  Node online bit is set. But N_HIGH_MEMORY
->                  (or N_NORMAL_MEMORY) might be not set.
-
-Ahh.. Okay.
-
-> B)Node has memory--
->                  one or more sections memory is onlined on the node.
->                  N_HIGH_MEMORY (or N_NORMAL_MEMORY) is set.
-> 
-> If first memory is onlined on the node, the node status changes
-> from A) to B).
-> 
-> I feel this is very useful to manage "halfway status" of node
-> hotplug. (So, memory-less node patch is very helpful for me.)
-> 
-> So, I would like to avoid using the word "node online" at here.
-> But, if above definition is messy for others, I'll change it.
-
-Ok can we talk about this as
-
-	node online
-
-and
-
-	node memory available?
-
+Index: linux-2.6.23/drivers/md/dm-bio-list.h
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-bio-list.h	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-bio-list.h	2007-10-12 13:18:13.000000000 +0100
+@@ -21,11 +21,6 @@ static inline int bio_list_empty(const s
+ 	return bl->head == NULL;
+ }
+ 
+-#define BIO_LIST_INIT { .head = NULL, .tail = NULL }
+-
+-#define BIO_LIST(bl) \
+-	struct bio_list bl = BIO_LIST_INIT
+-
+ static inline void bio_list_init(struct bio_list *bl)
+ {
+ 	bl->head = bl->tail = NULL;
+Index: linux-2.6.23/drivers/md/dm-delay.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-delay.c	2007-10-12 13:15:34.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-delay.c	2007-10-12 13:18:13.000000000 +0100
+@@ -83,7 +83,7 @@ static struct bio *flush_delayed_bios(st
+ 	struct dm_delay_info *delayed, *next;
+ 	unsigned long next_expires = 0;
+ 	int start_timer = 0;
+-	BIO_LIST(flush_bios);
++	struct bio_list flush_bios = { };
+ 
+ 	mutex_lock(&delayed_bios_lock);
+ 	list_for_each_entry_safe(delayed, next, &dc->delayed_bios, list) {
