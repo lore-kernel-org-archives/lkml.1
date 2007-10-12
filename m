@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXJLQTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932651AbXJLQUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbXJLQTl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760182AbXJLQHt
+	id S932651AbXJLQUI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXJLQHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:07:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43894 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 12:07:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43897 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758643AbXJLQHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:07:47 -0400
+	id S1757716AbXJLQHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:07:50 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 27/52] CRED: Give the create() inode op a credentials pointer
+Subject: [PATCH 28/52] CRED: Give the link() inode op a credentials pointer
 To: viro@ftp.linux.org.uk
 Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 12 Oct 2007 17:07:37 +0100
-Message-ID: <20071012160737.15119.32906.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 17:07:42 +0100
+Message-ID: <20071012160742.15119.31887.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,7 +29,7 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give the create() inode op a credentials pointer.
+Give the link() inode op a credentials pointer.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
@@ -37,166 +37,160 @@ Signed-off-by: David Howells <dhowells@redhat.com>
  fs/afs/dir.c       |    4 ++--
  fs/bad_inode.c     |    2 +-
  fs/ext3/namei.c    |    3 +--
+ fs/libfs.c         |    3 ++-
  fs/namei.c         |    3 ++-
- fs/nfs/dir.c       |    6 +++---
- fs/ramfs/inode.c   |    4 ++--
- fs/vfat/namei.c    |    2 +-
- include/linux/fs.h |    3 ++-
- mm/shmem.c         |    3 +--
- 9 files changed, 15 insertions(+), 15 deletions(-)
+ fs/nfs/dir.c       |    7 ++++---
+ include/linux/fs.h |    6 ++++--
+ mm/shmem.c         |    3 ++-
+ 8 files changed, 18 insertions(+), 13 deletions(-)
 
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index ccc09f1..e495269 100644
+index e495269..48f2759 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
-@@ -29,7 +29,7 @@ static void afs_d_release(struct dentry *dentry);
- static int afs_lookup_filldir(void *_cookie, const char *name, int nlen,
- 				  loff_t fpos, u64 ino, unsigned dtype);
- static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
--		      struct nameidata *nd);
-+		      struct nameidata *nd, struct cred *cred);
- static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
- 		     struct cred *cred);
+@@ -35,7 +35,7 @@ static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
  static int afs_rmdir(struct inode *dir, struct dentry *dentry);
-@@ -908,7 +908,7 @@ error:
-  * create a regular file on an AFS filesystem
+ static int afs_unlink(struct inode *dir, struct dentry *dentry);
+ static int afs_link(struct dentry *from, struct inode *dir,
+-		    struct dentry *dentry);
++		    struct dentry *dentry, struct cred *cred);
+ static int afs_symlink(struct inode *dir, struct dentry *dentry,
+ 		       const char *content);
+ static int afs_rename(struct inode *old_dir, struct dentry *old_dentry,
+@@ -979,7 +979,7 @@ error:
+  * create a hard link between files in an AFS filesystem
   */
- static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
--		      struct nameidata *nd)
-+		      struct nameidata *nd, struct cred *cred)
+ static int afs_link(struct dentry *from, struct inode *dir,
+-		    struct dentry *dentry)
++		    struct dentry *dentry, struct cred *cred)
  {
- 	struct afs_file_status status;
- 	struct afs_callback cb;
+ 	struct afs_vnode *dvnode, *vnode;
+ 	struct key *key;
 diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index 4b7e6b1..3895f7d 100644
+index 3895f7d..a13970d 100644
 --- a/fs/bad_inode.c
 +++ b/fs/bad_inode.c
-@@ -186,7 +186,7 @@ static const struct file_operations bad_file_ops =
- };
+@@ -198,7 +198,7 @@ static struct dentry *bad_inode_lookup(struct inode *dir,
+ }
  
- static int bad_inode_create (struct inode *dir, struct dentry *dentry,
--		int mode, struct nameidata *nd)
-+		int mode, struct nameidata *nd, struct cred *cred)
+ static int bad_inode_link (struct dentry *old_dentry, struct inode *dir,
+-		struct dentry *dentry)
++		struct dentry *dentry, struct cred *cred)
  {
  	return -EIO;
  }
 diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index f02cb17..c007ef2 100644
+index c007ef2..4c19acf 100644
 --- a/fs/ext3/namei.c
 +++ b/fs/ext3/namei.c
-@@ -1720,9 +1720,8 @@ static int ext3_add_nondir(handle_t *handle,
-  * with d_instantiate().
-  */
- static int ext3_create (struct inode * dir, struct dentry * dentry, int mode,
--		struct nameidata *nd)
-+		struct nameidata *nd, struct cred *cred)
+@@ -2254,9 +2254,8 @@ out_stop:
+ }
+ 
+ static int ext3_link (struct dentry * old_dentry,
+-		struct inode * dir, struct dentry *dentry)
++		struct inode * dir, struct dentry *dentry, struct cred *cred)
  {
 -	struct cred *cred = current->cred;
  	handle_t *handle;
- 	struct inode * inode;
+ 	struct inode *inode = old_dentry->d_inode;
  	int err, retries = 0;
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 5294de1..d82eaaa 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -250,7 +250,8 @@ Enomem:
+ 	return -ENOMEM;
+ }
+ 
+-int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
++int simple_link(struct dentry *old_dentry, struct inode *dir,
++		struct dentry *dentry, struct cred *cred)
+ {
+ 	struct inode *inode = old_dentry->d_inode;
+ 
 diff --git a/fs/namei.c b/fs/namei.c
-index ca2ccb1..ef6041a 100644
+index ef6041a..51e0322 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1545,6 +1545,7 @@ void unlock_rename(struct dentry *p1, struct dentry *p2)
- int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
- 		struct nameidata *nd)
+@@ -2300,6 +2300,7 @@ asmlinkage long sys_symlink(const char __user *oldname, const char __user *newna
+ 
+ int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
  {
 +	struct cred *cred = current->cred;
- 	int error = may_create(dir, dentry, nd);
+ 	struct inode *inode = old_dentry->d_inode;
+ 	int error;
  
- 	if (error)
-@@ -1558,7 +1559,7 @@ int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
- 	if (error)
- 		return error;
+@@ -2329,7 +2330,7 @@ int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_de
+ 
+ 	mutex_lock(&old_dentry->d_inode->i_mutex);
  	DQUOT_INIT(dir);
--	error = dir->i_op->create(dir, dentry, mode, nd);
-+	error = dir->i_op->create(dir, dentry, mode, nd, cred);
+-	error = dir->i_op->link(old_dentry, dir, new_dentry);
++	error = dir->i_op->link(old_dentry, dir, new_dentry, cred);
+ 	mutex_unlock(&old_dentry->d_inode->i_mutex);
  	if (!error)
- 		fsnotify_create(dir, dentry);
- 	return error;
+ 		fsnotify_create(dir, new_dentry);
 diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 98fccc1..833351e 100644
+index 833351e..4e12cf7 100644
 --- a/fs/nfs/dir.c
 +++ b/fs/nfs/dir.c
-@@ -44,7 +44,8 @@
- static int nfs_opendir(struct inode *, struct file *);
- static int nfs_readdir(struct file *, void *, filldir_t);
- static struct dentry *nfs_lookup(struct inode *, struct dentry *, struct nameidata *);
--static int nfs_create(struct inode *, struct dentry *, int, struct nameidata *);
-+static int nfs_create(struct inode *, struct dentry *, int, struct nameidata *,
-+		      struct cred *);
- static int nfs_mkdir(struct inode *, struct dentry *, int, struct cred *);
+@@ -50,7 +50,8 @@ static int nfs_mkdir(struct inode *, struct dentry *, int, struct cred *);
  static int nfs_rmdir(struct inode *, struct dentry *);
  static int nfs_unlink(struct inode *, struct dentry *);
-@@ -1248,9 +1249,8 @@ int nfs_instantiate(struct dentry *dentry, struct nfs_fh *fhandle,
-  * reply path made it appear to have failed.
-  */
- static int nfs_create(struct inode *dir, struct dentry *dentry, int mode,
--		struct nameidata *nd)
-+		struct nameidata *nd, struct cred *acred)
+ static int nfs_symlink(struct inode *, struct dentry *, const char *);
+-static int nfs_link(struct dentry *, struct inode *, struct dentry *);
++static int nfs_link(struct dentry *, struct inode *, struct dentry *,
++		    struct cred *);
+ static int nfs_mknod(struct inode *, struct dentry *, int, dev_t,
+ 		     struct cred *);
+ static int nfs_rename(struct inode *, struct dentry *,
+@@ -1604,9 +1605,9 @@ static int nfs_symlink(struct inode *dir, struct dentry *dentry, const char *sym
+ }
+ 
+ static int 
+-nfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
++nfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry,
++	 struct cred *acred)
  {
 -	struct cred *acred = current->cred;
- 	struct iattr attr;
+ 	struct inode *inode = old_dentry->d_inode;
  	int error;
- 	int open_flags = 0;
-diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-index 0e3142b..53e917c 100644
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -120,9 +120,9 @@ static int ramfs_mkdir(struct inode * dir, struct dentry * dentry, int mode,
- 	return retval;
- }
  
--static int ramfs_create(struct inode *dir, struct dentry *dentry, int mode, struct nameidata *nd)
-+static int ramfs_create(struct inode *dir, struct dentry *dentry, int mode,
-+			struct nameidata *nd, struct cred *cred)
- {
--	struct cred *cred = current->cred;
- 	return ramfs_mknod(dir, dentry, mode | S_IFREG, 0, cred);
- }
- 
-diff --git a/fs/vfat/namei.c b/fs/vfat/namei.c
-index 132601d..8784b57 100644
---- a/fs/vfat/namei.c
-+++ b/fs/vfat/namei.c
-@@ -731,7 +731,7 @@ error:
- }
- 
- static int vfat_create(struct inode *dir, struct dentry *dentry, int mode,
--		       struct nameidata *nd)
-+		       struct nameidata *nd, struct cred *cred)
- {
- 	struct super_block *sb = dir->i_sb;
- 	struct inode *inode;
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 69d7fcc..cb09038 100644
+index cb09038..d8cecd4 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1135,7 +1135,8 @@ struct file_operations {
- };
- 
- struct inode_operations {
--	int (*create) (struct inode *,struct dentry *,int, struct nameidata *);
-+	int (*create) (struct inode *,struct dentry *,int, struct nameidata *,
-+		       struct cred *);
+@@ -1138,7 +1138,8 @@ struct inode_operations {
+ 	int (*create) (struct inode *,struct dentry *,int, struct nameidata *,
+ 		       struct cred *);
  	struct dentry * (*lookup) (struct inode *,struct dentry *, struct nameidata *);
- 	int (*link) (struct dentry *,struct inode *,struct dentry *);
+-	int (*link) (struct dentry *,struct inode *,struct dentry *);
++	int (*link) (struct dentry *,struct inode *,struct dentry *,
++		     struct cred *);
  	int (*unlink) (struct inode *,struct dentry *);
+ 	int (*symlink) (struct inode *,struct dentry *,const char *);
+ 	int (*mkdir) (struct inode *,struct dentry *,int, struct cred *);
+@@ -1794,7 +1795,8 @@ extern loff_t dcache_dir_lseek(struct file *, loff_t, int);
+ extern int dcache_readdir(struct file *, void *, filldir_t);
+ extern int simple_getattr(struct vfsmount *, struct dentry *, struct kstat *);
+ extern int simple_statfs(struct dentry *, struct kstatfs *);
+-extern int simple_link(struct dentry *, struct inode *, struct dentry *);
++extern int simple_link(struct dentry *, struct inode *, struct dentry *,
++		       struct cred *);
+ extern int simple_unlink(struct inode *, struct dentry *);
+ extern int simple_rmdir(struct inode *, struct dentry *);
+ extern int simple_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
 diff --git a/mm/shmem.c b/mm/shmem.c
-index e69691a..3fff09b 100644
+index 3fff09b..7358d14 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -1752,9 +1752,8 @@ static int shmem_mkdir(struct inode *dir, struct dentry *dentry, int mode,
- }
- 
- static int shmem_create(struct inode *dir, struct dentry *dentry, int mode,
--		struct nameidata *nd)
-+		struct nameidata *nd, struct cred *cred)
+@@ -1760,7 +1760,8 @@ static int shmem_create(struct inode *dir, struct dentry *dentry, int mode,
+ /*
+  * Link a file..
+  */
+-static int shmem_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
++static int shmem_link(struct dentry *old_dentry, struct inode *dir,
++		      struct dentry *dentry, struct cred *cred)
  {
--	struct cred *cred = current->cred;
- 	return shmem_mknod(dir, dentry, mode | S_IFREG, 0, cred);
- }
- 
+ 	struct inode *inode = old_dentry->d_inode;
+ 	struct shmem_sb_info *sbinfo = SHMEM_SB(inode->i_sb);
 
