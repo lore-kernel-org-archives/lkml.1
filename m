@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbXJLXKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbXJLXLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934109AbXJLXKQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 19:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933348AbXJLW3t
+	id S1760624AbXJLXLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934018AbXJLWoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:29:49 -0400
-Received: from ns1.suse.de ([195.135.220.2]:54271 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933345AbXJLW3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:29:47 -0400
-Date: Fri, 12 Oct 2007 15:28:06 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [GIT PATCH] USB patches for 2.6.23
-Message-ID: <20071012222806.GA5365@suse.de>
-References: <20071012221245.GA4559@kroah.com> <20071012.152050.71091255.davem@davemloft.net>
+	Fri, 12 Oct 2007 18:44:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:32790 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932519AbXJLWoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:44:12 -0400
+Date: Fri, 12 Oct 2007 15:43:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: arch merge fallout.
+In-Reply-To: <20071012221253.GB4290@redhat.com>
+Message-ID: <alpine.LFD.0.999.0710121542030.6887@woody.linux-foundation.org>
+References: <20071012035743.GA12897@redhat.com>
+ <alpine.LFD.0.999.0710112103240.6887@woody.linux-foundation.org>
+ <20071012182504.GA9222@redhat.com> <alpine.LFD.0.999.0710121457230.6887@woody.linux-foundation.org>
+ <20071012221253.GB4290@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071012.152050.71091255.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 03:20:50PM -0700, David Miller wrote:
-> From: Greg KH <gregkh@suse.de>
-> Date: Fri, 12 Oct 2007 15:12:45 -0700
+
+
+On Fri, 12 Oct 2007, Dave Jones wrote:
 > 
-> > Alan Stern (44):
->  ...
-> >       USB: mutual exclusion for EHCI init and port resets
-> 
-> Greg, if you haven't already, please consider queueing
-> this one up for -stable too.
+> pull req below.  If it turns out to be more trouble than its worth,
 
-Ah, good idea, I'll go do that.
+It merged totally automatically, no trouble what-so-ever:
 
-thanks,
+	Renamed arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c => arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+	Auto-merged arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+	Renamed arch/i386/kernel/cpu/cpufreq/longhaul.c => arch/x86/kernel/cpu/cpufreq/longhaul.c
+	Auto-merged arch/x86/kernel/cpu/cpufreq/longhaul.c
+	Auto-merged arch/powerpc/platforms/cell/cbe_cpufreq.c
+	Merge made by recursive.
 
-greg k-h
+I think it was just unlucky that the particular version of git you have 
+probably hit exactly in the window of "limited rename detection" *and* 
+lacking the config switch to turn off the limiter.
+
+		Linus
