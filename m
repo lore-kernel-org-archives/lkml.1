@@ -1,42 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXJLC0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXJLC2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbXJLC0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 22:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbXJLC0g
+	id S1755528AbXJLC2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 22:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbXJLC2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 22:26:36 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:39767 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbXJLC0f (ORCPT
+	Thu, 11 Oct 2007 22:28:08 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54907 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbXJLC2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 22:26:35 -0400
-Date: Thu, 11 Oct 2007 22:26:33 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] __do_softirq() loop cleanup
-Message-ID: <20071012022633.GA10949@goodmis.org>
-References: <20071010121619.GA32677@saeurebad.de>
+	Thu, 11 Oct 2007 22:28:06 -0400
+Date: Fri, 12 Oct 2007 11:27:42 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [Patch 001/002] extract kmem_cache_shrink
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20071012112236.B99B.Y-GOTO@jp.fujitsu.com>
+References: <20071012111008.B995.Y-GOTO@jp.fujitsu.com> <20071012112236.B99B.Y-GOTO@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071012112648.B99F.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071010121619.GA32677@saeurebad.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 02:16:19PM +0200, Johannes Weiner wrote:
-> Hi,
-> 
-> This changes __do_softirq() to use a C looping construct instead of
-> simulating one by means of goto.
-> 
-> Signed-off-by: Johannes Weiner <hannes-kernel@saeurebad.de>
-> 
+Make kmem_cache_shrink_node() for callback routine of memory hotplug
+notifier. This is just extract a part of kmem_cache_shrink().
 
-I've read over the logic three times and it seems to keep with the
-original design.  So unless I missed something ...
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ mm/slub.c |  111 ++++++++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 61 insertions(+), 50 deletions(-)
 
--- Steve
+Index: current/mm/slub.c
+===================================================================
+--- current.orig/mm/slub.c	2007-10-11 20:30:45.000000000 +0900
++++ current/mm/slub.c	2007-10-11 21:58:47.000000000 +0900
+@@ -2626,6 +2626,56 @@ void kfree(const void *x)
+ }
+ EXPORT_SYMBOL(kfree);
+ 
++static inline void __kmem_cache_shrink_node(struct kmem_cache *s, int node,
++					    struct list_head *slabs_by_inuse)
++{
++	struct kmem_cache_node *n;
++	int i;
++	struct page *page;
++	struct page *t;
++	unsigned long flags;
++
++	n = get_node(s, node);
++
++	if (!n->nr_partial)
++		return;
++
++	for (i = 0; i < s->objects; i++)
++		INIT_LIST_HEAD(slabs_by_inuse + i);
++
++	spin_lock_irqsave(&n->list_lock, flags);
++
++	/*
++	 * Build lists indexed by the items in use in each slab.
++	 *
++	 * Note that concurrent frees may occur while we hold the
++	 * list_lock. page->inuse here is the upper limit.
++	 */
++	list_for_each_entry_safe(page, t, &n->partial, lru) {
++		if (!page->inuse && slab_trylock(page)) {
++			/*
++			 * Must hold slab lock here because slab_free
++			 * may have freed the last object and be
++			 * waiting to release the slab.
++			 */
++			list_del(&page->lru);
++			n->nr_partial--;
++			slab_unlock(page);
++			discard_slab(s, page);
++		} else
++			list_move(&page->lru, slabs_by_inuse + page->inuse);
++	}
++
++	/*
++	 * Rebuild the partial list with the slabs filled up most
++	 * first and the least used slabs at the end.
++	 */
++	for (i = s->objects - 1; i >= 0; i--)
++		list_splice(slabs_by_inuse + i, n->partial.prev);
++
++	spin_unlock_irqrestore(&n->list_lock, flags);
++}
++
+ /*
+  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+  * the remaining slabs by the number of items in use. The slabs with the
+@@ -2636,68 +2686,29 @@ EXPORT_SYMBOL(kfree);
+  * being allocated from last increasing the chance that the last objects
+  * are freed in them.
+  */
+-int kmem_cache_shrink(struct kmem_cache *s)
++int kmem_cache_shrink_node(struct kmem_cache *s, int node)
+ {
+-	int node;
+-	int i;
+-	struct kmem_cache_node *n;
+-	struct page *page;
+-	struct page *t;
+ 	struct list_head *slabs_by_inuse =
+ 		kmalloc(sizeof(struct list_head) * s->objects, GFP_KERNEL);
+-	unsigned long flags;
+ 
+ 	if (!slabs_by_inuse)
+ 		return -ENOMEM;
+ 
+ 	flush_all(s);
+-	for_each_node_state(node, N_NORMAL_MEMORY) {
+-		n = get_node(s, node);
+-
+-		if (!n->nr_partial)
+-			continue;
+-
+-		for (i = 0; i < s->objects; i++)
+-			INIT_LIST_HEAD(slabs_by_inuse + i);
+-
+-		spin_lock_irqsave(&n->list_lock, flags);
+-
+-		/*
+-		 * Build lists indexed by the items in use in each slab.
+-		 *
+-		 * Note that concurrent frees may occur while we hold the
+-		 * list_lock. page->inuse here is the upper limit.
+-		 */
+-		list_for_each_entry_safe(page, t, &n->partial, lru) {
+-			if (!page->inuse && slab_trylock(page)) {
+-				/*
+-				 * Must hold slab lock here because slab_free
+-				 * may have freed the last object and be
+-				 * waiting to release the slab.
+-				 */
+-				list_del(&page->lru);
+-				n->nr_partial--;
+-				slab_unlock(page);
+-				discard_slab(s, page);
+-			} else {
+-				list_move(&page->lru,
+-				slabs_by_inuse + page->inuse);
+-			}
+-		}
+-
+-		/*
+-		 * Rebuild the partial list with the slabs filled up most
+-		 * first and the least used slabs at the end.
+-		 */
+-		for (i = s->objects - 1; i >= 0; i--)
+-			list_splice(slabs_by_inuse + i, n->partial.prev);
+-
+-		spin_unlock_irqrestore(&n->list_lock, flags);
+-	}
++	if (node >= 0)
++		__kmem_cache_shrink_node(s, node, slabs_by_inuse);
++	else
++		for_each_node_state(node, N_NORMAL_MEMORY)
++			__kmem_cache_shrink_node(s, node, slabs_by_inuse);
+ 
+ 	kfree(slabs_by_inuse);
+ 	return 0;
+ }
++
++int kmem_cache_shrink(struct kmem_cache *s)
++{
++	return kmem_cache_shrink_node(s, -1);
++}
+ EXPORT_SYMBOL(kmem_cache_shrink);
+ 
+ /********************************************************************
+
+-- 
+Yasunori Goto 
+
 
