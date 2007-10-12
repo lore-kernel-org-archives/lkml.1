@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933186AbXJLW1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXJLW2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933186AbXJLW1k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbXJLWS4
+	id S933241AbXJLW2L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbXJLWTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:18:56 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49655 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:19:00 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53170 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760793AbXJLWSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:18:54 -0400
+	id S932367AbXJLWS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:18:58 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
+Cc: Dave Young <hidave.darkstar@gmail.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/75] debugfs: helper for decimal challenged
-Date: Fri, 12 Oct 2007 15:16:21 -0700
-Message-Id: <11922275181138-git-send-email-gregkh@suse.de>
+Subject: [PATCH 18/75] sysfs/file.c - use mutex instead of semaphore
+Date: Fri, 12 Oct 2007 15:16:22 -0700
+Message-Id: <11922275221643-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275121763-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922275181138-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -35,112 +35,86 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922275031518-git-send-email-gregkh@suse.de>
  <11922275074080-git-send-email-gregkh@suse.de>
  <11922275121763-git-send-email-gregkh@suse.de>
+ <11922275181138-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
+From: Dave Young <hidave.darkstar@gmail.com>
 
-Allows debugfs helper functions to have a hex output, rather than just decimal
+Use mutex instead of semaphore in sysfs/file.c : sys_buffer.
 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/debugfs/file.c       |   36 ++++++++++++++++++++++++++++++++++++
- include/linux/debugfs.h |   27 +++++++++++++++++++++++++++
- 2 files changed, 63 insertions(+), 0 deletions(-)
+ fs/sysfs/file.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 2e124e0..a9b99c0 100644
---- a/fs/debugfs/file.c
-+++ b/fs/debugfs/file.c
-@@ -221,6 +221,42 @@ struct dentry *debugfs_create_u64(const char *name, mode_t mode,
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u64);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 3e1cc06..b21d11b 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -8,8 +8,8 @@
+ #include <linux/namei.h>
+ #include <linux/poll.h>
+ #include <linux/list.h>
++#include <linux/mutex.h>
+ #include <asm/uaccess.h>
+-#include <asm/semaphore.h>
  
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n");
-+
-+/**
-+ * debugfs_create_x8 - create a debugfs file that is used to read and write an unsigned 8-bit value
-+ * debugfs_create_x16 - create a debugfs file that is used to read and write an unsigned 16-bit value
-+ * debugfs_create_x32 - create a debugfs file that is used to read and write an unsigned 32-bit value
-+ *
-+ * These functions are exactly the same as the above functions, (but use a hex
-+ * output for the decimal challenged) for details look at the above unsigned
-+ * decimal functions.
-+ */
-+struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+				 struct dentry *parent, u8 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x8);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x8);
-+
-+struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+				 struct dentry *parent, u16 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x16);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x16);
-+
-+struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+				 struct dentry *parent, u32 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x32);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x32);
-+
- static ssize_t read_file_bool(struct file *file, char __user *user_buf,
- 			      size_t count, loff_t *ppos)
- {
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index 104e51e..f592d6d 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -49,6 +49,12 @@ struct dentry *debugfs_create_u32(const char *name, mode_t mode,
- 				  struct dentry *parent, u32 *value);
- struct dentry *debugfs_create_u64(const char *name, mode_t mode,
- 				  struct dentry *parent, u64 *value);
-+struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+				 struct dentry *parent, u8 *value);
-+struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+				  struct dentry *parent, u16 *value);
-+struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+				  struct dentry *parent, u32 *value);
- struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- 				  struct dentry *parent, u32 *value);
+ #include "sysfs.h"
  
-@@ -122,6 +128,27 @@ static inline struct dentry *debugfs_create_u64(const char *name, mode_t mode,
- 	return ERR_PTR(-ENODEV);
+@@ -55,7 +55,7 @@ struct sysfs_buffer {
+ 	loff_t			pos;
+ 	char			* page;
+ 	struct sysfs_ops	* ops;
+-	struct semaphore	sem;
++	struct mutex		mutex;
+ 	int			needs_read_fill;
+ 	int			event;
+ };
+@@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	struct sysfs_buffer * buffer = file->private_data;
+ 	ssize_t retval = 0;
+ 
+-	down(&buffer->sem);
++	mutex_lock(&buffer->mutex);
+ 	if (buffer->needs_read_fill) {
+ 		retval = fill_read_buffer(file->f_path.dentry,buffer);
+ 		if (retval)
+@@ -139,7 +139,7 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	retval = simple_read_from_buffer(buf, count, ppos, buffer->page,
+ 					 buffer->count);
+ out:
+-	up(&buffer->sem);
++	mutex_unlock(&buffer->mutex);
+ 	return retval;
  }
  
-+static inline struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       u8 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
-+static inline struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+						struct dentry *parent,
-+						u16 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
-+static inline struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+						struct dentry *parent,
-+						u32 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- 						 struct dentry *parent,
- 						 u32 *value)
+@@ -228,13 +228,13 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
+ 	struct sysfs_buffer * buffer = file->private_data;
+ 	ssize_t len;
+ 
+-	down(&buffer->sem);
++	mutex_lock(&buffer->mutex);
+ 	len = fill_write_buffer(buffer, buf, count);
+ 	if (len > 0)
+ 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
+ 	if (len > 0)
+ 		*ppos += len;
+-	up(&buffer->sem);
++	mutex_unlock(&buffer->mutex);
+ 	return len;
+ }
+ 
+@@ -294,7 +294,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	if (!buffer)
+ 		goto err_out;
+ 
+-	init_MUTEX(&buffer->sem);
++	mutex_init(&buffer->mutex);
+ 	buffer->needs_read_fill = 1;
+ 	buffer->ops = ops;
+ 	file->private_data = buffer;
 -- 
 1.5.3.4
 
