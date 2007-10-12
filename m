@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbXJLJPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXJLJP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932415AbXJLJPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbXJLJIf
+	id S932693AbXJLJP7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbXJLJIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:08:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41734 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 05:08:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41736 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932386AbXJLJI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:08:29 -0400
+	id S1758038AbXJLJIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:08:35 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 15/31] IGET: Stop FAT from using iget() and read_inode() [try
-	#4]
+Subject: [PATCH 16/31] IGET: Stop FreeVXFS from using iget() and read_inode()
+	[try #4]
 To: torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Fri, 12 Oct 2007 10:08:25 +0100
-Message-ID: <20071012090825.3442.8883.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 10:08:30 +0100
+Message-ID: <20071012090830.3442.63418.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
 References: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,37 +30,188 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the FAT filesystem from using iget() and read_inode().  Replace
-the call to iget() with a call to ilookup().
+Stop the FreeVXFS filesystem from using iget() and read_inode().  Replace
+vxfs_read_inode() with vxfs_iget(), and call that instead of iget().
+vxfs_iget() then uses iget_locked() directly and returns a proper error code
+instead of an inode in the event of an error.
+
+vxfs_fill_super() returns any error incurred when getting the root inode
+instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/fat/inode.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ fs/freevxfs/vxfs_extern.h |    2 +-
+ fs/freevxfs/vxfs_inode.c  |   45 +++++++++++++++++++++++++++++----------------
+ fs/freevxfs/vxfs_lookup.c |    6 +++---
+ fs/freevxfs/vxfs_super.c  |   10 +++++++---
+ 4 files changed, 40 insertions(+), 23 deletions(-)
 
-diff --git a/fs/fat/inode.c b/fs/fat/inode.c
-index 960ed3d..9ae2e9f 100644
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -629,8 +629,6 @@ static const struct super_operations fat_sops = {
- 	.clear_inode	= fat_clear_inode,
- 	.remount_fs	= fat_remount,
+diff --git a/fs/freevxfs/vxfs_extern.h b/fs/freevxfs/vxfs_extern.h
+index 91ccee8..f307694 100644
+--- a/fs/freevxfs/vxfs_extern.h
++++ b/fs/freevxfs/vxfs_extern.h
+@@ -58,7 +58,7 @@ extern struct inode *		vxfs_get_fake_inode(struct super_block *,
+ extern void			vxfs_put_fake_inode(struct inode *);
+ extern struct vxfs_inode_info *	vxfs_blkiget(struct super_block *, u_long, ino_t);
+ extern struct vxfs_inode_info *	vxfs_stiget(struct super_block *, ino_t);
+-extern void			vxfs_read_inode(struct inode *);
++extern struct inode *		vxfs_iget(struct super_block *, unsigned long);
+ extern void			vxfs_clear_inode(struct inode *);
  
--	.read_inode	= make_bad_inode,
+ /* vxfs_lookup.c */
+diff --git a/fs/freevxfs/vxfs_inode.c b/fs/freevxfs/vxfs_inode.c
+index d1f7c5b..95a0af9 100644
+--- a/fs/freevxfs/vxfs_inode.c
++++ b/fs/freevxfs/vxfs_inode.c
+@@ -129,7 +129,7 @@ fail:
+  * Description:
+  *  Search the for inode number @ino in the filesystem
+  *  described by @sbp.  Use the specified inode table (@ilistp).
+- *  Returns the matching VxFS inode on success, else a NULL pointer.
++ *  Returns the matching VxFS inode on success, else an error code.
+  */
+ static struct vxfs_inode_info *
+ __vxfs_iget(ino_t ino, struct inode *ilistp)
+@@ -157,12 +157,12 @@ __vxfs_iget(ino_t ino, struct inode *ilistp)
+ 	}
+ 
+ 	printk(KERN_WARNING "vxfs: error on page %p\n", pp);
+-	return NULL;
++	return ERR_CAST(pp);
+ 
+ fail:
+ 	printk(KERN_WARNING "vxfs: unable to read inode %ld\n", (unsigned long)ino);
+ 	vxfs_put_page(pp);
+-	return NULL;
++	return ERR_PTR(-ENOMEM);
+ }
+ 
+ /**
+@@ -178,7 +178,10 @@ fail:
+ struct vxfs_inode_info *
+ vxfs_stiget(struct super_block *sbp, ino_t ino)
+ {
+-        return __vxfs_iget(ino, VXFS_SBI(sbp)->vsi_stilist);
++	struct vxfs_inode_info *vip;
++
++        vip = __vxfs_iget(ino, VXFS_SBI(sbp)->vsi_stilist);
++	return IS_ERR(vip) ? NULL : vip;
+ }
+ 
+ /**
+@@ -282,23 +285,32 @@ vxfs_put_fake_inode(struct inode *ip)
+ }
+ 
+ /**
+- * vxfs_read_inode - fill in inode information
+- * @ip:		inode pointer to fill
++ * vxfs_iget - get an inode
++ * @sbp:	the superblock to get the inode for
++ * @ino:	the number of the inode to get
+  *
+  * Description:
+- *  vxfs_read_inode reads the disk inode for @ip and fills
+- *  in all relevant fields in @ip.
++ *  vxfs_read_inode creates an inode, reads the disk inode for @ino and fills
++ *  in all relevant fields in the new inode.
+  */
+-void
+-vxfs_read_inode(struct inode *ip)
++struct inode *
++vxfs_iget(struct super_block *sbp, ino_t ino)
+ {
+-	struct super_block		*sbp = ip->i_sb;
+ 	struct vxfs_inode_info		*vip;
+ 	const struct address_space_operations	*aops;
+-	ino_t				ino = ip->i_ino;
 -
- 	.show_options	= fat_show_options,
- };
+-	if (!(vip = __vxfs_iget(ino, VXFS_SBI(sbp)->vsi_ilist)))
+-		return;
++	struct inode *ip;
++
++	ip = iget_locked(sbp, ino);
++	if (!ip)
++		return ERR_PTR(-ENOMEM);
++	if (!(ip->i_state & I_NEW))
++		return ip;
++
++	vip = __vxfs_iget(ino, VXFS_SBI(sbp)->vsi_ilist);
++	if (IS_ERR(vip)) {
++		iget_failed(ip);
++		return ERR_CAST(vip);
++	}
  
-@@ -667,8 +665,8 @@ static struct dentry *fat_get_dentry(struct super_block *sb, void *inump)
- 	struct dentry *result;
- 	__u32 *fh = inump;
+ 	vxfs_iinit(ip, vip);
  
--	inode = iget(sb, fh[0]);
--	if (!inode || is_bad_inode(inode) || inode->i_generation != fh[1]) {
-+	inode = ilookup(sb, fh[0]);
-+	if (!inode || inode->i_generation != fh[1]) {
- 		if (inode)
- 			iput(inode);
- 		inode = NULL;
+@@ -323,7 +335,8 @@ vxfs_read_inode(struct inode *ip)
+ 	} else
+ 		init_special_inode(ip, ip->i_mode, old_decode_dev(vip->vii_rdev));
+ 
+-	return;
++	unlock_new_inode(ip);
++	return ip;
+ }
+ 
+ /**
+diff --git a/fs/freevxfs/vxfs_lookup.c b/fs/freevxfs/vxfs_lookup.c
+index bf86e54..aee049c 100644
+--- a/fs/freevxfs/vxfs_lookup.c
++++ b/fs/freevxfs/vxfs_lookup.c
+@@ -213,10 +213,10 @@ vxfs_lookup(struct inode *dip, struct dentry *dp, struct nameidata *nd)
+ 	lock_kernel();
+ 	ino = vxfs_inode_by_name(dip, dp);
+ 	if (ino) {
+-		ip = iget(dip->i_sb, ino);
+-		if (!ip) {
++		ip = vxfs_iget(dip->i_sb, ino);
++		if (IS_ERR(ip)) {
+ 			unlock_kernel();
+-			return ERR_PTR(-EACCES);
++			return ERR_CAST(ip);
+ 		}
+ 	}
+ 	unlock_kernel();
+diff --git a/fs/freevxfs/vxfs_super.c b/fs/freevxfs/vxfs_super.c
+index 4f95572..1dacda8 100644
+--- a/fs/freevxfs/vxfs_super.c
++++ b/fs/freevxfs/vxfs_super.c
+@@ -60,7 +60,6 @@ static int		vxfs_statfs(struct dentry *, struct kstatfs *);
+ static int		vxfs_remount(struct super_block *, int *, char *);
+ 
+ static const struct super_operations vxfs_super_ops = {
+-	.read_inode =		vxfs_read_inode,
+ 	.clear_inode =		vxfs_clear_inode,
+ 	.put_super =		vxfs_put_super,
+ 	.statfs =		vxfs_statfs,
+@@ -153,6 +152,7 @@ static int vxfs_fill_super(struct super_block *sbp, void *dp, int silent)
+ 	struct buffer_head	*bp = NULL;
+ 	u_long			bsize;
+ 	struct inode *root;
++	int ret = -EINVAL;
+ 
+ 	sbp->s_flags |= MS_RDONLY;
+ 
+@@ -219,7 +219,11 @@ static int vxfs_fill_super(struct super_block *sbp, void *dp, int silent)
+ 	}
+ 
+ 	sbp->s_op = &vxfs_super_ops;
+-	root = iget(sbp, VXFS_ROOT_INO);
++	root = vxfs_iget(sbp, VXFS_ROOT_INO);
++	if (IS_ERR(root)) {
++		ret = PTR_ERR(root);
++		goto out;
++	}
+ 	sbp->s_root = d_alloc_root(root);
+ 	if (!sbp->s_root) {
+ 		iput(root);
+@@ -236,7 +240,7 @@ out_free_ilist:
+ out:
+ 	brelse(bp);
+ 	kfree(infp);
+-	return -EINVAL;
++	return ret;
+ }
+ 
+ /*
 
