@@ -1,100 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXJLVos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759028AbXJLVpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760575AbXJLVos (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760311AbXJLVof
+	id S1759028AbXJLVpK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760332AbXJLVoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:44:35 -0400
-Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42254 "EHLO
+	Fri, 12 Oct 2007 17:44:37 -0400
+Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42253 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759997AbXJLVoe (ORCPT
+	with ESMTP id S1760122AbXJLVof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:44:34 -0400
-X-Greylist: delayed 684 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Oct 2007 17:44:34 EDT
-Message-Id: <20071012211147.944148000@goop.org>
+	Fri, 12 Oct 2007 17:44:35 -0400
+Message-Id: <20071012211148.065483000@goop.org>
 References: <20071012211132.198718000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 12 Oct 2007 14:11:35 -0700
+Date: Fri, 12 Oct 2007 14:11:36 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>
-Subject: [PATCH 03/10] xen: yield to IPI target if necessary
-Content-Disposition: inline; filename=xen-ipi-yield.patch
+       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>,
+       Stable Kernel <stable@kernel.org>
+Subject: [PATCH 04/10] xen: add batch completion callbacks
+Content-Disposition: inline; filename=xen-multicall-callbacks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When sending a call-function IPI to a vcpu, yield if the vcpu isn't
-running.
+This adds a mechanism to register a callback function to be called once
+a batch of hypercalls has been issued.  This is typically used to unlock
+things which must remain locked until the hypercall has taken place.
+
+[ Stable folks: pre-req for 2.6.23 bugfix "xen: deal with stale cr3
+  values when unpinning pagetables" ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Stable Kernel <stable@kernel.org>
 
 ---
- arch/i386/xen/smp.c     |   14 ++++++++++----
- arch/i386/xen/time.c    |    6 ++++++
- arch/i386/xen/xen-ops.h |    2 ++
- 3 files changed, 18 insertions(+), 4 deletions(-)
+ arch/i386/xen/multicalls.c |   29 ++++++++++++++++++++++++++---
+ arch/i386/xen/multicalls.h |    3 +++
+ 2 files changed, 29 insertions(+), 3 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/smp.c
-+++ b/arch/i386/xen/smp.c
-@@ -360,7 +360,8 @@ int xen_smp_call_function_mask(cpumask_t
- 			       void *info, int wait)
- {
- 	struct call_data_struct data;
--	int cpus;
-+	int cpus, cpu;
-+	bool yield;
+--- a/arch/i386/xen/multicalls.c
++++ b/arch/i386/xen/multicalls.c
+@@ -32,7 +32,11 @@ struct mc_buffer {
+ struct mc_buffer {
+ 	struct multicall_entry entries[MC_BATCH];
+ 	u64 args[MC_ARGS];
+-	unsigned mcidx, argidx;
++	struct callback {
++		void (*fn)(void *);
++		void *data;
++	} callbacks[MC_BATCH];
++	unsigned mcidx, argidx, cbidx;
+ };
  
- 	/* Holding any lock stops cpus from going down. */
- 	spin_lock(&call_lock);
-@@ -389,9 +390,14 @@ int xen_smp_call_function_mask(cpumask_t
- 	/* Send a message to other CPUs and wait for them to respond */
- 	xen_send_IPI_mask(mask, XEN_CALL_FUNCTION_VECTOR);
+ static DEFINE_PER_CPU(struct mc_buffer, mc_buffer);
+@@ -43,6 +47,7 @@ void xen_mc_flush(void)
+ 	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
+ 	int ret = 0;
+ 	unsigned long flags;
++	int i;
  
--	/* Make sure other vcpus get a chance to run.
--	   XXX too severe?  Maybe we should check the other CPU's states? */
--	HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-+	/* Make sure other vcpus get a chance to run if they need to. */
-+	yield = false;
-+	for_each_cpu_mask(cpu, mask)
-+		if (xen_vcpu_stolen(cpu))
-+			yield = true;
+ 	BUG_ON(preemptible());
+ 
+@@ -51,8 +56,6 @@ void xen_mc_flush(void)
+ 	local_irq_save(flags);
+ 
+ 	if (b->mcidx) {
+-		int i;
+-
+ 		if (HYPERVISOR_multicall(b->entries, b->mcidx) != 0)
+ 			BUG();
+ 		for (i = 0; i < b->mcidx; i++)
+@@ -64,6 +67,13 @@ void xen_mc_flush(void)
+ 		BUG_ON(b->argidx != 0);
+ 
+ 	local_irq_restore(flags);
 +
-+	if (yield)
-+		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
- 
- 	/* Wait for response */
- 	while (atomic_read(&data.started) != cpus ||
-===================================================================
---- a/arch/i386/xen/time.c
-+++ b/arch/i386/xen/time.c
-@@ -103,6 +103,12 @@ static void get_runstate_snapshot(struct
- 		*res = *state;
- 		barrier();
- 	} while (get64(&state->state_entry_time) != state_time);
-+}
++	for(i = 0; i < b->cbidx; i++) {
++		struct callback *cb = &b->callbacks[i];
 +
-+/* return true when a vcpu could run but has no real cpu to run on */
-+bool xen_vcpu_stolen(int vcpu)
++		(*cb->fn)(cb->data);
++	}
++	b->cbidx = 0;
+ 
+ 	BUG_ON(ret);
+ }
+@@ -88,3 +98,16 @@ struct multicall_space __xen_mc_entry(si
+ 
+ 	return ret;
+ }
++
++void xen_mc_callback(void (*fn)(void *), void *data)
 +{
-+	return per_cpu(runstate, vcpu).state == RUNSTATE_runnable;
++	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
++	struct callback *cb;
++
++	if (b->cbidx == MC_BATCH)
++		xen_mc_flush();
++
++	cb = &b->callbacks[b->cbidx++];
++	cb->fn = fn;
++	cb->data = data;
++}
+===================================================================
+--- a/arch/i386/xen/multicalls.h
++++ b/arch/i386/xen/multicalls.h
+@@ -42,4 +42,7 @@ static inline void xen_mc_issue(unsigned
+ 	local_irq_restore(x86_read_percpu(xen_mc_irq_flags));
  }
  
- static void setup_runstate_info(int cpu)
-===================================================================
---- a/arch/i386/xen/xen-ops.h
-+++ b/arch/i386/xen/xen-ops.h
-@@ -27,6 +27,8 @@ int xen_set_wallclock(unsigned long time
- int xen_set_wallclock(unsigned long time);
- unsigned long long xen_sched_clock(void);
- 
-+bool xen_vcpu_stolen(int vcpu);
++/* Set up a callback to be called when the current batch is flushed */
++void xen_mc_callback(void (*fn)(void *), void *data);
 +
- void xen_mark_init_mm_pinned(void);
- 
- DECLARE_PER_CPU(enum paravirt_lazy_mode, xen_lazy_mode);
+ #endif /* _XEN_MULTICALLS_H */
 
 -- 
 
