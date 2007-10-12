@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXJLRZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbXJLR0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbXJLRZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763065AbXJLRXZ
+	id S1763283AbXJLR0B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762868AbXJLRXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:23:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58602 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:23:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58610 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762866AbXJLRXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:23:22 -0400
-Date: Fri, 12 Oct 2007 18:22:08 +0100
+	id S1762106AbXJLRXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:23:31 -0400
+Date: Fri, 12 Oct 2007 18:23:23 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
        Dave Wysochanski <dwysocha@redhat.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
        Chandra Seetharaman <sekharan@us.ibm.com>
-Subject: [2.6.24 PATCH 21/25] dm mpath: add retry pg init
-Message-ID: <20071012172208.GG24157@agk.fab.redhat.com>
+Subject: [2.6.24 PATCH 23/25] dm mpath: hp retry if not ready
+Message-ID: <20071012172323.GI24157@agk.fab.redhat.com>
 Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
 	Dave Wysochanski <dwysocha@redhat.com>,
-	Mike Christie <michaelc@cs.wisc.edu>,
 	Chandra Seetharaman <sekharan@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,202 +31,138 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Dave Wysochanski <dwysocha@redhat.com>
 
-This patch allows a failed path group initialisation command to be retried.
-
-It adds a generic MP_RETRY flag and a "pg_init_retries" feature to
-device-mapper multipath which limits the number of retries.
-
-1. A hw handler sends a path initialization command to the storage and
-the command completes with an error code indicating the command
-should be retried.  
-
-2. The hardware handler calls dm_pg_init_complete() with MP_RETRY
-set in err_flags to ask the dm multipath core to retry.
-
-3. If the retry limit has not been exceeded, pg_init() is retried.
-Otherwise fail_path() is called.
-
-
-If you are using the userspace multipath-tools or device-mapper-multipath
-package, you can set pg_init_retries in the 'device' section of your
-/etc/multipath.conf file. For example:
-
-features                "2 pg_init_retries 7"
-
-The number of PG retries attempted is reported in the 'dmsetup status' output.
+This patch adds retries to the hp hardware handler, and utilizes the 
+MP_RETRY flag of dm-multipath.  For now in the hp handler, if we get a 
+pg_init completed with a check condition we just assume we can retry the
+pg_init command.  We make this assumption because of incomplete data on
+specific check condition code of the HP hardware, and because testing
+has shown the HP path initialization command to be idempotent.
+The number of times we retry is settable via the "pg_init_retries"
+multipath map feature.
 
 Signed-off-by: Dave Wysochanski <dwysocha@redhat.com>
-Acked-by: Mike Christie <michaelc@cs.wisc.edu>
 Acked-by: Chandra Seetharaman <sekharan@us.ibm.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
 ---
+ drivers/md/dm-mpath-hp-sw.c |   64 ++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 53 insertions(+), 11 deletions(-)
 
-[AGK TODO: Perform a fresh review of the state machine changes related to dm_pg_init_complete.]
-
- drivers/md/dm-hw-handler.h |    1 
- drivers/md/dm-mpath.c      |   81 +++++++++++++++++++++++++++++++++++++--------
- 2 files changed, 68 insertions(+), 14 deletions(-)
-
-Index: linux-2.6.23/drivers/md/dm-hw-handler.h
+Index: linux-2.6.23/drivers/md/dm-mpath-hp-sw.c
 ===================================================================
---- linux-2.6.23.orig/drivers/md/dm-hw-handler.h	2007-10-12 12:36:14.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-hw-handler.h	2007-10-12 15:03:28.000000000 +0100
-@@ -58,5 +58,6 @@ unsigned dm_scsi_err_handler(struct hw_h
- #define MP_FAIL_PATH 1
- #define MP_BYPASS_PG 2
- #define MP_ERROR_IO  4	/* Don't retry this I/O */
-+#define MP_RETRY 8
+--- linux-2.6.23.orig/drivers/md/dm-mpath-hp-sw.c	2007-10-12 15:03:29.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-mpath-hp-sw.c	2007-10-12 15:03:31.000000000 +0100
+@@ -18,19 +18,54 @@
+ #include <linux/types.h>
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
++#include <scsi/scsi_dbg.h>
  
- #endif
-Index: linux-2.6.23/drivers/md/dm-mpath.c
-===================================================================
---- linux-2.6.23.orig/drivers/md/dm-mpath.c	2007-10-12 13:14:40.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-mpath.c	2007-10-12 15:03:28.000000000 +0100
-@@ -75,6 +75,8 @@ struct multipath {
- 	unsigned queue_io;		/* Must we queue all I/O? */
- 	unsigned queue_if_no_path;	/* Queue I/O if last path fails? */
- 	unsigned saved_queue_if_no_path;/* Saved state during suspension */
-+	unsigned pg_init_retries;	/* Number of times to retry pg_init */
-+	unsigned pg_init_count;		/* Number of times pg_init called */
+ #include "dm.h"
+ #include "dm-hw-handler.h"
  
- 	struct work_struct process_queued_ios;
- 	struct bio_list queued_ios;
-@@ -225,6 +227,8 @@ static void __switch_pg(struct multipath
- 		m->pg_init_required = 0;
- 		m->queue_io = 0;
- 	}
-+
-+	m->pg_init_count = 0;
- }
+ #define DM_MSG_PREFIX "multipath hp-sw"
+ #define DM_HP_HWH_NAME "hp-sw"
+-#define DM_HP_HWH_VER "0.0.3"
++#define DM_HP_HWH_VER "1.0.0"
  
- static int __choose_path_in_pg(struct multipath *m, struct priority_group *pg)
-@@ -424,6 +428,7 @@ static void process_queued_ios(struct wo
- 		must_queue = 0;
- 
- 	if (m->pg_init_required && !m->pg_init_in_progress) {
-+		m->pg_init_count++;
- 		m->pg_init_required = 0;
- 		m->pg_init_in_progress = 1;
- 		init_required = 1;
-@@ -689,9 +694,11 @@ static int parse_features(struct arg_set
- 	int r;
- 	unsigned argc;
- 	struct dm_target *ti = m->ti;
-+	const char *param_name;
- 
- 	static struct param _params[] = {
--		{0, 1, "invalid number of feature args"},
-+		{0, 3, "invalid number of feature args"},
-+		{1, 50, "pg_init_retries must be between 1 and 50"},
- 	};
- 
- 	r = read_param(_params, shift(as), &argc, &ti->error);
-@@ -701,12 +708,28 @@ static int parse_features(struct arg_set
- 	if (!argc)
- 		return 0;
- 
--	if (!strnicmp(shift(as), MESG_STR("queue_if_no_path")))
--		return queue_if_no_path(m, 1, 0);
--	else {
-+	do {
-+		param_name = shift(as);
-+		argc--;
-+
-+		if (!strnicmp(param_name, MESG_STR("queue_if_no_path"))) {
-+			r = queue_if_no_path(m, 1, 0);
-+			continue;
-+		}
-+
-+		if (!strnicmp(param_name, MESG_STR("pg_init_retries")) &&
-+		    (argc >= 1)) {
-+			r = read_param(_params + 1, shift(as),
-+				       &m->pg_init_retries, &ti->error);
-+			argc--;
-+			continue;
-+		}
-+
- 		ti->error = "Unrecognised multipath feature request";
--		return -EINVAL;
--	}
-+		r = -EINVAL;
-+	} while (argc && !r);
-+
-+	return r;
- }
- 
- static int multipath_ctr(struct dm_target *ti, unsigned int argc,
-@@ -976,6 +999,26 @@ static int bypass_pg_num(struct multipat
- }
+ struct hp_sw_context {
+ 	unsigned char sense[SCSI_SENSE_BUFFERSIZE];
+ };
  
  /*
-+ * Should we retry pg_init immediately?
++ * hp_sw_error_is_retryable - Is an HP-specific check condition retryable?
++ * @req: path activation request
++ *
++ * Examine error codes of request and determine whether the error is retryable.
++ * Some error codes are already retried by scsi-ml (see
++ * scsi_decide_disposition), but some HP specific codes are not.
++ * The intent of this routine is to supply the logic for the HP specific
++ * check conditions.
++ *
++ * Returns:
++ *  1 - command completed with retryable error
++ *  0 - command completed with non-retryable error
++ *
++ * Possible optimizations
++ * 1. More hardware-specific error codes
 + */
-+static int pg_init_limit_reached(struct multipath *m, struct pgpath *pgpath)
++static int hp_sw_error_is_retryable(struct request *req)
 +{
-+	unsigned long flags;
-+	int limit_reached = 0;
++	/*
++	 * NOT_READY is known to be retryable
++	 * For now we just dump out the sense data and call it retryable
++	 */
++	if (status_byte(req->errors) == CHECK_CONDITION)
++		__scsi_print_sense(DM_HP_HWH_NAME, req->sense, req->sense_len);
 +
-+	spin_lock_irqsave(&m->lock, flags);
-+
-+	if (m->pg_init_count <= m->pg_init_retries)
-+		m->pg_init_required = 1;
-+	else
-+		limit_reached = 1;
-+
-+	spin_unlock_irqrestore(&m->lock, flags);
-+
-+	return limit_reached;
++	/*
++	 * At this point we don't have complete information about all the error
++	 * codes from this hardware, so we are just conservative and retry
++	 * when in doubt.
++	 */
++	return 1;
 +}
 +
 +/*
-  * pg_init must call this when it has completed its initialisation
+  * hp_sw_end_io - Completion handler for HP path activation.
+  * @req: path activation request
+  * @error: scsi-ml error
+@@ -40,23 +75,30 @@ struct hp_sw_context {
+  *
+  * Context: scsi-ml softirq
+  *
+- * Possible optimizations
+- * 1. Actually check sense data for retryable error (e.g. NOT_READY)
   */
- void dm_pg_init_complete(struct dm_path *path, unsigned err_flags)
-@@ -985,8 +1028,14 @@ void dm_pg_init_complete(struct dm_path 
- 	struct multipath *m = pg->m;
- 	unsigned long flags;
+ static void hp_sw_end_io(struct request *req, int error)
+ {
+ 	struct dm_path *path = req->end_io_data;
+ 	unsigned err_flags = 0;
  
--	/* We insist on failing the path if the PG is already bypassed. */
--	if (err_flags && pg->bypassed)
-+	/*
-+	 * If requested, retry pg_init until maximum number of retries exceeded.
-+	 * If retry not requested and PG already bypassed, always fail the path.
-+	 */
-+	if (err_flags & MP_RETRY) {
-+		if (pg_init_limit_reached(m, pgpath))
-+			err_flags |= MP_FAIL_PATH;
-+	} else if (err_flags && pg->bypassed)
- 		err_flags |= MP_FAIL_PATH;
- 
- 	if (err_flags & MP_FAIL_PATH)
-@@ -996,7 +1045,7 @@ void dm_pg_init_complete(struct dm_path 
- 		bypass_pg(m, pg, 1);
- 
- 	spin_lock_irqsave(&m->lock, flags);
--	if (err_flags) {
-+	if (err_flags & ~MP_RETRY) {
- 		m->current_pgpath = NULL;
- 		m->current_pg = NULL;
- 	} else if (!m->pg_init_required)
-@@ -1148,11 +1197,15 @@ static int multipath_status(struct dm_ta
- 
- 	/* Features */
- 	if (type == STATUSTYPE_INFO)
--		DMEMIT("1 %u ", m->queue_size);
--	else if (m->queue_if_no_path)
--		DMEMIT("1 queue_if_no_path ");
--	else
--		DMEMIT("0 ");
-+		DMEMIT("2 %u %u ", m->queue_size, m->pg_init_count);
-+	else {
-+		DMEMIT("%u ", m->queue_if_no_path +
-+			      (m->pg_init_retries > 0) * 2);
-+		if (m->queue_if_no_path)
-+			DMEMIT("queue_if_no_path ");
-+		if (m->pg_init_retries)
-+			DMEMIT("pg_init_retries %u ", m->pg_init_retries);
+-	if (!error)
++	if (!error) {
+ 		DMDEBUG("%s path activation command - success",
+ 			path->dev->name);
+-	else {
+-		DMWARN("%s path activation command - error=0x%x",
+-		       path->dev->name, error);
+-		err_flags = MP_FAIL_PATH;
++		goto out;
 +	}
++
++	if (hp_sw_error_is_retryable(req)) {
++		DMDEBUG("%s path activation command - retry",
++			path->dev->name);
++		err_flags = MP_RETRY;
++		goto out;
+ 	}
  
- 	if (hwh->type && hwh->type->status)
- 		sz += hwh->type->status(hwh, type, result + sz, maxlen - sz);
++	DMWARN("%s path activation fail - error=0x%x",
++	       path->dev->name, error);
++	err_flags = MP_FAIL_PATH;
++
++out:
+ 	req->end_io_data = NULL;
+ 	__blk_put_request(req->q, req);
+ 	dm_pg_init_complete(path, err_flags);
+@@ -135,7 +177,7 @@ static void hp_sw_pg_init(struct hw_hand
+ 	if (!req) {
+ 		DMERR("%s path activation command - allocation fail",
+ 		      path->dev->name);
+-		goto fail;
++		goto retry;
+ 	}
+ 
+ 	DMDEBUG("%s path activation command - sent", path->dev->name);
+@@ -143,8 +185,8 @@ static void hp_sw_pg_init(struct hw_hand
+ 	blk_execute_rq_nowait(req->q, NULL, req, 1, hp_sw_end_io);
+ 	return;
+ 
+-fail:
+-	dm_pg_init_complete(path, MP_FAIL_PATH);
++retry:
++	dm_pg_init_complete(path, MP_RETRY);
+ }
+ 
+ static int hp_sw_create(struct hw_handler *hwh, unsigned argc, char **argv)
