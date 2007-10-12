@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934832AbXJLXTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760430AbXJLX3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934832AbXJLXTq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 19:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933381AbXJLXPu
+	id S1760430AbXJLX3e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXJLX3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 19:15:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58295 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933944AbXJLXPs (ORCPT
+	Fri, 12 Oct 2007 19:29:25 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43844 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756655AbXJLX3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 19:15:48 -0400
-Date: Fri, 12 Oct 2007 16:14:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: arch merge fallout.
-In-Reply-To: <20071012225222.GD4290@redhat.com>
-Message-ID: <alpine.LFD.0.999.0710121608460.6887@woody.linux-foundation.org>
-References: <20071012035743.GA12897@redhat.com>
- <alpine.LFD.0.999.0710112103240.6887@woody.linux-foundation.org>
- <20071012182504.GA9222@redhat.com> <alpine.LFD.0.999.0710121457230.6887@woody.linux-foundation.org>
- <20071012221253.GB4290@redhat.com> <alpine.LFD.0.999.0710121542030.6887@woody.linux-foundation.org>
- <20071012225222.GD4290@redhat.com>
+	Fri, 12 Oct 2007 19:29:25 -0400
+Date: Sat, 13 Oct 2007 01:29:22 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+In-Reply-To: <20071012155708.d8abd06d.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr>
+ <20071012155708.d8abd06d.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Fri, 12 Oct 2007, Dave Jones wrote:
+On Oct 12 2007 15:57, Randy Dunlap wrote:
+>On Fri, 12 Oct 2007 23:44:08 +0200 (CEST) Jan Engelhardt wrote:
 >
-> Something I find useful is to just do for eg..
-> 
-> git log arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-> 
-> from time to time, to figure out when certain changes happened,
-> or even to grep for something in a changelog.
-> With that file moved, git refuses to tell me about the log
-> of a file that doesn't exist, and the log of the moved
-> file in arch/x86 just has a single commit, detailing the move.
-> 
-> Is there an easy way to get the complete log of a file?
+>> warning("override: %s turns state choice", sym->name);
+>
+>What does that warning message mean?  I can't decipher it.
 
-The "--follow" flag will follow renames when doing a log, so a simple
+It is when the value of a "choice" kconfig object is changed, for example
+this .config excerpt:
 
-	git log --follow arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+# CONFIG_PREEMPT_BKL is not set
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_REEMPT_VOLUNTARY=y
 
-will do it.
+>Other than that, it works for me.  Thanks.
 
-[ Although I actually introduced a bug in that last week, so if it gives 
-  empty output for you, add a "--stat" to get a diffstat (or "-p" to get 
-  the whole patch) to work around a stupid mistake. That bug is in both 
-  1.5.3.3 and 1.5.3.4 - and Junio happens to be away for two weeks, so 
-  it's not fixed in any release yet. I have a trivial patch for it if you 
-  care, but the "use -p" workaround is usually what you want to do anyway, 
-  which is probably why  nobody even noticed it was broken! ]
-
-			Linus
+/What/ works, the patch, or the tree without the patch? (Note I was
+testing that on 2.6.23.1, not the git head, so if someone silently
+merged things behind me, I might have missed it. Then again, that
+would have probably caused an offset, fuzz or reject, which was not
+the case.)
