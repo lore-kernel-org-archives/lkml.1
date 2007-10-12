@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbXJLEmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbXJLEtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759579AbXJLEmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXJLEm2
+	id S1757895AbXJLEtS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 00:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXJLEtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:42:28 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40772 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXJLEm1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:42:27 -0400
-Date: Fri, 12 Oct 2007 13:41:52 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [Patch 001/002] extract kmem_cache_shrink
-Cc: Andrew Morton <akpm@osdl.org>,
-       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0710112054220.1882@schroedinger.engr.sgi.com>
-References: <20071012112648.B99F.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710112054220.1882@schroedinger.engr.sgi.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071012134021.B9A7.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 12 Oct 2007 00:49:04 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49107 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752010AbXJLEtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 00:49:01 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+FgUVgFiyFzRr8o97pPOHwZezJ8BjKltYxM6eR0R
+	BKI00bDbAA8JUn
+Subject: 2.6.23.git build error
+From: Mike Galbraith <efault@gmx.de>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 12 Oct 2007 06:48:58 +0200
+Message-Id: <1192164538.10413.3.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 12 Oct 2007, Yasunori Goto wrote:
-> 
-> > Make kmem_cache_shrink_node() for callback routine of memory hotplug
-> > notifier. This is just extract a part of kmem_cache_shrink().
-> 
-> Could we just call kmem_cache_shrink? It will do the shrink on every node 
-> but memory hotplug is rare?
+Greetings,
 
-Yes it is. Memory hotplug is rare.
-Ok. I'll do it.
+Freshly pulled 2.6.23.git failed to build:
 
-Thanks.
--- 
-Yasunori Goto 
+make[1]: *** No rule to make target `arch/x86/kernel/asm-offsets.c', needed by `arch/x86/kernel/asm-offsets.s'.  Stop.
+make: *** [prepare0] Error 2
+make: *** Waiting for unfinished jobs....
 
+	-Mike
 
