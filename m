@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbXJLF5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbXJLGAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759977AbXJLF5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 01:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbXJLF5K
+	id S1760057AbXJLGAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 02:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758739AbXJLGA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 01:57:10 -0400
-Received: from mx01.hansenet.de ([213.191.73.25]:39954 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750920AbXJLF5J convert rfc822-to-8bit (ORCPT
+	Fri, 12 Oct 2007 02:00:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48696 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758724AbXJLGA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 01:57:09 -0400
-Message-ID: <470F0CAD.2030308@e-dict.net>
-Date: Fri, 12 Oct 2007 07:57:01 +0200
-From: Ingo Freund <linux-kernel-news@e-dict.net>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: sometimes very long response times on network interfaces since
- 2.6.22
-References: <470C724A.9010403@e-dict.net> <470C7898.1060405@cosmosbay.com>
-In-Reply-To: <470C7898.1060405@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Oct 2007 02:00:26 -0400
+Date: Fri, 12 Oct 2007 07:00:19 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: axboe@kernel.dk, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] missed bio_endio() in axonram
+Message-ID: <20071012060019.GY8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.10.2007 09:00, Eric Dumazet wrote (please find the answer below the original text):
-> Ingo Freund a écrit :
->> Hello,
->>
->> since I switched to kernel 2.6.22 my dell 1750 server
->> with the two onboard BCM5704 network interfaces doesn't
->> work properly anymore.
->> TCP requests sometimes need more than 30 seconds to be answered
->> (or to get away) and the application stops with timeouts.
->> We are talking about two servers connected via Gigabit switch.
->> The timeouts happen up to ten times a day.
->> In the meantime I tried an old 3com 3c905c NIC which showed
->> the same behaviour.
->> I still couldn't figure out in which special situation the
->> communication stops.
->> The only solution ist to boot the old 2.6.21.5 kernel.
->> With this, all runs fine.
->> Did I miss a config issue in the migration to 2.6.22?
->> The machines run in a productive environment and there is
->> not much room (time) to debug, but if needed, I could try
->> if anyone would need more information for help.
->>
-> 
-> Hi
-> 1) A tcpdump would help for sure...
-> 2) Could you try 2.6.23
-> -
 
-I'm trying 2.6.23 with the same config as 2.6.22.n since yesterday.
-The error after on day uptime didn't show up again.
-It seems that 2.6.22.n is buggy in some special conditions
-concerning high load network traffic. This is not depending on
-the used NIC.
-
-Thanks for reading this.
--Ingo.
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
+index ab037a3..46fd9c6 100644
+--- a/arch/powerpc/sysdev/axonram.c
++++ b/arch/powerpc/sysdev/axonram.c
+@@ -117,7 +117,7 @@ axon_ram_make_request(struct request_queue *queue, struct bio *bio)
+ 	transfered = 0;
+ 	bio_for_each_segment(vec, bio, idx) {
+ 		if (unlikely(phys_mem + vec->bv_len > phys_end)) {
+-			bio_io_error(bio, bio->bi_size);
++			bio_io_error(bio);
+ 			rc = -ERANGE;
+ 			break;
+ 		}
+@@ -131,7 +131,7 @@ axon_ram_make_request(struct request_queue *queue, struct bio *bio)
+ 		phys_mem += vec->bv_len;
+ 		transfered += vec->bv_len;
+ 	}
+-	bio_endio(bio, transfered, 0);
++	bio_endio(bio, 0);
+ 
+ 	return rc;
+ }
