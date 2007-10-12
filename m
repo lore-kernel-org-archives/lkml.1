@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXJLVr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbXJLVrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761166AbXJLVr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbXJLVon
+	id S1761032AbXJLVrc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758134AbXJLVom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:44:43 -0400
+	Fri, 12 Oct 2007 17:44:42 -0400
 Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42271 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760455AbXJLVol (ORCPT
+	with ESMTP id S1760415AbXJLVoj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:44:41 -0400
-Message-Id: <20071012211148.465174000@goop.org>
+	Fri, 12 Oct 2007 17:44:39 -0400
+Message-Id: <20071012211148.864500000@goop.org>
 References: <20071012211132.198718000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 12 Oct 2007 14:11:39 -0700
+Date: Fri, 12 Oct 2007 14:11:42 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>
-Subject: [PATCH 07/10] xen: ask the hypervisor how much space it needs reserved
-Content-Disposition: inline; filename=xen-dynamic-topaddr.patch
+       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>,
+       XFS masters <xfs-masters@oss.sgi.com>,
+       Stable kernel <stable@kernel.org>,
+       Morten =?utf-8?q?B=C3=B8geskov?= <xen-users@morten.bogeskov.dk>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>
+Subject: [PATCH 10/10] xfs: eagerly remove vmap mappings to avoid upsetting Xen
+Content-Disposition: inline; filename=xen-xfs-unmap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ask the hypervisor how much space it needs reserved, since 32-on-64
-doesn't need any space, and it may change in future.
+XFS leaves stray mappings around when it vmaps memory to make it
+virtually contigious.  This upsets Xen if one of those pages is being
+recycled into a pagetable, since it finds an extra writable mapping of
+the page.
+
+This patch solves the problem in a brute force way, by making XFS
+always eagerly unmap its mappings.
+
+[ Stable: This works around a bug in 2.6.23.  We may come up with a
+better solution for mainline, but this seems like a low-impact fix for
+the stable kernel. ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: XFS masters <xfs-masters@oss.sgi.com>
+Cc: Stable kernel <stable@kernel.org>
+Cc: Morten =?utf-8?q?B=C3=B8geskov?= <xen-users@morten.bogeskov.dk>
+Cc: Mark Williamson <mark.williamson@cl.cam.ac.uk>
 
 ---
- arch/i386/xen/enlighten.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ fs/xfs/linux-2.6/xfs_buf.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -1085,6 +1085,17 @@ static const struct machine_ops __initda
- };
- 
- 
-+static void __init xen_reserve_top(void)
-+{
-+	unsigned long top = HYPERVISOR_VIRT_START;
-+	struct xen_platform_parameters pp;
-+
-+	if (HYPERVISOR_xen_version(XENVER_platform_parameters, &pp) == 0)
-+		top = pp.virt_start;
-+
-+	reserve_top_address(-top + 2 * PAGE_SIZE);
-+}
-+
- /* First C function to be called on Xen boot */
- asmlinkage void __init xen_start_kernel(void)
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -186,6 +186,19 @@ free_address(
+ 	void		*addr)
  {
-@@ -1134,7 +1145,7 @@ asmlinkage void __init xen_start_kernel(
- 		paravirt_ops.kernel_rpl = 0;
+ 	a_list_t	*aentry;
++
++#ifdef CONFIG_XEN
++	/*
++	 * Xen needs to be able to make sure it can get an exclusive
++	 * RO mapping of pages it wants to turn into a pagetable.  If
++	 * a newly allocated page is also still being vmap()ed by xfs,
++	 * it will cause pagetable construction to fail.  This is a
++	 * quick workaround to always eagerly unmap pages so that Xen
++	 * is happy.
++	 */
++	vunmap(addr);
++	return;
++#endif
  
- 	/* set the limit of our address space */
--	reserve_top_address(-HYPERVISOR_VIRT_START + 2 * PAGE_SIZE);
-+	xen_reserve_top();
- 
- 	/* set up basic CPUID stuff */
- 	cpu_detect(&new_cpu_data);
+ 	aentry = kmalloc(sizeof(a_list_t), GFP_NOWAIT);
+ 	if (likely(aentry)) {
 
 -- 
 
