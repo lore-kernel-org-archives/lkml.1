@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbXJLDRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbXJLD3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758504AbXJLDRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 23:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbXJLDRd
+	id S1759161AbXJLD3Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 23:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758957AbXJLD3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 23:17:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4663 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758214AbXJLDRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 23:17:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,263,1188802800"; 
-   d="scan'208";a="297117904"
-Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <200710111217.58473.rjw@sisk.pl>
-References: <1192068833.27482.13.camel@caritas-dev.intel.com>
-	 <200710111217.58473.rjw@sisk.pl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 12 Oct 2007 11:19:32 +0800
-Message-Id: <1192159172.17539.26.camel@caritas-dev.intel.com>
+	Thu, 11 Oct 2007 23:29:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55137
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758952AbXJLD27 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 23:28:59 -0400
+Date: Thu, 11 Oct 2007 20:28:57 -0700 (PDT)
+Message-Id: <20071011.202857.74752210.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: rdreier@cisco.com, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, gregkh@suse.de
+Subject: Re: [GIT PULL] please pull infiniband.git for-linus
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.0.999.0710111944120.6887@woody.linux-foundation.org>
+References: <aday7e9b0m3.fsf@cisco.com>
+	<20071011.181719.78707713.davem@davemloft.net>
+	<alpine.LFD.0.999.0710111944120.6887@woody.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 12 Oct 2007 03:17:28.0867 (UTC) FILETIME=[6B7A9F30:01C80C7E]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-11 at 12:17 +0200, Rafael J. Wysocki wrote:
-> On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
-> > Kexec base hibernation has some potential advantages over uswsusp and
-> > TuxOnIce (suspend2). Some most obvious advantages are:
-> 
-> Well, I have some doubts as far as the obviousness is concerned.
-
-OK, I will remove the "obvious".
-
-> > 1. The hibernation image size can exceed half of memory size easily.
-> 
-> This is also possible with TuxOnIce.
-
-I will add detail description about this. It is possible with TuxOnIce,
-and hard with u/swsusp.
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 11 Oct 2007 19:58:04 -0700 (PDT)
 
 > 
-> > 2. The hibernation image can be written to and read from almost
-> >    anywhere, such as USB disk, NFS.
 > 
-> This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
-
-I will remove this.
-
-> > 3. It is possible to eliminate freezer from kexec based hibernation
-> >    implementation.
+> On Thu, 11 Oct 2007, David Miller wrote:
+> > 
+> > Even if you're confident there won't be merge issues, could you just
+> > wait for the net-2.6 stuff to go in first?
 > 
-> This isn't true as long as we have not changed the handling of devices
-> (which is in the works, but will take time).
-
-I know it has not been implemented yet. I just say that it is possible
-for khibernation and it is almost impossible for u/swsusp and TuxOnIce.
-
-> > 4. Based on kexec/kdump implementation, the kernel code needed is
-> >    less.
+> I pulled the net stuff first, and merged the IB stuff afterwards. No 
+> conflicts in IB, but there *were* conflicts with the networking pull for 
+> other reasons.
 > 
-> Well, maybe.
+> That horrid, horrid mess that is called include/linux/mod_devicetable.h 
+> and scripts/mod/file2alias.c must go at some point. The thing is 
+> unmaintainable. Different maintainers add their own structures to both, 
+> and functions to both, and it's just messy. That's not how maintainable 
+> and modularized code should be written.
 > 
+> Now it broke on sdio vs ssb, but there was actually a conflict earlier 
+> with the Kbuild merge (which I aborted for other reasons), so this file 
+> really is starting to be a problem.
+> 
+> The merge was fairly straightforward and stupid - it's not like the code 
+> added is *complicated*, but all those small functions and structrues are 
+> set up to be a maze of very similar lines, so the merge is actually much 
+> worse than it should be - because there is inherent similarity, some lines 
+> are automatically auto-merged, making the result just harder to visualize.
+> 
+> So I merged it all, and I don't expect any problems, but I'm hoping 
+> somebody is thinking about that mod_devicetable.h/file2alias.c mess.
 
-Best Regards,
-Huang Ying
+It all looks good from here.
