@@ -1,83 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbXJLJDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbXJLJHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759556AbXJLJDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXJLJDa
+	id S1759566AbXJLJHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbXJLJHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:03:30 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64937 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753563AbXJLJD3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:03:29 -0400
-Subject: [PATCH] mm: avoid dirtying shared mappings on mlock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Suleiman Souhlal <ssouhlal@FreeBSD.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Suleiman Souhlal <suleiman@google.com>, linux-mm <linux-mm@kvack.org>,
-       hugh <hugh@veritas.com>
-In-Reply-To: <69AF9B2A-6AA7-4078-B0A2-BE3D4914AEDC@FreeBSD.org>
-References: <11854939641916-git-send-email-ssouhlal@FreeBSD.org>
-	 <20070726172330.d3409b57.akpm@linux-foundation.org>
-	 <1185518010.15205.36.camel@lappy>
-	 <69AF9B2A-6AA7-4078-B0A2-BE3D4914AEDC@FreeBSD.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-wiKc4oSMgthoYDncv+YZ"
-Date: Fri, 12 Oct 2007 11:03:25 +0200
-Message-Id: <1192179805.27435.6.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 12 Oct 2007 05:07:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41670 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752981AbXJLJHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:07:16 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/31] Remove iget() and read_inode() [try #4]
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Fri, 12 Oct 2007 10:07:09 +0100
+Message-ID: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-wiKc4oSMgthoYDncv+YZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-Subject: mm: avoid dirtying shared mappings on mlock
+Hi Linus,
 
-Suleiman noticed that shared mappings get dirtied when mlocked.
-Avoid this by teaching make_pages_present about this case.
+Here's a set of patches that remove all calls to iget() and all read_inode()
+functions.  They should be removed for two reasons: firstly they don't lend
+themselves to good error handling, and secondly their presence is a temptation
+for code outside a filesystem to call iget() to access inodes within that
+filesystem.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Suleiman Souhlal <suleiman@google.com>
----
- mm/memory.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+There are a few benefits to this:
 
-Index: linux-2.6/mm/memory.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -2719,7 +2719,12 @@ int make_pages_present(unsigned long add
- 	vma =3D find_vma(current->mm, addr);
- 	if (!vma)
- 		return -1;
--	write =3D (vma->vm_flags & VM_WRITE) !=3D 0;
-+	/*
-+	 * We want to touch writable mappings with a write fault in order
-+	 * to break COW, except for shared mappings because these don't COW
-+	 * and we would not want to dirty them for nothing.
-+	 */
-+	write =3D (vma->vm_flags & (VM_WRITE|VM_SHARED)) =3D=3D VM_WRITE;
- 	BUG_ON(addr >=3D end);
- 	BUG_ON(end > vma->vm_end);
- 	len =3D DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
+ (1) Error handling gets simpler as you can return an error code rather than
+     having to call is_bad_inode().
+
+ (2) You can now tell the difference between ENOMEM and EIO occurring in the
+     read_inode() path.
+
+ (3) The code should get smaller.  iget() is an inline function that is
+     typically called 2-3 times per filesystem that uses it.  By folding the
+     iget code into the read_inode code for each filesystem, it eliminates
+     some duplication.
+
+A tarball of the patches can be retrieved from:
+
+	http://people.redhat.com/~dhowells/iget-remove.tar.bz2
 
 
---=-wiKc4oSMgthoYDncv+YZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Additionally, there are a couple of patches that introduce an ERR_CAST() macro
+to be used instead of ERR_PTR(PTR_ERR(p)) constructs and apply it to all such
+instances in the kernel.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Of the patches directly relevant to the subject:
 
-iD8DBQBHDzhdXA2jU0ANEf4RAn8rAJ9khXjsR7JcWWTW2jb4djrhInvFkACdEQ3a
-LKTBRB+oYBWtkLOYtEu9TtM=
-=bub7
------END PGP SIGNATURE-----
+The first patch adds a function, iget_failed() that is a canned piece of code
+for killing an inode when the inode construction path fails.
 
---=-wiKc4oSMgthoYDncv+YZ--
+The second and third patches makes AFS and GFS2 use iget_failed() rather than
+interpolating the sequence directly.
 
+The fourth patch marks iget() and read_inode() as being deprecated.
+
+The final patch removes iget() and read_inode() completely.
+
+Each of the other patches modify a filesystem that used iget() and read_inode()
+to use iget_locked() instead.  The standard procedure was to convert:
+
+	void thingyfs_read_inode(struct inode *inode)
+	{
+		...
+	}
+
+into:
+
+	struct inode *thingyfs_iget(struct super_block *sp, unsigned long ino)
+	{
+		struct inode *inode;
+		int ret;
+		
+		inode = iget_locked(sb, ino);
+		if (!inode)
+			return ERR_PTR(-ENOMEM);
+		if (!(inode->i_state & I_NEW))
+			return inode;
+
+		...
+		unlock_new_inode(inode);
+		return inode;
+	error:
+		iget_failed(inode);
+		return ERR_PTR(ret);
+	}
+
+and then call thingyfs_iget() rather than iget():
+
+	ret = -EINVAL;
+	inode = iget(sb, ino);
+	if (!inode || is_bad_inode(inode))
+		goto error;
+
+becomes:
+
+	inode = thingyfs_iget(sb, ino);
+	if (IS_ERR(inode)) {
+		ret = PTR_ERR(inode);
+		goto error;
+	}
+
+There were exceptions; most notably it appeared FAT should be calling ilookup()
+not iget().
+
+Additionally, HPPFS and HOSTFS (UM-specific filesystems) really need checking:
+
+ hostfs_kern.c:
+
+ (*) hostfs_iget() should perhaps subsume init_inode() and hostfs_read_inode().
+
+ (*) It would appear that all hostfs inodes are the same inode because iget()
+     was being called with inode number 0 - which forms the lookup key.
+
+ hppfs_kern.c:
+
+ (*) The HPPFS inode retains a pointer to the proc dentry it is shadowing, but
+     whilst it does appear to retain a reference to it, it doesn't appear to
+     destroy the reference if the inode goes away.
+
+ (*) hppfs_iget() should perhaps subsume init_inode() and hppfs_read_inode().
+
+ (*) It would appear that all hppfs inodes are the same inode because iget()
+     was being called with inode number 0, which forms the lookup key.
+
+In addition to the introduction of ERR_CAST, the ext2, ext3 and ext4 patches
+have been fixed from Jan Kara's review.
+
+David
