@@ -1,50 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbXJLVWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932448AbXJLVXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbXJLVWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXJLVWo
+	id S932448AbXJLVXL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbXJLVWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:22:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50397 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756853AbXJLVWo (ORCPT
+	Fri, 12 Oct 2007 17:22:48 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:57471 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758181AbXJLVWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:22:44 -0400
-Date: Fri, 12 Oct 2007 14:22:23 -0700
-From: Greg KH <greg@kroah.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-Message-ID: <20071012212223.GD16418@kroah.com>
-References: <200710122231.50739.elendil@planet.nl>
+	Fri, 12 Oct 2007 17:22:47 -0400
+Message-ID: <470FE5A0.8000009@lwfinger.net>
+Date: Fri, 12 Oct 2007 16:22:40 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710122231.50739.elendil@planet.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: ppisa@pikron.com
+Subject: Build error for 2.6.23-git1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 10:31:50PM +0200, Frans Pop wrote:
-> Please consider this patch for 2.6.23.2
-> http://lkml.org/lkml/2007/10/4/389
-> 
-> tested by me in
-> http://lkml.org/lkml/2007/10/5/150
-> 
-> to fix the regression first reported in
-> http://lkml.org/lkml/2007/10/3/123
-> 
-> Cause of the wrong display in top is the value of stime in /proc/<pid>/stat 
-> decreasing occasionally.
-> 
-> The issue is also registered as:
-> http://bugzilla.kernel.org/show_bug.cgi?id=9135
+On 2.6.23-git1, if "MMC/SD card support" is selected, and LED driver support is not selected in the
+configuration, the following build errors occur:
 
-Is it already in Linus's tree?  If so, do you have a git commit id?  If
-not, please let us (stable@) know when it is, and what the id is, and
-then we can add it to our tree.
+drivers/mmc/core/host.c: In function ‘mmc_remove_host’:
+drivers/mmc/core/host.c:146: error: implicit declaration of function ‘led_trigger_unregister’
+drivers/mmc/core/host.c:146: error: ‘struct mmc_host’ has no member named ‘led’
 
-thanks,
+My architecture is x86_64, but I don't think that makes a difference.
 
-greg k-h
+Larry
