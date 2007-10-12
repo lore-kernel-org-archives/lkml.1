@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbXJLRSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbXJLRTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762194AbXJLRSi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762424AbXJLRSM
+	id S1762694AbXJLRTD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762392AbXJLRSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:18:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48992 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:18:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48999 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760072AbXJLRSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:18:10 -0400
-Date: Fri, 12 Oct 2007 18:18:05 +0100
+	id S1762194AbXJLRSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:18:36 -0400
+Date: Fri, 12 Oct 2007 18:18:31 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
        Milan Broz <mbroz@redhat.com>
 Subject: [2.6.24 PATCH 12/25] dm: tidy bio_io_error usage
-Message-ID: <20071012171805.GW24157@agk.fab.redhat.com>
+Message-ID: <20071012171831.GX24157@agk.fab.redhat.com>
 Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
 	Milan Broz <mbroz@redhat.com>
