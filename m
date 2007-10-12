@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbXJLVIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbXJLVIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbXJLVIh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbXJLVI0
+	id S1760481AbXJLVIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbXJLVIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:08:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56496 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355AbXJLVIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:08:25 -0400
-Message-ID: <470FE245.5040702@garzik.org>
-Date: Fri, 12 Oct 2007 17:08:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Bernd Schubert <bs@q-leap.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] faster workaround
-References: <200710081709.18253.bs@q-leap.de> <200710111639.38240.bs@q-leap.de> <470E3B8D.4080002@garzik.org> <200710111718.43159.bs@q-leap.de>
-In-Reply-To: <200710111718.43159.bs@q-leap.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 12 Oct 2007 17:08:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51445 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757673AbXJLVI2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 17:08:28 -0400
+Date: Fri, 12 Oct 2007 14:07:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: oops on rmmod asus_acpi
+Message-Id: <20071012140754.2643c334.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0710122250290.23981@fbirervta.pbzchgretzou.qr>
+References: <20070630022644.20822e6b.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0710122250290.23981@fbirervta.pbzchgretzou.qr>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Schubert wrote:
-> a) 2.6.23 + sil-patch I posted, this is on a customer system (though my former 
-> group), I wouldn't like to use -mm there.
+On Fri, 12 Oct 2007 22:53:08 +0200 (CEST)
+Jan Engelhardt <jengelh@computergmbh.de> wrote:
+
+> Hi,
 > 
-> b) .config is attached
 > 
-> c) attached
+> I am wondering about asus_acpi-fix-oops-on-non-asus-machines.patch ,
+> which is still neither in mainline git nor in Len's acpi git tree
+> ( http://lkml.org/lkml/2007/6/30/29 ).
+> Any plans?
 > 
-> d) attached (don't get irritaded by those machine check events, thats "GART 
-> TLB errorr", harmless warnings, just not disabled in the bios).
 
-Any chance you could provide dmesg on 2.6.23 without the sil patch?
-
-	Jeff
-
-
-
+That patch is in 2.6.23.
