@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXJLWgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbXJLWhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbXJLWgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXJLWUI
+	id S1761185AbXJLWhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbXJLWUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53284 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:20:12 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49755 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760445AbXJLWUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:05 -0400
+	id S932568AbXJLWUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:09 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 32/75] Driver core: kerneldoc - kobject_uevent_env is not "usually KOBJ_MOVE"
-Date: Fri, 12 Oct 2007 15:16:36 -0700
-Message-Id: <1192227589276-git-send-email-gregkh@suse.de>
+Cc: Markus Rechberger <markus.rechberger@amd.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 33/75] Fix Firmware class name collision
+Date: Fri, 12 Oct 2007 15:16:37 -0700
+Message-Id: <1192227593813-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275843236-git-send-email-gregkh@suse.de>
+In-Reply-To: <1192227589276-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -49,51 +50,41 @@ References: \<20071012221251.GB4559@kroah.com\>
  <1192227574129-git-send-email-gregkh@suse.de>
  <11922275781508-git-send-email-gregkh@suse.de>
  <11922275843236-git-send-email-gregkh@suse.de>
+ <1192227589276-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Markus Rechberger <markus.rechberger@amd.com>
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+following patch fixes the i2c name collision with i2c-dev.
+
+http://mcentral.de/wiki/index.php/Bugtracker#i2c_core_problem
+
+This issue has been experienced with em28xx and saa7133 based devices.
+I discussed that problem with Jean Delvare a while ago and he proposed
+to add a prefix to the class name.
+
+Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/kobject_uevent.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/base/firmware_class.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index a8efb48..2e4eae5 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -77,7 +77,7 @@ out:
- /**
-  * kobject_uevent_env - send an uevent with environmental data
-  *
-- * @action: action that is happening (usually KOBJ_MOVE)
-+ * @action: action that is happening
-  * @kobj: struct kobject that the action is happening to
-  * @envp_ext: pointer to environmental data
-  *
-@@ -102,9 +102,9 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 4a1b9bf..0295855 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -292,8 +292,7 @@ firmware_class_timeout(u_long data)
  
- 	/* search the kset we belong to */
- 	top_kobj = kobj;
--	while (!top_kobj->kset && top_kobj->parent) {
-+	while (!top_kobj->kset && top_kobj->parent)
- 		top_kobj = top_kobj->parent;
--	}
-+
- 	if (!top_kobj->kset) {
- 		pr_debug("kobject attempted to send uevent without kset!\n");
- 		return -EINVAL;
-@@ -237,7 +237,7 @@ EXPORT_SYMBOL_GPL(kobject_uevent_env);
- /**
-  * kobject_uevent - notify userspace by ending an uevent
-  *
-- * @action: action that is happening (usually KOBJ_ADD and KOBJ_REMOVE)
-+ * @action: action that is happening
-  * @kobj: struct kobject that the action is happening to
-  *
-  * Returns 0 if kobject_uevent() is completed with success or the
+ static inline void fw_setup_device_id(struct device *f_dev, struct device *dev)
+ {
+-	/* XXX warning we should watch out for name collisions */
+-	strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
++	snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s", dev->bus_id);
+ }
+ 
+ static int fw_register_device(struct device **dev_p, const char *fw_name,
 -- 
 1.5.3.4
 
