@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbXJLVrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXJLVr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbXJLVrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 17:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760459AbXJLVol
+	id S1761166AbXJLVr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 17:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbXJLVon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 17:44:41 -0400
-Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42270 "EHLO
+	Fri, 12 Oct 2007 17:44:43 -0400
+Received: from 224.sub-75-208-255.myvzw.com ([75.208.255.224]:42271 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760402AbXJLVoj (ORCPT
+	with ESMTP id S1760455AbXJLVol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 17:44:39 -0400
-Message-Id: <20071012211148.741961000@goop.org>
+	Fri, 12 Oct 2007 17:44:41 -0400
+Message-Id: <20071012211148.465174000@goop.org>
 References: <20071012211132.198718000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 12 Oct 2007 14:11:41 -0700
+Date: Fri, 12 Oct 2007 14:11:39 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>
-Subject: [PATCH 09/10] xen: add some debug output for failed multicalls
-Content-Disposition: inline; filename=xen-mc-debug.patch
+Subject: [PATCH 07/10] xen: ask the hypervisor how much space it needs reserved
+Content-Disposition: inline; filename=xen-dynamic-topaddr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Multicalls are expected to never fail, and the normal response to a
-failed multicall is very terse.  In the interests of better
-debuggability, add some more verbose output.  It may be worth turning
-this off once it all seems more tested.
+Ask the hypervisor how much space it needs reserved, since 32-on-64
+doesn't need any space, and it may change in future.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
 ---
- arch/i386/xen/multicalls.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ arch/i386/xen/enlighten.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/i386/xen/multicalls.c
-+++ b/arch/i386/xen/multicalls.c
-@@ -26,11 +26,16 @@
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -1085,6 +1085,17 @@ static const struct machine_ops __initda
+ };
  
- #include "multicalls.h"
  
-+#define MC_DEBUG	1
++static void __init xen_reserve_top(void)
++{
++	unsigned long top = HYPERVISOR_VIRT_START;
++	struct xen_platform_parameters pp;
 +
- #define MC_BATCH	32
- #define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
++	if (HYPERVISOR_xen_version(XENVER_platform_parameters, &pp) == 0)
++		top = pp.virt_start;
++
++	reserve_top_address(-top + 2 * PAGE_SIZE);
++}
++
+ /* First C function to be called on Xen boot */
+ asmlinkage void __init xen_start_kernel(void)
+ {
+@@ -1134,7 +1145,7 @@ asmlinkage void __init xen_start_kernel(
+ 		paravirt_ops.kernel_rpl = 0;
  
- struct mc_buffer {
- 	struct multicall_entry entries[MC_BATCH];
-+#if MC_DEBUG
-+	struct multicall_entry debug[MC_BATCH];
-+#endif
- 	u64 args[MC_ARGS];
- 	struct callback {
- 		void (*fn)(void *);
-@@ -56,11 +61,31 @@ void xen_mc_flush(void)
- 	local_irq_save(flags);
+ 	/* set the limit of our address space */
+-	reserve_top_address(-HYPERVISOR_VIRT_START + 2 * PAGE_SIZE);
++	xen_reserve_top();
  
- 	if (b->mcidx) {
-+#if MC_DEBUG
-+		memcpy(b->debug, b->entries,
-+		       b->mcidx * sizeof(struct multicall_entry));
-+#endif
-+
- 		if (HYPERVISOR_multicall(b->entries, b->mcidx) != 0)
- 			BUG();
- 		for (i = 0; i < b->mcidx; i++)
- 			if (b->entries[i].result < 0)
- 				ret++;
-+
-+#if MC_DEBUG
-+		if (ret) {
-+			printk(KERN_ERR "%d multicall(s) failed: cpu %d\n",
-+			       ret, smp_processor_id());
-+			for(i = 0; i < b->mcidx; i++) {
-+				printk("  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
-+				       i+1, b->mcidx,
-+				       b->debug[i].op,
-+				       b->debug[i].args[0],
-+				       b->entries[i].result);
-+			}
-+		}
-+#endif
-+
- 		b->mcidx = 0;
- 		b->argidx = 0;
- 	} else
+ 	/* set up basic CPUID stuff */
+ 	cpu_detect(&new_cpu_data);
 
 -- 
 
