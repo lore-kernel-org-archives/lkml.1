@@ -1,155 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbXJLClO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbXJLCnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbXJLClO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 22:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbXJLCk7
+	id S1755305AbXJLCnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 22:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbXJLCnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 22:40:59 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59776 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753843AbXJLCk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 22:40:58 -0400
-Message-ID: <470EDE86.4090101@au1.ibm.com>
-Date: Fri, 12 Oct 2007 12:40:06 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070809)
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/2] [V3] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
-References: <20071011071558.676463639@au1.ibm.com>	<20071011072208.075979098@au1.ibm.com>	<DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org> <470ECFF7.9040008@au1.ibm.com>
-In-Reply-To: <470ECFF7.9040008@au1.ibm.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Oct 2007 22:43:06 -0400
+Received: from smtpoutm.mac.com ([17.148.16.70]:53313 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbXJLCnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 22:43:05 -0400
+In-Reply-To: <200710120002.37341.a1426z@gawab.com>
+References: <200710120002.37341.a1426z@gawab.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <46B8DC5E-CD66-40B3-BF82-05259F9D7288@mac.com>
+Cc: LKML Kernel <linux-kernel@vger.kernel.org>, g@0xff.cl,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Reserve N process to root
+Date: Thu, 11 Oct 2007 22:42:57 -0400
+To: Al Boldi <a1426z@gawab.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code which
-allows for more flexibility in the note type for the state of 'extended
-floating point' implementations in coredumps.  New note types can now be
-added with an appropriate #define.
+Please don't trim CC lists
 
-This does #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all
-current users so there's are no change in behaviour.
+On Oct 11, 2007, at 17:02:37, Al Boldi wrote:
+> David Newall wrote:
+>> Valdis.Kletnieks@vt.edu wrote:
+>>> What David meant was that "root will always have a slot" doesn't  
+>>> *actually* help unless you *also* have a way to actually *spawn*  
+>>> such a process.  In order to do the ps, kill, and so on that you  
+>>> need to recover, you need to already have either a root shell  
+>>> available, or a way to *get* a root shell that doesn't rely on a  
+>>> non-root process (so /bin/su doesn't help here).
+>>
+>> That's right, although it's worse than that.  You need to have a  
+>> process with CAP_SYS_ADMIN.  If root processes normally have that  
+>> capability then the reserved slots may well disappear before you  
+>> notice a problem.  If root processes normally don't have it, then  
+>> you need to guarantee that one is already running.
+>
+> I once posted a patch to handle this DoS, but, as usual, it wasn't  
+> accepted.  Go figure...
 
-This will let us use different note types on powerpc for the
-Altivec/VMX state that some PowerPC cpus have (G4, PPC970, POWER6) and
-for the SPE (signal processing extension) state that some embedded
-PowerPC cpus from Freescale have.
+This isn't really necessary any more with the new CFS scheduler.  If  
+you want to prevent excess memory usage then you limit memory usage,  
+not process count, so just set the system max process count to  
+something absurdly high and leave the user counts down at the maximum  
+a user might run.  Then as long as the sum of the user processes is  
+less than the max number of processes (which you just set absurdly  
+high or unlimited), you may still log in.  With the per-user  
+scheduling enabled CFS allows you to run an optimistically-real-time  
+game as one user and several thousand busy-loops as another user and  
+get almost picture perfect 50% CPU distribution between the users.   
+To me that seems a much better DoS-prevention system than limits  
+which don't scale based on how many people are requesting resources.
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/ia64/ia32/elfcore32.h     |    1 +
- arch/x86_64/ia32/ia32_binfmt.c |    1 +
- fs/binfmt_elf.c                |    8 ++++----
- fs/binfmt_elf_fdpic.c          |    8 ++++----
- include/asm-i386/elf.h         |    1 +
- 5 files changed, 11 insertions(+), 8 deletions(-)
-
-Index: linux/arch/ia64/ia32/elfcore32.h
-===================================================================
---- linux.orig/arch/ia64/ia32/elfcore32.h
-+++ linux/arch/ia64/ia32/elfcore32.h
-@@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
- }
- 
- #define ELF_CORE_COPY_XFPREGS 1
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- static inline int
- elf_core_copy_task_xfpregs(struct task_struct *tsk, elf_fpxregset_t *xfpu)
- {
-Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-===================================================================
---- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-+++ linux/arch/x86_64/ia32/ia32_binfmt.c
-@@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
- }
- 
- #define ELF_CORE_COPY_XFPREGS 1
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- static inline int 
- elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t *xfpu)
- {
-Index: linux/fs/binfmt_elf.c
-===================================================================
---- linux.orig/fs/binfmt_elf.c
-+++ linux/fs/binfmt_elf.c
-@@ -1411,7 +1411,7 @@ struct elf_thread_status
- 	elf_fpregset_t fpu;		/* NT_PRFPREG */
- 	struct task_struct *thread;
- #ifdef ELF_CORE_COPY_XFPREGS
--	elf_fpxregset_t xfpu;		/* NT_PRXFPREG */
-+	elf_fpxregset_t xfpu;		/* ELF_CORE_XFPREG_TYPE */
- #endif
- 	struct memelfnote notes[3];
- 	int num_notes;
-@@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
- 
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
--		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
--			  &t->xfpu);
-+		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-+			  sizeof(t->xfpu), &t->xfpu);
- 		t->num_notes++;
- 		sz += notesize(&t->notes[2]);
- 	}
-@@ -1624,7 +1624,7 @@ static int elf_core_dump(long signr, str
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(current, xfpu))
- 		fill_note(notes + numnote++,
--			  "LINUX", NT_PRXFPREG, sizeof(*xfpu), xfpu);
-+			  "LINUX", ELF_CORE_XFPREG_TYPE, sizeof(*xfpu), xfpu);
- #endif	
-   
- 	fs = get_fs();
-Index: linux/fs/binfmt_elf_fdpic.c
-===================================================================
---- linux.orig/fs/binfmt_elf_fdpic.c
-+++ linux/fs/binfmt_elf_fdpic.c
-@@ -1417,7 +1417,7 @@ struct elf_thread_status
- 	elf_fpregset_t fpu;		/* NT_PRFPREG */
- 	struct task_struct *thread;
- #ifdef ELF_CORE_COPY_XFPREGS
--	elf_fpxregset_t xfpu;		/* NT_PRXFPREG */
-+	elf_fpxregset_t xfpu;		/* ELF_CORE_XFPREG_TYPE */
- #endif
- 	struct memelfnote notes[3];
- 	int num_notes;
-@@ -1453,8 +1453,8 @@ static int elf_dump_thread_status(long s
- 
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
--		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
--			  &t->xfpu);
-+		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-+			  sizeof(t->xfpu), &t->xfpu);
- 		t->num_notes++;
- 		sz += notesize(&t->notes[2]);
- 	}
-@@ -1690,7 +1690,7 @@ static int elf_fdpic_core_dump(long sign
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(current, xfpu))
- 		fill_note(notes + numnote++,
--			  "LINUX", NT_PRXFPREG, sizeof(*xfpu), xfpu);
-+			  "LINUX", ELF_CORE_XFPREG_TYPE, sizeof(*xfpu), xfpu);
- #endif
- 
- 	fs = get_fs();
-Index: linux/include/asm-i386/elf.h
-===================================================================
---- linux.orig/include/asm-i386/elf.h
-+++ linux/include/asm-i386/elf.h
-@@ -129,6 +129,7 @@ extern int dump_task_extended_fpu (struc
- #define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk, elf_regs)
- #define ELF_CORE_COPY_FPREGS(tsk, elf_fpregs) dump_task_fpu(tsk, elf_fpregs)
- #define ELF_CORE_COPY_XFPREGS(tsk, elf_xfpregs) dump_task_extended_fpu(tsk, elf_xfpregs)
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- 
- #define VDSO_HIGH_BASE		(__fix_to_virt(FIX_VDSO))
- #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
+Cheers,
+Kyle Moffett
 
