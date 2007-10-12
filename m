@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759615AbXJLHLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbXJLHN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759615AbXJLHLS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 03:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbXJLHLH
+	id S1759842AbXJLHN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 03:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbXJLHNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 03:11:07 -0400
-Received: from outbound0.mx.meer.net ([209.157.153.23]:2776 "EHLO
-	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755700AbXJLHLG (ORCPT
+	Fri, 12 Oct 2007 03:13:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52936 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755700AbXJLHNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 03:11:06 -0400
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org
-Subject: Re: 2.6.23-mm1 [PATCH] restore default ARCH
-References: <9dktM-4YU-11@gated-at.bofh.it> <9dkWK-5Qx-7@gated-at.bofh.it>
-From: Don Mullis <dwm@meer.net>
-Date: Fri, 12 Oct 2007 00:10:43 -0700
-In-Reply-To: <9dkWK-5Qx-7@gated-at.bofh.it> (KAMEZAWA Hiroyuki's message of "Fri\, 12 Oct 2007 07\:10\:10 +0200")
-Message-ID: <87ve9c6c5o.fsf_-_@meer.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 12 Oct 2007 03:13:44 -0400
+Date: Fri, 12 Oct 2007 00:13:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-mm1
+Message-Id: <20071012001325.ba02a6f0.akpm@linux-foundation.org>
+In-Reply-To: <20071012064658.GA8181@ftp.linux.org.uk>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071011234202.2f15bb76.akpm@linux-foundation.org>
+	<20071012064658.GA8181@ftp.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+On Fri, 12 Oct 2007 07:46:58 +0100 Al Viro <viro@ftp.linux.org.uk> wrote:
 
-> [kamezawa@hannibal ref-2.6.23-mm1]$ make menuconfig
-> Makefile:456: /home/kamezawa/ref-2.6.23-mm1/arch//Makefile: No such file or directory
-> make: *** No rule to make target `/home/kamezawa/ref-2.6.23-mm1/arch//Makefile'.  Stop.
-> ==
->
-> $(ARCH) cannot be detected automatically...
->
-> What information is useful for fixing this ?
+> On Thu, Oct 11, 2007 at 11:42:02PM -0700, Andrew Morton wrote:
+> > On Fri, 12 Oct 2007 14:03:28 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > On Thu, 11 Oct 2007 21:31:26 -0700
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > 
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > > 
+> > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> > > >   to stabilise things for the 2.6.23 merge.
+> > > > 
+> > > On RHEL5/x86_64 environment,
+> > > 
+> > > ==
+> > > [kamezawa@hannibal ref-2.6.23-mm1]$ make menuconfig
+> > > Makefile:456: /home/kamezawa/ref-2.6.23-mm1/arch//Makefile: No such file or directory
+> > > make: *** No rule to make target `/home/kamezawa/ref-2.6.23-mm1/arch//Makefile'.  Stop.
+> > > ==
+> > > 
+> > > $(ARCH) cannot be detected automatically...
+> > 
+> > So you need to set $ARCH by hand?  I always do that so I didn't notice this.
+> > 
+> > > What information is useful for fixing this ?
+> > 
+> > Sam's email address ;)
+> 
+> More serious breakage happened to UML - include/asm-um/arch went straight
+> to hell; I'll look into fixing that tomorrow...
 
+I always forget to test uml.  But a quick test build seems to work until
+it hits this:
 
-This works for i386 on Ubuntu:
+arch/um/drivers/slip_kern.c: In function 'slip_init':
+arch/um/drivers/slip_kern.c:34: error: 'struct net_device' has no member named 'header_cache_update'
+arch/um/drivers/slip_kern.c:35: error: 'struct net_device' has no member named 'hard_header_cache'
+arch/um/drivers/slip_kern.c:36: error: 'struct net_device' has no member named 'hard_header'
 
-
-
-Definition of ARCH to the empty string defeated default native ARCH
-assignment during initial run of make; eliminate said definition.
-
-Signed-off-by: Don Mullis <dwm@meer.net>
----
- Makefile |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.23-mm/Makefile
-===================================================================
---- linux-2.6.23-mm.orig/Makefile       2007-10-11 23:28:43.000000000 -0700
-+++ linux-2.6.23-mm/Makefile    2007-10-11 23:30:50.000000000 -0700
-@@ -189,9 +189,8 @@
- # Default value for CROSS_COMPILE is not to prefix executables
- # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-
--# The empty ARCH and CROSS_COMPILE statements exist so it is easy to
--# patch in hardcoded values for ARCH and CROSS_COMPILE
--ARCH           ?=
-+# The empty CROSS_COMPILE statement exists so it is easy to
-+# patch in a hardcoded value.
- CROSS_COMPILE  ?=
-
- # Kbuild save the ARCH and CROSS_COMPILE setting in .kbuild
+<looks at networking people>
