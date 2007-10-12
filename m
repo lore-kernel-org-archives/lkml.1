@@ -1,348 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933719AbXJLWe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933762AbXJLWe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933719AbXJLWe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932522AbXJLWTx
+	id S933762AbXJLWe4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453AbXJLWTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:19:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53264 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932422AbXJLWTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:19:50 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: "tonyj@suse.de" <tonyj@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 29/75] Convert from class_device to device in drivers/char
-Date: Fri, 12 Oct 2007 15:16:33 -0700
-Message-Id: <1192227574129-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922275693989-git-send-email-gregkh@suse.de>
-References: \<20071012221251.GB4559@kroah.com\>
- <11922274393667-git-send-email-gregkh@suse.de>
- <11922274441634-git-send-email-gregkh@suse.de>
- <11922274503271-git-send-email-gregkh@suse.de>
- <11922274543490-git-send-email-gregkh@suse.de>
- <11922274643370-git-send-email-gregkh@suse.de>
- <11922274682487-git-send-email-gregkh@suse.de>
- <11922274732211-git-send-email-gregkh@suse.de>
- <11922274772578-git-send-email-gregkh@suse.de>
- <1192227481691-git-send-email-gregkh@suse.de>
- <11922274853108-git-send-email-gregkh@suse.de>
- <11922274901810-git-send-email-gregkh@suse.de>
- <11922274941588-git-send-email-gregkh@suse.de>
- <11922274993462-git-send-email-gregkh@suse.de>
- <11922275031518-git-send-email-gregkh@suse.de>
- <11922275074080-git-send-email-gregkh@suse.de>
- <11922275121763-git-send-email-gregkh@suse.de>
- <11922275181138-git-send-email-gregkh@suse.de>
- <11922275221643-git-send-email-gregkh@suse.de>
- <1192227527856-git-send-email-gregkh@suse.de>
- <11922275312531-git-send-email-gregkh@suse.de>
- <11922275371856-git-send-email-gregkh@suse.de>
- <11922275413548-git-send-email-gregkh@suse.de>
- <11922275462233-git-send-email-gregkh@suse.de>
- <1192227551156-git-send-email-gregkh@suse.de>
- <11922275552558-git-send-email-gregkh@suse.de>
- <119222756066-git-send-email-gregkh@suse.de>
- <11922275642378-git-send-email-gregkh@suse.de>
- <11922275693989-git-send-email-gregkh@suse.de>
+	Fri, 12 Oct 2007 18:19:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47066 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932419AbXJLWTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:19:52 -0400
+Date: Fri, 12 Oct 2007 15:12:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] driver core patches for 2.6.23
+Message-ID: <20071012221251.GB4559@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: tonyj@suse.de <tonyj@suse.de>
+Here are lot of driver core patches, tweaks, fixes and documentation updates
+against your 2.6.23 git tree.
 
-Convert from class_device to device in drivers/char.
+They do loads of different things, see my summary last week for details,
+and the shortlog below for a short summary.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/char/dsp56k.c            |    4 ++--
- drivers/char/ip2/ip2main.c       |   12 ++++++------
- drivers/char/ipmi/ipmi_devintf.c |    6 +++---
- drivers/char/istallion.c         |    8 +++-----
- drivers/char/lp.c                |    5 ++---
- drivers/char/pcmcia/cm4000_cs.c  |    5 ++---
- drivers/char/pcmcia/cm4040_cs.c  |    5 ++---
- drivers/char/snsc.c              |    3 +--
- drivers/char/stallion.c          |    7 +++----
- drivers/char/tipar.c             |    6 +++---
- drivers/char/viotape.c           |   10 +++++-----
- 11 files changed, 32 insertions(+), 39 deletions(-)
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
 
-diff --git a/drivers/char/dsp56k.c b/drivers/char/dsp56k.c
-index 9b8278e..acbfe1c 100644
---- a/drivers/char/dsp56k.c
-+++ b/drivers/char/dsp56k.c
-@@ -513,7 +513,7 @@ static int __init dsp56k_init_driver(void)
- 		err = PTR_ERR(dsp56k_class);
- 		goto out_chrdev;
- 	}
--	class_device_create(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0), NULL, "dsp56k");
-+	device_create(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0), "dsp56k");
- 
- 	printk(banner);
- 	goto out;
-@@ -527,7 +527,7 @@ module_init(dsp56k_init_driver);
- 
- static void __exit dsp56k_cleanup_driver(void)
- {
--	class_device_destroy(dsp56k_class, MKDEV(DSP56K_MAJOR, 0));
-+	device_destroy(dsp56k_class, MKDEV(DSP56K_MAJOR, 0));
- 	class_destroy(dsp56k_class);
- 	unregister_chrdev(DSP56K_MAJOR, "dsp56k");
- }
-diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
-index 8d74b87..bd94d5f 100644
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -411,8 +411,8 @@ cleanup_module(void)
- 			iiResetDelay( i2BoardPtrTable[i] );
- 			/* free io addresses and Tibet */
- 			release_region( ip2config.addr[i], 8 );
--			class_device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i));
--			class_device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i + 1));
-+			device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i));
-+			device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i + 1));
- 		}
- 		/* Disable and remove interrupt handler. */
- 		if ( (ip2config.irq[i] > 0) && have_requested_irq(ip2config.irq[i]) ) {	
-@@ -718,12 +718,12 @@ ip2_loadmain(int *iop, int *irqp, unsigned char *firmware, int firmsize)
- 			}
- 
- 			if ( NULL != ( pB = i2BoardPtrTable[i] ) ) {
--				class_device_create(ip2_class, NULL,
-+				device_create(ip2_class, NULL,
- 						MKDEV(IP2_IPL_MAJOR, 4 * i),
--						NULL, "ipl%d", i);
--				class_device_create(ip2_class, NULL,
-+						"ipl%d", i);
-+				device_create(ip2_class, NULL,
- 						MKDEV(IP2_IPL_MAJOR, 4 * i + 1),
--						NULL, "stat%d", i);
-+						"stat%d", i);
- 
- 			    for ( box = 0; box < ABS_MAX_BOXES; ++box )
- 			    {
-diff --git a/drivers/char/ipmi/ipmi_devintf.c b/drivers/char/ipmi/ipmi_devintf.c
-index c2aa44e..0246a2b 100644
---- a/drivers/char/ipmi/ipmi_devintf.c
-+++ b/drivers/char/ipmi/ipmi_devintf.c
-@@ -865,7 +865,7 @@ static void ipmi_new_smi(int if_num, struct device *device)
- 	entry->dev = dev;
- 
- 	mutex_lock(&reg_list_mutex);
--	class_device_create(ipmi_class, NULL, dev, device, "ipmi%d", if_num);
-+	device_create(ipmi_class, device, dev, "ipmi%d", if_num);
- 	list_add(&entry->link, &reg_list);
- 	mutex_unlock(&reg_list_mutex);
- }
-@@ -883,7 +883,7 @@ static void ipmi_smi_gone(int if_num)
- 			break;
- 		}
- 	}
--	class_device_destroy(ipmi_class, dev);
-+	device_destroy(ipmi_class, dev);
- 	mutex_unlock(&reg_list_mutex);
- }
- 
-@@ -938,7 +938,7 @@ static __exit void cleanup_ipmi(void)
- 	mutex_lock(&reg_list_mutex);
- 	list_for_each_entry_safe(entry, entry2, &reg_list, link) {
- 		list_del(&entry->link);
--		class_device_destroy(ipmi_class, entry->dev);
-+		device_destroy(ipmi_class, entry->dev);
- 		kfree(entry);
- 	}
- 	mutex_unlock(&reg_list_mutex);
-diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
-index 3c66f40..1f27be1 100644
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -4624,9 +4624,8 @@ static int __init istallion_module_init(void)
- 
- 	istallion_class = class_create(THIS_MODULE, "staliomem");
- 	for (i = 0; i < 4; i++)
--		class_device_create(istallion_class, NULL,
--				MKDEV(STL_SIOMEMMAJOR, i),
--				NULL, "staliomem%d", i);
-+		device_create(istallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
-+			      "staliomem%d", i);
- 
- 	return 0;
- err_deinit:
-@@ -4659,8 +4658,7 @@ static void __exit istallion_module_exit(void)
- 	unregister_chrdev(STL_SIOMEMMAJOR, "staliomem");
- 
- 	for (j = 0; j < 4; j++)
--		class_device_destroy(istallion_class, MKDEV(STL_SIOMEMMAJOR,
--					j));
-+		device_destroy(istallion_class, MKDEV(STL_SIOMEMMAJOR, j));
- 	class_destroy(istallion_class);
- 
- 	pci_unregister_driver(&stli_pcidriver);
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index 62051f8..c59e2a0 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -799,8 +799,7 @@ static int lp_register(int nr, struct parport *port)
- 	if (reset)
- 		lp_reset(nr);
- 
--	class_device_create(lp_class, NULL, MKDEV(LP_MAJOR, nr), port->dev,
--				"lp%d", nr);
-+	device_create(lp_class, port->dev, MKDEV(LP_MAJOR, nr), "lp%d", nr);
- 
- 	printk(KERN_INFO "lp%d: using %s (%s).\n", nr, port->name, 
- 	       (port->irq == PARPORT_IRQ_NONE)?"polling":"interrupt-driven");
-@@ -971,7 +970,7 @@ static void lp_cleanup_module (void)
- 		if (lp_table[offset].dev == NULL)
- 			continue;
- 		parport_unregister_device(lp_table[offset].dev);
--		class_device_destroy(lp_class, MKDEV(LP_MAJOR, offset));
-+		device_destroy(lp_class, MKDEV(LP_MAJOR, offset));
- 	}
- 	class_destroy(lp_class);
- }
-diff --git a/drivers/char/pcmcia/cm4000_cs.c b/drivers/char/pcmcia/cm4000_cs.c
-index 4177f6d..cc5d777 100644
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1863,8 +1863,7 @@ static int cm4000_probe(struct pcmcia_device *link)
- 		return ret;
- 	}
- 
--	class_device_create(cmm_class, NULL, MKDEV(major, i), NULL,
--			    "cmm%d", i);
-+	device_create(cmm_class, NULL, MKDEV(major, i), "cmm%d", i);
- 
- 	return 0;
- }
-@@ -1888,7 +1887,7 @@ static void cm4000_detach(struct pcmcia_device *link)
- 	dev_table[devno] = NULL;
- 	kfree(dev);
- 
--	class_device_destroy(cmm_class, MKDEV(major, devno));
-+	device_destroy(cmm_class, MKDEV(major, devno));
- 
- 	return;
- }
-diff --git a/drivers/char/pcmcia/cm4040_cs.c b/drivers/char/pcmcia/cm4040_cs.c
-index b24a3e7..a0b9c87 100644
---- a/drivers/char/pcmcia/cm4040_cs.c
-+++ b/drivers/char/pcmcia/cm4040_cs.c
-@@ -642,8 +642,7 @@ static int reader_probe(struct pcmcia_device *link)
- 		return ret;
- 	}
- 
--	class_device_create(cmx_class, NULL, MKDEV(major, i), NULL,
--			    "cmx%d", i);
-+	device_create(cmx_class, NULL, MKDEV(major, i), "cmx%d", i);
- 
- 	return 0;
- }
-@@ -666,7 +665,7 @@ static void reader_detach(struct pcmcia_device *link)
- 	dev_table[devno] = NULL;
- 	kfree(dev);
- 
--	class_device_destroy(cmx_class, MKDEV(major, devno));
-+	device_destroy(cmx_class, MKDEV(major, devno));
- 
- 	return;
- }
-diff --git a/drivers/char/snsc.c b/drivers/char/snsc.c
-index 52753e7..b9c1dba 100644
---- a/drivers/char/snsc.c
-+++ b/drivers/char/snsc.c
-@@ -441,8 +441,7 @@ scdrv_init(void)
- 				continue;
- 			}
- 
--			class_device_create(snsc_class, NULL, dev, NULL,
--						"%s", devname);
-+			device_create(snsc_class, NULL, dev, "%s", devname);
- 
- 			ia64_sn_irtr_intr_enable(scd->scd_nasid,
- 						 0 /*ignored */ ,
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 4a80b2f..45758d5 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -4778,9 +4778,8 @@ static int __init stallion_module_init(void)
- 	if (IS_ERR(stallion_class))
- 		printk("STALLION: failed to create class\n");
- 	for (i = 0; i < 4; i++)
--		class_device_create(stallion_class, NULL,
--				    MKDEV(STL_SIOMEMMAJOR, i), NULL,
--				    "staliomem%d", i);
-+		device_create(stallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
-+			      "staliomem%d", i);
- 
- 	return 0;
- err_unrtty:
-@@ -4816,7 +4815,7 @@ static void __exit stallion_module_exit(void)
- 	}
- 
- 	for (i = 0; i < 4; i++)
--		class_device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
-+		device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
- 	unregister_chrdev(STL_SIOMEMMAJOR, "staliomem");
- 	class_destroy(stallion_class);
- 
-diff --git a/drivers/char/tipar.c b/drivers/char/tipar.c
-index 35b40b9..cef55c4 100644
---- a/drivers/char/tipar.c
-+++ b/drivers/char/tipar.c
-@@ -441,8 +441,8 @@ tipar_register(int nr, struct parport *port)
- 		goto out;
- 	}
- 
--	class_device_create(tipar_class, NULL, MKDEV(TIPAR_MAJOR,
--			TIPAR_MINOR + nr), port->dev, "par%d", nr);
-+	device_create(tipar_class, port->dev, MKDEV(TIPAR_MAJOR,
-+			TIPAR_MINOR + nr), "par%d", nr);
- 
- 	/* Display informations */
- 	pr_info("tipar%d: using %s (%s)\n", nr, port->name, (port->irq ==
-@@ -534,7 +534,7 @@ tipar_cleanup_module(void)
- 		if (table[i].dev == NULL)
- 			continue;
- 		parport_unregister_device(table[i].dev);
--		class_device_destroy(tipar_class, MKDEV(TIPAR_MAJOR, i));
-+		device_destroy(tipar_class, MKDEV(TIPAR_MAJOR, i));
- 	}
- 	class_destroy(tipar_class);
- 
-diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
-index f1d60f0..db7a731 100644
---- a/drivers/char/viotape.c
-+++ b/drivers/char/viotape.c
-@@ -871,10 +871,10 @@ static int viotape_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	state[i].cur_part = 0;
- 	for (j = 0; j < MAX_PARTITIONS; ++j)
- 		state[i].part_stat_rwi[j] = VIOT_IDLE;
--	class_device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i), NULL,
-+	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i),
- 			"iseries!vt%d", i);
--	class_device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
--			NULL, "iseries!nvt%d", i);
-+	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
-+			"iseries!nvt%d", i);
- 	printk(VIOTAPE_KERN_INFO "tape iseries/vt%d is iSeries "
- 			"resource %10.10s type %4.4s, model %3.3s\n",
- 			i, viotape_unitinfo[i].rsrcname,
-@@ -886,8 +886,8 @@ static int viotape_remove(struct vio_dev *vdev)
- {
- 	int i = vdev->unit_address;
- 
--	class_device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i | 0x80));
--	class_device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i));
-+	device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i | 0x80));
-+	device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i));
- 	return 0;
- }
- 
--- 
-1.5.3.4
+All of these patches have been in the past few -mm releases with no
+problems.
+
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+As a bonus, we removed more code than we added overall :)
+
+thanks,
+
+greg k-h
+
+
+ Documentation/ja_JP/HOWTO                   |   84 ++--
+ Documentation/kernel-parameters.txt         |    4 +
+ Documentation/kobject.txt                   |   22 +-
+ arch/ia64/sn/kernel/tiocx.c                 |    3 +-
+ arch/powerpc/kernel/of_device.c             |   37 +-
+ arch/powerpc/kernel/vio.c                   |   16 +-
+ arch/powerpc/platforms/ps3/system-bus.c     |    9 +-
+ block/bsg.c                                 |    5 +-
+ block/elevator.c                            |    2 +-
+ block/genhd.c                               |   35 +-
+ block/ll_rw_blk.c                           |    2 +-
+ drivers/acpi/bus.c                          |    2 +-
+ drivers/acpi/scan.c                         |   16 +-
+ drivers/acpi/video.c                        |    4 +-
+ drivers/amba/bus.c                          |    9 +-
+ drivers/base/Kconfig                        |    8 +
+ drivers/base/base.h                         |    2 -
+ drivers/base/bus.c                          |  116 +++--
+ drivers/base/class.c                        |   60 +--
+ drivers/base/core.c                         |  108 ++---
+ drivers/base/firmware_class.c               |   14 +-
+ drivers/base/memory.c                       |    3 +-
+ drivers/base/platform.c                     |   26 +-
+ drivers/base/power/Makefile                 |    2 +-
+ drivers/base/power/main.c                   |  344 ++++++++++++-
+ drivers/base/power/power.h                  |   38 +--
+ drivers/base/power/resume.c                 |  149 ------
+ drivers/base/power/suspend.c                |  210 --------
+ drivers/base/sys.c                          |   73 +--
+ drivers/char/dsp56k.c                       |    4 +-
+ drivers/char/ip2/ip2main.c                  |   12 +-
+ drivers/char/ipmi/ipmi_devintf.c            |    6 +-
+ drivers/char/istallion.c                    |    8 +-
+ drivers/char/lp.c                           |    5 +-
+ drivers/char/pcmcia/cm4000_cs.c             |    5 +-
+ drivers/char/pcmcia/cm4040_cs.c             |    5 +-
+ drivers/char/pty.c                          |    9 +-
+ drivers/char/raw.c                          |    5 +-
+ drivers/char/snsc.c                         |    3 +-
+ drivers/char/stallion.c                     |    7 +-
+ drivers/char/tipar.c                        |    6 +-
+ drivers/char/viotape.c                      |   10 +-
+ drivers/cpufreq/cpufreq.c                   |    2 +-
+ drivers/edac/edac_mc_sysfs.c                |    3 +-
+ drivers/eisa/eisa-bus.c                     |    9 +-
+ drivers/firewire/fw-device.c                |   11 +-
+ drivers/firmware/dmi-id.c                   |   62 ++-
+ drivers/firmware/edd.c                      |    4 +-
+ drivers/firmware/efivars.c                  |    4 +-
+ drivers/i2c/i2c-core.c                      |    8 +-
+ drivers/ide/ide.c                           |   17 +-
+ drivers/ieee1394/nodemgr.c                  |   17 +-
+ drivers/infiniband/core/sysfs.c             |    9 +-
+ drivers/input/input.c                       |   62 +--
+ drivers/input/misc/pcspkr.c                 |    1 +
+ drivers/input/serio/serio.c                 |   11 +-
+ drivers/md/md.c                             |    3 +-
+ drivers/media/dvb/dvb-core/dvbdev.c         |    5 +-
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    4 +-
+ drivers/misc/tifm_core.c                    |    9 +-
+ drivers/mmc/core/bus.c                      |   21 +-
+ drivers/net/ibmveth.c                       |    2 +-
+ drivers/pci/hotplug.c                       |   28 +-
+ drivers/pci/hotplug/pci_hotplug_core.c      |   60 ---
+ drivers/pci/hotplug/rpadlpar_sysfs.c        |    6 +-
+ drivers/pci/pci-driver.c                    |    3 +-
+ drivers/pci/pci.h                           |    3 +-
+ drivers/pci/setup-irq.c                     |    2 +-
+ drivers/pcmcia/cs.c                         |   10 +-
+ drivers/pcmcia/ds.c                         |   26 +-
+ drivers/pcmcia/pxa2xx_mainstone.c           |    2 +-
+ drivers/pcmcia/pxa2xx_sharpsl.c             |    2 +-
+ drivers/power/power_supply.h                |    3 +-
+ drivers/power/power_supply_sysfs.c          |   17 +-
+ drivers/s390/cio/ccwgroup.c                 |    3 +-
+ drivers/s390/cio/device.c                   |   25 +-
+ drivers/s390/crypto/ap_bus.c                |   14 +-
+ drivers/scsi/scsi_sysfs.c                   |    9 +-
+ drivers/spi/spi.c                           |    7 +-
+ drivers/usb/core/devio.c                    |    6 +-
+ drivers/usb/core/driver.c                   |   29 +-
+ drivers/usb/core/message.c                  |   28 +-
+ drivers/video/output.c                      |   29 +-
+ drivers/w1/w1.c                             |   19 +-
+ fs/debugfs/file.c                           |   36 ++
+ fs/dlm/lockspace.c                          |    2 +-
+ fs/gfs2/locking/dlm/sysfs.c                 |    2 +-
+ fs/gfs2/sys.c                               |    2 +-
+ fs/ocfs2/cluster/masklog.c                  |    3 +-
+ fs/partitions/check.c                       |   12 +-
+ fs/sysfs/bin.c                              |   36 +-
+ fs/sysfs/dir.c                              |  754 +++++++--------------------
+ fs/sysfs/file.c                             |  248 ++++++---
+ fs/sysfs/group.c                            |    2 -
+ fs/sysfs/inode.c                            |  103 ++--
+ fs/sysfs/mount.c                            |   26 +-
+ fs/sysfs/symlink.c                          |   34 +-
+ fs/sysfs/sysfs.h                            |  184 ++++---
+ include/asm-powerpc/of_device.h             |    2 +-
+ include/linux/debugfs.h                     |   27 +
+ include/linux/device.h                      |   17 +-
+ include/linux/kobject.h                     |  125 ++---
+ include/linux/platform_device.h             |    7 +-
+ include/linux/sysfs.h                       |  147 ++----
+ include/linux/tty.h                         |    1 -
+ include/linux/video_output.h                |    4 +-
+ lib/Makefile                                |    3 +-
+ lib/kobject.c                               |  135 ++---
+ lib/kobject_uevent.c                        |  216 ++++----
+ net/atm/atm_sysfs.c                         |    7 +-
+ net/bridge/br_sysfs_br.c                    |    2 +-
+ net/core/net-sysfs.c                        |   14 +-
+ net/wireless/sysfs.c                        |    3 +-
+ sound/aoa/soundbus/core.c                   |   33 +-
+ 114 files changed, 1777 insertions(+), 2493 deletions(-)
+ delete mode 100644 drivers/base/power/resume.c
+ delete mode 100644 drivers/base/power/suspend.c
+
+---------------
+
+Adrian Bunk (1):
+      drivers/base/power/: make 2 functions static
+
+Akinobu Mita (1):
+      sysdev: remove global sysdev drivers list
+
+Alan Stern (1):
+      PM: merge device power-management source files
+
+Cornelia Huck (1):
+      Driver core: clean up removed functions from the documentation
+
+Dave Young (2):
+      sysfs/file.c - use mutex instead of semaphore
+      sysfs: cleanup semaphore.h
+
+Eric W. Biederman (12):
+      sysfs: Remove first pass at shadow directory support
+      sysfs: Move all of inode initialization into sysfs_init_inode
+      sysfs: Remove sysfs_instantiate
+      sysfs: Use kill_anon_super
+      sysfs: Make sysfs_mount static
+      sysfs: In sysfs_lookup don't open code sysfs_find_dirent
+      sysfs: Simplify readdir.
+      sysfs: Rewrite sysfs_drop_dentry.
+      sysfs: Introduce sysfs_rename_mutex
+      sysfs: Remove s_dentry
+      sysfs: Rewrite rename in terms of sysfs dirents
+      sysfs: Rewrite sysfs_move_dir in terms of sysfs dirents
+
+Greg Kroah-Hartman (18):
+      Driver core: remove subsys_set_kset
+      Driver core: remove kset_set_kset_s
+      Driver core: remove subsys_put()
+      Driver core: remove subsys_get()
+      Driver core: remove put_bus()
+      Driver core: remove get_bus()
+      kobjects: fix up improper use of the kobject name field
+      cdev: remove unneeded setting of cdev names
+      Drivers: clean up direct setting of the name of a kset
+      kobject: remove the static array for the name
+      sysfs: spit a warning to users when they try to create a duplicate sysfs file
+      driver core: remove subsystem_init()
+      Driver core: rename ktype_class
+      Driver core: rename ktype_device
+      Driver core: rename ktype_driver
+      Driver core: rename ktype_edd and ktype_efivar
+      kset: add some kerneldoc to help describe what these strange things are
+      kobject: update the copyrights
+
+Jean Delvare (3):
+      dmi-id: Use dynamic sysfs attributes
+      dmi-id: Possible cleanup
+      Driver core: Make platform_device.id an int
+
+Kay Sievers (8):
+      platform: prefix MODALIAS with "platform:"
+      Driver core: make sysfs uevent-attributes static
+      Driver core: change add_uevent_var to use a struct
+      Driver core: add CONFIG_UEVENT_HELPER_PATH
+      Driver core: exclude kobject_uevent.c for !CONFIG_HOTPLUG
+      Driver core: add uevent file for bus and driver
+      Driver core: kerneldoc - kobject_uevent_env is not "usually KOBJ_MOVE"
+      PTY: add kernel parameter to overwrite legacy pty count
+
+Markus Rechberger (1):
+      Fix Firmware class name collision
+
+Robin Getz (1):
+      debugfs: helper for decimal challenged
+
+Rolf Eike Beer (1):
+      sysfs: Fix typos in fs/sysfs/file.c
+
+Tejun Heo (22):
+      sysfs: cosmetic changes in sysfs_lookup()
+      sysfs: simplify sysfs_rename_dir()
+      sysfs: make sysfs_add/remove_one() call link/unlink_sibling() implictly
+      sysfs: make sysfs_add_one() automatically check for duplicate entry
+      sysfs: make sysfs_addrm_finish() return void
+      sysfs: fix i_mutex locking in sysfs_get_dentry()
+      sysfs: simply sysfs_get_dentry
+      sysfs: fix comments of sysfs_add/remove_one()
+      sysfs: fix sysfs_chmod_file() such that it updates sd->s_mode too
+      sysfs: clean up header files
+      sysfs: kill sysfs_update_file()
+      sysfs: reposition sysfs_dirent->s_mode.
+      sysfs: kill unnecessary sysfs_get() in open paths
+      sysfs: kill unnecessary NULL pointer check in sysfs_release()
+      sysfs: make bin attr open get active reference of parent too
+      sysfs: make s_elem an anonymous union
+      sysfs: open code sysfs_attach_dentry()
+      sysfs: make sysfs_root a regular directory dirent
+      sysfs: move sysfs_dirent->s_children into sysfs_dirent->s_dir
+      sysfs: implement sysfs_open_dirent
+      sysfs: move sysfs file poll implementation to sysfs_open_dirent
+      sysfs: add copyrights
+
+Tsugikazu Shibata (1):
+      HOWTO: update ja_JP/HOWTO with latest changes
+
+tonyj@suse.de (2):
+      Convert from class_device to device for drivers/video
+      Convert from class_device to device in drivers/char
 
