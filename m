@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760897AbXJLJWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbXJLJXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760897AbXJLJWf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760293AbXJLJJl
+	id S1760983AbXJLJXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbXJLJJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:09:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41798 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 05:09:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41804 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760285AbXJLJJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:09:36 -0400
+	id S1751371AbXJLJJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:09:42 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 28/31] IGET: Stop OPENPROMFS from using iget() and
-	read_inode() [try #4]
+Subject: [PATCH 29/31] IGET: Stop HOSTFS from using iget() and read_inode()
+	[try #4]
 To: torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Fri, 12 Oct 2007 10:09:31 +0100
-Message-ID: <20071012090931.3442.8620.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Oct 2007 10:09:36 +0100
+Message-ID: <20071012090936.3442.98888.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
 References: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,124 +30,152 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the OPENPROMFS filesystem from using iget() and read_inode().  Replace
-openpromfs_read_inode() with openpromfs_iget(), and call that instead of
-iget().  openpromfs_iget() then uses iget_locked() directly and returns a
-proper error code instead of an inode in the event of an error.
+Stop the HOSTFS filesystem from using iget() and read_inode().  Provide
+hostfs_iget(), and call that instead of iget().  hostfs_iget() then uses
+iget_locked() directly and returns a proper error code instead of an inode in
+the event of an error.
 
-openpromfs_fill_super() returns any error incurred when getting the root inode
-instead of ENOMEM (not that it currently incurs any other error).
+hostfs_fill_sb_common() returns any error incurred when getting the root inode
+instead of EINVAL.
+
+Note that the contents of hostfs_kern.c need to be examined:
+
+ (*) hostfs_iget() should perhaps subsume init_inode() and hostfs_read_inode().
+
+ (*) It would appear that all hostfs inodes are the same inode because iget()
+     was being called with inode number 0 - which forms the lookup key.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/openpromfs/inode.c |   45 ++++++++++++++++++++++++++++++---------------
- 1 files changed, 30 insertions(+), 15 deletions(-)
+ fs/hostfs/hostfs_kern.c |   58 ++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 39 insertions(+), 19 deletions(-)
 
-diff --git a/fs/openpromfs/inode.c b/fs/openpromfs/inode.c
-index dd86be2..9c6017b 100644
---- a/fs/openpromfs/inode.c
-+++ b/fs/openpromfs/inode.c
-@@ -38,6 +38,8 @@ struct op_inode_info {
- 	union op_inode_data	u;
- };
- 
-+static struct inode *openprom_iget(struct super_block *sb, ino_t ino);
-+
- static inline struct op_inode_info *OP_I(struct inode *inode)
- {
- 	return container_of(inode, struct op_inode_info, vfs_inode);
-@@ -226,10 +228,10 @@ static struct dentry *openpromfs_lookup(struct inode *dir, struct dentry *dentry
- 	return ERR_PTR(-ENOENT);
- 
- found:
--	inode = iget(dir->i_sb, ino);
-+	inode = openprom_iget(dir->i_sb, ino);
- 	mutex_unlock(&op_mutex);
--	if (!inode)
--		return ERR_PTR(-EINVAL);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
- 	ent_oi = OP_I(inode);
- 	ent_oi->type = ent_type;
- 	ent_oi->u = ent_data;
-@@ -348,14 +350,23 @@ static void openprom_destroy_inode(struct inode *inode)
- 	kmem_cache_free(op_inode_cachep, OP_I(inode));
+diff --git a/fs/hostfs/hostfs_kern.c b/fs/hostfs/hostfs_kern.c
+index c778620..c6a456a 100644
+--- a/fs/hostfs/hostfs_kern.c
++++ b/fs/hostfs/hostfs_kern.c
+@@ -208,7 +208,7 @@ static char *follow_link(char *link)
+ 	return ERR_PTR(n);
  }
  
--static void openprom_read_inode(struct inode * inode)
-+static struct inode *openprom_iget(struct super_block *sb, ino_t ino)
+-static int read_inode(struct inode *ino)
++static int hostfs_read_inode(struct inode *ino)
  {
--	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
--	if (inode->i_ino == OPENPROM_ROOT_INO) {
--		inode->i_op = &openprom_inode_operations;
--		inode->i_fop = &openprom_operations;
--		inode->i_mode = S_IFDIR | S_IRUGO | S_IXUGO;
+ 	char *name;
+ 	int err = 0;
+@@ -238,6 +238,25 @@ static int read_inode(struct inode *ino)
+ 	return err;
+ }
+ 
++static struct inode *hostfs_iget(struct super_block *sb)
++{
 +	struct inode *inode;
++	long ret;
 +
-+	inode = iget_locked(sb, ino);
++	inode = iget_locked(sb, 0);
 +	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (inode->i_state & I_NEW) {
-+		inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
-+		if (inode->i_ino == OPENPROM_ROOT_INO) {
-+			inode->i_op = &openprom_inode_operations;
-+			inode->i_fop = &openprom_operations;
-+			inode->i_mode = S_IFDIR | S_IRUGO | S_IXUGO;
++		ret = hostfs_read_inode(inode);
++		if (ret < 0) {
++			iget_failed(inode);
++			return ERR_PTR(ret);
 +		}
 +		unlock_new_inode(inode);
- 	}
++	}
 +	return inode;
++}
++
+ int hostfs_statfs(struct dentry *dentry, struct kstatfs *sf)
+ {
+ 	/* do_statfs uses struct statfs64 internally, but the linux kernel
+@@ -305,17 +324,11 @@ static void hostfs_destroy_inode(struct inode *inode)
+ 	kfree(HOSTFS_I(inode));
  }
  
- static int openprom_remount(struct super_block *sb, int *flags, char *data)
-@@ -367,7 +378,6 @@ static int openprom_remount(struct super_block *sb, int *flags, char *data)
- static const struct super_operations openprom_sops = {
- 	.alloc_inode	= openprom_alloc_inode,
- 	.destroy_inode	= openprom_destroy_inode,
--	.read_inode	= openprom_read_inode,
- 	.statfs		= simple_statfs,
- 	.remount_fs	= openprom_remount,
+-static void hostfs_read_inode(struct inode *inode)
+-{
+-	read_inode(inode);
+-}
+-
+ static const struct super_operations hostfs_sbops = {
+ 	.alloc_inode	= hostfs_alloc_inode,
+ 	.drop_inode	= generic_delete_inode,
+ 	.delete_inode   = hostfs_delete_inode,
+ 	.destroy_inode	= hostfs_destroy_inode,
+-	.read_inode	= hostfs_read_inode,
+ 	.statfs		= hostfs_statfs,
  };
-@@ -376,6 +386,7 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
- {
- 	struct inode *root_inode;
- 	struct op_inode_info *oi;
-+	int ret;
  
- 	s->s_flags |= MS_NOATIME;
- 	s->s_blocksize = 1024;
-@@ -383,9 +394,11 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
- 	s->s_magic = OPENPROM_SUPER_MAGIC;
- 	s->s_op = &openprom_sops;
- 	s->s_time_gran = 1;
--	root_inode = iget(s, OPENPROM_ROOT_INO);
--	if (!root_inode)
-+	root_inode = openprom_iget(s, OPENPROM_ROOT_INO);
-+	if (IS_ERR(root_inode)) {
-+		ret = PTR_ERR(root_inode);
- 		goto out_no_root;
+@@ -584,9 +597,11 @@ int hostfs_create(struct inode *dir, struct dentry *dentry, int mode,
+ 	char *name;
+ 	int error, fd;
+ 
+-	error = -ENOMEM;
+-	inode = iget(dir->i_sb, 0);
+-	if(inode == NULL) goto out;
++	inode = hostfs_iget(dir->i_sb);
++	if (IS_ERR(inode)) {
++		error = PTR_ERR(inode);
++		goto out;
 +	}
  
- 	oi = OP_I(root_inode);
- 	oi->type = op_inode_node;
-@@ -393,13 +406,15 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
+ 	error = init_inode(inode, dentry);
+ 	if(error)
+@@ -627,10 +642,11 @@ struct dentry *hostfs_lookup(struct inode *ino, struct dentry *dentry,
+ 	char *name;
+ 	int err;
  
- 	s->s_root = d_alloc_root(root_inode);
- 	if (!s->s_root)
--		goto out_no_root;
-+		goto out_no_root_dentry;
- 	return 0;
+-	err = -ENOMEM;
+-	inode = iget(ino->i_sb, 0);
+-	if(inode == NULL)
++	inode = hostfs_iget(ino->i_sb);
++	if (IS_ERR(inode)) {
++		err = PTR_ERR(inode);
+ 		goto out;
++	}
  
-+out_no_root_dentry:
-+	iput(root_inode);
-+	ret = -ENOMEM;
- out_no_root:
- 	printk("openprom_fill_super: get root inode failed\n");
--	iput(root_inode);
--	return -ENOMEM;
-+	return ret;
- }
+ 	err = init_inode(inode, dentry);
+ 	if(err)
+@@ -748,11 +764,13 @@ int hostfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+ {
+ 	struct inode *inode;
+ 	char *name;
+-	int err = -ENOMEM;
++	int err;
  
- static int openprom_get_sb(struct file_system_type *fs_type,
+-	inode = iget(dir->i_sb, 0);
+-	if(inode == NULL)
++	inode = hostfs_iget(dir->i_sb);
++	if (IS_ERR(inode)) {
++		err = PTR_ERR(inode);
+ 		goto out;
++	}
+ 
+ 	err = init_inode(inode, dentry);
+ 	if(err)
+@@ -973,9 +991,11 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
+ 
+ 	sprintf(host_root_path, "%s/%s", root_ino, req_root);
+ 
+-	root_inode = iget(sb, 0);
+-	if(root_inode == NULL)
++	root_inode = hostfs_iget(sb);
++	if (IS_ERR(root_inode)) {
++		err = PTR_ERR(root_inode);
+ 		goto out_free;
++	}
+ 
+ 	err = init_inode(root_inode, NULL);
+ 	if(err)
+@@ -991,7 +1011,7 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
+ 	if(sb->s_root == NULL)
+ 		goto out_put;
+ 
+-	err = read_inode(root_inode);
++	err = hostfs_read_inode(root_inode);
+ 	if(err){
+ 		/* No iput in this case because the dput does that for us */
+ 		dput(sb->s_root);
 
