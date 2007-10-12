@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbXJLHN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXJLHOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbXJLHN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 03:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbXJLHNp
+	id S1760068AbXJLHOd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 03:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXJLHOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 03:13:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52936 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755700AbXJLHNo (ORCPT
+	Fri, 12 Oct 2007 03:14:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:51294 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755937AbXJLHOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 03:13:44 -0400
-Date: Fri, 12 Oct 2007 00:13:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-mm1
-Message-Id: <20071012001325.ba02a6f0.akpm@linux-foundation.org>
-In-Reply-To: <20071012064658.GA8181@ftp.linux.org.uk>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071011234202.2f15bb76.akpm@linux-foundation.org>
-	<20071012064658.GA8181@ftp.linux.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Oct 2007 03:14:23 -0400
+Message-ID: <470F1E92.7020304@scheler.com>
+Date: Fri, 12 Oct 2007 09:13:22 +0200
+From: Stefan Scheler <stefan@scheler.com>
+User-Agent: Mutt/1.5.11
+MIME-Version: 1.0
+To: Stefan Scheler <stefan@scheler.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Regression from 2.6.21 to 2.6.22 and above
+References: <fekuk7$kpl$1@sea.gmane.org> <470EAE84.3010704@redhat.com>
+In-Reply-To: <470EAE84.3010704@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-ripemd160;
+ protocol="application/pgp-signature";
+ boundary="------------enig242134010F76037F21797DDB"
+X-Provags-ID: V01U2FsdGVkX180gzZ1mlxBFNMvs2ZwySFA1rAu0tiZu9+Hnr6
+ J1SfVUAMvPRNxglQpCiP3F6A8OclWTpqsfUbcO6jE6R04wR+5I
+ Px0AmoGBXZ6JiGzRxKbIAuWvG+1n27l
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007 07:46:58 +0100 Al Viro <viro@ftp.linux.org.uk> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig242134010F76037F21797DDB
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, Oct 11, 2007 at 11:42:02PM -0700, Andrew Morton wrote:
-> > On Fri, 12 Oct 2007 14:03:28 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > On Thu, 11 Oct 2007 21:31:26 -0700
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > 
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
-> > > > 
-> > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
-> > > >   to stabilise things for the 2.6.23 merge.
-> > > > 
-> > > On RHEL5/x86_64 environment,
-> > > 
-> > > ==
-> > > [kamezawa@hannibal ref-2.6.23-mm1]$ make menuconfig
-> > > Makefile:456: /home/kamezawa/ref-2.6.23-mm1/arch//Makefile: No such file or directory
-> > > make: *** No rule to make target `/home/kamezawa/ref-2.6.23-mm1/arch//Makefile'.  Stop.
-> > > ==
-> > > 
-> > > $(ARCH) cannot be detected automatically...
-> > 
-> > So you need to set $ARCH by hand?  I always do that so I didn't notice this.
-> > 
-> > > What information is useful for fixing this ?
-> > 
-> > Sam's email address ;)
-> 
-> More serious breakage happened to UML - include/asm-um/arch went straight
-> to hell; I'll look into fixing that tomorrow...
+> Try turning off USB autosuspend by adding the kernel option
+> "usbcore.autosuspend=3D-1". Or if your USB is modular, add "autosuspend=
+=3D-1"
+> to the module parameters.
 
-I always forget to test uml.  But a quick test build seems to work until
-it hits this:
+Doesn't help. You also might have a look at the linux-usb-devel list. I
+posted a couple of logs there.
 
-arch/um/drivers/slip_kern.c: In function 'slip_init':
-arch/um/drivers/slip_kern.c:34: error: 'struct net_device' has no member named 'header_cache_update'
-arch/um/drivers/slip_kern.c:35: error: 'struct net_device' has no member named 'hard_header_cache'
-arch/um/drivers/slip_kern.c:36: error: 'struct net_device' has no member named 'hard_header'
+--=20
+Stefan Scheler
 
-<looks at networking people>
+
+--------------enig242134010F76037F21797DDB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQFHDx6V3fA/C3QJzpIRA813AJ0WDl1zUskFp26iDwq4NdHJGhS9pQCg2H2j
+pS4QvVUm7ncZq3UAOoIWyTE=
+=gJQd
+-----END PGP SIGNATURE-----
+
+--------------enig242134010F76037F21797DDB--
