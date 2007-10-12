@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbXJLEgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbXJLEmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759920AbXJLEgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 00:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXJLEgB
+	id S1759579AbXJLEmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 00:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXJLEm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 00:36:01 -0400
-Received: from stinky.trash.net ([213.144.137.162]:46234 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbXJLEf7 (ORCPT
+	Fri, 12 Oct 2007 00:42:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40772 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbXJLEm1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 00:35:59 -0400
-Message-ID: <470EF994.4080403@trash.net>
-Date: Fri, 12 Oct 2007 06:35:32 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Fri, 12 Oct 2007 00:42:27 -0400
+Date: Fri, 12 Oct 2007 13:41:52 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [Patch 001/002] extract kmem_cache_shrink
+Cc: Andrew Morton <akpm@osdl.org>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0710112054220.1882@schroedinger.engr.sgi.com>
+References: <20071012112648.B99F.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710112054220.1882@schroedinger.engr.sgi.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071012134021.B9A7.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: netfilter-devel@lists.netfilter.org, netdev@vger.kernel.org,
-       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@lists.netfilter.org>
-Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
-References: <200710120031.42805.a1426z@gawab.com>
-In-Reply-To: <200710120031.42805.a1426z@gawab.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please send mails discussing netfilter to netfilter-devel.
-
-Al Boldi wrote:
-> With the existence of the mangle table, how useful is the filter table?
+> On Fri, 12 Oct 2007, Yasunori Goto wrote:
 > 
-> Other than requiring the REJECT target to be ported to the mangle table, is 
-> the filter table faster than the mangle table?
+> > Make kmem_cache_shrink_node() for callback routine of memory hotplug
+> > notifier. This is just extract a part of kmem_cache_shrink().
+> 
+> Could we just call kmem_cache_shrink? It will do the shrink on every node 
+> but memory hotplug is rare?
 
-There are some minor differences in ordering (mangle comes before
-DNAT, filter afterwards), but for most rulesets thats completely
-irrelevant. The only difference that really matters is that mangle
-performs rerouting in LOCAL_OUT for packets that had their routing
-key changed, so its really a superset of the filter table. If you
-want to use REJECT in the mangle table, you just need to remove the
-restriction to filter, it works fine. I would prefer to also remove
-the restriction of MARK, CONNMARK etc. to mangle, they're used for
-more than just routing today so that restriction also doesn't make
-much sense. Patches for this are welcome.
+Yes it is. Memory hotplug is rare.
+Ok. I'll do it.
 
-> If not, then shouldn't the filter table be obsoleted to avoid confusion?
+Thanks.
+-- 
+Yasunori Goto 
 
-That would probably confuse people. Just don't use it if you don't
-need to.
+
