@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbXJMTHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932996AbXJMTJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763029AbXJMTHe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 15:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbXJMTH0
+	id S932996AbXJMTJz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 15:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761841AbXJMTJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 15:07:26 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:43096 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755064AbXJMTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 15:07:26 -0400
-Date: Sat, 13 Oct 2007 15:07:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       shannon.nelson@intel.com, dan.j.williams@intel.com
-Subject: [PATCH] drivers/pci, drivers/dma: kill unused vars
-Message-ID: <20071013190724.GA20132@havoc.gtf.org>
+	Sat, 13 Oct 2007 15:09:43 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35594
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756966AbXJMTJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 15:09:42 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: What still uses the block layer?
+Date: Thu, 11 Oct 2007 20:11:21 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200710112011.22000.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My impression from asking questions on the linux-scsi mailing list is that the 
+scsi upper/middle/lower layers doesn't use the block layer described in 
+Documentation/block/*.
 
-Kill two never-used (not even in hidden debug macros) variables,
-noticed by the compiler.
+For example, the scsi guys say:
+http://marc.info/?l=linux-scsi&m=118633268527856&w=2
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/dma/ioatdma.c                  |    1 -
- drivers/pci/hotplug/pci_hotplug_core.c |    2 --
- 2 files changed, 3 deletions(-)
+Instead of using the block layer, SCSI reinvents this particular wheel itself.  
+There's a scsi "upper layer" that provides /dev nodes, scsi low-level 
+drivers, and a gigantic glue layer in between call the "scsi midlayer" that's 
+something like a networking stack, and is responsible for losing track of all 
+your devices so that the one SATA disk hardwired into your laptop might be 
+sda or sdc depending on whether or not you had a USB key plugged in when you 
+booted up.  Anyway, the block layer isn't between any of these three, that I 
+can tell.
 
-diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
-index 41b18c5..d9db64b 100644
---- a/drivers/dma/ioatdma.c
-+++ b/drivers/dma/ioatdma.c
-@@ -244,7 +244,6 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
- 	struct ioat_device *ioat_device = to_ioat_device(chan->device);
- 	struct ioat_desc_sw *desc, *_desc;
--	u16 chanctrl;
- 	int in_use_descs = 0;
- 
- 	ioat_dma_memcpy_cleanup(ioat_chan);
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index f0eba53..01c351c 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -689,8 +689,6 @@ int pci_hp_deregister (struct hotplug_slot *slot)
- int __must_check pci_hp_change_slot_info(struct hotplug_slot *slot,
- 					 struct hotplug_slot_info *info)
- {
--	int retval;
--
- 	if ((slot == NULL) || (info == NULL))
- 		return -ENODEV;
- 
+Now that IDE disks have been rerouted through the scsi layer, SATA goes 
+through the scsi layer, USB goes through the scsi layer, firewire goes 
+through the scsi layer...  What's left?  It seems like everything but 
+ramdisks have now been routed through the scsi layer.  My laptop hasn't got a 
+single SCSI device but it also hasn't got any block devices that don't show 
+up as scsi.
+
+So what's still using the block layer?  How do the scsi layers and the block 
+layer relate?  I'm confused!  (This is normal for me, but still...)
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
