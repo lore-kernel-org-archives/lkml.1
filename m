@@ -1,89 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbXJLJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbXJLJwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbXJLJtt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXJLJti
+	id S1760138AbXJLJwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXJLJwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:49:38 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:47652 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbXJLJtg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:49:36 -0400
-Date: Fri, 12 Oct 2007 15:12:31 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ballabio_dario@emc.com,
-       linux-scsi@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Build Failure (Was Re: 2.6.23-mm1)
-Message-ID: <20071012094231.GA15012@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 12 Oct 2007 05:52:14 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:51969 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756976AbXJLJwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:52:13 -0400
+Date: Fri, 12 Oct 2007 11:55:05 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071012095505.GD1962@ff.dom.local>
+References: <20071004052348.GC15131@wotan.suse.de> <20071012082534.GB1962@ff.dom.local> <20071012085733.GA19237@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071012085733.GA19237@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 09:31:26PM -0700, Andrew Morton wrote:
+On Fri, Oct 12, 2007 at 10:57:33AM +0200, Nick Piggin wrote:
+> On Fri, Oct 12, 2007 at 10:25:34AM +0200, Jarek Poplawski wrote:
+> > On 04-10-2007 07:23, Nick Piggin wrote:
+> > > According to latest memory ordering specification documents from Intel and
+> > > AMD, both manufacturers are committed to in-order loads from cacheable memory
+> > > for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+> > ...
+> > 
+> > Great news!
+> > 
+> > First it looks like a really great thing that it's revealed at last.
+> > But then... there is probably some confusion: did we have to use
+> > ineffective code for so long?
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> I'm not sure exactly what the situation is with the manufacturers,
+> but maybe they (at least Intel) wanted to keep their options open
+> WRT their barrier semantics, even if current implementations were
+> not taking full liberty of them.
+> 
+>  
+> > First again, we could try to blame Intel etc. But then, wait a minute:
+> > is it such a mystery knowledge? If this reordering is done there are
+> > some easy rules broken (just like in examples from these manuals). And
+> > if somebody cared to do this for optimization, then this is probably
+> > noticeable optimization, let's say 5 or 10%. Then any test shouldn't
+> > need to take very long to tell the truth in less than 100 loops!
+> 
+> I don't know quite what you're saying... the CPUs could probably get
+> performance by having weakly ordered loads, OTOH I think the Intel
+> ones might already do this speculatively so they appear in order but
+> essentially have the performance of weak order.
+
+I meant: if there is any reordering possible this should be quite
+distinctly visible, because why would any vendor enable such nasty
+things if not for performance. But now I start to doubt: of course
+there is such a possibility someone makes this reordering for some
+other reasons which could be so rare it's hard to check. And this
+someone knows it's processors are seen less efficient because of eg.
+mostly unneeded read barriers used by operating systems...
+
+> 
+> If you're just talking about this patch, then it probably isn't much
+> performance gain. I'm guessing you'd be lucky to measure it from
+> userspace.
+
+No, it's only about the comment to this patch: "Hence, smp_rmb() may be
+a simple barrier".
+
+> 
+> 
+> > So, maybe linux needs something like this, instead of waiting few
+> > years with each new model for vendors goodwill? IMHO, even for less
+> > popular processors, this could be checked under some debugging option
+> > at the system start (after disabling suspicios barrier for a while
+> > plus some WARN_ONs).
+> 
+> I don't know if that would be worthwhile. It actually isn't always
+> trivial to trigger reordering. For example, on my dual-core core2,
+> in order to see reads pass writes, I have to do work on a set that
+> exceeds the cache size and does a huge amount of work to ensure it
+> is going to trigger that. If you can actually come up with a test
+> case that triggers load/load or store/store reordering, I'm sure
+> Intel / AMD would like to see it ;)
+
+Anyway, it seems any heavy testing such as yours, should give us the
+same informations years earlier than any vendors manual and then any
+gain is multiplied by millions of users. Then only still doubtful
+cases could be treated with additional caution and some debugging
+code.
+
+> 
+> All existing processors as far as we know are in-order WRT loads vs
+> loads and stores vs stores. It was just a matter of getting the docs
+> clarified, which gives us more confidence that we're correct and a
+> reasonable guarnatee of forward compatibility.
+
+After reading this Intel's legal information I don't think you should
+feel so much more forward confident...
+
+> 
+> So, I think the plan is just to merge these 3 patches during the
+> current window.
 > 
 
-Hi Andrew
+And they really should be!
 
-My compile just failed with 
-
-drivers/scsi/gdth.c: In function ‘gdth_search_dev’:
-drivers/scsi/gdth.c:646: warning: ‘pci_find_device’ is deprecated
-(declared at include/linux/pci.h:482)
-drivers/scsi/gdth.c: In function ‘gdth_init_isa’:
-drivers/scsi/gdth.c:857: error: ‘gdth_irq_tab’ undeclared (first use in
-this function)
-drivers/scsi/gdth.c:857: error: (Each undeclared identifier is reported
-only once
-drivers/scsi/gdth.c:857: error: for each function it appears in.)
-drivers/scsi/gdth.c: In function ‘gdth_copy_internal_data’:
-drivers/scsi/gdth.c:2362: warning: unused variable ‘sg’
-make[2]: *** [drivers/scsi/gdth.o] Error 1
-make[1]: *** [drivers/scsi] Error 2
-make: *** [drivers] Error 2
-[dhaval@gondor linux-2.6.23]$
-
-Looking into the code I notice that gdth_irq_tab is not declared with
-CONFIG_ISA=y and !CONFIG_EISA.
-
-The values seem to be same in 2.6.23 (I am not sure why it has been put
-with #ifdefs in -mm) so I have just modified the #ifdef to take care of
-CONFIG_ISA as well.
-
-(Compile tested only)
-
-Thanks,
-
---
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
-
-Index: linux-2.6.23/drivers/scsi/gdth.c
-===================================================================
---- linux-2.6.23.orig/drivers/scsi/gdth.c	2007-10-12 14:07:28.000000000 +0530
-+++ linux-2.6.23/drivers/scsi/gdth.c	2007-10-12 15:06:47.000000000 +0530
-@@ -288,7 +288,7 @@ static struct timer_list gdth_timer;
- #ifdef CONFIG_ISA
- static unchar   gdth_drq_tab[4] = {5,6,7,7};            /* DRQ table */
- #endif
--#ifdef CONFIG_EISA
-+#if defined(CONFIG_EISA) || defined(CONFIG_ISA)
- static unchar   gdth_irq_tab[6] = {0,10,11,12,14,0};    /* IRQ table */
- #endif
- static unchar   gdth_polling;                           /* polling if TRUE */
-
--- 
-regards,
-Dhaval
+Jarek P.
