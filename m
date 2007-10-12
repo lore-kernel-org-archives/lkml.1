@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbXJLTz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXJLUBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759018AbXJLTz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 15:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbXJLTzV
+	id S1758683AbXJLUBq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 16:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXJLUBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 15:55:21 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:47759 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755032AbXJLTzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 15:55:20 -0400
-Date: Fri, 12 Oct 2007 21:55:13 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [GIT PULL] MMC updates
-Message-ID: <20071012215513.1a4dfc7d@poseidon.drzeus.cx>
-In-Reply-To: <alpine.LFD.0.999.0710112228200.6887@woody.linux-foundation.org>
-References: <20071010212149.0073ee08@poseidon.drzeus.cx>
-	<alpine.LFD.0.999.0710112228200.6887@woody.linux-foundation.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+	Fri, 12 Oct 2007 16:01:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45740 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754378AbXJLUBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 16:01:33 -0400
+Date: Fri, 12 Oct 2007 13:01:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: viro@ftp.linux.org.uk, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-mm1 thread exit_group issue
+Message-Id: <20071012130107.6f1c8421.akpm@linux-foundation.org>
+In-Reply-To: <20071012194759.GA31733@Krystal>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071011234202.2f15bb76.akpm@linux-foundation.org>
+	<20071012064658.GA8181@ftp.linux.org.uk>
+	<20071012001325.ba02a6f0.akpm@linux-foundation.org>
+	<20071012194759.GA31733@Krystal>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 22:30:41 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, 12 Oct 2007 15:47:59 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
+> I noticed a regression between 2.6.23-rc8-mm2 and 2.6.23-mm1 (with your
+> hotfixes). User space threads seems to receive a ERESTART_RESTARTBLOCK
+> as soon as a thread does a pthread_join on them. The previous behavior
+> was to wait for them to exit by taking a futex.
 > 
-> There seems to be some breakage here:
+> I provide a toy program that shows the problem. On 2.6.23-rc8-mm2, it
+> loops forever (as it should). On 2.6.23-mm1, it exits after 10 seconds.
 > 
+> Any idea on what may cause this problem ?
+> 
+> (I also provide complete ptrace -f of a correct and buggy run and my
+> kernel config. Tests were done on i386.)
 
-Breakage repaired (and some new git voodoo learned. woot!). I even
-threw in a few randconfig for good measure. So repull and things should
-be peachy.
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+No idea.  But I can reproduce it here so I'll bisect it now.  Thanks
+for the test case!
