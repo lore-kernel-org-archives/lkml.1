@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934209AbXJLWp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934254AbXJLWqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934209AbXJLWp6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbXJLWVQ
+	id S934254AbXJLWqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932607AbXJLWVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:21:16 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53413 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:21:21 -0400
+Received: from mail.suse.de ([195.135.220.2]:53424 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932690AbXJLWVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:21:14 -0400
+	id S932706AbXJLWVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:21:19 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
+Cc: Tejun Heo <htejun@gmail.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 46/75] sysfs: Introduce sysfs_rename_mutex
-Date: Fri, 12 Oct 2007 15:16:50 -0700
-Message-Id: <11922276572176-git-send-email-gregkh@suse.de>
+Subject: [PATCH 47/75] sysfs: simply sysfs_get_dentry
+Date: Fri, 12 Oct 2007 15:16:51 -0700
+Message-Id: <11922276622731-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192227653165-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276572176-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -65,124 +65,142 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276433594-git-send-email-gregkh@suse.de>
  <11922276471365-git-send-email-gregkh@suse.de>
  <1192227653165-git-send-email-gregkh@suse.de>
+ <11922276572176-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Tejun Heo <htejun@gmail.com>
 
-Looking carefully at the rename code we have a subtle dependency
-that the structure of sysfs not change while we are performing
-a rename.  If the parent directory of the object we are renaming
-changes while the rename is being performed nasty things could
-happen when we go to release our locks.
+Now that we know the sysfs tree structure cannot change under us and
+sysfs shadow support is dropped, sysfs_get_dentry() can be simplified
+greatly.  It can just look up from the root and there's no need to
+retry on failure.
 
-So introduce a sysfs_rename_mutex to prevent this highly
-unlikely theoretical issue.
-
-In addition hold sysfs_rename_mutex over all calls to
-sysfs_get_dentry. Allowing sysfs_get_dentry to be simplified
-in the future.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |    8 +++++++-
- fs/sysfs/file.c  |    4 ++++
- fs/sysfs/sysfs.h |    1 +
- 3 files changed, 12 insertions(+), 1 deletions(-)
+ fs/sysfs/dir.c |   91 ++++++++++----------------------------------------------
+ 1 files changed, 16 insertions(+), 75 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 1af963e..9fe83d2 100644
+index 9fe83d2..1c3dc5d 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -15,6 +15,7 @@
- #include "sysfs.h"
- 
- DEFINE_MUTEX(sysfs_mutex);
-+DEFINE_MUTEX(sysfs_rename_mutex);
- spinlock_t sysfs_assoc_lock = SPIN_LOCK_UNLOCKED;
- 
- static spinlock_t sysfs_ino_lock = SPIN_LOCK_UNLOCKED;
-@@ -82,7 +83,7 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
-  *	down from there looking up dentry for each step.
+@@ -78,9 +78,8 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+  *	@sd: sysfs_dirent of interest
+  *
+  *	Get dentry for @sd.  Dentry is looked up if currently not
+- *	present.  This function climbs sysfs_dirent tree till it
+- *	reaches a sysfs_dirent with valid dentry attached and descends
+- *	down from there looking up dentry for each step.
++ *	present.  This function descends from the root looking up
++ *	dentry for each step.
   *
   *	LOCKING:
-- *	Kernel thread context (may sleep)
-+ *	mutex_lock(sysfs_rename_mutex)
-  *
-  *	RETURNS:
-  *	Pointer to found dentry on success, ERR_PTR() value on error.
-@@ -858,6 +859,8 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	const char *dup_name = NULL;
- 	int error;
+  *	mutex_lock(sysfs_rename_mutex)
+@@ -90,86 +89,28 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+  */
+ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ {
+-	struct sysfs_dirent *cur;
+-	struct dentry *parent_dentry, *dentry;
+-	int i, depth;
++	struct dentry *dentry = dget(sysfs_sb->s_root);
  
-+	mutex_lock(&sysfs_rename_mutex);
-+
- 	/* get the original dentry */
- 	sd = kobj->sd;
- 	old_dentry = sysfs_get_dentry(sd);
-@@ -915,6 +918,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	kfree(dup_name);
- 	dput(old_dentry);
- 	dput(new_dentry);
-+	mutex_unlock(&sysfs_rename_mutex);
- 	return error;
+-	/* Find the first parent which has valid s_dentry and get the
+-	 * dentry.
+-	 */
+-	mutex_lock(&sysfs_mutex);
+- restart0:
+-	spin_lock(&sysfs_assoc_lock);
+- restart1:
+-	spin_lock(&dcache_lock);
+-
+-	dentry = NULL;
+-	depth = 0;
+-	cur = sd;
+-	while (!cur->s_dentry || !cur->s_dentry->d_inode) {
+-		if (cur->s_flags & SYSFS_FLAG_REMOVED) {
+-			dentry = ERR_PTR(-ENOENT);
+-			depth = 0;
+-			break;
+-		}
+-		cur = cur->s_parent;
+-		depth++;
+-	}
+-	if (!IS_ERR(dentry))
+-		dentry = dget_locked(cur->s_dentry);
++	while (dentry->d_fsdata != sd) {
++		struct sysfs_dirent *cur;
++		struct dentry *parent;
+ 
+-	spin_unlock(&dcache_lock);
+-	spin_unlock(&sysfs_assoc_lock);
+-
+-	/* from the found dentry, look up depth times */
+-	while (depth--) {
+-		/* find and get depth'th ancestor */
+-		for (cur = sd, i = 0; cur && i < depth; i++)
++		/* find the first ancestor which hasn't been looked up */
++		cur = sd;
++		while (cur->s_parent != dentry->d_fsdata)
+ 			cur = cur->s_parent;
+ 
+-		/* This can happen if tree structure was modified due
+-		 * to move/rename.  Restart.
+-		 */
+-		if (i != depth) {
+-			dput(dentry);
+-			goto restart0;
+-		}
+-
+-		sysfs_get(cur);
+-
+-		mutex_unlock(&sysfs_mutex);
+-
+ 		/* look it up */
+-		parent_dentry = dentry;
+-		mutex_lock(&parent_dentry->d_inode->i_mutex);
+-		dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
++		parent = dentry;
++		mutex_lock(&parent->d_inode->i_mutex);
++		dentry = lookup_one_len_kern(cur->s_name, parent,
+ 					     strlen(cur->s_name));
+-		mutex_unlock(&parent_dentry->d_inode->i_mutex);
+-		dput(parent_dentry);
+-
+-		if (IS_ERR(dentry)) {
+-			sysfs_put(cur);
+-			return dentry;
+-		}
++		mutex_unlock(&parent->d_inode->i_mutex);
++		dput(parent);
+ 
+-		mutex_lock(&sysfs_mutex);
+-		spin_lock(&sysfs_assoc_lock);
+-
+-		/* This, again, can happen if tree structure has
+-		 * changed and we looked up the wrong thing.  Restart.
+-		 */
+-		if (cur->s_dentry != dentry) {
+-			dput(dentry);
+-			sysfs_put(cur);
+-			goto restart1;
+-		}
+-
+-		spin_unlock(&sysfs_assoc_lock);
+-
+-		sysfs_put(cur);
++		if (IS_ERR(dentry))
++			break;
+ 	}
+-
+-	mutex_unlock(&sysfs_mutex);
+ 	return dentry;
  }
  
-@@ -926,6 +930,7 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
- 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
- 	int error;
- 
-+	mutex_lock(&sysfs_rename_mutex);
- 	BUG_ON(!sd->s_parent);
- 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
- 
-@@ -982,6 +987,7 @@ again:
- 	dput(new_parent);
- 	dput(old_dentry);
- 	dput(new_dentry);
-+	mutex_unlock(&sysfs_rename_mutex);
- 	return error;
- }
- 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 16f39c3..ff93c92 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -470,7 +470,9 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
- 	if (!victim_sd)
- 		goto out;
- 
-+	mutex_lock(&sysfs_rename_mutex);
- 	victim = sysfs_get_dentry(victim_sd);
-+	mutex_unlock(&sysfs_rename_mutex);
- 	if (IS_ERR(victim)) {
- 		rc = PTR_ERR(victim);
- 		victim = NULL;
-@@ -509,7 +511,9 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- 	if (!victim_sd)
- 		goto out;
- 
-+	mutex_lock(&sysfs_rename_mutex);
- 	victim = sysfs_get_dentry(victim_sd);
-+	mutex_unlock(&sysfs_rename_mutex);
- 	if (IS_ERR(victim)) {
- 		rc = PTR_ERR(victim);
- 		victim = NULL;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 77253aa..179e6a2 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -90,6 +90,7 @@ extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
- 
- extern spinlock_t sysfs_assoc_lock;
- extern struct mutex sysfs_mutex;
-+extern struct mutex sysfs_rename_mutex;
- extern struct super_block * sysfs_sb;
- extern const struct file_operations sysfs_dir_operations;
- extern const struct file_operations sysfs_file_operations;
 -- 
 1.5.3.4
 
