@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXJLXFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXJLXGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbXJLXFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 19:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760445AbXJLWX0
+	id S932697AbXJLXGn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761038AbXJLWXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:23:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50093 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:23:32 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53640 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760051AbXJLWXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:23:23 -0400
+	id S1760757AbXJLWX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:23:28 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 73/75] kobject: update the copyrights
-Date: Fri, 12 Oct 2007 15:17:17 -0700
-Message-Id: <11922277851672-git-send-email-gregkh@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 74/75] sysfs: add copyrights
+Date: Fri, 12 Oct 2007 15:17:18 -0700
+Message-Id: <11922277903290-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922277801964-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922277851672-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -90,48 +90,174 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922277711448-git-send-email-gregkh@suse.de>
  <1192227776447-git-send-email-gregkh@suse.de>
  <11922277801964-git-send-email-gregkh@suse.de>
+ <11922277851672-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been hacking on these files for a while now, might as well make it
-official...
+From: Tejun Heo <htejun@gmail.com>
 
+Sysfs has gone through considerable amount of reimplementation.  Add
+copyrights.  Any objections?  :-)
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kobject.h |    6 ++++--
- lib/kobject.c           |    2 ++
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ fs/sysfs/bin.c        |    8 +++++++-
+ fs/sysfs/dir.c        |   10 +++++++++-
+ fs/sysfs/file.c       |   10 +++++++++-
+ fs/sysfs/inode.c      |    8 ++++++--
+ fs/sysfs/mount.c      |   10 +++++++++-
+ fs/sysfs/symlink.c    |   10 +++++++++-
+ fs/sysfs/sysfs.h      |   10 ++++++++++
+ include/linux/sysfs.h |    2 ++
+ 8 files changed, 61 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 973aa7b..4a0d27f 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -1,8 +1,10 @@
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 247ea19..006fc64 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -1,9 +1,15 @@
  /*
-  * kobject.h - generic kernel object infrastructure.
+- * bin.c - binary file operations for sysfs.
++ * fs/sysfs/bin.c - sysfs binary file implementation
   *
-- * Copyright (c) 2002-2003	Patrick Mochel
-- * Copyright (c) 2002-2003	Open Source Development Labs
-+ * Copyright (c) 2002-2003 Patrick Mochel
-+ * Copyright (c) 2002-2003 Open Source Development Labs
-+ * Copyright (c) 2006-2007 Greg Kroah-Hartman <greg@kroah.com>
-+ * Copyright (c) 2006-2007 Novell Inc.
+  * Copyright (c) 2003 Patrick Mochel
+  * Copyright (c) 2003 Matthew Wilcox
+  * Copyright (c) 2004 Silicon Graphics, Inc.
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+ 
+ #undef DEBUG
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index e301a12..9161db4 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -1,5 +1,13 @@
+ /*
+- * dir.c - Operations for sysfs directories.
++ * fs/sysfs/dir.c - sysfs core and dir operation implementation
++ *
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+ 
+ #undef DEBUG
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index c05f961..d3be1e7 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -1,5 +1,13 @@
+ /*
+- * file.c - operations for regular (text) files.
++ * fs/sysfs/file.c - sysfs regular (text) file implementation
++ *
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+ 
+ #include <linux/module.h>
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 2210cf0..9236635 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -1,7 +1,11 @@
+ /*
+- * inode.c - basic inode and dentry operations.
++ * fs/sysfs/inode.c - basic sysfs inode and dentry operations
   *
-  * This file is released under the GPLv2.
+- * sysfs is Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
   *
-diff --git a/lib/kobject.c b/lib/kobject.c
-index b7e0646..03d4036 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -2,6 +2,8 @@
-  * kobject.c - library routines for handling generic kernel objects
+  * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 465902c..c76c540 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -1,5 +1,13 @@
+ /*
+- * mount.c - operations for initializing and mounting sysfs.
++ * fs/sysfs/symlink.c - operations for initializing and mounting sysfs
++ *
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+ 
+ #define DEBUG 
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index ffa82e9..3eac20c 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -1,5 +1,13 @@
+ /*
+- * symlink.c - operations for sysfs symlinks.
++ * fs/sysfs/symlink.c - sysfs symlink implementation
++ *
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
+ 
+ #include <linux/fs.h>
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 269c845..f0326f2 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -1,3 +1,13 @@
++/*
++ * fs/sysfs/sysfs.h - sysfs internal header file
++ *
++ * Copyright (c) 2001-3 Patrick Mochel
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ */
++
+ struct sysfs_open_dirent;
+ 
+ /* type-specific structures for sysfs_dirent->s_* union members */
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index db5dd24..149ab62 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -3,6 +3,8 @@
   *
-  * Copyright (c) 2002-2003 Patrick Mochel <mochel@osdl.org>
-+ * Copyright (c) 2006-2007 Greg Kroah-Hartman <greg@kroah.com>
-+ * Copyright (c) 2006-2007 Novell Inc.
+  * Copyright (c) 2001,2002 Patrick Mochel
+  * Copyright (c) 2004 Silicon Graphics, Inc.
++ * Copyright (c) 2007 SUSE Linux Products GmbH
++ * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
   *
-  * This file is released under the GPLv2.
-  *
+  * Please see Documentation/filesystems/sysfs.txt for more information.
+  */
 -- 
 1.5.3.4
 
