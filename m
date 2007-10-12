@@ -1,99 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXJLPOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbXJLPOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXJLPOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 11:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXJLPOJ
+	id S1758871AbXJLPOf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 11:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXJLPOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 11:14:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48709 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750845AbXJLPOI (ORCPT
+	Fri, 12 Oct 2007 11:14:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:59329 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbXJLPOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 11:14:08 -0400
-Date: Fri, 12 Oct 2007 08:13:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-In-Reply-To: <20071012082534.GB1962@ff.dom.local>
-Message-ID: <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org>
-References: <20071012082534.GB1962@ff.dom.local>
+	Fri, 12 Oct 2007 11:14:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=TPTVZ57wnG6fABxLXN066jmk85w19s0ScDBGf5iI6R+PRjXT2vVVNuJ5Gk+z0YGAP
+	KDMDHHe5eIhxJId6EtKMg==
+Date: Fri, 12 Oct 2007 08:13:35 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: menage@google.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       a.p.zijlstra@chello.nl, serue@us.ibm.com, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       svaidy@linux.vnet.ibm.com, xemul@openvz.org, containers@lists.osdl.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] task containersv11 add tasks file interface fix for
+ cpusets
+In-Reply-To: <20071011161559.378e7766.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710120010210.8474@chino.kir.corp.google.com>
+References: <20071003084241.24279.62099.sendpatchset@jackhammer.engr.sgi.com> <6599ad830710030851jb44f00ft9634f9381218b6e9@mail.gmail.com> <20071003105817.7adf6516.pj@sgi.com> <6599ad830710031110r1a74eafej56f20cc33e72ac81@mail.gmail.com> <20071003131632.fed4b848.pj@sgi.com>
+ <6599ad830710031331h15d35e90lc63d845efd2de6f5@mail.gmail.com> <20071006012437.c0fd3a8a.pj@sgi.com> <alpine.DEB.0.9999.0710061047400.24311@chino.kir.corp.google.com> <6599ad830710061411l3fb9368al319a80469d54946e@mail.gmail.com>
+ <alpine.DEB.0.9999.0710062250590.11526@chino.kir.corp.google.com> <6599ad830710101346y1ade5ccdgd3b64a041eab7ec1@mail.gmail.com> <alpine.DEB.0.9999.0710101351400.4771@chino.kir.corp.google.com> <20071011161559.378e7766.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Oct 2007, Paul Jackson wrote:
 
-
-On Fri, 12 Oct 2007, Jarek Poplawski wrote:
+> Hmmm ... I hadn't noticed that sched_hotcpu_mutex before.
 > 
-> First it looks like a really great thing that it's revealed at last.
-> But then... there is probably some confusion: did we have to use
-> ineffective code for so long?
+> I wonder what it is guarding?  As best as I can guess, it seems, at
+> least in part, to be keeping the following two items consistent:
+>  1) cpu_online_map
 
-I think the chip manufacturers really wanted to keep their options open.
+Yes, it protects against cpu hot-plug or hot-unplug; cpu_online_map is 
+guaranteed to be unchanged while the mutex is being held.
 
-Having the option to re-order loads in architecturally visible ways was 
-something that they probably felt they really wanted to have. On the other 
-hand:
+>  2) the per-task cpus_allowed masks
+> 
 
- - I bet they had noticed that things break, and some applications depend 
-   on fairly strong ordering (not necessarily in Linux-land, but..)
+It doesn't need to protect the per-task cpus_allowed per se, that's 
+already protected.  If a task's cpu affinity changes during a call to 
+set_cpus_allowed(), the migration thread will notice the change when it 
+tries to deactive the task and activate it on the destination cpu.  It 
+then becomes a no-op.
 
-   I suspect hw manufacturers go through life hoping that "software 
-   improves". They probably thought that getting rid of the old 16-bit 
-   windows would mean that less people depended on undefined behaviour. 
+That's a consequence of the fact that we can't migrate current and need a 
+kthread, particularly the source cpu's runqueue migration thread, to do it 
+when it's scheduled.  A migration request such as that includes a 
+completion variable so that the set_cpus_allowed() waits until it has 
+either been migrated or changed cpu affinity again.
 
-   And I suspect that they started noticing that no, with threads and 
-   JVM's and things, *more* people started depending on fairly strong 
-   memory ordering.
+> That is, it seems to ensure that a task is allowed to run on some
+> online CPU.
+> 
 
- - I suspect Intel in particular noticed that they can do a lot of very 
-   aggressive re-ordering at a microarchitectural level, but can still 
-   guarantee that *architecturally* they never show it (dynamic detection 
-   of reordered loads being replayed on cache dirty events etc).
+Right, the destination cpu will not be hot-unplugged out from underneath 
+the task during migration.
 
-IOW, I suspect that both Intel and AMD noticed that while they had wanted 
-to keep their options open, those options weren't really realistic, and 
-not something that the market wanted (aggressive use of threading wants 
-*stricter* memory ordering, not looser), and they could work well enough 
-with a fairly strict memory model.
+> If that's approximately true, then shouldn't I take sched_hotcpu_mutex
+> around the entire chunk of code that handles updating a cpusets 'cpus',
+> from the time it verifies that the requested CPUs are online, until the
+> time that every affected task has its cpus_allowed updated?
+> 
 
-> So, maybe linux needs something like this, instead of waiting few
-> years with each new model for vendors goodwill? IMHO, even for less
-> popular processors, this could be checked under some debugging option
-> at the system start (after disabling suspicios barrier for a while
-> plus some WARN_ONs).
+Not necessarily, you can iterate through a list of tasks and change their 
+cpu affinity (represented by task->cpus_allowed) by migrating them away 
+while task->cpuset->cpus_allowed remains unchanged.  The hotcpu notifier 
+cpuset_handle_cpuhp() will update that when necessary for cpu hot-plug or 
+hot-unplug events.
 
-Quite frankly, even *within* Intel and AMD, there are damn few people who 
-understand exactly what the memory ordering requirements and guarantees 
-are and historically were for the different CPU's.
+So it's entirely possible that a cpu will be downed during your iteration 
+of tasks, but that's fine.  Just as long as it isn't downed during the 
+migration.  The cpuset's cpus_allowed will be updated by the hotcpu 
+notifier and sched_hotcpu_mutex will protect from unplugged cpus around 
+the set_cpus_allowed() call, which checks for intersection between your 
+new cpumask and cpu_online_map.
 
-I would bet that had you asked a random (but still competent) Intel/AMD 
-engineer that wasn't really intimately involved with the actual design of 
-the cache protocols and memory pipelines, they would absolutely not have 
-been able to tell you how the CPU actually worked.
+> Furthermore, I should probably guard changes to and verifications
+> against the top_cpuset's cpus_allowed with this mutex as well, as it is
+> supposed to be a copy of cpu_online_map.
+> 
 
-So no, there's no way a software person could have afforded to say "it 
-seems to work on my setup even without the barrier". On a dual-socket 
-setup with s shared bus, that says absolutely *nothing* about the 
-behaviour of the exact same CPU when used with a multi-bus chipset. Not to 
-mention another revisions of the same CPU - much less a whole other 
-microarchitecture.
+The hotcpu notifier protects you there as well.  
+common_cpu_mem_hotplug_unplug() explicitly sets them.
 
-So yes, I've personally been aware for about a year that the memory 
-ordering was going to likely be documented, but no way was I going to 
-depend on it until Intel and AMD were ready to state so *publicly*. 
-Because before that happens, they may have noticed errata etc that made it 
-not work out.
+> And since all descendent cpusets have to have 'cpus' masks that are
+> subsets of their parents, this means guarding other chunks of cpuset
+> code that depend on the consistency of various per-cpuset cpus_allowed
+> masks and cpu_online_map.
+> 
 
-Also, please note that we didn't even just change the barriers immediately 
-when the docs came out. I want to do it soon - still *early* in the 2.6.24 
-development cycle - exactly because bugs happen, and if somebody notices 
-something strange, we'll have more time to perhaps decide that "oops, 
-there's something bad going on, let's undo this for the real 2.6.24 
-release until we can figure out the exact pattern".
+Same as above, except now you're using 
+guarantee_online_cpus_mems_in_subtree().
 
-		Linus
+> My current intuition is that this expanded use of sched_hotcpu_mutex in
+> the cpuset code involving various cpus_allowed masks would be a good
+> thing.
+> 
+> In sum, perhaps sched_hotcpu_mutex is guarding the dispersed kernel
+> state that depends on what CPUs are online.  This includes the per-task
+> and per-cpuset cpus_allowed masks, all of which are supposed to be some
+> non-empty subset of the online CPUs.
+> 
+
+It guards cpu_online_map from being changed while it's held.
+
+> Taking and dropping the sched_hotcpu_mutex for each task, just around
+> the call to set_cpus_allowed(), as you suggested above, doesn't seem to
+> accomplish much that I can see, and certainly doesn't seem to guard the
+> consistency of cpu_online_map with the tasks cpus_allowed masks.
+> 
+
+It's needed to serialize with other migrations such as sched_setaffinity() 
+and you can use it since all migrations will inherently need this type of 
+protection.  It makes the new cpumask consistent with cpu_online_map only 
+so far as that it's a subset; otherwise, set_cpus_allowed() will fail.  
+The particular destination cpu is chosen as any online cpu, which we know 
+won't be downed because we're holding sched_hotcpu_mutex.
+
+		David
