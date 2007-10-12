@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbXJLJhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXJLJj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761318AbXJLJhD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760737AbXJLJfm
+	id S1760868AbXJLJj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbXJLJjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:35:42 -0400
-Received: from sullivan.realtime.net ([205.238.132.226]:1334 "EHLO
-	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760706AbXJLJfl (ORCPT
+	Fri, 12 Oct 2007 05:39:21 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:51889 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755549AbXJLJjV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:35:41 -0400
-Date: Fri, 12 Oct 2007 04:35:19 -0500 (CDT)
-From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH] sched domain sysctl: don't bug on alloc failure
-In-Reply-To: <mm-sched-0@bga.com>
-Message-Id: <mm-sched-4@bga.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: <linux-kernel@vger.kernel.org>
+	Fri, 12 Oct 2007 05:39:21 -0400
+Message-ID: <470F40C4.1050901@freedesktop.org>
+Date: Fri, 12 Oct 2007 02:39:16 -0700
+From: Josh Triplett <josh@freedesktop.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: ego@in.ibm.com
+CC: Paul E McKenney <paulmck@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Dipankar Sarma <dipankar@in.ibm.com>,
+       rostedt@goodmis.org
+Subject: Re: [PATCH] Use raw_smp_processor_id() in rcu_random()
+References: <20071012092044.GA1138@in.ibm.com>
+In-Reply-To: <20071012092044.GA1138@in.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we are calling this at runtime, a more relaxed error path is
-suggested.  If an allocation fails, we just register the partial table,
-which will show empty directories.
+Gautham R Shenoy wrote:
+> With CONFIG_PREEMPT=y on 2.6.23-rc8-mm2, rcu_random() calls 
+> smp_processor_id() from a preemptible context, triggering the
+> following kernel error.
+> 
+> BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5155
+> caller is rcu_random+0x16/0x39 [rcutorture]
+>  [<c010612f>] dump_trace+0x68/0x1d2
+>  [<c01062b1>] show_trace_log_lvl+0x18/0x2c
+>  [<c0106c23>] show_trace+0xf/0x11
+>  [<c0106d33>] dump_stack+0x12/0x14
+>  [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
+>  [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
+>  [<f8870cdf>] <3>BUG: using smp_processor_id() in preemptible [00000001] code: rcu_torture_fak/5156
+> rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
+>  [<c0139b32>] caller is rcu_random+0x16/0x39 [rcutorture]
+> kthread+0x38/0x5e
+>  [<c0105ca7>] kernel_thread_helper+0x7/0x10
+>  =======================
+>  [<c010612f>] dump_trace+0x68/0x1d2
+>  [<c01062b1>] show_trace_log_lvl+0x18/0x2c
+>  [<c0106c23>] show_trace+0xf/0x11
+>  [<c0106d33>] dump_stack+0x12/0x14
+>  [<c02a0a25>] debug_smp_processor_id+0xa1/0xb4
+>  [<f887064c>] rcu_random+0x16/0x39 [rcutorture]
+>  [<f8870cdf>] rcu_torture_fakewriter+0x4d/0xc5 [rcutorture]
+> 
+> rcu_random() can do with raw_smp_processor_id() as a parameter to cpu_clock()
+> in this particular context.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
+Looks reasonable to me.
 
-Index: kernel/kernel/sched.c
-===================================================================
---- kernel.orig/kernel/sched.c	2007-10-12 03:59:02.000000000 -0500
-+++ kernel/kernel/sched.c	2007-10-12 03:59:07.000000000 -0500
-@@ -5285,8 +5285,6 @@ static struct ctl_table *sd_alloc_ctl_en
- 	struct ctl_table *entry =
- 		kcalloc(n, sizeof(struct ctl_table), GFP_KERNEL);
- 
--	BUG_ON(!entry);
--
- 	return entry;
- }
- 
-@@ -5319,6 +5317,9 @@ sd_alloc_ctl_domain_table(struct sched_d
- {
- 	struct ctl_table *table = sd_alloc_ctl_entry(14);
- 
-+	if (table == NULL)
-+		return NULL;
-+
- 	set_table_entry(&table[0], "min_interval", &sd->min_interval,
- 		sizeof(long), 0644, proc_doulongvec_minmax);
- 	set_table_entry(&table[1], "max_interval", &sd->max_interval,
-@@ -5356,6 +5357,8 @@ static ctl_table *sd_alloc_ctl_cpu_table
- 	for_each_domain(cpu, sd)
- 		domain_num++;
- 	entry = table = sd_alloc_ctl_entry(domain_num + 1);
-+	if (table == NULL)
-+		return NULL;
- 
- 	i = 0;
- 	for_each_domain(cpu, sd) {
-@@ -5376,6 +5379,9 @@ static void register_sched_domain_sysctl
- 	struct ctl_table *entry = sd_alloc_ctl_entry(cpu_num + 1);
- 	char buf[32];
- 
-+	if (entry == NULL)
-+		return;
-+
- 	sd_ctl_dir[0].child = entry;
- 
- 	for_each_online_cpu(i) {
+Acked-by: Josh Triplett <josh@kernel.org> 
+
