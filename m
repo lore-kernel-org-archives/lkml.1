@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbXJLR0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763396AbXJLR0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763283AbXJLR0B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762868AbXJLRXe
+	id S1763396AbXJLR0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763032AbXJLRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:23:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58610 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:23:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58619 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762106AbXJLRXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:23:31 -0400
-Date: Fri, 12 Oct 2007 18:23:23 +0100
+	id S1762966AbXJLRXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:23:42 -0400
+Date: Fri, 12 Oct 2007 18:23:37 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Dave Wysochanski <dwysocha@redhat.com>,
-       Chandra Seetharaman <sekharan@us.ibm.com>
-Subject: [2.6.24 PATCH 23/25] dm mpath: hp retry if not ready
-Message-ID: <20071012172323.GI24157@agk.fab.redhat.com>
+       Jonathan Brassow <jbrassow@redhat.com>
+Subject: [2.6.24 PATCH 24/25] dm log: split suspend
+Message-ID: <20071012172337.GJ24157@agk.fab.redhat.com>
 Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Dave Wysochanski <dwysocha@redhat.com>,
-	Chandra Seetharaman <sekharan@us.ibm.com>
+	Jonathan Brassow <jbrassow@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,140 +27,62 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Wysochanski <dwysocha@redhat.com>
+From: Jonathan Brassow <jbrassow@redhat.com>
 
-This patch adds retries to the hp hardware handler, and utilizes the 
-MP_RETRY flag of dm-multipath.  For now in the hp handler, if we get a 
-pg_init completed with a check condition we just assume we can retry the
-pg_init command.  We make this assumption because of incomplete data on
-specific check condition code of the HP hardware, and because testing
-has shown the HP path initialization command to be idempotent.
-The number of times we retry is settable via the "pg_init_retries"
-multipath map feature.
+There are now two phases to a suspend in device-mapper -
+presuspend and postsuspend.  This patch removes the
+single 'suspend' in the logging API and replaces it with
+'presuspend' and 'postsuspend' functions to align it 
+better with core device-mapper.
 
-Signed-off-by: Dave Wysochanski <dwysocha@redhat.com>
-Acked-by: Chandra Seetharaman <sekharan@us.ibm.com>
+A subsequent patch will make use of 'presuspend'.
+
+Signed-off-by: Jonathan Brassow <jbrassow@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
 ---
- drivers/md/dm-mpath-hp-sw.c |   64 ++++++++++++++++++++++++++++++++++++--------
- 1 files changed, 53 insertions(+), 11 deletions(-)
+ drivers/md/dm-log.c   |    2 +-
+ drivers/md/dm-log.h   |    3 ++-
+ drivers/md/dm-raid1.c |    2 +-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.23/drivers/md/dm-mpath-hp-sw.c
+Index: linux-2.6.23/drivers/md/dm-log.c
 ===================================================================
---- linux-2.6.23.orig/drivers/md/dm-mpath-hp-sw.c	2007-10-12 15:03:29.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-mpath-hp-sw.c	2007-10-12 15:03:31.000000000 +0100
-@@ -18,19 +18,54 @@
- #include <linux/types.h>
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_dbg.h>
+--- linux-2.6.23.orig/drivers/md/dm-log.c	2007-10-12 12:36:13.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-log.c	2007-10-12 15:03:32.000000000 +0100
+@@ -696,7 +696,7 @@ static struct dirty_log_type _disk_type 
+ 	.module = THIS_MODULE,
+ 	.ctr = disk_ctr,
+ 	.dtr = disk_dtr,
+-	.suspend = disk_flush,
++	.postsuspend = disk_flush,
+ 	.resume = disk_resume,
+ 	.get_region_size = core_get_region_size,
+ 	.is_clean = core_is_clean,
+Index: linux-2.6.23/drivers/md/dm-log.h
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-log.h	2007-10-12 12:36:13.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-log.h	2007-10-12 15:03:32.000000000 +0100
+@@ -32,7 +32,8 @@ struct dirty_log_type {
+ 	 * There are times when we don't want the log to touch
+ 	 * the disk.
+ 	 */
+-	int (*suspend)(struct dirty_log *log);
++	int (*presuspend)(struct dirty_log *log);
++	int (*postsuspend)(struct dirty_log *log);
+ 	int (*resume)(struct dirty_log *log);
  
- #include "dm.h"
- #include "dm-hw-handler.h"
+ 	/*
+Index: linux-2.6.23/drivers/md/dm-raid1.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-raid1.c	2007-10-12 13:15:36.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-raid1.c	2007-10-12 15:03:32.000000000 +0100
+@@ -1305,7 +1305,7 @@ static void mirror_postsuspend(struct dm
+ 	wait_event(_kmirrord_recovery_stopped,
+ 		   !atomic_read(&ms->rh.recovery_in_flight));
  
- #define DM_MSG_PREFIX "multipath hp-sw"
- #define DM_HP_HWH_NAME "hp-sw"
--#define DM_HP_HWH_VER "0.0.3"
-+#define DM_HP_HWH_VER "1.0.0"
- 
- struct hp_sw_context {
- 	unsigned char sense[SCSI_SENSE_BUFFERSIZE];
- };
- 
- /*
-+ * hp_sw_error_is_retryable - Is an HP-specific check condition retryable?
-+ * @req: path activation request
-+ *
-+ * Examine error codes of request and determine whether the error is retryable.
-+ * Some error codes are already retried by scsi-ml (see
-+ * scsi_decide_disposition), but some HP specific codes are not.
-+ * The intent of this routine is to supply the logic for the HP specific
-+ * check conditions.
-+ *
-+ * Returns:
-+ *  1 - command completed with retryable error
-+ *  0 - command completed with non-retryable error
-+ *
-+ * Possible optimizations
-+ * 1. More hardware-specific error codes
-+ */
-+static int hp_sw_error_is_retryable(struct request *req)
-+{
-+	/*
-+	 * NOT_READY is known to be retryable
-+	 * For now we just dump out the sense data and call it retryable
-+	 */
-+	if (status_byte(req->errors) == CHECK_CONDITION)
-+		__scsi_print_sense(DM_HP_HWH_NAME, req->sense, req->sense_len);
-+
-+	/*
-+	 * At this point we don't have complete information about all the error
-+	 * codes from this hardware, so we are just conservative and retry
-+	 * when in doubt.
-+	 */
-+	return 1;
-+}
-+
-+/*
-  * hp_sw_end_io - Completion handler for HP path activation.
-  * @req: path activation request
-  * @error: scsi-ml error
-@@ -40,23 +75,30 @@ struct hp_sw_context {
-  *
-  * Context: scsi-ml softirq
-  *
-- * Possible optimizations
-- * 1. Actually check sense data for retryable error (e.g. NOT_READY)
-  */
- static void hp_sw_end_io(struct request *req, int error)
- {
- 	struct dm_path *path = req->end_io_data;
- 	unsigned err_flags = 0;
- 
--	if (!error)
-+	if (!error) {
- 		DMDEBUG("%s path activation command - success",
- 			path->dev->name);
--	else {
--		DMWARN("%s path activation command - error=0x%x",
--		       path->dev->name, error);
--		err_flags = MP_FAIL_PATH;
-+		goto out;
-+	}
-+
-+	if (hp_sw_error_is_retryable(req)) {
-+		DMDEBUG("%s path activation command - retry",
-+			path->dev->name);
-+		err_flags = MP_RETRY;
-+		goto out;
- 	}
- 
-+	DMWARN("%s path activation fail - error=0x%x",
-+	       path->dev->name, error);
-+	err_flags = MP_FAIL_PATH;
-+
-+out:
- 	req->end_io_data = NULL;
- 	__blk_put_request(req->q, req);
- 	dm_pg_init_complete(path, err_flags);
-@@ -135,7 +177,7 @@ static void hp_sw_pg_init(struct hw_hand
- 	if (!req) {
- 		DMERR("%s path activation command - allocation fail",
- 		      path->dev->name);
--		goto fail;
-+		goto retry;
- 	}
- 
- 	DMDEBUG("%s path activation command - sent", path->dev->name);
-@@ -143,8 +185,8 @@ static void hp_sw_pg_init(struct hw_hand
- 	blk_execute_rq_nowait(req->q, NULL, req, 1, hp_sw_end_io);
- 	return;
- 
--fail:
--	dm_pg_init_complete(path, MP_FAIL_PATH);
-+retry:
-+	dm_pg_init_complete(path, MP_RETRY);
+-	if (log->type->suspend && log->type->suspend(log))
++	if (log->type->postsuspend && log->type->postsuspend(log))
+ 		/* FIXME: need better error handling */
+ 		DMWARN("log suspend failed");
  }
- 
- static int hp_sw_create(struct hw_handler *hwh, unsigned argc, char **argv)
