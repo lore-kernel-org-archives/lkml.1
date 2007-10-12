@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbXJLWli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbXJLWmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933986AbXJLWli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932400AbXJLWUs
+	id S933850AbXJLWmR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932539AbXJLWUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:48 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53364 "EHLO mx1.suse.de"
+	Fri, 12 Oct 2007 18:20:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49845 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760067AbXJLWUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:46 -0400
+	id S932621AbXJLWUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:50 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 40/75] sysfs: Remove sysfs_instantiate
-Date: Fri, 12 Oct 2007 15:16:44 -0700
-Message-Id: <11922276302338-git-send-email-gregkh@suse.de>
+Subject: [PATCH 41/75] sysfs: Use kill_anon_super
+Date: Fri, 12 Oct 2007 15:16:45 -0700
+Message-Id: <1192227634772-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922276254051-git-send-email-gregkh@suse.de>
+In-Reply-To: <11922276302338-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -59,77 +59,40 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276163147-git-send-email-gregkh@suse.de>
  <11922276201219-git-send-email-gregkh@suse.de>
  <11922276254051-git-send-email-gregkh@suse.de>
+ <11922276302338-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Now that sysfs_get_inode is dropping the inode lock
-we no longer have a need from sysfs_instantiate.
+Since sysfs no longer stores fs directory information in the dcache
+on a permanent basis kill_litter_super it is inappropriate and actively
+wrong.  It will decrement the count on all dentries left in the
+dcache before trying to free them.
+
+At the moment this is not biting us only because we never unmount sysfs.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |    2 +-
- fs/sysfs/inode.c |   17 -----------------
- fs/sysfs/sysfs.h |    1 -
- 3 files changed, 1 insertions(+), 19 deletions(-)
+ fs/sysfs/mount.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 5a70a93..739dda1 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -773,7 +773,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 		goto out_unlock;
- 	}
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 92f407f..ac76256 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -71,7 +71,7 @@ static int sysfs_get_sb(struct file_system_type *fs_type,
+ static struct file_system_type sysfs_fs_type = {
+ 	.name		= "sysfs",
+ 	.get_sb		= sysfs_get_sb,
+-	.kill_sb	= kill_litter_super,
++	.kill_sb	= kill_anon_super,
+ };
  
--	sysfs_instantiate(dentry, inode);
-+	d_instantiate(dentry, inode);
- 	sysfs_attach_dentry(sd, dentry);
- 
-  out_unlock:
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 200e1bf..0d706a8 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -211,23 +211,6 @@ struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
- 	return inode;
- }
- 
--/**
-- *	sysfs_instantiate - instantiate dentry
-- *	@dentry: dentry to be instantiated
-- *	@inode: inode associated with @sd
-- *
-- *	Unlock @inode if locked and instantiate @dentry with @inode.
-- *
-- *	LOCKING:
-- *	None.
-- */
--void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
--{
--	BUG_ON(!dentry || dentry->d_inode);
--
--	d_instantiate(dentry, inode);
--}
--
- int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
- {
- 	struct sysfs_addrm_cxt acxt;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 0436754..8a0aea1 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -69,7 +69,6 @@ extern void sysfs_remove_one(struct sysfs_addrm_cxt *acxt,
- extern void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
- 
- extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
--extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
- 
- extern void release_sysfs_dirent(struct sysfs_dirent * sd);
- extern struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
+ int __init sysfs_init(void)
 -- 
 1.5.3.4
 
