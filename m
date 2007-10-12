@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763216AbXJLRYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763117AbXJLRYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763216AbXJLRYZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762890AbXJLRVs
+	id S1763117AbXJLRYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762971AbXJLRXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:21:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58510 "EHLO mx1.redhat.com"
+	Fri, 12 Oct 2007 13:23:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58600 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762887AbXJLRVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:21:46 -0400
-Date: Fri, 12 Oct 2007 18:21:36 +0100
+	id S1760329AbXJLRXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:23:18 -0400
+Date: Fri, 12 Oct 2007 18:23:05 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Milan Broz <mbroz@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [2.6.24 PATCH 20/25] dm crypt: tidy labels
-Message-ID: <20071012172136.GF24157@agk.fab.redhat.com>
+       Dave Wysochanski <dwysocha@redhat.com>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: [2.6.24 PATCH 22/25] dm mpath: add hp handler
+Message-ID: <20071012172305.GH24157@agk.fab.redhat.com>
 Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Milan Broz <mbroz@redhat.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>
+	Dave Wysochanski <dwysocha@redhat.com>,
+	Chandra Seetharaman <sekharan@us.ibm.com>,
+	Mike Christie <michaelc@cs.wisc.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,147 +31,267 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milan Broz <mbroz@redhat.com>
+From: Dave Wysochanski <dwysocha@redhat.com>
 
-Replace numbers with names in labels in error paths, to avoid confusion
-when new one get added between existing ones.
+This patch adds the most basic dm-multipath hardware support for the 
+HP active/passive arrays.
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Dave Wysochanski <dwysocha@redhat.com>
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+Acked-by: Chandra Seetharaman <sekharan@us.ibm.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
- drivers/md/dm-crypt.c |   38 +++++++++++++++++++-------------------
- 1 files changed, 19 insertions(+), 19 deletions(-)
 
-Index: linux-2.6.23/drivers/md/dm-crypt.c
+---
+ drivers/md/Kconfig          |    6 +
+ drivers/md/Makefile         |    2 
+ drivers/md/dm-mpath-hp-sw.c |  206 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 214 insertions(+)
+
+Index: linux-2.6.23/drivers/md/Kconfig
 ===================================================================
---- linux-2.6.23.orig/drivers/md/dm-crypt.c	2007-10-12 15:03:23.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-crypt.c	2007-10-12 15:03:26.000000000 +0100
-@@ -792,7 +792,7 @@ static int crypt_ctr(struct dm_target *t
+--- linux-2.6.23.orig/drivers/md/Kconfig	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/Kconfig	2007-10-12 15:03:29.000000000 +0100
+@@ -267,6 +267,12 @@ config DM_MULTIPATH_RDAC
+ 	---help---
+ 	  Multipath support for LSI/Engenio RDAC.
  
-  	if (crypt_set_key(cc, argv[1])) {
- 		ti->error = "Error decoding key";
--		goto bad1;
-+		goto bad_cipher;
- 	}
- 
- 	/* Compatiblity mode for old dm-crypt cipher strings */
-@@ -803,19 +803,19 @@ static int crypt_ctr(struct dm_target *t
- 
- 	if (strcmp(chainmode, "ecb") && !ivmode) {
- 		ti->error = "This chaining mode requires an IV mechanism";
--		goto bad1;
-+		goto bad_cipher;
- 	}
- 
- 	if (snprintf(cc->cipher, CRYPTO_MAX_ALG_NAME, "%s(%s)",
- 		     chainmode, cipher) >= CRYPTO_MAX_ALG_NAME) {
- 		ti->error = "Chain mode + cipher name is too long";
--		goto bad1;
-+		goto bad_cipher;
- 	}
- 
- 	tfm = crypto_alloc_blkcipher(cc->cipher, 0, CRYPTO_ALG_ASYNC);
- 	if (IS_ERR(tfm)) {
- 		ti->error = "Error allocating crypto tfm";
--		goto bad1;
-+		goto bad_cipher;
- 	}
- 
- 	strcpy(cc->cipher, cipher);
-@@ -839,12 +839,12 @@ static int crypt_ctr(struct dm_target *t
- 		cc->iv_gen_ops = &crypt_iv_null_ops;
- 	else {
- 		ti->error = "Invalid IV mode";
--		goto bad2;
-+		goto bad_ivmode;
- 	}
- 
- 	if (cc->iv_gen_ops && cc->iv_gen_ops->ctr &&
- 	    cc->iv_gen_ops->ctr(cc, ti, ivopts) < 0)
--		goto bad2;
-+		goto bad_ivmode;
- 
- 	cc->iv_size = crypto_blkcipher_ivsize(tfm);
- 	if (cc->iv_size)
-@@ -863,13 +863,13 @@ static int crypt_ctr(struct dm_target *t
- 	cc->io_pool = mempool_create_slab_pool(MIN_IOS, _crypt_io_pool);
- 	if (!cc->io_pool) {
- 		ti->error = "Cannot allocate crypt io mempool";
--		goto bad3;
-+		goto bad_slab_pool;
- 	}
- 
- 	cc->page_pool = mempool_create_page_pool(MIN_POOL_PAGES, 0);
- 	if (!cc->page_pool) {
- 		ti->error = "Cannot allocate page mempool";
--		goto bad4;
-+		goto bad_page_pool;
- 	}
- 
- 	cc->bs = bioset_create(MIN_IOS, MIN_IOS);
-@@ -880,25 +880,25 @@ static int crypt_ctr(struct dm_target *t
- 
- 	if (crypto_blkcipher_setkey(tfm, cc->key, key_size) < 0) {
- 		ti->error = "Error setting key";
--		goto bad5;
-+		goto bad_device;
- 	}
- 
- 	if (sscanf(argv[2], "%llu", &tmpll) != 1) {
- 		ti->error = "Invalid iv_offset sector";
--		goto bad5;
-+		goto bad_device;
- 	}
- 	cc->iv_offset = tmpll;
- 
- 	if (sscanf(argv[4], "%llu", &tmpll) != 1) {
- 		ti->error = "Invalid device sector";
--		goto bad5;
-+		goto bad_device;
- 	}
- 	cc->start = tmpll;
- 
- 	if (dm_get_device(ti, argv[3], cc->start, ti->len,
- 			  dm_table_get_mode(ti->table), &cc->dev)) {
- 		ti->error = "Device lookup failed";
--		goto bad5;
-+		goto bad_device;
- 	}
- 
- 	if (ivmode && cc->iv_gen_ops) {
-@@ -907,7 +907,7 @@ static int crypt_ctr(struct dm_target *t
- 		cc->iv_mode = kmalloc(strlen(ivmode) + 1, GFP_KERNEL);
- 		if (!cc->iv_mode) {
- 			ti->error = "Error kmallocing iv_mode string";
--			goto bad_iv_mode;
-+			goto bad_ivmode_string;
- 		}
- 		strcpy(cc->iv_mode, ivmode);
- 	} else
-@@ -932,20 +932,20 @@ bad_crypt_queue:
- 	destroy_workqueue(cc->io_queue);
- bad_io_queue:
- 	kfree(cc->iv_mode);
--bad_iv_mode:
-+bad_ivmode_string:
- 	dm_put_device(ti, cc->dev);
--bad5:
-+bad_device:
- 	bioset_free(cc->bs);
- bad_bs:
- 	mempool_destroy(cc->page_pool);
--bad4:
-+bad_page_pool:
- 	mempool_destroy(cc->io_pool);
--bad3:
-+bad_slab_pool:
- 	if (cc->iv_gen_ops && cc->iv_gen_ops->dtr)
- 		cc->iv_gen_ops->dtr(cc);
--bad2:
-+bad_ivmode:
- 	crypto_free_blkcipher(tfm);
--bad1:
-+bad_cipher:
- 	/* Must zero key material before freeing */
- 	memset(cc, 0, sizeof(*cc) + cc->key_size * sizeof(u8));
- 	kfree(cc);
++config DM_MULTIPATH_HP
++        tristate "HP MSA multipath support (EXPERIMENTAL)"
++        depends on DM_MULTIPATH && BLK_DEV_DM && EXPERIMENTAL
++        ---help---
++          Multipath support for HP MSA (Active/Passive) series hardware.
++
+ config DM_DELAY
+ 	tristate "I/O delaying target (EXPERIMENTAL)"
+ 	depends on BLK_DEV_DM && EXPERIMENTAL
+Index: linux-2.6.23/drivers/md/Makefile
+===================================================================
+--- linux-2.6.23.orig/drivers/md/Makefile	2007-10-12 12:36:14.000000000 +0100
++++ linux-2.6.23/drivers/md/Makefile	2007-10-12 15:03:29.000000000 +0100
+@@ -8,6 +8,7 @@ dm-multipath-objs := dm-hw-handler.o dm-
+ dm-snapshot-objs := dm-snap.o dm-exception-store.o
+ dm-mirror-objs	:= dm-log.o dm-raid1.o
+ dm-rdac-objs	:= dm-mpath-rdac.o
++dm-hp-sw-objs	:= dm-mpath-hp-sw.o
+ md-mod-objs     := md.o bitmap.o
+ raid456-objs	:= raid5.o raid6algos.o raid6recov.o raid6tables.o \
+ 		   raid6int1.o raid6int2.o raid6int4.o \
+@@ -35,6 +36,7 @@ obj-$(CONFIG_DM_CRYPT)		+= dm-crypt.o
+ obj-$(CONFIG_DM_DELAY)		+= dm-delay.o
+ obj-$(CONFIG_DM_MULTIPATH)	+= dm-multipath.o dm-round-robin.o
+ obj-$(CONFIG_DM_MULTIPATH_EMC)	+= dm-emc.o
++obj-$(CONFIG_DM_MULTIPATH_HP)	+= dm-hp-sw.o
+ obj-$(CONFIG_DM_MULTIPATH_RDAC)	+= dm-rdac.o
+ obj-$(CONFIG_DM_SNAPSHOT)	+= dm-snapshot.o
+ obj-$(CONFIG_DM_MIRROR)		+= dm-mirror.o
+Index: linux-2.6.23/drivers/md/dm-mpath-hp-sw.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23/drivers/md/dm-mpath-hp-sw.c	2007-10-12 15:03:29.000000000 +0100
+@@ -0,0 +1,206 @@
++/*
++ * Copyright (C) 2005 Mike Christie, All rights reserved.
++ * Copyright (C) 2007 Red Hat, Inc. All rights reserved.
++ * Authors: Mike Christie
++ *          Dave Wysochanski
++ *
++ * This file is released under the GPL.
++ *
++ * This module implements the specific path activation code for
++ * HP StorageWorks and FSC FibreCat Asymmetric (Active/Passive)
++ * storage arrays.
++ * These storage arrays have controller-based failover, not
++ * LUN-based failover.  However, LUN-based failover is the design
++ * of dm-multipath. Thus, this module is written for LUN-based failover.
++ */
++#include <linux/blkdev.h>
++#include <linux/list.h>
++#include <linux/types.h>
++#include <scsi/scsi.h>
++#include <scsi/scsi_cmnd.h>
++
++#include "dm.h"
++#include "dm-hw-handler.h"
++
++#define DM_MSG_PREFIX "multipath hp-sw"
++#define DM_HP_HWH_NAME "hp-sw"
++#define DM_HP_HWH_VER "0.0.3"
++
++struct hp_sw_context {
++	unsigned char sense[SCSI_SENSE_BUFFERSIZE];
++};
++
++/*
++ * hp_sw_end_io - Completion handler for HP path activation.
++ * @req: path activation request
++ * @error: scsi-ml error
++ *
++ *  Check sense data, free request structure, and notify dm that
++ *  pg initialization has completed.
++ *
++ * Context: scsi-ml softirq
++ *
++ * Possible optimizations
++ * 1. Actually check sense data for retryable error (e.g. NOT_READY)
++ */
++static void hp_sw_end_io(struct request *req, int error)
++{
++	struct dm_path *path = req->end_io_data;
++	unsigned err_flags = 0;
++
++	if (!error)
++		DMDEBUG("%s path activation command - success",
++			path->dev->name);
++	else {
++		DMWARN("%s path activation command - error=0x%x",
++		       path->dev->name, error);
++		err_flags = MP_FAIL_PATH;
++	}
++
++	req->end_io_data = NULL;
++	__blk_put_request(req->q, req);
++	dm_pg_init_complete(path, err_flags);
++}
++
++/*
++ * hp_sw_get_request - Allocate an HP specific path activation request
++ * @path: path on which request will be sent (needed for request queue)
++ *
++ * The START command is used for path activation request.
++ * These arrays are controller-based failover, not LUN based.
++ * One START command issued to a single path will fail over all
++ * LUNs for the same controller.
++ *
++ * Possible optimizations
++ * 1. Make timeout configurable
++ * 2. Preallocate request
++ */
++static struct request *hp_sw_get_request(struct dm_path *path)
++{
++	struct request *req;
++	struct block_device *bdev = path->dev->bdev;
++	struct request_queue *q = bdev_get_queue(bdev);
++	struct hp_sw_context *h = path->hwhcontext;
++
++	req = blk_get_request(q, WRITE, GFP_NOIO);
++	if (!req)
++		goto out;
++
++	req->timeout = 60 * HZ;
++
++	req->errors = 0;
++	req->cmd_type = REQ_TYPE_BLOCK_PC;
++	req->cmd_flags |= REQ_FAILFAST | REQ_NOMERGE;
++	req->end_io_data = path;
++	req->sense = h->sense;
++	memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
++
++	memset(&req->cmd, 0, BLK_MAX_CDB);
++	req->cmd[0] = START_STOP;
++	req->cmd[4] = 1;
++	req->cmd_len = COMMAND_SIZE(req->cmd[0]);
++
++out:
++	return req;
++}
++
++/*
++ * hp_sw_pg_init - HP path activation implementation.
++ * @hwh: hardware handler specific data
++ * @bypassed: unused; is the path group bypassed? (see dm-mpath.c)
++ * @path: path to send initialization command
++ *
++ * Send an HP-specific path activation command on 'path'.
++ * Do not try to optimize in any way, just send the activation command.
++ * More than one path activation command may be sent to the same controller.
++ * This seems to work fine for basic failover support.
++ *
++ * Possible optimizations
++ * 1. Detect an in-progress activation request and avoid submitting another one
++ * 2. Model the controller and only send a single activation request at a time
++ * 3. Determine the state of a path before sending an activation request
++ *
++ * Context: kmpathd (see process_queued_ios() in dm-mpath.c)
++ */
++static void hp_sw_pg_init(struct hw_handler *hwh, unsigned bypassed,
++			  struct dm_path *path)
++{
++	struct request *req;
++	struct hp_sw_context *h;
++
++	path->hwhcontext = hwh->context;
++	h = hwh->context;
++
++	req = hp_sw_get_request(path);
++	if (!req) {
++		DMERR("%s path activation command - allocation fail",
++		      path->dev->name);
++		goto fail;
++	}
++
++	DMDEBUG("%s path activation command - sent", path->dev->name);
++
++	blk_execute_rq_nowait(req->q, NULL, req, 1, hp_sw_end_io);
++	return;
++
++fail:
++	dm_pg_init_complete(path, MP_FAIL_PATH);
++}
++
++static int hp_sw_create(struct hw_handler *hwh, unsigned argc, char **argv)
++{
++	struct hp_sw_context *h;
++
++	h = kmalloc(sizeof(*h), GFP_KERNEL);
++	if (!h)
++		return -ENOMEM;
++
++	hwh->context = h;
++
++	return 0;
++}
++
++static void hp_sw_destroy(struct hw_handler *hwh)
++{
++	struct hp_sw_context *h = hwh->context;
++
++	kfree(h);
++}
++
++static struct hw_handler_type hp_sw_hwh = {
++	.name = DM_HP_HWH_NAME,
++	.module = THIS_MODULE,
++	.create = hp_sw_create,
++	.destroy = hp_sw_destroy,
++	.pg_init = hp_sw_pg_init,
++};
++
++static int __init hp_sw_init(void)
++{
++	int r;
++
++	r = dm_register_hw_handler(&hp_sw_hwh);
++	if (r < 0)
++		DMERR("register failed %d", r);
++	else
++		DMINFO("version " DM_HP_HWH_VER " loaded");
++
++	return r;
++}
++
++static void __exit hp_sw_exit(void)
++{
++	int r;
++
++	r = dm_unregister_hw_handler(&hp_sw_hwh);
++	if (r < 0)
++		DMERR("unregister failed %d", r);
++}
++
++module_init(hp_sw_init);
++module_exit(hp_sw_exit);
++
++MODULE_DESCRIPTION("DM Multipath HP StorageWorks / FSC FibreCat (A/P) support");
++MODULE_AUTHOR("Mike Christie, Dave Wysochanski <dm-devel@redhat.com>");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(DM_HP_HWH_VER);
