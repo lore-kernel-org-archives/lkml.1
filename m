@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbXJLWii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbXJLWjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071AbXJLWii (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbXJLWUU
+	id S932755AbXJLWjK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932586AbXJLWUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:20:20 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49765 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:20:25 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53314 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932389AbXJLWUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:20:15 -0400
+	id S932464AbXJLWUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:20:22 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/75] drivers/base/power/: make 2 functions static
-Date: Fri, 12 Oct 2007 15:16:38 -0700
-Message-Id: <1192227598106-git-send-email-gregkh@suse.de>
+Subject: [PATCH 35/75] sysfs: Fix typos in fs/sysfs/file.c
+Date: Fri, 12 Oct 2007 15:16:39 -0700
+Message-Id: <1192227603335-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1192227593813-git-send-email-gregkh@suse.de>
+In-Reply-To: <1192227598106-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -52,65 +53,32 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922275843236-git-send-email-gregkh@suse.de>
  <1192227589276-git-send-email-gregkh@suse.de>
  <1192227593813-git-send-email-gregkh@suse.de>
+ <1192227598106-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-suspend_device() and resume_device() can now become static.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/power/power.h   |    6 ------
- drivers/base/power/resume.c  |    2 +-
- drivers/base/power/suspend.c |    2 +-
- 3 files changed, 2 insertions(+), 8 deletions(-)
+ fs/sysfs/file.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 8ba0830..49e64db 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -55,12 +55,6 @@ extern void dpm_sysfs_remove(struct device *);
- 
- extern void dpm_resume(void);
- extern void dpm_power_up(void);
--extern int resume_device(struct device *);
--
--/*
-- * suspend.c
-- */
--extern int suspend_device(struct device *, pm_message_t);
- 
- #else /* CONFIG_PM_SLEEP */
- 
-diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
-index 00fd84a..67948ba 100644
---- a/drivers/base/power/resume.c
-+++ b/drivers/base/power/resume.c
-@@ -20,7 +20,7 @@
-  *
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 33bb340..16f39c3 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -335,7 +335,7 @@ static int sysfs_release(struct inode * inode, struct file * filp)
+  * again will not get new data, or reset the state of 'poll'.
+  * Reminder: this only works for attributes which actively support
+  * it, and it is not possible to test an attribute from userspace
+- * to see if it supports poll (Nether 'poll' or 'select' return
++ * to see if it supports poll (Neither 'poll' nor 'select' return
+  * an appropriate error code).  When in doubt, set a suitable timeout value.
   */
- 
--int resume_device(struct device * dev)
-+static int resume_device(struct device * dev)
- {
- 	int error = 0;
- 
-diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
-index 26df9b2..204517a 100644
---- a/drivers/base/power/suspend.c
-+++ b/drivers/base/power/suspend.c
-@@ -54,7 +54,7 @@ suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
-  *	@state:	Power state device is entering.
-  */
- 
--int suspend_device(struct device * dev, pm_message_t state)
-+static int suspend_device(struct device * dev, pm_message_t state)
- {
- 	int error = 0;
- 
+ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
 -- 
 1.5.3.4
 
