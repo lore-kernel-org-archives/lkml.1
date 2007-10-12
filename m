@@ -1,135 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbXJLRGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbXJLRGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759165AbXJLRGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbXJLRFg
+	id S932556AbXJLRGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761511AbXJLRFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 13:05:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53081 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758804AbXJLRFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:05:35 -0400
-Date: Fri, 12 Oct 2007 10:02:04 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.1
-Message-ID: <20071012170204.GB18498@kroah.com>
-References: <20071012170140.GA18498@kroah.com>
-MIME-Version: 1.0
+	Fri, 12 Oct 2007 13:05:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36454 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761498AbXJLRFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:05:46 -0400
+Date: Fri, 12 Oct 2007 18:05:41 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Dmitry Monakhov <dmonakhov@openvz.org>, Milan Broz <mbroz@redhat.com>
+Subject: [2.6.24 PATCH 03/25] dm crypt: drop device ref in ctr error path
+Message-ID: <20071012170541.GN24157@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Dmitry Monakhov <dmonakhov@openvz.org>,
+	Milan Broz <mbroz@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071012170140.GA18498@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 4635a64..c244a02 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 23
--EXTRAVERSION =
-+EXTRAVERSION = .1
- NAME = Arr Matey! A Hairy Bilge Rat!
- 
- # *DOCUMENTATION*
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index cb7dec9..d9832e2 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -69,10 +69,11 @@
- #include <linux/device.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_device.h>
- #include <linux/libata.h>
- 
- #define DRV_NAME	"sata_mv"
--#define DRV_VERSION	"1.0"
-+#define DRV_VERSION	"1.01"
- 
- enum {
- 	/* BAR's are enumerated in terms of pci_resource_start() terms */
-@@ -420,6 +421,7 @@ static void mv_error_handler(struct ata_port *ap);
- static void mv_post_int_cmd(struct ata_queued_cmd *qc);
- static void mv_eh_freeze(struct ata_port *ap);
- static void mv_eh_thaw(struct ata_port *ap);
-+static int mv_slave_config(struct scsi_device *sdev);
- static int mv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
- 
- static void mv5_phy_errata(struct mv_host_priv *hpriv, void __iomem *mmio,
-@@ -457,7 +459,7 @@ static struct scsi_host_template mv5_sht = {
- 	.use_clustering		= 1,
- 	.proc_name		= DRV_NAME,
- 	.dma_boundary		= MV_DMA_BOUNDARY,
--	.slave_configure	= ata_scsi_slave_config,
-+	.slave_configure	= mv_slave_config,
- 	.slave_destroy		= ata_scsi_slave_destroy,
- 	.bios_param		= ata_std_bios_param,
- };
-@@ -475,7 +477,7 @@ static struct scsi_host_template mv6_sht = {
- 	.use_clustering		= 1,
- 	.proc_name		= DRV_NAME,
- 	.dma_boundary		= MV_DMA_BOUNDARY,
--	.slave_configure	= ata_scsi_slave_config,
-+	.slave_configure	= mv_slave_config,
- 	.slave_destroy		= ata_scsi_slave_destroy,
- 	.bios_param		= ata_std_bios_param,
- };
-@@ -763,6 +765,17 @@ static void mv_irq_clear(struct ata_port *ap)
- {
- }
- 
-+static int mv_slave_config(struct scsi_device *sdev)
-+{
-+	int rc = ata_scsi_slave_config(sdev);
-+	if (rc)
-+		return rc;
-+
-+	blk_queue_max_phys_segments(sdev->request_queue, MV_MAX_SG_CT / 2);
-+
-+	return 0;	/* scsi layer doesn't check return value, sigh */
-+}
-+
- static void mv_set_edma_ptrs(void __iomem *port_mmio,
- 			     struct mv_host_priv *hpriv,
- 			     struct mv_port_priv *pp)
-@@ -1130,10 +1143,9 @@ static void mv_port_stop(struct ata_port *ap)
-  *      LOCKING:
-  *      Inherited from caller.
-  */
--static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
-+static void mv_fill_sg(struct ata_queued_cmd *qc)
- {
- 	struct mv_port_priv *pp = qc->ap->private_data;
--	unsigned int n_sg = 0;
- 	struct scatterlist *sg;
- 	struct mv_sg *mv_sg;
- 
-@@ -1151,7 +1163,7 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
- 
- 			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
- 			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
--			mv_sg->flags_size = cpu_to_le32(len);
-+			mv_sg->flags_size = cpu_to_le32(len & 0xffff);
- 
- 			sg_len -= len;
- 			addr += len;
-@@ -1160,12 +1172,9 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
- 				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
- 
- 			mv_sg++;
--			n_sg++;
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+
+Add a missing 'dm_put_device' in an error path in crypt target constructor.
+
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+---
+ drivers/md/dm-crypt.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.23/drivers/md/dm-crypt.c
+===================================================================
+--- linux-2.6.23.orig/drivers/md/dm-crypt.c	2007-10-12 13:15:20.000000000 +0100
++++ linux-2.6.23/drivers/md/dm-crypt.c	2007-10-12 13:15:30.000000000 +0100
+@@ -882,7 +882,7 @@ static int crypt_ctr(struct dm_target *t
+ 		cc->iv_mode = kmalloc(strlen(ivmode) + 1, GFP_KERNEL);
+ 		if (!cc->iv_mode) {
+ 			ti->error = "Error kmallocing iv_mode string";
+-			goto bad5;
++			goto bad_iv_mode;
  		}
+ 		strcpy(cc->iv_mode, ivmode);
+ 	} else
+@@ -891,6 +891,8 @@ static int crypt_ctr(struct dm_target *t
+ 	ti->private = cc;
+ 	return 0;
  
- 	}
--
--	return n_sg;
- }
- 
- static inline void mv_crqb_pack_cmd(__le16 *cmdw, u8 data, u8 addr, unsigned last)
++bad_iv_mode:
++	dm_put_device(ti, cc->dev);
+ bad5:
+ 	bioset_free(cc->bs);
+ bad_bs:
