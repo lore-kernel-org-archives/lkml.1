@@ -1,119 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXJLRFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbXJLRGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbXJLRFu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 13:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758682AbXJLRFg
+	id S1759165AbXJLRGX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 13:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbXJLRFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 12 Oct 2007 13:05:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36443 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758171AbXJLRFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 13:05:34 -0400
-Date: Fri, 12 Oct 2007 18:05:09 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Milan Broz <mbroz@redhat.com>, Guido Guenther <agx@sigxcpu.org>,
-       Kevin Corry <kevcorry@us.ibm.com>, stable@kernel.org
-Subject: [2.6.24 PATCH 02/25] dm io:ctl use constant struct size
-Message-ID: <20071012170509.GM24157@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Milan Broz <mbroz@redhat.com>, Guido Guenther <agx@sigxcpu.org>,
-	Kevin Corry <kevcorry@us.ibm.com>, stable@kernel.org
-Mime-Version: 1.0
+Received: from pentafluge.infradead.org ([213.146.154.40]:53081 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758804AbXJLRFf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 13:05:35 -0400
+Date: Fri, 12 Oct 2007 10:02:04 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.23.1
+Message-ID: <20071012170204.GB18498@kroah.com>
+References: <20071012170140.GA18498@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <20071012170140.GA18498@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milan Broz <mbroz@redhat.com>
-
-Make size of dm_ioctl struct always 312 bytes on all supported
-architectures.
-
-This change retains compatibility with already-compiled code because
-it uses an embedded offset to locate the payload that follows the
-structure.
-
-On 64-bit architectures there is no change at all; on 32-bit
-we are increasing the size of dm-ioctl from 308 to 312 bytes.
-
-Currently with 32-bit userspace / 64-bit kernel on x86_64
-some ioctls (including rename, message) are incorrectly rejected
-by the comparison against 'param + 1'.  This breaks userspace
-lvrename and multipath 'fail_if_no_path' changes, for example.
-
-(BTW Device-mapper uses its own versioning and ignores the ioctl
-size bits.  Only the generic ioctl compat code on mixed arches
-checks them, and that will continue to accept both sizes for now,
-but we intend to list 308 as deprecated and eventually remove it.)
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-Cc: Guido Guenther <agx@sigxcpu.org>
-Cc: Kevin Corry <kevcorry@us.ibm.com>
-Cc: stable@kernel.org
-
----
- drivers/md/dm-ioctl.c    |    6 +++---
- include/linux/dm-ioctl.h |    5 +++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.23/drivers/md/dm-ioctl.c
-===================================================================
---- linux-2.6.23.orig/drivers/md/dm-ioctl.c	2007-10-12 13:15:21.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-ioctl.c	2007-10-12 13:15:29.000000000 +0100
-@@ -700,7 +700,7 @@ static int dev_rename(struct dm_ioctl *p
- 	int r;
- 	char *new_name = (char *) param + param->data_start;
+diff --git a/Makefile b/Makefile
+index 4635a64..c244a02 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 23
+-EXTRAVERSION =
++EXTRAVERSION = .1
+ NAME = Arr Matey! A Hairy Bilge Rat!
  
--	if (new_name < (char *) (param + 1) ||
-+	if (new_name < (char *) param->data ||
- 	    invalid_str(new_name, (void *) param + param_size)) {
- 		DMWARN("Invalid new logical volume name supplied.");
- 		return -EINVAL;
-@@ -726,7 +726,7 @@ static int dev_set_geometry(struct dm_io
- 	if (!md)
- 		return -ENXIO;
+ # *DOCUMENTATION*
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index cb7dec9..d9832e2 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -69,10 +69,11 @@
+ #include <linux/device.h>
+ #include <scsi/scsi_host.h>
+ #include <scsi/scsi_cmnd.h>
++#include <scsi/scsi_device.h>
+ #include <linux/libata.h>
  
--	if (geostr < (char *) (param + 1) ||
-+	if (geostr < (char *) param->data ||
- 	    invalid_str(geostr, (void *) param + param_size)) {
- 		DMWARN("Invalid geometry supplied.");
- 		goto out;
-@@ -1233,7 +1233,7 @@ static int target_message(struct dm_ioct
- 	if (r)
- 		goto out;
+ #define DRV_NAME	"sata_mv"
+-#define DRV_VERSION	"1.0"
++#define DRV_VERSION	"1.01"
  
--	if (tmsg < (struct dm_target_msg *) (param + 1) ||
-+	if (tmsg < (struct dm_target_msg *) param->data ||
- 	    invalid_str(tmsg->message, (void *) param + param_size)) {
- 		DMWARN("Invalid target message parameters.");
- 		r = -EINVAL;
-Index: linux-2.6.23/include/linux/dm-ioctl.h
-===================================================================
---- linux-2.6.23.orig/include/linux/dm-ioctl.h	2007-10-12 13:15:21.000000000 +0100
-+++ linux-2.6.23/include/linux/dm-ioctl.h	2007-10-12 13:15:29.000000000 +0100
-@@ -131,6 +131,7 @@ struct dm_ioctl {
- 	char name[DM_NAME_LEN];	/* device name */
- 	char uuid[DM_UUID_LEN];	/* unique identifier for
- 				 * the block device */
-+	char data[7];		/* padding or data */
+ enum {
+ 	/* BAR's are enumerated in terms of pci_resource_start() terms */
+@@ -420,6 +421,7 @@ static void mv_error_handler(struct ata_port *ap);
+ static void mv_post_int_cmd(struct ata_queued_cmd *qc);
+ static void mv_eh_freeze(struct ata_port *ap);
+ static void mv_eh_thaw(struct ata_port *ap);
++static int mv_slave_config(struct scsi_device *sdev);
+ static int mv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
+ 
+ static void mv5_phy_errata(struct mv_host_priv *hpriv, void __iomem *mmio,
+@@ -457,7 +459,7 @@ static struct scsi_host_template mv5_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= ata_scsi_slave_config,
++	.slave_configure	= mv_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
  };
+@@ -475,7 +477,7 @@ static struct scsi_host_template mv6_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= ata_scsi_slave_config,
++	.slave_configure	= mv_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
+ };
+@@ -763,6 +765,17 @@ static void mv_irq_clear(struct ata_port *ap)
+ {
+ }
  
- /*
-@@ -285,9 +286,9 @@ typedef char ioctl_struct[308];
- #define DM_DEV_SET_GEOMETRY	_IOWR(DM_IOCTL, DM_DEV_SET_GEOMETRY_CMD, struct dm_ioctl)
++static int mv_slave_config(struct scsi_device *sdev)
++{
++	int rc = ata_scsi_slave_config(sdev);
++	if (rc)
++		return rc;
++
++	blk_queue_max_phys_segments(sdev->request_queue, MV_MAX_SG_CT / 2);
++
++	return 0;	/* scsi layer doesn't check return value, sigh */
++}
++
+ static void mv_set_edma_ptrs(void __iomem *port_mmio,
+ 			     struct mv_host_priv *hpriv,
+ 			     struct mv_port_priv *pp)
+@@ -1130,10 +1143,9 @@ static void mv_port_stop(struct ata_port *ap)
+  *      LOCKING:
+  *      Inherited from caller.
+  */
+-static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
++static void mv_fill_sg(struct ata_queued_cmd *qc)
+ {
+ 	struct mv_port_priv *pp = qc->ap->private_data;
+-	unsigned int n_sg = 0;
+ 	struct scatterlist *sg;
+ 	struct mv_sg *mv_sg;
  
- #define DM_VERSION_MAJOR	4
--#define DM_VERSION_MINOR	11
-+#define DM_VERSION_MINOR	12
- #define DM_VERSION_PATCHLEVEL	0
--#define DM_VERSION_EXTRA	"-ioctl (2006-10-12)"
-+#define DM_VERSION_EXTRA	"-ioctl (2007-10-02)"
+@@ -1151,7 +1163,7 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
  
- /* Status bits */
- #define DM_READONLY_FLAG	(1 << 0) /* In/Out */
+ 			mv_sg->addr = cpu_to_le32(addr & 0xffffffff);
+ 			mv_sg->addr_hi = cpu_to_le32((addr >> 16) >> 16);
+-			mv_sg->flags_size = cpu_to_le32(len);
++			mv_sg->flags_size = cpu_to_le32(len & 0xffff);
+ 
+ 			sg_len -= len;
+ 			addr += len;
+@@ -1160,12 +1172,9 @@ static unsigned int mv_fill_sg(struct ata_queued_cmd *qc)
+ 				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
+ 
+ 			mv_sg++;
+-			n_sg++;
+ 		}
+ 
+ 	}
+-
+-	return n_sg;
+ }
+ 
+ static inline void mv_crqb_pack_cmd(__le16 *cmdw, u8 data, u8 addr, unsigned last)
