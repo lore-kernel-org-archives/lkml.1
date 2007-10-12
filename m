@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbXJLGrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbXJLGrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbXJLGrv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 02:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXJLGrb
+	id S1759131AbXJLGrh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 02:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbXJLGrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 02:47:31 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:24827 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760124AbXJLGra (ORCPT
+	Fri, 12 Oct 2007 02:47:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58897 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758394AbXJLGrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 02:47:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vTCEPAuv/u2Gl63Z7cnPiqib3C9T3scUEbGrpMXdiCiLOPULwFcepKazwTjLgO8DJk5j6MaL8dRtFXV5nS2BU8AZBEp1GNRhkfeL2P1L7Z/8EopNi5XB/RbUocgYsAQ9gvVU5cQJXzQd3k2+wbDlp7k8ZP1x1eka6qHWCGXFCEM=  ;
-X-YMail-OSG: LYuQSyMVM1kRfjT1yqcV_rzkvCULXfXa4ItP_aZyzWCExAjDSBvLgSZ98bvfKHanT.wSDZsQYrl92Q9fr_JLboiUaHrimZC5CICICvhIP1g6bKOUhFyME5d5QKIDiA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.23
-Date: Fri, 12 Oct 2007 00:15:40 +1000
-User-Agent: KMail/1.9.5
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.999.0710091346490.5039@woody.linux-foundation.org> <200710111916.23633.nickpiggin@yahoo.com.au> <20071012054615.GA22256@elte.hu>
-In-Reply-To: <20071012054615.GA22256@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Oct 2007 02:47:12 -0400
+Date: Fri, 12 Oct 2007 07:46:58 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.23-mm1
+Message-ID: <20071012064658.GA8181@ftp.linux.org.uk>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com> <20071011234202.2f15bb76.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710120015.40306.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071011234202.2f15bb76.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 October 2007 15:46, Ingo Molnar wrote:
-> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > ;) I think you snipped the important bit:
-> >
-> > "the peak is terrible but it has virtually no dropoff and performs
-> > better under load than the default 2.6.21 scheduler." (verbatim)
->
-> hm, i understood that peak remark to be in reference to FreeBSD's
-> scheduler (which the FreeBSD guys are primarily interested in
-> obviously), not v2.6.21 - but i could be wrong.
+On Thu, Oct 11, 2007 at 11:42:02PM -0700, Andrew Morton wrote:
+> On Fri, 12 Oct 2007 14:03:28 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Thu, 11 Oct 2007 21:31:26 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > 
+> > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> > >   to stabilise things for the 2.6.23 merge.
+> > > 
+> > On RHEL5/x86_64 environment,
+> > 
+> > ==
+> > [kamezawa@hannibal ref-2.6.23-mm1]$ make menuconfig
+> > Makefile:456: /home/kamezawa/ref-2.6.23-mm1/arch//Makefile: No such file or directory
+> > make: *** No rule to make target `/home/kamezawa/ref-2.6.23-mm1/arch//Makefile'.  Stop.
+> > ==
+> > 
+> > $(ARCH) cannot be detected automatically...
+> 
+> So you need to set $ARCH by hand?  I always do that so I didn't notice this.
+> 
+> > What information is useful for fixing this ?
+> 
+> Sam's email address ;)
 
-I think the Linux peak has always been roughly as good as their
-best FreeBSD ones (eg. http://people.freebsd.org/~jeff/sysbench.png).
-Obviously in that graph, Linux sucks because of the malloc/mmap_sem
-issue. It also shows what he is calling the terrible CFS peak, I
-guess.
-
-In my own tests, after that was fixed, Linux's peak got even a bit
-higher, so that's the benchmark for performance.
-
-
-> In any case, there is indeed a regression with sysbench and a low number
-> of threads, and it's being fixed. The peak got improved visibly in
-> sched-devel:
->
->   http://people.redhat.com/mingo/misc/sysbench-sched-devel.jpg
->
-> but there is still some peak regression left, i'm testing a patch for
-> that.
-
-OK good. Once that's fixed, we'll hopefully be competitive with
-FreeBSD again in this test :)
+More serious breakage happened to UML - include/asm-um/arch went straight
+to hell; I'll look into fixing that tomorrow...
