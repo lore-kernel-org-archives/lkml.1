@@ -1,167 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXJKWqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXJKWsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbXJKWqw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Oct 2007 18:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXJKWqo
+	id S1757594AbXJKWsG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Oct 2007 18:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXJKWr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Oct 2007 18:46:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23917 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbXJKWqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Oct 2007 18:46:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,261,1188802800"; 
-   d="scan'208";a="296985625"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 11 Oct 2007 18:47:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:4537 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbXJKWrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Oct 2007 18:47:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=c8Ei5OFGul9RAxvWkjcnN1H2NmmB0onVDEz4xUvdDTHaYSC7i/P8Os6KVuPWQNXAgxToN7Ls96GtqYz8I+7wpfnngzeBlIEzT7tkloCLPY4TzsTUE1uQFzYVvRLlgWc6qCO4mWDaNx1oM9oNF4GDIhrBMj0BdLZ406PlcnBTrmY=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [QUESTION] I need advice for writing .suspend/.resume functions
+Date: Fri, 12 Oct 2007 12:47:31 +0200
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0710111813540.6334-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0710111813540.6334-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C80C58.809E0DAF"
-Subject: RE: TPM driver changes to support multiple locality
-Date: Thu, 11 Oct 2007 15:46:03 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628CB9DD5@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <20071011143917.0eb75029.randy.dunlap@oracle.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: TPM driver changes to support multiple locality
-Thread-Index: AcgMT0fIQsOJK0MESJaB8CeFyFAf6gAB81gg
-References: <A3258B497F1C1441AD36A2E8B45FD628C7D657@scsmsx412.amr.corp.intel.com><27383.1192045583@turing-police.cc.vt.edu><A3258B497F1C1441AD36A2E8B45FD628CB9AEE@scsmsx412.amr.corp.intel.com><20071011115429.92326cbd.randy.dunlap@oracle.com><A3258B497F1C1441AD36A2E8B45FD628CB9CB2@scsmsx412.amr.corp.intel.com> <20071011143917.0eb75029.randy.dunlap@oracle.com>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Oct 2007 22:46:04.0395 (UTC) FILETIME=[812D63B0:01C80C58]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710121247.31243.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Friday 12 October 2007 00:23:50 Alan Stern wrote:
+> On Fri, 12 Oct 2007, Rafael J. Wysocki wrote:
+> 
+> > On Thursday, 11 October 2007 05:13, Maxim Levitsky wrote:
+> > > Hi,
+> > > 
+> > > I have few questions about .suspend()/.resume() driver functions and how best to write them.
+> > > 
+> > > I have written a support for suspend/resume for saa7134 v4l driver.
+> > > Now looking at code again and again, I found few problems, and I am seeking your advice how to fix them.
+> > > 
+> > > First of all the .suspend() function:
+> > > 
+> > > Looking at various drivers (including v4l ones) it seems that in general the function:
+> > > 
+> > > 1) tells upper layers that it is suspended
+> > > 2) saves the state of device
+> > > (generally there is nothing to save, since the driver maintains a copy of device state in memory)
+> > > 
+> > > 3) disables the device (including DMA)
+> > > 4) does usual pci_save_state+pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state))
+> > > (I am talking about pci devices of course)
+> > > 
+> > > But there is one problem that my .suspend() function have together with quite a lot of drivers:
+> > > It can race with IRQ handler. Suppose the handler is called just before .suspend(), and thus .suspend() literally 
+> > > pulls the hadware from that handler.
+> > >
+> > > I was told that I should use synchronize_irq(), and it looks exactly like the solution.
+> > 
+> > Yes, that seems to be the right solution.
+> > 
+> > > But I was surprised to see that very few drivers use it in their .suspend() routines.
+> > 
+> > Frankly, I'm not sure why that is so.
+> 
+> USB calls it.
+> 
+> > > Another issue, even bigger happens during the resume:
+> > > Suppose the IRQ line is shared with some other device and it gets resumed first.
+> > > And my IRQ handler is called because of the other device.
+> > > Now my IRQ handler can't determine whenever the IRQ for the device, since the hardware is still powered off.
+> > > 
+> > > Probably I can fix the following issues doing this:
+> > > 
+> > > 1) do free_irq() in .suspend(), and request_irq() in .resume
+> > > this solves both problems since free_irq()  calls synchronize_irq()
+> > > Few drivers do that this way. I would like to know if this is the right way.
+> > 
+> > AFAICS, it is not and these drivers should probably be modified not to do so.
+> > 
+> > The problem, as I see it, is that we don't know what state the device will be
+> > in during the resume (this may be a resume from disk and the device may have
+> > been initialized by the BIOS and we get it actually generating interrupts).
+> >  
+> > > 2) Disable the card's IRQ register , then call synchronize_irq(), at that
+> > > point I can be sure that no IRQ handler is running and will run then set some
+> > > per device flag say dev->insuspend 
+> > > 
+> > > let IRQ handler check this flag, and bail out if set, so false interrupts are caught on resume
+> > > Probably not a good idea, since I didn't find such implementation in kernel
+> > 
+> > I'm not sure of that.  Sounds better than freeing the IRQs in .suspend() to me.
+> 
+> USB uses 2).  Actually we set the "insuspend" flag after disabling IRQ
+> generation but before calling synchronize_irq() -- presumably this
+> doesn't lead to any problems.
+> 
+> The problem of devices initialized by the BIOS and generating unwanted 
+> interrupts is handled by a PCI quirk routine.  The device's IRQ-enable 
+> flag is turned off early on in the boot kernel.
+> 
+> Alan Stern
+> 
+> 
 
-------_=_NextPart_001_01C80C58.809E0DAF
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Thank you very much.
+I will now implement (2) knowing that this is the right way.
 
-Attached is the patch which resolves all the comments.
-
-------_=_NextPart_001_01C80C58.809E0DAF
-Content-Type: application/octet-stream;
-	name="tpm_tis.c.patch"
-Content-Transfer-Encoding: base64
-Content-Description: tpm_tis.c.patch
-Content-Disposition: attachment;
-	filename="tpm_tis.c.patch"
-
-QWRkaW5nIHN1cHBvcnQgZm9yIG11bHRpcGxlIGxvY2FsaXRpZXMgaW4gdHBtIGRyaXZlcg0KdGhp
-cyBkcml2ZXIgY2FuIGJlIGluc3RhdGlhdGVkIHdpdGggYSBsb2NhbGl0eSBwYXJhbWV0ZXIgYW5k
-IHRoYXQgaW5zdGFuY2Ugd2lsbCBvcGVyYXRlIG9uIA0KZ2l2ZW4gbG9jYWxpdHkuDQpCeSBkZWZh
-dWx0IGl0IHdvcmtzIG9uIGxvY2FsaXR5IDANClNpZ25lZC1vZmYtYnk6IExvbWVzaCBBZ2Fyd2Fs
-IDxsb21lc2guYWdhcndhbEBpbnRlbC5jb20+DQotLS0NCiBkcml2ZXJzL2NoYXIvdHBtL3RwbV90
-aXMuYyB8ICAgODEgKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0NCiAxIGZpbGUg
-Y2hhbmdlZCwgNTYgaW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pDQoNCi0tLSBwcmlzdGlu
-ZS1saW51eC0yLjYuMTgvZHJpdmVycy9jaGFyL3RwbS90cG1fdGlzLmMJMjAwNi0wOS0xOSAyMDo0
-MjowNi4wMDAwMDAwMDAgLTA3MDANCisrKyBsaW51eC0yLjYuMTgteGVuL2RyaXZlcnMvY2hhci90
-cG0vdHBtX3Rpcy5jCTIwMDctMTAtMTEgMTU6MzA6NTMuMDAwMDAwMDAwIC0wNzAwDQpAQCAtNTYs
-MjkgKzU2LDM3IEBAIGVudW0gdGlzX2ludF9mbGFncyB7DQogDQogZW51bSB0aXNfZGVmYXVsdHMg
-ew0KIAlUSVNfTUVNX0JBU0UgPSAweEZFRDQwMDAwLA0KLQlUSVNfTUVNX0xFTiA9IDB4NTAwMCwN
-CisJVElTX0xPQ0FMSVRZX1NISUZUID0gMTIsDQorCVRJU19NRU1fTEVOID0gMHgxMDAwLA0KIAlU
-SVNfU0hPUlRfVElNRU9VVCA9IDc1MCwJLyogbXMgKi8NCiAJVElTX0xPTkdfVElNRU9VVCA9IDIw
-MDAsCS8qIDIgc2VjICovDQogfTsNCiANCi0jZGVmaW5lCVRQTV9BQ0NFU1MobCkJCQkoMHgwMDAw
-IHwgKChsKSA8PCAxMikpDQotI2RlZmluZQlUUE1fSU5UX0VOQUJMRShsKQkJKDB4MDAwOCB8ICgo
-bCkgPDwgMTIpKQ0KLSNkZWZpbmUJVFBNX0lOVF9WRUNUT1IobCkJCSgweDAwMEMgfCAoKGwpIDw8
-IDEyKSkNCi0jZGVmaW5lCVRQTV9JTlRfU1RBVFVTKGwpCQkoMHgwMDEwIHwgKChsKSA8PCAxMikp
-DQotI2RlZmluZQlUUE1fSU5URl9DQVBTKGwpCQkoMHgwMDE0IHwgKChsKSA8PCAxMikpDQotI2Rl
-ZmluZQlUUE1fU1RTKGwpCQkJKDB4MDAxOCB8ICgobCkgPDwgMTIpKQ0KLSNkZWZpbmUJVFBNX0RB
-VEFfRklGTyhsKQkJKDB4MDAyNCB8ICgobCkgPDwgMTIpKQ0KKyNkZWZpbmUJVFBNX0FDQ0VTUyhs
-KQkJCSgweDAwMDApDQorI2RlZmluZQlUUE1fSU5UX0VOQUJMRShsKQkJKDB4MDAwOCkNCisjZGVm
-aW5lCVRQTV9JTlRfVkVDVE9SKGwpCQkoMHgwMDBDKQ0KKyNkZWZpbmUJVFBNX0lOVF9TVEFUVVMo
-bCkJCSgweDAwMTApDQorI2RlZmluZQlUUE1fSU5URl9DQVBTKGwpCQkoMHgwMDE0KQ0KKyNkZWZp
-bmUJVFBNX1NUUyhsKQkJCSgweDAwMTgpDQorI2RlZmluZQlUUE1fREFUQV9GSUZPKGwpCQkoMHgw
-MDI0KQ0KIA0KLSNkZWZpbmUJVFBNX0RJRF9WSUQobCkJCQkoMHgwRjAwIHwgKChsKSA8PCAxMikp
-DQotI2RlZmluZQlUUE1fUklEKGwpCQkJKDB4MEYwNCB8ICgobCkgPDwgMTIpKQ0KKyNkZWZpbmUJ
-VFBNX0RJRF9WSUQobCkJCQkoMHgwRjAwKQ0KKyNkZWZpbmUJVFBNX1JJRChsKQkJCSgweDBGMDQp
-DQogDQogc3RhdGljIExJU1RfSEVBRCh0aXNfY2hpcHMpOw0KIHN0YXRpYyBERUZJTkVfU1BJTkxP
-Q0sodGlzX2xvY2spOw0KIA0KIHN0YXRpYyBpbnQgY2hlY2tfbG9jYWxpdHkoc3RydWN0IHRwbV9j
-aGlwICpjaGlwLCBpbnQgbCkNCiB7DQotCWlmICgoaW9yZWFkOChjaGlwLT52ZW5kb3IuaW9iYXNl
-ICsgVFBNX0FDQ0VTUyhsKSkgJg0KLQkgICAgIChUUE1fQUNDRVNTX0FDVElWRV9MT0NBTElUWSB8
-IFRQTV9BQ0NFU1NfVkFMSUQpKSA9PQ0KKwl1bnNpZ25lZCBjaGFyIHRwbV9hY2Nlc3M7DQorDQor
-CXRwbV9hY2Nlc3MgPSBpb3JlYWQ4KGNoaXAtPnZlbmRvci5pb2Jhc2UgKyBUUE1fQUNDRVNTKGwp
-KTsNCisNCisJLyogY2hlY2sgaWYgbG9jYWxpdHkgaXMgY2xvc2VkICovDQorCWlmICh0cG1fYWNj
-ZXNzID09IDB4RkYpDQorCQlyZXR1cm4gLTE7DQorDQorCWlmICgodHBtX2FjY2VzcyAmIChUUE1f
-QUNDRVNTX0FDVElWRV9MT0NBTElUWSB8IFRQTV9BQ0NFU1NfVkFMSUQpKSA9PQ0KIAkgICAgKFRQ
-TV9BQ0NFU1NfQUNUSVZFX0xPQ0FMSVRZIHwgVFBNX0FDQ0VTU19WQUxJRCkpDQogCQlyZXR1cm4g
-Y2hpcC0+dmVuZG9yLmxvY2FsaXR5ID0gbDsNCiANCkBAIC0yNTEsMTAgKzI1OSwxNCBAQCBzdGF0
-aWMgaW50IHRwbV90aXNfcmVjdihzdHJ1Y3QgdHBtX2NoaXAgDQogDQogb3V0Og0KIAl0cG1fdGlz
-X3JlYWR5KGNoaXApOw0KLQlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2Nh
-bGl0eSwgMCk7DQorCXJlbGVhc2VfbG9jYWxpdHkoY2hpcCwgY2hpcC0+dmVuZG9yLmxvY2FsaXR5
-LCAxKTsNCiAJcmV0dXJuIHNpemU7DQogfQ0KIA0KK3N0YXRpYyBpbnQgbG9jYWxpdHk7DQorbW9k
-dWxlX3BhcmFtKGxvY2FsaXR5LCBpbnQsIDA0NDQpOw0KK01PRFVMRV9QQVJNX0RFU0MobG9jYWxp
-dHksICJUUE0gTG9jYWxpdHkgVG8gYWNjZXNzIik7DQorDQogLyoNCiAgKiBJZiBpbnRlcnJ1cHRz
-IGFyZSB1c2VkIChzaWduYWxlZCBieSBhbiBpcnEgc2V0IGluIHRoZSB2ZW5kb3Igc3RydWN0dXJl
-KQ0KICAqIHRwbS5jIGNhbiBza2lwIHBvbGxpbmcgZm9yIHRoZSBkYXRhIHRvIGJlIGF2YWlsYWJs
-ZSBhcyB0aGUgaW50ZXJydXB0IGlzDQpAQCAtMjY2LDcgKzI3OCw3IEBAIHN0YXRpYyBpbnQgdHBt
-X3Rpc19zZW5kKHN0cnVjdCB0cG1fY2hpcCANCiAJc2l6ZV90IGNvdW50ID0gMDsNCiAJdTMyIG9y
-ZGluYWw7DQogDQotCWlmIChyZXF1ZXN0X2xvY2FsaXR5KGNoaXAsIDApIDwgMCkNCisJaWYgKHJl
-cXVlc3RfbG9jYWxpdHkoY2hpcCwgbG9jYWxpdHkpIDwgMCkNCiAJCXJldHVybiAtRUJVU1k7DQog
-DQogCXN0YXR1cyA9IHRwbV90aXNfc3RhdHVzKGNoaXApOw0KQEAgLTMyNiw3ICszMzgsNyBAQCBz
-dGF0aWMgaW50IHRwbV90aXNfc2VuZChzdHJ1Y3QgdHBtX2NoaXAgDQogCXJldHVybiBsZW47DQog
-b3V0X2VycjoNCiAJdHBtX3Rpc19yZWFkeShjaGlwKTsNCi0JcmVsZWFzZV9sb2NhbGl0eShjaGlw
-LCBjaGlwLT52ZW5kb3IubG9jYWxpdHksIDApOw0KKwlyZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNo
-aXAtPnZlbmRvci5sb2NhbGl0eSwgMSk7DQogCXJldHVybiByYzsNCiB9DQogDQpAQCAtNDAxLDcg
-KzQxMywxMCBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgdGlzX2ludF9oYW5kbGVyKGludCBpDQogew0K
-IAlzdHJ1Y3QgdHBtX2NoaXAgKmNoaXAgPSAoc3RydWN0IHRwbV9jaGlwICopIGRldl9pZDsNCiAJ
-dTMyIGludGVycnVwdDsNCi0JaW50IGk7DQorDQorCS8qIGNoZWNrIGlmIGludGVycnVwdCBpcyBt
-ZWFudCBmb3IgdGhpcyBsb2NhbGl0eSAqLw0KKwlpZiAoY2hlY2tfbG9jYWxpdHkoY2hpcCwgbG9j
-YWxpdHkpIDwgMCkNCisJCXJldHVybiBJUlFfTk9ORTsNCiANCiAJaW50ZXJydXB0ID0gaW9yZWFk
-MzIoY2hpcC0+dmVuZG9yLmlvYmFzZSArDQogCQkJICAgICBUUE1fSU5UX1NUQVRVUyhjaGlwLT52
-ZW5kb3IubG9jYWxpdHkpKTsNCkBAIC00MTEsMTAgKzQyNiw2IEBAIHN0YXRpYyBpcnFyZXR1cm5f
-dCB0aXNfaW50X2hhbmRsZXIoaW50IGkNCiANCiAJaWYgKGludGVycnVwdCAmIFRQTV9JTlRGX0RB
-VEFfQVZBSUxfSU5UKQ0KIAkJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZjaGlwLT52ZW5kb3IucmVh
-ZF9xdWV1ZSk7DQotCWlmIChpbnRlcnJ1cHQgJiBUUE1fSU5URl9MT0NBTElUWV9DSEFOR0VfSU5U
-KQ0KLQkJZm9yIChpID0gMDsgaSA8IDU7IGkrKykNCi0JCQlpZiAoY2hlY2tfbG9jYWxpdHkoY2hp
-cCwgaSkgPj0gMCkNCi0JCQkJYnJlYWs7DQogCWlmIChpbnRlcnJ1cHQgJg0KIAkgICAgKFRQTV9J
-TlRGX0xPQ0FMSVRZX0NIQU5HRV9JTlQgfCBUUE1fSU5URl9TVFNfVkFMSURfSU5UIHwNCiAJICAg
-ICBUUE1fSU5URl9DTURfUkVBRFlfSU5UKSkNCkBAIC00NDAsNyArNDUxLDcgQEAgc3RhdGljIGlu
-dCB0cG1fdGlzX2luaXQoc3RydWN0IGRldmljZSAqZA0KIAlzdHJ1Y3QgdHBtX2NoaXAgKmNoaXA7
-DQogDQogCWlmICghc3RhcnQpDQotCQlzdGFydCA9IFRJU19NRU1fQkFTRTsNCisJCXN0YXJ0ID0g
-VElTX01FTV9CQVNFIHwgKGxvY2FsaXR5IDw8IFRJU19MT0NBTElUWV9TSElGVCk7DQogCWlmICgh
-bGVuKQ0KIAkJbGVuID0gVElTX01FTV9MRU47DQogDQpAQCAtNDkwLDggKzUwMSwxMCBAQCBzdGF0
-aWMgaW50IHRwbV90aXNfaW5pdChzdHJ1Y3QgZGV2aWNlICpkDQogCWlmIChpbnRmY2FwcyAmIFRQ
-TV9JTlRGX0RBVEFfQVZBSUxfSU5UKQ0KIAkJZGV2X2RiZyhkZXYsICJcdERhdGEgQXZhaWwgSW50
-IFN1cHBvcnRcbiIpOw0KIA0KLQlpZiAocmVxdWVzdF9sb2NhbGl0eShjaGlwLCAwKSAhPSAwKSB7
-DQotCQlyYyA9IC1FTk9ERVY7DQorCWlmIChyZXF1ZXN0X2xvY2FsaXR5KGNoaXAsIGxvY2FsaXR5
-KSA8IDApIHsNCisJCXJjID0gLUVCVVNZOw0KKwkJcHJpbnRrKEtFUk5fV0FSTklORyAidHBtX3Rp
-czogZmFpbGVkIHJlcXVlc3RfbG9jYWxpdHkgJWRcbiIsDQorCQkJbG9jYWxpdHkpOw0KIAkJZ290
-byBvdXRfZXJyOw0KIAl9DQogDQpAQCAtNTgyLDkgKzU5NSwxMSBAQCBzdGF0aWMgaW50IHRwbV90
-aXNfaW5pdChzdHJ1Y3QgZGV2aWNlICpkDQogDQogCXRwbV9nZXRfdGltZW91dHMoY2hpcCk7DQog
-CXRwbV9jb250aW51ZV9zZWxmdGVzdChjaGlwKTsNCisJcmVsZWFzZV9sb2NhbGl0eShjaGlwLCBj
-aGlwLT52ZW5kb3IubG9jYWxpdHksIDEpOw0KIA0KIAlyZXR1cm4gMDsNCiBvdXRfZXJyOg0KKwly
-ZWxlYXNlX2xvY2FsaXR5KGNoaXAsIGNoaXAtPnZlbmRvci5sb2NhbGl0eSwgMSk7DQogCWlmIChj
-aGlwLT52ZW5kb3IuaW9iYXNlKQ0KIAkJaW91bm1hcChjaGlwLT52ZW5kb3IuaW9iYXNlKTsNCiAJ
-dHBtX3JlbW92ZV9oYXJkd2FyZShjaGlwLT5kZXYpOw0KQEAgLTYzNiw3ICs2NTEsNyBAQCBtb2R1
-bGVfcGFyYW1fc3RyaW5nKGhpZCwgdHBtX3BucF90YmxbVElTDQogTU9EVUxFX1BBUk1fREVTQyho
-aWQsICJTZXQgYWRkaXRpb25hbCBzcGVjaWZpYyBISUQgZm9yIHRoaXMgZHJpdmVyIHRvIHByb2Jl
-Iik7DQogDQogc3RhdGljIHN0cnVjdCBkZXZpY2VfZHJpdmVyIHRpc19kcnYgPSB7DQotCS5uYW1l
-ID0gInRwbV90aXMiLA0KKwkubmFtZSA9ICIiLA0KIAkuYnVzID0gJnBsYXRmb3JtX2J1c190eXBl
-LA0KIAkub3duZXIgPSBUSElTX01PRFVMRSwNCiAJLnN1c3BlbmQgPSB0cG1fcG1fc3VzcGVuZCwN
-CkBAIC02NDgsMTkgKzY2MywzNCBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRl
-djsNCiBzdGF0aWMgaW50IGZvcmNlOw0KIG1vZHVsZV9wYXJhbShmb3JjZSwgYm9vbCwgMDQ0NCk7
-DQogTU9EVUxFX1BBUk1fREVTQyhmb3JjZSwgIkZvcmNlIGRldmljZSBwcm9iZSByYXRoZXIgdGhh
-biB1c2luZyBBQ1BJIGVudHJ5Iik7DQorDQorc3RhdGljIGNoYXIgKmRldm5hbWU7DQorDQogc3Rh
-dGljIGludCBfX2luaXQgaW5pdF90aXModm9pZCkNCiB7DQorI2RlZmluZSBERVZOQU1FX1NJWkUg
-MTANCisNCiAJaW50IHJjOw0KIA0KKwlpZiAoKGxvY2FsaXR5IDwgMCkgfHwgKGxvY2FsaXR5ID4g
-NCkpDQorCQlyZXR1cm4gUFRSX0VSUihwZGV2KTsNCisNCiAJaWYgKGZvcmNlKSB7DQorCQlkZXZu
-YW1lID0ga21hbGxvYyhERVZOQU1FX1NJWkUsIEdGUF9LRVJORUwpOw0KKwkJc2NucHJpbnRmKGRl
-dm5hbWUsIERFVk5BTUVfU0laRSwgIiVzJWQiLCAidHBtX3RpcyIsIGxvY2FsaXR5KTsNCisNCisJ
-CXRpc19kcnYubmFtZSA9IGRldm5hbWU7DQogCQlyYyA9IGRyaXZlcl9yZWdpc3RlcigmdGlzX2Ry
-dik7DQogCQlpZiAocmMgPCAwKQ0KIAkJCXJldHVybiByYzsNCi0JCWlmIChJU19FUlIocGRldj1w
-bGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXJfc2ltcGxlKCJ0cG1fdGlzIiwgLTEsIE5VTEwsIDApKSkN
-CisNCisJCXBkZXYgPSBwbGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXJfc2ltcGxlKGRldm5hbWUsIC0x
-LCBOVUxMLCAwKTsNCisJCWlmIChJU19FUlIocGRldikpDQogCQkJcmV0dXJuIFBUUl9FUlIocGRl
-dik7DQogCQlpZigocmM9dHBtX3Rpc19pbml0KCZwZGV2LT5kZXYsIDAsIDApKSAhPSAwKSB7DQog
-CQkJcGxhdGZvcm1fZGV2aWNlX3VucmVnaXN0ZXIocGRldik7DQogCQkJZHJpdmVyX3VucmVnaXN0
-ZXIoJnRpc19kcnYpOw0KKwkJCWtmcmVlKGRldm5hbWUpOw0KIAkJfQ0KIAkJcmV0dXJuIHJjOw0K
-IAl9DQpAQCAtNjkyLDYgKzcyMiw3IEBAIHN0YXRpYyB2b2lkIF9fZXhpdCBjbGVhbnVwX3Rpcyh2
-b2lkKQ0KIAlpZiAoZm9yY2UpIHsNCiAJCXBsYXRmb3JtX2RldmljZV91bnJlZ2lzdGVyKHBkZXYp
-Ow0KIAkJZHJpdmVyX3VucmVnaXN0ZXIoJnRpc19kcnYpOw0KKwkJa2ZyZWUoZGV2bmFtZSk7DQog
-CX0gZWxzZQ0KIAkJcG5wX3VucmVnaXN0ZXJfZHJpdmVyKCZ0aXNfcG5wX2RyaXZlcik7DQogfQ0K
-
-------_=_NextPart_001_01C80C58.809E0DAF--
+Thanks again,
+	Best regards,
+		Maxim Levitsky
