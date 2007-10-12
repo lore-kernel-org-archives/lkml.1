@@ -1,66 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbXJLJVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbXJLJVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933061AbXJLJVK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 05:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbXJLJJa
+	id S932510AbXJLJVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 05:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760277AbXJLJJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 05:09:30 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:39556 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760236AbXJLJJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 05:09:22 -0400
-Date: Fri, 12 Oct 2007 11:12:13 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071012091213.GC1962@ff.dom.local>
-References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <470F337A.9090205@aitel.hist.no>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 12 Oct 2007 05:09:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41790 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760254AbXJLJJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 05:09:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 26/31] IGET: Stop the SYSV filesystem from using iget() and
+	read_inode() [try #4]
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Fri, 12 Oct 2007 10:09:21 +0100
+Message-ID: <20071012090921.3442.69925.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
+References: <20071012090709.3442.69133.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 10:42:34AM +0200, Helge Hafting wrote:
-> Jarek Poplawski wrote:
-> >On 04-10-2007 07:23, Nick Piggin wrote:
-> >  
-> >>According to latest memory ordering specification documents from Intel and
-> >>AMD, both manufacturers are committed to in-order loads from cacheable 
-> >>memory
-> >>for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
-> >>    
-> >...
-> >
-> >Great news!
-> >
-> >First it looks like a really great thing that it's revealed at last.
-> >But then... there is probably some confusion: did we have to use
-> >ineffective code for so long?
-> >  
-> You could have tried the optimization before, and
-> gotten better performance. But if without solid knowledge that
-> the optimization is _valid_, you risk having a kernel
-> that performs great but suffer the occational glitch and
-> therefore is unstable and crash the machine "now and then".
-> This sort of thing can't really be figured out by experimentation, because
-> the bad cases might happen only with some processors, some
-> combinations of memory/chipsets, or with some minimum
-> number of processors.  Such problems can be very hard
-> to find, especially considering that other plain bugs also
-> cause crashes.
-> 
-> Therefore, the "ineffective code" was used because it was
-> the only safe alternative. Now we know, so now we may optimize.
+Stop the SYSV filesystem from using iget() and read_inode().  Replace
+sysv_read_inode() with sysv_iget(), and call that instead of iget().
+sysv_iget() then uses iget_locked() directly and returns a proper error code
+instead of an inode in the event of an error.
 
-Sorry, I don't understand this logic at all. Since bad cases
-happen independently from any specifications and Intel doesn't
-take any legal responsibility for such information, it seems we
-should better still not optimize?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Jarek P.
+ fs/sysv/inode.c |   25 ++++++++++++++++---------
+ fs/sysv/namei.c |    6 +++---
+ fs/sysv/super.c |    4 ++--
+ fs/sysv/sysv.h  |    1 +
+ 4 files changed, 22 insertions(+), 14 deletions(-)
+
+diff --git a/fs/sysv/inode.c b/fs/sysv/inode.c
+index 7c4e5d3..9d512a8 100644
+--- a/fs/sysv/inode.c
++++ b/fs/sysv/inode.c
+@@ -169,20 +169,27 @@ void sysv_set_inode(struct inode *inode, dev_t rdev)
+ 		init_special_inode(inode, inode->i_mode, rdev);
+ }
+ 
+-static void sysv_read_inode(struct inode *inode)
++struct inode *sysv_iget(struct super_block *sb, unsigned int ino)
+ {
+-	struct super_block * sb = inode->i_sb;
+ 	struct sysv_sb_info * sbi = SYSV_SB(sb);
+ 	struct buffer_head * bh;
+ 	struct sysv_inode * raw_inode;
+ 	struct sysv_inode_info * si;
+-	unsigned int block, ino = inode->i_ino;
++	struct inode *inode;
++	unsigned int block;
+ 
+ 	if (!ino || ino > sbi->s_ninodes) {
+ 		printk("Bad inode number on dev %s: %d is out of range\n",
+-		       inode->i_sb->s_id, ino);
+-		goto bad_inode;
++		       sb->s_id, ino);
++		return ERR_PTR(-EIO);
+ 	}
++
++	inode = iget_locked(sb, ino);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++	if (!(inode->i_state & I_NEW))
++		return inode;
++
+ 	raw_inode = sysv_raw_inode(sb, ino, &bh);
+ 	if (!raw_inode) {
+ 		printk("Major problem: unable to read inode from dev %s\n",
+@@ -214,11 +221,12 @@ static void sysv_read_inode(struct inode *inode)
+ 			       old_decode_dev(fs32_to_cpu(sbi, si->i_data[0])));
+ 	else
+ 		sysv_set_inode(inode, 0);
+-	return;
++	unlock_new_inode(inode);
++	return inode;
+ 
+ bad_inode:
+-	make_bad_inode(inode);
+-	return;
++	iget_failed(inode);
++	return ERR_PTR(-EIO);
+ }
+ 
+ static struct buffer_head * sysv_update_inode(struct inode * inode)
+@@ -328,7 +336,6 @@ static void init_once(void *p, struct kmem_cache *cachep, unsigned long flags)
+ const struct super_operations sysv_sops = {
+ 	.alloc_inode	= sysv_alloc_inode,
+ 	.destroy_inode	= sysv_destroy_inode,
+-	.read_inode	= sysv_read_inode,
+ 	.write_inode	= sysv_write_inode,
+ 	.delete_inode	= sysv_delete_inode,
+ 	.put_super	= sysv_put_super,
+diff --git a/fs/sysv/namei.c b/fs/sysv/namei.c
+index 6bd850b..a1f1ef3 100644
+--- a/fs/sysv/namei.c
++++ b/fs/sysv/namei.c
+@@ -53,9 +53,9 @@ static struct dentry *sysv_lookup(struct inode * dir, struct dentry * dentry, st
+ 	ino = sysv_inode_by_name(dentry);
+ 
+ 	if (ino) {
+-		inode = iget(dir->i_sb, ino);
+-		if (!inode)
+-			return ERR_PTR(-EACCES);
++		inode = sysv_iget(dir->i_sb, ino);
++		if (IS_ERR(inode))
++			return ERR_CAST(inode);
+ 	}
+ 	d_add(dentry, inode);
+ 	return NULL;
+diff --git a/fs/sysv/super.c b/fs/sysv/super.c
+index 6f9707a..a92d104 100644
+--- a/fs/sysv/super.c
++++ b/fs/sysv/super.c
+@@ -332,8 +332,8 @@ static int complete_read_super(struct super_block *sb, int silent, int size)
+ 	sb->s_magic = SYSV_MAGIC_BASE + sbi->s_type;
+ 	/* set up enough so that it can read an inode */
+ 	sb->s_op = &sysv_sops;
+-	root_inode = iget(sb,SYSV_ROOT_INO);
+-	if (!root_inode || is_bad_inode(root_inode)) {
++	root_inode = sysv_iget(sb,SYSV_ROOT_INO);
++	if (IS_ERR(root_inode)) {
+ 		printk("SysV FS: get root inode failed\n");
+ 		return 0;
+ 	}
+diff --git a/fs/sysv/sysv.h b/fs/sysv/sysv.h
+index 5b4fedf..71ebdbc 100644
+--- a/fs/sysv/sysv.h
++++ b/fs/sysv/sysv.h
+@@ -138,6 +138,7 @@ extern unsigned long sysv_count_free_blocks(struct super_block *);
+ extern void sysv_truncate(struct inode *);
+ 
+ /* inode.c */
++extern struct inode *sysv_iget(struct super_block *, unsigned int);
+ extern int sysv_write_inode(struct inode *, int);
+ extern int sysv_sync_inode(struct inode *);
+ extern int sysv_sync_file(struct file *, struct dentry *, int);
+
