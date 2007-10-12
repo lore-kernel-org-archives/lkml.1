@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934387AbXJLWsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934423AbXJLWtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934387AbXJLWsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 18:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbXJLWVk
+	id S934423AbXJLWtG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 18:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932695AbXJLWVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 18:21:40 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49935 "EHLO mx2.suse.de"
+	Fri, 12 Oct 2007 18:21:44 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49941 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932769AbXJLWVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 18:21:38 -0400
+	id S932688AbXJLWVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 18:21:42 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 51/75] PTY: add kernel parameter to overwrite legacy pty count
-Date: Fri, 12 Oct 2007 15:16:55 -0700
-Message-Id: <1192227681926-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 52/75] sysfs: spit a warning to users when they try to create a duplicate sysfs file
+Date: Fri, 12 Oct 2007 15:16:56 -0700
+Message-Id: <11922276862914-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <11922276763650-git-send-email-gregkh@suse.de>
+In-Reply-To: <1192227681926-git-send-email-gregkh@suse.de>
 References: \<20071012221251.GB4559@kroah.com\>
  <11922274393667-git-send-email-gregkh@suse.de>
  <11922274441634-git-send-email-gregkh@suse.de>
@@ -68,72 +68,37 @@ References: \<20071012221251.GB4559@kroah.com\>
  <11922276672660-git-send-email-gregkh@suse.de>
  <1192227671143-git-send-email-gregkh@suse.de>
  <11922276763650-git-send-email-gregkh@suse.de>
+ <1192227681926-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+We want to let people know when we create a duplicate sysfs file, as
+they need to fix up their code.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/kernel-parameters.txt |    4 ++++
- drivers/char/pty.c                  |    9 +++++++--
- include/linux/tty.h                 |    1 -
- 3 files changed, 11 insertions(+), 3 deletions(-)
+ fs/sysfs/dir.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index a57c1f2..bdddd3c 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1430,6 +1430,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 	pt.		[PARIDE]
- 			See Documentation/paride.txt.
- 
-+	pty.legacy_count=
-+			[KNL] Number of legacy pty's. Overwrites compiled-in
-+			default number.
-+
- 	quiet		[KNL] Disable most log messages
- 
- 	r128=		[HW,DRM]
-diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-index de14aea..73de771 100644
---- a/drivers/char/pty.c
-+++ b/drivers/char/pty.c
-@@ -248,14 +248,19 @@ static int pty_bsd_ioctl(struct tty_struct *tty, struct file *file,
- 	return -ENOIOCTLCMD;
- }
- 
-+static int legacy_count = CONFIG_LEGACY_PTY_COUNT;
-+module_param(legacy_count, int, 0);
-+
- static void __init legacy_pty_init(void)
- {
-+	if (legacy_count <= 0)
-+		return;
- 
--	pty_driver = alloc_tty_driver(NR_PTYS);
-+	pty_driver = alloc_tty_driver(legacy_count);
- 	if (!pty_driver)
- 		panic("Couldn't allocate pty driver");
- 
--	pty_slave_driver = alloc_tty_driver(NR_PTYS);
-+	pty_slave_driver = alloc_tty_driver(legacy_count);
- 	if (!pty_slave_driver)
- 		panic("Couldn't allocate pty slave driver");
- 
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 6570719..60478f6 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -21,7 +21,6 @@
-  * (Note: the *_driver.minor_start values 1, 64, 128, 192 are
-  * hardcoded at present.)
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index da4bb66..5d95aa8 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -428,8 +428,12 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
   */
--#define NR_PTYS	CONFIG_LEGACY_PTY_COUNT   /* Number of legacy ptys */
- #define NR_UNIX98_PTY_DEFAULT	4096      /* Default maximum for Unix98 ptys */
- #define NR_UNIX98_PTY_MAX	(1 << MINORBITS) /* Absolute limit */
- #define NR_LDISCS		17
+ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
+-	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
++	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
++		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
++		       "can not be created\n", sd->s_name);
++		WARN_ON(1);
+ 		return -EEXIST;
++	}
+ 
+ 	sd->s_parent = sysfs_get(acxt->parent_sd);
+ 
 -- 
 1.5.3.4
 
