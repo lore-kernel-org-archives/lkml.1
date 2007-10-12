@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbXJLQd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXJLQeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762305AbXJLQd4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 12:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760829AbXJLQM2
+	id S933084AbXJLQeZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 12:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbXJLQM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 12:12:28 -0400
-Received: from mail.suse.de ([195.135.220.2]:54189 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760909AbXJLQM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 12:12:26 -0400
-Date: Fri, 12 Oct 2007 18:12:23 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCHes] ISDN simple cleanups - hotplug API prep
-Message-ID: <20071012161223.GA31078@pingi.kke.suse.de>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>, kkeil@suse.de,
-	isdn4linux@listserv.isdn4linux.de,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20071011190655.GA23206@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071011190655.GA23206@havoc.gtf.org>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+	Fri, 12 Oct 2007 12:12:59 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:34566 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761223AbXJLQM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 12:12:57 -0400
+Date: Fri, 12 Oct 2007 12:12:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: John Sigler <linux.kernel@free.fr>
+cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: NMI watchdog
+In-Reply-To: <470F7620.6040705@free.fr>
+Message-ID: <Pine.LNX.4.58.0710121210210.12663@gandalf.stny.rr.com>
+References: <470F3BE0.4050807@free.fr> <Pine.LNX.4.58.0710120625380.8208@gandalf.stny.rr.com>
+ <470F7620.6040705@free.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 11, 2007 at 03:06:55PM -0400, Jeff Garzik wrote:
-> Karsten,
-> 
-> As I mentioned in previous emails, I would like to send these upstream
-> for 2.6.24.  These are the first step in converting the hisax driver
-> over to the modular, hotplug-friendly ISA/PNP/PCI APIs.
-> 
-> The second step in that conversion is 95% complete (one more driver),
-> and is stored in branch 'isdn-pci' of the repository below.
-> 
-> The changes below were posted as patches many weeks ago, without
-> comment.  I also propagated these to the 'ALL' branch that gets copied
-> into -mm for testing, though some changes have been there longer than
-> others.
-> 
-> All these changes are code movement changes, without any changes to the
-> logic -- even the existing whitespace funnies were kept in many cases.
-> 
-> Would you mind pulling these, or permitting me to push them upstream?
-> 
 
-Tested and Acked.
+--
+On Fri, 12 Oct 2007, John Sigler wrote:
+> Steven Rostedt wrote:
+>
+> > John Sigler wrote:
+>  > APIC timer registered as dummy, due to nmi_watchdog=1!
+> 213a216,217
+>  > Clockevents: could not switch to one-shot mode: lapic is not functional.
+>  > Could not switch to high resolution mode on CPU 0
+>
+> Do you know why nmi_watchdog=1 disables high-resolution timers?
+>
+> And why nmi_watchdog=1 implies APIC timer registered as dummy?
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Crap, I forgot about that. Thomas explained why to me once, and I forgot.
+
+Does it still crash? If not, does it crash if you turn off highres?
+
+Or better yet, try turning off dynamic-ticks. We had a bug once before
+that had a problem with the new RCU code and dynamic ticks.
+
+-- Steve
