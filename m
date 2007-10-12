@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbXJLUX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbXJLUap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbXJLUX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 16:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbXJLUXS
+	id S1759004AbXJLUap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 16:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbXJLUag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 16:23:18 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:35781 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755032AbXJLUXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 16:23:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RrMB9L52IYf+fQItYIbDRrn83OmqT7ZZkEHO79QC3dG/2t7dLwKQxeKzs3l76US4toQ96y6+ri2xnYTKD8JPiKGWSZ+2Tp9IdNUxUMxQCdM0r4ZvB0G5cQxWVgo9dXbaNSRQ6j6I1h8e+9QkIbKP1FQUnJqPPGog+4zJ2Xp9Z8E=
-Message-ID: <d120d5000710121323w563cf328s315f95eb6a857b75@mail.gmail.com>
-Date: Fri, 12 Oct 2007 16:23:15 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: Re: [PATCH try #2] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20071012192111.GB12559@Ahmed>
+	Fri, 12 Oct 2007 16:30:36 -0400
+Received: from maxwell.spina.si ([193.77.104.223]:57712 "EHLO maxwell.spina.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755443AbXJLUag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 16:30:36 -0400
+Message-ID: <470FD96A.8040505@kanardia.eu>
+Date: Fri, 12 Oct 2007 22:30:34 +0200
+From: Rok Markovic <kernel@kanardia.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: 2.6.23-rt1 lockup after loading HAL deamon
+References: <470F27DA.9020307@kanardia.eu> <20071012083551.GA17937@elte.hu> <470FB4F4.60707@kanardia.eu> <20071012175831.GA27420@elte.hu>
+In-Reply-To: <20071012175831.GA27420@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192174727.6247.20.camel@roc-laptop>
-	 <20071012164131.GA12559@Ahmed>
-	 <d120d5000710121029q400d05d8s38ae8769f2f44b15@mail.gmail.com>
-	 <20071012192111.GB12559@Ahmed>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
-> On Fri, Oct 12, 2007 at 01:29:31PM -0400, Dmitry Torokhov wrote:
-> >
-> > > Isn't disabling device interrupts from the begining of the ISR "ad7142_interrupt"
-> > > till the kthread "ad7142_thread" got waked-up and scheduled a long time,
-> > > espicially if there's a high load on the userspace side ?
-> > >
-> >
-> > It is OK - you disable a specific interrupt line preventing it from
-> > raising any more IRQs until current one is serviced.
->
-> Won't this affect system responsiveness if the IRQ line was shared ?
+Hi
 
-You are right, this would not work in case of shared IRQs. Hovewer
-this driver is for an embedded arch and the line is not shared.
+I enabled netconsole but I am affraid that it won't help. In attachment
+I am sending complete log over netconsole. While I was trying to make
+everything, I got a lockup on linux-2.6.23-rc8, but I am not sure into
+this. But all lockups happend in VGA console mode. Any ideas.
 
->
-> >
-> > This is different from disabling interrupts on CPU.
-> >
->
-> mm, Why disabling interrupts in general. Doesn't IRQ hanlers of the same kind got
-> executed in a serialized fashion even on SMPs ?. If so, why not just wakeup our
-> custom-thread or use workqueues and let them do their business ?
+Rok
 
-Because you don't want CPU to be continually interrupted while untill
-right thread gets scheduled. I think using work[queue] is the best
-solution for this driver, but you still want to mask that particular
-IRQ off until you do the read.
 
--- 
-Dmitry
+Ingo Molnar wrote:
+>> I tried to recompile with those options enabled, kernel and linux 
+>> boots and loads fine, but after few minutes (if i try to recompile 
+>> kernel in console) the system locks completely (hard reset) without 
+>> any messages. Is there anything I can do, maybe console on serial 
+>> port? My new config is atached.
+> 
+> yes, serial console (or netconsole) output would be useful, if you can 
+> solve that. Another way would be to boot with nmi_watchdog=2, do the 
+> kernel recompile in a VGA text console, and wait for the lockup to 
+> occur. Either you get some crash message to the text console 
+> immediately, or you should get the NMI watchdog print something within a 
+> minute or so. If neither happens you just get a blank hard lockup then 
+> the wedge is very deep ...
+> 
+> (also make sure that the NMI counter in /proc/interrupts is increasing 
+> on all CPUs properly, with nmi_watchdog=2. If not all CPUs/cores are 
+> increasing their NMI counters once per second then the NMI watchdog wont 
+> be able to print out a stackdump.)
+> 
+> 	Ingo
+
