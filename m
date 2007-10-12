@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbXJLXdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbXJLXvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbXJLXdY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 19:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbXJLXdP
+	id S1760130AbXJLXvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 19:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbXJLXvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 19:33:15 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31220 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756655AbXJLXdO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 19:33:14 -0400
-Message-ID: <471003F5.6050903@oracle.com>
-Date: Fri, 12 Oct 2007 16:32:05 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 12 Oct 2007 19:51:11 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:44674 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754667AbXJLXvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 19:51:10 -0400
+Message-ID: <47100864.2090208@overt.org>
+Date: Fri, 12 Oct 2007 16:51:00 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: zippel@linux-m68k.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org
-Subject: Re: [PATCH] Allow kconfig to accept overrides
-References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Jiri Kosina <jkosina@suse.cz>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hiddev: Add 32bit ioctl compatibilty
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Oct 12 2007 15:57, Randy Dunlap wrote:
->> On Fri, 12 Oct 2007 23:44:08 +0200 (CEST) Jan Engelhardt wrote:
->>
->>> warning("override: %s turns state choice", sym->name);
->> What does that warning message mean?  I can't decipher it.
-> 
-> It is when the value of a "choice" kconfig object is changed, for example
-> this .config excerpt:
-> 
-> CONFIG_PREEMPT_NONE=y
-> # CONFIG_PREEMPT_VOLUNTARY is not set
-> # CONFIG_PREEMPT is not set
-> # CONFIG_PREEMPT_BKL is not set
-> # CONFIG_PREEMPT_NONE is not set
-> CONFIG_REEMPT_VOLUNTARY=y
-> 
->> Other than that, it works for me.  Thanks.
-> 
-> /What/ works, the patch, or the tree without the patch? (Note I was
-> testing that on 2.6.23.1, not the git head, so if someone silently
-> merged things behind me, I might have missed it. Then again, that
-> would have probably caused an offset, fuzz or reject, which was not
-> the case.)
+The hiddev driver currently lacks 32bit ioctl compatibility, so
+if you're running with a 64bit kernel and 32bit userspace, it won't
+work.
 
-The patch and me modifying the .config file by hand to cause overrides.
+I'm pretty sure that the only thing missing is a compat_ioctl
+implementation as all structs have fixed size fields.
 
--- 
-~Randy
+With this change I can use revoco to configure my MX Revolution mouse.
+
+Signed-off-by: Philip Langdale <philipl@overt.org>
+
+--- linux-2.6.23/drivers/hid/usbhid/hiddev.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-phil/drivers/hid/usbhid/hiddev.c	2007-10-12 15:02:15.000000000 -0700
+@@ -34,6 +34,7 @@
+ #include <linux/usb.h>
+ #include <linux/hid.h>
+ #include <linux/hiddev.h>
++#include <linux/compat.h>
+ #include "usbhid.h"
+
+ #ifdef CONFIG_USB_DYNAMIC_MINORS
+@@ -738,6 +738,14 @@
+ 	return -EINVAL;
+ }
+
++#ifdef CONFIG_COMPAT
++static long hiddev_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	return hiddev_ioctl(inode, file, cmd, compat_ptr(arg));
++}
++#endif
++
+ static const struct file_operations hiddev_fops = {
+ 	.owner =	THIS_MODULE,
+ 	.read =		hiddev_read,
+@@ -747,6 +754,9 @@
+ 	.release =	hiddev_release,
+ 	.ioctl =	hiddev_ioctl,
+ 	.fasync =	hiddev_fasync,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= hiddev_compat_ioctl,
++#endif
+ };
+
+ static struct usb_class_driver hiddev_class = {
