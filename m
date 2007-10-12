@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbXJLNYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbXJLN0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbXJLNYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 09:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXJLNYL
+	id S1758968AbXJLN0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 09:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbXJLN0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 09:24:11 -0400
-Received: from stinky.trash.net ([213.144.137.162]:58330 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754909AbXJLNYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 09:24:09 -0400
-Message-ID: <470F7555.4090500@trash.net>
-Date: Fri, 12 Oct 2007 15:23:33 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
-References: <200710120031.42805.a1426z@gawab.com> <200710121525.44510.a1426z@gawab.com> <470F6927.9040505@trash.net> <200710121618.51046.a1426z@gawab.com>
-In-Reply-To: <200710121618.51046.a1426z@gawab.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Oct 2007 09:26:39 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:56595 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753208AbXJLN0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 09:26:38 -0400
+Date: Fri, 12 Oct 2007 15:29:29 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071012132929.GA4013@ff.dom.local>
+References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no> <20071012091213.GC1962@ff.dom.local> <470F6C43.4090905@aitel.hist.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <470F6C43.4090905@aitel.hist.no>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Patrick McHardy wrote:
-> 
->>Al Boldi wrote:
->>
->>>Well, for example to stop any transient packets being forwarded.  You
->>>could probably hack around this using mark's, but you can't stop the
->>>implied route lookup, unless you stop it in prerouting.
->>
->>This also works fine in FORWARD with a little extra overhead.
->>If you really have to save resources, you should use PREROUTING/raw
->>to also avoid the creation of a connection tracking entry.
-> 
-> 
-> Yes sure, if you use nat.
+On Fri, Oct 12, 2007 at 02:44:51PM +0200, Helge Hafting wrote:
+...
+> The point is that we _trust_ intel when they says "this will work".
+> Therefore, we can use the optimizations. It was never about
+> legal matters. If we didn't trust intel, then we couldn't
+> use their processors at all.
 
-Conntrack.
+But there was nothing about trust. Usually you don't trust somebody
+but somebody's opinions. The problem is there was no valid opinion,
+or this opinion has been changed now (no reason to not trust yet...).
 
-> But can you see how forcing people into splitting 
-> their rules across tables adds complexity.  And without ipt_REJECT patch, 
-> they can't even use REJECT in prerouting, which forces them to do some 
-> strange hacks.
-> 
-> IMHO, we should make things as easily configurable as possible, and as things 
-> stand right now, the filter-table is completely useless for 99% of 
-> use-cases.
+> We couldn't take the chance before. It was not documented
+> to work, verification by testing would not be trivial at all for
+> this case.
+> Linux is about "stability first, then performance".
+> Now we _know_ that we can have this optimization without
+> compromising stability. Nobody knew before!
 
+So, you think this would be the first or the least credibly
+verified undocumented feature used in linux? Then, it seems
+I can try to install this linux on my laptop at last! (...
+And, I can trust you, it will not break anything...?)
 
-Sure, as I said, patches to remove the arbitary restrictions to
-tables are welcome, but please do this for all targets and
-matches which allow this, not only REJECT. And if you include a
-seperate (tested) patch for the IPv4 and IPv6 REJECT targets
-I'll consider it as well.
+Thanks,
+Jarek P.
