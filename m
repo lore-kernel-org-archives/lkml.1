@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXJLKAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760514AbXJLKBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbXJLKAp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 06:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbXJLKAg
+	id S1760514AbXJLKBf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 06:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXJLKB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 06:00:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59251 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756861AbXJLKAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 06:00:35 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19H33xQVDVHq7rflWqxzhWY5YTHbXXQbcAacODUA9
-	6ghyJlNzdQygnW
-Date: Fri, 12 Oct 2007 12:00:43 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: NMI watchdog
-Message-ID: <20071012100043.GA28777@atjola.homenet>
-References: <470F3BE0.4050807@free.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 12 Oct 2007 06:01:27 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:54849 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750906AbXJLKB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 06:01:26 -0400
+Date: Fri, 12 Oct 2007 12:04:18 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071012100418.GE1962@ff.dom.local>
+References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no> <20071012091213.GC1962@ff.dom.local> <20071012094427.GC19237@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <470F3BE0.4050807@free.fr>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20071012094427.GC19237@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.10.12 11:18:24 +0200, John Sigler wrote:
-> Hello,
->
-> I'm experiencing a full system lockup. I'm using an out-of-tree driver 
-> which I suspect is responsible. I'm trying to enable the NMI watchdog.
->
-> # cat /proc/version
-> Linux version 2.6.22.1-rt9 (gcc version 3.4.6) #1 PREEMPT RT Tue Oct 9 
-> 12:25:47 CEST 2007
->
-> # cat /proc/cmdline
-> ro root=/dev/hdc1 console=ttyS0,57600n8 console=tty0 panic=3 apic=debug 
-> nmi_watchdog=2
->
-> However, after boot, the NMI count does not change.
->
-> # cat /proc/interrupts ; sleep 10 ; cat /proc/interrupts
+On Fri, Oct 12, 2007 at 11:44:27AM +0200, Nick Piggin wrote:
+...
+> So unless there is reasonable information for us to believe this
+> will be a problem, IMO the best thing to do is stick with the
+> specs. Intel is pretty reasonable with documenting errata I think.
 
-Try running some cpu hog in the background. The performance counters get
-increased only when the CPU is actually doing something. On a mostly
-idle system, it can take quite a while for the next NMI to show up.
+100% right - if there are any specs. But it seems for a few years
+this spec was missing or there is some change of mind, I presume?
 
-Björn
+Jarek P.
