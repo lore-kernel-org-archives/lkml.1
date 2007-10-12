@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760058AbXJLHyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXJLIWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760058AbXJLHyn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 03:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXJLHye
+	id S1757337AbXJLIWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 04:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXJLIWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 03:54:34 -0400
-Received: from loopy.telegraphics.com.au ([202.45.126.152]:51203 "EHLO
-	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbXJLHyc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 03:54:32 -0400
-Date: Fri, 12 Oct 2007 17:54:30 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Rob Landley <rob@landley.net>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-In-Reply-To: <Pine.LNX.4.64.0710120849480.11634@anakin>
-Message-ID: <Pine.LNX.4.64.0710121731110.17887@loopy.telegraphics.com.au>
-References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710111707270.3729@anakin>
- <Pine.LNX.4.64.0710120211130.4083@loopy.telegraphics.com.au>
- <200710111614.39879.rob@landley.net> <Pine.LNX.4.64.0710120849480.11634@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Oct 2007 04:22:43 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:53490 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750981AbXJLIWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 04:22:42 -0400
+Date: Fri, 12 Oct 2007 10:25:34 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071012082534.GB1962@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071004052348.GC15131@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04-10-2007 07:23, Nick Piggin wrote:
+> According to latest memory ordering specification documents from Intel and
+> AMD, both manufacturers are committed to in-order loads from cacheable memory
+> for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+...
 
+Great news!
 
-> 
-> If your cross-compiler is called differently than the default on in 
-> arch/*/Makefile,
+First it looks like a really great thing that it's revealed at last.
+But then... there is probably some confusion: did we have to use
+ineffective code for so long?
 
-Part of the problem is that there is no compelling default. The name of 
-the cross-compiler can vary depending on the chosen executable prefix or 
-the chosen target tuple.
+First again, we could try to blame Intel etc. But then, wait a minute:
+is it such a mystery knowledge? If this reordering is done there are
+some easy rules broken (just like in examples from these manuals). And
+if somebody cared to do this for optimization, then this is probably
+noticeable optimization, let's say 5 or 10%. Then any test shouldn't
+need to take very long to tell the truth in less than 100 loops!
 
-Let's say I create new cross toolchains for both m68k and powerpc. I use 
-the "m68k-linux-gnu" to follow the m68k default, but let's assume powerpc 
-users prefer their default "powerpc-linux" so I follow that too. The 
-result is that I now have gcc's -B option working (or not working) in 
-suprising ways too.
+So, maybe linux needs something like this, instead of waiting few
+years with each new model for vendors goodwill? IMHO, even for less
+popular processors, this could be checked under some debugging option
+at the system start (after disabling suspicios barrier for a while
+plus some WARN_ONs).
 
-Uniformity is more helpful downstream than a different arbitrary default 
-for each architecture. Debian should patch their default into their kernel 
-source packages if they've standardised on cross compiler prefixes.
-
-> what's the problem with calling?
-> 
->     make ARCH=myarch CROSS_COMPILE=my-cross-compile-prefx-
-> 
-> This has been working for +10 years on all non-ia32 platforms I ever worked on.
-
-But there is no problem with calling that (?). Rob's patch doesn't change 
-this.
-
--f
-
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
+Thanks,
+Jarek P.
