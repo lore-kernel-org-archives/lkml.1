@@ -1,89 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbXJMWiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbXJMWve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762835AbXJMWiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 18:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbXJMWiB
+	id S1762033AbXJMWve (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 18:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXJMWv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 18:38:01 -0400
-Received: from userg501.nifty.com ([202.248.238.81]:32778 "EHLO
-	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753782AbXJMWiA (ORCPT
+	Sat, 13 Oct 2007 18:51:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52230 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbXJMWvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 18:38:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=elcfT1lj3QGE0DICqYMDVgEVQejQkyLhPVQNikpU2gbidbcioFcLaQhKx8ml+eHkr
-	X4+6oOWmD2Afst8SJp0MA==
-X-Nifty-SrcIP: [219.104.15.224]
-Date: Sun, 14 Oct 2007 07:36:58 +0900
-From: Komuro <komurojun@nifty.com>
-To: davem@sunset.davemloft.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero in
- Cubic and BIC.
-Message-Id: <20071014073658.d4352b8c.komurojun@nifty.com>
-In-Reply-To: <20071006132601.f944f461.komurojun@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+	Sat, 13 Oct 2007 18:51:25 -0400
+Subject: [RFC][PATCH] sched: SCHED_FIFO watchdog timer
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Mike Galbraith <efault@gmx.de>,
+       Lennart Poettering <mztabzr@0pointer.de>
+In-Reply-To: <1192222309.5897.3.camel@lappy>
+References: <1192222309.5897.3.camel@lappy>
+Content-Type: text/plain
+Date: Sun, 14 Oct 2007 00:51:07 +0200
+Message-Id: <1192315867.5625.6.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The below patch is an idea proposed by tglx and depends on sched-devel +
+the hrtick patch previously posted.
 
-Dear David
+The current watchdog action is to demote the task to SCHED_NORMAL,
+however it might be wanted to deliver a signal instead (or have more per
+task configuration state). Which is why I added Lennart to the CC list
+as I gathered he would like something like this for PulseAudio.
 
-The patch "[TCP]: Set initial_ssthresh default to zero in Cubic and BIC."
-is not very safe.
+---
+Subject: sched: SCHED_FIFO watchdog timer
 
-With this patch, ftp-transfer stops in my system.
-(vsftpd-2.0.5-8)
+Set a per task (rlimit based) limit on SCHED_FIFO runtime. When the
+limit is exceeded the task is demoted back to SCHED_NORMAL.
 
-Please revert this patch.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/asm-generic/resource.h |    5 +++--
+ kernel/sched.c                 |    5 +++++
+ kernel/sched_rt.c              |   36 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/include/asm-generic/resource.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/resource.h
++++ linux-2.6/include/asm-generic/resource.h
+@@ -44,8 +44,8 @@
+ #define RLIMIT_NICE		13	/* max nice prio allowed to raise to
+ 					   0-39 for nice level 19 .. -20 */
+ #define RLIMIT_RTPRIO		14	/* maximum realtime priority */
+-
+-#define RLIM_NLIMITS		15
++#define RLIMIT_FIFOTIME		15	/* timeout for fifo slices in us */
++#define RLIM_NLIMITS		16
+ 
+ /*
+  * SuS says limits have to be unsigned.
+@@ -86,6 +86,7 @@
+ 	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
+ 	[RLIMIT_NICE]		= { 0, 0 },				\
+ 	[RLIMIT_RTPRIO]		= { 0, 0 },				\
++	[RLIMIT_FIFOTIME]	= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+ }
+ 
+ #endif	/* __KERNEL__ */
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -89,6 +89,14 @@ static struct task_struct *pick_next_tas
+ 
+ 	next->se.exec_start = rq->clock;
+ 
++	if (next->policy == SCHED_FIFO) {
++		unsigned long fifotime;
++
++		fifotime = rq->curr->signal->rlim[RLIMIT_FIFOTIME].rlim_cur;
++		if (fifotime != RLIM_INFINITY)
++			hrtick_start(rq, (u64)fifotime * 1000, 0);
++	}
++
+ 	return next;
+ }
+ 
+@@ -194,8 +202,36 @@ load_balance_rt(struct rq *this_rq, int 
+ 	return load_moved;
+ }
+ 
++#ifdef CONFIG_SCHED_HRT_TICK
++static int fifo_watchdog(struct rq *rq, struct task_struct *p, int queued)
++{
++	if (likely(!queued || p->policy != SCHED_FIFO))
++		return 0;
++
++	/*
++	 * task has been naughty, turn into SCHED_NORMAL
++	 */
++	printk(KERN_INFO "SCHED_FIFO task %s/%d exceeded his runtime quota,"
++			" demoting to regular task\n", p->comm, task_pid_nr(p));
++	deactivate_task(rq, p, 0);
++	__setscheduler(rq, p, SCHED_NORMAL, 0);
++	activate_task(rq, p, 0);
++	resched_task(p);
++
++	return 1;
++}
++#else
++static inline int fifo_watchdog(struct rq *rq, struct task_struct *p, int queued)
++{
++	return 0;
++}
++#endif
++
+ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ {
++	if (fifo_watchdog(rq, p, queued))
++		return;
++
+ 	/*
+ 	 * RR tasks need a special form of timeslice management.
+ 	 * FIFO tasks have no timeslices.
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -132,6 +132,11 @@ static inline void sg_inc_cpu_power(stru
+ }
+ #endif
+ 
++static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep);
++static void activate_task(struct rq *rq, struct task_struct *p, int wakeup);
++static void
++__setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio);
++
+ static inline int rt_policy(int policy)
+ {
+ 	if (unlikely(policy == SCHED_FIFO) || unlikely(policy == SCHED_RR))
 
 
-Best Regards
-Komuro
-
->commit 66e1e3b20cbbf99da63e6c1af0fc6d39c2ed099a
->Author: David S. Miller <davem@sunset.davemloft.net>
->Date:   Wed Jun 13 01:03:53 2007 -0700
->
->    [TCP]: Set initial_ssthresh default to zero in Cubic and BIC.
->    
->    Because of the current default of 100, Cubic and BIC perform very
->    poorly compared to standard Reno.
->    
->    In the worst case, this change makes Cubic and BIC as aggressive as
->    Reno.  So this change should be very safe.
->    
->    Signed-off-by: David S. Miller <davem@davemloft.net>
->
->diff --git a/net/ipv4/tcp_bic.c b/net/ipv4/tcp_bic.c
->index 281c9f9..dd9ef65 100644
->--- a/net/ipv4/tcp_bic.c
->+++ b/net/ipv4/tcp_bic.c
->@@ -29,7 +29,7 @@ static int fast_convergence = 1;
-> static int max_increment = 16;
-> static int low_window = 14;
-> static int beta = 819;		/* = 819/1024 (BICTCP_BETA_SCALE) */
->-static int initial_ssthresh = 100;
->+static int initial_ssthresh;
-> static int smooth_part = 20;
-> 
-> module_param(fast_convergence, int, 0644);
->diff --git a/net/ipv4/tcp_cubic.c b/net/ipv4/tcp_cubic.c
->index 1422448..ebfaac2 100644
->--- a/net/ipv4/tcp_cubic.c
->+++ b/net/ipv4/tcp_cubic.c
->@@ -29,7 +29,7 @@
-> static int fast_convergence __read_mostly = 1;
-> static int max_increment __read_mostly = 16;
-> static int beta __read_mostly = 819;	/* = 819/1024 (BICTCP_BETA_SCALE) */
->-static int initial_ssthresh __read_mostly = 100;
->+static int initial_ssthresh __read_mostly;
-> static int bic_scale __read_mostly = 41;
-> static int tcp_friendliness __read_mostly = 1;
-> 
