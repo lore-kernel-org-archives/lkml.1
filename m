@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbXJMPc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbXJMPqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbXJMPc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 11:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXJMPct
+	id S1760214AbXJMPqt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 11:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXJMPqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 11:32:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50136 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754737AbXJMPcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 11:32:48 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: [patch 2/8] m68k: Atari keyboard ACIA driver cleanup
-References: <20071013123123.085686856@mail.of.borg>
-	<20071013123412.672481897@mail.of.borg>
-X-Yow: WHY are we missing KOJAK?
-Date: Sat, 13 Oct 2007 17:32:43 +0200
-In-Reply-To: <20071013123412.672481897@mail.of.borg> (Geert Uytterhoeven's
-	message of "Sat\, 13 Oct 2007 14\:31\:25 +0200")
-Message-ID: <jed4vjrpwk.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Sat, 13 Oct 2007 11:46:40 -0400
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:42857 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbXJMPqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 11:46:40 -0400
+Date: Sat, 13 Oct 2007 11:46:42 -0400
+From: Steven Toth <stoth@hauppauge.com>
+Subject: Re: [PATCH] Double-free in cx23885_initdev [sls][spam-bayes]
+In-reply-to: <4710DB10.2000107@gmail.com>
+To: Florin Malita <fmalita@gmail.com>
+Cc: "mchehab@infradead.org" <mchehab@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4710E862.9090606@hauppauge.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4710DB10.2000107@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Thanks for the patch, much appreciated.
 
-> --- a/arch/m68k/atari/atakeyb.c
-> +++ b/arch/m68k/atari/atakeyb.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * linux/atari/atakeyb.c
-> + * linux/arch/m68k/atari/atakeyb.c
+- Steve
 
-Please kill that line.
+Florin Malita wrote:
+> Both cx23885_initdev and cx23885_dev_setup free the device in their 
+> error path so a failure in the latter causes a double-free. Since 
+> cx23885_dev_setup is only called from cx23885_initdev, it should be safe 
+> to remove its deallocation and leave the cleanup up to the allocating 
+> function.
+>
+> Coverity CID 1922.
+>
+> Signed-off-by: Florin Malita <fmalita@gmail.com>
+> ---
+>
+>  drivers/media/video/cx23885/cx23885-core.c |    6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+>
+> diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
+> index af16505..3cdd136 100644
+> --- a/drivers/media/video/cx23885/cx23885-core.c
+> +++ b/drivers/media/video/cx23885/cx23885-core.c
+> @@ -793,7 +793,7 @@ static int cx23885_dev_setup(struct cx23885_dev *dev)
+>  		       dev->pci->subsystem_device);
+>  
+>  		cx23885_devcount--;
+> -		goto fail_free;
+> +		return -ENODEV;
+>  	}
+>  
+>  	/* PCIe stuff */
+> @@ -835,10 +835,6 @@ static int cx23885_dev_setup(struct cx23885_dev *dev)
+>  	}
+>  
+>  	return 0;
+> -
+> -fail_free:
+> -	kfree(dev);
+> -	return -ENODEV;
+>  }
+>  
+>  void cx23885_dev_unregister(struct cx23885_dev *dev)
+>
+>   
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
