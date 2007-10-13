@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761189AbXJMR2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbXJMR3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761189AbXJMR2Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXJMR2B
+	id S1761383AbXJMR3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXJMR3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:28:01 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:46550 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754893AbXJMR2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:28:00 -0400
-Message-ID: <4710FFA3.5080309@oracle.com>
-Date: Sat, 13 Oct 2007 10:25:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, shaggy@austin.ibm.com,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: 2.6.23-git3 jfs/bio bug
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 13 Oct 2007 13:29:45 -0400
+Received: from 1wt.eu ([62.212.114.60]:3095 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751994AbXJMR3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 13:29:45 -0400
+Date: Sat, 13 Oct 2007 19:22:14 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in bidirectional flows.
+Message-ID: <20071013172214.GA18155@1wt.eu>
+References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu> <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ 9158.155844] JFS: nTxBlock = 8192, nTxLock = 65536
-[ 9159.199567] BUG at fs/jfs/jfs_logmgr.c:2333 assert(bp->l_flag & lbmRELEASE)
-[ 9159.206566] ------------[ cut here ]------------
-[ 9159.211189] kernel BUG at fs/jfs/jfs_logmgr.c:2333!
-[ 9159.216066] invalid opcode: 0000 [1] SMP 
-[ 9159.220108] CPU 2 
-[ 9159.222144] Modules linked in: jfs loop
-[ 9159.226034] Pid: 0, comm: swapper Not tainted 2.6.23-git3 #1
-[ 9159.231688] RIP: 0010:[<ffffffff8801e39c>]  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
-[ 9159.240063] RSP: 0018:ffff81011fcefc90  EFLAGS: 00010286
-[ 9159.245372] RAX: 0000000000000052 RBX: ffff81011fcfe800 RCX: 0000000000000000
-[ 9159.252499] RDX: 0000000100000000 RSI: 0000000000000082 RDI: 0000000100000000
-[ 9159.259626] RBP: ffff81011fcefcc0 R08: ffffffff806e43b8 R09: 0000000000000086
-[ 9159.266754] R10: 0000000000000082 R11: ffffffff8073d000 R12: 0000000000000282
-[ 9159.273881] R13: ffff81011d451740 R14: 0000000000000000 R15: 0000000000001000
-[ 9159.281009] FS:  0000000000000000(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
-[ 9159.289089] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[ 9159.294830] CR2: 00002adf5b051180 CR3: 000000010416b000 CR4: 00000000000006e0
-[ 9159.301959] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 9159.309087] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-[ 9159.316215] Process swapper (pid: 0, threadinfo ffff81011fce8000, task ffff81011fca3820)
-[ 9159.324293] Stack:  ffff81011fcefca0 ffff81010f51e800 0000000000000000 ffff8101061b7728
-[ 9159.332374]  0000000000000000 0000000000001000 ffff81011fcefcd0 ffffffff802ac695
-[ 9159.339830]  ffff81011fcefcf0 ffffffff803404a6 0000000000001000 ffff81010f51e800
-[ 9159.347096] Call Trace:
-[ 9159.349738]  <IRQ>  [<ffffffff802ac695>] bio_endio+0x28/0x2a
-[ 9159.355423]  [<ffffffff803404a6>] req_bio_endio+0x79/0x93
-[ 9159.360817]  [<ffffffff803405c1>] __end_that_request_first+0x101/0x2cb
-[ 9159.367339]  [<ffffffff80340794>] end_that_request_chunk+0x9/0xb
-[ 9159.373341]  [<ffffffff8043af50>] scsi_end_request+0x30/0xd5
-[ 9159.378995]  [<ffffffff8043b1b1>] scsi_io_completion+0x15a/0x390
-[ 9159.384998]  [<ffffffff8048b154>] sd_rw_intr+0x2d1/0x305
-[ 9159.390307]  [<ffffffff80436078>] scsi_finish_command+0x98/0xa1
-[ 9159.396220]  [<ffffffff8043bab1>] scsi_softirq_done+0xf1/0xfa
-[ 9159.401963]  [<ffffffff8034323c>] blk_done_softirq+0x63/0x72
-[ 9159.407619]  [<ffffffff8023e06f>] __do_softirq+0x57/0xc7
-[ 9159.412927]  [<ffffffff8020c67c>] call_softirq+0x1c/0x28
-[ 9159.418235]  [<ffffffff8020d9a4>] do_softirq+0x34/0x87
-[ 9159.423370]  [<ffffffff8023e016>] irq_exit+0x3f/0x41
-[ 9159.428333]  [<ffffffff8020db3b>] do_IRQ+0x144/0x169
-[ 9159.433296]  [<ffffffff8020a7f2>] mwait_idle+0x0/0x4e
-[ 9159.438344]  [<ffffffff8020ba01>] ret_from_intr+0x0/0xa
-[ 9159.443566]  <EOI>  [<ffffffff8020a838>] mwait_idle+0x46/0x4e
-[ 9159.449335]  [<ffffffff8020a0b0>] enter_idle+0x22/0x24
-[ 9159.454470]  [<ffffffff8020a785>] cpu_idle+0x93/0xb6
-[ 9159.459434]  [<ffffffff8021bca0>] start_secondary+0x2b7/0x2c6
-[ 9159.465173] 
-[ 9159.466670] 
-[ 9159.466671] Code: 0f 0b eb fe a8 10 75 25 48 c7 c1 6e 6b 02 88 ba 1e 09 00 00 
-[ 9159.475739] RIP  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
-[ 9159.481775]  RSP <ffff81011fcefc90>
-[ 9159.485552] Kernel panic - not syncing: Fatal exception
-[ 9159.490780] Rebooting in 30 seconds..
+Hi Ilpo,
 
-config file: http://oss.oracle.com/~rdunlap/kerneltest/2.6.23-git3-jfs/kconfig.~1
+On Sat, Oct 13, 2007 at 08:15:52PM +0300, Ilpo Järvinen wrote:
+> On Sat, 13 Oct 2007, Willy Tarreau wrote:
+> 
+> > It's possible that new SACK blocks that should trigger new LOST
+> > markings arrive with new data (which previously made is_dupack
+> > false). In addition, I think this fixes a case where we get
+> > a cumulative ACK with enough SACK blocks to trigger the fast
+> > recovery (is_dupack would be false there too).
+> > 
+> > I'm not completely pleased with this solution because readability
+> > of the code is somewhat questionable as 'is_dupack' in SACK case
+> > is no longer about dupacks only but would mean something like
+> > 'lost_marker_work_todo' too... But because of Eifel stuff done
+> > in CA_Recovery, the FLAG_DATA_SACKED check cannot be placed to
+> > the if statement which seems attractive solution. Nevertheless,
+> > I didn't like adding another variable just for that either... :-)
+> > 
+> > Signed-off-by: Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>
+> > Signed-off-by: David S. Miller <davem@davemloft.net>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  net/ipv4/tcp_input.c |    5 ++++-
+> >  1 files changed, 4 insertions(+), 1 deletions(-)
+> > 
+> > Index: 2.6/net/ipv4/tcp_input.c
+> > ===================================================================
+> > --- 2.6.orig/net/ipv4/tcp_input.c
+> > +++ 2.6/net/ipv4/tcp_input.c
+> > @@ -1951,7 +1951,10 @@ tcp_fastretrans_alert(struct sock *sk, u
+> >  {
+> >  	struct inet_connection_sock *icsk = inet_csk(sk);
+> >  	struct tcp_sock *tp = tcp_sk(sk);
+> > -	int is_dupack = (tp->snd_una == prior_snd_una && !(flag&FLAG_NOT_DUP));
+> > +	int is_dupack = (tp->snd_una == prior_snd_una &&
+> > +			 (!(flag&FLAG_NOT_DUP) ||
+> > +			  ((flag&FLAG_DATA_SACKED) &&
+> > +			   (tp->fackets_out > tp->reordering))));
+> >  
+> >  	/* Some technical things:
+> >  	 * 1. Reno does not count dupacks (sacked_out) automatically. */
+> 
+> FYI,
+> 
+> This ended up being a non complete fix. Day after these two patches 
+> (11-12) I submitted two other patches to complete this fix series (got 
+> bitten by release-early-release-often, fixed day-after-submission 
+> thoughts in those two later patches). For some reason these two keep 
+> floating around as separate ones from those two later ones.
+> 
+> To make things even more complicated, eb7bdad82e8 (see stable-2.6.22) 
+> could have been split more logically to do_lost addition and 
+> FLAG_SND_UNA_ADVANCED parts (but that didn't occur to me back then).
+> 
+> All of them listed here (from stable-2.6.22 since one of them is
+> reduced from mainline version):
+> 
+> 6d742fb6e2b8913457e1282e1be77d6f4e45af00 Fix TCP DSACK cwnd handling
+> eb7bdad82e8af48e1ed1b650268dc85ca7e9ff39 Handle snd_una in tcp_cwnd_down()
+> 8385cffd22359ad561a173accefeb354bd606ce4 TCP: Fix TCP handling of SACK in 
+> 783366ad4b212cde069c50903494eb6a6b83958c TCP: Fix TCP rate-halving on 
 
--- 
-~Randy
+Thanks for your help, I really appreciate it. In fact, I've reviewed them
+four, but two of them did not apply and the code looked somewhat different,
+so I considered them irrelevant to 2.6.20. I didn't understand that they
+were all related, so maybe I checked them in a wrong order.
+
+I'll recheck all that in the right sequence and will merge them four, or
+get back to you if something still puzzles me.
+
+Thanks!
+Willy
+
