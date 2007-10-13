@@ -1,159 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbXJMQqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbXJMRFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbXJMQqg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 12:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXJMQq2
+	id S1757534AbXJMRFn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbXJMRFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 12:46:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:37493 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbXJMQq1 (ORCPT
+	Sat, 13 Oct 2007 13:05:34 -0400
+Received: from quark.didntduck.org ([69.55.226.66]:47820 "EHLO
+	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbXJMRFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 12:46:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:in-reply-to:references:content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SISnVn3HY8CHGapXHOD8rEDjyrw/wFa8L1dohNnCAMK8RPtzRZqVaACbJR/lVbajLIvNHaztfKyctAMNDeqx2Oy4BV71hmZmEKe9nTUqyo4oy6nefPMRhT2+pu++7Z9TU5wlKLsvaV9YJfcA3YcutldujYNz/DgdmfkLoq38oJo=
-Subject: Compiling kernel 2.6.23.1 HELP
-From: animesh saxena <animesh.saxena@gmail.com>
-Reply-To: animesh.saxena@gmail.com
-To: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071004040003.303112696@sgi.com>
-References: <20071004035935.042951211@sgi.com>
-	 <20071004040003.303112696@sgi.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: Open Source
-Date: Sat, 13 Oct 2007 22:16:08 +0530
-Message-Id: <1192293968.16391.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 8bit
+	Sat, 13 Oct 2007 13:05:32 -0400
+X-Greylist: delayed 3574 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Oct 2007 13:05:31 EDT
+Message-ID: <4710ECD9.2070600@didntduck.org>
+Date: Sat, 13 Oct 2007 12:05:45 -0400
+From: Brian Gerst <bgerst@didntduck.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: trivial header merges
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   I am a kernel newbie, so need some help trying to compile it. 
-I have fedora 7 installed. 
+Merge 32/64-bit headers that simply redirect to asm-generic
 
-While compiling it, I get errors as follows.....
+Signed-off-by: Brian Gerst <bgerst@didntduck.org>
+---
+ include/asm-x86/cputime.h     |    6 +-----
+ include/asm-x86/cputime_32.h  |    6 ------
+ include/asm-x86/cputime_64.h  |    6 ------
+ include/asm-x86/errno.h       |   14 +-------------
+ include/asm-x86/errno_32.h    |    6 ------
+ include/asm-x86/errno_64.h    |    6 ------
+ include/asm-x86/resource.h    |   14 +-------------
+ include/asm-x86/resource_32.h |    6 ------
+ include/asm-x86/resource_64.h |    6 ------
+ include/asm-x86/rtc.h         |    6 +-----
+ include/asm-x86/rtc_32.h      |   10 ----------
+ include/asm-x86/rtc_64.h      |   10 ----------
+ include/asm-x86/sections.h    |    6 +-----
+ include/asm-x86/sections_32.h |    7 -------
+ include/asm-x86/sections_64.h |    7 -------
+ 15 files changed, 5 insertions(+), 111 deletions(-)
+ delete mode 100644 include/asm-x86/cputime_32.h
+ delete mode 100644 include/asm-x86/cputime_64.h
+ delete mode 100644 include/asm-x86/errno_32.h
+ delete mode 100644 include/asm-x86/errno_64.h
+ delete mode 100644 include/asm-x86/resource_32.h
+ delete mode 100644 include/asm-x86/resource_64.h
+ delete mode 100644 include/asm-x86/rtc_32.h
+ delete mode 100644 include/asm-x86/rtc_64.h
+ delete mode 100644 include/asm-x86/sections_32.h
+ delete mode 100644 include/asm-x86/sections_64.h
 
- HOSTCC  scripts/basic/fixdep
-scripts/basic/fixdep.c:107:23: error: sys/types.h: No such file or
-directory
-scripts/basic/fixdep.c:108:22: error: sys/stat.h: No such file or
-directory
-scripts/basic/fixdep.c:109:22: error: sys/mman.h: No such file or
-directory
-scripts/basic/fixdep.c:110:20: error: unistd.h: No such file or
-directory
-scripts/basic/fixdep.c:111:19: error: fcntl.h: No such file or directory
-scripts/basic/fixdep.c:112:20: error: string.h: No such file or
-directory
-scripts/basic/fixdep.c:113:20: error: stdlib.h: No such file or
-directory
-scripts/basic/fixdep.c:114:19: error: stdio.h: No such file or directory
-In file included
-from /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/syslimits.h:7,
-
-from /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/limits.h:11,
-                 from scripts/basic/fixdep.c:115:
-/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/limits.h:122:61: error:
-limits.h: No such file or directory
-scripts/basic/fixdep.c:116:19: error: ctype.h: No such file or directory
-scripts/basic/fixdep.c:117:23: error: arpa/inet.h: No such file or
-directory
-scripts/basic/fixdep.c: In function ‘usage’:
-scripts/basic/fixdep.c:131: warning: implicit declaration of function
-‘fprintf’
-scripts/basic/fixdep.c:131: warning: incompatible implicit declaration
-of built-in function ‘fprintf’
-scripts/basic/fixdep.c:131: error: ‘stderr’ undeclared (first use in
-this function)
-scripts/basic/fixdep.c:131: error: (Each undeclared identifier is
-reported only once
-scripts/basic/fixdep.c:131: error: for each function it appears in.)
-scripts/basic/fixdep.c:132: warning: implicit declaration of function
-‘exit’
-scripts/basic/fixdep.c:132: warning: incompatible implicit declaration
-of built-in function ‘exit’
-scripts/basic/fixdep.c: In function ‘print_cmdline’:
-scripts/basic/fixdep.c:140: warning: implicit declaration of function
-‘printf’
-scripts/basic/fixdep.c:140: warning: incompatible implicit declaration
-of built-in function ‘printf’
-scripts/basic/fixdep.c: At top level:
-scripts/basic/fixdep.c:143: error: ‘NULL’ undeclared here (not in a
-function)
-scripts/basic/fixdep.c: In function ‘grow_config’:
-scripts/basic/fixdep.c:156: warning: implicit declaration of function
-‘realloc’
-scripts/basic/fixdep.c:156: warning: assignment makes pointer from
-integer without a cast
-scripts/basic/fixdep.c:158: warning: implicit declaration of function
-‘perror’
-scripts/basic/fixdep.c:158: warning: incompatible implicit declaration
-of built-in function ‘exit’
-scripts/basic/fixdep.c: In function ‘is_defined_config’:
-scripts/basic/fixdep.c:174: warning: implicit declaration of function
-‘memcmp’
-scripts/basic/fixdep.c: In function ‘define_config’:
-scripts/basic/fixdep.c:187: warning: implicit declaration of function
-‘memcpy’
-scripts/basic/fixdep.c:187: warning: incompatible implicit declaration
-of built-in function ‘memcpy’
-scripts/basic/fixdep.c: In function ‘use_config’:
-scripts/basic/fixdep.c:206: error: ‘PATH_MAX’ undeclared (first use in
-this function)
-scripts/basic/fixdep.c:214: warning: incompatible implicit declaration
-of built-in function ‘memcpy’
-scripts/basic/fixdep.c:220: warning: implicit declaration of function
-‘tolower’
-scripts/basic/fixdep.c:222: warning: incompatible implicit declaration
-of built-in function ‘printf’
-scripts/basic/fixdep.c:206: warning: unused variable ‘s’
-scripts/basic/fixdep.c: At top level:
-scripts/basic/fixdep.c:225: error: expected declaration specifiers or
-‘...’ before ‘size_t’
-scripts/basic/fixdep.c: In function ‘parse_config_file’:
-scripts/basic/fixdep.c:227: error: ‘len’ undeclared (first use in this
-function)
-scripts/basic/fixdep.c:233: warning: implicit declaration of function
-‘ntohl’
-scripts/basic/fixdep.c:244: warning: implicit declaration of function
-‘isalnum’
-scripts/basic/fixdep.c: In function ‘strrcmp’:
-scripts/basic/fixdep.c:261: warning: implicit declaration of function
-‘strlen’
-scripts/basic/fixdep.c:261: warning: incompatible implicit declaration
-of built-in function ‘strlen’
-scripts/basic/fixdep.c: In function ‘do_config_file’:
-scripts/basic/fixdep.c:272: error: storage size of ‘st’ isn’t known
-scripts/basic/fixdep.c:276: warning: implicit declaration of function
-‘open’
-scripts/basic/fixdep.c:276: error: ‘O_RDONLY’ undeclared (first use in
-this function)
-scripts/basic/fixdep.c:278: warning: incompatible implicit declaration
-of built-in function ‘fprintf’
-scripts/basic/fixdep.c:278: error: ‘stderr’ undeclared (first use in
-this function)
-
-On many forums it said I need to have 2.4 kernel headers. I can't
-understand why is it so? Am I missing something?
-
-I used git for getting the latest kernel. 
-
-git-clone
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
-Is there something similar for getting kernel headers? Please help. 
-
-Thanks,
-Animesh Saxena
-
-
-
-
-
-
+diff --git a/include/asm-x86/cputime.h b/include/asm-x86/cputime.h
+index 87c37cf..6d68ad7 100644
+--- a/include/asm-x86/cputime.h
++++ b/include/asm-x86/cputime.h
+@@ -1,5 +1 @@
+-#ifdef CONFIG_X86_32
+-# include "cputime_32.h"
+-#else
+-# include "cputime_64.h"
+-#endif
++#include <asm-generic/cputime.h>
+diff --git a/include/asm-x86/cputime_32.h b/include/asm-x86/cputime_32.h
+deleted file mode 100644
+index 398ed7c..0000000
+--- a/include/asm-x86/cputime_32.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __I386_CPUTIME_H
+-#define __I386_CPUTIME_H
+-
+-#include <asm-generic/cputime.h>
+-
+-#endif /* __I386_CPUTIME_H */
+diff --git a/include/asm-x86/cputime_64.h b/include/asm-x86/cputime_64.h
+deleted file mode 100644
+index a07012d..0000000
+--- a/include/asm-x86/cputime_64.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __X86_64_CPUTIME_H
+-#define __X86_64_CPUTIME_H
+-
+-#include <asm-generic/cputime.h>
+-
+-#endif /* __X86_64_CPUTIME_H */
+diff --git a/include/asm-x86/errno.h b/include/asm-x86/errno.h
+index 9d511be..4c82b50 100644
+--- a/include/asm-x86/errno.h
++++ b/include/asm-x86/errno.h
+@@ -1,13 +1 @@
+-#ifdef __KERNEL__
+-# ifdef CONFIG_X86_32
+-#  include "errno_32.h"
+-# else
+-#  include "errno_64.h"
+-# endif
+-#else
+-# ifdef __i386__
+-#  include "errno_32.h"
+-# else
+-#  include "errno_64.h"
+-# endif
+-#endif
++#include <asm-generic/errno.h>
+diff --git a/include/asm-x86/errno_32.h b/include/asm-x86/errno_32.h
+deleted file mode 100644
+index 969b343..0000000
+--- a/include/asm-x86/errno_32.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef _I386_ERRNO_H
+-#define _I386_ERRNO_H
+-
+-#include <asm-generic/errno.h>
+-
+-#endif
+diff --git a/include/asm-x86/errno_64.h b/include/asm-x86/errno_64.h
+deleted file mode 100644
+index 3111821..0000000
+--- a/include/asm-x86/errno_64.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef _X8664_ERRNO_H
+-#define _X8664_ERRNO_H
+-
+-#include <asm-generic/errno.h>
+-
+-#endif
+diff --git a/include/asm-x86/resource.h b/include/asm-x86/resource.h
+index 732410a..04bc4db 100644
+--- a/include/asm-x86/resource.h
++++ b/include/asm-x86/resource.h
+@@ -1,13 +1 @@
+-#ifdef __KERNEL__
+-# ifdef CONFIG_X86_32
+-#  include "resource_32.h"
+-# else
+-#  include "resource_64.h"
+-# endif
+-#else
+-# ifdef __i386__
+-#  include "resource_32.h"
+-# else
+-#  include "resource_64.h"
+-# endif
+-#endif
++#include <asm-generic/resource.h>
+diff --git a/include/asm-x86/resource_32.h b/include/asm-x86/resource_32.h
+deleted file mode 100644
+index 6c1ea37..0000000
+--- a/include/asm-x86/resource_32.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef _I386_RESOURCE_H
+-#define _I386_RESOURCE_H
+-
+-#include <asm-generic/resource.h>
+-
+-#endif
+diff --git a/include/asm-x86/resource_64.h b/include/asm-x86/resource_64.h
+deleted file mode 100644
+index f40b406..0000000
+--- a/include/asm-x86/resource_64.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef _X8664_RESOURCE_H
+-#define _X8664_RESOURCE_H
+-
+-#include <asm-generic/resource.h>
+-
+-#endif
+diff --git a/include/asm-x86/rtc.h b/include/asm-x86/rtc.h
+index 1f0c98e..f71c3b0 100644
+--- a/include/asm-x86/rtc.h
++++ b/include/asm-x86/rtc.h
+@@ -1,5 +1 @@
+-#ifdef CONFIG_X86_32
+-# include "rtc_32.h"
+-#else
+-# include "rtc_64.h"
+-#endif
++#include <asm-generic/rtc.h>
+diff --git a/include/asm-x86/rtc_32.h b/include/asm-x86/rtc_32.h
+deleted file mode 100644
+index ffd0210..0000000
+--- a/include/asm-x86/rtc_32.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _I386_RTC_H
+-#define _I386_RTC_H
+-
+-/*
+- * x86 uses the default access methods for the RTC.
+- */
+-
+-#include <asm-generic/rtc.h>
+-
+-#endif
+diff --git a/include/asm-x86/rtc_64.h b/include/asm-x86/rtc_64.h
+deleted file mode 100644
+index 18ed713..0000000
+--- a/include/asm-x86/rtc_64.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _X86_64_RTC_H
+-#define _X86_64_RTC_H
+-
+-/*
+- * x86 uses the default access methods for the RTC.
+- */
+-
+-#include <asm-generic/rtc.h>
+-
+-#endif
+diff --git a/include/asm-x86/sections.h b/include/asm-x86/sections.h
+index ae6c69d..2b8c516 100644
+--- a/include/asm-x86/sections.h
++++ b/include/asm-x86/sections.h
+@@ -1,5 +1 @@
+-#ifdef CONFIG_X86_32
+-# include "sections_32.h"
+-#else
+-# include "sections_64.h"
+-#endif
++#include <asm-generic/sections.h>
+diff --git a/include/asm-x86/sections_32.h b/include/asm-x86/sections_32.h
+deleted file mode 100644
+index 2dcbb92..0000000
+--- a/include/asm-x86/sections_32.h
++++ /dev/null
+@@ -1,7 +0,0 @@
+-#ifndef _I386_SECTIONS_H
+-#define _I386_SECTIONS_H
+-
+-/* nothing to see, move along */
+-#include <asm-generic/sections.h>
+-
+-#endif
+diff --git a/include/asm-x86/sections_64.h b/include/asm-x86/sections_64.h
+deleted file mode 100644
+index c746d9f..0000000
+--- a/include/asm-x86/sections_64.h
++++ /dev/null
+@@ -1,7 +0,0 @@
+-#ifndef _X8664_SECTIONS_H
+-#define _X8664_SECTIONS_H
+-
+-/* nothing to see, move along */
+-#include <asm-generic/sections.h>
+-
+-#endif
+-- 
+1.5.3.GIT
 
 
