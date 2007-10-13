@@ -1,69 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXJMFAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbXJMFBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbXJMFAf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 01:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXJMFA0
+	id S1760668AbXJMFBV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 01:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbXJMFBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 01:00:26 -0400
-Received: from qsrv02sl.mx.bigpond.com ([144.140.93.182]:62508 "EHLO
-	qsrv02sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750791AbXJMFAZ (ORCPT
+	Sat, 13 Oct 2007 01:01:11 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48624 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbXJMFBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 01:00:25 -0400
-Message-ID: <47101F7D.8050101@bigpond.net.au>
-Date: Sat, 13 Oct 2007 11:29:33 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sat, 13 Oct 2007 01:01:09 -0400
+Date: Sat, 13 Oct 2007 14:00:25 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [Patch 002/002] Create/delete kmem_cache_node for SLUB on memory online callback
+Cc: Andrew Morton <akpm@osdl.org>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0710121014430.8605@schroedinger.engr.sgi.com>
+References: <20071012133336.B9A5.Y-GOTO@jp.fujitsu.com> <Pine.LNX.4.64.0710121014430.8605@schroedinger.engr.sgi.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071013133630.BDFE.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>,
-       "Siddha\, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Rationalize sys_sched_rr_get_interval()
-References: <20071012064927.GA1962@ff.dom.local>
-In-Reply-To: <20071012064927.GA1962@ff.dom.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [124.179.200.236] using ID pwil3058@bigpond.net.au at Sat, 13 Oct 2007 01:29:34 +0000
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On 12-10-2007 00:23, Peter Williams wrote:
-> ...
->> The reason I was going that route was for modularity (which helps when 
->> adding plugsched patches).  I'll submit a revised patch for consideration.
-> ...
+> On Fri, 12 Oct 2007, Yasunori Goto wrote:
 > 
-> IMHO, it looks like modularity could suck here:
+> > > > +	down_read(&slub_lock);
+> > > > +	list_for_each_entry(s, &slab_caches, list) {
+> > > > +		local_node = page_to_nid(virt_to_page(s));
+> > > > +		if (local_node == offline_node)
+> > > > +			/* This slub is on the offline node. */
+> > > > +			return -EBUSY;
+> > > > +	}
+> > > > +	up_read(&slub_lock);
+> > > 
+> > > So this checks if the any kmem_cache structure is on the offlined node? If
+> > > so then we cannot offline the node?
+> > 
+> > Right. If slabs' migration is possible, here would be good place for
+> > doing it. But, it is not possible (at least now).
 > 
->> +static unsigned int default_timeslice_fair(struct task_struct *p)
->> +{
->> +	return NS_TO_JIFFIES(sysctl_sched_min_granularity);
->> +}
+> I think you can avoid this check. The kmem_cache structures are allocated 
+> from the kmalloc array. The check if the kmalloc slabs are empty will fail 
+> if kmem_cache structures still exist on the node.
+
+Ah, Ok.
+
+
 > 
-> If it's needed for outside and sched_fair will use something else
-> (to avoid double conversion) this could be misleading. Shouldn't
-> this be kind of private and return something usable for the class
-> mainly?
+> > > > +			 * because the node is used by slub yet.
+> > > > +			 */
+> > > 
+> > > It may be clearer to say:
+> > > 
+> > > "If nr_slabs > 0 then slabs still exist on the node that is going down.
+> > > We were unable to free them so we must fail."
+> > 
+> > Again. If nr_slabs > 0, offline_pages must be fail due to slabs
+> > remaining on the node before. So, this callback isn't called.
+> 
+> Ok then we can remove these checks?
 
-This is supplying data for a system call not something for internal use 
-by the class.  As far as the sched_fair class is concerned this is just 
-a (necessary - because it's need by a system call) diversion.
+Hmm. Yes. I'll remove it.
 
-> Why anything else than sched_fair should care about this?
+> 
+> > > > +static int slab_mem_going_online_callback(void *arg)
+> > > > +{
+> > > > +	struct kmem_cache_node *n;
+> > > > +	struct kmem_cache *s;
+> > > > +	struct memory_notify *marg = arg;
+> > > > +	int nid = marg->status_change_nid;
+> > > > +
+> > > > +	/* If the node already has memory, then nothing is necessary. */
+> > > > +	if (nid < 0)
+> > > > +		return 0;
+> > > 
+> > > The node must have memory????  Or we have already brought up the code?
+> > 
+> > kmem_cache_node is created at boot time if the node has memory.
+> > (Or, it is created by this callback on first added memory on the node).
+> > 
+> > When nid = - 1, kmem_cache_node is created before this node due to
+> > node has memory. 
+> 
+> So the function can be called for a node that is already online?
 
-sched_fair doesn't care so if nothing else does why do we even have 
-sys_sched_rr_get_interval()?  Is this whole function an anachronism that 
-can be expunged?  I'm assuming that the reason it exists is that there 
-are user space programs that use this system call.  Am I correct in this 
-assumption?  Personally, I can't think of anything it would be useful 
-for other than satisfying curiosity.
+already "node memory available", accurately ;-)
 
-Peter
+
+> 
+> > > > +	 * New memory will be onlined on the node which has no memory so far.
+> > > > +	 * New kmem_cache_node is necssary for it.
+> > > 
+> > > "We are bringing a node online. No memory is available yet. We must 
+> > > allocate a kmem_cache_node structure in order to bring the node online." ?
+> > 
+> > Your mention might be ok.
+> > But. I would like to prefer to define status of node hotplug for
+> > exactitude like followings
+> > 
+> > 
+> > A)Node online -- pgdat is created and can be accessed for this node.
+> >                  but there are no gurantee that cpu or memory is onlined.
+> >                  This status is very close from memory-less node.
+> >                  But this might be halfway status for node hotplug.
+> >                  Node online bit is set. But N_HIGH_MEMORY
+> >                  (or N_NORMAL_MEMORY) might be not set.
+> 
+> Ahh.. Okay.
+> 
+> > B)Node has memory--
+> >                  one or more sections memory is onlined on the node.
+> >                  N_HIGH_MEMORY (or N_NORMAL_MEMORY) is set.
+> > 
+> > If first memory is onlined on the node, the node status changes
+> > from A) to B).
+> > 
+> > I feel this is very useful to manage "halfway status" of node
+> > hotplug. (So, memory-less node patch is very helpful for me.)
+> > 
+> > So, I would like to avoid using the word "node online" at here.
+> > But, if above definition is messy for others, I'll change it.
+> 
+> Ok can we talk about this as
+> 
+> 	node online
+> 
+> and
+> 
+> 	node memory available?
+
+Yes. Thanks.
+
+
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
+Yasunori Goto 
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+
