@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbXJMNwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbXJMOBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbXJMNwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 09:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXJMNwB
+	id S1757419AbXJMOBp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXJMOBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 09:52:01 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37680 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754036AbXJMNwA (ORCPT
+	Sat, 13 Oct 2007 10:01:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:59924 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbXJMOBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 09:52:00 -0400
-Date: Sat, 13 Oct 2007 15:52:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: checkpatch: ERROR: Does not appear to be a unified-diff format
-	patch
-Message-ID: <20071013135229.GB4211@stusta.de>
-References: <Pine.LNX.4.64.0710131424470.12088@anakin> <20071013124733.GA4211@stusta.de> <Pine.LNX.4.64.0710131453530.31913@fbirervta.pbzchgretzou.qr>
+	Sat, 13 Oct 2007 10:01:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4710CF9F.6080207@s5r6.in-berlin.de>
+Date: Sat, 13 Oct 2007 16:01:03 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710131453530.31913@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr> <47107ED2.6040509@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 02:55:01PM +0200, Jan Engelhardt wrote:
+Jan Engelhardt wrote:
+> On Oct 13 2007 10:16, Stefan Richter wrote:
+>> Perhaps say
+>>
+>> 	warning("override: switching to choice %s", sym->name);
+>>
+>> if sym->name is [CONFIG_]PREEMPT_VOLUNTARY.  Or what is it?
 > 
-> On Oct 13 2007 14:47, Adrian Bunk wrote:
-> >On Sat, Oct 13, 2007 at 02:28:00PM +0200, Geert Uytterhoeven wrote:
-> >> scripts/checkpatch.pl doesn't seem to like this patch:
-> >> 
-> >> $ scripts/checkpatch.pl m68k-export-asm-cachectl-h.diff 
-> >> ERROR: Does not appear to be a unified-diff format patch
-> >>...
-> >> --- a/include/asm-m68k/Kbuild
-> >> +++ b/include/asm-m68k/Kbuild
-> >> @@ -1 +1,2 @@
-> >>... ^^
-> >
-> >Broken patch, this has to be "-1,1".
+> .config:176:warning: override: reassigning to symbol PREEMPT_VOLUNTARY
+> .config:176:warning: override: PREEMPT_VOLUNTARY turns state choice
+
+Try to make it a single warning.
+
+> Which seems correct, as PREEMPT_VOLUNTARY=y will overturn
+> the previous decision.
 > 
-> No, this is actually how diff outputs it.
->...
+> Perhaps it should be "%s overturns state choice" ?
 
-You seem to be right.
-
-That's a really strange part of the unidiff format - you have to write
-",0" or ",2", but you can omit a ",1".
-
-cu
-Adrian
-
+Sounds like "overthrows government".
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Stefan Richter
+-=====-=-=== =-=- -==-=
+http://arcgraph.de/sr/
