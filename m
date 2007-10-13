@@ -1,40 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761868AbXJMHZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXJMHZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761868AbXJMHZW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXJMHZJ
+	id S1762098AbXJMHZm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXJMHZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:25:09 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14061 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbXJMHZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:25:07 -0400
-Date: Sat, 13 Oct 2007 09:25:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: akpm@linux-foundation.org, willy@debian.org, fujita.tomonori@lab.ntt.co.jp,
-       anil.s.keshavamurthy@intel.com, vs@namesys.com, edward@namesys.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: git-block patches broken on 2.6.23-mm1 ia64 SN
-Message-ID: <20071013072504.GD969@kernel.dk>
-References: <20071013001356.304b505f.pj@sgi.com> <20071013071821.GC969@kernel.dk> <20071013002003.2134542e.pj@sgi.com>
-MIME-Version: 1.0
+	Sat, 13 Oct 2007 03:25:28 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37412 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762015AbXJMHZ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:25:27 -0400
+Date: Sat, 13 Oct 2007 08:25:24 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] v4l: copy_to_user() is not a good method name
+Message-ID: <20071013072524.GF8181@ftp.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071013002003.2134542e.pj@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13 2007, Paul Jackson wrote:
-> Jens wrote:
-> > Can you try with init call debugging,
-> 
-> Sure - if I knew what that was or how to do it ;).
-> 
-> If you want to guide me, I'll give it try.
+Breaks on any target that has copy_to_user() defined as a non-trivial
+macro.
 
-Just pass 'initcall_debug' as a boot parameter.
-
--- 
-Jens Axboe
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index c606332..5599a36 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -674,7 +674,7 @@ ssize_t videobuf_read_one(struct videobuf_queue *q,
+ 	}
+ 
+ 	/* Copy to userspace */
+-	retval=CALL(q,copy_to_user,q,data,count,nonblocking);
++	retval=CALL(q,video_copy_to_user,q,data,count,nonblocking);
+ 	if (retval<0)
+ 		goto done;
+ 
+diff --git a/drivers/media/video/videobuf-dma-sg.c b/drivers/media/video/videobuf-dma-sg.c
+index 8bb7fdd..3eb6123 100644
+--- a/drivers/media/video/videobuf-dma-sg.c
++++ b/drivers/media/video/videobuf-dma-sg.c
+@@ -670,7 +670,7 @@ static struct videobuf_qtype_ops pci_ops = {
+ 	.sync         = __videobuf_sync,
+ 	.mmap_free    = __videobuf_mmap_free,
+ 	.mmap_mapper  = __videobuf_mmap_mapper,
+-	.copy_to_user = __videobuf_copy_to_user,
++	.video_copy_to_user = __videobuf_copy_to_user,
+ 	.copy_stream  = __videobuf_copy_stream,
+ };
+ 
+diff --git a/drivers/media/video/videobuf-vmalloc.c b/drivers/media/video/videobuf-vmalloc.c
+index 2e3689a..cd74341 100644
+--- a/drivers/media/video/videobuf-vmalloc.c
++++ b/drivers/media/video/videobuf-vmalloc.c
+@@ -320,7 +320,7 @@ static struct videobuf_qtype_ops qops = {
+ 	.sync         = __videobuf_sync,
+ 	.mmap_free    = __videobuf_mmap_free,
+ 	.mmap_mapper  = __videobuf_mmap_mapper,
+-	.copy_to_user = __videobuf_copy_to_user,
++	.video_copy_to_user = __videobuf_copy_to_user,
+ 	.copy_stream  = __videobuf_copy_stream,
+ };
+ 
+diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
+index 9fa09fb..0fa5d59 100644
+--- a/include/media/videobuf-core.h
++++ b/include/media/videobuf-core.h
+@@ -133,7 +133,7 @@ struct videobuf_qtype_ops {
+ 				 enum v4l2_memory memory);
+ 	int (*sync)		(struct videobuf_queue* q,
+ 				 struct videobuf_buffer *buf);
+-	int (*copy_to_user)	(struct videobuf_queue *q,
++	int (*video_copy_to_user)(struct videobuf_queue *q,
+ 				 char __user *data,
+ 				 size_t count,
+ 				 int nonblocking);
