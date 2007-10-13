@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbXJMHaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbXJMHfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762050AbXJMHaj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXJMHab
+	id S1761478AbXJMHfZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXJMHfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:30:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51041 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752399AbXJMHaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:30:30 -0400
-Date: Sat, 13 Oct 2007 08:30:26 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: davem@davemloft.net, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] fallout from DECLARE_MAC_BUF patches
-Message-ID: <20071013073026.GH8181@ftp.linux.org.uk>
+	Sat, 13 Oct 2007 03:35:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56284 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753815AbXJMHfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:35:11 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18q16xUZckqM1ftng5hiuyh2dDw38RnVTZAXwzkaV
+	O88pUSCNeTGlcN
+Subject: Re: 2.6.23.git build error
+From: Mike Galbraith <efault@gmx.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Giacomo Catenazzi <cate@debian.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071013071626.GA28168@uranus.ravnborg.org>
+References: <1192164538.10413.3.camel@Homer.simpson.net>
+	 <20071012213114.GA24016@uranus.ravnborg.org>
+	 <1192246457.7395.19.camel@Homer.simpson.net> <47105A39.9070406@debian.org>
+	 <20071013071626.GA28168@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sat, 13 Oct 2007 09:35:09 +0200
+Message-Id: <1192260909.7369.20.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-10-13 at 09:16 +0200, Sam Ravnborg wrote:
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-4804102d4d0db062dcc480bfbd4336066f6e879d
-diff --git a/drivers/net/atarilance.c b/drivers/net/atarilance.c
-index ebf1a3a..b74dbee 100644
---- a/drivers/net/atarilance.c
-+++ b/drivers/net/atarilance.c
-@@ -1023,7 +1023,7 @@ static int lance_rx( struct net_device *dev )
- 					DECLARE_MAC_BUF(mac);
- 					DECLARE_MAC_BUF(mac2);
- 
--					printk(KERN_DEBUG "%s: RX pkt type 0x%04x from %s to %s ",
-+					printk(KERN_DEBUG "%s: RX pkt type 0x%04x from %s to %s "
- 						   "data %02x %02x %02x %02x %02x %02x %02x %02x "
- 						   "len %d\n",
- 						   dev->name, ((u_short *)data)[6],
-diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
-index b33d21f..84f2d63 100644
---- a/drivers/net/mv643xx_eth.c
-+++ b/drivers/net/mv643xx_eth.c
-@@ -784,7 +784,6 @@ static int mv643xx_eth_open(struct net_device *dev)
- 	unsigned int port_num = mp->port_num;
- 	unsigned int size;
- 	int err;
--	DECLARE_MAC_BUF(mac);
- 
- 	/* Clear any pending ethernet port interrupts */
- 	mv_write(MV643XX_ETH_INTERRUPT_CAUSE_REG(port_num), 0);
-@@ -1296,6 +1295,7 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
- 	struct ethtool_cmd cmd;
- 	int duplex = DUPLEX_HALF;
- 	int speed = 0;			/* default to auto-negotiation */
-+	DECLARE_MAC_BUF(mac);
- 
- 	pd = pdev->dev.platform_data;
- 	if (pd == NULL) {
+> Pulled 2.6.23 tree and did a build
+> Added latest -linus on top of it.
+> Did a new build (x86_64).
+> 
+> 
+> As expected it failed due to wrong asm symlink but nothing
+> like the error Mike posted.
+> So I'm a bit puzzeled here.
+> 
+> I anyone can explain how to reproduce it I will chase it
+> but otherwise it will be left as a "consequence of
+> the x86 merge".
+
+What I did was to pull, then diff against my working tree (/me=SCM
+weenie;) for review as usual, and then apply that diff to working tree
+and make oldconfig as usual.  That left me with the same failure this
+morning, despite the file being verified present in the git tree.  I
+then used git-archive --format=tar | (cd work_tree;tar -xvf -).  That
+spewed chunks when I tried to build it even though diff said the trees
+were identical.  After make mrproper and restoring my saved .config, all
+was peachy.
+
+Methinks dontdiff bit me.
+
+	-Mike
+
