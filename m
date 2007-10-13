@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762956AbXJMOt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbXJMOuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762956AbXJMOt4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 10:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761544AbXJMOml
+	id S1762982AbXJMOuh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbXJMOmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 10:42:41 -0400
-Received: from 1wt.eu ([62.212.114.60]:3002 "EHLO 1wt.eu"
+	Sat, 13 Oct 2007 10:42:44 -0400
+Received: from 1wt.eu ([62.212.114.60]:3006 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761942AbXJMOmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 10:42:40 -0400
+	id S1761999AbXJMOmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 10:42:42 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20071013143455.%N@1wt.eu>
+Message-Id: <20071013143448.%N@1wt.eu>
 References: <20071013142822.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 17:28:38 +0200
+Date: Sat, 13 Oct 2007 17:28:29 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.21 review 16/35] setpgid(child) fails if the child was forked by sub-thread
-Content-Disposition: inline; filename=0058-setpgid-child-fails-if-the-child-was-forked-by-sub.patch
+Subject: [2.6.20.21 review 07/35] SNAP: Fix SNAP protocol header accesses.
+Content-Disposition: inline; filename=0034-SNAP-Fix-SNAP-protocol-header-accesses.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit b07e35f94a7b6a059f889b904529ee907dc0634d in mainline tree
+The snap_rcv code reads 5 bytes so we should make sure that
+we have 5 bytes in the head before proceeding.
 
-Spotted by Marcin Kowalczyk <qrczak@knm.org.pl>.
+Based on diagnosis and fix by Evgeniy Polyakov, reported by
+Alan J. Wylie.
 
-sys_setpgid(child) fails if the child was forked by sub-thread.
+Patch also kills the skb->sk assignment before kfree_skb
+since it's redundant.
 
-Fix the "is it our child" check. The previous commit
-ee0acf90d320c29916ba8c5c1b2e908d81f5057d was not complete.
-
-(this patch asks for the new same_thread_group() helper, but mainline doesn't
- have it yet).
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Acked-by: Roland McGrath <roland@redhat.com>
-Tested-by: "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/sys.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ net/802/psnap.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
 
-Index: 2.6/kernel/sys.c
+Index: 2.6/net/802/psnap.c
 ===================================================================
---- 2.6.orig/kernel/sys.c
-+++ 2.6/kernel/sys.c
-@@ -1358,7 +1358,6 @@ asmlinkage long sys_times(struct tms __u
-  * Auch. Had to add the 'did_exec' flag to conform completely to POSIX.
-  * LBT 04.03.94
-  */
--
- asmlinkage long sys_setpgid(pid_t pid, pid_t pgid)
- {
- 	struct task_struct *p;
-@@ -1386,7 +1385,7 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 	if (!thread_group_leader(p))
- 		goto out;
+--- 2.6.orig/net/802/psnap.c
++++ 2.6/net/802/psnap.c
+@@ -55,6 +55,9 @@ static int snap_rcv(struct sk_buff *skb,
+ 		.type = __constant_htons(ETH_P_SNAP),
+ 	};
  
--	if (p->real_parent == group_leader) {
-+	if (p->real_parent->tgid == group_leader->tgid) {
- 		err = -EPERM;
- 		if (process_session(p) != process_session(group_leader))
- 			goto out;
++	if (unlikely(!pskb_may_pull(skb, 5)))
++		goto drop;
++
+ 	rcu_read_lock();
+ 	proto = find_snap_client(skb->h.raw);
+ 	if (proto) {
+@@ -62,14 +65,18 @@ static int snap_rcv(struct sk_buff *skb,
+ 		skb->h.raw  += 5;
+ 		skb_pull_rcsum(skb, 5);
+ 		rc = proto->rcvfunc(skb, dev, &snap_packet_type, orig_dev);
+-	} else {
+-		skb->sk = NULL;
+-		kfree_skb(skb);
+-		rc = 1;
+ 	}
+-
+ 	rcu_read_unlock();
++
++	if (unlikely(!proto))
++		goto drop;
++
++out:
+ 	return rc;
++
++drop:
++	kfree_skb(skb);
++	goto out;
+ }
+ 
+ /*
 
 -- 
