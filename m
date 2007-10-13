@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbXJMKLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbXJMKvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761952AbXJMKLY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 06:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbXJMKLP
+	id S1759844AbXJMKvV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 06:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXJMKvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 06:11:15 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33945 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753230AbXJMKLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 06:11:13 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/sGDwa6h/sqISDSMVVjN0w9ig3Y4mVx0b5C7z/po
-	CN3niAjBqtIk5D
-Subject: Re: [PATCH] sched: high-res preemption tick
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1192267072.5897.5.camel@lappy>
-References: <1192222309.5897.3.camel@lappy>
-	 <1192259938.7369.4.camel@Homer.simpson.net>
-	 <1192265717.27435.44.camel@twins>  <1192267072.5897.5.camel@lappy>
-Content-Type: text/plain
-Date: Sat, 13 Oct 2007 12:11:09 +0200
-Message-Id: <1192270269.7221.4.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sat, 13 Oct 2007 06:51:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33924 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753806AbXJMKvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 06:51:09 -0400
+Message-ID: <4710A31A.7020204@garzik.org>
+Date: Sat, 13 Oct 2007 06:51:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mike Galbraith <efault@gmx.de>
+CC: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [linux-2.6.git] IDE/ATA fighting over driver name?
+References: <1192254081.29452.13.camel@Homer.simpson.net>
+In-Reply-To: <1192254081.29452.13.camel@Homer.simpson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-13 at 11:17 +0200, Peter Zijlstra wrote:
+Mike Galbraith wrote:
+> Greetings,
+> 
+> Perhaps my .config is dainbramaged.  When make oldconfig asked me if I
+> wanted CONFIG_PATA_PLATFORM, I said "Damned if I know, go for it".
+> 
+> drivers/ide/legacy/ide_platform.c:		.name = "pata_platform",
+> drivers/ata/pata_platform.c:#define DRV_NAME "pata_platform"
 
-> Also, this seems to suggest iperf would like SCHED_BATCH.
+That's a clear bug..  IDE's should be called ide_platform.
 
-Yes.  Throughput falls as preemption climbs.
+	Jeff
 
-	-Mike
 
