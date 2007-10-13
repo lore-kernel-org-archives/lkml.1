@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbXJMMhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762141AbXJMMiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbXJMMhj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758805AbXJMMfj
+	id S1762141AbXJMMiA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760382AbXJMMgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:35:39 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:55428 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756349AbXJMMfa (ORCPT
+	Sat, 13 Oct 2007 08:36:09 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:58007 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760307AbXJMMgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:35:30 -0400
-Message-Id: <20071013123414.647276232@mail.of.borg>
-References: <20071013123123.085686856@mail.of.borg>
+	Sat, 13 Oct 2007 08:36:07 -0400
+Message-Id: <20071013123123.085686856@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 14:31:31 +0200
+Date: Sat, 13 Oct 2007 14:31:23 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Buesch <mb@bu3sch.de>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [patch 8/8] ssb bus needs <linux/io.h>
-Content-Disposition: inline; filename=ssb-needs-linux-io.h.diff
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/8] m68k patches for 2.6.24
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ssb bus needs <linux/io.h>
+	Hi Linus, Andrew,
 
-linux/drivers/ssb/main.c: In function 'ssb_ssb_read16':
-linux/drivers/ssb/main.c:518: error: implicit declaration of function 'readw'
-linux/drivers/ssb/main.c: In function 'ssb_ssb_read32':
-linux/drivers/ssb/main.c:526: error: implicit declaration of function 'readl'
-linux/drivers/ssb/main.c: In function 'ssb_ssb_write16':
-linux/drivers/ssb/main.c:534: error: implicit declaration of function 'writew'
-linux/drivers/ssb/main.c: In function 'ssb_ssb_write32':
-linux/drivers/ssb/main.c:542: error: implicit declaration of function 'writel'
+Here are some m68k patches for 2.6.24:
+  [1] m68k: Atari input drivers cleanup
+  [2] m68k: Atari keyboard ACIA driver cleanup
+  [3] m68k: ignore restart_syscall
+  [4] m68k: Export cachectl.h
+  [5] dm: emc_endio returns void
+  [6] m68k: fix net drivers after recent get_stats updates
+  [7] b43 wireless needs <linux/io.h>
+  [8] ssb bus needs <linux/io.h>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/ssb/main.c |    1 +
- 1 file changed, 1 insertion(+)
+Patches 1-4 are m68k support updates.
+Patches 5-8 are fixes for regressions/failures introduced after 2.6.23.
 
---- a/drivers/ssb/main.c
-+++ b/drivers/ssb/main.c
-@@ -11,6 +11,7 @@
- #include "ssb_private.h"
- 
- #include <linux/delay.h>
-+#include <linux/io.h>
- #include <linux/ssb/ssb.h>
- #include <linux/ssb/ssb_regs.h>
- #include <linux/dma-mapping.h>
+Please apply, thanks!
 
--- 
 Gr{oetje,eeting}s,
 
 						Geert
