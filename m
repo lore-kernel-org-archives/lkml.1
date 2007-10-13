@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbXJMETu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbXJMEU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760885AbXJMETu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 00:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbXJMESy
+	id S1752501AbXJMEU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 00:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXJMES4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 00:18:54 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30058 "EHLO
+	Sat, 13 Oct 2007 00:18:56 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:30066 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbXJMESu (ORCPT
+	with ESMTP id S1751171AbXJMESv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 00:18:50 -0400
-Date: Fri, 12 Oct 2007 21:17:00 -0700
+	Sat, 13 Oct 2007 00:18:51 -0400
+Date: Fri, 12 Oct 2007 21:17:49 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH 1/5] docbook/deviceiobook: fixup x86 path/file names
-Message-Id: <20071012211700.a45ea1e6.randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>,
+       davem@davemloft.net
+Subject: [PATCH 5/5] net core: fix kernel-doc for new function parameters
+Message-Id: <20071012211749.9e3f9971.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -30,23 +31,138 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix docbook templates for new x86 path/filenames:
+Fix networking code kernel-doc for newly added parameters.
 
-docproc: linux-2.6.23-git2/include/asm-i386/io.h: No such file or directory
+Warning(linux-2.6.23-git2//net/core/sock.c:879): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:570): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:594): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:617): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:641): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:667): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:722): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:959): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:1195): No description found for parameter 'dev'
+Warning(linux-2.6.23-git2//net/core/dev.c:2105): No description found for parameter 'n'
+Warning(linux-2.6.23-git2//net/core/dev.c:3272): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//net/core/dev.c:3445): No description found for parameter 'net'
+Warning(linux-2.6.23-git2//include/linux/netdevice.h:1301): No description found for parameter 'cpu'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- Documentation/DocBook/deviceiobook.tmpl |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/netdevice.h |    1 +
+ net/core/dev.c            |   13 +++++++++++--
+ net/core/sock.c           |    1 +
+ 3 files changed, 13 insertions(+), 2 deletions(-)
 
---- linux-2.6.23-git2.orig/Documentation/DocBook/deviceiobook.tmpl
-+++ linux-2.6.23-git2/Documentation/DocBook/deviceiobook.tmpl
-@@ -316,7 +316,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
+--- linux-2.6.23-git2.orig/include/linux/netdevice.h
++++ linux-2.6.23-git2/include/linux/netdevice.h
+@@ -1294,6 +1294,7 @@ static inline void netif_rx_complete(str
+ /**
+  *	netif_tx_lock - grab network device transmit lock
+  *	@dev: network device
++ *	@cpu: cpu number of lock owner
+  *
+  * Get network device transmit lock
+  */
+--- linux-2.6.23-git2.orig/net/core/sock.c
++++ linux-2.6.23-git2/net/core/sock.c
+@@ -869,6 +869,7 @@ static inline void sock_lock_init(struct
  
-   <chapter id="pubfunctions">
-      <title>Public Functions Provided</title>
--!Iinclude/asm-i386/io.h
-+!Iinclude/asm-x86/io_32.h
- !Elib/iomap.c
-   </chapter>
+ /**
+  *	sk_alloc - All socket objects are allocated here
++ *	@net: the applicable net namespace
+  *	@family: protocol family
+  *	@priority: for allocation (%GFP_KERNEL, %GFP_ATOMIC, etc)
+  *	@prot: struct proto associated with this new sock instance
+--- linux-2.6.23-git2.orig/net/core/dev.c
++++ linux-2.6.23-git2/net/core/dev.c
+@@ -557,6 +557,7 @@ __setup("netdev=", netdev_boot_setup);
  
+ /**
+  *	__dev_get_by_name	- find a device by its name
++ *	@net: the applicable net namespace
+  *	@name: name to find
+  *
+  *	Find an interface by name. Must be called under RTNL semaphore
+@@ -581,6 +582,7 @@ struct net_device *__dev_get_by_name(str
+ 
+ /**
+  *	dev_get_by_name		- find a device by its name
++ *	@net: the applicable net namespace
+  *	@name: name to find
+  *
+  *	Find an interface by name. This can be called from any
+@@ -604,6 +606,7 @@ struct net_device *dev_get_by_name(struc
+ 
+ /**
+  *	__dev_get_by_index - find a device by its ifindex
++ *	@net: the applicable net namespace
+  *	@ifindex: index of device
+  *
+  *	Search for an interface by index. Returns %NULL if the device
+@@ -629,6 +632,7 @@ struct net_device *__dev_get_by_index(st
+ 
+ /**
+  *	dev_get_by_index - find a device by its ifindex
++ *	@net: the applicable net namespace
+  *	@ifindex: index of device
+  *
+  *	Search for an interface by index. Returns NULL if the device
+@@ -651,6 +655,7 @@ struct net_device *dev_get_by_index(stru
+ 
+ /**
+  *	dev_getbyhwaddr - find a device by its hardware address
++ *	@net: the applicable net namespace
+  *	@type: media type of device
+  *	@ha: hardware address
+  *
+@@ -709,6 +714,7 @@ EXPORT_SYMBOL(dev_getfirstbyhwtype);
+ 
+ /**
+  *	dev_get_by_flags - find any device with given flags
++ *	@net: the applicable net namespace
+  *	@if_flags: IFF_* values
+  *	@mask: bitmask of bits in if_flags to check
+  *
+@@ -948,6 +954,7 @@ void netdev_state_change(struct net_devi
+ 
+ /**
+  *	dev_load 	- load a network module
++ *	@net: the applicable net namespace
+  *	@name: name of interface
+  *
+  *	If a network interface is not present and the process has suitable
+@@ -1185,7 +1192,7 @@ int unregister_netdevice_notifier(struct
+ /**
+  *	call_netdevice_notifiers - call all network notifier blocks
+  *      @val: value passed unmodified to notifier function
+- *      @v:   pointer passed unmodified to notifier function
++ *      @dev: net_device pointer passed unmodified to notifier function
+  *
+  *	Call all network notifier blocks.  Parameters and return value
+  *	are as for raw_notifier_call_chain().
+@@ -2097,7 +2104,7 @@ static int process_backlog(struct napi_s
+ 
+ /**
+  * __napi_schedule - schedule for receive
+- * @napi: entry to schedule
++ * @n: entry to schedule
+  *
+  * The entry's receive function will be scheduled to run
+  */
+@@ -3259,6 +3266,7 @@ static int dev_ifsioc(struct net *net, s
+ 
+ /**
+  *	dev_ioctl	-	network device ioctl
++ *	@net: the applicable net namespace
+  *	@cmd: command to issue
+  *	@arg: pointer to a struct ifreq in user space
+  *
+@@ -3436,6 +3444,7 @@ int dev_ioctl(struct net *net, unsigned 
+ 
+ /**
+  *	dev_new_index	-	allocate an ifindex
++ *	@net: the applicable net namespace
+  *
+  *	Returns a suitable unique value for a new device interface
+  *	number.  The caller must hold the rtnl semaphore or the
