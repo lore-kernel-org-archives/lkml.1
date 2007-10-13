@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXJMMWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbXJMM2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbXJMMWS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbXJMMWJ
+	id S1757726AbXJMM2S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXJMM2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:22:09 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:22938 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbXJMMWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:22:08 -0400
-Date: Sat, 13 Oct 2007 14:22:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Build error in block/compat_ioctl.c latest git
-Message-ID: <20071013122202.GG969@kernel.dk>
-References: <20071013020840.1cf1261a@gmail.com>
+	Sat, 13 Oct 2007 08:28:09 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:57622 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752890AbXJMM2H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 08:28:07 -0400
+Date: Sat, 13 Oct 2007 14:28:00 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: checkpatch: ERROR: Does not appear to be a unified-diff format patch
+Message-ID: <Pine.LNX.4.64.0710131424470.12088@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071013020840.1cf1261a@gmail.com>
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <Pine.LNX.4.64.0710131425421.15951@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13 2007, Alejandro Riveira Fernández wrote:
-> 
->   Latest commit is
->   ab9c232286c2b77be78441c2d8396500b045777e
-> 
->  /home/alex/kernel/linux-2.6/block/compat_ioctl.c: En la función ???compat_put_ushort???:
+scripts/checkpatch.pl doesn't seem to like this patch:
 
-This should already be fixed, Linus fixed it up. block/compat_ioctl.o
-should only be built when CONFIG_BLOCK && CONFIG_COMPAT are both set.
+$ scripts/checkpatch.pl m68k-export-asm-cachectl-h.diff 
+ERROR: Does not appear to be a unified-diff format patch
 
--- 
-Jens Axboe
+Your patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+$ cat m68k-export-asm-cachectl-h.diff 
+Subject: m68k: Export cachectl.h
 
+From: Matthew Wilcox <matthew@wil.cx>
+
+libffi in GCC 4.2 needs cachectl.h to do its cache flushing.  But we
+don't currently export it.  I believe this patch should do the trick.
+
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+---
+ include/asm-m68k/Kbuild |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/include/asm-m68k/Kbuild
++++ b/include/asm-m68k/Kbuild
+@@ -1 +1,2 @@
+ include include/asm-generic/Kbuild.asm
++header-y += cachectl.h
+$ 
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
