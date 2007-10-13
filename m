@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbXJMHfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbXJMHgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761478AbXJMHfZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXJMHfN
+	id S1761952AbXJMHgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXJMHg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:35:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56284 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753815AbXJMHfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:35:11 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18q16xUZckqM1ftng5hiuyh2dDw38RnVTZAXwzkaV
-	O88pUSCNeTGlcN
-Subject: Re: 2.6.23.git build error
-From: Mike Galbraith <efault@gmx.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Giacomo Catenazzi <cate@debian.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071013071626.GA28168@uranus.ravnborg.org>
-References: <1192164538.10413.3.camel@Homer.simpson.net>
-	 <20071012213114.GA24016@uranus.ravnborg.org>
-	 <1192246457.7395.19.camel@Homer.simpson.net> <47105A39.9070406@debian.org>
-	 <20071013071626.GA28168@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 13 Oct 2007 09:35:09 +0200
-Message-Id: <1192260909.7369.20.camel@Homer.simpson.net>
+	Sat, 13 Oct 2007 03:36:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34189 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751967AbXJMHg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:36:27 -0400
+Date: Sat, 13 Oct 2007 00:36:24 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: akpm@linux-foundation.org, willy@debian.org, fujita.tomonori@lab.ntt.co.jp,
+       anil.s.keshavamurthy@intel.com, vs@namesys.com, edward@namesys.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: git-block patches broken on 2.6.23-mm1 ia64 SN
+Message-Id: <20071013003624.c11358a4.pj@sgi.com>
+In-Reply-To: <20071013072504.GD969@kernel.dk>
+References: <20071013001356.304b505f.pj@sgi.com>
+	<20071013071821.GC969@kernel.dk>
+	<20071013002003.2134542e.pj@sgi.com>
+	<20071013072504.GD969@kernel.dk>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-13 at 09:16 +0200, Sam Ravnborg wrote:
+Booting with initcall_debug doesn't change the output at all.  If I
+boot a working kernel with initcall_debug, the added output starts
+showing up right after the point that my broken kernel is freezing.
 
-> Pulled 2.6.23 tree and did a build
-> Added latest -linus on top of it.
-> Did a new build (x86_64).
-> 
-> 
-> As expected it failed due to wrong asm symlink but nothing
-> like the error Mike posted.
-> So I'm a bit puzzeled here.
-> 
-> I anyone can explain how to reproduce it I will chase it
-> but otherwise it will be left as a "consequence of
-> the x86 merge".
+    Mount-cache hash table entries: 1024
+    ACPI: Core revision 20070126
+    Boot processor id 0x0/0x0
+    Brought up 8 CPUs
+    Total of 8 processors activated (15564.80 BogoMIPS).
+<< Broken kernel freezes here >>
+<< Good kernel continues with ...>>
+    Calling initcall 0xa0000001009d6310: net_ns_init+0x0/0x3e0()
+    net_namespace: 120 bytes
+    initcall 0xa0000001009d6310: net_ns_init+0x0/0x3e0() returned 0.
+    initcall 0xa0000001009d6310 ran for 0 msecs: net_ns_init+0x0/0x3e0()
+    Calling initcall 0xa0000001009d6630: run_dmi_scan+0x0/0x40()
 
-What I did was to pull, then diff against my working tree (/me=SCM
-weenie;) for review as usual, and then apply that diff to working tree
-and make oldconfig as usual.  That left me with the same failure this
-morning, despite the file being verified present in the git tree.  I
-then used git-archive --format=tar | (cd work_tree;tar -xvf -).  That
-spewed chunks when I tried to build it even though diff said the trees
-were identical.  After make mrproper and restoring my saved .config, all
-was peachy.
-
-Methinks dontdiff bit me.
-
-	-Mike
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
