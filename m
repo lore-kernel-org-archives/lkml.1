@@ -1,81 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbXJMOuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763104AbXJMOu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762982AbXJMOuh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 10:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbXJMOmo
+	id S1763104AbXJMOu7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761145AbXJMOmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 10:42:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:3006 "EHLO 1wt.eu"
+	Sat, 13 Oct 2007 10:42:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:3011 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761999AbXJMOmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 10:42:42 -0400
+	id S1762007AbXJMOmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 10:42:44 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20071013143448.%N@1wt.eu>
+Message-Id: <20071013143506.%N@1wt.eu>
 References: <20071013142822.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 17:28:29 +0200
+Date: Sat, 13 Oct 2007 17:28:48 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
+Cc: Eric Sandeen <sandeen@redhat.com>, Duane Griffin <duaneg@dghda.com>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.21 review 07/35] SNAP: Fix SNAP protocol header accesses.
-Content-Disposition: inline; filename=0034-SNAP-Fix-SNAP-protocol-header-accesses.patch
+Subject: [2.6.20.21 review 26/35] dir_index: error out instead of BUG on corrupt dx dirs
+Content-Disposition: inline; filename=0082-dir_index-error-out-instead-of-BUG-on-corrupt-dx-di.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The snap_rcv code reads 5 bytes so we should make sure that
-we have 5 bytes in the head before proceeding.
+commit 3d82abae9523c33d4a16fdfdfd2bdde316d7b56a in mainline.
 
-Based on diagnosis and fix by Evgeniy Polyakov, reported by
-Alan J. Wylie.
+Convert asserts (BUGs) in dx_probe from bad on-disk data to recoverable
+errors with helpful warnings.  With help catching other asserts from Duane
+Griffin <duaneg@dghda.com>
 
-Patch also kills the skb->sk assignment before kfree_skb
-since it's redundant.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Acked-by: Duane Griffin <duaneg@dghda.com>
+Acked-by: Theodore Ts'o <tytso@mit.edu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/802/psnap.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+ fs/ext3/namei.c |   34 ++++++++++++++++++++++++++++++----
+ fs/ext4/namei.c |   34 ++++++++++++++++++++++++++++++----
+ 2 files changed, 60 insertions(+), 8 deletions(-)
 
-Index: 2.6/net/802/psnap.c
+Index: 2.6/fs/ext3/namei.c
 ===================================================================
---- 2.6.orig/net/802/psnap.c
-+++ 2.6/net/802/psnap.c
-@@ -55,6 +55,9 @@ static int snap_rcv(struct sk_buff *skb,
- 		.type = __constant_htons(ETH_P_SNAP),
- 	};
+--- 2.6.orig/fs/ext3/namei.c
++++ 2.6/fs/ext3/namei.c
+@@ -380,13 +380,28 @@ dx_probe(struct dentry *dentry, struct i
  
-+	if (unlikely(!pskb_may_pull(skb, 5)))
-+		goto drop;
+ 	entries = (struct dx_entry *) (((char *)&root->info) +
+ 				       root->info.info_length);
+-	assert(dx_get_limit(entries) == dx_root_limit(dir,
+-						      root->info.info_length));
 +
- 	rcu_read_lock();
- 	proto = find_snap_client(skb->h.raw);
- 	if (proto) {
-@@ -62,14 +65,18 @@ static int snap_rcv(struct sk_buff *skb,
- 		skb->h.raw  += 5;
- 		skb_pull_rcsum(skb, 5);
- 		rc = proto->rcvfunc(skb, dev, &snap_packet_type, orig_dev);
--	} else {
--		skb->sk = NULL;
--		kfree_skb(skb);
--		rc = 1;
++	if (dx_get_limit(entries) != dx_root_limit(dir,
++						   root->info.info_length)) {
++		ext3_warning(dir->i_sb, __FUNCTION__,
++			     "dx entry: limit != root limit");
++		brelse(bh);
++		*err = ERR_BAD_DX_DIR;
++		goto fail;
++	}
++
+ 	dxtrace (printk("Look up %x", hash));
+ 	while (1)
+ 	{
+ 		count = dx_get_count(entries);
+-		assert (count && count <= dx_get_limit(entries));
++		if (!count || count > dx_get_limit(entries)) {
++			ext3_warning(dir->i_sb, __FUNCTION__,
++				     "dx entry: no count or count > limit");
++			brelse(bh);
++			*err = ERR_BAD_DX_DIR;
++			goto fail2;
++		}
++
+ 		p = entries + 1;
+ 		q = entries + count - 1;
+ 		while (p <= q)
+@@ -424,8 +439,15 @@ dx_probe(struct dentry *dentry, struct i
+ 		if (!(bh = ext3_bread (NULL,dir, dx_get_block(at), 0, err)))
+ 			goto fail2;
+ 		at = entries = ((struct dx_node *) bh->b_data)->entries;
+-		assert (dx_get_limit(entries) == dx_node_limit (dir));
++		if (dx_get_limit(entries) != dx_node_limit (dir)) {
++			ext3_warning(dir->i_sb, __FUNCTION__,
++				     "dx entry: limit != node limit");
++			brelse(bh);
++			*err = ERR_BAD_DX_DIR;
++			goto fail2;
++		}
+ 		frame++;
++		frame->bh = NULL;
  	}
--
- 	rcu_read_unlock();
-+
-+	if (unlikely(!proto))
-+		goto drop;
-+
-+out:
- 	return rc;
-+
-+drop:
-+	kfree_skb(skb);
-+	goto out;
+ fail2:
+ 	while (frame >= frame_in) {
+@@ -433,6 +455,10 @@ fail2:
+ 		frame--;
+ 	}
+ fail:
++	if (*err == ERR_BAD_DX_DIR)
++		ext3_warning(dir->i_sb, __FUNCTION__,
++			     "Corrupt dir inode %ld, running e2fsck is "
++			     "recommended.", dir->i_ino);
+ 	return NULL;
  }
  
- /*
+Index: 2.6/fs/ext4/namei.c
+===================================================================
+--- 2.6.orig/fs/ext4/namei.c
++++ 2.6/fs/ext4/namei.c
+@@ -380,13 +380,28 @@ dx_probe(struct dentry *dentry, struct i
+ 
+ 	entries = (struct dx_entry *) (((char *)&root->info) +
+ 				       root->info.info_length);
+-	assert(dx_get_limit(entries) == dx_root_limit(dir,
+-						      root->info.info_length));
++
++	if (dx_get_limit(entries) != dx_root_limit(dir,
++						   root->info.info_length)) {
++		ext4_warning(dir->i_sb, __FUNCTION__,
++			     "dx entry: limit != root limit");
++		brelse(bh);
++		*err = ERR_BAD_DX_DIR;
++		goto fail;
++	}
++
+ 	dxtrace (printk("Look up %x", hash));
+ 	while (1)
+ 	{
+ 		count = dx_get_count(entries);
+-		assert (count && count <= dx_get_limit(entries));
++		if (!count || count > dx_get_limit(entries)) {
++			ext4_warning(dir->i_sb, __FUNCTION__,
++				     "dx entry: no count or count > limit");
++			brelse(bh);
++			*err = ERR_BAD_DX_DIR;
++			goto fail2;
++		}
++
+ 		p = entries + 1;
+ 		q = entries + count - 1;
+ 		while (p <= q)
+@@ -424,8 +439,15 @@ dx_probe(struct dentry *dentry, struct i
+ 		if (!(bh = ext4_bread (NULL,dir, dx_get_block(at), 0, err)))
+ 			goto fail2;
+ 		at = entries = ((struct dx_node *) bh->b_data)->entries;
+-		assert (dx_get_limit(entries) == dx_node_limit (dir));
++		if (dx_get_limit(entries) != dx_node_limit (dir)) {
++			ext4_warning(dir->i_sb, __FUNCTION__,
++				     "dx entry: limit != node limit");
++			brelse(bh);
++			*err = ERR_BAD_DX_DIR;
++			goto fail2;
++		}
+ 		frame++;
++		frame->bh = NULL;
+ 	}
+ fail2:
+ 	while (frame >= frame_in) {
+@@ -433,6 +455,10 @@ fail2:
+ 		frame--;
+ 	}
+ fail:
++	if (*err == ERR_BAD_DX_DIR)
++		ext4_warning(dir->i_sb, __FUNCTION__,
++			     "Corrupt dir inode %ld, running e2fsck is "
++			     "recommended.", dir->i_ino);
+ 	return NULL;
+ }
+ 
 
 -- 
