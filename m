@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbXJMEU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbXJMEfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761106AbXJMEU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 00:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbXJMETA
+	id S1759335AbXJMEfx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 00:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXJMEfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 00:19:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30080 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXJMES7 (ORCPT
+	Sat, 13 Oct 2007 00:35:44 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:37529 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbXJMEfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 00:18:59 -0400
-Date: Fri, 12 Oct 2007 21:17:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH 4/5] docbook/mcabook: fixup x86 path/file names
-Message-Id: <20071012211735.df41a9a1.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 13 Oct 2007 00:35:43 -0400
+Message-ID: <47104AFF.7000501@linux.vnet.ibm.com>
+Date: Sat, 13 Oct 2007 10:05:11 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1 - Build failure on rgmii
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi Andrew,
 
-Fix docbook templates for new x86 path/filenames:
-docproc: linux-2.6.23-git2/include/asm-i386/mca_dma.h: No such file or directory
+The build fails with following message
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+CC drivers/net/ibm_newemac/zmii.o
+CC drivers/net/ibm_newemac/rgmii.o
+drivers/net/ibm_newemac/rgmii.c: In function ‘rgmii_probe’:
+drivers/net/ibm_newemac/rgmii.c:254: error: implicit declaration of
+function ‘device_is_compatible’
+make[3]: *** [drivers/net/ibm_newemac/rgmii.o] Error 1
+make[2]: *** [drivers/net/ibm_newemac] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
+
+The function device_is_compatible does not exist, and seems to called
+instead of
+of_device_compatible. This patch replace the function.
+
+Signed-off-by : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 ---
- Documentation/DocBook/mcabook.tmpl |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.23-git2.orig/Documentation/DocBook/mcabook.tmpl
-+++ linux-2.6.23-git2/Documentation/DocBook/mcabook.tmpl
-@@ -101,7 +101,7 @@
+--- linux-2.6.23/drivers/net/ibm_newemac/rgmii.c        2007-10-12 12:10:48.000000000 +0530
++++ linux-2.6.23/drivers/net/ibm_newemac/~rgmii.c       2007-10-12 14:37:21.000000000 +0530
+@@ -251,7 +251,7 @@ static int __devinit rgmii_probe(struct 
+        }
  
-   <chapter id="dmafunctions">
-      <title>DMA Functions Provided</title>
--!Iinclude/asm-i386/mca_dma.h
-+!Iinclude/asm-x86/mca_dma.h
-   </chapter>
- 
- </book>
+        /* Check for RGMII type */
+-       if (device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
++       if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
+                dev->type = RGMII_AXON;
+        else
+                dev->type = RGMII_STANDARD;
+
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
+
