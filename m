@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbXJMHPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbXJMHQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbXJMHPH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbXJMHOz
+	id S1761612AbXJMHQY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXJMHQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:14:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46101 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbXJMHOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:14:55 -0400
-Date: Sat, 13 Oct 2007 09:16:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Giacomo Catenazzi <cate@debian.org>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23.git build error
-Message-ID: <20071013071626.GA28168@uranus.ravnborg.org>
-References: <1192164538.10413.3.camel@Homer.simpson.net> <20071012213114.GA24016@uranus.ravnborg.org> <1192246457.7395.19.camel@Homer.simpson.net> <47105A39.9070406@debian.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47105A39.9070406@debian.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 13 Oct 2007 03:16:16 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:36482 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbXJMHQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:16:15 -0400
+Message-ID: <471070A3.6020003@linux.vnet.ibm.com>
+Date: Sat, 13 Oct 2007 12:45:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-git2 buid failure
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 07:40:09AM +0200, Giacomo Catenazzi wrote:
-> Mike Galbraith wrote:
-> > On Fri, 2007-10-12 at 23:31 +0200, Sam Ravnborg wrote:
-> >> On Fri, Oct 12, 2007 at 06:48:58AM +0200, Mike Galbraith wrote:
-> >>> Greetings,
-> >>>
-> >>> Freshly pulled 2.6.23.git failed to build:
-> >>>
-> >>> make[1]: *** No rule to make target `arch/x86/kernel/asm-offsets.c', needed by `arch/x86/kernel/asm-offsets.s'.  Stop.
-> >>> make: *** [prepare0] Error 2
-> >>> make: *** Waiting for unfinished jobs....
-> >> You are the only reporter of this bug.
-> >> I do not see it here and I have the asm-offset.c file.
-> > 
-> > Yeah, I noticed nobody else was griping.
-> 
-> 
-> I also saw this behaiour, but make mrproper solved the problem.
+Hi,
 
-Pulled 2.6.23 tree and did a build
-Added latest -linus on top of it.
-Did a new build (x86_64).
+The 2.6.23-git2 build fails with build error 
 
+  CC [M]  drivers/mmc/core/core.o
+  CC [M]  drivers/mmc/core/sysfs.o
+  CC [M]  drivers/mmc/core/bus.o
+  CC [M]  drivers/mmc/core/host.o
+drivers/mmc/core/host.c: In function ‘mmc_remove_host’:
+drivers/mmc/core/host.c:146: error: implicit declaration of function ‘led_trigger_unregister’
+drivers/mmc/core/host.c:146: error: ‘struct mmc_host’ has no member named ‘led’
+make[3]: *** [drivers/mmc/core/host.o] Error 1
+make[2]: *** [drivers/mmc/core] Error 2
+make[1]: *** [drivers/mmc] Error 2
+make: *** [drivers] Error 2
 
-As expected it failed due to wrong asm symlink but nothing
-like the error Mike posted.
-So I'm a bit puzzeled here.
-
-I anyone can explain how to reproduce it I will chase it
-but otherwise it will be left as a "consequence of
-the x86 merge".
-
-	Sam
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
