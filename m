@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbXJMJbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXJMJmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbXJMJbR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 05:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761608AbXJMJag
+	id S1760604AbXJMJmM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 05:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbXJMJl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 05:30:36 -0400
-Received: from ev1s-75-125-39-150.ev1servers.net ([75.125.39.150]:40308 "EHLO
-	colorfullife.mysite.adiungo.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761553AbXJMJae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 05:30:34 -0400
-Message-ID: <4710901F.8010206@colorfullife.com>
-Date: Sat, 13 Oct 2007 11:30:07 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Sat, 13 Oct 2007 05:41:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57532 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbXJMJl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 05:41:57 -0400
+Date: Sat, 13 Oct 2007 11:41:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rok Markovic <kernel@kanardia.eu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rt1 lockup after loading HAL deamon
+Message-ID: <20071013094142.GA16098@elte.hu>
+References: <470F27DA.9020307@kanardia.eu> <20071012083551.GA17937@elte.hu> <470FB4F4.60707@kanardia.eu> <20071012175831.GA27420@elte.hu> <470FD96A.8040505@kanardia.eu> <20071013055922.GB26370@elte.hu> <47109008.5090405@kanardia.eu>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MSI interrupts and disable_irq
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-In-Reply-To: <46FDBCB4.9090802@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47109008.5090405@kanardia.eu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->
-> I think the scenario you outline is an illustration of the approach's 
-> fragility:  disable_irq() is a heavy hammer that originated with INTx, 
-> and it relies on a chip-specific disable method (kernel/irq/manage.c) 
-> that practically guarantees behavior will vary across MSI/INTx/etc.
->
-I checked the code: IRQ_DISABLE is implemented in software, i.e. 
-handle_level_irq() only calls handle_IRQ_event() [and then the nic irq 
-handler] if IRQ_DISABLE is not set.
-OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
 
-Perhaps something corrupts dev->irq? The irq is requested with
-    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
-and disabled with
-    disable_irq_lockdep(dev->irq);
+* Rok Markovic <kernel@kanardia.eu> wrote:
 
-Someone around with a MSI capable board? The forcedeth driver does
-    dev->irq = pci_dev->irq
-in nv_probe(), especially before pci_enable_msi().
-Does pci_enable_msi() change pci_dev->irq? Then we would disable the 
-wrong interrupt....
+> Hi
+> 
+> I have recompiled kernel with OPROFILE disabled. I am sending in 
+> attachment /proc/interrupts (i ran it 3 times with 2 sec delay) and 
+> netconsole log. Lockup in the lock is software made with ./lockup. The 
+> kernel still locks 4-5minutes after boot without any further messages 
+> (waited more than 2 minutes). Any ideas?
 
---
-    Manfred
+no good ideas :-( I suspect this one:
+
+  [  185.600900] hdc: lost interrupt
+
+was a side-effect of lockup.c too?
+
+does the lockup go away if you boot with maxcpus=1?
+
+	Ingo
