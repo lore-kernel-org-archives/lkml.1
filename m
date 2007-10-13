@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbXJMVku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbXJMWDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762828AbXJMVku (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 17:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXJMVkl
+	id S1762733AbXJMWDb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 18:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXJMWDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 17:40:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41053 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752863AbXJMVkk (ORCPT
+	Sat, 13 Oct 2007 18:03:23 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:56143 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbXJMWDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 17:40:40 -0400
-Date: Sat, 13 Oct 2007 22:44:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] IDE updates (part 2)
-Message-ID: <20071013224452.71d6f61f@the-village.bc.nu>
-In-Reply-To: <200710132259.53574.bzolnier@gmail.com>
-References: <200710131825.24768.bzolnier@gmail.com>
-	<20071013205618.3ddc91e9@the-village.bc.nu>
-	<200710132259.53574.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 13 Oct 2007 18:03:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CEtGfWZTeCyB3FyBBv9DaGxTw2qJ64ZbBk9yhfZESzGV2d1NrfKqsN8D55pOpE2O6M0fygvNutnxrrEqGDlNrItgf/IAy0XyRYFH4z+0U4Gu/Txe7AM07fzNAPyrNYKarQ3TN4kX91K86CiwafkMLfQDr8P8iKaFC+A/FWpv13s=
+Message-ID: <3aa654a40710131503t1ba08614jc8ab7f6813dc5c2e@mail.gmail.com>
+Date: Sat, 13 Oct 2007 15:03:20 -0700
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: 2.6.23-rc4-mm1 myri10ge module link error on x86_64
+Cc: "David Miller" <davem@davemloft.net>, mathieu.desnoyers@polymtl.ca,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, help@myri.com
+In-Reply-To: <46E1E5E7.4080508@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+	 <20070906193751.GA4518@Krystal>
+	 <20070906.134038.85411315.davem@davemloft.net>
+	 <20070906.134831.39160997.davem@davemloft.net>
+	 <46E1E5E7.4080508@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Comment in pmac_ide_init_hwif_ports() is highly misleading as this function
-> returns early only for "normal" IDE PCI devices (pmac_ide_init_hwif_ports()
-> can be called outside ide-pmac driver through ppc_ide_md).
+On 9/7/07, Jeff Garzik <jeff@garzik.org> wrote:
+> David Miller wrote:
+> > From: David Miller <davem@davemloft.net>
+> > Date: Thu, 06 Sep 2007 13:40:38 -0700 (PDT)
+> >
+> >> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >> Date: Thu, 6 Sep 2007 15:37:51 -0400
+> >>
+> >>> I got a link error on myri10ge when building 2.6.23-rc4-mm1 on x86_64 :
+> >>>
+> >>> ERROR: "lro_flush_all" [drivers/net/myri10ge/myri10ge.ko] undefined!
+> >>> ERROR: "lro_receive_frags" [drivers/net/myri10ge/myri10ge.ko] undefined!
+> >>> make[2]: *** [__modpost] Error 1
+> >>> make[1]: *** [modules] Error 2
+> >>> make: *** [_all] Error 2
+> >> myri10ge needs some LRO ifdeffery.
+> >
+> > Actually the fix is even simpler, missing select in Kconfig.
+> >
+> > I've checked the following fix for this into the net-2.6.24
+> > tree.
+> >
+> > commit 9fd380e892e078b582920325357292c07eeeecc9
+> > Author: David S. Miller <davem@kimchee.(none)>
+> > Date:   Thu Sep 6 21:44:36 2007 +0100
+> >
+> >     [MYRI10GE]: Need to select INET_LRO.
+> >
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> >
+> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> > index b92b7dc..7d1a84e 100644
+> > --- a/drivers/net/Kconfig
+> > +++ b/drivers/net/Kconfig
+> > @@ -2496,6 +2496,7 @@ config MYRI10GE
+> >       depends on PCI
+> >       select FW_LOADER
+> >       select CRC32
+> > +     select INET_LRO
+>
+> Yes, that's the correct fix.  ACK.
 
-Follow the code you pasted
+This bug still exists, though now it is in mainline. I just bisected
+to it with this config[1], unless, of course randconfig is still
+making bad configs.
 
-> 	pmif->regbase = (unsigned long) base + 0x2000;
-> ...
-> 	rc = pmac_ide_setup_device(pmif, hwif);
+Errors out with:
+drivers/built-in.o: In function `myri10ge_poll':
+myri10ge.c:(.text+0xce259): undefined reference to `lro_receive_frags'
+myri10ge.c:(.text+0xce37c): undefined reference to `lro_flush_all'
 
-Ok so regbase is set
+It bisects back to this with this:
+sbh@shapeshifter /tmp/tester/linux-2.6 $ git-bisect bad
+1e6e9342d41ff80ced0ad5dfcf084926700cdfc5 is first bad commit
+commit 1e6e9342d41ff80ced0ad5dfcf084926700cdfc5
+Author: Andrew Gallatin <gallatin@myri.com>
+Date:   Mon Sep 17 11:37:42 2007 -0700
 
-> ...
-> }
-> 
-> static int
-> pmac_ide_setup_device(pmac_ide_hwif_t *pmif, ide_hwif_t *hwif)
-> {
-> ...
-> 	pmac_ide_init_hwif_ports(&hwif->hw, pmif->regbase, 0, &hwif->irq);
+    [MYRI10GE]: Use LRO.
 
-Now we pass a honking great zero for the ctrl_port
-> ...
-> }
-> 
-> void
-> pmac_ide_init_hwif_ports(hw_regs_t *hw,
-> 			      unsigned long data_port, unsigned long ctrl_port,
-> 			      int *irq)
-> {
-> ...
-> 	for (ix = 0; ix < MAX_HWIFS; ++ix)
-> 		if (data_port == pmac_ide[ix].regbase)
-> 			break;
-> ---> since pmif->regbase was set earlier ix will be < MAX_HWIFS
+    Singed off by: Andrew Gallatin <gallatin@myri.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-> 	if (ix >= MAX_HWIFS) {
-> 		/* Probably a PCI interface... */
-> 		for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; ++i)
-> 			hw->io_ports[i] = data_port + i - IDE_DATA_OFFSET;
-> 		hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
+This is with linux-2.6.git
+master: 8d8fe64237646fdd2c2de2722ec4189a5999119d
 
-Which is zero..
-
-
-See the problem ?
-
-Alan
+[1] http://avuton.googlepages.com/undef-reference-lro_receive_frags.config
+-- 
+avuton
+--
+ Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
