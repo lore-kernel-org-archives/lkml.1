@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbXJMHKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbXJMHOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761350AbXJMHKp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXJMHKg
+	id S1761439AbXJMHOP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXJMHN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:10:36 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59500 "EHLO
+	Sat, 13 Oct 2007 03:13:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33353 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752785AbXJMHKf (ORCPT
+	with ESMTP id S1752631AbXJMHN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:10:35 -0400
-Date: Sat, 13 Oct 2007 00:10:27 -0700
+	Sat, 13 Oct 2007 03:13:58 -0400
+Date: Sat, 13 Oct 2007 00:13:56 -0700
 From: Paul Jackson <pj@sgi.com>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -20,7 +20,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Vladimir Saveliev <vs@namesys.com>,
        Edward Shishkin <edward@namesys.com>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Message-Id: <20071013001027.535cc294.pj@sgi.com>
+Subject: git-block patches broken on 2.6.23-mm1 ia64 SN
+Message-Id: <20071013001356.304b505f.pj@sgi.com>
 Organization: SGI
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
@@ -28,6 +29,8 @@ Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+[Try again, with a Subject this time ...]
 
 The git-block patches in 2.6.23-mm1 freeze my ia64 SN Altix hard on boot.
 Not good (tm).
@@ -68,6 +71,7 @@ without these patches, but never get, is:
     xor: using function: ia64 (2692.000 MB/sec)
     NET: Registered protocol family 16
     ACPI  DSDT OEM Rev 0x20101
+
 
 -- 
                   I won't rest till it's the best ...
