@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbXJMOrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXJMOss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbXJMOrx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 10:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761283AbXJMOmb
+	id S1762801AbXJMOss (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759991AbXJMOmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 10:42:31 -0400
-Received: from 1wt.eu ([62.212.114.60]:2974 "EHLO 1wt.eu"
+	Sat, 13 Oct 2007 10:42:36 -0400
+Received: from 1wt.eu ([62.212.114.60]:2991 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761871AbXJMOm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 10:42:29 -0400
+	id S1761940AbXJMOme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 10:42:34 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20071013143459.%N@1wt.eu>
+Message-Id: <20071013143501.%N@1wt.eu>
 References: <20071013142822.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 17:28:41 +0200
+Date: Sat, 13 Oct 2007 17:28:43 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Kumar Gala <galak@kernel.crashing.org>,
+Cc: Steven Toth <stoth@hauppauge.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.21 review 19/35] POWERPC: Flush registers to proper task context
-Content-Disposition: inline; filename=0064-POWERPC-Flush-registers-to-proper-task-context.patch
+Subject: [2.6.20.21 review 21/35] V4L: cx88: Avoid a NULL pointer dereference during mpeg_open()
+Content-Disposition: inline; filename=0068-V4L-cx88-Avoid-a-NULL-pointer-dereference-during-m.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 0ee6c15e7ba7b36a217cdadb292eeaf32a057a59 in mainline.
+(cherry picked from commit 48200baeab95fd39a7f4c4f3536c7142a64ac335)
 
-When we flush register state for FP, Altivec, or SPE in flush_*_to_thread
-we need to respect the task_struct that the caller has passed to us.
+[PATCH] V4L: cx88: Avoid a NULL pointer dereference during mpeg_open()
 
-Most cases we are called with current, however sometimes (ptrace) we may
-be passed a different task_struct.
+Bug: With a hardware encoder board installed as cx88[1] and a
+non-encoder boards installed as cx88[0], an OOPS is generated
+during cx8802_get_device() called from mpeg_open().
 
-This showed up when using gdbserver debugging a simple program that used
-floating point. When gdb tried to show the FP regs they all showed up as
-0, because the child's FP registers were never properly flushed to memory.
-
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Steven Toth <stoth@hauppauge.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/powerpc/kernel/process.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/cx88/cx88-mpeg.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: 2.6/arch/powerpc/kernel/process.c
+Index: 2.6/drivers/media/video/cx88/cx88-mpeg.c
 ===================================================================
---- 2.6.orig/arch/powerpc/kernel/process.c
-+++ 2.6/arch/powerpc/kernel/process.c
-@@ -84,7 +84,7 @@ void flush_fp_to_thread(struct task_stru
- 			 */
- 			BUG_ON(tsk != current);
- #endif
--			giveup_fpu(current);
-+			giveup_fpu(tsk);
- 		}
- 		preempt_enable();
+--- 2.6.orig/drivers/media/video/cx88/cx88-mpeg.c
++++ 2.6/drivers/media/video/cx88/cx88-mpeg.c
+@@ -556,7 +556,7 @@ struct cx8802_dev * cx8802_get_device(st
+ 
+ 	list_for_each(list,&cx8802_devlist) {
+ 		h = list_entry(list, struct cx8802_dev, devlist);
+-		if (h->mpeg_dev->minor == minor)
++		if (h->mpeg_dev && h->mpeg_dev->minor == minor)
+ 			return h;
  	}
-@@ -144,7 +144,7 @@ void flush_altivec_to_thread(struct task
- #ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
- #endif
--			giveup_altivec(current);
-+			giveup_altivec(tsk);
- 		}
- 		preempt_enable();
- 	}
-@@ -183,7 +183,7 @@ void flush_spe_to_thread(struct task_str
- #ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
- #endif
--			giveup_spe(current);
-+			giveup_spe(tsk);
- 		}
- 		preempt_enable();
- 	}
+ 
 
 -- 
