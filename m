@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762744AbXJMT0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbXJMT0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762744AbXJMT0V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 15:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbXJMT0F
+	id S1763219AbXJMT0l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 15:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762685AbXJMT0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 15:26:05 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44112 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756276AbXJMT0D (ORCPT
+	Sat, 13 Oct 2007 15:26:16 -0400
+Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:46286 "HELO
+	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762641AbXJMT0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 15:26:03 -0400
-Date: Sat, 13 Oct 2007 21:26:31 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Rob Landley <rob@landley.net>
-Cc: linux-scsi@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Scsi on sparc build break in 2.6.23.
-Message-ID: <20071013192631.GE4211@stusta.de>
-References: <200710110552.49129.rob@landley.net> <200710111737.30420.rob@landley.net> <20071011235659.GB3620@stusta.de> <200710131409.36164.rob@landley.net>
+	Sat, 13 Oct 2007 15:26:14 -0400
+X-YMail-OSG: CXeDxrEVM1m3L1CMP_jkHazIAQQEMGzHipmogFdW3zLkAtYK5M5iMyajSoGn1AVr_MTFC7Yjgw--
+X-RocketYMMF: rancidfat
+Date: Sat, 13 Oct 2007 12:26:13 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] Version 6 (2.6.23) Smack: Simplified Mandatory Access Control Kernel
+To: Al Viro <viro@ftp.linux.org.uk>, Casey Schaufler <casey@schaufler-ca.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <20071013060400.GD8181@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200710131409.36164.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <737394.85994.qm@web36611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 02:09:35PM -0500, Rob Landley wrote:
-> On Thursday 11 October 2007 6:56:59 pm Adrian Bunk wrote:
-> > On Thu, Oct 11, 2007 at 05:37:30PM -0500, Rob Landley wrote:
-> > > On Thursday 11 October 2007 10:21:49 am Adrian Bunk wrote:
-> > > > I assume you have the full .config in your build directory, and could
-> > > > have taken it from there?
-> > >
-> > > Actually I don't.  (The extracted source tree is in a temporary directory
-> > > which the script deletes afterwards unless I tell it not to.  I just
-> > > followed my own instructions to create the .config and attach it, but I
-> > > see that James Bottomley already diagnosed it and you came up with a
-> > > patch.  Off to try it...)
-> >
-> > I was able to follow your instructions for generating it.
-> >
-> > But I hope you got my point that it's much easier to debug such issues
-> > when you generate the .config yourself and attach it when sending the
-> > bug report.
+
+--- Al Viro <viro@ftp.linux.org.uk> wrote:
+
+> On Fri, Oct 12, 2007 at 10:01:17PM -0700, Casey Schaufler wrote:
 > 
-> *shrug*  I find miniconfig much easier to read because I can see what the 50 
-> or so intentional options are, not just the 1000 or so background options set 
-> to various default values.
+> What do you need smk_sb for?  Looks like dead weight...
 
-The .config is the canonical format everyone is used to.
+Reminant of an abandoned thought process. Cleaning.
 
-It also has advantages like a defined order of the options.
+> smk_read_load(): obvious seq_file candidate.
+> smk_read_cipso(): ditto.
+> 
+> What protects smk_cipso_written?  BTW, its use on the read side is an
+> atrocity...
+> 
+> smk_write_doi() - WTF would NUL-terminate temp[]?  You run sscanf on
+> it...
+> smk_write_direct() - ditto
+> smk_write_ambient() - ditto
+> smk_read_ambient() - who said that you won't get write between strlen()
+> and simple_read_from_buffer()?
 
-And it is actually an advantage that you see what the other options are 
-set to (e.g. in this case your miniconfig did not show the value of 
-CONFIG_HOTPLUG which was the most important option for understanding the 
-bug) - it doesn't matter whether you {dis,en}abled it intentionally, 
-all that matter is it's value.
+Eek. The smackfs code does look pretty crufty in the
+context of seq_file, doesn't it? I will have a go at
+cleaning that up some.
 
-There might be use cases where a miniconfig is better, but for debugging 
-compile errors a full .config is much better.
+> smk_import_entry():
+> > +	for (skp = smack_known; skp != NULL; skp = skp->smk_next)
+> > +		if (skp->smk_known == smack)
+> > +			break;
+> Really?  With smack[] being an auto array?
 
-> Rob
+Nope. What you see there is a flaw, a mistake, a bug.
+And a serious memory use problem, too. Fix in test.
+Thank you.
 
-cu
-Adrian
+> That's from quick look through the read/write in there; I hadn't really
+> looked into parsers or deeper into the guts.
 
--- 
+Your suggestions regarding seq_file look helpful. Thank you.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+Casey Schaufler
+casey@schaufler-ca.com
