@@ -1,148 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbXJMWve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbXJMWwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762033AbXJMWve (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 18:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXJMWv0
+	id S1758739AbXJMWwY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 18:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbXJMWwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 18:51:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52230 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbXJMWvZ (ORCPT
+	Sat, 13 Oct 2007 18:52:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42906
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753270AbXJMWwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 18:51:25 -0400
-Subject: [RFC][PATCH] sched: SCHED_FIFO watchdog timer
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Mike Galbraith <efault@gmx.de>,
-       Lennart Poettering <mztabzr@0pointer.de>
-In-Reply-To: <1192222309.5897.3.camel@lappy>
-References: <1192222309.5897.3.camel@lappy>
-Content-Type: text/plain
-Date: Sun, 14 Oct 2007 00:51:07 +0200
-Message-Id: <1192315867.5625.6.camel@lappy>
+	Sat, 13 Oct 2007 18:52:10 -0400
+Date: Sat, 13 Oct 2007 15:52:11 -0700 (PDT)
+Message-Id: <20071013.155211.92587020.davem@davemloft.net>
+To: komurojun@nifty.com
+Cc: davem@sunset.davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [NOT VERY SAFE] [TCP]: Set initial_ssthresh default to zero in
+ Cubic and BIC.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071014073658.d4352b8c.komurojun@nifty.com>
+References: <20071006132601.f944f461.komurojun@nifty.com>
+	<20071014073658.d4352b8c.komurojun@nifty.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The below patch is an idea proposed by tglx and depends on sched-devel +
-the hrtick patch previously posted.
+From: Komuro <komurojun@nifty.com>
+Date: Sun, 14 Oct 2007 07:36:58 +0900
 
-The current watchdog action is to demote the task to SCHED_NORMAL,
-however it might be wanted to deliver a signal instead (or have more per
-task configuration state). Which is why I added Lennart to the CC list
-as I gathered he would like something like this for PulseAudio.
+> 
+> Dear David
+> 
+> The patch "[TCP]: Set initial_ssthresh default to zero in Cubic and BIC."
+> is not very safe.
+> 
+> With this patch, ftp-transfer stops in my system.
+> (vsftpd-2.0.5-8)
+> 
+> Please revert this patch.
 
----
-Subject: sched: SCHED_FIFO watchdog timer
+No, I will not revert it with so little information, that would be a
+knee-jerk reaction.
 
-Set a per task (rlimit based) limit on SCHED_FIFO runtime. When the
-limit is exceeded the task is demoted back to SCHED_NORMAL.
+Let's anaylyze the problem first.  Please:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/asm-generic/resource.h |    5 +++--
- kernel/sched.c                 |    5 +++++
- kernel/sched_rt.c              |   36 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 44 insertions(+), 2 deletions(-)
+1) Send this report to the correct place, which is netdev@vger.kernel.org,
+   so that the networking developers can analyze the bug.  Most of
+   the core networking developers do not read linux-kernel so they
+   did not see your report.
 
-Index: linux-2.6/include/asm-generic/resource.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/resource.h
-+++ linux-2.6/include/asm-generic/resource.h
-@@ -44,8 +44,8 @@
- #define RLIMIT_NICE		13	/* max nice prio allowed to raise to
- 					   0-39 for nice level 19 .. -20 */
- #define RLIMIT_RTPRIO		14	/* maximum realtime priority */
--
--#define RLIM_NLIMITS		15
-+#define RLIMIT_FIFOTIME		15	/* timeout for fifo slices in us */
-+#define RLIM_NLIMITS		16
- 
- /*
-  * SuS says limits have to be unsigned.
-@@ -86,6 +86,7 @@
- 	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
- 	[RLIMIT_NICE]		= { 0, 0 },				\
- 	[RLIMIT_RTPRIO]		= { 0, 0 },				\
-+	[RLIMIT_FIFOTIME]	= {  RLIM_INFINITY,  RLIM_INFINITY },	\
- }
- 
- #endif	/* __KERNEL__ */
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -89,6 +89,14 @@ static struct task_struct *pick_next_tas
- 
- 	next->se.exec_start = rq->clock;
- 
-+	if (next->policy == SCHED_FIFO) {
-+		unsigned long fifotime;
-+
-+		fifotime = rq->curr->signal->rlim[RLIMIT_FIFOTIME].rlim_cur;
-+		if (fifotime != RLIM_INFINITY)
-+			hrtick_start(rq, (u64)fifotime * 1000, 0);
-+	}
-+
- 	return next;
- }
- 
-@@ -194,8 +202,36 @@ load_balance_rt(struct rq *this_rq, int 
- 	return load_moved;
- }
- 
-+#ifdef CONFIG_SCHED_HRT_TICK
-+static int fifo_watchdog(struct rq *rq, struct task_struct *p, int queued)
-+{
-+	if (likely(!queued || p->policy != SCHED_FIFO))
-+		return 0;
-+
-+	/*
-+	 * task has been naughty, turn into SCHED_NORMAL
-+	 */
-+	printk(KERN_INFO "SCHED_FIFO task %s/%d exceeded his runtime quota,"
-+			" demoting to regular task\n", p->comm, task_pid_nr(p));
-+	deactivate_task(rq, p, 0);
-+	__setscheduler(rq, p, SCHED_NORMAL, 0);
-+	activate_task(rq, p, 0);
-+	resched_task(p);
-+
-+	return 1;
-+}
-+#else
-+static inline int fifo_watchdog(struct rq *rq, struct task_struct *p, int queued)
-+{
-+	return 0;
-+}
-+#endif
-+
- static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
- {
-+	if (fifo_watchdog(rq, p, queued))
-+		return;
-+
- 	/*
- 	 * RR tasks need a special form of timeslice management.
- 	 * FIFO tasks have no timeslices.
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -132,6 +132,11 @@ static inline void sg_inc_cpu_power(stru
- }
- #endif
- 
-+static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep);
-+static void activate_task(struct rq *rq, struct task_struct *p, int wakeup);
-+static void
-+__setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio);
-+
- static inline int rt_policy(int policy)
- {
- 	if (unlikely(policy == SCHED_FIFO) || unlikely(policy == SCHED_RR))
+2) Provide a test case that the developers can use the precisely
+   reproduce the problem.  Your problem may be dependant upon the
+   remote system or infrastructure such as firewalls that sit between
+   your machine and the remote one, so it may instead be useful
+   to provide a tcpdump of the failing transfer.
 
+I suspect some intermediate node, such as a firewall, is corrupting
+your connection and causing the transfer to fail, and thus reverting
+the BIC/CUBIC patch is just a workaround.
 
+There are no other reports like your's and that change has been in
+the tree for long enough to get substantial exposure.
