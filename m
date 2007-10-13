@@ -1,246 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbXJMS1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXJMSf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762693AbXJMS1j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 14:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbXJMS1a
+	id S1762539AbXJMSf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbXJMSfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 14:27:30 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:41375 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753790AbXJMS12 (ORCPT
+	Sat, 13 Oct 2007 14:35:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:22023 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756649AbXJMSfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 14:27:28 -0400
-Date: Sat, 13 Oct 2007 20:27:22 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: [patch 2/8] m68k: Atari keyboard ACIA driver cleanup
-In-Reply-To: <jed4vjrpwk.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.64.0710132027010.15951@anakin>
-References: <20071013123123.085686856@mail.of.borg> <20071013123412.672481897@mail.of.borg>
- <jed4vjrpwk.fsf@sykes.suse.de>
+	Sat, 13 Oct 2007 14:35:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B91TLRdyg1jtpzEpCBQlvkA2WJzRw/f/3Tb4VjBkjqhwCFyxBPJzu+6A6ONoyY5Ar4i8E/YYOusMmEZ8oukQgj2WQhTByWq96ILTv1CKYf+KPUtGIFqX8t9HkMYx/xzK+QAMR7iGuSmewOhd5P0hk1wD2rjgVOJ2p9rLVkcv4i4=
+Message-ID: <64bb37e0710131135s41790cafxd010d9eb04088728@mail.gmail.com>
+Date: Sat, 13 Oct 2007 20:35:16 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-mm1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071013111853.7e67c6c3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	 <4710A407.3070000@garzik.org>
+	 <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
+	 <4710B7C5.5050403@garzik.org>
+	 <64bb37e0710130732p303547e3n54cfa9dac34c53b5@mail.gmail.com>
+	 <64bb37e0710130740u78613f83wbd4f43d073bbe13d@mail.gmail.com>
+	 <64bb37e0710130813le68c48dve36f8473b197b84b@mail.gmail.com>
+	 <47110500.8050503@garzik.org>
+	 <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>
+	 <20071013111853.7e67c6c3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007, Andreas Schwab wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> > --- a/arch/m68k/atari/atakeyb.c
-> > +++ b/arch/m68k/atari/atakeyb.c
-> > @@ -1,5 +1,5 @@
-> >  /*
-> > - * linux/atari/atakeyb.c
-> > + * linux/arch/m68k/atari/atakeyb.c
-> 
-> Please kill that line.
+On 10/13/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 13 Oct 2007 20:05:19 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+>
+> > The only thing I noted during load testing (updating Gentoo ==
+> > compiling and installing) was, that there seems to be memory leak.
+> > After ~2h 2.5 of my 4Gb where gone. But there where to many things
+> > going on to pinpoint it... (NFSv4 over eth1394?)
+>
+> Please send /proc/meminfo and /proc/slabinfo after the leak has been
+> happening for a while.
+>
+> Sometimes `echo m > /proc/sysrq_trigger ; dmesg -s 1000000' will
+> provide useful info.
 
-Done. New version below:
+I don't have the meminfo or slabinfo, only the output from SysRq+M:
 
-Subject: m68k: Atari keyboard ACIA driver cleanup
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@atrey.karlin.mff.cuni.cz
+SysRq : Show Memory
+Mem-info:
+Node 0 DMA per-cpu:
+CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+Node 0 DMA32 per-cpu:
+CPU    0: Hot: hi:  186, btch:  31 usd: 173   Cold: hi:   62, btch:  15 usd:  29
+CPU    1: Hot: hi:  186, btch:  31 usd:  69   Cold: hi:   62, btch:  15 usd:   4
+CPU    2: Hot: hi:  186, btch:  31 usd:  82   Cold: hi:   62, btch:  15 usd:  13
+CPU    3: Hot: hi:  186, btch:  31 usd:  71   Cold: hi:   62, btch:  15 usd:   3
+Node 1 DMA32 per-cpu:
+CPU    0: Hot: hi:  186, btch:  31 usd: 171   Cold: hi:   62, btch:  15 usd:   0
+CPU    1: Hot: hi:  186, btch:  31 usd:  57   Cold: hi:   62, btch:  15 usd:   0
+CPU    2: Hot: hi:  186, btch:  31 usd: 171   Cold: hi:   62, btch:  15 usd:   6
+CPU    3: Hot: hi:  186, btch:  31 usd: 158   Cold: hi:   62, btch:  15 usd:   7
+Node 1 Normal per-cpu:
+CPU    0: Hot: hi:  186, btch:  31 usd:   0   Cold: hi:   62, btch:  15 usd:   0
+CPU    1: Hot: hi:  186, btch:  31 usd:   0   Cold: hi:   62, btch:  15 usd:   0
+CPU    2: Hot: hi:  186, btch:  31 usd: 170   Cold: hi:   62, btch:  15 usd:  13
+CPU    3: Hot: hi:  186, btch:  31 usd: 172   Cold: hi:   62, btch:  15 usd:  19
+Active:236368 inactive:63289 dirty:365 writeback:0 unstable:0
+ free:28366 slab:43372 mapped:13718 pagetables:2356 bounce:0
+Node 0 DMA free:8048kB min:16kB low:20kB high:24kB active:0kB
+inactive:0kB present:8876kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 2004 2004 2004
+Node 0 DMA32 free:98364kB min:4040kB low:5048kB high:6060kB
+active:527764kB inactive:107636kB present:2052320kB pages_scanned:0
+all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+Node 1 DMA32 free:5824kB min:3040kB low:3800kB high:4560kB
+active:223216kB inactive:135068kB present:1544000kB pages_scanned:0
+all_unreclaimable? no
+lowmem_reserve[]: 0 0 505 505
+Node 1 Normal free:1228kB min:1016kB low:1268kB high:1524kB
+active:194492kB inactive:10452kB present:517120kB pages_scanned:0
+all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+Node 0 DMA: 6*4kB 7*8kB 4*16kB 5*32kB 3*64kB 3*128kB 4*256kB 2*512kB
+1*1024kB 2*2048kB 0*4096kB = 8048kB
+Node 0 DMA32: 10629*4kB 4229*8kB 1240*16kB 4*32kB 0*64kB 0*128kB
+0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB = 98364kB
+Node 1 DMA32: 442*4kB 5*8kB 3*16kB 2*32kB 1*64kB 0*128kB 1*256kB
+1*512kB 1*1024kB 1*2048kB 0*4096kB = 5824kB
+Node 1 Normal: 182*4kB 17*8kB 9*16kB 1*32kB 3*64kB 0*128kB 0*256kB
+0*512kB 0*1024kB 0*2048kB 0*4096kB = 1232kB
+Swap cache: add 64, delete 64, find 35/40, race 0+0
+Free swap  = 9775416kB
+Total swap = 9775416kB
+Free swap:       9775416kB
+1048576 pages of RAM
+35172 reserved pages
+106120 pages shared
+0 pages swap cached
 
-m68k: Atari keyboard ACIA driver cleanup:
-  - removed dead key autorepeat code
-  - removed hardcoded initial keymap
+When I noticed the leak, I stopped the emerge (the Gentoo update aka
+the compiling tasks) and cleared the tmpfs that was used for it. I
+also stopped X.
+~1Gb was used as pagecache, slubinfo showed around 200..300 Mb used
+for slab, but only ~350Mb free out of 4Gb.
+I did not see any tasks with abnormal memory sizes.
 
-Signed-off-by: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/atari/atakeyb.c |  104 ++--------------------------------------------
- 1 file changed, 6 insertions(+), 98 deletions(-)
+> The page-owner code can pinpoint a leak source.  See
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/page-owner-tracking-leak-detector.patch
+>
+> Enable CONFIG_DEBUG_SLAB_LEAK, check out /proc/slab_allocators
+>
 
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -1,6 +1,4 @@
- /*
-- * linux/atari/atakeyb.c
-- *
-  * Atari Keyboard driver for 680x0 Linux
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-@@ -11,6 +9,9 @@
- /*
-  * Atari support by Robert de Vries
-  * enhanced by Bjoern Brauel and Roman Hodek
-+ *
-+ * 2.6 and input cleanup (removed autorepeat stuff) for 2.6.21
-+ * 06/07 Michael Schmitz
-  */
- 
- #include <linux/module.h>
-@@ -32,7 +33,6 @@
- #include <asm/atari_joystick.h>
- #include <asm/irq.h>
- 
--static void atakeyb_rep(unsigned long ignore);
- extern unsigned int keymap_count;
- 
- /* Hook for MIDI serial driver */
-@@ -104,25 +104,6 @@ static unsigned long broken_keys[128/(si
-  *  - Keypad Left/Right Parenthesis mapped to new K_PPAREN[LR]
-  */
- 
--static u_short ataplain_map[NR_KEYS] __initdata = {
--	0xf200, 0xf01b, 0xf031, 0xf032, 0xf033, 0xf034, 0xf035, 0xf036,
--	0xf037, 0xf038, 0xf039, 0xf030, 0xf02d, 0xf03d, 0xf008, 0xf009,
--	0xfb71, 0xfb77, 0xfb65, 0xfb72, 0xfb74, 0xfb79, 0xfb75, 0xfb69,
--	0xfb6f, 0xfb70, 0xf05b, 0xf05d, 0xf201, 0xf702, 0xfb61, 0xfb73,
--	0xfb64, 0xfb66, 0xfb67, 0xfb68, 0xfb6a, 0xfb6b, 0xfb6c, 0xf03b,
--	0xf027, 0xf060, 0xf700, 0xf05c, 0xfb7a, 0xfb78, 0xfb63, 0xfb76,
--	0xfb62, 0xfb6e, 0xfb6d, 0xf02c, 0xf02e, 0xf02f, 0xf700, 0xf200,
--	0xf703, 0xf020, 0xf207, 0xf100, 0xf101, 0xf102, 0xf103, 0xf104,
--	0xf105, 0xf106, 0xf107, 0xf108, 0xf109, 0xf200, 0xf200, 0xf114,
--	0xf603, 0xf200, 0xf30b, 0xf601, 0xf200, 0xf602, 0xf30a, 0xf200,
--	0xf600, 0xf200, 0xf115, 0xf07f, 0xf200, 0xf200, 0xf200, 0xf200,
--	0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200,
--	0xf200, 0xf1ff, 0xf11b, 0xf312, 0xf313, 0xf30d, 0xf30c, 0xf307,
--	0xf308, 0xf309, 0xf304, 0xf305, 0xf306, 0xf301, 0xf302, 0xf303,
--	0xf300, 0xf310, 0xf30e, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200,
--	0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200, 0xf200
--};
--
- typedef enum kb_state_t {
- 	KEYBOARD, AMOUSE, RMOUSE, JOYSTICK, CLOCK, RESYNC
- } KB_STATE_T;
-@@ -137,41 +118,6 @@ typedef struct keyboard_state {
- 
- KEYBOARD_STATE kb_state;
- 
--#define	DEFAULT_KEYB_REP_DELAY	(HZ/4)
--#define	DEFAULT_KEYB_REP_RATE	(HZ/25)
--
--/* These could be settable by some ioctl() in future... */
--static unsigned int key_repeat_delay = DEFAULT_KEYB_REP_DELAY;
--static unsigned int key_repeat_rate = DEFAULT_KEYB_REP_RATE;
--
--static unsigned char rep_scancode;
--static struct timer_list atakeyb_rep_timer = {
--	.function = atakeyb_rep,
--};
--
--static void atakeyb_rep(unsigned long ignore)
--{
--	/* Disable keyboard for the time we call handle_scancode(), else a race
--	 * in the keyboard tty queue may happen */
--	atari_disable_irq(IRQ_MFP_ACIA);
--	del_timer(&atakeyb_rep_timer);
--
--	/* A keyboard int may have come in before we disabled the irq, so
--	 * double-check whether rep_scancode is still != 0 */
--	if (rep_scancode) {
--		init_timer(&atakeyb_rep_timer);
--		atakeyb_rep_timer.expires = jiffies + key_repeat_rate;
--		add_timer(&atakeyb_rep_timer);
--
--		//handle_scancode(rep_scancode, 1);
--		if (atari_input_keyboard_interrupt_hook)
--			atari_input_keyboard_interrupt_hook(rep_scancode, 1);
--	}
--
--	atari_enable_irq(IRQ_MFP_ACIA);
--}
--
--
- /* ++roman: If a keyboard overrun happened, we can't tell in general how much
-  * bytes have been lost and in which state of the packet structure we are now.
-  * This usually causes keyboards bytes to be interpreted as mouse movements
-@@ -209,9 +155,6 @@ repeat:
- 		/* ...happens often if interrupts were disabled for too long */
- 		printk(KERN_DEBUG "Keyboard overrun\n");
- 		scancode = acia.key_data;
--		/* Turn off autorepeating in case a break code has been lost */
--		del_timer(&atakeyb_rep_timer);
--		rep_scancode = 0;
- 		if (ikbd_self_test)
- 			/* During self test, don't do resyncing, just process the code */
- 			goto interpret_scancode;
-@@ -281,11 +224,12 @@ repeat:
- 					 * make codes instead. Therefore, simply ignore
- 					 * break_flag...
- 					 */
--					int keyval = plain_map[scancode], keytyp;
-+					int keyval, keytyp;
- 
- 					set_bit(scancode, broken_keys);
- 					self_test_last_rcv = jiffies;
--					keyval = plain_map[scancode];
-+					/* new Linux scancodes; approx. */
-+					keyval = scancode;
- 					keytyp = KTYP(keyval) - 0xf0;
- 					keyval = KVAL(keyval);
- 
-@@ -301,19 +245,6 @@ repeat:
- 				} else if (test_bit(scancode, broken_keys))
- 					break;
- 
--#if 0	// FIXME; hangs at boot
--				if (break_flag) {
--					del_timer(&atakeyb_rep_timer);
--					rep_scancode = 0;
--				} else {
--					del_timer(&atakeyb_rep_timer);
--					rep_scancode = scancode;
--					atakeyb_rep_timer.expires = jiffies + key_repeat_delay;
--					add_timer(&atakeyb_rep_timer);
--				}
--#endif
--
--				// handle_scancode(scancode, !break_flag);
- 				if (atari_input_keyboard_interrupt_hook)
- 					atari_input_keyboard_interrupt_hook((unsigned char)scancode, !break_flag);
- 				break;
-@@ -639,9 +570,6 @@ int __init atari_keyb_init(void)
- 	if (atari_keyb_done)
- 		return 0;
- 
--	/* setup key map */
--	memcpy(key_maps[0], ataplain_map, sizeof(plain_map));
--
- 	kb_state.state = KEYBOARD;
- 	kb_state.len = 0;
- 
-@@ -704,26 +632,6 @@ int __init atari_keyb_init(void)
- 	return 0;
- }
- 
--int atari_kbdrate(struct kbd_repeat *k)
--{
--	if (k->delay > 0) {
--		/* convert from msec to jiffies */
--		key_repeat_delay = (k->delay * HZ + 500) / 1000;
--		if (key_repeat_delay < 1)
--			key_repeat_delay = 1;
--	}
--	if (k->period > 0) {
--		key_repeat_rate = (k->period * HZ + 500) / 1000;
--		if (key_repeat_rate < 1)
--			key_repeat_rate = 1;
--	}
--
--	k->delay  = key_repeat_delay * 1000 / HZ;
--	k->period = key_repeat_rate  * 1000 / HZ;
--
--	return 0;
--}
--
- int atari_kbd_translate(unsigned char keycode, unsigned char *keycodep, char raw_mode)
- {
- #ifdef CONFIG_MAGIC_SYSRQ
+I suspected that I need more debugging options to track this.
+Currently compiling more packages again, but no obvious leak.
+When the leak occurred I noticed the disk throughput falling /
+stalling several second and this appeared in the syslog:
+ohci1394: fw-host0: Waking dma ctx=0 ... processing is probably too slow
+ohci1394: fw-host0: Waking dma ctx=0 ... processing is probably too slow
 
+I'm still using the old firewire stack because of eth1394.
 
-Gr{oetje,eeting}s,
+I will mail again, when I have more info.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Torsten
