@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXJMAcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbXJMAdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761642AbXJMAcp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 20:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXJMA31
+	id S1761836AbXJMAdI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 20:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760946AbXJMA3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 20:29:27 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:33505
+	Fri, 12 Oct 2007 20:29:32 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:33511
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760861AbXJMA3Z (ORCPT
+	by vger.kernel.org with ESMTP id S1760924AbXJMA3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 20:29:25 -0400
+	Fri, 12 Oct 2007 20:29:30 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 6/7] RT: Select tasks based on relative affinity
+Subject: [PATCH 7/7] RT: (RFC) Only try to pull tasks in if we are downgrading
+	our priority
 To: Steven Rostedt <rostedt@goodmis.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        Gregory Haskins <ghaskins@novell.com>
-Date: Fri, 12 Oct 2007 20:16:04 -0400
-Message-ID: <20071013001604.7444.39391.stgit@novell1.haskins.net>
+Date: Fri, 12 Oct 2007 20:16:09 -0400
+Message-ID: <20071013001609.7444.60149.stgit@novell1.haskins.net>
 In-Reply-To: <20071013001052.7444.8363.stgit@novell1.haskins.net>
 References: <20071013001052.7444.8363.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -28,112 +29,64 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In theory, tasks will be most efficient if they are allowed to re-wake to
-the CPU that they last ran on due to cache affinity.  Short of that, it is
-cheaper to wake up the current CPU.  If neither of those two are options,
-than the lowest CPU will do. 
+The current code runs the balance_rt_tasks() on every _schedule()
+once the system enters an overload state.  Now that we have better
+distribution on the push side, we can reduce the conditions that
+require us to pull tasks.  They are as follows:
+
+At the time of a _schedule(), if our priority is staying the same or
+going logically higher between _prev_ and _next_ we can skip trying
+to balance tasks because any tasks that were runnable by our queue
+have already been pushed to us.  However, if our priority is
+transitioning lower AND some CPUs out there are in overload, we
+should check to see if we can pull some over.
+
+Note: DO NOT RUN TEST WITH THIS PATCH APPLIED !
+
+This patch is a concept only (for now) and is here for
+demonstration/comment purposes only.  The current series is still
+racy with respect to acquiring the lowest RQ in the system.  The
+concept in this patch is predicated on raceless distribution to our
+current priority level.  So the current balancer is a nice big
+safety net to cleanup any issues related to that. This patch
+effectively takes that net away, so we need to be sure we have all
+our ducks lined up before turning this one on.  But once we do we can
+eliminate the (fairly expensive) checks (e.g. rq double-locks, etc)
+in a subset (hopefully significant #) of the calls to schedule(),
+which sounds like a good optimization to me ;)  We shall see if that
+pans out.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c |   72 +++++++++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 53 insertions(+), 19 deletions(-)
+ kernel/sched.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 3c71156..b79b968 100644
+index b79b968..9e1f3ec 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1511,6 +1511,15 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
- /* Only try this algorithm three times */
- #define RT_PUSH_MAX_TRIES 3
+@@ -4118,8 +4118,20 @@ asmlinkage void __sched __schedule(void)
+ 		sub_preempt_count(PREEMPT_ACTIVE);
  
-+static int non_rt_cpu(cpumask_t *mask, int cpu)
-+{
-+	if (!rt_prio(cpu_rq(cpu)->curr_prio) &&
-+	    cpu_isset(cpu, *mask))
-+		return 1;
+ #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+-	if (unlikely(atomic_read(&rt_overload)))
+-		balance_rt_tasks(rq, cpu);
++	/*
++	 * If we are switching away from an RT task while the system is in
++	 * overload, we need to see if there is a way we can help a different
++	 * cpu.  If the next task to run is not RT, or if it *is* RT but
++	 * is a logically lower priority, try to balance the system.  Otherwise
++	 * we can skip it, because anyone that could have pushed their tasks
++	 * to us already did.
++	 */
++	if (unlikely(rt_task(prev) && atomic_read(&rt_overload))) {
++		struct task_struct *preview = pick_rt_task(rq, cpu);
 +
-+	return 0;
-+}
-+
- /* Will lock the rq it finds */
- static int find_lowest_cpu(cpumask_t *cpu_mask, struct task_struct *task,
- 				 struct rq *this_rq)
-@@ -1519,32 +1528,57 @@ static int find_lowest_cpu(cpumask_t *cpu_mask, struct task_struct *task,
- 	int dst_cpu = -1;
- 	int cpu;
- 	int tries;
-+	int this_cpu = smp_processor_id();
++		if (!preview || (preview->prio > prev->prio))
++			balance_rt_tasks(rq, cpu);
++	}
+ #endif
  
- 	for (tries = 0; tries < RT_PUSH_MAX_TRIES; tries++) {
-+
- 		/*
--		 * Scan each rq for the lowest prio.
-+		 * We select a CPU in the following priority:
-+		 *
-+		 *       task_cpu, this_cpu, first_cpu
-+		 *
-+		 * for efficiency.
-+		 *
-+		 * - task_cpu preserves cache affinity
-+		 * - this_cpu is (presumably) cheaper to preempt
-+		 *   (note that sometimes task_cpu and this_cpu
-+		 *   are the same).
-+		 * - Finally, we will take whatever is available
-+		 *   if the first two don't pan out by scanning.
- 		 */
--		for_each_cpu_mask(cpu, *cpu_mask) {
--			struct rq *rq = &per_cpu(runqueues, cpu);
--
--			if (cpu == smp_processor_id())
--				continue;
--
--			/* We look for lowest RT prio or non-rt CPU */
--			if (rq->curr_prio >= MAX_RT_PRIO) {
--				lowest_rq = rq;
--				dst_cpu = cpu;
--				break;
--			}
-+		if (non_rt_cpu(cpu_mask, task_cpu(task))) {
-+			lowest_rq = task_rq(task);	
-+			dst_cpu = lowest_rq->cpu;
-+		} else if (non_rt_cpu(cpu_mask, this_cpu)) {
-+			dst_cpu = this_cpu;
-+			lowest_rq = cpu_rq(this_cpu);	
-+		} else {
- 
--			/* no locking for now */
--			if (rq->curr_prio > task->prio &&
--			    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
--				dst_cpu = cpu;
--				lowest_rq = rq;
-+			/*
-+			 * Scan each rq for the lowest prio.
-+			 */
-+			for_each_cpu_mask(cpu, *cpu_mask) {
-+				struct rq *rq = &per_cpu(runqueues, cpu);
-+				
-+				if (cpu == this_cpu)
-+					continue;
-+				
-+				/* We look for lowest RT prio or non-rt CPU */
-+				if (rq->curr_prio >= MAX_RT_PRIO) {
-+					lowest_rq = rq;
-+					dst_cpu = cpu;
-+					break;
-+				}
-+				
-+				/* no locking for now */
-+				if (rq->curr_prio > task->prio &&
-+				    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
-+					dst_cpu = cpu;
-+					lowest_rq = rq;
-+				}
- 			}
- 		}
--
-+			
- 		if (!lowest_rq) {
- 			dst_cpu = -1;
- 			break;
+ 	if (unlikely(!rq->nr_running))
 
