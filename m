@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbXJMSSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbXJMSSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762810AbXJMSSc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 14:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762505AbXJMSSN
+	id S1762913AbXJMSSv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762609AbXJMSSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 14:18:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52441 "EHLO ogre.sisk.pl"
+	Sat, 13 Oct 2007 14:18:18 -0400
+Received: from 1wt.eu ([62.212.114.60]:3101 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762247AbXJMSSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 14:18:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: Suspend Broken (Re: 2.6.23-mm1)
-Date: Sat, 13 Oct 2007 20:33:45 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       pavel@suse.cz
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <20071013175845.GA14596@linux.vnet.ibm.com>
-In-Reply-To: <20071013175845.GA14596@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1762588AbXJMSSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 14:18:17 -0400
+Date: Sat, 13 Oct 2007 20:10:45 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in bidirectional flows.
+Message-ID: <20071013181045.GB18155@1wt.eu>
+References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu> <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi> <20071013172214.GA18155@1wt.eu> <20071013175036.GD4211@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710132033.46423.rjw@sisk.pl>
+In-Reply-To: <20071013175036.GD4211@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Adrian,
 
-On Saturday, 13 October 2007 19:58, Dhaval Giani wrote:
-> Hi,
+On Sat, Oct 13, 2007 at 07:50:36PM +0200, Adrian Bunk wrote:
+> On Sat, Oct 13, 2007 at 07:22:14PM +0200, Willy Tarreau wrote:
+> >...
+> > Thanks for your help, I really appreciate it. In fact, I've reviewed them
+> > four, but two of them did not apply and the code looked somewhat different,
+> > so I considered them irrelevant to 2.6.20. I didn't understand that they
+> > were all related, so maybe I checked them in a wrong order.
+> > 
+> > I'll recheck all that in the right sequence and will merge them four, or
+> > get back to you if something still puzzles me.
 > 
-> I just tried 2.6.23-mm1 and suspend is not working there. automount
-> refuses to go in the freezer. I've attached dmesg (three attempts to
-> suspend so it gets a bit big). Suspend works on 2.6.23 and sched-devel.
-> 
-> Another funny thing that I've noticed on -mm is that amarok refuses to
-> load a playlist. It works properly on sched-devel tree. 
+> I discussed this issue with Ilpo just yesterday regarding 2.6.16, and 
+> the result of our discussion was that I reverted it.
 
-Could you please try to find the patch that introduces this issue (using
-bisection)?
+OK.
 
-Greetings,
-Rafael
+> TCP being in some situations a bit more conservative than it should be 
+> isn't a big issue and not worth backporting with a risk of introducing
+> a regression.
+
+I agree with this. The impression I got from the description of the two
+patches I merged was that the problems they fix were quite annoying. But
+maybe I should take that with a grain of salt.
+
+> I'd recommend you simply drop the two patches for 2.6.20.
+
+That sounds OK to me. If 2.6.16 is fine without the patches, 2.6.20
+certainly is, particularly if we keep in mind that it's a last version.
+
+Thanks very much for your insights Adrian,
+Willy
+
