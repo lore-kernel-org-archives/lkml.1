@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbXJMMA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXJMMDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbXJMMA2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbXJMMAQ
+	id S1762254AbXJMMDa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbXJMMDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:00:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50820 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753314AbXJMMAO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:00:14 -0400
-Date: Sat, 13 Oct 2007 13:02:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mike Galbraith <efault@gmx.de>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [linux-2.6.git] IDE/ATA fighting over driver name?
-Message-ID: <20071013130219.1f020d49@the-village.bc.nu>
-In-Reply-To: <4710A31A.7020204@garzik.org>
-References: <1192254081.29452.13.camel@Homer.simpson.net>
-	<4710A31A.7020204@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 13 Oct 2007 08:03:22 -0400
+Received: from maxwell.spina.si ([193.77.104.223]:64235 "EHLO maxwell.spina.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753338AbXJMMDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 08:03:21 -0400
+Message-ID: <4710B407.8070101@kanardia.eu>
+Date: Sat, 13 Oct 2007 14:03:19 +0200
+From: Rok Markovic <kernel@kanardia.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rt1 lockup after loading HAL deamon
+References: <470F27DA.9020307@kanardia.eu> <20071012083551.GA17937@elte.hu> <470FB4F4.60707@kanardia.eu> <20071012175831.GA27420@elte.hu> <470FD96A.8040505@kanardia.eu> <20071013055922.GB26370@elte.hu> <47109008.5090405@kanardia.eu> <20071013094142.GA16098@elte.hu>
+In-Reply-To: <20071013094142.GA16098@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 06:51:06 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+Hi
 
-> Mike Galbraith wrote:
-> > Greetings,
-> > 
-> > Perhaps my .config is dainbramaged.  When make oldconfig asked me if I
-> > wanted CONFIG_PATA_PLATFORM, I said "Damned if I know, go for it".
-> > 
-> > drivers/ide/legacy/ide_platform.c:		.name = "pata_platform",
-> > drivers/ata/pata_platform.c:#define DRV_NAME "pata_platform"
+Good news (I hope). With kernel option maxcpus=1, I can not get
+a lock, so the system is stable and running. Where could be a problem?
+
+Best regards,
+Rok
+ 
+
+Ingo Molnar wrote:
+>> Hi
+>>
+>> I have recompiled kernel with OPROFILE disabled. I am sending in 
+>> attachment /proc/interrupts (i ran it 3 times with 2 sec delay) and 
+>> netconsole log. Lockup in the lock is software made with ./lockup. The 
+>> kernel still locks 4-5minutes after boot without any further messages 
+>> (waited more than 2 minutes). Any ideas?
 > 
-> That's a clear bug..  IDE's should be called ide_platform.
+> no good ideas :-( I suspect this one:
+> 
+>   [  185.600900] hdc: lost interrupt
+> 
+> was a side-effect of lockup.c too?
+> 
+> does the lockup go away if you boot with maxcpus=1?
+> 
+> 	Ingo
+> 
+> 
 
-No its intentional and was discussed. Both of them provide an identical
-platform driver interface, so they both use the same name. This means an
-embedded platform developer doesn't have to choose which driver each of
-their downstream users gets.
-
-Probably just needs a bit of ifdef twiddling, if its even a bug (which is
-not clear).
-
-Alan
