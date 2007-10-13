@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXJMWFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXJMWF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbXJMWFY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 18:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbXJMWFI
+	id S1760908AbXJMWF4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 18:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXJMWFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 18:05:08 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:7229 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753533AbXJMWFF (ORCPT
+	Sat, 13 Oct 2007 18:05:43 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54957 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758599AbXJMWFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 18:05:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=NwpP83Rj9GYKNe2NMbDgpy5SRsUL74VmC+Ix95eieykftjDf/Xf/hYgpKokK3+kp3OpVQ4t0Pr9u8btbJyfUpMXtEPI+6tm5f1ctVJC6RtI6BwpDcuGnhcZC2EODWcp7D0CycQJZ8rU2/Gn7lfxCqqpwbNPh1okwFFB3uLtn3bg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git patches] IDE updates (part 2)
-Date: Sun, 14 Oct 2007 00:09:06 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200710131825.24768.bzolnier@gmail.com> <200710132259.53574.bzolnier@gmail.com> <20071013224452.71d6f61f@the-village.bc.nu>
-In-Reply-To: <20071013224452.71d6f61f@the-village.bc.nu>
+	Sat, 13 Oct 2007 18:05:42 -0400
+Date: Sat, 13 Oct 2007 16:05:39 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Jens Axboe <axboe@suse.de>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071013220539.GD29934@parisc-linux.org>
+References: <200710112011.22000.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710140009.06260.bzolnier@gmail.com>
+In-Reply-To: <200710112011.22000.rob@landley.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 October 2007, Alan Cox wrote:
-> > Comment in pmac_ide_init_hwif_ports() is highly misleading as this function
-> > returns early only for "normal" IDE PCI devices (pmac_ide_init_hwif_ports()
-> > can be called outside ide-pmac driver through ppc_ide_md).
-> 
-> Follow the code you pasted
-> 
-> > 	pmif->regbase = (unsigned long) base + 0x2000;
-> > ...
-> > 	rc = pmac_ide_setup_device(pmif, hwif);
-> 
-> Ok so regbase is set
-> 
-> > ...
-> > }
-> > 
-> > static int
-> > pmac_ide_setup_device(pmac_ide_hwif_t *pmif, ide_hwif_t *hwif)
-> > {
-> > ...
-> > 	pmac_ide_init_hwif_ports(&hwif->hw, pmif->regbase, 0, &hwif->irq);
-> 
-> Now we pass a honking great zero for the ctrl_port
-> > ...
-> > }
-> > 
-> > void
-> > pmac_ide_init_hwif_ports(hw_regs_t *hw,
-> > 			      unsigned long data_port, unsigned long ctrl_port,
-> > 			      int *irq)
-> > {
-> > ...
-> > 	for (ix = 0; ix < MAX_HWIFS; ++ix)
+On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
+> My impression from asking questions on the linux-scsi mailing list is that the 
+> scsi upper/middle/lower layers doesn't use the block layer described in 
+> Documentation/block/*.
 
-this loop is a tricky part, regbase is set so we break out early
+Entirely incorrect.
 
-> > 		if (data_port == pmac_ide[ix].regbase)
-> > 			break;
-> > ---> since pmif->regbase was set earlier ix will be < MAX_HWIFS
-                                             ^^^^^^^^^^^^^^^^^^^^^^
-> > 	if (ix >= MAX_HWIFS) {
-            ^^^^^^^^^^^^^^^
-> > 		/* Probably a PCI interface... */
-> > 		for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; ++i)
-> > 			hw->io_ports[i] = data_port + i - IDE_DATA_OFFSET;
-> > 		hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
-> 
-> Which is zero..
-> 
-> 
-> See the problem ?
+> Instead of using the block layer, SCSI reinvents this particular wheel itself.  
+> There's a scsi "upper layer" that provides /dev nodes, scsi low-level 
+> drivers, and a gigantic glue layer in between call the "scsi midlayer" that's 
+> something like a networking stack, and is responsible for losing track of all 
+> your devices so that the one SATA disk hardwired into your laptop might be 
+> sda or sdc depending on whether or not you had a USB key plugged in when you 
+> booted up.  Anyway, the block layer isn't between any of these three, that I 
+> can tell.
+
+You really need to get the fuck over yourself.
+
+> Now that IDE disks have been rerouted through the scsi layer, SATA goes 
+> through the scsi layer, USB goes through the scsi layer, firewire goes 
+> through the scsi layer...  What's left?  It seems like everything but 
+> ramdisks have now been routed through the scsi layer.  My laptop hasn't got a 
+> single SCSI device but it also hasn't got any block devices that don't show 
+> up as scsi.
+
+That's nice.  Why not take a look in drivers/block?  Floppy, CCISS,
+CPQDA, UMEM, UBD, loop, NBD, SX8, UB, AoE, and many more.
+
+> So what's still using the block layer?  How do the scsi layers and the block 
+> layer relate?  I'm confused!  (This is normal for me, but still...)
+
+sd and sr are block drivers.  In fact, the whole SCSI subsystem ...
+
+        depends on BLOCK
+
+Just take a look at sd.c.  The init code reads:
+
+        for (i = 0; i < SD_MAJORS; i++)
+                if (register_blkdev(sd_major(i), "sd") == 0)
+                        majors++;
+
+Then look at struct scsi_cmnd.  It has a pointer to the block request
+that was passed down to it.  struct scsi_device has a pointer to the
+block request_queue that's associated with the device.  Block is what
+has elevators and io schedulers -- that work isn't duplicated by scsi.
+There's work to push more of scsi's infrastructure up into the block
+layer, so non-scsi block devices can take advantage of it.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
