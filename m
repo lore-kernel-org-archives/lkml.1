@@ -1,83 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXJMRQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbXJMRQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbXJMRQL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXJMRP5
+	id S1761586AbXJMRQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbXJMRQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:15:57 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:34868 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbXJMRP4 (ORCPT
+	Sat, 13 Oct 2007 13:16:00 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34949 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756476AbXJMRP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:15:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=d5Bb169WE7XRbmCq3iHqk3nVA5umDUXpBDZLviuCdkHGtlH7xsrOF1WZ0B2uEYkZeynk9Y9l144OZCqAYnxEYl6m4MpedYe9G9jb2FHjyePI4XmE6AhzguT2F4z7p2NFKrqcnZ0INf+7twt9M5jZBuHzsbjgR2M8Mlx1/FYRcu0=
-Message-ID: <4710FC91.6030806@googlemail.com>
-Date: Sat, 13 Oct 2007 19:12:49 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Sat, 13 Oct 2007 13:15:59 -0400
+Date: Sat, 13 Oct 2007 20:15:52 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Willy Tarreau <w@1wt.eu>
+cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
+ bidirectional flows.
+In-Reply-To: <20071013143452.%N@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
+References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; boundary="-696243703-320683280-1192295294=:27718"
+Content-ID: <Pine.LNX.4.64.0710132008170.27718@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Hi,
+---696243703-320683280-1192295294=:27718
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0710132008171.27718@kivilampi-30.cs.helsinki.fi>
 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+On Sat, 13 Oct 2007, Willy Tarreau wrote:
+
+> It's possible that new SACK blocks that should trigger new LOST
+> markings arrive with new data (which previously made is_dupack
+> false). In addition, I think this fixes a case where we get
+> a cumulative ACK with enough SACK blocks to trigger the fast
+> recovery (is_dupack would be false there too).
 > 
-> - I've been largely avoiding applying anything since rc8-mm2 in an attempt
->   to stabilise things for the 2.6.23 merge.
+> I'm not completely pleased with this solution because readability
+> of the code is somewhat questionable as 'is_dupack' in SACK case
+> is no longer about dupacks only but would mean something like
+> 'lost_marker_work_todo' too... But because of Eifel stuff done
+> in CA_Recovery, the FLAG_DATA_SACKED check cannot be placed to
+> the if statement which seems attractive solution. Nevertheless,
+> I didn't like adding another variable just for that either... :-)
 > 
->   But that didn't stop all the subsystem maintainers from going nuts, with
->   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
->   a bit better.
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  net/ipv4/tcp_input.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> Index: 2.6/net/ipv4/tcp_input.c
+> ===================================================================
+> --- 2.6.orig/net/ipv4/tcp_input.c
+> +++ 2.6/net/ipv4/tcp_input.c
+> @@ -1951,7 +1951,10 @@ tcp_fastretrans_alert(struct sock *sk, u
+>  {
+>  	struct inet_connection_sock *icsk = inet_csk(sk);
+>  	struct tcp_sock *tp = tcp_sk(sk);
+> -	int is_dupack = (tp->snd_una == prior_snd_una && !(flag&FLAG_NOT_DUP));
+> +	int is_dupack = (tp->snd_una == prior_snd_una &&
+> +			 (!(flag&FLAG_NOT_DUP) ||
+> +			  ((flag&FLAG_DATA_SACKED) &&
+> +			   (tp->fackets_out > tp->reordering))));
+>  
+>  	/* Some technical things:
+>  	 * 1. Reno does not count dupacks (sacked_out) automatically. */
 
-Works a bit better right :) At least it boots here but I have a strange problem with it.
+FYI,
 
-It seems 2.6.23-mm1 kills off java. Every program needs java here does not work anymore telling
-'my java' installation is incorrect. Also I noticed firefox is acting weird as well thunderbird.
-Gtk apps just random freeze and need be killed with -11.
+This ended up being a non complete fix. Day after these two patches 
+(11-12) I submitted two other patches to complete this fix series (got 
+bitten by release-early-release-often, fixed day-after-submission 
+thoughts in those two later patches). For some reason these two keep 
+floating around as separate ones from those two later ones.
 
-Running 'java -version' manually returns nothing , 'java -jar some.jar' does nothing as well. ( not even a error or anything else )
+To make things even more complicated, eb7bdad82e8 (see stable-2.6.22) 
+could have been split more logically to do_lost addition and 
+FLAG_SND_UNA_ADVANCED parts (but that didn't occur to me back then).
 
-( I've also tested sun's java 1.5 and 1.6 and openjre as well all with same result )
+All of them listed here (from stable-2.6.22 since one of them is
+reduced from mainline version):
 
-I only have a WARNING in my dmesg but i don't think this is related to this :
-
-Oct 13 01:44:52 lara [10722.146448] WARNING: at fs/namespace.c:586 __mntput()
-Oct 13 01:44:52 lara [10722.146478]  [<c0167cb2>] mntput_no_expire+0x5d/0xab
-Oct 13 01:44:52 lara [10722.146503]  [<c01683d1>] sys_umount+0x1f8/0x202
-Oct 13 01:44:52 lara [10722.146511]  [<c010f368>] check_pgt_cache+0x13/0x15
-Oct 13 01:44:52 lara [10722.146529]  [<c0158cd0>] sys_stat64+0xf/0x23
-Oct 13 01:44:52 lara [10722.146549]  [<c0147a9c>] remove_vma+0x31/0x36
-Oct 13 01:44:52 lara [10722.146574]  [<c010fbf6>] do_page_fault+0x180/0x4ea
-Oct 13 01:44:52 lara [10722.146600]  [<c01683e6>] sys_oldumount+0xb/0xe
-Oct 13 01:44:52 lara [10722.146614]  [<c010258e>] sysenter_past_esp+0x5f/0x85
-Oct 13 01:44:52 lara [10722.146639]  [<c02e0000>] xfrm_tmpl_resolve+0x2bd/0x37b
-Oct 13 01:44:52 lara [10722.146656]  =======================
+6d742fb6e2b8913457e1282e1be77d6f4e45af00 Fix TCP DSACK cwnd handling
+eb7bdad82e8af48e1ed1b650268dc85ca7e9ff39 Handle snd_una in tcp_cwnd_down()
+8385cffd22359ad561a173accefeb354bd606ce4 TCP: Fix TCP handling of SACK in 
+783366ad4b212cde069c50903494eb6a6b83958c TCP: Fix TCP rate-halving on 
 
 
-I also noticed some programs like vlc segfaults :
-
-vlc[20506]: segfault at 01950000 eip 01950000 esp b4876368 error 4
-
-Booting 2.6.23 makes all these go away.
-
-I don't have anything else in my logs. Any idea what patches could cause this problem(s) ?
-
-Config can be found there -> http://194.231.229.228/2.6.23-mm1-config
-
-
-Regards,
-
-Gabriel C
+-- 
+ i.
+---696243703-320683280-1192295294=:27718--
