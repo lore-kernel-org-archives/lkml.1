@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbXJMU4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbXJMVNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762868AbXJMU4p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 16:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbXJMU4e
+	id S1762605AbXJMVNK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 17:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXJMVM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 16:56:34 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:35840 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758493AbXJMU4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 16:56:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=hte3sesxqa/EiHc8LqReSc4LJcQwDc/npty5O5pFQQoWFi2vOhBR8wJxHHH8FuMc8JQ7ocBUZCnjAPrcXe1R82RRExFjuTU+6ZezH/ssKuYoIY+5fx5LQzO9WV6mrt/9ZbokFgXzGt1wz8s00tzX6GquIT68qGegxBSyTQXly5o=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git patches] IDE updates (part 2)
-Date: Sat, 13 Oct 2007 22:59:53 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
+	Sat, 13 Oct 2007 17:12:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:42452 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbXJMVM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 17:12:56 -0400
+Date: Sat, 13 Oct 2007 23:12:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Roland Dreier <roland@digitalvampire.org>
+cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-References: <200710131825.24768.bzolnier@gmail.com> <20071013205618.3ddc91e9@the-village.bc.nu>
-In-Reply-To: <20071013205618.3ddc91e9@the-village.bc.nu>
+Subject: Re: x86: merge some trivially mergeable headers
+In-Reply-To: <87bqb2u4ez.fsf@shaolin.home.digitalvampire.org>
+Message-ID: <alpine.LFD.0.9999.0710132307360.12017@localhost.localdomain>
+References: <87bqb2u4ez.fsf@shaolin.home.digitalvampire.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710132259.53574.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 October 2007, Alan Cox wrote:
-> On Sat, 13 Oct 2007 18:25:24 +0200
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Sat, 13 Oct 2007, Roland Dreier wrote:
+
+> Merge errno.h, resource.h, rtc.h, sections.h, serial.h and sockios.h,
+> where i386 and x86_64 have no or only trivial comment/include guard
+> differences.
 > 
-> > 
-> > Hi,
-> > 
-> > highlights of this update:
-> > 
-> > * Rework of IDE PMAC host driver: bugfixes, removal of the code
-> >   duplicated from the IDE core and conversion to use the generic
-> >   DMA tuning code path (the rework cuts ide-pmac.c by ~200 LOC).
+> Build tested on both 32-bit and 64-bit, and booted on 64-bit.
 > 
-> Reading the current driver from the git tree I don't see how the PCI
-> driver ever sets the ctl register base. It seems to always be set to zero
-> which means you can't issue SRST and reset sequences ?
+> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
+> ---
+> Not sure who's merging this type of stuff so I just picked a grab bag
+> of people to put on the To: line.
+> 
+> Also I'm not sure if someone else is already working on this, so I'm
+> just sending out about 15 minutes of work.  If this is helpful I'll do
+> more of the easy ones...
 
-Hi Alan,
+Roland, thanks for providing this. I have some of those already, but I 
+really appreciate the help. I take yours and the previously posted and 
+push them out into a cleanup branch on my x86 git tree.
 
-Comment in pmac_ide_init_hwif_ports() is highly misleading as this function
-returns early only for "normal" IDE PCI devices (pmac_ide_init_hwif_ports()
-can be called outside ide-pmac driver through ppc_ide_md).
+I guess it will be unavoidable that there will be some overlap on the low 
+hanging fruit merges, but anyone who is tackling a more complex one should 
+make this public upfront so we can avoid the redundant work.
 
-static int __devinit
-pmac_ide_pci_attach(struct pci_dev *pdev, const struct pci_device_id *id)
-{
-...
-	pmif = &pmac_ide[i];
-...
-	pmif->regbase = (unsigned long) base + 0x2000;
-...
-	rc = pmac_ide_setup_device(pmif, hwif);
-...
-}
-
-static int
-pmac_ide_setup_device(pmac_ide_hwif_t *pmif, ide_hwif_t *hwif)
-{
-...
-	pmac_ide_init_hwif_ports(&hwif->hw, pmif->regbase, 0, &hwif->irq);
-...
-}
-
-void
-pmac_ide_init_hwif_ports(hw_regs_t *hw,
-			      unsigned long data_port, unsigned long ctrl_port,
-			      int *irq)
-{
-...
-	for (ix = 0; ix < MAX_HWIFS; ++ix)
-		if (data_port == pmac_ide[ix].regbase)
-			break;
----> since pmif->regbase was set earlier ix will be < MAX_HWIFS
-	if (ix >= MAX_HWIFS) {
-		/* Probably a PCI interface... */
-		for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; ++i)
-			hw->io_ports[i] = data_port + i - IDE_DATA_OFFSET;
-		hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
-		return;
-	}
-
-	for (i = 0; i < 8; ++i)
-		hw->io_ports[i] = data_port + i * 0x10;
----> ctl register base will be set here
-	hw->io_ports[8] = data_port + 0x160;
-...
-}
-
-Bart
+Thanks,
+	tglx
+ 
