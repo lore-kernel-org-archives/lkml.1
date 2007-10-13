@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbXJMTuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762849AbXJMTwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbXJMTuO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 15:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXJMTuA
+	id S1762849AbXJMTwT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 15:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXJMTwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 15:50:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34427 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751327AbXJMTt7 (ORCPT
+	Sat, 13 Oct 2007 15:52:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43543 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752737AbXJMTwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 15:49:59 -0400
-Date: Sat, 13 Oct 2007 12:44:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-git3 jfs/bio bug
-In-Reply-To: <1192298280.6166.21.camel@norville.austin.ibm.com>
-Message-ID: <alpine.LFD.0.999.0710131112380.6887@woody.linux-foundation.org>
-References: <4710FFA3.5080309@oracle.com>
- <1192298280.6166.21.camel@norville.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 13 Oct 2007 15:52:05 -0400
+Date: Sat, 13 Oct 2007 20:56:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE updates (part 2)
+Message-ID: <20071013205618.3ddc91e9@the-village.bc.nu>
+In-Reply-To: <200710131825.24768.bzolnier@gmail.com>
+References: <200710131825.24768.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 13 Oct 2007 18:25:24 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-
-On Sat, 13 Oct 2007, Dave Kleikamp wrote:
 > 
-> commit 6712ecf8f648118c3363c142196418f89a510b90 removed some "return 0;"
-> statements, rather than changing them to null returns.
+> Hi,
+> 
+> highlights of this update:
+> 
+> * Rework of IDE PMAC host driver: bugfixes, removal of the code
+>   duplicated from the IDE core and conversion to use the generic
+>   DMA tuning code path (the rework cuts ide-pmac.c by ~200 LOC).
 
-Not commit 6712ecf8f648118c3363c142196418f89a510b90. It was the later 
-e30408b2a99cb7b8bf529c7dc2328a19d71894cf commit by Jeff that removed the 
-returns.
+Reading the current driver from the git tree I don't see how the PCI
+driver ever sets the ctl register base. It seems to always be set to zero
+which means you can't issue SRST and reset sequences ?
 
-Tssk, tssk.
-
-		Linus
