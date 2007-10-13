@@ -1,43 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXJMMMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbXJMMTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbXJMMMs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXJMMMj
+	id S1755529AbXJMMTf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJMMTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:12:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48861 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbXJMMMi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:12:38 -0400
-Date: Sat, 13 Oct 2007 12:32:22 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Correct filenames in comments.
-Message-ID: <20071013113222.GB11464@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20071013004332.GA18760@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071013004332.GA18760@redhat.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 13 Oct 2007 08:19:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53708 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750913AbXJMMTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 08:19:24 -0400
+Message-ID: <4710B7C5.5050403@garzik.org>
+Date: Sat, 13 Oct 2007 08:19:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>,
+       Peer Chen <pchen@nvidia.com>
+Subject: Re: 2.6.23-mm1
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>	 <20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>	 <20071011234202.2f15bb76.akpm@linux-foundation.org>	 <64bb37e0710120131y6b939951y74c50bd596b1d938@mail.gmail.com>	 <20071012013729.ada2127b.akpm@linux-foundation.org>	 <64bb37e0710130101y7fb8e4c0lf214fd821e8305ed@mail.gmail.com>	 <4710A407.3070000@garzik.org> <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
+In-Reply-To: <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 08:43:32PM -0400, Dave Jones wrote:
-> I never really understood the motivation behind putting the filename
-> in a comment, but this fixes up a bunch of them that are now wrong
-> post-merge.
+Torsten Kaiser wrote:
+> On 10/13/07, Jeff Garzik <jeff@garzik.org> wrote:
+>> Torsten Kaiser wrote:
+>>> On 10/12/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>>> On Fri, 12 Oct 2007 10:31:42 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+>>>>> Oct 12 10:23:03 treogen smartd[6091]: Device: /dev/sdc, not found in
+>>>>> smartd database.
+>>>> hm.
+>>>>
+>>>>> Oct 12 10:23:03 treogen [  105.990000] WARNING: at
+>>>>> drivers/ata/libata-core.c:5752 ata_qc_issue()
+>>>> Let's cc linux-ide.
+>>>>
+>>>>> Oct 12 10:23:03 treogen [  105.990000]
+>>>>> Oct 12 10:23:03 treogen [  105.990000] Call Trace:
+>>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff804442ef>]
+>>>>> ata_qc_issue+0x47f/0x540
+>>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff80432e60>] scsi_done+0x0/0x20
+>>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff80449c80>]
+>>>>> ata_scsi_flush_xlat+0x0/0x30
+>>> Oct 13 07:46:48 treogen [   99.850000]
+>>> Oct 13 07:46:48 treogen [   99.850000] ata3: EH in SWNCQ
+>>> mode,QC:qc_active 0x3 sactive 0x1
+>>> Oct 13 07:46:48 treogen [   99.850000] ata3: SWNCQ:qc_active 0x1
+>>> defer_bits 0x0 last_issue_tag 0x0
+>> The WARNING indicates that there is a SWNCQ bug in sata_nv.  Given that
+>> the problem appears when SYNCHRONIZE CACHE is being issued, I would
+> 
+> I can't follow you on SYNCHRONIZE CACHE.
+> The only command written to the syslog in the errors where
+> 0x60==ATA_CMD_FPDMA_READ and 0xB0 (which is not in
+> include/linux/ata.h, but ATA-6 says that this is SMART related. That
+> makes sense, as smartd is failing).
 
-Please just remove all these useless filename comments.
+In the traceback you have "ata_scsi_flush_xlat", which is the function 
+that translates a SCSI sync-cache command into an ATA flush-cache command.
+
+The "WARNING: at drivers/ata/libata-core.c:5752 ata_qc_issue()" also 
+guides us to the code comment
+
+         /* Make sure only one non-NCQ command is outstanding.  The
+          * check is skipped for old EH because it reuses active qc to
+          * request ATAPI sense.
+          */
+
+which is a check related to NCQ->off and off->NCQ edge cases.
+
+So those are the two bits of information I found interesting.
+
+
+>> guess that sata_nv is not properly handling non-queued commands.
+> 
+> But that still seems correct, as I would not expect that SMART
+> commands get queued. (Thats just a guess, as I did not try to find the
+> code that does this distinction)
+> 
+>> This is a patch from libata-dev.git#nv-swncq (via #ALL).
+> 
+> Comparing sata_nv.c from 2.6.23-rc8-mm1 and 2.6.23-mm1 I see two
+> changes, that look suspicious:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/jgarzik/libata-dev.git;a=commitdiff;h=31cc23b34913bc173680bdc87af79e551bf8cc0d
+> 
+> The comment says: "ahci and sata_sil24 are converted to use ata_std_qc_defer()."
+> But the patch also adds ".qc_defer = ata_std_qc_defer," to sata_nv.c
+> 
+> The second change is the removal of the 'lock' spinlock from sata_nv.c
+> that was used in nv_swncq_qc_issue and nv_swncq_host_interrupt.
+> 
+> Should I try to revert one or both of these changes?
+
+If you are git-capable, IMO the next steps in problem elimination should be
+
+* download latest linux-2.6.git (currently 
+752097cec53eea111d087c545179b421e2bde98a)
+* build and test linux-2.6.git, to establish a new baseline
+* download latest libata-dev.git#nv-swncq (currently 
+3cb664c2d319a4fde5028c3c5dab6221fe70bd2d)
+* build and test, with sata_nv module option swncq=0
+* build and test, with sata_nv module option swncq=1
+
+That will get -mm out of the picture, use the same baseline kernel for 
+all three tests (nv-swncq is based off of 
+752097cec53eea111d087c545179b421e2bde98a) and narrow things down to the 
+precise changes that went upstream (or are on the 'nv-swncq' branch, 
+waiting to go upstream).
+
+My gut feeling is that there is a lingering bug in sata_nv SWNCQ somewhere.
+
+	Jeff
+
+
 
