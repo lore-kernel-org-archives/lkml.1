@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXJMDea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbXJMDhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbXJMDea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 23:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbXJMDeW
+	id S1760630AbXJMDhN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 23:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbXJMDhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 23:34:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40627 "HELO mail.gmx.net"
+	Fri, 12 Oct 2007 23:37:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56213 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755335AbXJMDeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 23:34:21 -0400
+	id S1752527AbXJMDhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 23:37:00 -0400
 X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19njdkAFmxn+V1vPaxBeb+YPp+PXH7GElGvtZ8ebc
-	Yck3TCsFPFXK1L
-Subject: Re: 2.6.23.git build error
+X-Provags-ID: V01U2FsdGVkX19/h3UjgaB/x3Dwv6wKZfSRR+LAe1drQXkobwSzLv
+	42RKhNOIXt4vqn
+Subject: Re: kernel NULL pointer dereference in check_spread+0x0/0x26
 From: Mike Galbraith <efault@gmx.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071012213114.GA24016@uranus.ravnborg.org>
-References: <1192164538.10413.3.camel@Homer.simpson.net>
-	 <20071012213114.GA24016@uranus.ravnborg.org>
+To: Jan Blunck <jblunck@suse.de>
+Cc: mingo@redhat.com, Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20071012124054.GD8471@hasse.suse.de>
+References: <20071012124054.GD8471@hasse.suse.de>
 Content-Type: text/plain
-Date: Sat, 13 Oct 2007 05:34:17 +0200
-Message-Id: <1192246457.7395.19.camel@Homer.simpson.net>
+Date: Sat, 13 Oct 2007 05:36:56 +0200
+Message-Id: <1192246616.7395.21.camel@Homer.simpson.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
@@ -29,27 +29,22 @@ X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-12 at 23:31 +0200, Sam Ravnborg wrote:
-> On Fri, Oct 12, 2007 at 06:48:58AM +0200, Mike Galbraith wrote:
-> > Greetings,
-> > 
-> > Freshly pulled 2.6.23.git failed to build:
-> > 
-> > make[1]: *** No rule to make target `arch/x86/kernel/asm-offsets.c', needed by `arch/x86/kernel/asm-offsets.s'.  Stop.
-> > make: *** [prepare0] Error 2
-> > make: *** Waiting for unfinished jobs....
+On Fri, 2007-10-12 at 14:40 +0200, Jan Blunck wrote:
+> This is with 2.6.23-mm1 and allmodconfig.
 > 
-> You are the only reporter of this bug.
-> I do not see it here and I have the asm-offset.c file.
+> Seems that se in the following is a NULL pointer.
+> 
+> 453     static void check_spread(struct cfs_rq *cfs_rq, struct
+> sched_entity *se)
+> 454     {
+> 455     #ifdef CONFIG_SCHED_DEBUG
+> 456             s64 d = se->vruntime - cfs_rq->min_vruntime;
+> 457
+> 458             if (d < 0)
+> 459                     d = -d;
 
-Yeah, I noticed nobody else was griping.
-
-> Have you figured out more about this bug?
-> For now I assume you did something bad when you updated your kernel tree.
-> Could  you as minimum check the content of the arch/x86/kernel/ directory.
-
-I just re-pulled, and the little bugger showed up.  Elves and Gremlins
-at play I guess.
+I hit this once yesterday (in sched-devel), and again first boot this
+morning.
 
 	-Mike
 
