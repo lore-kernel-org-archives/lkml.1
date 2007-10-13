@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932450AbXJMOz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbXJMOz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932450AbXJMOz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 10:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762064AbXJMOm5
+	id S1763478AbXJMOz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762073AbXJMOm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 10:42:57 -0400
-Received: from 1wt.eu ([62.212.114.60]:3034 "EHLO 1wt.eu"
+	Sat, 13 Oct 2007 10:42:59 -0400
+Received: from 1wt.eu ([62.212.114.60]:3038 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762053AbXJMOm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 10:42:56 -0400
+	id S1761519AbXJMOm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 10:42:57 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20071013143510.%N@1wt.eu>
+Message-Id: <20071013143513.%N@1wt.eu>
 References: <20071013142822.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 17:28:52 +0200
+Date: Sat, 13 Oct 2007 17:28:56 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Willy Tarreau <w@1wt.eu>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.21 review 30/35] fix realtek phy id in forcedeth
-Content-Disposition: inline; filename=0087-fix-realtek-phy-id-in-forcedeth.patch
+Subject: [2.6.20.21 review 34/35] Fix datagram recvmsg NULL iov handling regression.
+Content-Disposition: inline; filename=0100-Fix-datagram-recvmsg-NULL-iov-handling-regression.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit ba685fb2abd71162bea6895a99449c1071b01402 in mainline.
+commit ef8aef55ce61fd0e2af798695f7386ac756ae1e7 in mainline
 
-As noticed by Chuck Ebbert, commit c5e3ae8823693b260ce1f217adca8add1bc0b3de
-introduced a copy-paste typo, as realtek phy is 0x732 and not 0x1c1. Obvious
-fix below suggested by Ayaz Abdulla.
+Subject: [2.6.20.21 review 34/35] [PATCH] [NET]: Do not dereference iov if length is zero
 
-Signed-off-by: Willy Tarreau <w@1wt.eu>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+When msg_iovlen is zero we shouldn't try to dereference
+msg_iov.  Right now the only thing that tries to do so
+is skb_copy_and_csum_datagram_iovec.  Since the total
+length should also be zero if msg_iovlen is zero, it's
+sufficient to check the total length there and simply
+return if it's zero.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/forcedeth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ net/core/datagram.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Index: 2.6/drivers/net/forcedeth.c
+Index: 2.6/net/core/datagram.c
 ===================================================================
---- 2.6.orig/drivers/net/forcedeth.c
-+++ 2.6/drivers/net/forcedeth.c
-@@ -554,6 +554,7 @@ union ring_type {
- #define PHY_OUI_MARVELL	0x5043
- #define PHY_OUI_CICADA	0x03f1
- #define PHY_OUI_VITESSE	0x01c1
-+#define PHY_OUI_REALTEK	0x0732
- #define PHYID1_OUI_MASK	0x03ff
- #define PHYID1_OUI_SHFT	6
- #define PHYID2_OUI_MASK	0xfc00
+--- 2.6.orig/net/core/datagram.c
++++ 2.6/net/core/datagram.c
+@@ -444,6 +444,9 @@ int skb_copy_and_csum_datagram_iovec(str
+ 	__wsum csum;
+ 	int chunk = skb->len - hlen;
+ 
++	if (!chunk)
++		return 0;
++
+ 	/* Skip filled elements.
+ 	 * Pretty silly, look at memcpy_toiovec, though 8)
+ 	 */
 
 -- 
