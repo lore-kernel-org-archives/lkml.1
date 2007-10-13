@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXJMILL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXJMIQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbXJMILL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 04:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXJMIKx
+	id S1760716AbXJMIQf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 04:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXJMIQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 04:10:53 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:44763 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756687AbXJMIKv (ORCPT
+	Sat, 13 Oct 2007 04:16:21 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49182 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbXJMIQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 04:10:51 -0400
-Message-ID: <47107D7B.7020200@cosmosbay.com>
-Date: Sat, 13 Oct 2007 10:10:35 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 13 Oct 2007 04:16:20 -0400
+Message-ID: <47107ED2.6040509@s5r6.in-berlin.de>
+Date: Sat, 13 Oct 2007 10:16:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Subject: Re: How to find slab\'s usage?
-References: <200710120701.l9C71Jx6038998@www262.sakura.ne.jp>	<84144f020710130043v4f8e4cfbm178c88478d4b053d@mail.gmail.com> <200710131702.FHD09857.VSQOLFtFOJHMFO@I-love.SAKURA.ne.jp>
-In-Reply-To: <200710131702.FHD09857.VSQOLFtFOJHMFO@I-love.SAKURA.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 13 Oct 2007 10:10:45 +0200 (CEST)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa a écrit :
-> Hello.
+Jan Engelhardt wrote:
+> On Oct 12 2007 15:57, Randy Dunlap wrote:
+>>On Fri, 12 Oct 2007 23:44:08 +0200 (CEST) Jan Engelhardt wrote:
+>>
+>>> warning("override: %s turns state choice", sym->name);
+>>
+>>What does that warning message mean?  I can't decipher it.
 > 
-> Pekka Enberg wrote:
->>> I saw /proc/meminfo and it seems to me that slab is leaking memory.
->>> But /usr/bin/slabtop claims /proc/slabinfo is missing.
->> Do you have CONFIG_SLUB enabled? Try looking into /sys/slab/.
+> It is when the value of a "choice" kconfig object is changed, for example
+> this .config excerpt:
 > 
-> Yes. There is /sys/slab/ .
-> But are there any tools for browsing like /usr/bin/slabtop ?
-> Is
->   cd /sys/slab/; for i in *; do echo -n $i " "; cat $i/slabs; done
-> the only way currently available?
+> CONFIG_PREEMPT_NONE=y
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> # CONFIG_PREEMPT is not set
+> # CONFIG_PREEMPT_BKL is not set
+> # CONFIG_PREEMPT_NONE is not set
+> CONFIG_REEMPT_VOLUNTARY=y
 
-Grab kernel sources, you'll find inside : Documentation/vm/slabinfo.c
+Perhaps say
 
-gcc -o slabinfo Documentation/vm/slabinfo.c
+	warning("override: switching to choice %s", sym->name);
 
+if sym->name is [CONFIG_]PREEMPT_VOLUNTARY.  Or what is it?
+-- 
+Stefan Richter
+-=====-=-=== =-=- -==-=
+http://arcgraph.de/sr/
