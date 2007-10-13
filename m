@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbXJMRuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXJMRwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761459AbXJMRuX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbXJMRuK
+	id S1761674AbXJMRwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXJMRwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:50:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57657 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753714AbXJMRuH (ORCPT
+	Sat, 13 Oct 2007 13:52:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47137 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754258AbXJMRwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:50:07 -0400
-Date: Sat, 13 Oct 2007 19:50:36 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
-	bidirectional flows.
-Message-ID: <20071013175036.GD4211@stusta.de>
-References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu> <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi> <20071013172214.GA18155@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071013172214.GA18155@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 13 Oct 2007 13:52:00 -0400
+Date: Sat, 13 Oct 2007 10:49:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, viro@ftp.linux.org.uk,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, netdev@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.23-mm1 thread exit_group issue
+Message-Id: <20071013104943.e4a54abe.akpm@linux-foundation.org>
+In-Reply-To: <20071013120230.GA130@tv-sign.ru>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071011234202.2f15bb76.akpm@linux-foundation.org>
+	<20071012064658.GA8181@ftp.linux.org.uk>
+	<20071012001325.ba02a6f0.akpm@linux-foundation.org>
+	<20071012194759.GA31733@Krystal>
+	<20071012180349.b4b4c2c3.akpm@linux-foundation.org>
+	<20071013114820.GA121@tv-sign.ru>
+	<20071013120230.GA130@tv-sign.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 07:22:14PM +0200, Willy Tarreau wrote:
->...
-> Thanks for your help, I really appreciate it. In fact, I've reviewed them
-> four, but two of them did not apply and the code looked somewhat different,
-> so I considered them irrelevant to 2.6.20. I didn't understand that they
-> were all related, so maybe I checked them in a wrong order.
+On Sat, 13 Oct 2007 16:02:30 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> On 10/13, Oleg Nesterov wrote:
+> >
+> > On 10/12, Andrew Morton wrote:
+> > >
+> > > Bisection shows that this problem is caused by these two patches:
+> > >
+> > > pid-namespaces-allow-cloning-of-new-namespace.patch
+> > 
+> > This? http://marc.info/?l=linux-mm-commits&m=118712242002039
+> > 
+> > Pavel, this patch has a subtle difference compared to what we discussed on
+> > containers list. It moves put_user(parent_tidptr) from copy_process() to
+> > do_fork(), so we don't report child's pid if copy_process() failed. I do
+> > not think this is bad, but Eric seems to disagree with such a change.
+> > 
+> > But I can't understand why Andrew sees the same problem _after_ this patch!
+> >
+> > And which patch removed the "put_user(nr, parent_tidptr)" chunk?
 > 
-> I'll recheck all that in the right sequence and will merge them four, or
-> get back to you if something still puzzles me.
+> Aha. I am looking at
+> 	ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/pid-namespaces-allow-cloning-of-new-namespace.patch
+> 
+> Looks like the original patch was damaged somehow, it doesn't have the
+> "put_user(nr, parent_tidptr)" code.
+> 
 
-I discussed this issue with Ilpo just yesterday regarding 2.6.16, and 
-the result of our discussion was that I reverted it.
-
-TCP being in some situations a bit more conservative than it should be 
-isn't a big issue and not worth backporting with a risk of introducing
-a regression.
-
-I'd recommend you simply drop the two patches for 2.6.20.
-
-> Thanks!
-> Willy
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+It does have it, except it moved somewhere else.  That would have been me
+trying to fix yet another reject storm.  I thought I had that one right. 
+Could someone fix it please?
 
