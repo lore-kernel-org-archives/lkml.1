@@ -1,137 +1,599 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXJMSf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbXJMSh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbXJMSf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbXJMSfT
+	id S1762789AbXJMSh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759739AbXJMShS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 14:35:19 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:22023 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756649AbXJMSfR (ORCPT
+	Sat, 13 Oct 2007 14:37:18 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39857 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbXJMShQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 14:35:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B91TLRdyg1jtpzEpCBQlvkA2WJzRw/f/3Tb4VjBkjqhwCFyxBPJzu+6A6ONoyY5Ar4i8E/YYOusMmEZ8oukQgj2WQhTByWq96ILTv1CKYf+KPUtGIFqX8t9HkMYx/xzK+QAMR7iGuSmewOhd5P0hk1wD2rjgVOJ2p9rLVkcv4i4=
-Message-ID: <64bb37e0710131135s41790cafxd010d9eb04088728@mail.gmail.com>
-Date: Sat, 13 Oct 2007 20:35:16 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071013111853.7e67c6c3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	 <4710A407.3070000@garzik.org>
-	 <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
-	 <4710B7C5.5050403@garzik.org>
-	 <64bb37e0710130732p303547e3n54cfa9dac34c53b5@mail.gmail.com>
-	 <64bb37e0710130740u78613f83wbd4f43d073bbe13d@mail.gmail.com>
-	 <64bb37e0710130813le68c48dve36f8473b197b84b@mail.gmail.com>
-	 <47110500.8050503@garzik.org>
-	 <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>
-	 <20071013111853.7e67c6c3.akpm@linux-foundation.org>
+	Sat, 13 Oct 2007 14:37:16 -0400
+Date: Sat, 13 Oct 2007 14:35:12 -0400
+Message-Id: <200710131835.l9DIZCYp030867@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: "Mike D. Day" <ncmike@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Erez Zadok <ezk@cs.sunysb.edu>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] checkpatch: Fix line number reporting 
+In-reply-to: Your message of "Fri, 12 Oct 2007 20:37:51 BST."
+             <20071012193751.GA31579@shadowen.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sat, 13 Oct 2007 20:05:19 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
->
-> > The only thing I noted during load testing (updating Gentoo ==
-> > compiling and installing) was, that there seems to be memory leak.
-> > After ~2h 2.5 of my 4Gb where gone. But there where to many things
-> > going on to pinpoint it... (NFSv4 over eth1394?)
->
-> Please send /proc/meminfo and /proc/slabinfo after the leak has been
-> happening for a while.
->
-> Sometimes `echo m > /proc/sysrq_trigger ; dmesg -s 1000000' will
-> provide useful info.
+In message <20071012193751.GA31579@shadowen.org>, Andy Whitcroft writes:
+> On Fri, Oct 12, 2007 at 03:26:54PM -0400, Mike D. Day wrote:
+> > Fix line number reporting when checking source files (as opposed to
+> > patches)
+> > 
+> > Signed-off-by: Mike D. Day <ncmike@us.ibm.com>
+> 
+> Sorry you've had to fix this about 4 times, mostly because of ongoing
+> changes, and slow replication getting in the way.  I've applied this
+> and you should find it in -next when replication hits.  md5sum is
+> below of the version with it in, so you can make sure you've got
+> the right one.
+> 
+> 54f053c50265e44a6041e3147dc66a69  checkpatch.pl
+> 
+> -apw
 
-I don't have the meminfo or slabinfo, only the output from SysRq+M:
+Andy, I've tested the --emacs feature in the above latest
+checkpatch.pl-next.  Below is a patch that completes the functionality of
+the --emacs option: it ensures that only the cc-style error messages are
+printed, no extra context lines or caret lines, no extra newlines, etc.
+Although this patch changes every call to a message-producing function, it
+is a trivial change, and I believe it's the cleanest way to handle the
+separation between the terse cc-style messages and the verbose default
+messages.  With this patch, I can finally test a single source file as
+follows:
 
-SysRq : Show Memory
-Mem-info:
-Node 0 DMA per-cpu:
-CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-Node 0 DMA32 per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd: 173   Cold: hi:   62, btch:  15 usd:  29
-CPU    1: Hot: hi:  186, btch:  31 usd:  69   Cold: hi:   62, btch:  15 usd:   4
-CPU    2: Hot: hi:  186, btch:  31 usd:  82   Cold: hi:   62, btch:  15 usd:  13
-CPU    3: Hot: hi:  186, btch:  31 usd:  71   Cold: hi:   62, btch:  15 usd:   3
-Node 1 DMA32 per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd: 171   Cold: hi:   62, btch:  15 usd:   0
-CPU    1: Hot: hi:  186, btch:  31 usd:  57   Cold: hi:   62, btch:  15 usd:   0
-CPU    2: Hot: hi:  186, btch:  31 usd: 171   Cold: hi:   62, btch:  15 usd:   6
-CPU    3: Hot: hi:  186, btch:  31 usd: 158   Cold: hi:   62, btch:  15 usd:   7
-Node 1 Normal per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd:   0   Cold: hi:   62, btch:  15 usd:   0
-CPU    1: Hot: hi:  186, btch:  31 usd:   0   Cold: hi:   62, btch:  15 usd:   0
-CPU    2: Hot: hi:  186, btch:  31 usd: 170   Cold: hi:   62, btch:  15 usd:  13
-CPU    3: Hot: hi:  186, btch:  31 usd: 172   Cold: hi:   62, btch:  15 usd:  19
-Active:236368 inactive:63289 dirty:365 writeback:0 unstable:0
- free:28366 slab:43372 mapped:13718 pagetables:2356 bounce:0
-Node 0 DMA free:8048kB min:16kB low:20kB high:24kB active:0kB
-inactive:0kB present:8876kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 2004 2004 2004
-Node 0 DMA32 free:98364kB min:4040kB low:5048kB high:6060kB
-active:527764kB inactive:107636kB present:2052320kB pages_scanned:0
-all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-Node 1 DMA32 free:5824kB min:3040kB low:3800kB high:4560kB
-active:223216kB inactive:135068kB present:1544000kB pages_scanned:0
-all_unreclaimable? no
-lowmem_reserve[]: 0 0 505 505
-Node 1 Normal free:1228kB min:1016kB low:1268kB high:1524kB
-active:194492kB inactive:10452kB present:517120kB pages_scanned:0
-all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-Node 0 DMA: 6*4kB 7*8kB 4*16kB 5*32kB 3*64kB 3*128kB 4*256kB 2*512kB
-1*1024kB 2*2048kB 0*4096kB = 8048kB
-Node 0 DMA32: 10629*4kB 4229*8kB 1240*16kB 4*32kB 0*64kB 0*128kB
-0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB = 98364kB
-Node 1 DMA32: 442*4kB 5*8kB 3*16kB 2*32kB 1*64kB 0*128kB 1*256kB
-1*512kB 1*1024kB 1*2048kB 0*4096kB = 5824kB
-Node 1 Normal: 182*4kB 17*8kB 9*16kB 1*32kB 3*64kB 0*128kB 0*256kB
-0*512kB 0*1024kB 0*2048kB 0*4096kB = 1232kB
-Swap cache: add 64, delete 64, find 35/40, race 0+0
-Free swap  = 9775416kB
-Total swap = 9775416kB
-Free swap:       9775416kB
-1048576 pages of RAM
-35172 reserved pages
-106120 pages shared
-0 pages swap cached
+$ ./scripts/checkpatch.pl -q -q --emacs --file path/name/to/file
 
-When I noticed the leak, I stopped the emerge (the Gentoo update aka
-the compiling tasks) and cleared the tmpfs that was used for it. I
-also stopped X.
-~1Gb was used as pagecache, slubinfo showed around 200..300 Mb used
-for slab, but only ~350Mb free out of 4Gb.
-I did not see any tasks with abnormal memory sizes.
+(Yes, I need two -q).
 
-> The page-owner code can pinpoint a leak source.  See
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/page-owner-tracking-leak-detector.patch
->
-> Enable CONFIG_DEBUG_SLAB_LEAK, check out /proc/slab_allocators
->
+Cheers,
+Erez.
 
-I suspected that I need more debugging options to track this.
-Currently compiling more packages again, but no obvious leak.
-When the leak occurred I noticed the disk throughput falling /
-stalling several second and this appeared in the syslog:
-ohci1394: fw-host0: Waking dma ctx=0 ... processing is probably too slow
-ohci1394: fw-host0: Waking dma ctx=0 ... processing is probably too slow
 
-I'm still using the old firewire stack because of eth1394.
-
-I will mail again, when I have more info.
-
-Torsten
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 13de0e2..051b354 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -511,18 +511,21 @@ sub report_dump {
+ 	@report;
+ }
+ sub ERROR {
+-	report("ERROR: $_[0]\n");
++	report("ERROR: $_[0]");
++	report("$_[1]\n") if (!$emacs);
+ 	our $clean = 0;
+ 	our $cnt_error++;
+ }
+ sub WARN {
+-	report("WARNING: $_[0]\n");
++	report("WARNING: $_[0]");
++	report("$_[1]\n") if (!$emacs);
+ 	our $clean = 0;
+ 	our $cnt_warn++;
+ }
+ sub CHK {
+ 	if ($check) {
+-		report("CHECK: $_[0]\n");
++		report("CHECK: $_[0]");
++		report("$_[1]\n") if (!$emacs);
+ 		our $clean = 0;
+ 		our $cnt_chk++;
+ 	}
+@@ -663,18 +666,18 @@ sub process {
+ 			# This is a signoff, if ugly, so do not double report.
+ 			$signoff++;
+ 			if (!($line =~ /^\s*Signed-off-by:/)) {
+-				WARN("Signed-off-by: is the preferred form\n" .
++				WARN("Signed-off-by: is the preferred form\n",
+ 					$herecurr);
+ 			}
+ 			if ($line =~ /^\s*signed-off-by:\S/i) {
+-				WARN("need space after Signed-off-by:\n" .
++				WARN("need space after Signed-off-by:\n",
+ 					$herecurr);
+ 			}
+ 		}
+ 
+ # Check for wrappage within a valid hunk of the file
+ 		if ($realcnt != 0 && $line !~ m{^(?:\+|-| |$)}) {
+-			ERROR("patch seems to be corrupt (line wrapped?)\n" .
++			ERROR("patch seems to be corrupt (line wrapped?)\n",
+ 				$herecurr) if (!$emitted_corrupt++);
+ 		}
+ 
+@@ -690,7 +693,7 @@ sub process {
+ 				| [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
+ 				|  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
+ 				)*$/x )) {
+-			ERROR("Invalid UTF-8\n" . $herecurr);
++			ERROR("Invalid UTF-8\n", $herecurr);
+ 		}
+ 
+ #ignore lines being removed
+@@ -702,15 +705,15 @@ sub process {
+ #trailing whitespace
+ 		if ($line =~ /^\+.*\015/) {
+ 			my $herevet = "$here\n" . cat_vet($line) . "\n";
+-			ERROR("DOS line endings\n" . $herevet);
++			ERROR("DOS line endings\n", $herevet);
+ 
+ 		} elsif ($line =~ /^\+.*\S\s+$/ || $line =~ /^\+\s+$/) {
+ 			my $herevet = "$here\n" . cat_vet($line) . "\n";
+-			ERROR("trailing whitespace\n" . $herevet);
++			ERROR("trailing whitespace\n", $herevet);
+ 		}
+ #80 column limit
+ 		if ($line =~ /^\+/ && !($prevline=~/\/\*\*/) && $length > 80) {
+-			WARN("line over 80 characters\n" . $herecurr);
++			WARN("line over 80 characters\n", $herecurr);
+ 		}
+ 
+ # check we are in a valid source file *.[hc] if not then ignore this hunk
+@@ -720,7 +723,7 @@ sub process {
+ # more than 8 must use tabs.
+ 		if ($line=~/^\+\s* \t\s*\S/ or $line=~/^\+\s*        \s*/) {
+ 			my $herevet = "$here\n" . cat_vet($line) . "\n";
+-			ERROR("use tabs not spaces\n" . $herevet);
++			ERROR("use tabs not spaces\n", $herevet);
+ 		}
+ 
+ # Remove comments from the line before processing.
+@@ -786,7 +789,7 @@ sub process {
+ 				}
+ 			}
+ 			if ($err ne '') {
+-				ERROR("switch and case should be at the same indent\n$hereline$err");
++				ERROR("switch and case should be at the same indent\n", "$hereline$err");
+ 			}
+ 		}
+ 
+@@ -806,13 +809,13 @@ sub process {
+ 			##warn "line<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>";
+ 
+ 			if ($ctx !~ /{\s*/ && $ctx_cnt > 0 && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
+-				ERROR("That open brace { should be on the previous line\n" .
++				ERROR("That open brace { should be on the previous line\n",
+ 					"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 			}
+ 			if ($level == 0 && $ctx =~ /\)\s*\;\s*$/ && defined $lines[$ctx_ln - 1]) {
+ 				my ($nlength, $nindent) = line_stats($lines[$ctx_ln - 1]);
+ 				if ($nindent > $indent) {
+-					WARN("Trailing semicolon indicates no statements, indent implies otherwise\n" .
++					WARN("Trailing semicolon indicates no statements, indent implies otherwise\n",
+ 						"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 				}
+ 			}
+@@ -823,14 +826,14 @@ sub process {
+ 
+ # TEST: allow direct testing of the type matcher.
+ 		if ($tst_type && $line =~ /^.$Declare$/) {
+-			ERROR("TEST: is type $Declare\n" . $herecurr);
++			ERROR("TEST: is type $Declare\n", $herecurr);
+ 			next;
+ 		}
+ 
+ # check for initialisation to aggregates open brace on the next line
+ 		if ($prevline =~ /$Declare\s*$Ident\s*=\s*$/ &&
+ 		    $line =~ /^.\s*{/) {
+-			ERROR("That open brace { should be on the previous line\n" . $hereprev);
++			ERROR("That open brace { should be on the previous line\n", $hereprev);
+ 		}
+ 
+ #
+@@ -841,7 +844,7 @@ sub process {
+ 		if ($rawline =~ m{^.#\s*include\s+[<"](.*)[">]}) {
+ 			my $path = $1;
+ 			if ($path =~ m{//}) {
+-				ERROR("malformed #include filename\n" .
++				ERROR("malformed #include filename\n",
+ 					$herecurr);
+ 			}
+ 			# Sanitise this special form of string.
+@@ -851,7 +854,7 @@ sub process {
+ 
+ # no C99 // comments
+ 		if ($line =~ m{//}) {
+-			ERROR("do not use C99 // comments\n" . $herecurr);
++			ERROR("do not use C99 // comments\n", $herecurr);
+ 		}
+ 		# Remove C99 comments.
+ 		$line =~ s@//.*@@;
+@@ -864,18 +867,18 @@ sub process {
+ 			   ($prevline !~ /^\+}/) &&
+ 			   ($prevline !~ /^ }/) &&
+ 			   ($prevline !~ /\b\Q$name\E(?:\s+$Attribute)?\s*(?:;|=)/)) {
+-				WARN("EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
++				WARN("EXPORT_SYMBOL(foo); should immediately follow its function/variable\n", $herecurr);
+ 			}
+ 		}
+ 
+ # check for external initialisers.
+ 		if ($line =~ /^.$Type\s*$Ident\s*=\s*(0|NULL);/) {
+-			ERROR("do not initialise externals to 0 or NULL\n" .
++			ERROR("do not initialise externals to 0 or NULL\n",
+ 				$herecurr);
+ 		}
+ # check for static initialisers.
+ 		if ($line =~ /\s*static\s.*=\s*(0|NULL);/) {
+-			ERROR("do not initialise statics to 0 or NULL\n" .
++			ERROR("do not initialise statics to 0 or NULL\n",
+ 				$herecurr);
+ 		}
+ 
+@@ -884,24 +887,24 @@ sub process {
+ 		if ($line =~ /\btypedef\s/ &&
+ 		    $line !~ /\btypedef\s+$Type\s+\(\s*\*?$Ident\s*\)\s*\(/ &&
+ 		    $line !~ /\b__bitwise(?:__|)\b/) {
+-			WARN("do not add new typedefs\n" . $herecurr);
++			WARN("do not add new typedefs\n", $herecurr);
+ 		}
+ 
+ # * goes on variable not on type
+ 		if ($line =~ m{\($NonptrType(\*+)(?:\s+const)?\)}) {
+-			ERROR("\"(foo$1)\" should be \"(foo $1)\"\n" .
++			ERROR("\"(foo$1)\" should be \"(foo $1)\"\n",
+ 				$herecurr);
+ 
+ 		} elsif ($line =~ m{\($NonptrType\s+(\*+)(?!\s+const)\s+\)}) {
+-			ERROR("\"(foo $1 )\" should be \"(foo $1)\"\n" .
++			ERROR("\"(foo $1 )\" should be \"(foo $1)\"\n",
+ 				$herecurr);
+ 
+ 		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+(?:$Attribute|$Sparse))?\s+[A-Za-z\d_]+}) {
+-			ERROR("\"foo$1 bar\" should be \"foo $1bar\"\n" .
++			ERROR("\"foo$1 bar\" should be \"foo $1bar\"\n",
+ 				$herecurr);
+ 
+ 		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+(?:$Attribute|$Sparse))\s+[A-Za-z\d_]+}) {
+-			ERROR("\"foo $1 bar\" should be \"foo $1bar\"\n" .
++			ERROR("\"foo $1 bar\" should be \"foo $1bar\"\n",
+ 				$herecurr);
+ 		}
+ 
+@@ -931,7 +934,7 @@ sub process {
+ 				}
+ 			}
+ 			if ($ok == 0) {
+-				WARN("printk() should include KERN_ facility level\n" . $herecurr);
++				WARN("printk() should include KERN_ facility level\n", $herecurr);
+ 			}
+ 		}
+ 
+@@ -939,14 +942,14 @@ sub process {
+ # or if closed on same line
+ 		if (($line=~/$Type\s*[A-Za-z\d_]+\(.*\).* {/) and
+ 		    !($line=~/\#define.*do\s{/) and !($line=~/}/)) {
+-			ERROR("open brace '{' following function declarations go on the next line\n" . $herecurr);
++			ERROR("open brace '{' following function declarations go on the next line\n", $herecurr);
+ 		}
+ 
+ # check for spaces between functions and their parentheses.
+ 		while ($line =~ /($Ident)\s+\(/g) {
+ 			if ($1 !~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case)$/ &&
+ 		            $line !~ /$Type\s+\(/ && $line !~ /^.\#\s*define\b/) {
+-				WARN("no space between function name and open parenthesis '('\n" . $herecurr);
++				WARN("no space between function name and open parenthesis '('\n", $herecurr);
+ 			}
+ 		}
+ # Check operator spacing.
+@@ -1030,7 +1033,7 @@ sub process {
+ 				if ($op eq ';') {
+ 					if ($ctx !~ /.x[WEB]/ && $cc !~ /^\\/ &&
+ 					    $cc !~ /^;/) {
+-						ERROR("need space after that '$op' $at\n" . $hereptr);
++						ERROR("need space after that '$op' $at\n", $hereptr);
+ 					}
+ 
+ 				# // is a comment
+@@ -1039,13 +1042,13 @@ sub process {
+ 				# -> should have no spaces
+ 				} elsif ($op eq '->') {
+ 					if ($ctx =~ /Wx.|.xW/) {
+-						ERROR("no spaces around that '$op' $at\n" . $hereptr);
++						ERROR("no spaces around that '$op' $at\n", $hereptr);
+ 					}
+ 
+ 				# , must have a space on the right.
+ 				} elsif ($op eq ',') {
+ 					if ($ctx !~ /.xW|.xE/ && $cc !~ /^}/) {
+-						ERROR("need space after that '$op' $at\n" . $hereptr);
++						ERROR("need space after that '$op' $at\n", $hereptr);
+ 					}
+ 
+ 				# '*' as part of a type definition -- reported already.
+@@ -1058,19 +1061,19 @@ sub process {
+ 				} elsif ($op eq '!' || $op eq '~' ||
+ 				         ($is_unary && ($op eq '*' || $op eq '-' || $op eq '&'))) {
+ 					if ($ctx !~ /[WEB]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+-						ERROR("need space before that '$op' $at\n" . $hereptr);
++						ERROR("need space before that '$op' $at\n", $hereptr);
+ 					}
+ 					if ($ctx =~ /.xW/) {
+-						ERROR("no space after that '$op' $at\n" . $hereptr);
++						ERROR("no space after that '$op' $at\n", $hereptr);
+ 					}
+ 
+ 				# unary ++ and unary -- are allowed no space on one side.
+ 				} elsif ($op eq '++' or $op eq '--') {
+ 					if ($ctx !~ /[WOB]x[^W]/ && $ctx !~ /[^W]x[WOBE]/) {
+-						ERROR("need space one side of that '$op' $at\n" . $hereptr);
++						ERROR("need space one side of that '$op' $at\n", $hereptr);
+ 					}
+ 					if ($ctx =~ /Wx./ && $cc =~ /^;/) {
+-						ERROR("no space before that '$op' $at\n" . $hereptr);
++						ERROR("no space before that '$op' $at\n", $hereptr);
+ 					}
+ 
+ 				# << and >> may either have or not have spaces both sides
+@@ -1080,7 +1083,7 @@ sub process {
+ 					 $op eq '*' or $op eq '/')
+ 				{
+ 					if ($ctx !~ /VxV|WxW|VxE|WxE|VxO/) {
+-						ERROR("need consistent spacing around '$op' $at\n" .
++						ERROR("need consistent spacing around '$op' $at\n",
+ 							$hereptr);
+ 					}
+ 
+@@ -1089,7 +1092,7 @@ sub process {
+ 					# Ignore email addresses <foo@bar>
+ 					if (!($op eq '<' && $cb =~ /$;\S+\@\S+>/) &&
+ 					    !($op eq '>' && $cb =~ /<\S+\@\S+$;/)) {
+-						ERROR("need spaces around that '$op' $at\n" . $hereptr);
++						ERROR("need spaces around that '$op' $at\n", $hereptr);
+ 					}
+ 				}
+ 				$off += length($elements[$n + 1]);
+@@ -1098,7 +1101,7 @@ sub process {
+ 
+ # check for multiple assignments
+ 		if ($line =~ /^.\s*$Lval\s*=\s*$Lval\s*=(?!=)/) {
+-			CHK("multiple assignments should be avoided\n" . $herecurr);
++			CHK("multiple assignments should be avoided\n", $herecurr);
+ 		}
+ 
+ ## # check for multiple declarations, allowing for a function declaration
+@@ -1112,62 +1115,62 @@ sub process {
+ ## 			while ($ln =~ s/\([^\(\)]*\)//g) {
+ ## 			}
+ ## 			if ($ln =~ /,/) {
+-## 				WARN("declaring multiple variables together should be avoided\n" . $herecurr);
++## 				WARN("declaring multiple variables together should be avoided\n", $herecurr);
+ ## 			}
+ ## 		}
+ 
+ #need space before brace following if, while, etc
+ 		if (($line =~ /\(.*\){/ && $line !~ /\($Type\){/) ||
+ 		    $line =~ /do{/) {
+-			ERROR("need a space before the open brace '{'\n" . $herecurr);
++			ERROR("need a space before the open brace '{'\n", $herecurr);
+ 		}
+ 
+ # closing brace should have a space following it when it has anything
+ # on the line
+ 		if ($line =~ /}(?!(?:,|;|\)))\S/) {
+-			ERROR("need a space after that close brace '}'\n" . $herecurr);
++			ERROR("need a space after that close brace '}'\n", $herecurr);
+ 		}
+ 
+ # check spacing on square brackets
+ 		if ($line =~ /\[\s/ && $line !~ /\[\s*$/) {
+-			ERROR("no space after that open square bracket '['\n" . $herecurr);
++			ERROR("no space after that open square bracket '['\n", $herecurr);
+ 		}
+ 		if ($line =~ /\s\]/) {
+-			ERROR("no space before that close square bracket ']'\n" . $herecurr);
++			ERROR("no space before that close square bracket ']'\n", $herecurr);
+ 		}
+ 
+ # check spacing on paretheses
+ 		if ($line =~ /\(\s/ && $line !~ /\(\s*(?:\\)?$/ &&
+ 		    $line !~ /for\s*\(\s+;/) {
+-			ERROR("no space after that open parenthesis '('\n" . $herecurr);
++			ERROR("no space after that open parenthesis '('\n", $herecurr);
+ 		}
+ 		if ($line =~ /\s\)/ && $line !~ /^.\s*\)/ &&
+ 		    $line !~ /for\s*\(.*;\s+\)/) {
+-			ERROR("no space before that close parenthesis ')'\n" . $herecurr);
++			ERROR("no space before that close parenthesis ')'\n", $herecurr);
+ 		}
+ 
+ #goto labels aren't indented, allow a single space however
+ 		if ($line=~/^.\s+[A-Za-z\d_]+:(?![0-9]+)/ and
+ 		   !($line=~/^. [A-Za-z\d_]+:/) and !($line=~/^.\s+default:/)) {
+-			WARN("labels should not be indented\n" . $herecurr);
++			WARN("labels should not be indented\n", $herecurr);
+ 		}
+ 
+ # Need a space before open parenthesis after if, while etc
+ 		if ($line=~/\b(if|while|for|switch)\(/) {
+-			ERROR("need a space before the open parenthesis '('\n" . $herecurr);
++			ERROR("need a space before the open parenthesis '('\n", $herecurr);
+ 		}
+ 
+ # Check for illegal assignment in if conditional.
+ 		if ($line=~/\bif\s*\(.*[^<>!=]=[^=]/) {
+ 			#next if ($line=~/\".*\Q$op\E.*\"/ or $line=~/\'\Q$op\E\'/);
+-			ERROR("do not use assignment in if condition\n" . $herecurr);
++			ERROR("do not use assignment in if condition\n", $herecurr);
+ 		}
+ 
+ 		# Check for }<nl>else {, these must be at the same
+ 		# indent level to be relevant to each other.
+ 		if ($prevline=~/}\s*$/ and $line=~/^.\s*else\s*/ and
+ 						$previndent == $indent) {
+-			ERROR("else should follow close brace '}'\n" . $hereprev);
++			ERROR("else should follow close brace '}'\n", $hereprev);
+ 		}
+ 
+ #studly caps, commented out until figure out how to distinguish between use of existing and adding new
+@@ -1179,14 +1182,14 @@ sub process {
+ 
+ #no spaces allowed after \ in define
+ 		if ($line=~/\#define.*\\\s$/) {
+-			WARN("Whitepspace after \\ makes next lines useless\n" . $herecurr);
++			WARN("Whitepspace after \\ makes next lines useless\n", $herecurr);
+ 		}
+ 
+ #warn if <asm/foo.h> is #included and <linux/foo.h> is available (uses RAW line)
+ 		if ($tree && $rawline =~ m{^.\#\s*include\s*\<asm\/(.*)\.h\>}) {
+ 			my $checkfile = "$root/include/linux/$1.h";
+ 			if (-f $checkfile && $1 ne 'irq.h') {
+-				CHK("Use #include <linux/$1.h> instead of <asm/$1.h>\n" .
++				CHK("Use #include <linux/$1.h> instead of <asm/$1.h>\n",
+ 					$herecurr);
+ 			}
+ 		}
+@@ -1194,7 +1197,7 @@ sub process {
+ # if and else should not have general statements after it
+ 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+ 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
+-			ERROR("trailing statements should be on next line\n" . $herecurr);
++			ERROR("trailing statements should be on next line\n", $herecurr);
+ 		}
+ 
+ # multi-statement macros should be enclosed in a do while loop, grab the
+@@ -1233,9 +1236,9 @@ sub process {
+ 
+ 			if ($ctx =~ /\\$/) {
+ 				if ($ctx =~ /;/) {
+-					ERROR("Macros with multiple statements should be enclosed in a do - while loop\n" . "$here\n$ctx\n");
++					ERROR("Macros with multiple statements should be enclosed in a do - while loop\n", "$here\n$ctx\n");
+ 				} else {
+-					ERROR("Macros with complex values should be enclosed in parenthesis\n" . "$here\n$ctx\n");
++					ERROR("Macros with complex values should be enclosed in parenthesis\n", "$here\n$ctx\n");
+ 				}
+ 			}
+ 		}
+@@ -1277,7 +1280,7 @@ sub process {
+ 				    $before !~ /}/ && $after !~ /{/) {
+ 				    	my $herectx = "$here\n" . join("\n", @control, @block[1 .. $#block]) . "\n";
+ 				    	shift(@block);
+-					WARN("braces {} are not necessary for single statement blocks\n" . $herectx);
++					WARN("braces {} are not necessary for single statement blocks\n", $herectx);
+ 				}
+ 			}
+ 		}
+@@ -1285,31 +1288,31 @@ sub process {
+ # don't include deprecated include files (uses RAW line)
+ 		for my $inc (@dep_includes) {
+ 			if ($rawline =~ m@\#\s*include\s*\<$inc>@) {
+-				ERROR("Don't use <$inc>: see Documentation/feature-removal-schedule.txt\n" . $herecurr);
++				ERROR("Don't use <$inc>: see Documentation/feature-removal-schedule.txt\n", $herecurr);
+ 			}
+ 		}
+ 
+ # don't use deprecated functions
+ 		for my $func (@dep_functions) {
+ 			if ($line =~ /\b$func\b/) {
+-				ERROR("Don't use $func(): see Documentation/feature-removal-schedule.txt\n" . $herecurr);
++				ERROR("Don't use $func(): see Documentation/feature-removal-schedule.txt\n", $herecurr);
+ 			}
+ 		}
+ 
+ # no volatiles please
+ 		my $asm_volatile = qr{\b(__asm__|asm)\s+(__volatile__|volatile)\b};
+ 		if ($line =~ /\bvolatile\b/ && $line !~ /$asm_volatile/) {
+-			WARN("Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n" . $herecurr);
++			WARN("Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n", $herecurr);
+ 		}
+ 
+ # SPIN_LOCK_UNLOCKED & RW_LOCK_UNLOCKED are deprecated
+ 		if ($line =~ /\b(SPIN_LOCK_UNLOCKED|RW_LOCK_UNLOCKED)/) {
+-			ERROR("Use of $1 is deprecated: see Documentation/spinlocks.txt\n" . $herecurr);
++			ERROR("Use of $1 is deprecated: see Documentation/spinlocks.txt\n", $herecurr);
+ 		}
+ 
+ # warn about #if 0
+ 		if ($line =~ /^.#\s*if\s+0\b/) {
+-			CHK("if this code is redundant consider removing it\n" .
++			CHK("if this code is redundant consider removing it\n",
+ 				$herecurr);
+ 		}
+ 
+@@ -1317,7 +1320,7 @@ sub process {
+ 		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
+ 			my $expr = $1;
+ 			if ($line =~ /\bkfree\(\Q$expr\E\);/) {
+-				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
++				WARN("kfree(NULL) is safe this check is probabally not required\n", $hereprev);
+ 			}
+ 		}
+ 
+@@ -1330,37 +1333,37 @@ sub process {
+ 
+ # warn about spacing in #ifdefs
+ 		if ($line =~ /^.#\s*(ifdef|ifndef|elif)\s\s+/) {
+-			ERROR("exactly one space required after that #$1\n" . $herecurr);
++			ERROR("exactly one space required after that #$1\n", $herecurr);
+ 		}
+ 
+ # check for spinlock_t definitions without a comment.
+ 		if ($line =~ /^.\s*(struct\s+mutex|spinlock_t)\s+\S+;/) {
+ 			my $which = $1;
+ 			if (!ctx_has_comment($first_line, $linenr)) {
+-				CHK("$1 definition without comment\n" . $herecurr);
++				CHK("$1 definition without comment\n", $herecurr);
+ 			}
+ 		}
+ # check for memory barriers without a comment.
+ 		if ($line =~ /\b(mb|rmb|wmb|read_barrier_depends|smp_mb|smp_rmb|smp_wmb|smp_read_barrier_depends)\(/) {
+ 			if (!ctx_has_comment($first_line, $linenr)) {
+-				CHK("memory barrier without comment\n" . $herecurr);
++				CHK("memory barrier without comment\n", $herecurr);
+ 			}
+ 		}
+ # check of hardware specific defines
+ 		if ($line =~ m@^.#\s*if.*\b(__i386__|__powerpc64__|__sun__|__s390x__)\b@ && $realfile !~ m@include/asm-@) {
+-			CHK("architecture specific defines should be avoided\n" .  $herecurr);
++			CHK("architecture specific defines should be avoided\n",  $herecurr);
+ 		}
+ 
+ # check the location of the inline attribute, that it is between
+ # storage class and type.
+ 		if ($line =~ /\b$Type\s+$Inline\b/ ||
+ 		    $line =~ /\b$Inline\s+$Storage\b/) {
+-			ERROR("inline keyword should sit between storage class and type\n" . $herecurr);
++			ERROR("inline keyword should sit between storage class and type\n", $herecurr);
+ 		}
+ 
+ # check for new externs in .c files.
+ 		if ($line =~ /^.\s*extern\s/ && ($realfile =~ /\.c$/)) {
+-			WARN("externs should be avoided in .c files\n" .  $herecurr);
++			WARN("externs should be avoided in .c files\n",  $herecurr);
+ 		}
+ 
+ # checks for new __setup's
+@@ -1368,21 +1371,21 @@ sub process {
+ 			my $name = $1;
+ 
+ 			if (!grep(/$name/, @setup_docs)) {
+-				CHK("__setup appears un-documented -- check Documentation/kernel-parameters.txt\n" . $herecurr);
++				CHK("__setup appears un-documented -- check Documentation/kernel-parameters.txt\n", $herecurr);
+ 			}
+ 		}
+ 
+ # check for pointless casting of kmalloc return
+ 		if ($line =~ /\*\s*\)\s*k[czm]alloc\b/) {
+-			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
++			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n", $herecurr);
+ 		}
+ 	}
+ 
+ 	if ($chk_patch && !$is_patch) {
+-		ERROR("Does not appear to be a unified-diff format patch\n");
++		ERROR("Does not appear to be a unified-diff format patch\n", "");
+ 	}
+ 	if ($is_patch && $chk_signoff && $signoff == 0) {
+-		ERROR("Missing Signed-off-by: line(s)\n");
++		ERROR("Missing Signed-off-by: line(s)\n", "");
+ 	}
+ 
+ 	if ($clean == 0 && ($chk_patch || $is_patch)) {
