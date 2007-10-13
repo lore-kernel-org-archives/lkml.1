@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761989AbXJMR6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbXJMSCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761989AbXJMR6S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXJMR6I
+	id S1762450AbXJMSCX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbXJMSB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:58:08 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43942 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755729AbXJMR6G (ORCPT
+	Sat, 13 Oct 2007 14:01:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45907 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762233AbXJMSBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:58:06 -0400
-Subject: Re: 2.6.23-git3 jfs/bio bug
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4710FFA3.5080309@oracle.com>
-References: <4710FFA3.5080309@oracle.com>
-Content-Type: text/plain
-Date: Sat, 13 Oct 2007 12:58:00 -0500
-Message-Id: <1192298280.6166.21.camel@norville.austin.ibm.com>
+	Sat, 13 Oct 2007 14:01:55 -0400
+Date: Sat, 13 Oct 2007 11:01:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: 2.6.23-mm1
+Message-Id: <20071013110103.ae4dd2da.akpm@linux-foundation.org>
+In-Reply-To: <4710FC91.6030806@googlemail.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<4710FC91.6030806@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-13 at 10:25 -0700, Randy Dunlap wrote:
-> [ 9158.155844] JFS: nTxBlock = 8192, nTxLock = 65536
-> [ 9159.199567] BUG at fs/jfs/jfs_logmgr.c:2333 assert(bp->l_flag & lbmRELEASE)
-> [ 9159.206566] ------------[ cut here ]------------
-> [ 9159.211189] kernel BUG at fs/jfs/jfs_logmgr.c:2333!
-> [ 9159.216066] invalid opcode: 0000 [1] SMP 
-> [ 9159.220108] CPU 2 
-> [ 9159.222144] Modules linked in: jfs loop
-> [ 9159.226034] Pid: 0, comm: swapper Not tainted 2.6.23-git3 #1
-> [ 9159.231688] RIP: 0010:[<ffffffff8801e39c>]  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
-> [ 9159.240063] RSP: 0018:ffff81011fcefc90  EFLAGS: 00010286
-> [ 9159.245372] RAX: 0000000000000052 RBX: ffff81011fcfe800 RCX: 0000000000000000
-> [ 9159.252499] RDX: 0000000100000000 RSI: 0000000000000082 RDI: 0000000100000000
-> [ 9159.259626] RBP: ffff81011fcefcc0 R08: ffffffff806e43b8 R09: 0000000000000086
-> [ 9159.266754] R10: 0000000000000082 R11: ffffffff8073d000 R12: 0000000000000282
-> [ 9159.273881] R13: ffff81011d451740 R14: 0000000000000000 R15: 0000000000001000
-> [ 9159.281009] FS:  0000000000000000(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
-> [ 9159.289089] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [ 9159.294830] CR2: 00002adf5b051180 CR3: 000000010416b000 CR4: 00000000000006e0
-> [ 9159.301959] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [ 9159.309087] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-> [ 9159.316215] Process swapper (pid: 0, threadinfo ffff81011fce8000, task ffff81011fca3820)
-> [ 9159.324293] Stack:  ffff81011fcefca0 ffff81010f51e800 0000000000000000 ffff8101061b7728
-> [ 9159.332374]  0000000000000000 0000000000001000 ffff81011fcefcd0 ffffffff802ac695
-> [ 9159.339830]  ffff81011fcefcf0 ffffffff803404a6 0000000000001000 ffff81010f51e800
-> [ 9159.347096] Call Trace:
-> [ 9159.349738]  <IRQ>  [<ffffffff802ac695>] bio_endio+0x28/0x2a
-> [ 9159.355423]  [<ffffffff803404a6>] req_bio_endio+0x79/0x93
-> [ 9159.360817]  [<ffffffff803405c1>] __end_that_request_first+0x101/0x2cb
-> [ 9159.367339]  [<ffffffff80340794>] end_that_request_chunk+0x9/0xb
-> [ 9159.373341]  [<ffffffff8043af50>] scsi_end_request+0x30/0xd5
-> [ 9159.378995]  [<ffffffff8043b1b1>] scsi_io_completion+0x15a/0x390
-> [ 9159.384998]  [<ffffffff8048b154>] sd_rw_intr+0x2d1/0x305
-> [ 9159.390307]  [<ffffffff80436078>] scsi_finish_command+0x98/0xa1
-> [ 9159.396220]  [<ffffffff8043bab1>] scsi_softirq_done+0xf1/0xfa
-> [ 9159.401963]  [<ffffffff8034323c>] blk_done_softirq+0x63/0x72
-> [ 9159.407619]  [<ffffffff8023e06f>] __do_softirq+0x57/0xc7
-> [ 9159.412927]  [<ffffffff8020c67c>] call_softirq+0x1c/0x28
-> [ 9159.418235]  [<ffffffff8020d9a4>] do_softirq+0x34/0x87
-> [ 9159.423370]  [<ffffffff8023e016>] irq_exit+0x3f/0x41
-> [ 9159.428333]  [<ffffffff8020db3b>] do_IRQ+0x144/0x169
-> [ 9159.433296]  [<ffffffff8020a7f2>] mwait_idle+0x0/0x4e
-> [ 9159.438344]  [<ffffffff8020ba01>] ret_from_intr+0x0/0xa
-> [ 9159.443566]  <EOI>  [<ffffffff8020a838>] mwait_idle+0x46/0x4e
-> [ 9159.449335]  [<ffffffff8020a0b0>] enter_idle+0x22/0x24
-> [ 9159.454470]  [<ffffffff8020a785>] cpu_idle+0x93/0xb6
-> [ 9159.459434]  [<ffffffff8021bca0>] start_secondary+0x2b7/0x2c6
-> [ 9159.465173] 
-> [ 9159.466670] 
-> [ 9159.466671] Code: 0f 0b eb fe a8 10 75 25 48 c7 c1 6e 6b 02 88 ba 1e 09 00 00 
-> [ 9159.475739] RIP  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
-> [ 9159.481775]  RSP <ffff81011fcefc90>
-> [ 9159.485552] Kernel panic - not syncing: Fatal exception
-> [ 9159.490780] Rebooting in 30 seconds..
+On Sat, 13 Oct 2007 19:12:49 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
 
-I don't have time to test this now, but the bio_endio patches ended up
-removing some return statements that need to stay.  I think this should
-fix it.
+> Andrew Morton wrote:
+> 
+> Hi,
+> 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > 
+> > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> >   to stabilise things for the 2.6.23 merge.
+> > 
+> >   But that didn't stop all the subsystem maintainers from going nuts, with
+> >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
+> >   a bit better.
+> 
+> Works a bit better right :) At least it boots here but I have a strange problem with it.
+> 
+> It seems 2.6.23-mm1 kills off java. Every program needs java here does not work anymore telling
+> 'my java' installation is incorrect. Also I noticed firefox is acting weird as well thunderbird.
+> Gtk apps just random freeze and need be killed with -11.
+> 
+> Running 'java -version' manually returns nothing , 'java -jar some.jar' does nothing as well. ( not even a error or anything else )
+> 
+> ( I've also tested sun's java 1.5 and 1.6 and openjre as well all with same result )
 
-JFS: Bio cleanup: Replace missing return statements
+We have a screwup in thread handling which might have caused this.
 
-commit 6712ecf8f648118c3363c142196418f89a510b90 removed some "return 0;"
-statements, rather than changing them to null returns.
+> I only have a WARNING in my dmesg but i don't think this is related to this :
+> 
+> Oct 13 01:44:52 lara [10722.146448] WARNING: at fs/namespace.c:586 __mntput()
+> Oct 13 01:44:52 lara [10722.146478]  [<c0167cb2>] mntput_no_expire+0x5d/0xab
+> Oct 13 01:44:52 lara [10722.146503]  [<c01683d1>] sys_umount+0x1f8/0x202
+> Oct 13 01:44:52 lara [10722.146511]  [<c010f368>] check_pgt_cache+0x13/0x15
+> Oct 13 01:44:52 lara [10722.146529]  [<c0158cd0>] sys_stat64+0xf/0x23
+> Oct 13 01:44:52 lara [10722.146549]  [<c0147a9c>] remove_vma+0x31/0x36
+> Oct 13 01:44:52 lara [10722.146574]  [<c010fbf6>] do_page_fault+0x180/0x4ea
+> Oct 13 01:44:52 lara [10722.146600]  [<c01683e6>] sys_oldumount+0xb/0xe
+> Oct 13 01:44:52 lara [10722.146614]  [<c010258e>] sysenter_past_esp+0x5f/0x85
+> Oct 13 01:44:52 lara [10722.146639]  [<c02e0000>] xfrm_tmpl_resolve+0x2bd/0x37b
+> Oct 13 01:44:52 lara [10722.146656]  =======================
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+I guess that's the r-o-bind-mounts stuff.
 
-diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
-index ccfd029..15a3974 100644
---- a/fs/jfs/jfs_logmgr.c
-+++ b/fs/jfs/jfs_logmgr.c
-@@ -2234,6 +2234,8 @@ static void lbmIODone(struct bio *bio, int error)
- 
- 		/* wakeup I/O initiator */
- 		LCACHE_WAKEUP(&bp->l_ioevent);
-+
-+		return;
- 	}
- 
- 	/*
-@@ -2258,6 +2260,7 @@ static void lbmIODone(struct bio *bio, int error)
- 	if (bp->l_flag & lbmDIRECT) {
- 		LCACHE_WAKEUP(&bp->l_ioevent);
- 		LCACHE_UNLOCK(flags);
-+		return;
- 	}
- 
- 	tail = log->wqueue;
+> 
+> I also noticed some programs like vlc segfaults :
+> 
+> vlc[20506]: segfault at 01950000 eip 01950000 esp b4876368 error 4
+> 
+> Booting 2.6.23 makes all these go away.
+> 
+> I don't have anything else in my logs. Any idea what patches could cause this problem(s) ?
+> 
+> Config can be found there -> http://194.231.229.228/2.6.23-mm1-config
 
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+what is vlc?
