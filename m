@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXJMIQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761590AbXJMIRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760716AbXJMIQf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 04:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXJMIQV
+	id S1761590AbXJMIRB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 04:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759977AbXJMIQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 04:16:21 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49182 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbXJMIQU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 04:16:20 -0400
-Message-ID: <47107ED2.6040509@s5r6.in-berlin.de>
-Date: Sat, 13 Oct 2007 10:16:18 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, zippel@linux-m68k.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org
-Subject: Re: [PATCH] Allow kconfig to accept overrides
-References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Oct 2007 04:16:31 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56158 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758095AbXJMIQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 04:16:27 -0400
+Date: Sat, 13 Oct 2007 10:17:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Giacomo Catenazzi <cate@debian.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23.git build error
+Message-ID: <20071013081759.GB28168@uranus.ravnborg.org>
+References: <1192164538.10413.3.camel@Homer.simpson.net> <20071012213114.GA24016@uranus.ravnborg.org> <1192246457.7395.19.camel@Homer.simpson.net> <47105A39.9070406@debian.org> <20071013071626.GA28168@uranus.ravnborg.org> <1192260909.7369.20.camel@Homer.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192260909.7369.20.camel@Homer.simpson.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Oct 12 2007 15:57, Randy Dunlap wrote:
->>On Fri, 12 Oct 2007 23:44:08 +0200 (CEST) Jan Engelhardt wrote:
->>
->>> warning("override: %s turns state choice", sym->name);
->>
->>What does that warning message mean?  I can't decipher it.
+On Sat, Oct 13, 2007 at 09:35:09AM +0200, Mike Galbraith wrote:
+> On Sat, 2007-10-13 at 09:16 +0200, Sam Ravnborg wrote:
 > 
-> It is when the value of a "choice" kconfig object is changed, for example
-> this .config excerpt:
+> > Pulled 2.6.23 tree and did a build
+> > Added latest -linus on top of it.
+> > Did a new build (x86_64).
+> > 
+> > 
+> > As expected it failed due to wrong asm symlink but nothing
+> > like the error Mike posted.
+> > So I'm a bit puzzeled here.
+> > 
+> > I anyone can explain how to reproduce it I will chase it
+> > but otherwise it will be left as a "consequence of
+> > the x86 merge".
 > 
-> CONFIG_PREEMPT_NONE=y
-> # CONFIG_PREEMPT_VOLUNTARY is not set
-> # CONFIG_PREEMPT is not set
-> # CONFIG_PREEMPT_BKL is not set
-> # CONFIG_PREEMPT_NONE is not set
-> CONFIG_REEMPT_VOLUNTARY=y
+> What I did was to pull, then diff against my working tree (/me=SCM
+> weenie;) for review as usual, and then apply that diff to working tree
+> and make oldconfig as usual.  That left me with the same failure this
+> morning, despite the file being verified present in the git tree.  I
+> then used git-archive --format=tar | (cd work_tree;tar -xvf -).  That
+> spewed chunks when I tried to build it even though diff said the trees
+> were identical.  After make mrproper and restoring my saved .config, all
+> was peachy.
+> 
+> Methinks dontdiff bit me.
 
-Perhaps say
+After a quick look:
+[sam@neptun x86.git]$ find -name '*.i'
+./include/asm-x86/alternative-asm_64.i
+./include/asm-x86/alternative-asm_32.i
+./include/asm-x86/frame.i
+./include/asm-x86/alternative-asm.i
+./include/asm-um/frame.i
+./include/asm-um/alternative-asm.i
+[sam@neptun x86.git]$ grep '*.i' Documentation/dontdiff 
+*.i
 
-	warning("override: switching to choice %s", sym->name);
+But I cannot see how this could result in the bug you
+reported..
+Anyway at least one dontdiff buglet - or we should preferably
+drop the .i files in the kernel src.
 
-if sym->name is [CONFIG_]PREEMPT_VOLUNTARY.  Or what is it?
--- 
-Stefan Richter
--=====-=-=== =-=- -==-=
-http://arcgraph.de/sr/
+	Sam
