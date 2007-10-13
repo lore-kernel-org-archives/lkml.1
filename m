@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbXJMSSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbXJMSTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762913AbXJMSSv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 14:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762609AbXJMSSS
+	id S1762856AbXJMSTb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758097AbXJMSTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 14:18:18 -0400
-Received: from 1wt.eu ([62.212.114.60]:3101 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762588AbXJMSSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 14:18:17 -0400
-Date: Sat, 13 Oct 2007 20:10:45 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in bidirectional flows.
-Message-ID: <20071013181045.GB18155@1wt.eu>
-References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu> <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi> <20071013172214.GA18155@1wt.eu> <20071013175036.GD4211@stusta.de>
+	Sat, 13 Oct 2007 14:19:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56095 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762388AbXJMSTH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 14:19:07 -0400
+Date: Sat, 13 Oct 2007 11:18:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, "Kuan Luo" <kluo@nvidia.com>,
+       "Peer Chen" <pchen@nvidia.com>
+Subject: Re: 2.6.23-mm1
+Message-Id: <20071013111853.7e67c6c3.akpm@linux-foundation.org>
+In-Reply-To: <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<20071012013729.ada2127b.akpm@linux-foundation.org>
+	<64bb37e0710130101y7fb8e4c0lf214fd821e8305ed@mail.gmail.com>
+	<4710A407.3070000@garzik.org>
+	<64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
+	<4710B7C5.5050403@garzik.org>
+	<64bb37e0710130732p303547e3n54cfa9dac34c53b5@mail.gmail.com>
+	<64bb37e0710130740u78613f83wbd4f43d073bbe13d@mail.gmail.com>
+	<64bb37e0710130813le68c48dve36f8473b197b84b@mail.gmail.com>
+	<47110500.8050503@garzik.org>
+	<64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071013175036.GD4211@stusta.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+On Sat, 13 Oct 2007 20:05:19 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
 
-On Sat, Oct 13, 2007 at 07:50:36PM +0200, Adrian Bunk wrote:
-> On Sat, Oct 13, 2007 at 07:22:14PM +0200, Willy Tarreau wrote:
-> >...
-> > Thanks for your help, I really appreciate it. In fact, I've reviewed them
-> > four, but two of them did not apply and the code looked somewhat different,
-> > so I considered them irrelevant to 2.6.20. I didn't understand that they
-> > were all related, so maybe I checked them in a wrong order.
-> > 
-> > I'll recheck all that in the right sequence and will merge them four, or
-> > get back to you if something still puzzles me.
-> 
-> I discussed this issue with Ilpo just yesterday regarding 2.6.16, and 
-> the result of our discussion was that I reverted it.
+> The only thing I noted during load testing (updating Gentoo ==
+> compiling and installing) was, that there seems to be memory leak.
+> After ~2h 2.5 of my 4Gb where gone. But there where to many things
+> going on to pinpoint it... (NFSv4 over eth1394?)
 
-OK.
+Please send /proc/meminfo and /proc/slabinfo after the leak has been
+happening for a while.
 
-> TCP being in some situations a bit more conservative than it should be 
-> isn't a big issue and not worth backporting with a risk of introducing
-> a regression.
+Sometimes `echo m > /proc/sysrq_trigger ; dmesg -s 1000000' will
+provide useful info.
 
-I agree with this. The impression I got from the description of the two
-patches I merged was that the problems they fix were quite annoying. But
-maybe I should take that with a grain of salt.
+The page-owner code can pinpoint a leak source.  See
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/page-owner-tracking-leak-detector.patch
 
-> I'd recommend you simply drop the two patches for 2.6.20.
-
-That sounds OK to me. If 2.6.16 is fine without the patches, 2.6.20
-certainly is, particularly if we keep in mind that it's a last version.
-
-Thanks very much for your insights Adrian,
-Willy
-
+Enable CONFIG_DEBUG_SLAB_LEAK, check out /proc/slab_allocators
