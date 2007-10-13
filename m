@@ -1,45 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759746AbXJMMgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761881AbXJMMgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759746AbXJMMgm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbXJMMfe
+	id S1761881AbXJMMgz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbXJMMff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:35:34 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:35782 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755226AbXJMMf2 (ORCPT
+	Sat, 13 Oct 2007 08:35:35 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:54107 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756230AbXJMMfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:35:28 -0400
-Message-Id: <20071013123413.168920487@mail.of.borg>
+	Sat, 13 Oct 2007 08:35:30 -0400
+Message-Id: <20071013123414.160200918@mail.of.borg>
 References: <20071013123123.085686856@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 14:31:27 +0200
+Date: Sat, 13 Oct 2007 14:31:30 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Buesch <mb@bu3sch.de>, Stefano Brivio <st3@riseup.net>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: [patch 4/8] m68k: Export cachectl.h
-Content-Disposition: inline; filename=m68k-export-asm-cachectl-h.diff
+       linux-wireless@vger.kernel.org
+Subject: [patch 7/8] b43 wireless needs <linux/io.h>
+Content-Disposition: inline; filename=b43-needs-linux-io.h.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Wilcox <matthew@wil.cx>
+b43 wireless needs <linux/io.h>
 
-libffi in GCC 4.2 needs cachectl.h to do its cache flushing.  But we
-don't currently export it.  I believe this patch should do the trick.
+linux/drivers/net/wireless/b43/pio.h: In function 'b43_pio_write':
+linux/drivers/net/wireless/b43/pio.h:89: error: implicit declaration of function 'mmiowb'
 
-Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+linux/drivers/net/wireless/b43/phy.c: In function 'b43_phy_write':
+linux/drivers/net/wireless/b43/phy.c:301: error: implicit declaration of function 'mmiowb'
+
+linuxdrivers/net/wireless/b43/sysfs.c: In function 'b43_attr_interfmode_store':
+linuxdrivers/net/wireless/b43/sysfs.c:147: error: implicit declaration of function 'mmiowb'
+
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- include/asm-m68k/Kbuild |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/wireless/b43/phy.c   |    1 +
+ drivers/net/wireless/b43/pio.h   |    1 +
+ drivers/net/wireless/b43/sysfs.c |    5 +++--
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
---- a/include/asm-m68k/Kbuild
-+++ b/include/asm-m68k/Kbuild
-@@ -1 +1,2 @@
- include include/asm-generic/Kbuild.asm
-+header-y += cachectl.h
+--- a/drivers/net/wireless/b43/phy.c
++++ b/drivers/net/wireless/b43/phy.c
+@@ -26,6 +26,7 @@
+ */
+ 
+ #include <linux/delay.h>
++#include <linux/io.h>
+ #include <linux/types.h>
+ 
+ #include "b43.h"
+--- a/drivers/net/wireless/b43/pio.h
++++ b/drivers/net/wireless/b43/pio.h
+@@ -4,6 +4,7 @@
+ #include "b43.h"
+ 
+ #include <linux/interrupt.h>
++#include <linux/io.h>
+ #include <linux/list.h>
+ #include <linux/skbuff.h>
+ 
+--- a/drivers/net/wireless/b43/sysfs.c
++++ b/drivers/net/wireless/b43/sysfs.c
+@@ -23,13 +23,14 @@
+ 
+ */
+ 
++#include <linux/capability.h>
++#include <linux/io.h>
++
+ #include "b43.h"
+ #include "sysfs.h"
+ #include "main.h"
+ #include "phy.h"
+ 
+-#include <linux/capability.h>
+-
+ #define GENERIC_FILESIZE	64
+ 
+ static int get_integer(const char *buf, size_t count)
 
 -- 
 Gr{oetje,eeting}s,
