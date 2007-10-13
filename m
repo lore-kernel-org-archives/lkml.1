@@ -1,67 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXJMSqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbXJMSuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXJMSqY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 14:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762474AbXJMSqJ
+	id S1762948AbXJMSuz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 14:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbXJMSus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 14:46:09 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:57859
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761119AbXJMSqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 14:46:08 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [patch 7/8] b43 wireless needs <linux/io.h>
-Date: Sat, 13 Oct 2007 20:45:20 +0200
-User-Agent: KMail/1.9.6
-Cc: Larry Finger <larry.finger@lwfinger.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <20071013123123.085686856@mail.of.borg> <4710E2C6.5090302@lwfinger.net> <Pine.LNX.4.64.0710132027410.15951@anakin>
-In-Reply-To: <Pine.LNX.4.64.0710132027410.15951@anakin>
+	Sat, 13 Oct 2007 14:50:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33526 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754696AbXJMSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 14:50:47 -0400
+Message-ID: <47111380.5010106@garzik.org>
+Date: Sat, 13 Oct 2007 14:50:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fallout from elsa setup split
+References: <20071013184242.GM8181@ftp.linux.org.uk>
+In-Reply-To: <20071013184242.GM8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710132045.20787.mb@bu3sch.de>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 October 2007 20:38:43 Geert Uytterhoeven wrote:
-> On Sat, 13 Oct 2007, Larry Finger wrote:
-> > Geert Uytterhoeven wrote:
-> > > linux/drivers/net/wireless/b43/pio.h: In function 'b43_pio_write':
-> > > linux/drivers/net/wireless/b43/pio.h:89: error: implicit declaration of function 'mmiowb'
-> > >
-> > > linux/drivers/net/wireless/b43/phy.c: In function 'b43_phy_write':
-> > > linux/drivers/net/wireless/b43/phy.c:301: error: implicit declaration of function 'mmiowb'
-> > >
-> > > linuxdrivers/net/wireless/b43/sysfs.c: In function 'b43_attr_interfmode_store':
-> > > linuxdrivers/net/wireless/b43/sysfs.c:147: error: implicit declaration of function 'mmiowb'
-> > 
-> > From the distribution list for this E-mail, I presume this error occurred for m68k. Is this correct?
+Al Viro wrote:
+> ... and yes, caller wants it to return int.
 > 
-> That's correct.
-> 
-> > If so, I will probably need to prepare a similar patch for b43legacy.
-> 
-> I had no problems compiling b43legacy on m68k, though. Probably
-> <linux/io.h> was included through some other include file.
-> Of course it's safer to always #include <linux/io.h> when using I/O.
-> 
-> During linking, I did get a bunch of `undefined reference to `dma_*''
-> errors, with both b43 and b43legacy (and a few other drivers). Probably
-> they need to depend on HAS_DMA.
-> I'll post separate patches for those after I've sorted them out.
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-We could make the b43 and b43legacy DMA engine code depend on HAS_DMA
-then. So it can still be compiled with PIO. (Though, I don't know if
-anybody would put such a card into a machine without DMA, anyway).
+ACK (I was just about to send same)
 
-The DMA engine code is a seperate kconfig option.
 
--- 
-Greetings Michael.
