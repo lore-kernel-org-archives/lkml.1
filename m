@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXJMHZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbXJMH3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXJMHZm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXJMHZ2
+	id S1755774AbXJMH3O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXJMH3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:25:28 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37412 "EHLO
+	Sat, 13 Oct 2007 03:29:00 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51029 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762015AbXJMHZ1 (ORCPT
+	with ESMTP id S1753293AbXJMH26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:25:27 -0400
-Date: Sat, 13 Oct 2007 08:25:24 +0100
+	Sat, 13 Oct 2007 03:28:58 -0400
+Date: Sat, 13 Oct 2007 08:28:49 +0100
 From: Al Viro <viro@ftp.linux.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] v4l: copy_to_user() is not a good method name
-Message-ID: <20071013072524.GF8181@ftp.linux.org.uk>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] fallout from ->get_stats patches
+Message-ID: <20071013072849.GG8181@ftp.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,60 +23,50 @@ User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Breaks on any target that has copy_to_user() defined as a non-trivial
-macro.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
-diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
-index c606332..5599a36 100644
---- a/drivers/media/video/videobuf-core.c
-+++ b/drivers/media/video/videobuf-core.c
-@@ -674,7 +674,7 @@ ssize_t videobuf_read_one(struct videobuf_queue *q,
- 	}
+diff --git a/drivers/net/macmace.c b/drivers/net/macmace.c
+index 6589239..1877052 100644
+--- a/drivers/net/macmace.c
++++ b/drivers/net/macmace.c
+@@ -538,8 +538,9 @@ static void mace_set_multicast(struct net_device *dev)
+ 	local_irq_restore(flags);
+ }
  
- 	/* Copy to userspace */
--	retval=CALL(q,copy_to_user,q,data,count,nonblocking);
-+	retval=CALL(q,video_copy_to_user,q,data,count,nonblocking);
- 	if (retval<0)
- 		goto done;
+-static void mace_handle_misc_intrs(struct mace_data *mp, int intr)
++static void mace_handle_misc_intrs(struct net_device *dev, int intr)
+ {
++	struct mace_data *mp = netdev_priv(dev);
+ 	volatile struct mace *mb = mp->mace;
+ 	static int mace_babbles, mace_jabbers;
  
-diff --git a/drivers/media/video/videobuf-dma-sg.c b/drivers/media/video/videobuf-dma-sg.c
-index 8bb7fdd..3eb6123 100644
---- a/drivers/media/video/videobuf-dma-sg.c
-+++ b/drivers/media/video/videobuf-dma-sg.c
-@@ -670,7 +670,7 @@ static struct videobuf_qtype_ops pci_ops = {
- 	.sync         = __videobuf_sync,
- 	.mmap_free    = __videobuf_mmap_free,
- 	.mmap_mapper  = __videobuf_mmap_mapper,
--	.copy_to_user = __videobuf_copy_to_user,
-+	.video_copy_to_user = __videobuf_copy_to_user,
- 	.copy_stream  = __videobuf_copy_stream,
- };
+@@ -571,7 +572,7 @@ static irqreturn_t mace_interrupt(int irq, void *dev_id)
+ 	local_irq_save(flags);
  
-diff --git a/drivers/media/video/videobuf-vmalloc.c b/drivers/media/video/videobuf-vmalloc.c
-index 2e3689a..cd74341 100644
---- a/drivers/media/video/videobuf-vmalloc.c
-+++ b/drivers/media/video/videobuf-vmalloc.c
-@@ -320,7 +320,7 @@ static struct videobuf_qtype_ops qops = {
- 	.sync         = __videobuf_sync,
- 	.mmap_free    = __videobuf_mmap_free,
- 	.mmap_mapper  = __videobuf_mmap_mapper,
--	.copy_to_user = __videobuf_copy_to_user,
-+	.video_copy_to_user = __videobuf_copy_to_user,
- 	.copy_stream  = __videobuf_copy_stream,
- };
+ 	intr = mb->ir; /* read interrupt register */
+-	mace_handle_misc_intrs(mp, intr);
++	mace_handle_misc_intrs(dev, intr);
  
-diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
-index 9fa09fb..0fa5d59 100644
---- a/include/media/videobuf-core.h
-+++ b/include/media/videobuf-core.h
-@@ -133,7 +133,7 @@ struct videobuf_qtype_ops {
- 				 enum v4l2_memory memory);
- 	int (*sync)		(struct videobuf_queue* q,
- 				 struct videobuf_buffer *buf);
--	int (*copy_to_user)	(struct videobuf_queue *q,
-+	int (*video_copy_to_user)(struct videobuf_queue *q,
- 				 char __user *data,
- 				 size_t count,
- 				 int nonblocking);
+ 	if (intr & XMTINT) {
+ 		fs = mb->xmtfs;
+@@ -645,7 +646,6 @@ static void mace_tx_timeout(struct net_device *dev)
+ 
+ static void mace_dma_rx_frame(struct net_device *dev, struct mace_frame *mf)
+ {
+-	struct mace_data *mp = netdev_priv(dev);
+ 	struct sk_buff *skb;
+ 	unsigned int frame_status = mf->rcvsts;
+ 
+diff --git a/drivers/net/mvme147.c b/drivers/net/mvme147.c
+index 86c9c06..06ca425 100644
+--- a/drivers/net/mvme147.c
++++ b/drivers/net/mvme147.c
+@@ -85,7 +85,6 @@ struct net_device * __init mvme147lance_probe(int unit)
+ 	dev->open = &m147lance_open;
+ 	dev->stop = &m147lance_close;
+ 	dev->hard_start_xmit = &lance_start_xmit;
+-	dev->get_stats = &lance_get_stats;
+ 	dev->set_multicast_list = &lance_set_multicast;
+ 	dev->tx_timeout = &lance_tx_timeout;
+ 	dev->dma = 0;
