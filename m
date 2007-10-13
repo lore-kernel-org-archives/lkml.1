@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761260AbXJMOnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbXJMOnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761260AbXJMOnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 10:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbXJMOmH
+	id S1762204AbXJMOnq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 10:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbXJMOmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 10:42:07 -0400
-Received: from 1wt.eu ([62.212.114.60]:2905 "EHLO 1wt.eu"
+	Sat, 13 Oct 2007 10:42:09 -0400
+Received: from 1wt.eu ([62.212.114.60]:2919 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761481AbXJMOmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 10:42:02 -0400
+	id S1755301AbXJMOmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 10:42:07 -0400
 From: Willy Tarreau <w@1wt.eu>
-Message-Id: <20071013143437.%N@1wt.eu>
+Message-Id: <20071013143449.%N@1wt.eu>
 References: <20071013142822.%N@1wt.eu>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 17:28:25 +0200
+Date: Sat, 13 Oct 2007 17:28:31 +0200
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Thomas M=FCller <thomas@mathtm.de>, Francois Romieu <romieu@fr.zoreil.com>,
+Cc: "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [2.6.20.21 review 03/35] r8169: avoid needless NAPI poll scheduling
-Content-Disposition: inline; filename=0011-r8169-avoid-needless-NAPI-poll-scheduling.patch
+Subject: [2.6.20.21 review 09/35] SPARC64: Fix sparc64 task stack traces.
+Content-Disposition: inline; filename=0036-SPARC64-Fix-sparc64-task-stack-traces.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theory  : though needless, it should not have hurt.
-Practice: it does not play nice with DEBUG_SHIRQ + LOCKDEP + UP
-(see https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=3D242572).
+It didn't handle that case at all, and now dump_stack()
+can be implemented directly as show_stack(current, NULL)
 
-
-The patch makes sense in itself but I should dig why it has an effect
-on #242572 (assuming that NAPI do not change in a near future).
-
-Patch in mainline as 313b0305b5a1e7e0fb39383befbf79558ce68a9c.
-Backported to 2.6.22-stable by Thomas M=FCller.
-
-Signed-off-by: Thomas M=FCller <thomas@mathtm.de>
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/r8169.c |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
+ arch/sparc64/kernel/traps.c |   18 +++++++++++-------
+ arch/sparc64/mm/fault.c     |    5 +----
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-Index: 2.6/drivers/net/r8169.c
+Index: 2.6/arch/sparc64/kernel/traps.c
 ===================================================================
---- 2.6.orig/drivers/net/r8169.c
-+++ 2.6/drivers/net/r8169.c
-@@ -2646,14 +2646,16 @@ rtl8169_interrupt(int irq, void *dev_ins
- 			rtl8169_check_link_status(dev, tp, ioaddr);
+--- 2.6.orig/arch/sparc64/kernel/traps.c
++++ 2.6/arch/sparc64/kernel/traps.c
+@@ -2146,12 +2146,20 @@ static void user_instruction_dump (unsig
+ void show_stack(struct task_struct *tsk, unsigned long *_ksp)
+ {
+ 	unsigned long pc, fp, thread_base, ksp;
+-	void *tp = task_stack_page(tsk);
++	struct thread_info *tp;
+ 	struct reg_window *rw;
+ 	int count = 0;
  
- #ifdef CONFIG_R8169_NAPI
--		RTL_W16(IntrMask, rtl8169_intr_mask & ~rtl8169_napi_event);
--		tp->intr_mask = ~rtl8169_napi_event;
-+		if (status & rtl8169_napi_event) {
-+			RTL_W16(IntrMask, rtl8169_intr_mask & ~rtl8169_napi_event);
-+			tp->intr_mask = ~rtl8169_napi_event;
+ 	ksp = (unsigned long) _ksp;
+-
++	if (!tsk)
++		tsk = current;
++	tp = task_thread_info(tsk);
++	if (ksp == 0UL) {
++		if (tsk == current)
++			asm("mov %%fp, %0" : "=r" (ksp));
++		else
++			ksp = tp->ksp;
++	}
+ 	if (tp == current_thread_info())
+ 		flushw_all();
  
--		if (likely(netif_rx_schedule_prep(dev)))
--			__netif_rx_schedule(dev);
--		else if (netif_msg_intr(tp)) {
--			printk(KERN_INFO "%s: interrupt %04x taken in poll
+@@ -2180,11 +2188,7 @@ void show_stack(struct task_struct *tsk,
+ 
+ void dump_stack(void)
+ {
+-	unsigned long *ksp;
+-
+-	__asm__ __volatile__("mov	%%fp, %0"
+-			     : "=r" (ksp));
+-	show_stack(current, ksp);
++	show_stack(current, NULL);
+ }
+ 
+ EXPORT_SYMBOL(dump_stack);
+Index: 2.6/arch/sparc64/mm/fault.c
+===================================================================
+--- 2.6.orig/arch/sparc64/mm/fault.c
++++ 2.6/arch/sparc64/mm/fault.c
+@@ -129,15 +129,12 @@ static void __kprobes unhandled_fault(un
+ 
+ static void bad_kernel_pc(struct pt_regs *regs, unsigned long vaddr)
+ {
+-	unsigned long *ksp;
+-
+ 	printk(KERN_CRIT "OOPS: Bogus kernel PC [%016lx] in fault handler
 ",
--			       dev->name, status);
-+			if (likely(netif_rx_schedule_prep(dev)))
-+				__netif_rx_schedule(dev);
-+			else if (netif_msg_intr(tp)) {
-+				printk(KERN_INFO "%s: interrupt %04x in poll
-",
-+				       dev->name, status);
-+			}
- 		}
- 		break;
- #else
+ 	       regs->tpc);
+ 	printk(KERN_CRIT "OOPS: RPC [%016lx]
+", regs->u_regs[15]);
+ 	print_symbol("RPC: <%s>
+", regs->u_regs[15]);
+ 	printk(KERN_CRIT "OOPS: Fault was to vaddr[%lx]
+", vaddr);
+-	__asm__("mov %%sp, %0" : "=r" (ksp));
+-	show_stack(current, ksp);
++	dump_stack();
+ 	unhandled_fault(regs->tpc, current, regs);
+ }
+ 
 
 -- 
