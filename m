@@ -1,79 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXJMR4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761989AbXJMR6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbXJMR4L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbXJMRz6
+	id S1761989AbXJMR6S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXJMR6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:55:58 -0400
-Received: from lug-owl.de ([195.71.106.12]:54553 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756694AbXJMRz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:55:57 -0400
-X-Greylist: delayed 1628 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Oct 2007 13:55:57 EDT
-Date: Sat, 13 Oct 2007 19:28:48 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: vignesh babu <vigneshbabu@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: wierd file perms
-Message-ID: <20071013172848.GE16774@lug-owl.de>
-Mail-Followup-To: vignesh babu <vigneshbabu@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AjmyJqqohANyBN/e"
-Content-Disposition: inline
-In-Reply-To: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 13 Oct 2007 13:58:08 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43942 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755729AbXJMR6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 13:58:06 -0400
+Subject: Re: 2.6.23-git3 jfs/bio bug
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <4710FFA3.5080309@oracle.com>
+References: <4710FFA3.5080309@oracle.com>
+Content-Type: text/plain
+Date: Sat, 13 Oct 2007 12:58:00 -0500
+Message-Id: <1192298280.6166.21.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-10-13 at 10:25 -0700, Randy Dunlap wrote:
+> [ 9158.155844] JFS: nTxBlock = 8192, nTxLock = 65536
+> [ 9159.199567] BUG at fs/jfs/jfs_logmgr.c:2333 assert(bp->l_flag & lbmRELEASE)
+> [ 9159.206566] ------------[ cut here ]------------
+> [ 9159.211189] kernel BUG at fs/jfs/jfs_logmgr.c:2333!
+> [ 9159.216066] invalid opcode: 0000 [1] SMP 
+> [ 9159.220108] CPU 2 
+> [ 9159.222144] Modules linked in: jfs loop
+> [ 9159.226034] Pid: 0, comm: swapper Not tainted 2.6.23-git3 #1
+> [ 9159.231688] RIP: 0010:[<ffffffff8801e39c>]  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
+> [ 9159.240063] RSP: 0018:ffff81011fcefc90  EFLAGS: 00010286
+> [ 9159.245372] RAX: 0000000000000052 RBX: ffff81011fcfe800 RCX: 0000000000000000
+> [ 9159.252499] RDX: 0000000100000000 RSI: 0000000000000082 RDI: 0000000100000000
+> [ 9159.259626] RBP: ffff81011fcefcc0 R08: ffffffff806e43b8 R09: 0000000000000086
+> [ 9159.266754] R10: 0000000000000082 R11: ffffffff8073d000 R12: 0000000000000282
+> [ 9159.273881] R13: ffff81011d451740 R14: 0000000000000000 R15: 0000000000001000
+> [ 9159.281009] FS:  0000000000000000(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
+> [ 9159.289089] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [ 9159.294830] CR2: 00002adf5b051180 CR3: 000000010416b000 CR4: 00000000000006e0
+> [ 9159.301959] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [ 9159.309087] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
+> [ 9159.316215] Process swapper (pid: 0, threadinfo ffff81011fce8000, task ffff81011fca3820)
+> [ 9159.324293] Stack:  ffff81011fcefca0 ffff81010f51e800 0000000000000000 ffff8101061b7728
+> [ 9159.332374]  0000000000000000 0000000000001000 ffff81011fcefcd0 ffffffff802ac695
+> [ 9159.339830]  ffff81011fcefcf0 ffffffff803404a6 0000000000001000 ffff81010f51e800
+> [ 9159.347096] Call Trace:
+> [ 9159.349738]  <IRQ>  [<ffffffff802ac695>] bio_endio+0x28/0x2a
+> [ 9159.355423]  [<ffffffff803404a6>] req_bio_endio+0x79/0x93
+> [ 9159.360817]  [<ffffffff803405c1>] __end_that_request_first+0x101/0x2cb
+> [ 9159.367339]  [<ffffffff80340794>] end_that_request_chunk+0x9/0xb
+> [ 9159.373341]  [<ffffffff8043af50>] scsi_end_request+0x30/0xd5
+> [ 9159.378995]  [<ffffffff8043b1b1>] scsi_io_completion+0x15a/0x390
+> [ 9159.384998]  [<ffffffff8048b154>] sd_rw_intr+0x2d1/0x305
+> [ 9159.390307]  [<ffffffff80436078>] scsi_finish_command+0x98/0xa1
+> [ 9159.396220]  [<ffffffff8043bab1>] scsi_softirq_done+0xf1/0xfa
+> [ 9159.401963]  [<ffffffff8034323c>] blk_done_softirq+0x63/0x72
+> [ 9159.407619]  [<ffffffff8023e06f>] __do_softirq+0x57/0xc7
+> [ 9159.412927]  [<ffffffff8020c67c>] call_softirq+0x1c/0x28
+> [ 9159.418235]  [<ffffffff8020d9a4>] do_softirq+0x34/0x87
+> [ 9159.423370]  [<ffffffff8023e016>] irq_exit+0x3f/0x41
+> [ 9159.428333]  [<ffffffff8020db3b>] do_IRQ+0x144/0x169
+> [ 9159.433296]  [<ffffffff8020a7f2>] mwait_idle+0x0/0x4e
+> [ 9159.438344]  [<ffffffff8020ba01>] ret_from_intr+0x0/0xa
+> [ 9159.443566]  <EOI>  [<ffffffff8020a838>] mwait_idle+0x46/0x4e
+> [ 9159.449335]  [<ffffffff8020a0b0>] enter_idle+0x22/0x24
+> [ 9159.454470]  [<ffffffff8020a785>] cpu_idle+0x93/0xb6
+> [ 9159.459434]  [<ffffffff8021bca0>] start_secondary+0x2b7/0x2c6
+> [ 9159.465173] 
+> [ 9159.466670] 
+> [ 9159.466671] Code: 0f 0b eb fe a8 10 75 25 48 c7 c1 6e 6b 02 88 ba 1e 09 00 00 
+> [ 9159.475739] RIP  [<ffffffff8801e39c>] :jfs:lbmIODone+0x317/0x367
+> [ 9159.481775]  RSP <ffff81011fcefc90>
+> [ 9159.485552] Kernel panic - not syncing: Fatal exception
+> [ 9159.490780] Rebooting in 30 seconds..
 
---AjmyJqqohANyBN/e
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I don't have time to test this now, but the bio_endio patches ended up
+removing some return statements that need to stay.  I think this should
+fix it.
 
-On Sat, 2007-10-13 22:40:23 +0530, vignesh babu <vigneshbabu@gmail.com> wro=
-te:
->=20
-> I was surprised and did an ls -l on the files and guess what I found:
->=20
-> total 0
-> ?--------- ? ? ? ?                ? fcntl.c
-> ?--------- ? ? ? ?                ? fifo.c
-> ?--------- ? ? ? ?                ? filesystems.c
-> ?--------- ? ? ? ?                ? file_table.c
-> ?--------- ? ? ? ?                ? freevxfs
->=20
-> So end result is that, Im not able to delete the files or change perms
-> or ownership even as root.
+JFS: Bio cleanup: Replace missing return statements
 
-Most probably, your filesystem is broken and needs a fsck.
+commit 6712ecf8f648118c3363c142196418f89a510b90 removed some "return 0;"
+statements, rather than changing them to null returns.
 
-MfG, JBG
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-  Signature of:                          Zensur im Internet? Nein danke!
-  the second  :
+diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
+index ccfd029..15a3974 100644
+--- a/fs/jfs/jfs_logmgr.c
++++ b/fs/jfs/jfs_logmgr.c
+@@ -2234,6 +2234,8 @@ static void lbmIODone(struct bio *bio, int error)
+ 
+ 		/* wakeup I/O initiator */
+ 		LCACHE_WAKEUP(&bp->l_ioevent);
++
++		return;
+ 	}
+ 
+ 	/*
+@@ -2258,6 +2260,7 @@ static void lbmIODone(struct bio *bio, int error)
+ 	if (bp->l_flag & lbmDIRECT) {
+ 		LCACHE_WAKEUP(&bp->l_ioevent);
+ 		LCACHE_UNLOCK(flags);
++		return;
+ 	}
+ 
+ 	tail = log->wqueue;
 
---AjmyJqqohANyBN/e
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHEQBQHb1edYOZ4bsRAkeeAJ9pTWMNzy2IlciSU9GMPNd457mZMwCeMGyK
-jQfERaWAGQyt2locluYzqBI=
-=Zx9i
------END PGP SIGNATURE-----
-
---AjmyJqqohANyBN/e--
