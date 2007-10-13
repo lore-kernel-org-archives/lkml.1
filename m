@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbXJMVNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbXJMVRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762605AbXJMVNK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 17:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXJMVM5
+	id S1762706AbXJMVRU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 17:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbXJMVRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 17:12:57 -0400
-Received: from www.tglx.de ([62.245.132.106]:42452 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbXJMVM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 17:12:56 -0400
-Date: Sat, 13 Oct 2007 23:12:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Roland Dreier <roland@digitalvampire.org>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86: merge some trivially mergeable headers
-In-Reply-To: <87bqb2u4ez.fsf@shaolin.home.digitalvampire.org>
-Message-ID: <alpine.LFD.0.9999.0710132307360.12017@localhost.localdomain>
-References: <87bqb2u4ez.fsf@shaolin.home.digitalvampire.org>
+	Sat, 13 Oct 2007 17:17:12 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:24128 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbXJMVRL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 17:17:11 -0400
+X-IronPort-AV: E=Sophos;i="4.21,271,1188802800"; 
+   d="scan'208";a="180822811"
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [GIT PULL] please pull infiniband.git for-linus
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 13 Oct 2007 14:17:10 -0700
+Message-ID: <adaejfyn295.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Oct 2007 21:17:10.0626 (UTC) FILETIME=[6AD45420:01C80DDE]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007, Roland Dreier wrote:
+Linus, please pull from
 
-> Merge errno.h, resource.h, rtc.h, sections.h, serial.h and sockios.h,
-> where i386 and x86_64 have no or only trivial comment/include guard
-> differences.
-> 
-> Build tested on both 32-bit and 64-bit, and booted on 64-bit.
-> 
-> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-> ---
-> Not sure who's merging this type of stuff so I just picked a grab bag
-> of people to put on the To: line.
-> 
-> Also I'm not sure if someone else is already working on this, so I'm
-> just sending out about 15 minutes of work.  If this is helpful I'll do
-> more of the easy ones...
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Roland, thanks for providing this. I have some of those already, but I 
-really appreciate the help. I take yours and the previously posted and 
-push them out into a cleanup branch on my x86 git tree.
+This tree is also available from kernel.org mirrors at:
 
-I guess it will be unavoidable that there will be some overlap on the low 
-hanging fruit merges, but anyone who is tackling a more complex one should 
-make this public upfront so we can avoid the redundant work.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Thanks,
-	tglx
+This will get one bug fix for a problem that completely kills the mlx4 driver:
+
+Roland Dreier (1):
+      mlx4_core: Fix infinite loop on device initialization
+
+ drivers/net/mlx4/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/mlx4/main.c b/drivers/net/mlx4/main.c
+index e029b8a..89b3f0b 100644
+--- a/drivers/net/mlx4/main.c
++++ b/drivers/net/mlx4/main.c
+@@ -884,7 +884,7 @@ static int __devinit mlx4_init_one(struct pci_dev *pdev,
+ 		++mlx4_version_printed;
+ 	}
  
+-	return mlx4_init_one(pdev, id);
++	return __mlx4_init_one(pdev, id);
+ }
+ 
+ static void mlx4_remove_one(struct pci_dev *pdev)
