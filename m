@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXJMRwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXJMR4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761674AbXJMRwS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXJMRwB
+	id S1761935AbXJMR4L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbXJMRz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:52:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47137 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754258AbXJMRwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:52:00 -0400
-Date: Sat, 13 Oct 2007 10:49:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, viro@ftp.linux.org.uk,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, netdev@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: 2.6.23-mm1 thread exit_group issue
-Message-Id: <20071013104943.e4a54abe.akpm@linux-foundation.org>
-In-Reply-To: <20071013120230.GA130@tv-sign.ru>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071011234202.2f15bb76.akpm@linux-foundation.org>
-	<20071012064658.GA8181@ftp.linux.org.uk>
-	<20071012001325.ba02a6f0.akpm@linux-foundation.org>
-	<20071012194759.GA31733@Krystal>
-	<20071012180349.b4b4c2c3.akpm@linux-foundation.org>
-	<20071013114820.GA121@tv-sign.ru>
-	<20071013120230.GA130@tv-sign.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Oct 2007 13:55:58 -0400
+Received: from lug-owl.de ([195.71.106.12]:54553 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756694AbXJMRz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 13:55:57 -0400
+X-Greylist: delayed 1628 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Oct 2007 13:55:57 EDT
+Date: Sat, 13 Oct 2007 19:28:48 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: vignesh babu <vigneshbabu@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: wierd file perms
+Message-ID: <20071013172848.GE16774@lug-owl.de>
+Mail-Followup-To: vignesh babu <vigneshbabu@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="AjmyJqqohANyBN/e"
+Content-Disposition: inline
+In-Reply-To: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com>
+X-Operating-System: Linux mail 2.6.18-5-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 16:02:30 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> On 10/13, Oleg Nesterov wrote:
-> >
-> > On 10/12, Andrew Morton wrote:
-> > >
-> > > Bisection shows that this problem is caused by these two patches:
-> > >
-> > > pid-namespaces-allow-cloning-of-new-namespace.patch
-> > 
-> > This? http://marc.info/?l=linux-mm-commits&m=118712242002039
-> > 
-> > Pavel, this patch has a subtle difference compared to what we discussed on
-> > containers list. It moves put_user(parent_tidptr) from copy_process() to
-> > do_fork(), so we don't report child's pid if copy_process() failed. I do
-> > not think this is bad, but Eric seems to disagree with such a change.
-> > 
-> > But I can't understand why Andrew sees the same problem _after_ this patch!
-> >
-> > And which patch removed the "put_user(nr, parent_tidptr)" chunk?
-> 
-> Aha. I am looking at
-> 	ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/pid-namespaces-allow-cloning-of-new-namespace.patch
-> 
-> Looks like the original patch was damaged somehow, it doesn't have the
-> "put_user(nr, parent_tidptr)" code.
-> 
+--AjmyJqqohANyBN/e
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It does have it, except it moved somewhere else.  That would have been me
-trying to fix yet another reject storm.  I thought I had that one right. 
-Could someone fix it please?
+On Sat, 2007-10-13 22:40:23 +0530, vignesh babu <vigneshbabu@gmail.com> wro=
+te:
+>=20
+> I was surprised and did an ls -l on the files and guess what I found:
+>=20
+> total 0
+> ?--------- ? ? ? ?                ? fcntl.c
+> ?--------- ? ? ? ?                ? fifo.c
+> ?--------- ? ? ? ?                ? filesystems.c
+> ?--------- ? ? ? ?                ? file_table.c
+> ?--------- ? ? ? ?                ? freevxfs
+>=20
+> So end result is that, Im not able to delete the files or change perms
+> or ownership even as root.
 
+Most probably, your filesystem is broken and needs a fsck.
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+  Signature of:                          Zensur im Internet? Nein danke!
+  the second  :
+
+--AjmyJqqohANyBN/e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHEQBQHb1edYOZ4bsRAkeeAJ9pTWMNzy2IlciSU9GMPNd457mZMwCeMGyK
+jQfERaWAGQyt2locluYzqBI=
+=Zx9i
+-----END PGP SIGNATURE-----
+
+--AjmyJqqohANyBN/e--
