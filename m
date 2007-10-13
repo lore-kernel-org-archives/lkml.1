@@ -1,124 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbXJMMTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXJMMWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbXJMMTf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJMMTZ
+	id S1757219AbXJMMWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbXJMMWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:19:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53708 "EHLO mail.dvmed.net"
+	Sat, 13 Oct 2007 08:22:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22938 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbXJMMTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 08:19:24 -0400
-Message-ID: <4710B7C5.5050403@garzik.org>
-Date: Sat, 13 Oct 2007 08:19:17 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1750858AbXJMMWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 08:22:08 -0400
+Date: Sat, 13 Oct 2007 14:22:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Build error in block/compat_ioctl.c latest git
+Message-ID: <20071013122202.GG969@kernel.dk>
+References: <20071013020840.1cf1261a@gmail.com>
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>,
-       Peer Chen <pchen@nvidia.com>
-Subject: Re: 2.6.23-mm1
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>	 <20071012140328.f82af8e8.kamezawa.hiroyu@jp.fujitsu.com>	 <20071011234202.2f15bb76.akpm@linux-foundation.org>	 <64bb37e0710120131y6b939951y74c50bd596b1d938@mail.gmail.com>	 <20071012013729.ada2127b.akpm@linux-foundation.org>	 <64bb37e0710130101y7fb8e4c0lf214fd821e8305ed@mail.gmail.com>	 <4710A407.3070000@garzik.org> <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
-In-Reply-To: <64bb37e0710130503haa66d6eu93e75ecdc78ac866@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071013020840.1cf1261a@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torsten Kaiser wrote:
-> On 10/13/07, Jeff Garzik <jeff@garzik.org> wrote:
->> Torsten Kaiser wrote:
->>> On 10/12/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>>> On Fri, 12 Oct 2007 10:31:42 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
->>>>> Oct 12 10:23:03 treogen smartd[6091]: Device: /dev/sdc, not found in
->>>>> smartd database.
->>>> hm.
->>>>
->>>>> Oct 12 10:23:03 treogen [  105.990000] WARNING: at
->>>>> drivers/ata/libata-core.c:5752 ata_qc_issue()
->>>> Let's cc linux-ide.
->>>>
->>>>> Oct 12 10:23:03 treogen [  105.990000]
->>>>> Oct 12 10:23:03 treogen [  105.990000] Call Trace:
->>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff804442ef>]
->>>>> ata_qc_issue+0x47f/0x540
->>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff80432e60>] scsi_done+0x0/0x20
->>>>> Oct 12 10:23:03 treogen [  105.990000]  [<ffffffff80449c80>]
->>>>> ata_scsi_flush_xlat+0x0/0x30
->>> Oct 13 07:46:48 treogen [   99.850000]
->>> Oct 13 07:46:48 treogen [   99.850000] ata3: EH in SWNCQ
->>> mode,QC:qc_active 0x3 sactive 0x1
->>> Oct 13 07:46:48 treogen [   99.850000] ata3: SWNCQ:qc_active 0x1
->>> defer_bits 0x0 last_issue_tag 0x0
->> The WARNING indicates that there is a SWNCQ bug in sata_nv.  Given that
->> the problem appears when SYNCHRONIZE CACHE is being issued, I would
+On Sat, Oct 13 2007, Alejandro Riveira Fernández wrote:
 > 
-> I can't follow you on SYNCHRONIZE CACHE.
-> The only command written to the syslog in the errors where
-> 0x60==ATA_CMD_FPDMA_READ and 0xB0 (which is not in
-> include/linux/ata.h, but ATA-6 says that this is SMART related. That
-> makes sense, as smartd is failing).
-
-In the traceback you have "ata_scsi_flush_xlat", which is the function 
-that translates a SCSI sync-cache command into an ATA flush-cache command.
-
-The "WARNING: at drivers/ata/libata-core.c:5752 ata_qc_issue()" also 
-guides us to the code comment
-
-         /* Make sure only one non-NCQ command is outstanding.  The
-          * check is skipped for old EH because it reuses active qc to
-          * request ATAPI sense.
-          */
-
-which is a check related to NCQ->off and off->NCQ edge cases.
-
-So those are the two bits of information I found interesting.
-
-
->> guess that sata_nv is not properly handling non-queued commands.
+>   Latest commit is
+>   ab9c232286c2b77be78441c2d8396500b045777e
 > 
-> But that still seems correct, as I would not expect that SMART
-> commands get queued. (Thats just a guess, as I did not try to find the
-> code that does this distinction)
-> 
->> This is a patch from libata-dev.git#nv-swncq (via #ALL).
-> 
-> Comparing sata_nv.c from 2.6.23-rc8-mm1 and 2.6.23-mm1 I see two
-> changes, that look suspicious:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jgarzik/libata-dev.git;a=commitdiff;h=31cc23b34913bc173680bdc87af79e551bf8cc0d
-> 
-> The comment says: "ahci and sata_sil24 are converted to use ata_std_qc_defer()."
-> But the patch also adds ".qc_defer = ata_std_qc_defer," to sata_nv.c
-> 
-> The second change is the removal of the 'lock' spinlock from sata_nv.c
-> that was used in nv_swncq_qc_issue and nv_swncq_host_interrupt.
-> 
-> Should I try to revert one or both of these changes?
+>  /home/alex/kernel/linux-2.6/block/compat_ioctl.c: En la función ???compat_put_ushort???:
 
-If you are git-capable, IMO the next steps in problem elimination should be
+This should already be fixed, Linus fixed it up. block/compat_ioctl.o
+should only be built when CONFIG_BLOCK && CONFIG_COMPAT are both set.
 
-* download latest linux-2.6.git (currently 
-752097cec53eea111d087c545179b421e2bde98a)
-* build and test linux-2.6.git, to establish a new baseline
-* download latest libata-dev.git#nv-swncq (currently 
-3cb664c2d319a4fde5028c3c5dab6221fe70bd2d)
-* build and test, with sata_nv module option swncq=0
-* build and test, with sata_nv module option swncq=1
-
-That will get -mm out of the picture, use the same baseline kernel for 
-all three tests (nv-swncq is based off of 
-752097cec53eea111d087c545179b421e2bde98a) and narrow things down to the 
-precise changes that went upstream (or are on the 'nv-swncq' branch, 
-waiting to go upstream).
-
-My gut feeling is that there is a lingering bug in sata_nv SWNCQ somewhere.
-
-	Jeff
-
-
+-- 
+Jens Axboe
 
