@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbXJMJav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbXJMJbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761869AbXJMJav (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 05:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbXJMJaR
+	id S1762009AbXJMJbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 05:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761608AbXJMJag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 05:30:17 -0400
-Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:58699 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761281AbXJMJaK (ORCPT
+	Sat, 13 Oct 2007 05:30:36 -0400
+Received: from ev1s-75-125-39-150.ev1servers.net ([75.125.39.150]:40308 "EHLO
+	colorfullife.mysite.adiungo.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761553AbXJMJae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 05:30:10 -0400
-Date: Sat, 13 Oct 2007 11:30:06 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Current Linus' git compilation breakage.
-Message-ID: <20071013113006.6494d1d2@hyperion.delvare>
-In-Reply-To: <20071013012244.GD18760@redhat.com>
-References: <200710131111.32941.nigel@nigel.suspend2.net>
-	<20071013012244.GD18760@redhat.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 13 Oct 2007 05:30:34 -0400
+Message-ID: <4710901F.8010206@colorfullife.com>
+Date: Sat, 13 Oct 2007 11:30:07 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MSI interrupts and disable_irq
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
+In-Reply-To: <46FDBCB4.9090802@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007 21:22:44 -0400, Dave Jones wrote:
-> On Sat, Oct 13, 2007 at 11:11:31AM +1000, Nigel Cunningham wrote:
->  > Hi all.
->  > 
->  > Maybe I just picked a bad time to try, but...
->  > 
->  > arch/x86/kernel/alternative.c: In function 'apply_alternatives':
->  > arch/x86/kernel/alternative.c:191: error: 'VSYSCALL_START' undeclared (first use in this function)
->  > arch/x86/kernel/alternative.c:191: error: (Each undeclared identifier is reported only once
->  > arch/x86/kernel/alternative.c:191: error: for each function it appears in.)
->  > arch/x86/kernel/alternative.c:191: error: 'VSYSCALL_END' undeclared (first use in this function)
->  > make[1]: *** [arch/x86/kernel/alternative.o] Error 1
->  > make: *** [arch/x86/kernel] Error 2
-> 
-> Try this.
-> 
-> Include missing header for vsyscall.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-> index bd72d94..11b03d3 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -10,6 +10,7 @@
->  #include <asm/pgtable.h>
->  #include <asm/mce.h>
->  #include <asm/nmi.h>
-> +#include <asm/vsyscall.h>
->  
->  #define MAX_PATCH_LEN (255-1)
->  
+Jeff Garzik wrote:
+>
+> I think the scenario you outline is an illustration of the approach's 
+> fragility:  disable_irq() is a heavy hammer that originated with INTx, 
+> and it relies on a chip-specific disable method (kernel/irq/manage.c) 
+> that practically guarantees behavior will vary across MSI/INTx/etc.
+>
+I checked the code: IRQ_DISABLE is implemented in software, i.e. 
+handle_level_irq() only calls handle_IRQ_event() [and then the nic irq 
+handler] if IRQ_DISABLE is not set.
+OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
 
-Fixes the problem for me, thanks Dave!
+Perhaps something corrupts dev->irq? The irq is requested with
+    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
+and disabled with
+    disable_irq_lockdep(dev->irq);
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+Someone around with a MSI capable board? The forcedeth driver does
+    dev->irq = pci_dev->irq
+in nv_probe(), especially before pci_enable_msi().
+Does pci_enable_msi() change pci_dev->irq? Then we would disable the 
+wrong interrupt....
 
-This should be applied to Linus' tree quickly.
-
--- 
-Jean Delvare
+--
+    Manfred
