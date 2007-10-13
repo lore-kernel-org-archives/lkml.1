@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbXJMLef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761499AbXJMLjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761874AbXJMLef (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 07:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXJMLeZ
+	id S1761499AbXJMLjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 07:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXJMLjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 07:34:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35692 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbXJMLeY (ORCPT
+	Sat, 13 Oct 2007 07:39:45 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58678 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbXJMLjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 07:34:24 -0400
-Date: Sat, 13 Oct 2007 12:33:48 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] v4l: copy_to_user() is not a good method name
-Message-ID: <20071013113348.GC11464@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	mchehab@infradead.org, linux-kernel@vger.kernel.org
-References: <20071013072524.GF8181@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071013072524.GF8181@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 13 Oct 2007 07:39:44 -0400
+Date: Sat, 13 Oct 2007 13:39:43 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+In-Reply-To: <47107ED2.6040509@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr>
+ <20071012155708.d8abd06d.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr>
+ <47107ED2.6040509@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 08:25:24AM +0100, Al Viro wrote:
-> Breaks on any target that has copy_to_user() defined as a non-trivial
-> macro.
 
-Where did that CALL crap come from?  We normally don;t accept junk like
-that.
+On Oct 13 2007 10:16, Stefan Richter wrote:
+>>>> warning("override: %s turns state choice", sym->name);
+>>>
+>>>What does that warning message mean?  I can't decipher it.
+>> 
+>> It is when the value of a "choice" kconfig object is changed, for example
+>> this .config excerpt:
+>> 
+>> CONFIG_PREEMPT_NONE=y
+>> # CONFIG_PREEMPT_VOLUNTARY is not set
+>> # CONFIG_PREEMPT is not set
+>> # CONFIG_PREEMPT_BKL is not set
+>> # CONFIG_PREEMPT_NONE is not set
+>> CONFIG_REEMPT_VOLUNTARY=y
+>
+>Perhaps say
+>
+>	warning("override: switching to choice %s", sym->name);
+>
+>if sym->name is [CONFIG_]PREEMPT_VOLUNTARY.  Or what is it?
 
+.config:176:warning: override: reassigning to symbol PREEMPT_VOLUNTARY
+.config:176:warning: override: PREEMPT_VOLUNTARY turns state choice
+
+Which seems correct, as PREEMPT_VOLUNTARY=y will overturn
+the previous decision.
+
+Perhaps it should be "%s overturns state choice" ?
