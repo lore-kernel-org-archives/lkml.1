@@ -1,490 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbXJMAoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbXJMArZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761561AbXJMAoB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 20:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbXJMAnv
+	id S1761418AbXJMArZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 20:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbXJMArN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 20:43:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50221 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757922AbXJMAnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 20:43:50 -0400
-Date: Fri, 12 Oct 2007 20:43:32 -0400
-From: Dave Jones <davej@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Correct filenames in comments.
-Message-ID: <20071013004332.GA18760@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 12 Oct 2007 20:47:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48392 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756045AbXJMArM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 20:47:12 -0400
+Date: Fri, 12 Oct 2007 17:46:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Hitachi disk: spurious completions during NCQ
+Message-Id: <20071012174637.9b3b517b.akpm@linux-foundation.org>
+In-Reply-To: <20071010190342.GA13843@dreamland.darkstar.lan>
+References: <20071010190342.GA13843@dreamland.darkstar.lan>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I never really understood the motivation behind putting the filename
-in a comment, but this fixes up a bunch of them that are now wrong
-post-merge.
+On Wed, 10 Oct 2007 21:03:43 +0200
+Luca Tettamanti <kronos.it@gmail.com> wrote:
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+> Hello,
+> sometimes kernel complains about spurious completions on my new
+> notebook:
+> 
+> ata3.00: exception Emask 0x2 SAct 0x407fd SErr 0x0 action 0x2 frozen
+> ata3.00: spurious completions during NCQ issue=0x0 SAct=0x407fd FIS=005040a1:00020000
+> ata3.00: cmd 61/08:00:c7:5a:82/00:00:1b:00:00/40 tag 0 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:10:3f:5b:fa/00:00:18:00:00/40 tag 2 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:18:5f:5b:fa/00:00:18:00:00/40 tag 3 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/18:20:6f:5b:fa/00:00:18:00:00/40 tag 4 cdb 0x0 data 12288 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:28:e7:19:fd/00:00:18:00:00/40 tag 5 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:30:df:59:ae/00:00:1a:00:00/40 tag 6 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:38:3f:5a:ae/00:00:1a:00:00/40 tag 7 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/08:40:6f:62:ae/00:00:1a:00:00/40 tag 8 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/28:48:d7:59:7e/00:00:1b:00:00/40 tag 9 cdb 0x0 data 20480 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/10:50:07:5b:82/00:00:1b:00:00/40 tag 10 cdb 0x0 data 8192 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3.00: cmd 61/30:90:f7:5a:fa/00:00:18:00:00/40 tag 18 cdb 0x0 data 24576 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
+> ata3: soft resetting port
+> ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata3.00: configured for UDMA/133
+> ata3: EH complete
+> sd 2:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> 
+> (this is a very recent 2.6.23-git, SMP, x86_64)
 
-diff --git a/arch/x86/kernel/bugs_64.c b/arch/x86/kernel/bugs_64.c
-index 4e5e9d3..45aa435 100644
---- a/arch/x86/kernel/bugs_64.c
-+++ b/arch/x86/kernel/bugs_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  arch/x86_64/kernel/bugs.c
-+ *  arch/x86/kernel/bugs_64.c
-  *
-  *  Copyright (C) 1994  Linus Torvalds
-  *  Copyright (C) 2000  SuSE
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 59266f0..84f2496 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -1,5 +1,5 @@
- /*
-- *  arch/i386/cpu/bugs.c
-+ *  arch/x86/kernel/cpu/bugs.c
-  *
-  *  Copyright (C) 1994  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
-index 3f532df..d919089 100644
---- a/arch/x86/kernel/crash_dump_32.c
-+++ b/arch/x86/kernel/crash_dump_32.c
-@@ -1,5 +1,5 @@
- /*
-- *	kernel/crash_dump.c - Memory preserving reboot related code.
-+ *	arch/x86/kernel/crash_dump_32.c - Memory preserving reboot related code.
-  *
-  *	Created by: Hariprasad Nellitheertha (hari@in.ibm.com)
-  *	Copyright (C) IBM Corporation, 2004. All rights reserved
-diff --git a/arch/x86/kernel/crash_dump_64.c b/arch/x86/kernel/crash_dump_64.c
-index 942deac..7da6ff5 100644
---- a/arch/x86/kernel/crash_dump_64.c
-+++ b/arch/x86/kernel/crash_dump_64.c
-@@ -1,5 +1,5 @@
- /*
-- *	kernel/crash_dump.c - Memory preserving reboot related code.
-+ *	arch/x86/kernel/crash_dump_64.c - Memory preserving reboot related code.
-  *
-  *	Created by: Hariprasad Nellitheertha (hari@in.ibm.com)
-  *	Copyright (C) IBM Corporation, 2004. All rights reserved
-diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-index 6c34bdd..a7f006d 100644
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86_64/kernel/head64.c -- prepare to run common code
-+ *  arch/x86/kernel/head64.c -- prepare to run common code
-  *
-  *  Copyright (C) 2000 Andrea Arcangeli <andrea@suse.de> SuSE
-  */
-diff --git a/arch/x86/kernel/i387_32.c b/arch/x86/kernel/i387_32.c
-index 6658472..3f51937 100644
---- a/arch/x86/kernel/i387_32.c
-+++ b/arch/x86/kernel/i387_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/i387.c
-+ *  arch/x86/kernel/i387_32.c
-  *
-  *  Copyright (C) 1994 Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/i387_64.c b/arch/x86/kernel/i387_64.c
-index 1d58c13..3de4b03 100644
---- a/arch/x86/kernel/i387_64.c
-+++ b/arch/x86/kernel/i387_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86_64/kernel/i387.c
-+ *  arch/x86/kernel/i387_64.c
-  *
-  *  Copyright (C) 1994 Linus Torvalds
-  *  Copyright (C) 2002 Andi Kleen, SuSE Labs
-diff --git a/arch/x86/kernel/ioport_32.c b/arch/x86/kernel/ioport_32.c
-index 3d310a9..82c0256 100644
---- a/arch/x86/kernel/ioport_32.c
-+++ b/arch/x86/kernel/ioport_32.c
-@@ -1,5 +1,5 @@
- /*
-- *	linux/arch/i386/kernel/ioport.c
-+ *	arch/x86/kernel/ioport_32.c
-  *
-  * This contains the io-permission bitmap code - written by obz, with changes
-  * by Linus.
-diff --git a/arch/x86/kernel/ioport_64.c b/arch/x86/kernel/ioport_64.c
-index 653efa3..480b8af 100644
---- a/arch/x86/kernel/ioport_64.c
-+++ b/arch/x86/kernel/ioport_64.c
-@@ -1,5 +1,5 @@
- /*
-- *	linux/arch/x86_64/kernel/ioport.c
-+ *	arch/x86/kernel/ioport_64.c
-  *
-  * This contains the io-permission bitmap code - written by obz, with changes
-  * by Linus.
-diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-index 4f681bc..ca20f1a 100644
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -1,5 +1,5 @@
- /*
-- *	linux/arch/i386/kernel/irq.c
-+ *	arch/x86/kernel/irq_32.c
-  *
-  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
-  *
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index bd11e42..f505944 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -1,5 +1,5 @@
- /*
-- *	linux/arch/x86_64/kernel/irq.c
-+ *	arch/x86/kernel/irq_64.c
-  *
-  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
-  *
-diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
-index 448a50b..b0383f8 100644
---- a/arch/x86/kernel/kprobes_32.c
-+++ b/arch/x86/kernel/kprobes_32.c
-@@ -1,6 +1,6 @@
- /*
-  *  Kernel Probes (KProbes)
-- *  arch/i386/kernel/kprobes.c
-+ *  arch/x86/kernel/kprobes_32.c
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
-index a30e004..925f248 100644
---- a/arch/x86/kernel/kprobes_64.c
-+++ b/arch/x86/kernel/kprobes_64.c
-@@ -1,6 +1,6 @@
- /*
-  *  Kernel Probes (KProbes)
-- *  arch/x86_64/kernel/kprobes.c
-+ *  arch/x86/kernel/kprobes_64.c
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-diff --git a/arch/x86/kernel/ldt_32.c b/arch/x86/kernel/ldt_32.c
-index e0b2d17..8934895 100644
---- a/arch/x86/kernel/ldt_32.c
-+++ b/arch/x86/kernel/ldt_32.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/i386/kernel/ldt.c
-+ * arch/x86/kernel/ldt_32.c
-  *
-  * Copyright (C) 1992 Krishna Balasubramanian and Linus Torvalds
-  * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
-diff --git a/arch/x86/kernel/ldt_64.c b/arch/x86/kernel/ldt_64.c
-index bc9ffd5..850a43c 100644
---- a/arch/x86/kernel/ldt_64.c
-+++ b/arch/x86/kernel/ldt_64.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/x86_64/kernel/ldt.c
-+ * arch/x86/kernel/ldt_64.c
-  *
-  * Copyright (C) 1992 Krishna Balasubramanian and Linus Torvalds
-  * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
-diff --git a/arch/x86/kernel/mca_32.c b/arch/x86/kernel/mca_32.c
-index b83672b..c35626b 100644
---- a/arch/x86/kernel/mca_32.c
-+++ b/arch/x86/kernel/mca_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/mca.c
-+ *  arch/x86/kernel/mca_32.c
-  *  Written by Martin Kolinek, February 1996
-  *
-  * Changes:
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index 95d3fc2..e3b2d62 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/nmi.c
-+ *  arch/x86/kernel/nmi_32.c
-  *
-  *  NMI watchdog support on APIC systems
-  *
-diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-index e60ac0d..2973706 100644
---- a/arch/x86/kernel/nmi_64.c
-+++ b/arch/x86/kernel/nmi_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86_64/nmi.c
-+ *  arch/x86/kernel/nmi_64.c
-  *
-  *  NMI watchdog support on APIC systems
-  *
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 6f9dbbe..3cfc62f 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86-64/kernel/process.c
-+ *  arch/x86/kernel/process_64.c
-  *
-  *  Copyright (C) 1995  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
-index 7c1b925..56ec088 100644
---- a/arch/x86/kernel/ptrace_32.c
-+++ b/arch/x86/kernel/ptrace_32.c
-@@ -1,4 +1,4 @@
--/* ptrace.c */
-+/* ptrace_32.c */
- /* By Ross Biro 1/23/92 */
- /*
-  * Pentium III FXSR, SSE support
-diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
-index eea3702..de78129 100644
---- a/arch/x86/kernel/ptrace_64.c
-+++ b/arch/x86/kernel/ptrace_64.c
-@@ -1,4 +1,4 @@
--/* ptrace.c */
-+/* ptrace_64.c */
- /* By Ross Biro 1/23/92 */
- /*
-  * Pentium III FXSR, SSE support
-diff --git a/arch/x86/kernel/reboot_32.c b/arch/x86/kernel/reboot_32.c
-index b37ed22..0708315 100644
---- a/arch/x86/kernel/reboot_32.c
-+++ b/arch/x86/kernel/reboot_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/reboot.c
-+ *  arch/x86/kernel/reboot_32.c
-  */
- 
- #include <linux/mm.h>
-diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-index 139eb03..98b77c0 100644
---- a/arch/x86/kernel/reboot_fixups_32.c
-+++ b/arch/x86/kernel/reboot_fixups_32.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/i386/kernel/reboot_fixups.c
-+ * arch/x86/kernel/reboot_fixups_32.c
-  *
-  * This is a good place to put board specific reboot fixups.
-  *
-diff --git a/arch/x86/kernel/scx200_32.c b/arch/x86/kernel/scx200_32.c
-index c7d3df2..f5751c0 100644
---- a/arch/x86/kernel/scx200_32.c
-+++ b/arch/x86/kernel/scx200_32.c
-@@ -1,4 +1,4 @@
--/* linux/arch/i386/kernel/scx200.c 
-+/* arch/x86/kernel/scx200_32.c
- 
-    Copyright (c) 2001,2002 Christer Weinigel <wingel@nano-system.com>
- 
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index d474cd6..a61763c 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/setup.c
-+ *  arch/x86/kernel/setup_32.c
-  *
-  *  Copyright (C) 1995  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 32054bf..b0b6393 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86-64/kernel/setup.c
-+ *  arch/x86/kernel/setup_64.c
-  *
-  *  Copyright (C) 1995  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index c03570f..7b5a507 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/signal.c
-+ *  arch/x86/kernel/signal_32.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 739175b..afa874e 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86_64/kernel/signal.c
-+ *  arch/x86/kernel/signal_64.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-  *  Copyright (C) 2000, 2001, 2002 Andi Kleen SuSE Labs
-diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
-index cb91091..c51fc33 100644
---- a/arch/x86/kernel/stacktrace.c
-+++ b/arch/x86/kernel/stacktrace.c
-@@ -1,5 +1,5 @@
- /*
-- * arch/x86_64/kernel/stacktrace.c
-+ * arch/x86/kernel/stacktrace.c
-  *
-  * Stack trace management functions
-  *
-diff --git a/arch/x86/kernel/summit_32.c b/arch/x86/kernel/summit_32.c
-index d0e01a3..edfe960 100644
---- a/arch/x86/kernel/summit_32.c
-+++ b/arch/x86/kernel/summit_32.c
-@@ -1,5 +1,5 @@
- /*
-- * arch/i386/kernel/summit.c - IBM Summit-Specific Code
-+ * arch/x86/kernel/summit_32.c - IBM Summit-Specific Code
-  *
-  * Written By: Matthew Dobson, IBM Corporation
-  *
-diff --git a/arch/x86/kernel/sys_i386_32.c b/arch/x86/kernel/sys_i386_32.c
-index 4214730..30ccb5e 100644
---- a/arch/x86/kernel/sys_i386_32.c
-+++ b/arch/x86/kernel/sys_i386_32.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/i386/kernel/sys_i386.c
-+ * arch/x86/kernel/sys_i386_32.c
-  *
-  * This file contains various random system calls that
-  * have a non-standard calling sequence on the Linux/i386
-diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
-index 4770b7a..c1c8ff6 100644
---- a/arch/x86/kernel/sys_x86_64.c
-+++ b/arch/x86/kernel/sys_x86_64.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/x86_64/kernel/sys_x86_64.c
-+ * arch/x86/kernel/sys_x86_64.c
-  */
- 
- #include <linux/errno.h>
-diff --git a/arch/x86/kernel/sysenter_32.c b/arch/x86/kernel/sysenter_32.c
-index 4eb2e40..f58a87d 100644
---- a/arch/x86/kernel/sysenter_32.c
-+++ b/arch/x86/kernel/sysenter_32.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/i386/kernel/sysenter.c
-+ * arch/x86/kernel/sysenter_32.c
-  *
-  * (C) Copyright 2002 Linus Torvalds
-  * Portions based on the vdso-randomization code from exec-shield:
-diff --git a/arch/x86/kernel/time_32.c b/arch/x86/kernel/time_32.c
-index 56dadfc..5a765d6 100644
---- a/arch/x86/kernel/time_32.c
-+++ b/arch/x86/kernel/time_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/kernel/time.c
-+ *  arch/x86/kernel/time_32.c
-  *
-  *  Copyright (C) 1991, 1992, 1995  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
-index e0134d6..1443fbb 100644
---- a/arch/x86/kernel/time_64.c
-+++ b/arch/x86/kernel/time_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86-64/kernel/time.c
-+ *  arch/x86/kernel/time_64.c
-  *
-  *  "High Precision Event Timer" based timekeeping.
-  *
-diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
-index 4578235..b51557e 100644
---- a/arch/x86/kernel/topology.c
-+++ b/arch/x86/kernel/topology.c
-@@ -1,5 +1,5 @@
- /*
-- * arch/i386/kernel/topology.c - Populate sysfs with topology information
-+ * arch/x86/kernel/topology.c - Populate sysfs with topology information
-  *
-  * Written by: Matthew Dobson, IBM Corporation
-  * Original Code: Paul Dorwin, IBM Corporation, Patrick Mochel, OSDL
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 47b0bef..7e59a60 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/i386/traps.c
-+ *  arch/x86/kernel/traps_32.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 0388842..9933d05 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86-64/traps.c
-+ *  arch/x86/kernel/traps_64.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-  *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
-diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-index 355f5f5..42c4ce1 100644
---- a/arch/x86/kernel/tsc_sync.c
-+++ b/arch/x86/kernel/tsc_sync.c
-@@ -1,5 +1,5 @@
- /*
-- * arch/x86_64/kernel/tsc_sync.c: check TSC synchronization.
-+ * arch/x86/kernel/tsc_sync.c: check TSC synchronization.
-  *
-  * Copyright (C) 2006, Red Hat, Inc., Ingo Molnar
-  *
-diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
-index f2dcd1d..ea69cf7 100644
---- a/arch/x86/kernel/vm86_32.c
-+++ b/arch/x86/kernel/vm86_32.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/kernel/vm86.c
-+ *  arch/x86/kernel/vm86_32.c
-  *
-  *  Copyright (C) 1994  Linus Torvalds
-  *
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 06c3494..7a91f9e 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/arch/x86_64/kernel/vsyscall.c
-+ *  arch/x86/kernel/vsyscall_64.c
-  *
-  *  Copyright (C) 2001 Andrea Arcangeli <andrea@suse.de> SuSE
-  *  Copyright 2003 Andi Kleen, SuSE Labs.
+The latest kernel, a serious-looking problem, sent to the correct mailing
+lists.  After two days nobody has bothered replying.
 
--- 
-http://www.codemonkey.org.uk
+> The disk is:
+> 
+> ATA device, with non-removable media
+>         Model Number:       Hitachi HTS542525K9SA00
+>         Firmware Revision:  BBFOC31P
+> 
+> The controller is: 
+> 
+> 00:1f.2 SATA controller: Intel Corporation Mobile SATA AHCI Controller (rev 03) (prog-if 01 [AHCI 1.0])
+>         Subsystem: ASUSTeK Computer Inc. Unknown device 14e7
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0
+>         Interrupt: pin B routed to IRQ 1272
+>         Region 0: I/O ports at ec00 [size=8]
+>         Region 1: I/O ports at e880 [size=4]
+>         Region 2: I/O ports at e800 [size=8]
+>         Region 3: I/O ports at e480 [size=4]
+>         Region 4: I/O ports at e400 [size=32]
+>         Region 5: Memory at febff800 (32-bit, non-prefetchable) [size=2K]
+>         Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/2 Enable+
+>                 Address: fee0300c  Data: 41b9
+>         Capabilities: [70] Power Management version 3
+>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold-)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [a8] #12 [0010]
+> 
+> and I'm using AHCI driver.
+> 
+> I see that similar disks are already blacklisted, probably this one is
+> bugged too - though the error is pretty rare :(
+> 
+
+Does this cause any other symptoms?  ie: does the system otherwise work OK?
+
+
