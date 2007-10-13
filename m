@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761881AbXJMMgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbXJMMhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761881AbXJMMgz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 08:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbXJMMff
+	id S1760312AbXJMMhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 08:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758805AbXJMMfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 08:35:35 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:54107 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756230AbXJMMfa (ORCPT
+	Sat, 13 Oct 2007 08:35:39 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:55428 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756349AbXJMMfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Oct 2007 08:35:30 -0400
-Message-Id: <20071013123414.160200918@mail.of.borg>
+Message-Id: <20071013123414.647276232@mail.of.borg>
 References: <20071013123123.085686856@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sat, 13 Oct 2007 14:31:30 +0200
+Date: Sat, 13 Oct 2007 14:31:31 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Michael Buesch <mb@bu3sch.de>, Stefano Brivio <st3@riseup.net>
+       Michael Buesch <mb@bu3sch.de>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: [patch 7/8] b43 wireless needs <linux/io.h>
-Content-Disposition: inline; filename=b43-needs-linux-io.h.diff
+       netdev@vger.kernel.org
+Subject: [patch 8/8] ssb bus needs <linux/io.h>
+Content-Disposition: inline; filename=ssb-needs-linux-io.h.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-b43 wireless needs <linux/io.h>
+ssb bus needs <linux/io.h>
 
-linux/drivers/net/wireless/b43/pio.h: In function 'b43_pio_write':
-linux/drivers/net/wireless/b43/pio.h:89: error: implicit declaration of function 'mmiowb'
-
-linux/drivers/net/wireless/b43/phy.c: In function 'b43_phy_write':
-linux/drivers/net/wireless/b43/phy.c:301: error: implicit declaration of function 'mmiowb'
-
-linuxdrivers/net/wireless/b43/sysfs.c: In function 'b43_attr_interfmode_store':
-linuxdrivers/net/wireless/b43/sysfs.c:147: error: implicit declaration of function 'mmiowb'
+linux/drivers/ssb/main.c: In function 'ssb_ssb_read16':
+linux/drivers/ssb/main.c:518: error: implicit declaration of function 'readw'
+linux/drivers/ssb/main.c: In function 'ssb_ssb_read32':
+linux/drivers/ssb/main.c:526: error: implicit declaration of function 'readl'
+linux/drivers/ssb/main.c: In function 'ssb_ssb_write16':
+linux/drivers/ssb/main.c:534: error: implicit declaration of function 'writew'
+linux/drivers/ssb/main.c: In function 'ssb_ssb_write32':
+linux/drivers/ssb/main.c:542: error: implicit declaration of function 'writel'
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/net/wireless/b43/phy.c   |    1 +
- drivers/net/wireless/b43/pio.h   |    1 +
- drivers/net/wireless/b43/sysfs.c |    5 +++--
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/ssb/main.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/wireless/b43/phy.c
-+++ b/drivers/net/wireless/b43/phy.c
-@@ -26,6 +26,7 @@
- */
+--- a/drivers/ssb/main.c
++++ b/drivers/ssb/main.c
+@@ -11,6 +11,7 @@
+ #include "ssb_private.h"
  
  #include <linux/delay.h>
 +#include <linux/io.h>
- #include <linux/types.h>
- 
- #include "b43.h"
---- a/drivers/net/wireless/b43/pio.h
-+++ b/drivers/net/wireless/b43/pio.h
-@@ -4,6 +4,7 @@
- #include "b43.h"
- 
- #include <linux/interrupt.h>
-+#include <linux/io.h>
- #include <linux/list.h>
- #include <linux/skbuff.h>
- 
---- a/drivers/net/wireless/b43/sysfs.c
-+++ b/drivers/net/wireless/b43/sysfs.c
-@@ -23,13 +23,14 @@
- 
- */
- 
-+#include <linux/capability.h>
-+#include <linux/io.h>
-+
- #include "b43.h"
- #include "sysfs.h"
- #include "main.h"
- #include "phy.h"
- 
--#include <linux/capability.h>
--
- #define GENERIC_FILESIZE	64
- 
- static int get_integer(const char *buf, size_t count)
+ #include <linux/ssb/ssb.h>
+ #include <linux/ssb/ssb_regs.h>
+ #include <linux/dma-mapping.h>
 
 -- 
 Gr{oetje,eeting}s,
