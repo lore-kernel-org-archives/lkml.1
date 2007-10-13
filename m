@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762776AbXJMTcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762895AbXJMTf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762776AbXJMTcR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 15:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbXJMTcH
+	id S1762895AbXJMTf5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 15:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbXJMTfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 15:32:07 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:53967 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbXJMTcG (ORCPT
+	Sat, 13 Oct 2007 15:35:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60991 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbXJMTfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 15:32:06 -0400
-X-Greylist: delayed 1887 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Oct 2007 15:32:06 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-	b=dATsrMgDyZsjhPMyIa6ja1s7JGw/Xp6Hs5u7lXXzhPRsWI2OeKJb9dO7x/CDKcadkTve4EpLIIDcoyyZXSiCR2rzJr/wgmnPEcjA2MTLdkF6gy4vWIQyYhjjLEtcfWS3VvcRGqHiwhGDh/Zh5qfQYGBjWEUEeSeEWJAeeyxrrbw=;
-Message-ID: <4711159D.1010305@unsolicited.net>
-Date: Sat, 13 Oct 2007 19:59:41 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Peter Volkov <pva@gentoo.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: regression(?): starting with 2.6.21 sending packets became broken.
-References: <1192299385.31908.8.camel@localhost>
-In-Reply-To: <1192299385.31908.8.camel@localhost>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 13 Oct 2007 15:35:47 -0400
+Date: Sat, 13 Oct 2007 12:28:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, shaggy@linux.vnet.ibm.com
+Subject: Re: [PATCH] JFS: Bio cleanup: Replace missing return statements
+Message-Id: <20071013122853.aafd3c00.randy.dunlap@oracle.com>
+In-Reply-To: <20071013191110.GA20203@havoc.gtf.org>
+References: <20071013191110.GA20203@havoc.gtf.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Volkov wrote:
-> Hello, all on the list.
->
-> Please CC me in answers, I'm not subscribed. Please, if this is wrong
-> list tell me what is correct.
->
-> Starting with 2.6.21 (or may be 2.6.20 as I have not tried it) kernel I
-> have problem that most tcp based services freeze at some point of
-> operation. I've noticed this first on ssh but then found out that at
-> lease one other service became similarly. The problem sites somewhere in
-> the kernel as I've compiled 2.6.19, 2.6.21, and 2.6.22 with the
-> similar .config options (of course not exact, as some options does not
-> exist in some kernels, but seems that enabled options are all the same)
-> but I have this problem only with the 21 and 22. I've tried to debug the
-> problem a bit, but not a lot as that is production box working as linux
-> based firewall/router.
->   
-Try
+On Sat, 13 Oct 2007 15:11:10 -0400 Jeff Garzik wrote:
 
-echo 0 > /proc/sys/net/ipv4/tcp_window_scaling
+> 
+> From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> 
+> commit 6712ecf8f648118c3363c142196418f89a510b90 removed some "return 0;"
+> statements, rather than changing them to null returns.
 
-I bet you have broken router(s) between your machine and the problem
-site(s).
+Is my git tree mucked up?  It looks to me like it was commit
+e30408b2a99cb7b8bf529c7dc2328a19d71894cf  that removed the return 0's.
 
-Cheers
-David
+
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+> Dave sent this under a different cover, but just in case it was missed
+> in the middle of the thread, I wanted to make sure it was not missed.
+> 
+>  fs/jfs/jfs_logmgr.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
+> index ccfd029..15a3974 100644
+> --- a/fs/jfs/jfs_logmgr.c
+> +++ b/fs/jfs/jfs_logmgr.c
+> @@ -2234,6 +2234,8 @@ static void lbmIODone(struct bio *bio, int error)
+>  
+>  		/* wakeup I/O initiator */
+>  		LCACHE_WAKEUP(&bp->l_ioevent);
+> +
+> +		return;
+>  	}
+>  
+>  	/*
+> @@ -2258,6 +2260,7 @@ static void lbmIODone(struct bio *bio, int error)
+>  	if (bp->l_flag & lbmDIRECT) {
+>  		LCACHE_WAKEUP(&bp->l_ioevent);
+>  		LCACHE_UNLOCK(flags);
+> +		return;
+>  	}
+>  
+>  	tail = log->wqueue;
+
+---
+~Randy
