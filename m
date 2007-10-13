@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXJMEpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXJMFAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbXJMEpE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 00:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXJMEov
+	id S1758205AbXJMFAf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 01:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXJMFA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 00:44:51 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:39358 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbXJMEou (ORCPT
+	Sat, 13 Oct 2007 01:00:26 -0400
+Received: from qsrv02sl.mx.bigpond.com ([144.140.93.182]:62508 "EHLO
+	qsrv02sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbXJMFAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 00:44:50 -0400
-Message-ID: <47104D26.7050206@linux.vnet.ibm.com>
-Date: Sat, 13 Oct 2007 10:14:22 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sat, 13 Oct 2007 01:00:25 -0400
+Message-ID: <47101F7D.8050101@bigpond.net.au>
+Date: Sat, 13 Oct 2007 11:29:33 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 - build failure with advansys
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Jarek Poplawski <jarkao2@o2.pl>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>,
+       "Siddha\, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: Rationalize sys_sched_rr_get_interval()
+References: <20071012064927.GA1962@ff.dom.local>
+In-Reply-To: <20071012064927.GA1962@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [124.179.200.236] using ID pwil3058@bigpond.net.au at Sat, 13 Oct 2007 01:29:34 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Jarek Poplawski wrote:
+> On 12-10-2007 00:23, Peter Williams wrote:
+> ...
+>> The reason I was going that route was for modularity (which helps when 
+>> adding plugsched patches).  I'll submit a revised patch for consideration.
+> ...
+> 
+> IMHO, it looks like modularity could suck here:
+> 
+>> +static unsigned int default_timeslice_fair(struct task_struct *p)
+>> +{
+>> +	return NS_TO_JIFFIES(sysctl_sched_min_granularity);
+>> +}
+> 
+> If it's needed for outside and sched_fair will use something else
+> (to avoid double conversion) this could be misleading. Shouldn't
+> this be kind of private and return something usable for the class
+> mainly?
 
-Another build failure with following message
+This is supplying data for a system call not something for internal use 
+by the class.  As far as the sched_fair class is concerned this is just 
+a (necessary - because it's need by a system call) diversion.
 
-  CC      drivers/scsi/advansys.o
-drivers/scsi/advansys.c:71:2: warning: #warning this driver is still not properly converted to the DMA API
-drivers/scsi/advansys.c: In function ‘AdvBuildCarrierFreelist’:
-drivers/scsi/advansys.c:6486: error: implicit declaration of function ‘virt_to_bus’
-drivers/scsi/advansys.c: In function ‘AdvInitAsc3550Driver’:
-drivers/scsi/advansys.c:6974: error: implicit declaration of function ‘bus_to_virt’
-drivers/scsi/advansys.c:6974: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c:6994: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c: In function ‘AdvInitAsc38C0800Driver’:
-drivers/scsi/advansys.c:7450: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c:7471: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c: In function ‘AdvInitAsc38C1600Driver’:
-drivers/scsi/advansys.c:7939: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c:7963: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c: In function ‘adv_isr_callback’:
-drivers/scsi/advansys.c:8175: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c: In function ‘AdvISR’:
-drivers/scsi/advansys.c:8392: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c:8412: warning: cast to pointer from integer of different size
-drivers/scsi/advansys.c: In function ‘AdvExeScsiQueue’:
-drivers/scsi/advansys.c:10845: warning: cast to pointer from integer of different size
-make[2]: *** [drivers/scsi/advansys.o] Error 1
-make[1]: *** [drivers/scsi] Error 2
-make: *** [drivers] Error 2
+> Why anything else than sched_fair should care about this?
 
+sched_fair doesn't care so if nothing else does why do we even have 
+sys_sched_rr_get_interval()?  Is this whole function an anachronism that 
+can be expunged?  I'm assuming that the reason it exists is that there 
+are user space programs that use this system call.  Am I correct in this 
+assumption?  Personally, I can't think of anything it would be useful 
+for other than satisfying curiosity.
 
-The functions virt_to_bus and bus_to_virt are begin defined between ifdef CONFIG_PPC32
-but when i compile allyesconfig with ppc64 box,i get this error. This patch removes the
-ifdef.
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
-Signed-off-by : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
---- linux-2.6.23/include/asm-powerpc/io.h       2007-10-12 15:46:14.000000000 +0530
-+++ linux-2.6.23/include/asm-powerpc/~io.h      2007-10-12 15:46:00.000000000 +0530
-@@ -690,7 +690,6 @@ static inline void * phys_to_virt(unsign
-  * drivers (shame shame shame) that use bus_to_virt() and haven't been
-  * fixed yet so I need to define it here.
-  */
--#ifdef CONFIG_PPC32
- 
- static inline unsigned long virt_to_bus(volatile void * address)
- {
-@@ -708,7 +707,6 @@ static inline void * bus_to_virt(unsigne
- 
- #define page_to_bus(page)      (page_to_phys(page) + PCI_DRAM_OFFSET)
- 
--#endif /* CONFIG_PPC32 */
- 
- /* access ports */
- #define setbits32(_addr, _v) out_be32((_addr), in_be32(_addr) |  (_v))
-
-
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
