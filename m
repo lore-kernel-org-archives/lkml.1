@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbXJMHxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761802AbXJMHzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761466AbXJMHxe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 03:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXJMHxZ
+	id S1761802AbXJMHzu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbXJMHzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 03:53:25 -0400
-Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:32790 "EHLO
-	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751849AbXJMHxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 03:53:24 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-Date: Sat, 13 Oct 2007 09:53:21 +0200
-User-Agent: KMail/1.9.7
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200710122231.50739.elendil@planet.nl> <20071012212223.GD16418@kroah.com>
-In-Reply-To: <20071012212223.GD16418@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710130953.22099.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Oct 2007 07:53:22.0439 (UTC) FILETIME=[20970170:01C80D6E]
+	Sat, 13 Oct 2007 03:55:42 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52145 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751967AbXJMHzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:55:41 -0400
+X-Authenticated: #815327
+X-Provags-ID: V01U2FsdGVkX1/NVgclVrrNDiv+paripuZRdn9RMLvydCYSuos7yF
+	+1RcH0ERmhVzMN
+Date: Sat, 13 Oct 2007 09:55:36 +0200
+From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Strange network related data corruption
+Message-ID: <20071013095536.32c2afd6@highlander.home.lan>
+In-Reply-To: <200710091257.20874.vda.linux@googlemail.com>
+References: <20071007184741.3b1951c1@highlander.home.lan>
+	<200710081401.32375.vda.linux@googlemail.com>
+	<20071009132553.439f7d8b@cp771133>
+	<200710091257.20874.vda.linux@googlemail.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/t.94BSW/VBnijQ3PVoYr5E0";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 October 2007, Greg KH wrote:
-> On Fri, Oct 12, 2007 at 10:31:50PM +0200, Frans Pop wrote:
-> > Please consider this patch for 2.6.23.2
-> > http://lkml.org/lkml/2007/10/4/389
-> >
-> > tested by me in
-> > http://lkml.org/lkml/2007/10/5/150
-> >
-> > to fix the regression first reported in
-> > http://lkml.org/lkml/2007/10/3/123
-> >
-> > Cause of the wrong display in top is the value of stime in
-> > /proc/<pid>/stat decreasing occasionally.
-> >
-> > The issue is also registered as:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9135
->
-> Is it already in Linus's tree?  If so, do you have a git commit id?  If
-> not, please let us (stable@) know when it is, and what the id is, and
-> then we can add it to our tree.
+--Sig_/t.94BSW/VBnijQ3PVoYr5E0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Not AFAICT.
-CCing Christian (as patch author) and Ingo (as author of the change that 
-caused the regression) so they can push it through the correct channels.
+On Tue, 9 Oct 2007 12:57:20 +0100
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
+
+> On Tuesday 09 October 2007 12:25, Malte Schr=C3=B6der wrote:
+> > > Does it happen over loopback?
+> >=20
+> > I just tried a few times and yes, it also happens on loopback, but
+> > much less frequently. Now I am really confused ...
+>=20
+> Actually, that eliminates a lot of cases.
+>=20
+> Run memtest86 overnight ("bad hardware" theory),
+
+Well, that did not show problems. But I put apart the PC, removed dust
+and so on.
+Now it doesn't even boot anymore (i.e. no BIOS, not even pcspeaker when
+I boot without RAM. So I declare the mainboard as dead.
+
+> try older kernel versions ("kernel bug" theory).
+
+Done. But it is the hardware.
+
+
+Thanks for the advise :)
+
+> --
+> vda
+>=20
+
+
+--=20
+---------------------------------------
+Malte Schr=C3=B6der
+MalteSch@gmx.de
+ICQ# 68121508
+---------------------------------------
+
+
+--Sig_/t.94BSW/VBnijQ3PVoYr5E0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHEHn74q3E2oMjYtURAuuOAJoCI3pFy/DIfkVWFGqDn4OuWEEr2gCfaDOB
+4SoUQfe8k52cJPb0yWPSUjA=
+=FSh0
+-----END PGP SIGNATURE-----
+
+--Sig_/t.94BSW/VBnijQ3PVoYr5E0--
