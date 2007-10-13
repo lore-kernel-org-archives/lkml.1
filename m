@@ -1,218 +1,600 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbXJMBkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbXJMBvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbXJMBkW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Oct 2007 21:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbXJMBkE
+	id S1760668AbXJMBvN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Oct 2007 21:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbXJMBu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Oct 2007 21:40:04 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:21239 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755050AbXJMBkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Oct 2007 21:40:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=pqBr8bP70wRGME+AIAn226yOE0e4hamqFAt9Ktj41/3hdWUx+80t1BJ3DxuY616pGUfpVAEuwsJhoRl8WWZJlwwz+NnF/rF8bCuwe8Zhe/qd0ND8g3mMtZbb3wbZVUnnZLd+kfqNsJu97lL48cFCqlZA4C1i7sr9Yr8/mtfXdKA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [git patches] libata update
-Date: Sat, 13 Oct 2007 03:42:22 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
-       Kristoffer Nyborg Gregertsen <kngregertsen@norway.atmel.com>
-References: <20071012194002.GA1545@havoc.gtf.org>
-In-Reply-To: <20071012194002.GA1545@havoc.gtf.org>
+	Fri, 12 Oct 2007 21:50:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51080 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751983AbXJMBu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Oct 2007 21:50:56 -0400
+Date: Fri, 12 Oct 2007 21:10:53 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Delete filenames in comments.
+Message-ID: <20071013011053.GC18760@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+References: <20071013004332.GA18760@redhat.com> <20071012174950.7cf2e0b9.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710130342.22217.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071012174950.7cf2e0b9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since the x86 merge, lots of files that referenced their own filenames
+are no longer correct.  Rather than keep them up to date, just delete
+them, as they add no real value.
 
-On Friday 12 October 2007, Jeff Garzik wrote:
-> 
-> [ I just sent this upstream to Andrew and Linus ]
-> 
-> Now that I have nailed down the corruption problem, I can attend to
-> this...  Fun stuff:
-> 
-> * port multiplier support (like an ethernet hub, only dumber)
+Additionally:
+- fix up comment formatting in scx200_32.c
+- Remove a credit from myself in setup_64.c from a time when we had no SCM
+- remove longwinded history from tsc_32.c which can be figured out from
+  git.
 
-Great to see this here.
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-> * Asynchronous notification -- finally userspace CD-ROM polling can go away!
-
-Is this AHCI specific or could be used by some other SATA hosts?
-
->   (NOTE: waiting on James B to apply the piece that actually makes this
->   work...)
-> 
-> * Alan continues to hammer out edge cases in generic ATA support.  An
->   amazing amount of ancient and/or obscure hardware works with libata   thanks to him :)
-
-Worth to mention that this update also contains two new drivers from Alan,
-pata_acpi and pata_ns87415. :)
-
-> * Turn on ACPI by default (watch for bug reports!).  This should make
->   suspend/resume work a lot better.
-> 
-> * New drivers for embedded ATA chips.
-
-Unfortunately both are broken ATM, details below.
-
-[ added Sonic Zhang and Kristoffer Nyborg Gregertsen to cc: ]
-
-> Please pull from 'upstream-linus' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
-
-[ ... ]
-
-> Alan Cox (22):
->       pata_cmd64x: Set up MWDMA modes properly
-
-two minor things:
-
-a.
-
-@@ -88,14 +88,15 @@ static int cmd648_cable_detect(struct ata_port *ap)
- }
- 
- /**
-- *     cmd64x_set_piomode      -       set initial PIO mode data
-+ *     cmd64x_set_piomode      -       set PIO and MWDMA timing
-  *     @ap: ATA interface
-  *     @adev: ATA device
-+ *     @mode: mode
+diff --git a/arch/x86/kernel/bugs_64.c b/arch/x86/kernel/bugs_64.c
+index 4e5e9d3..9a189ce 100644
+--- a/arch/x86/kernel/bugs_64.c
++++ b/arch/x86/kernel/bugs_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  arch/x86_64/kernel/bugs.c
+- *
+  *  Copyright (C) 1994  Linus Torvalds
+  *  Copyright (C) 2000  SuSE
+  */
+diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
+index 59266f0..205fd5b 100644
+--- a/arch/x86/kernel/cpu/bugs.c
++++ b/arch/x86/kernel/cpu/bugs.c
+@@ -1,6 +1,4 @@
+ /*
+- *  arch/i386/cpu/bugs.c
+- *
+  *  Copyright (C) 1994  Linus Torvalds
   *
-- *     Called to do the PIO mode setup.
-+ *     Called to do the PIO and MWDMA mode setup.
+  *  Cyrix stuff, June 1998 by:
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index 5c2faa1..f4548c9 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -11,8 +11,6 @@
+  * ----------------------------------------------------------------------- */
+ 
+ /*
+- * cpuid.c
+- *
+  * x86 CPUID access device
+  *
+  * This device is accessed by lseek() to the appropriate CPUID level
+diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
+index 3f532df..32e75d0 100644
+--- a/arch/x86/kernel/crash_dump_32.c
++++ b/arch/x86/kernel/crash_dump_32.c
+@@ -1,5 +1,5 @@
+ /*
+- *	kernel/crash_dump.c - Memory preserving reboot related code.
++ *	Memory preserving reboot related code.
+  *
+  *	Created by: Hariprasad Nellitheertha (hari@in.ibm.com)
+  *	Copyright (C) IBM Corporation, 2004. All rights reserved
+diff --git a/arch/x86/kernel/crash_dump_64.c b/arch/x86/kernel/crash_dump_64.c
+index 942deac..15e6c6b 100644
+--- a/arch/x86/kernel/crash_dump_64.c
++++ b/arch/x86/kernel/crash_dump_64.c
+@@ -1,5 +1,5 @@
+ /*
+- *	kernel/crash_dump.c - Memory preserving reboot related code.
++ *	Memory preserving reboot related code.
+  *
+  *	Created by: Hariprasad Nellitheertha (hari@in.ibm.com)
+  *	Copyright (C) IBM Corporation, 2004. All rights reserved
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 6c34bdd..8561f62 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/arch/x86_64/kernel/head64.c -- prepare to run common code
++ *  prepare to run common code
+  *
+  *  Copyright (C) 2000 Andrea Arcangeli <andrea@suse.de> SuSE
+  */
+diff --git a/arch/x86/kernel/i387_32.c b/arch/x86/kernel/i387_32.c
+index 6658472..7d2e12f 100644
+--- a/arch/x86/kernel/i387_32.c
++++ b/arch/x86/kernel/i387_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/i387.c
+- *
+  *  Copyright (C) 1994 Linus Torvalds
+  *
+  *  Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/i387_64.c b/arch/x86/kernel/i387_64.c
+index 1d58c13..56c1f11 100644
+--- a/arch/x86/kernel/i387_64.c
++++ b/arch/x86/kernel/i387_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86_64/kernel/i387.c
+- *
+  *  Copyright (C) 1994 Linus Torvalds
+  *  Copyright (C) 2002 Andi Kleen, SuSE Labs
+  *
+diff --git a/arch/x86/kernel/i8237.c b/arch/x86/kernel/i8237.c
+index 6f508e8..2931383 100644
+--- a/arch/x86/kernel/i8237.c
++++ b/arch/x86/kernel/i8237.c
+@@ -1,5 +1,5 @@
+ /*
+- * i8237.c: 8237A DMA controller suspend functions.
++ * 8237A DMA controller suspend functions.
+  *
+  * Written by Pierre Ossman, 2005.
+  *
+diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
+index ac15e4c..5cc8841 100644
+--- a/arch/x86/kernel/i8253.c
++++ b/arch/x86/kernel/i8253.c
+@@ -1,5 +1,5 @@
+ /*
+- * i8253.c  8253/PIT functions
++ * 8253/PIT functions
+  *
+  */
+ #include <linux/clockchips.h>
+diff --git a/arch/x86/kernel/ioport_32.c b/arch/x86/kernel/ioport_32.c
+index 3d310a9..4ed48dc 100644
+--- a/arch/x86/kernel/ioport_32.c
++++ b/arch/x86/kernel/ioport_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *	linux/arch/i386/kernel/ioport.c
+- *
+  * This contains the io-permission bitmap code - written by obz, with changes
+  * by Linus.
+  */
+diff --git a/arch/x86/kernel/ioport_64.c b/arch/x86/kernel/ioport_64.c
+index 653efa3..5f62fad 100644
+--- a/arch/x86/kernel/ioport_64.c
++++ b/arch/x86/kernel/ioport_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *	linux/arch/x86_64/kernel/ioport.c
+- *
+  * This contains the io-permission bitmap code - written by obz, with changes
+  * by Linus.
+  */
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+index 4f681bc..e173b76 100644
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *	linux/arch/i386/kernel/irq.c
+- *
+  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
+  *
+  * This file contains the lowest level x86-specific interrupt
+diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
+index bd11e42..865669e 100644
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *	linux/arch/x86_64/kernel/irq.c
+- *
+  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
+  *
+  * This file contains the lowest level x86_64-specific interrupt
+diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
+index 448a50b..c2d03e9 100644
+--- a/arch/x86/kernel/kprobes_32.c
++++ b/arch/x86/kernel/kprobes_32.c
+@@ -1,6 +1,5 @@
+ /*
+  *  Kernel Probes (KProbes)
+- *  arch/i386/kernel/kprobes.c
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
+index a30e004..1df17a0 100644
+--- a/arch/x86/kernel/kprobes_64.c
++++ b/arch/x86/kernel/kprobes_64.c
+@@ -1,6 +1,5 @@
+ /*
+  *  Kernel Probes (KProbes)
+- *  arch/x86_64/kernel/kprobes.c
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+diff --git a/arch/x86/kernel/ldt_32.c b/arch/x86/kernel/ldt_32.c
+index e0b2d17..a8b1842 100644
+--- a/arch/x86/kernel/ldt_32.c
++++ b/arch/x86/kernel/ldt_32.c
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/i386/kernel/ldt.c
+- *
+  * Copyright (C) 1992 Krishna Balasubramanian and Linus Torvalds
+  * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
+  */
+diff --git a/arch/x86/kernel/ldt_64.c b/arch/x86/kernel/ldt_64.c
+index bc9ffd5..3796523 100644
+--- a/arch/x86/kernel/ldt_64.c
++++ b/arch/x86/kernel/ldt_64.c
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/x86_64/kernel/ldt.c
+- *
+  * Copyright (C) 1992 Krishna Balasubramanian and Linus Torvalds
+  * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
+  * Copyright (C) 2002 Andi Kleen
+diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
+index 91966ba..deda9a2 100644
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -1,5 +1,5 @@
+ /*
+- * machine_kexec.c - handle transition of Linux booting another kernel
++ * handle transition of Linux booting another kernel
+  * Copyright (C) 2002-2005 Eric Biederman  <ebiederm@xmission.com>
+  *
+  * This source code is licensed under the GNU General Public License,
+diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
+index c3a5547..cd1899a 100644
+--- a/arch/x86/kernel/machine_kexec_64.c
++++ b/arch/x86/kernel/machine_kexec_64.c
+@@ -1,5 +1,5 @@
+ /*
+- * machine_kexec.c - handle transition of Linux booting another kernel
++ * handle transition of Linux booting another kernel
+  * Copyright (C) 2002-2005 Eric Biederman  <ebiederm@xmission.com>
+  *
+  * This source code is licensed under the GNU General Public License,
+diff --git a/arch/x86/kernel/mca_32.c b/arch/x86/kernel/mca_32.c
+index b83672b..9482033 100644
+--- a/arch/x86/kernel/mca_32.c
++++ b/arch/x86/kernel/mca_32.c
+@@ -1,5 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/mca.c
+  *  Written by Martin Kolinek, February 1996
+  *
+  * Changes:
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index 0c1069b..c044de3 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -11,8 +11,6 @@
+  * ----------------------------------------------------------------------- */
+ 
+ /*
+- * msr.c
+- *
+  * x86 MSR access device
+  *
+  * This device is accessed by lseek() to the appropriate register number
+diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
+index 95d3fc2..f803ed0 100644
+--- a/arch/x86/kernel/nmi_32.c
++++ b/arch/x86/kernel/nmi_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/nmi.c
+- *
+  *  NMI watchdog support on APIC systems
+  *
+  *  Started by Ingo Molnar <mingo@redhat.com>
+diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
+index e60ac0d..a576fd7 100644
+--- a/arch/x86/kernel/nmi_64.c
++++ b/arch/x86/kernel/nmi_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86_64/nmi.c
+- *
+  *  NMI watchdog support on APIC systems
+  *
+  *  Started by Ingo Molnar <mingo@redhat.com>
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 8466471..097aeaf 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/process.c
+- *
+  *  Copyright (C) 1995  Linus Torvalds
+  *
+  *  Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 6f9dbbe..7352d4b 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86-64/kernel/process.c
+- *
+  *  Copyright (C) 1995  Linus Torvalds
+  *
+  *  Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
+index 7c1b925..0cecd75 100644
+--- a/arch/x86/kernel/ptrace_32.c
++++ b/arch/x86/kernel/ptrace_32.c
+@@ -1,4 +1,3 @@
+-/* ptrace.c */
+ /* By Ross Biro 1/23/92 */
+ /*
+  * Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
+index eea3702..c0cac42 100644
+--- a/arch/x86/kernel/ptrace_64.c
++++ b/arch/x86/kernel/ptrace_64.c
+@@ -1,4 +1,3 @@
+-/* ptrace.c */
+ /* By Ross Biro 1/23/92 */
+ /*
+  * Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/reboot_32.c b/arch/x86/kernel/reboot_32.c
+index b37ed22..9e2269d 100644
+--- a/arch/x86/kernel/reboot_32.c
++++ b/arch/x86/kernel/reboot_32.c
+@@ -1,7 +1,3 @@
+-/*
+- *  linux/arch/i386/kernel/reboot.c
+- */
+-
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
+index 139eb03..8b30b26 100644
+--- a/arch/x86/kernel/reboot_fixups_32.c
++++ b/arch/x86/kernel/reboot_fixups_32.c
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/i386/kernel/reboot_fixups.c
+- *
+  * This is a good place to put board specific reboot fixups.
+  *
+  * List of supported fixups:
+diff --git a/arch/x86/kernel/scx200_32.c b/arch/x86/kernel/scx200_32.c
+index c7d3df2..4875977 100644
+--- a/arch/x86/kernel/scx200_32.c
++++ b/arch/x86/kernel/scx200_32.c
+@@ -1,8 +1,8 @@
+-/* linux/arch/i386/kernel/scx200.c 
+-
+-   Copyright (c) 2001,2002 Christer Weinigel <wingel@nano-system.com>
+-
+-   National Semiconductor SCx200 support. */
++/*
++ *  Copyright (c) 2001,2002 Christer Weinigel <wingel@nano-system.com>
++ *
++ *  National Semiconductor SCx200 support.
++ */
+ 
+ #include <linux/module.h>
+ #include <linux/errno.h>
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index d474cd6..c8e1bc3 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/setup.c
+- *
+  *  Copyright (C) 1995  Linus Torvalds
+  *
+  *  Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 32054bf..b7da90e 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -1,10 +1,5 @@
+ /*
+- *  linux/arch/x86-64/kernel/setup.c
+- *
+  *  Copyright (C) 1995  Linus Torvalds
+- *
+- *  Nov 2001 Dave Jones <davej@suse.de>
+- *  Forked from i386 setup code.
   */
  
--static void cmd64x_set_piomode(struct ata_port *ap, struct ata_device *adev)
-+static void cmd64x_set_timing(struct ata_port *ap, struct ata_device *adev, u8 mode)
- {
-        struct pci_dev *pdev = to_pci_dev(ap->host->dev);
-        struct ata_timing t;
+ /*
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index c03570f..d01d51f 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/signal.c
+- *
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  *
+  *  1997-11-28  Modified for POSIX.1b signals by Richard Henderson
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 739175b..683802b 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86_64/kernel/signal.c
+- *
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  *  Copyright (C) 2000, 2001, 2002 Andi Kleen SuSE Labs
+  *
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index cb91091..413e527 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -1,6 +1,4 @@
+ /*
+- * arch/x86_64/kernel/stacktrace.c
+- *
+  * Stack trace management functions
+  *
+  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+diff --git a/arch/x86/kernel/summit_32.c b/arch/x86/kernel/summit_32.c
+index d0e01a3..91c7acc 100644
+--- a/arch/x86/kernel/summit_32.c
++++ b/arch/x86/kernel/summit_32.c
+@@ -1,5 +1,5 @@
+ /*
+- * arch/i386/kernel/summit.c - IBM Summit-Specific Code
++ * IBM Summit-Specific Code
+  *
+  * Written By: Matthew Dobson, IBM Corporation
+  *
+diff --git a/arch/x86/kernel/sys_i386_32.c b/arch/x86/kernel/sys_i386_32.c
+index 4214730..f8bae9b 100644
+--- a/arch/x86/kernel/sys_i386_32.c
++++ b/arch/x86/kernel/sys_i386_32.c
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/i386/kernel/sys_i386.c
+- *
+  * This file contains various random system calls that
+  * have a non-standard calling sequence on the Linux/i386
+  * platform.
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index 4770b7a..907942e 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -1,7 +1,3 @@
+-/*
+- * linux/arch/x86_64/kernel/sys_x86_64.c
+- */
+-
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/syscalls.h>
+diff --git a/arch/x86/kernel/sysenter_32.c b/arch/x86/kernel/sysenter_32.c
+index 4eb2e40..5a2d951 100644
+--- a/arch/x86/kernel/sysenter_32.c
++++ b/arch/x86/kernel/sysenter_32.c
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/i386/kernel/sysenter.c
+- *
+  * (C) Copyright 2002 Linus Torvalds
+  * Portions based on the vdso-randomization code from exec-shield:
+  * Copyright(C) 2005-2006, Red Hat, Inc., Ingo Molnar
+diff --git a/arch/x86/kernel/time_32.c b/arch/x86/kernel/time_32.c
+index 56dadfc..8a322c9 100644
+--- a/arch/x86/kernel/time_32.c
++++ b/arch/x86/kernel/time_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/kernel/time.c
+- *
+  *  Copyright (C) 1991, 1992, 1995  Linus Torvalds
+  *
+  * This file contains the PC-specific time handling details:
+diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
+index e0134d6..c821edc 100644
+--- a/arch/x86/kernel/time_64.c
++++ b/arch/x86/kernel/time_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86-64/kernel/time.c
+- *
+  *  "High Precision Event Timer" based timekeeping.
+  *
+  *  Copyright (c) 1991,1992,1995  Linus Torvalds
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 4578235..c25f23e 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -1,5 +1,5 @@
+ /*
+- * arch/i386/kernel/topology.c - Populate sysfs with topology information
++ * Populate sysfs with topology information
+  *
+  * Written by: Matthew Dobson, IBM Corporation
+  * Original Code: Paul Dorwin, IBM Corporation, Patrick Mochel, OSDL
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 47b0bef..05c27ec 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/i386/traps.c
+- *
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  *
+  *  Pentium III FXSR, SSE support
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 0388842..bc7116a 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86-64/traps.c
+- *
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
+  *
+diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
+index 3ed0ae8..b85ad75 100644
+--- a/arch/x86/kernel/tsc_32.c
++++ b/arch/x86/kernel/tsc_32.c
+@@ -1,9 +1,3 @@
+-/*
+- * This code largely moved from arch/i386/kernel/timer/timer_tsc.c
+- * which was originally moved from arch/i386/kernel/time.c.
+- * See comments there for proper credits.
+- */
+-
+ #include <linux/sched.h>
+ #include <linux/clocksource.h>
+ #include <linux/workqueue.h>
+diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
+index 355f5f5..9125efe 100644
+--- a/arch/x86/kernel/tsc_sync.c
++++ b/arch/x86/kernel/tsc_sync.c
+@@ -1,5 +1,5 @@
+ /*
+- * arch/x86_64/kernel/tsc_sync.c: check TSC synchronization.
++ * check TSC synchronization.
+  *
+  * Copyright (C) 2006, Red Hat, Inc., Ingo Molnar
+  *
+diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
+index f2dcd1d..157e4be 100644
+--- a/arch/x86/kernel/vm86_32.c
++++ b/arch/x86/kernel/vm86_32.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/kernel/vm86.c
+- *
+  *  Copyright (C) 1994  Linus Torvalds
+  *
+  *  29 dec 2001 - Fixed oopses caused by unchecked access to the vm86
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index 06c3494..93847d8 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/arch/x86_64/kernel/vsyscall.c
+- *
+  *  Copyright (C) 2001 Andrea Arcangeli <andrea@suse.de> SuSE
+  *  Copyright 2003 Andi Kleen, SuSE Labs.
+  *
 
-function name in the documentation needs fixing
 
-b.
-
-regD fiddling in cmd64x_set_dmamode() could be removed completly
-
->       libata: correct handling of SRST reset sequences
-
-This potentially adds a regression for nVidia boxes (but ACPI cable
-detection should compensate for it):
-
-pata_amd's ->cable_detect checks UDMA timings to get the cable type
-(cable detection is done before the SRST) but pata_amd's ->set_piomode
-messes with UDMA timings.  It seems that both methods need fixing.
-
-> Jeff Garzik (14):
-
->       [libata] Turn on ACPI by default
-
--MODULE_PARM_DESC(noacpi, "Disables the use of ACPI in suspend/resume when set");
-+MODULE_PARM_DESC(noacpi, "Disables the use of ACPI in probe/suspend/resume when set");
-
-Would be nice to have Documentation/kernel-parameters.txt updated as well.
-
-> Kristoffer Nyborg Gregertsen (1):
->       AVR32 PATA driver
-
-Won't build because this libata update removes ->irq_ack and ->port_disable
-methods from struct ata_port.
-
-> Sonic Zhang (1):
->       libata driver for bf548 on chip ATAPI controller.
-
-Won't build, same problem as with AVR32 PATA driver + needs update to
-accomodate for libata-link patches.
-
-There are some other problems:
-
-a.
-
-+config PATA_BF54X_DMA
-+       bool "DMA mode"
-+       depends on PATA_BF54X
-+       default y
-+       help
-+         Enable DMA mode for Blackfin ATAPI controller.
-
-The preferred solution would be to use module parameter.
-
-If this option is on by default it may be even possible to remove it
-completly since this libata update also contains patch from Alan allowing
-DMA disable per different classes of ATA devices.
-
-b.
-
-+static struct ata_port_info bfin_port_info[] = {
-+       {
-+               .sht            = &bfin_sht,
-+               .flags          = ATA_FLAG_SLAVE_POSS
-+                               | ATA_FLAG_MMIO
-+                               | ATA_FLAG_NO_LEGACY,
-+               .pio_mask       = 0x1f, /* pio0-4 */
-+               .mwdma_mask     = 0,
-+#ifdef CONFIG_PATA_BF54X_DMA
-+               .udma_mask      = ATA_UDMA5,
-+#else
-+               .udma_mask      = 0,
-+#endif
-+               .port_ops       = &bfin_pata_ops,
-+       },
-+};
-
-MWDMA is never enabled (even if CONFIG_PATA_BF54X_DMA=y) but the driver
-contains MWDMA support...
-
-c.
-
-+/**
-+ *
-+ *    Function:       wait_complete
-+ *
-+ *    Description:    Waits the interrupt from device
-+ *
-+ */
-+static inline void wait_complete(void __iomem *base, unsigned short mask)
-+{
-+       unsigned short status;
-+       unsigned int i = 0;
-+
-+#define PATA_BF54X_WAIT_TIMEOUT                10000
-+
-+       for (i = 0; i < PATA_BF54X_WAIT_TIMEOUT; i++) {
-+               status = ATAPI_GET_INT_STATUS(base) & mask;
-+               if (status)
-+                       break;
-+       }
-+
-+       ATAPI_SET_INT_STATUS(base, mask);
-+}
-
-udelay() between retries?
-
-d.
-
-* write_atapi_register()
-* read_atapi_register()
-* write_atapi_data()
-* read_atapi_data()
-
-and
-
-* wait_complete()
-
-need a proper documentation (DocBook-ized etc).
-
-Thanks,
-Bart
+-- 
+http://www.codemonkey.org.uk
