@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbXJMG4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbXJMHES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761119AbXJMG4z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 02:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXJMG4q
+	id S1760779AbXJMHES (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 03:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXJMHEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 02:56:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48135 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbXJMG4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 02:56:45 -0400
-Date: Fri, 12 Oct 2007 23:56:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] 2.6.23-rc8-mm2 - call trace at kernel/lockdep.c:2664
-Message-Id: <20071012235636.7237ccff.akpm@linux-foundation.org>
-In-Reply-To: <471063E5.8050706@linux.vnet.ibm.com>
-References: <471063E5.8050706@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 13 Oct 2007 03:04:07 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:34579 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbXJMHEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 03:04:06 -0400
+Date: Sat, 13 Oct 2007 09:03:58 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicolas Pitre <nico@cam.org>, LKML <linux-kernel@vger.kernel.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [GIT PULL] MMC updates
+Message-ID: <20071013090358.71714173@poseidon.drzeus.cx>
+In-Reply-To: <20071012222929.39dcc3bd.randy.dunlap@oracle.com>
+References: <20071010212149.0073ee08@poseidon.drzeus.cx>
+	<alpine.LFD.0.999.0710112228200.6887@woody.linux-foundation.org>
+	<20071012215513.1a4dfc7d@poseidon.drzeus.cx>
+	<alpine.LFD.0.9999.0710121603080.19446@xanadu.home>
+	<20071012230027.606a705b@poseidon.drzeus.cx>
+	<20071012222929.39dcc3bd.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 11:51:25 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Fri, 12 Oct 2007 22:29:29 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> Hi Andrew,
 > 
-> Following call trace is seen will booting up the machine. Similar
-> call trace was reported for 2.6.23-rc3-mm1 at
-> http://lkml.org/lkml/2007/8/26/77
-> 
-> Mount-cache hash table entries: 512
-> WARNING: at kernel/lockdep.c:2664 check_flags()
->  [<c010612f>] dump_trace+0x68/0x1d2
->  [<c01062b1>] show_trace_log_lvl+0x18/0x2c
->  [<c0106c23>] show_trace+0xf/0x11
->  [<c0106d33>] dump_stack+0x12/0x14
->  [<c01414ac>] check_flags+0x92/0x145
->  [<c0144426>] lock_acquire+0x2f/0x8a
->  [<c0509771>] _spin_lock+0x33/0x3e
->  [<c0180e2b>] ifind+0x16/0x7f
->  [<c0180eff>] ilookup5_nowait+0x33/0x38
->  [<c01a793d>] sysfs_addrm_start+0x36/0x84
->  [<c01a7dc7>] create_dir+0x37/0x86
->  [<c01a7e43>] sysfs_create_dir+0x2d/0x40
->  [<c029ab5e>] kobject_add+0xe9/0x190
->  [<c029ac26>] kset_register+0x19/0x2e
->  [<c07a58a7>] mnt_init+0xe0/0x1be
->  [<c07a552a>] vfs_caches_init+0x11e/0x12e
->  [<c07938e5>] start_kernel+0x2ed/0x318
->  =======================
-> irq event stamp: 1139108
-> hardirqs last  enabled at (1139108): [<c05085a4>] __mutex_lock_slowpath+0x24d/0x273
-> hardirqs last disabled at (1139107): [<c0124221>] cpu_clock+0xd/0x4c
-> softirqs last  enabled at (1138798): [<c012d2b5>] do_softirq+0x36/0x51
-> softirqs last disabled at (1138793): [<c012d2b5>] do_softirq+0x36/0x51
-> CPU: After generic identify, caps: bfebfbff 20100000 00000000 00000000 0004e3bd 00000000 00000001 00000000
+> Patch doesn't apply cleanly due to spaces instead of tabs.
+> Copy-and-paste ?
 > 
 
-Were kprobes/jprobes in use?  If so, 2.6.23-mm1's
-lockdep-annotate-kprobes-irq-fiddling.patch should help.  
+Yeah, gnome-terminal damage. But you need to git it from the repo to
+get the full commit info anyway.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
