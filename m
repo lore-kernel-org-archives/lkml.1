@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760445AbXJMQ2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbXJMQfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760445AbXJMQ2r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 12:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbXJMQ2l
+	id S1761418AbXJMQfk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 12:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbXJMQfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 12:28:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:18969 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbXJMQ2k (ORCPT
+	Sat, 13 Oct 2007 12:35:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:63726 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754721AbXJMQfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 12:28:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=X3IXAIqJLP6jMownrc8MBF5N+aHxb8gJbvsHLMfyhlf3g4cGCqwx8ni7vFlO8yKOIHbPxkTsN3MYHwWL4n1qJJZBaXIB0rfVNTj4Uw+UAo/12CZH0e5P/3V2FJ5V6SgfvDql8JTuleCbzwjZfPS/1mm2Wdu/zws0WyLiHJp2fMU=
-Message-ID: <4710F1E8.6090103@gmail.com>
-Date: Sat, 13 Oct 2007 12:27:20 -0400
-From: Florin Malita <fmalita@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+	Sat, 13 Oct 2007 12:35:32 -0400
+Message-ID: <4710F17C.8080100@oracle.com>
+Date: Sat, 13 Oct 2007 09:25:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: drzeus-mmc@drzeus.cx
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mmc: possible leak in mmc_read_ext_csd
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr> <47107ED2.6040509@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr> <4710CF9F.6080207@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131609170.3348@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710131609170.3348@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The exception path associated with an invalid ext_csd_struct returns 
-without freeing ext_csd.
+Jan Engelhardt wrote:
+> On Oct 13 2007 16:01, Stefan Richter wrote:
+>>> .config:176:warning: override: reassigning to symbol PREEMPT_VOLUNTARY
+>>> .config:176:warning: override: PREEMPT_VOLUNTARY turns state choice
 
-Coverity CID 1909.
+.config:176:warning: override: PREEMPT_VOLUNTARY modifies state choice
 
-Signed-off-by: Florin Malita
----
+"turns" is just odd there.
 
- drivers/mmc/core/mmc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/mmc/core/mmc.c b/drivers/mmc/core/mmc.c
-index 65fe288..68c0e3b 100644
---- a/drivers/mmc/core/mmc.c
-+++ b/drivers/mmc/core/mmc.c
-@@ -213,7 +213,8 @@ static int mmc_read_ext_csd(struct mmc_card *card)
- 		printk(KERN_ERR "%s: unrecognised EXT_CSD structure "
- 			"version %d\n", mmc_hostname(card->host),
- 			ext_csd_struct);
--		return -EINVAL;
-+		err = -EINVAL;
-+		goto out;
- 	}
- 
- 	if (ext_csd_struct >= 2) {
+>> Try to make it a single warning.
+> 
+> Patches welcome. Even without the patch, i.e. original kconfig
+> behavior, spews two warnings. One for the symbol, and one for the choiec
+> object. I do not see anything wrong with that; adding extra checks
+> would perhaps only increase the code size.
 
+
+
+-- 
+~Randy
