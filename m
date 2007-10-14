@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbXJNLEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXJNLJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbXJNLEv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 07:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXJNLEn
+	id S1757111AbXJNLJt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 07:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbXJNLJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 07:04:43 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54572 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755480AbXJNLEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 07:04:42 -0400
-Date: Sun, 14 Oct 2007 13:04:31 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] remove GPL restriction from set_dumpable()
-Message-ID: <Pine.LNX.4.64.0710141257030.20620@jikos.suse.cz>
+	Sun, 14 Oct 2007 07:09:42 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:37589 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754832AbXJNLJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 07:09:41 -0400
+Message-ID: <392360181.25583@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 14 Oct 2007 19:09:37 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: richard kennedy <richard@rsk.demon.co.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] mm - background_writeout exits when pages_skipped ?
+Message-ID: <20071014110937.GA9235@mail.ustc.edu.cn>
+References: <1192123174.3082.41.camel@castor.rsk.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192123174.3082.41.camel@castor.rsk.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
+On Thu, Oct 11, 2007 at 06:19:34PM +0100, richard kennedy wrote:
+> When background_writeout() (mm/page-writeback.c) finds any pages_skipped
+> in writeback_inodes() and it didn't meet any congestion, it exits even
+> when it hasn't written enough pages yet.
+> 
+> Performing 2 ( or more) concurrent copies of a large file, often creates
+> lots of skipped pages (1000+) making background_writeout exit and so
+> pages don't get written out until we reach dirty_ratio.
+> 
+> I added some instrumentation to fs/buffer.c in
+> __block_write_full_page(..) and all the skipped pages come from here :-
+> 
+> done:
+> 	if (nr_underway == 0) {
+> 		/*
+> 		 * The page was marked dirty, but the buffers were
+> 		 * clean.  Someone wrote them back by hand with
+> 		 * ll_rw_block/submit_bh.  A rare case.
+> 		 */
+> 		end_page_writeback(page);
+> 
+> 		/*
+> 		 * The page and buffer_heads can be released at any time from
+> 		 * here on.
+> 		 */
 
-remove GPL restriction from set_dumpable()
+> 		wbc->pages_skipped++;	/* We didn't write this page */
 
-Commit 6c5d5238 introduced a set_dumpable() function that replaced the 
-direct access to mm_struct->dumpable. I don't think there is any reason to 
-restrict this function to EXPORT_SYMBOL_GPL() -- previously any module 
-could modify current->mm->dumpable without any resitrictions, so it makes 
-a little sense to turn this into 'internal interface' at once.
+FYI: The above line has just been removed in 2.6.23-mm1, which fixed the bug.
 
-There in fact are 3rd party modules that modify the dumpable flag, and 
-this patch should fix the situation for them once again (for example 
-vmware).
+Thank you,
+Fengguang
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 073b0b8..a204720 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1699,7 +1699,7 @@ void set_dumpable(struct mm_struct *mm, int value)
- 		break;
- 	}
- }
--EXPORT_SYMBOL_GPL(set_dumpable);
-+EXPORT_SYMBOL(set_dumpable);
- 
- int get_dumpable(struct mm_struct *mm)
- {
