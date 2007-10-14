@@ -1,33 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbXJNEur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbXJNEwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758402AbXJNEur (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 00:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbXJNEuh
+	id S1758161AbXJNEwE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 00:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXJNEvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 00:50:37 -0400
-Received: from smtp05.mtu.ru ([62.5.255.52]:55308 "EHLO smtp05.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbXJNEug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 00:50:36 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [git pull] Input updates for 2.6.24-rc0
-To: linux-kernel@vger.kernel.org
-Date: Sun, 14 Oct 2007 08:50:33 +0400
-References: <200710131614.35356.dmitry.torokhov@gmail.com>
-User-Agent: KNode/0.10.5
-MIME-Version: 1.0
+	Sun, 14 Oct 2007 00:51:53 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41590 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXJNEvx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 00:51:53 -0400
+Date: Sun, 14 Oct 2007 05:51:51 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mb@bu3sch.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] missing include in ssb
+Message-ID: <20071014045151.GT8181@ftp.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20071014045034.8ECF4981D57@smtp05.mtu.ru>
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
+	Using readw() and friends => needs to pull io.h and not all
+targets are doing that via indirect chains.
 
-[...]
->       Input: tsdev - implement proper locking
-[...]
->  delete mode 100644 drivers/input/tsdev.c
-
-This fixes all locking issues indeed :)
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/drivers/ssb/pcmcia.c b/drivers/ssb/pcmcia.c
+index 7c77360..b6abee8 100644
+--- a/drivers/ssb/pcmcia.c
++++ b/drivers/ssb/pcmcia.c
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/ssb/ssb.h>
+ #include <linux/delay.h>
++#include <linux/io.h>
+ 
+ #include <pcmcia/cs_types.h>
+ #include <pcmcia/cs.h>
