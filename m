@@ -1,163 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXJNF5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbXJNF5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbXJNF5c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbXJNF5Z
+	id S1761290AbXJNF5y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760306AbXJNF5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:57:25 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56634
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbXJNF5Y (ORCPT
+	Sun, 14 Oct 2007 01:57:41 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51031 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753872AbXJNF5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:57:24 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add section IDs to Documentation/DocBook/filesystems.tmpl
-Date: Sun, 14 Oct 2007 00:57:19 -0500
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, rgammans@computer-surgery.co.uk, sct@redhat.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 14 Oct 2007 01:57:39 -0400
+Date: Sat, 13 Oct 2007 22:57:35 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: git-sched patch won't boot on SN arch, 2.6.23-mm1
+Message-Id: <20071013225735.58c6415c.pj@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710140057.20134.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+The git-sched patch in 2.6.23-mm1 freezes my ia64 SN Altix hard on boot.
+Not good (tm).
 
-Add recommended section IDs to Documentation/DocBook/filesystems.tmpl
+Something broke between the git-sched patch of Sept 26 in 2.6.23-rc8-mm2
+and the git-sched patch of Oct 10 in 2.6.23-mm1 on my ia64 SN Altix
+system using sn2_defconfig.
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+I can boot 2.6.23-rc8-mm2 fine, but I freeze early in boot
+on 2.6.23-mm1, after the following prints on the console:
+    McKinley Errata 9 workaround not needed; disabling it
+    SLUB: Genslabs=26, HWalign=128, Order=0-2, MinObjects=8, CPUs=8, Nodes=1024
+    Dentry cache hash table entries: 1048576 (order: 9, 8388608 bytes)
+    Inode-cache hash table entries: 524288 (order: 8, 4194304 bytes)
+    Mount-cache hash table entries: 1024
+    ACPI: Core revision 20070126
+    Boot processor id 0x0/0x0
+    Brought up 8 CPUs
+    Total of 8 processors activated (15564.80 BogoMIPS).
 
- Documentation/DocBook/filesystems.tmpl |   36 +++++++++++------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+The next output that I -would- have expected, based on successful boots
+without this patch, but never get, is:
+    net_namespace: 120 bytes
+    DMI not present or invalid.
+    xor: measuring software checksum speed
+       ia64      :  2692.000 MB/sec
+    xor: using function: ia64 (2692.000 MB/sec)
+    NET: Registered protocol family 16
+    ACPI  DSDT OEM Rev 0x20101
 
-diff -r 79f0ea1e0e70 Documentation/DocBook/filesystems.tmpl
---- a/Documentation/DocBook/filesystems.tmpl	Tue Oct 09 21:00:40 2007 +0000
-+++ b/Documentation/DocBook/filesystems.tmpl	Sat Oct 13 23:16:49 2007 -0500
-@@ -40,25 +40,25 @@
- 
-   <chapter id="vfs">
-      <title>The Linux VFS</title>
--     <sect1><title>The Filesystem types</title>
-+     <sect1 id="the_filesystem_types"><title>The Filesystem types</title>
- !Iinclude/linux/fs.h
-      </sect1>
--     <sect1><title>The Directory Cache</title>
-+     <sect1 id="the_directory_cache"><title>The Directory Cache</title>
- !Efs/dcache.c
- !Iinclude/linux/dcache.h
-      </sect1>
--     <sect1><title>Inode Handling</title>
-+     <sect1 id="inode_handling"><title>Inode Handling</title>
- !Efs/inode.c
- !Efs/bad_inode.c
-      </sect1>
--     <sect1><title>Registration and Superblocks</title>
-+     <sect1 id="registration_and_superblocks"><title>Registration and Superblocks</title>
- !Efs/super.c
-      </sect1>
--     <sect1><title>File Locks</title>
-+     <sect1 id="file_locks"><title>File Locks</title>
- !Efs/locks.c
- !Ifs/locks.c
-      </sect1>
--     <sect1><title>Other Functions</title>
-+     <sect1 id="other_functions"><title>Other Functions</title>
- !Efs/mpage.c
- !Efs/namei.c
- !Efs/buffer.c
-@@ -73,11 +73,11 @@
-   <chapter id="proc">
-      <title>The proc filesystem</title>
- 
--     <sect1><title>sysctl interface</title>
-+     <sect1 id="sysctl_interface"><title>sysctl interface</title>
- !Ekernel/sysctl.c
-      </sect1>
- 
--     <sect1><title>proc filesystem interface</title>
-+     <sect1 id="proc_filesystem_interface"><title>proc filesystem interface</title>
- !Ifs/proc/base.c
-      </sect1>
-   </chapter>
-@@ -92,7 +92,7 @@
-   <chapter id="debugfs">
-      <title>The debugfs filesystem</title>
- 
--     <sect1><title>debugfs interface</title>
-+     <sect1 id="debugfs_interface"><title>debugfs interface</title>
- !Efs/debugfs/inode.c
- !Efs/debugfs/file.c
-      </sect1>
-@@ -134,9 +134,9 @@
- 
-   <title>The Linux Journalling API</title>
- 
--    <sect1>
-+    <sect1 id="journaling_overview">
-      <title>Overview</title>
--    <sect2>
-+    <sect2 id="journaling_details">
-      <title>Details</title>
- <para>
- The journalling layer is  easy to use. You need to
-@@ -307,7 +307,7 @@ particular inode.
- 
-     </sect2>
- 
--    <sect2>
-+    <sect2 id="jbd_summary">
-      <title>Summary</title>
- <para>
- Using the journal is a matter of wrapping the different context changes,
-@@ -349,7 +349,7 @@ an example.
- 
-     </sect1>
- 
--    <sect1>
-+    <sect1 id="data_types">
-      <title>Data Types</title>
-      <para>
- 	The journalling layer uses typedefs to 'hide' the concrete definitions
-@@ -358,27 +358,27 @@ an example.
- 
- 	Obviously the hiding is not enforced as this is 'C'.
-      </para>
--	<sect2><title>Structures</title>
-+	<sect2 id="structures"><title>Structures</title>
- !Iinclude/linux/jbd.h
- 	</sect2>
-     </sect1>
- 
--    <sect1>
-+    <sect1 id="functions">
-      <title>Functions</title>
-      <para>
- 	The functions here are split into two groups those that
- 	affect a journal as a whole, and those which are used to
- 	manage transactions
-      </para>
--	<sect2><title>Journal Level</title>
-+	<sect2 id="journal_level"><title>Journal Level</title>
- !Efs/jbd/journal.c
- !Ifs/jbd/recovery.c
- 	</sect2>
--	<sect2><title>Transasction Level</title>
-+	<sect2 id="transaction_level"><title>Transasction Level</title>
- !Efs/jbd/transaction.c
- 	</sect2>
-     </sect1>
--    <sect1>
-+    <sect1 id="see_also">
-      <title>See also</title>
- 	<para>
- 	  <citation>
+My .config has the following elements matching "SCHED"
+    # CONFIG_FAIR_GROUP_SCHED is not set
+    CONFIG_IOSCHED_NOOP=y
+    CONFIG_IOSCHED_AS=y
+    CONFIG_IOSCHED_DEADLINE=y
+    CONFIG_IOSCHED_CFQ=y
+    CONFIG_DEFAULT_IOSCHED="anticipatory"
+    CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+    CONFIG_SCHED_SMT=y
+    # CONFIG_NET_SCHED is not set
+    # CONFIG_USB_EHCI_TT_NEWSCHED is not set
+    CONFIG_SCHED_DEBUG=y
+    # CONFIG_SCHEDSTATS is not set
+
+I'm pretty certain that I also saw this hang with the config setting:
+    CONFIG_FAIR_GROUP_SCHED=y
+though there is a small chance I'm confused on that point.
+
+You'll probably need more information, but I can't guess what,
+so ask away.
 
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
