@@ -1,102 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbXJMRQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXJMR1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761586AbXJMRQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 13:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbXJMRQA
+	id S1758367AbXJMR1B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 13:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXJMR0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 13:16:00 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34949 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756476AbXJMRP7 (ORCPT
+	Sat, 13 Oct 2007 13:26:53 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:46532 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbXJMR0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 13:15:59 -0400
-Date: Sat, 13 Oct 2007 20:15:52 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Willy Tarreau <w@1wt.eu>
-cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
- bidirectional flows.
-In-Reply-To: <20071013143452.%N@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
-References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-320683280-1192295294=:27718"
-Content-ID: <Pine.LNX.4.64.0710132008170.27718@kivilampi-30.cs.helsinki.fi>
+	Sat, 13 Oct 2007 13:26:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=nuh3yVjB3Vh3ByYpHFJRxgNwnoM9nVSeFsFr5hMWVZWOv9jSBDCAK07xc9IQRK+FZpE78KQuDwnRwTC6SJeds8PW8VqTSlRN7p5K7h4wdFefoWEijuoACvY2dFvbRbf7EUtAXnk0kaZ+ved06E+KV1J7FF4CF2/FMN+UyPzp90A=
+Date: Sat, 13 Oct 2007 19:35:01 -0700
+To: animesh.saxena@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Compiling kernel 2.6.23.1 HELP
+Message-Id: <20071013193501.03d0ce14.Kristoffer.Ericson@Gmail.com>
+In-Reply-To: <1192293968.16391.9.camel@localhost.localdomain>
+References: <20071004035935.042951211@sgi.com>
+	<20071004040003.303112696@sgi.com>
+	<1192293968.16391.9.camel@localhost.localdomain>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Greetings,
 
----696243703-320683280-1192295294=:27718
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0710132008171.27718@kivilampi-30.cs.helsinki.fi>
+This is not the proper forum for compilation help (if nothing is broken of course). You would probably get good help asking on fedora forum (or simply do a search there). Looking at your log it seems to more reflect headers missing than anything wrong with the kernel in it self.
 
-On Sat, 13 Oct 2007, Willy Tarreau wrote:
+If you fail to find anything useful, I can help you but please send me mail directly so we don't put additional weight on 
+this mailinglist.
 
-> It's possible that new SACK blocks that should trigger new LOST
-> markings arrive with new data (which previously made is_dupack
-> false). In addition, I think this fixes a case where we get
-> a cumulative ACK with enough SACK blocks to trigger the fast
-> recovery (is_dupack would be false there too).
+Best wishes
+Kristoffer Ericson
+
+On Sat, 13 Oct 2007 22:16:08 +0530
+animesh saxena <animesh.saxena@gmail.com> wrote:
+
+> Hi,
+>    I am a kernel newbie, so need some help trying to compile it. 
+> I have fedora 7 installed. 
 > 
-> I'm not completely pleased with this solution because readability
-> of the code is somewhat questionable as 'is_dupack' in SACK case
-> is no longer about dupacks only but would mean something like
-> 'lost_marker_work_todo' too... But because of Eifel stuff done
-> in CA_Recovery, the FLAG_DATA_SACKED check cannot be placed to
-> the if statement which seems attractive solution. Nevertheless,
-> I didn't like adding another variable just for that either... :-)
+> While compiling it, I get errors as follows.....
 > 
-> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  net/ipv4/tcp_input.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+>  HOSTCC  scripts/basic/fixdep
+> scripts/basic/fixdep.c:107:23: error: sys/types.h: No such file or
+> directory
+> scripts/basic/fixdep.c:108:22: error: sys/stat.h: No such file or
+> directory
+> scripts/basic/fixdep.c:109:22: error: sys/mman.h: No such file or
+> directory
+> scripts/basic/fixdep.c:110:20: error: unistd.h: No such file or
+> directory
+> scripts/basic/fixdep.c:111:19: error: fcntl.h: No such file or directory
+> scripts/basic/fixdep.c:112:20: error: string.h: No such file or
+> directory
+> scripts/basic/fixdep.c:113:20: error: stdlib.h: No such file or
+> directory
+> scripts/basic/fixdep.c:114:19: error: stdio.h: No such file or directory
+> In file included
+> from /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/syslimits.h:7,
 > 
-> Index: 2.6/net/ipv4/tcp_input.c
-> ===================================================================
-> --- 2.6.orig/net/ipv4/tcp_input.c
-> +++ 2.6/net/ipv4/tcp_input.c
-> @@ -1951,7 +1951,10 @@ tcp_fastretrans_alert(struct sock *sk, u
->  {
->  	struct inet_connection_sock *icsk = inet_csk(sk);
->  	struct tcp_sock *tp = tcp_sk(sk);
-> -	int is_dupack = (tp->snd_una == prior_snd_una && !(flag&FLAG_NOT_DUP));
-> +	int is_dupack = (tp->snd_una == prior_snd_una &&
-> +			 (!(flag&FLAG_NOT_DUP) ||
-> +			  ((flag&FLAG_DATA_SACKED) &&
-> +			   (tp->fackets_out > tp->reordering))));
->  
->  	/* Some technical things:
->  	 * 1. Reno does not count dupacks (sacked_out) automatically. */
-
-FYI,
-
-This ended up being a non complete fix. Day after these two patches 
-(11-12) I submitted two other patches to complete this fix series (got 
-bitten by release-early-release-often, fixed day-after-submission 
-thoughts in those two later patches). For some reason these two keep 
-floating around as separate ones from those two later ones.
-
-To make things even more complicated, eb7bdad82e8 (see stable-2.6.22) 
-could have been split more logically to do_lost addition and 
-FLAG_SND_UNA_ADVANCED parts (but that didn't occur to me back then).
-
-All of them listed here (from stable-2.6.22 since one of them is
-reduced from mainline version):
-
-6d742fb6e2b8913457e1282e1be77d6f4e45af00 Fix TCP DSACK cwnd handling
-eb7bdad82e8af48e1ed1b650268dc85ca7e9ff39 Handle snd_una in tcp_cwnd_down()
-8385cffd22359ad561a173accefeb354bd606ce4 TCP: Fix TCP handling of SACK in 
-783366ad4b212cde069c50903494eb6a6b83958c TCP: Fix TCP rate-halving on 
+> from /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/limits.h:11,
+>                  from scripts/basic/fixdep.c:115:
+> /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include/limits.h:122:61: error:
+> limits.h: No such file or directory
+> scripts/basic/fixdep.c:116:19: error: ctype.h: No such file or directory
+> scripts/basic/fixdep.c:117:23: error: arpa/inet.h: No such file or
+> directory
+> scripts/basic/fixdep.c: In function ‘usage’:
+> scripts/basic/fixdep.c:131: warning: implicit declaration of function
+> ‘fprintf’
+> scripts/basic/fixdep.c:131: warning: incompatible implicit declaration
+> of built-in function ‘fprintf’
+> scripts/basic/fixdep.c:131: error: ‘stderr’ undeclared (first use in
+> this function)
+> scripts/basic/fixdep.c:131: error: (Each undeclared identifier is
+> reported only once
+> scripts/basic/fixdep.c:131: error: for each function it appears in.)
+> scripts/basic/fixdep.c:132: warning: implicit declaration of function
+> ‘exit’
+> scripts/basic/fixdep.c:132: warning: incompatible implicit declaration
+> of built-in function ‘exit’
+> scripts/basic/fixdep.c: In function ‘print_cmdline’:
+> scripts/basic/fixdep.c:140: warning: implicit declaration of function
+> ‘printf’
+> scripts/basic/fixdep.c:140: warning: incompatible implicit declaration
+> of built-in function ‘printf’
+> scripts/basic/fixdep.c: At top level:
+> scripts/basic/fixdep.c:143: error: ‘NULL’ undeclared here (not in a
+> function)
+> scripts/basic/fixdep.c: In function ‘grow_config’:
+> scripts/basic/fixdep.c:156: warning: implicit declaration of function
+> ‘realloc’
+> scripts/basic/fixdep.c:156: warning: assignment makes pointer from
+> integer without a cast
+> scripts/basic/fixdep.c:158: warning: implicit declaration of function
+> ‘perror’
+> scripts/basic/fixdep.c:158: warning: incompatible implicit declaration
+> of built-in function ‘exit’
+> scripts/basic/fixdep.c: In function ‘is_defined_config’:
+> scripts/basic/fixdep.c:174: warning: implicit declaration of function
+> ‘memcmp’
+> scripts/basic/fixdep.c: In function ‘define_config’:
+> scripts/basic/fixdep.c:187: warning: implicit declaration of function
+> ‘memcpy’
+> scripts/basic/fixdep.c:187: warning: incompatible implicit declaration
+> of built-in function ‘memcpy’
+> scripts/basic/fixdep.c: In function ‘use_config’:
+> scripts/basic/fixdep.c:206: error: ‘PATH_MAX’ undeclared (first use in
+> this function)
+> scripts/basic/fixdep.c:214: warning: incompatible implicit declaration
+> of built-in function ‘memcpy’
+> scripts/basic/fixdep.c:220: warning: implicit declaration of function
+> ‘tolower’
+> scripts/basic/fixdep.c:222: warning: incompatible implicit declaration
+> of built-in function ‘printf’
+> scripts/basic/fixdep.c:206: warning: unused variable ‘s’
+> scripts/basic/fixdep.c: At top level:
+> scripts/basic/fixdep.c:225: error: expected declaration specifiers or
+> ‘...’ before ‘size_t’
+> scripts/basic/fixdep.c: In function ‘parse_config_file’:
+> scripts/basic/fixdep.c:227: error: ‘len’ undeclared (first use in this
+> function)
+> scripts/basic/fixdep.c:233: warning: implicit declaration of function
+> ‘ntohl’
+> scripts/basic/fixdep.c:244: warning: implicit declaration of function
+> ‘isalnum’
+> scripts/basic/fixdep.c: In function ‘strrcmp’:
+> scripts/basic/fixdep.c:261: warning: implicit declaration of function
+> ‘strlen’
+> scripts/basic/fixdep.c:261: warning: incompatible implicit declaration
+> of built-in function ‘strlen’
+> scripts/basic/fixdep.c: In function ‘do_config_file’:
+> scripts/basic/fixdep.c:272: error: storage size of ‘st’ isn’t known
+> scripts/basic/fixdep.c:276: warning: implicit declaration of function
+> ‘open’
+> scripts/basic/fixdep.c:276: error: ‘O_RDONLY’ undeclared (first use in
+> this function)
+> scripts/basic/fixdep.c:278: warning: incompatible implicit declaration
+> of built-in function ‘fprintf’
+> scripts/basic/fixdep.c:278: error: ‘stderr’ undeclared (first use in
+> this function)
+> 
+> On many forums it said I need to have 2.4 kernel headers. I can't
+> understand why is it so? Am I missing something?
+> 
+> I used git for getting the latest kernel. 
+> 
+> git-clone
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> 
+> Is there something similar for getting kernel headers? Please help. 
+> 
+> Thanks,
+> Animesh Saxena
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
 -- 
- i.
----696243703-320683280-1192295294=:27718--
+Kristoffer Ericson <Kristoffer.Ericson@Gmail.com>
