@@ -1,95 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXJNIza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbXJNJVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbXJNIza (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 04:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbXJNIzS
+	id S1755840AbXJNJVz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 05:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbXJNJVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 04:55:18 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40603 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbXJNIzP (ORCPT
+	Sun, 14 Oct 2007 05:21:46 -0400
+Received: from hpsmtp-eml12.KPNXCHANGE.COM ([213.75.38.112]:31369 "EHLO
+	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754583AbXJNJVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 04:55:15 -0400
-Date: Sun, 14 Oct 2007 11:55:12 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Willy Tarreau <w@1wt.eu>
-cc: Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
- bidirectional flows.
-In-Reply-To: <20071013181045.GB18155@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0710141129190.24841@kivilampi-30.cs.helsinki.fi>
-References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu>
- <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
- <20071013172214.GA18155@1wt.eu> <20071013175036.GD4211@stusta.de>
- <20071013181045.GB18155@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 14 Oct 2007 05:21:46 -0400
+From: Frans Pop <pop00041@planet.nl>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: 2.6.23: No text consoles with FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+Date: Sun, 14 Oct 2007 11:21:43 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200710132013.24024.elendil@planet.nl> <1192340601.6548.11.camel@daplas>
+In-Reply-To: <1192340601.6548.11.camel@daplas>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710141121.43752.pop00041@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2007 09:21:43.0997 (UTC) FILETIME=[A2FA4ED0:01C80E43]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007, Willy Tarreau wrote:
-> On Sat, Oct 13, 2007 at 07:50:36PM +0200, Adrian Bunk wrote:
-> > On Sat, Oct 13, 2007 at 07:22:14PM +0200, Willy Tarreau wrote:
-> > >...
-> > > Thanks for your help, I really appreciate it. In fact, I've reviewed them
-> > > four, but two of them did not apply and the code looked somewhat different,
-> > > so I considered them irrelevant to 2.6.20. I didn't understand that they
-> > > were all related, so maybe I checked them in a wrong order.
-> > > 
-> > > I'll recheck all that in the right sequence and will merge them four, or
-> > > get back to you if something still puzzles me.
-> > 
-> > I discussed this issue with Ilpo just yesterday regarding 2.6.16, and 
-> > the result of our discussion was that I reverted it.
-> 
-> OK.
-> 
-> > TCP being in some situations a bit more conservative than it should be 
+On Sunday 14 October 2007, Antonino A. Daplas wrote:
+> On Sat, 2007-10-13 at 20:13 +0200, Frans Pop wrote:
+> > I could solve this issue in two ways:
+> > - boot with VGA=791 parameter (initial boot was without VGA= parameter)
+> > - compile kernel without FRAMEBUFFER_CONSOLE_DETECT_PRIMARY set (I also
+> >   unset FB_VIRTUAL, but without its boot param that should be a no-op)
+>
+> After looking at vfb.c again, it seems the default is for vfb to be
+> enabled and you have to actively disable vfb either with
+>
+> video=vfb:disable or video=vfb:off
 
-This of course understatement from what I wrote about the performance:
-"I would rather put it this way: Without those four patches TCP
-just is very much more conservative than with them but still
-works. " Emphasis on word very. Yet this isn't a correctness issue.
+Yes, that works as well.
 
-> > isn't a big issue and not worth backporting with a risk of introducing
-> > a regression.
+> I have to change this behavior. In the meantime, try one of the above
+> options.
 
-I agree that it's not that big issue due to the cases that are affected. 
-The flow must simulataneously be bidirectional and get at least one of the 
-directions to suffer from congestion. Considering that this problem has 
-been there very long (definately predates 2.6 series, probably it has 
-occured since ratehalving was added, I don't know when), and nobody has 
-complained because of poor performance, I'd claim it's highly unlikely 
-they will, in the near future... :-)
+No real need. I normally boot with vga=791 (which is also why I did not
+see this during my testing of 2.6.23-rc*).
 
-> I agree with this. The impression I got from the description of the two
-> patches I merged was that the problems they fix were quite annoying. But
-> maybe I should take that with a grain of salt.
+On Sunday 14 October 2007, Antonino A. Daplas wrote:
+> Can you also post your dmesg and /proc/cdmline?
 
-No, it's not a grain of salt. I would say its utterly broken, out loud. 
-But many people are not that much into time-seq graphs (that I'm familiar 
-with), they are pleased when it seems to work well enough even though 
-from my perspective, it is simply unacceptable in worst cases (not 
-speaking of theoretical ones here, have seen very bad performance). Not 
-that it always is that bad, depends on phase of the opposite direction 
-what happens.
+Guess that's no longer really needed, but here are the relevant lines from a
+dmesg diff between kernels with and without FB_CONSOLE_DETECT_PRIMARY.
 
-Somebody asked me when those four patches were made about this, I put 
-these there back then:
+<snip>
+ Command line: root=/dev/sdb1 ro
+[...]
+ Console: colour VGA+ 80x25
+ console [tty0] enabled
+[...]
+ checking if image is initramfs...<6>Switched to high resolution mode on CPU 1
+ Switched to high resolution mode on CPU 0
+[console output stopped here]
+  it is
+[...] (omitted about 30 lines)
+-Console: switching to colour frame buffer device 80x25
+-fb0: Virtual frame buffer device, using 1024K of video memory
+</snip>
 
-http://www.cs.helsinki.fi/u/ijjarvin/bidir-showcase/
+Thanks for quick reaction. Let me know if you'd like a patch tested.
 
-They are generated from my old test archives and thus may have a bit 
-differences in TCP variant, which may slightly differ from mainline
-here and there (my point was just to show how it breaks). Typical 
-people wouldn't even notice those minor differences compared with the 
-bidir brokeness which is very visible in all except in the fixed "ok"
-case. Please judge for yourself whether I overexaggrated or not... :-)
-
-
--- 
- i.
+Cheers,
+FJP
