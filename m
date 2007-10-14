@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbXJNVU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763608AbXJNVXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763629AbXJNVU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXJNVUR
+	id S1763608AbXJNVXb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 17:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXJNVXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:20:17 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36311 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752591AbXJNVUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:20:16 -0400
-Date: Sun, 14 Oct 2007 23:14:46 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove GPL restriction from set_dumpable()
-In-Reply-To: <20071014210341.GA30029@infradead.org>
-Message-ID: <Pine.LNX.4.64.0710142311150.20620@jikos.suse.cz>
-References: <Pine.LNX.4.64.0710141257030.20620@jikos.suse.cz>
- <20071014210341.GA30029@infradead.org>
+	Sun, 14 Oct 2007 17:23:23 -0400
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:37327 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755146AbXJNVXW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 17:23:22 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: menuconfig: fail with clearer error if curses.h N/A
+Date: Sun, 14 Oct 2007 23:23:20 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710142323.21139.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2007 21:23:20.0939 (UTC) FILETIME=[71F75BB0:01C80EA8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Oct 2007, Christoph Hellwig wrote:
+It would be nice if 'make menuconfig' could fail earlier or with a clearer
+error if curses.h is not available. The actual error is currently rather
+buried in a huge amount of indirect errors.
 
-> > Commit 6c5d5238 introduced a set_dumpable() function that replaced the 
-> > direct access to mm_struct->dumpable. I don't think there is any 
-> > reason to restrict this function to EXPORT_SYMBOL_GPL() -- previously 
-> > any module could modify current->mm->dumpable without any 
-> > resitrictions, so it makes a little sense to turn this into 'internal 
-> > interface' at once.
-> Nack, the just shouldn't do such things at all.  I start to get really 
-> sick of patches adding random exports everywhere.
+After installing libncurses-dev (Debian) everything was fine.
 
-I actually don't care that much whether this is merged or not. In fact the 
-function itself is pretty trivial and standalone, so any 3rd party module 
-willing to modify current->mm->flags can just reimplement it line-by-line 
-themselves without breaking the license anyway ...
+$ make menuconfig
+  HOSTCC  scripts/kconfig/lxdialog/checklist.o
+In file included from scripts/kconfig/lxdialog/checklist.c:24:
+scripts/kconfig/lxdialog/dialog.h:32:20: error: curses.h: No such file or directory
+In file included from scripts/kconfig/lxdialog/checklist.c:24:
+scripts/kconfig/lxdialog/dialog.h:97: error: expected specifier-qualifier-list before ‘chtype’
+scripts/kconfig/lxdialog/dialog.h:187: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:194: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:196: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:197: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:198: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:199: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/dialog.h:201: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/checklist.c:31: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/checklist.c:59: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/checklist.c:95: error: expected ‘)’ before ‘*’ token
+scripts/kconfig/lxdialog/checklist.c: In function ‘dialog_checklist’:
+[another 30 or so lines with warnings/errors omitted]
 
-My main point here was that we should probably better document somewhere 
-what are the intended usage scenarios for EXPORT_SYMBOL() vs. 
-EXPORT_SYMBOL_GPL(). "Really internal interface" seems a little bit vague 
-to me.
-
--- 
-Jiri Kosina
-SUSE Labs
+Cheers,
+FJP
