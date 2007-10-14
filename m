@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763669AbXJNWFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764174AbXJNWFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763669AbXJNWFd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 18:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbXJNWFR
+	id S1764174AbXJNWFp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763416AbXJNWF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 18:05:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:5745 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbXJNWFO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 18:05:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=X3YBno+TnfyfHBs9yWIGFo+rs4hdCSELbEyXad5jCW4PjZc2X8M0HzRxHZ1la+3QwBDbGrMwWw/33/gysqlSy5Zxk0S0cDq0+lZWgvwNa/zir+R4z6a37MAgVS393AQdJWv/oq2dwhpvLyj6poi64Z6G4PESyU+WfRwAoUmnH3E=
-Message-ID: <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
-Date: Sun, 14 Oct 2007 17:05:12 -0500
-From: "Mark Weber" <crash@treysoft.com>
-Reply-To: crash@treysoft.com
-To: "Bart Samwel" <bart@samwel.tk>
-Subject: Re: hdparm standby timeout not working for WD raptors?
-Cc: "Mark Lord" <lkml@rtr.ca>, linux-kernel@vger.kernel.org
-In-Reply-To: <471284A7.1060800@samwel.tk>
+	Sun, 14 Oct 2007 18:05:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45208 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763285AbXJNWF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 18:05:26 -0400
+Message-ID: <4712922F.6010005@redhat.com>
+Date: Mon, 15 Oct 2007 00:03:27 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.23-mm1
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>	<4710B7C5.5050403@garzik.org>	<64bb37e0710130732p303547e3n54cfa9dac34c53b5@mail.gmail.com>	<64bb37e0710130740u78613f83wbd4f43d073bbe13d@mail.gmail.com>	<64bb37e0710130813le68c48dve36f8473b197b84b@mail.gmail.com>	<47110500.8050503@garzik.org>	<64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>	<20071013111853.7e67c6c3.akpm@linux-foundation.org>	<64bb37e0710140454s61325fdfya43179b14ea26dc4@mail.gmail.com>	<20071014113914.7654759d.akpm@linux-foundation.org>	<64bb37e0710141212k58c5fc66s620d1f28e80bb40@mail.gmail.com> <20071014122613.5bbe4fc3.akpm@linux-foundation.org>
+In-Reply-To: <20071014122613.5bbe4fc3.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>
-	 <470E7B90.5060203@rtr.ca>
-	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>
-	 <470F7705.3@rtr.ca>
-	 <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>
-	 <47120D65.3080008@samwel.tk>
-	 <71b295590710141330g7a4779e5q2d6b8f50387ee971@mail.gmail.com>
-	 <471284A7.1060800@samwel.tk>
-X-Google-Sender-Auth: 83e316d502a3866c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/07, Bart Samwel <bart@samwel.tk> wrote:
->
-> Just to be sure: you did use -S 60 to get 5 minutes, right?
+Andrew Morton wrote:
+> On Sun, 14 Oct 2007 21:12:08 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+...
+>> 354036 Page allocated via order 0, mask 0x11202
+>>             1 (PFN/Block always differ) PFN 3072 Block 6 type 0          Flags
+>> 354338 [0xffffffff80266373] mempool_alloc+83
+>> 354338 [0xffffffff80266373] mempool_alloc+83
+>> 354025 [0xffffffff802bb389] bio_alloc_bioset+185
+>> 354058 [0xffffffff804d2b40] kcryptd_do_crypt+0
+>> 354052 [0xffffffff804d2cc7] kcryptd_do_crypt+391
+>> 354058 [0xffffffff804d2b40] kcryptd_do_crypt+0
+>> 354052 [0xffffffff80245d3c] run_workqueue+204
+>> 354062 [0xffffffff802467b0] worker_thread+0
+>>
+>> I'm using dm-crypt with CONFIG_CRYPTO_TWOFISH_X86_64
+>>
+>>> The other info shows a tremendous memory leak, not via slab.  Looks like
+>>> someone is running alloc_pages() directly and isnb't giving them back.
+>> Blaming it on dm-crypt looks right, as the leak seems to happens, if
+>> there is (heavy) disk activity.
+>> (updatedb just ate ~500 Mb)
+>>
+> 
+> Yup, it does appear that dm-crypt is leaking.  Let's add some cc's.
 
-Yes. And hdparm is kind enough to print:
+More precisely - change below from git-block.patch update
+caused that pages are not deallocated at all.
+(cc-ing Jens)
 
-/dev/sda:
- setting standby to 60 (5 minutes)
+-static int crypt_endio(struct bio *clone, unsigned int done, int error)
++static void crypt_endio(struct bio *clone, int error)
+...
+-	 * free the processed pages, even if
+-	 * it's only a partially completed write
++	 * free the processed pages
+ 	 */
+-	if (!read_io)
+-		crypt_free_buffer_pages(cc, clone, done);
+-
+-	/* keep going - not finished yet */
+-	if (unlikely(clone->bi_size))
+-		return 1;
+-
+-	if (!read_io)
++	if (!read_io) {
++		crypt_free_buffer_pages(cc, clone, clone->bi_size);
+ 		goto out;
++	}
 
-Here's a bizarre sequence which I just noticed:
-[extraneous blank lines removed for clarity]
+clone->bi_size is zero here now, so crypt_free_buffer_pages will not
+work correctly (previously there was count of processed bytes).
 
->> hdparm -C /dev/sd[abcde]
-/dev/sda:  drive state is:  standby
-/dev/sdb:  drive state is:  standby
-/dev/sdc:  drive state is:  standby
-/dev/sdd:  drive state is:  standby
-/dev/sde:  drive state is:  standby
+But because it seems that bio cannot be processed partially now, we can
+simplify crypt_free_buffer_pages to always remove all allocated pages.
 
->> hdparm -S 60 /dev/sda
-/dev/sda: setting standby to 60 (5 minutes)
-
->> hdparm -C /dev/sd[abcde]
-/dev/sda: drive state is:  active/idle
-/dev/sdb: drive state is:  active/idle
-/dev/sdc: drive state is:  standby
-/dev/sdd: drive state is:  standby
-/dev/sde: drive state is:  standby
-
-Note that the -S 60 on /dev/sda affected
-/dev/sdb too! This is repeatable.
-
-I have these drives as RAID5 (software RAID).
-I don't know if that has anything to do with the
-failure of -S or not. Don't know if hdparm bypasses
-the RAID or not.
+Milan
+--
+mbroz@redhat.com
