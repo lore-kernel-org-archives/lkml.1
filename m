@@ -1,200 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763634AbXJNShl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763713AbXJNSh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763634AbXJNShl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 14:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763360AbXJNSfm
+	id S1763713AbXJNSh4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 14:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761118AbXJNSfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 14:35:42 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47945 "EHLO
+	Sun, 14 Oct 2007 14:35:53 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47948 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763345AbXJNSfl (ORCPT
+	with ESMTP id S1761493AbXJNSfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 14:35:41 -0400
+	Sun, 14 Oct 2007 14:35:51 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] more trivial signedness fixes in drivers
+Subject: [PATCH] more low-hanging fruits - kernel, fs, lib signedness
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1Ih8JQ-00043S-7E@ZenIV.linux.org.uk>
+Message-Id: <E1Ih8Ja-00043r-7O@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 14 Oct 2007 19:35:40 +0100
+Date: Sun, 14 Oct 2007 19:35:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/acpi/toshiba_acpi.c    |    2 +-
- drivers/ata/ata_piix.c         |    2 +-
- drivers/ata/sata_via.c         |    2 +-
- drivers/atm/firestream.c       |    2 +-
- drivers/block/cciss.c          |    2 +-
- drivers/hid/hid-input.c        |    2 +-
- drivers/isdn/hisax/hfc_2bds0.c |    3 ++-
- drivers/isdn/hisax/nj_s.c      |    2 +-
- drivers/net/tulip/tulip_core.c |    5 +++--
- drivers/pci/pci.c              |    2 +-
- sound/usb/usbaudio.c           |    2 +-
- 11 files changed, 14 insertions(+), 12 deletions(-)
+ fs/jfs/jfs_dtree.c             |    2 +-
+ fs/jfs/jfs_incore.h            |    2 +-
+ fs/jfs/jfs_logmgr.h            |    2 +-
+ fs/smbfs/smbiod.c              |    2 +-
+ include/linux/reiserfs_fs_sb.h |    4 ++--
+ kernel/posix-timers.c          |    6 +++---
+ lib/idr.c                      |    2 +-
+ 7 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-index 13369b4..a736ef7 100644
---- a/drivers/acpi/toshiba_acpi.c
-+++ b/drivers/acpi/toshiba_acpi.c
-@@ -362,7 +362,7 @@ static unsigned long write_video(const char *buffer, unsigned long count)
- 	int crt_out = -1;
- 	int tv_out = -1;
- 	u32 hci_result;
--	int video_out;
-+	u32 video_out;
- 
- 	/* scan expression.  Multiple expressions may be delimited with ;
- 	 *
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index e783e67..9ce4aa9 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -1122,7 +1122,7 @@ static void __devinit piix_init_sata_map(struct pci_dev *pdev,
- 					 const struct piix_map_db *map_db)
+diff --git a/fs/jfs/jfs_dtree.c b/fs/jfs/jfs_dtree.c
+index c14ba3c..df0b853 100644
+--- a/fs/jfs/jfs_dtree.c
++++ b/fs/jfs/jfs_dtree.c
+@@ -520,7 +520,7 @@ static void free_index(tid_t tid, struct inode *ip, u32 index, u32 next)
+  *	Changes an entry in the directory index table
+  */
+ static void modify_index(tid_t tid, struct inode *ip, u32 index, s64 bn,
+-			 int slot, struct metapage ** mp, u64 *lblock)
++			 int slot, struct metapage ** mp, s64 *lblock)
  {
- 	struct piix_host_priv *hpriv = pinfo[0].private_data;
--	const unsigned int *map;
-+	const int *map;
- 	int i, invalid_map = 0;
- 	u8 map_value;
+ 	struct dir_table_slot *dirtab_slot;
  
-diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
-index 1dc9b4f..cc6ee08 100644
---- a/drivers/ata/sata_via.c
-+++ b/drivers/ata/sata_via.c
-@@ -505,7 +505,7 @@ static int svia_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
- 	int rc;
- 	struct ata_host *host;
- 	int board_id = (int) ent->driver_data;
--	const int *bar_sizes;
-+	const unsigned *bar_sizes;
+diff --git a/fs/jfs/jfs_incore.h b/fs/jfs/jfs_incore.h
+index cb8f309..439901d 100644
+--- a/fs/jfs/jfs_incore.h
++++ b/fs/jfs/jfs_incore.h
+@@ -49,7 +49,7 @@ struct jfs_inode_info {
+ 	short	btorder;	/* access order	*/
+ 	short	btindex;	/* btpage entry index*/
+ 	struct inode *ipimap;	/* inode map			*/
+-	long	cflag;		/* commit flags		*/
++	unsigned long cflag;	/* commit flags		*/
+ 	u16	bxflag;		/* xflag of pseudo buffer?	*/
+ 	unchar	agno;		/* ag number			*/
+ 	signed char active_ag;	/* ag currently allocating from	*/
+diff --git a/fs/jfs/jfs_logmgr.h b/fs/jfs/jfs_logmgr.h
+index 1f85ef0..9236bc4 100644
+--- a/fs/jfs/jfs_logmgr.h
++++ b/fs/jfs/jfs_logmgr.h
+@@ -376,7 +376,7 @@ struct jfs_log {
+ 	int size;		/* 4: log size in log page (in page) */
+ 	int l2bsize;		/* 4: log2 of bsize */
  
- 	if (!printed_version++)
- 		dev_printk(KERN_DEBUG, &pdev->dev, "version " DRV_VERSION "\n");
-diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
-index 737cea4..94ebc9d 100644
---- a/drivers/atm/firestream.c
-+++ b/drivers/atm/firestream.c
-@@ -1295,7 +1295,7 @@ static const struct atmdev_ops ops = {
+-	long flag;		/* 4: flag */
++	unsigned long flag;	/* 4: flag */
  
- static void __devinit undocumented_pci_fix (struct pci_dev *pdev)
+ 	struct lbuf *lbuf_free;	/* 4: free lbufs */
+ 	wait_queue_head_t free_wait;	/* 4: */
+diff --git a/fs/smbfs/smbiod.c b/fs/smbfs/smbiod.c
+index 67176af..283c572 100644
+--- a/fs/smbfs/smbiod.c
++++ b/fs/smbfs/smbiod.c
+@@ -45,7 +45,7 @@ static LIST_HEAD(smb_servers);
+ static DEFINE_SPINLOCK(servers_lock);
+ 
+ #define SMBIOD_DATA_READY	(1<<0)
+-static long smbiod_flags;
++static unsigned long smbiod_flags;
+ 
+ static int smbiod(void *);
+ static int smbiod_start(void);
+diff --git a/include/linux/reiserfs_fs_sb.h b/include/linux/reiserfs_fs_sb.h
+index 1e5488e..ff9e923 100644
+--- a/include/linux/reiserfs_fs_sb.h
++++ b/include/linux/reiserfs_fs_sb.h
+@@ -120,7 +120,7 @@ struct reiserfs_journal_cnode {
+ 	struct buffer_head *bh;	/* real buffer head */
+ 	struct super_block *sb;	/* dev of real buffer head */
+ 	__u32 blocknr;		/* block number of real buffer head, == 0 when buffer on disk */
+-	long state;
++	unsigned long state;
+ 	struct reiserfs_journal_list *jlist;	/* journal list this cnode lives in */
+ 	struct reiserfs_journal_cnode *next;	/* next in transaction list */
+ 	struct reiserfs_journal_cnode *prev;	/* prev in transaction list */
+@@ -181,7 +181,7 @@ struct reiserfs_journal {
+ 	struct block_device *j_dev_bd;
+ 	int j_1st_reserved_block;	/* first block on s_dev of reserved area journal */
+ 
+-	long j_state;
++	unsigned long j_state;
+ 	unsigned long j_trans_id;
+ 	unsigned long j_mount_id;
+ 	unsigned long j_start;	/* start of current waiting commit (index into j_ap_blocks) */
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 7a15afb..57efe04 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -712,7 +712,7 @@ sys_timer_getoverrun(timer_t timer_id)
  {
--	int tint;
-+	u32 tint;
+ 	struct k_itimer *timr;
+ 	int overrun;
+-	long flags;
++	unsigned long flags;
  
- 	/* The Windows driver says: */
- 	/* Switch off FireStream Retry Limit Threshold 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 28d1457..55c3237 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3101,7 +3101,7 @@ static void cciss_getgeometry(int cntl_num)
- 	int i;
- 	int listlength = 0;
- 	__u32 lunid = 0;
--	int block_size;
-+	unsigned block_size;
- 	sector_t total_size;
+ 	timr = lock_timer(timer_id, &flags);
+ 	if (!timr)
+@@ -784,7 +784,7 @@ sys_timer_settime(timer_t timer_id, int flags,
+ 	struct k_itimer *timr;
+ 	struct itimerspec new_spec, old_spec;
+ 	int error = 0;
+-	long flag;
++	unsigned long flag;
+ 	struct itimerspec *rtn = old_setting ? &old_spec : NULL;
  
- 	ld_buff = kzalloc(sizeof(ReportLunData_struct), GFP_KERNEL);
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 0c3e12c..dd332f2 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -950,7 +950,7 @@ ignore:
- void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct hid_usage *usage, __s32 value)
+ 	if (!new_setting)
+@@ -836,7 +836,7 @@ asmlinkage long
+ sys_timer_delete(timer_t timer_id)
  {
- 	struct input_dev *input;
--	int *quirks = &hid->quirks;
-+	unsigned *quirks = &hid->quirks;
+ 	struct k_itimer *timer;
+-	long flags;
++	unsigned long flags;
  
- 	if (!field->hidinput)
- 		return;
-diff --git a/drivers/isdn/hisax/hfc_2bds0.c b/drivers/isdn/hisax/hfc_2bds0.c
-index 8d98644..5c46a71 100644
---- a/drivers/isdn/hisax/hfc_2bds0.c
-+++ b/drivers/isdn/hisax/hfc_2bds0.c
-@@ -1019,7 +1019,8 @@ hfc_dbusy_timer(struct IsdnCardState *cs)
- static unsigned int
- *init_send_hfcd(int cnt)
- {
--	int i, *send;
-+	int i;
-+	unsigned *send;
+ retry_delete:
+ 	timer = lock_timer(timer_id, &flags);
+diff --git a/lib/idr.c b/lib/idr.c
+index d0f1acd..09cbe2b 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -120,7 +120,7 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ 	int n, m, sh;
+ 	struct idr_layer *p, *new;
+ 	int l, id, oid;
+-	long bm;
++	unsigned long bm;
  
- 	if (!(send = kmalloc(cnt * sizeof(unsigned int), GFP_ATOMIC))) {
- 		printk(KERN_WARNING
-diff --git a/drivers/isdn/hisax/nj_s.c b/drivers/isdn/hisax/nj_s.c
-index fa2db87..a895dfe 100644
---- a/drivers/isdn/hisax/nj_s.c
-+++ b/drivers/isdn/hisax/nj_s.c
-@@ -151,7 +151,7 @@ NETjet_S_card_msg(struct IsdnCardState *cs, int mt, void *arg)
- static int __devinit njs_pci_probe(struct pci_dev *dev_netjet,
- 				   struct IsdnCardState *cs)
- {
--	int cfg;
-+	u32 cfg;
- 
- 	if (pci_enable_device(dev_netjet))
- 		return(0);
-diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
-index ee08292..e5e2c9c 100644
---- a/drivers/net/tulip/tulip_core.c
-+++ b/drivers/net/tulip/tulip_core.c
-@@ -292,6 +292,7 @@ static void tulip_up(struct net_device *dev)
- 	struct tulip_private *tp = netdev_priv(dev);
- 	void __iomem *ioaddr = tp->base_addr;
- 	int next_tick = 3*HZ;
-+	u32 reg;
- 	int i;
- 
- #ifdef CONFIG_TULIP_NAPI
-@@ -307,14 +308,14 @@ static void tulip_up(struct net_device *dev)
- 
- 	/* Reset the chip, holding bit 0 set at least 50 PCI cycles. */
- 	iowrite32(0x00000001, ioaddr + CSR0);
--	pci_read_config_dword(tp->pdev, PCI_COMMAND, &i);  /* flush write */
-+	pci_read_config_dword(tp->pdev, PCI_COMMAND, &reg);  /* flush write */
- 	udelay(100);
- 
- 	/* Deassert reset.
- 	   Wait the specified 50 PCI cycles after a reset by initializing
- 	   Tx and Rx queues and the address filter list. */
- 	iowrite32(tp->csr0, ioaddr + CSR0);
--	pci_read_config_dword(tp->pdev, PCI_COMMAND, &i);  /* flush write */
-+	pci_read_config_dword(tp->pdev, PCI_COMMAND, &reg);  /* flush write */
- 	udelay(100);
- 
- 	if (tulip_debug > 1)
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 728b3c8..71d561f 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -658,7 +658,7 @@ int
- pci_restore_state(struct pci_dev *dev)
- {
- 	int i;
--	int val;
-+	u32 val;
- 
- 	/* PCI Express register must be restored first */
- 	pci_restore_pcie_state(dev);
-diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-index 7bd5852..ac5666f 100644
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -2876,7 +2876,7 @@ static int create_fixed_stream_quirk(struct snd_usb_audio *chip,
- 	struct audioformat *fp;
- 	struct usb_host_interface *alts;
- 	int stream, err;
--	int *rate_table = NULL;
-+	unsigned *rate_table = NULL;
- 
- 	fp = kmemdup(quirk->data, sizeof(*fp), GFP_KERNEL);
- 	if (! fp) {
+ 	id = *starting_id;
+  restart:
 -- 
 1.5.3.GIT
 
