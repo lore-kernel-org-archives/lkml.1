@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763838AbXJNVQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbXJNVU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763838AbXJNVQh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbXJNVQ3
+	id S1763629AbXJNVU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 17:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXJNVUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:16:29 -0400
-Received: from host06.hostingexpert.com ([216.80.70.60]:52438 "EHLO
-	host06.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754176AbXJNVQ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:16:28 -0400
-Message-ID: <47128718.2070603@linuxtv.org>
-Date: Sun, 14 Oct 2007 17:16:08 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sun, 14 Oct 2007 17:20:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36311 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752591AbXJNVUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 17:20:16 -0400
+Date: Sun, 14 Oct 2007 23:14:46 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove GPL restriction from set_dumpable()
+In-Reply-To: <20071014210341.GA30029@infradead.org>
+Message-ID: <Pine.LNX.4.64.0710142311150.20620@jikos.suse.cz>
+References: <Pine.LNX.4.64.0710141257030.20620@jikos.suse.cz>
+ <20071014210341.GA30029@infradead.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Re: tuner-core.c:fe_has_signal() can returne uninitialized value
-References: <20071014175159.GO4211@stusta.de>
-In-Reply-To: <20071014175159.GO4211@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - host06.hostingexpert.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - linuxtv.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Commit 1f5ef19779df2c2f75870332b37dd3004c08a515 added the following 
-> function to drivers/media/video/tuner-core.c:
->
-> <--  snip  -->
->
-> static int fe_has_signal(struct tuner *t)
-> {
->         struct dvb_tuner_ops *fe_tuner_ops = &t->fe.ops.tuner_ops;
->         u16 strength;
->
->         if (fe_tuner_ops->get_rf_strength)
->                 fe_tuner_ops->get_rf_strength(&t->fe, &strength);
->
->         return strength;
-> }
->
-> <--  snip  -->
->
->
-> If (!fe_tuner_ops->get_rf_strength) this function returns the value of 
-> an uninitialized variable.
->
-> Spotted by the Coverity checker.
->   
-Thank you, Adrian.  I've fixed this in my tree:
+On Sun, 14 Oct 2007, Christoph Hellwig wrote:
 
-http://linuxtv.org/hg/~mkrufky/v4l-dvb/rev/101ca558a777
+> > Commit 6c5d5238 introduced a set_dumpable() function that replaced the 
+> > direct access to mm_struct->dumpable. I don't think there is any 
+> > reason to restrict this function to EXPORT_SYMBOL_GPL() -- previously 
+> > any module could modify current->mm->dumpable without any 
+> > resitrictions, so it makes a little sense to turn this into 'internal 
+> > interface' at once.
+> Nack, the just shouldn't do such things at all.  I start to get really 
+> sick of patches adding random exports everywhere.
 
-Mauro, please pull from:
+I actually don't care that much whether this is merged or not. In fact the 
+function itself is pretty trivial and standalone, so any 3rd party module 
+willing to modify current->mm->flags can just reimplement it line-by-line 
+themselves without breaking the license anyway ...
 
-http://linuxtv.org/hg/~mkrufky/v4l-dvb
+My main point here was that we should probably better document somewhere 
+what are the intended usage scenarios for EXPORT_SYMBOL() vs. 
+EXPORT_SYMBOL_GPL(). "Really internal interface" seems a little bit vague 
+to me.
 
-for:
-
-- tuner-core.c: fe_has_signal() can return uninitialized value
-
- tuner-core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Please send this to Linus for 2.6.24
-
-Regards,
-
-Mike
+-- 
+Jiri Kosina
+SUSE Labs
