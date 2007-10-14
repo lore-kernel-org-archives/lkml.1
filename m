@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764087AbXJNWfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXJNWfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764087AbXJNWfQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 18:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758830AbXJNWfD
+	id S1764275AbXJNWfr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758830AbXJNWfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 18:35:03 -0400
-Received: from smtp5-g19.free.fr ([212.27.42.35]:57222 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755538AbXJNWfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 18:35:00 -0400
-Message-ID: <47129992.4040903@free.fr>
-Date: Mon, 15 Oct 2007 00:34:58 +0200
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Sun, 14 Oct 2007 18:35:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:51470 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760108AbXJNWff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 18:35:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PEiZASuf3cEY1cwa9rbYyWpd735MFkEFvHpMg2+mmEWHcbf0GnyFwHph3oVdGyNI4p4yWLMwCg8xHEZcWPDeI6dwuXRmKp0VS1E2UIh/UYzBDsB6UsvbakcErSOpIZ4foF3Ls7ceLKn82o2sVYyVf0KyaNOwLAe0v3M6dN7xL2k=
+Message-ID: <40f323d00710141535t671e83akc90906338b6021a6@mail.gmail.com>
+Date: Mon, 15 Oct 2007 00:35:33 +0200
+From: "Benoit Boissinot" <bboissin@gmail.com>
+To: "Alistair John Strachan" <alistair@devzero.co.uk>
+Subject: Re: Which companies are helping developing the kernel
+Cc: "Stefan Heinrichsen" <gelbemauer@gmx.de>, linux-kernel@vger.kernel.org,
+       "Greg KH" <gregkh@suse.de>
+In-Reply-To: <200710142328.46850.alistair@devzero.co.uk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       reiserfs-devel@vger.kernel.org
-Subject: Re: 2.6.23-mm1: BUG in reiserfs_delete_xattrs
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071014220622.203990@gmx.net>
+	 <200710142328.46850.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 12.10.2007 06:31, Andrew Morton a écrit :
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+On 10/15/07, Alistair John Strachan <alistair@devzero.co.uk> wrote:
+> On Sunday 14 October 2007 23:06:22 Stefan Heinrichsen wrote:
+> > Hello,
+> >
+> > I posted this question at comp.linux.misc and where told this would be a
+> > better place therefore. I would like to do a internship in the field of the
+> > Linux kernel.
+> > Can someone tell me where to find a list of companies (don't matter in
+> > which country) that employ kernel developers?
+>
+perhaps this helps:
 
-/home is mounted with the following options:
-   /dev/mapper/vglinux1-lvhome on /home type reiserfs (rw,noatime,nodiratime,user_xattr)
+http://lwn.net/Articles/247582/
 
-I guess that beagled (the Beagle desktop search daemon) has populated user
-xattrs on almost all files. Now, when I delete a file, two BUGs occur
-and the system hangs. Here is the stack for the first BUG (the second
-one is very similar):
+regards,
 
-[partially hand copied stack]
-_fput
-fput
-reiserfs_delete_xattrs
-reiserfs_delete_inode
-generic_delete_inode
-generic_drop_inode
-iput
-do_unlinkat
-sys_unlink
-sys_enter_past_esp
-
-I reported a similar BUG in 2.6.22-rc8-mm2 (see
-http://lkml.org/lkml/2007/9/27/235). Dave Hansen sent a patch for it, I
-tested it and it was OK for 2.6.22-rc8-mm2.
-
-I tried this patch on 2.6.23-mm1, and it fixed the BUGs here too.
-
-----
-From: Dave Hansen <haveblue@us.ibm.com>
-
-The bug is caused by reiserfs creating a special 'struct file' with a
-NULL vfsmount.  
-
-/* Opens a file pointer to the attribute associated with inode */
-static struct file *open_xa_file(const struct inode *inode, const char
-*name,
-                                 int flags)
-{
-...
-        fp = dentry_open(xafile, NULL, O_RDWR);
-        /* dentry_open dputs the dentry if it fails */
-
-
-As Christoph just said, this is somewhat of a bandaid.  But, it
-shouldn't hurt anything.
-
----
-
- lxc-dave/fs/file_table.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN fs/open.c~fix-reiserfs-oops fs/open.c
-diff -puN fs/file_table.c~fix-reiserfs-oops fs/file_table.c
---- lxc/fs/file_table.c~fix-reiserfs-oops	2007-09-27 13:32:20.000000000 -0700
-+++ lxc-dave/fs/file_table.c	2007-09-27 13:33:11.000000000 -0700
-@@ -236,7 +236,7 @@ void fastcall __fput(struct file *file)
- 	fops_put(file->f_op);
- 	if (file->f_mode & FMODE_WRITE) {
- 		put_write_access(inode);
--		if (!special_file(inode->i_mode))
-+		if (!special_file(inode->i_mode) && mnt)
- 			mnt_drop_write(mnt);
- 	}
- 	put_pid(file->f_owner.pid);
-diff -puN include/linux/mount.h~fix-reiserfs-oops include/linux/mount.h
-_
-
-
+Benoit
