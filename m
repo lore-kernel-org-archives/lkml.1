@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXJNSDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXJNSUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762892AbXJNSDy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 14:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbXJNSDp
+	id S1759383AbXJNSUt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 14:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXJNSUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 14:03:45 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1645 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758274AbXJNSDo (ORCPT
+	Sun, 14 Oct 2007 14:20:40 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51453 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbXJNSUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 14:03:44 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] ivtv: fix NULL dereference
-Date: Sun, 14 Oct 2007 20:03:20 +0200
-User-Agent: KMail/1.9.7
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-References: <20071014175137.GM4211@stusta.de>
-In-Reply-To: <20071014175137.GM4211@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Oct 2007 14:20:39 -0400
+Date: Sun, 14 Oct 2007 19:20:30 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: davem@davemloft.net, jgarzik@pobox.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] skb->tail in ibm_newemac should be skb_tail_pointer()
+Message-ID: <20071014182030.GW8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710142003.20323.hverkuil@xs4all.nl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007 19:51:37 Adrian Bunk wrote:
-> We shouldn't dereference "itv" when we know it's NULL...
->
-> Spotted by the Coverity checker.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
-> --- linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c.old	2007-10-14
-> 19:17:12.000000000 +0200 +++
-> linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c	2007-10-14
-> 19:18:05.000000000 +0200 @@ -947,7 +947,7 @@ int
-> ivtv_v4l2_open(struct inode *inode,
->  	if (itv == NULL) {
->  		/* Couldn't find a device registered
->  		   on that minor, shouldn't happen! */
-> -		IVTV_WARN("No ivtv device found on minor %d\n", minor);
-> +		printk(KERN_WARNING "No ivtv device found on minor %d\n", minor);
->  		return -ENXIO;
->  	}
+... since that sucker is not 32bit-only and on 64bit skb->tail is an
+offset, not a pointer.
 
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/net/ibm_newemac/core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 8ea5009..7a5aabd 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -1534,7 +1534,7 @@ static inline int emac_rx_sg_append(struct emac_instance *dev, int slot)
+ 			dev_kfree_skb(dev->rx_sg_skb);
+ 			dev->rx_sg_skb = NULL;
+ 		} else {
+-			cacheable_memcpy(dev->rx_sg_skb->tail,
++			cacheable_memcpy(skb_tail_pointer(dev->rx_sg_skb),
+ 					 dev->rx_skb[slot]->data, len);
+ 			skb_put(dev->rx_sg_skb, len);
+ 			emac_recycle_rx_skb(dev, slot, len);
+-- 
+1.5.3.GIT
 
-Luckily this is something that 'shoudn't happen' :-)
-Oddly enough it is correct in my standalone driver.
-
-Mauro, can you merge this with 2.6.24 as well? Or shall I add it to my 
-ivtv tree with my other outstanding fixes?
-
-Regards,
-
-	Hans
