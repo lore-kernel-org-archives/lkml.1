@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbXJNVnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763998AbXJNVs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763955AbXJNVnn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbXJNVnf
+	id S1763998AbXJNVs1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 17:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbXJNVsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:43:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59401 "EHLO mail.dvmed.net"
+	Sun, 14 Oct 2007 17:48:16 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41355 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760901AbXJNVne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:43:34 -0400
-Message-ID: <47128D76.5050407@garzik.org>
-Date: Sun, 14 Oct 2007 17:43:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: {GIT pull] x86 bugfixes
-References: <alpine.LFD.0.9999.0710142326451.22612@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710142326451.22612@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------010206050103090303070102"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1754134AbXJNVsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 17:48:14 -0400
+Subject: Re: MSI interrupts and disable_irq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4711C217.2010605@colorfullife.com>
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
+	 <4710901F.8010206@colorfullife.com>
+	 <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
+	 <4711C217.2010605@colorfullife.com>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 07:47:53 +1000
+Message-Id: <1192398473.6188.10.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010206050103090303070102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Thomas Gleixner wrote:
-> Linus,
-> 
-> please pull from
-> 
->   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-x86.git
-> 
-> Thanks,
-> 
-> 	tglx
-> --
-> Dave Jones (1):
->       x86: fix missing include for vsyscall
-> 
-> Thomas Gleixner (3):
->       clockevents: introduce force broadcast notifier
->       x86: move local APIC timer init to the end of start_secondary()
->       x86: force timer broadcast on late AMD C1E detection
-> 
->  arch/x86/kernel/alternative.c |    1 +
->  arch/x86/kernel/apic_64.c     |   26 ++++++++++++++++++++++++++
->  arch/x86/kernel/smpboot_64.c  |    7 ++-----
->  include/linux/clockchips.h    |    1 +
->  kernel/time/tick-broadcast.c  |   29 +++++++++++++++++++++++------
->  kernel/time/tick-common.c     |    1 +
->  6 files changed, 54 insertions(+), 11 deletions(-)
+On Sun, 2007-10-14 at 09:15 +0200, Manfred Spraul wrote:
+> Yinghai Lu wrote:
+> > On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
+> >   
+> >> Someone around with a MSI capable board? The forcedeth driver does
+> >>     dev->irq = pci_dev->irq
+> >> in nv_probe(), especially before pci_enable_msi().
+> >> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
+> >> wrong interrupt....
+> >>     
+> >
+> > the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
+> >
+> >   
+> Where is that?
+> Otherwise I would propose the attached patch. My board is not 
+> MSI-capable, thus I can't test it myself.
 
-Unless the size is overlarge (currently 400k, on lkml), any chance I 
-could talk you into appending the associated patch onto the end of 
-future emails?
+Why not just copy pcidev->irq to dev->irq once ?
 
-If it helps, I use the attached script when I send stuff upstream.
-
-	Jeff
+Ben.
 
 
-
-
---------------010206050103090303070102
-Content-Type: application/x-shellscript;
- name="mkmsg.sh"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="mkmsg.sh"
-
-IyEvYmluL3NoCgojCiMgdXNhZ2U6IG1rbXNnIFticmFuY2hdIFtvdXRwdXQgdGV4dCBmaWxl
-XQojCgpCUkFOQ0g9IiQxIgpURVhUX09VVD0iJDIiCgpQV0Q9YHB3ZGAKUkVQTz1gYmFzZW5h
-bWUgJFBXRGAKCmVjaG8gIlBsZWFzZSBwdWxsIGZyb20gJyRCUkFOQ0gnIGJyYW5jaCBvZiIg
-PiAkVEVYVF9PVVQKZWNobyAibWFzdGVyLmtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2Vy
-bmVsL2dpdC9qZ2FyemlrLyRSRVBPLmdpdCAkQlJBTkNIIiBcCgk+PiAkVEVYVF9PVVQKZWNo
-byAiIiA+PiAkVEVYVF9PVVQKZWNobyAidG8gcmVjZWl2ZSB0aGUgZm9sbG93aW5nIHVwZGF0
-ZXM6IiA+PiAkVEVYVF9PVVQKZWNobyAiIiA+PiAkVEVYVF9PVVQKCmdpdCBkaWZmIC1NIC0t
-c3RhdCAtLXN1bW1hcnkgbWFzdGVyLi4kQlJBTkNIID4+ICRURVhUX09VVAplY2hvICIiID4+
-ICRURVhUX09VVApnaXQgbG9nIC0tbm8tbWVyZ2VzIG1hc3Rlci4uJEJSQU5DSCB8IGdpdCBz
-aG9ydGxvZyA+PiAkVEVYVF9PVVQKZ2l0IGRpZmYgbWFzdGVyLi4kQlJBTkNIID4+ICRURVhU
-X09VVAoK
---------------010206050103090303070102--
