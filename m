@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763448AbXJNW0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763867AbXJNW2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763448AbXJNW0m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 18:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbXJNW0c
+	id S1763867AbXJNW2V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXJNW2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 18:26:32 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:58423 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752361AbXJNW0b (ORCPT
+	Sun, 14 Oct 2007 18:28:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:53228 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120AbXJNW2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 18:26:31 -0400
-Subject: Re: linux-2.6.23-mm1 crashed
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Milter <davemilter@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <20071014122144.f8e56ed9.akpm@linux-foundation.org>
-References: <2a382c6e0710141145j51286bd0o8a2eb307f7455cd@mail.gmail.com>
-	 <20071014122144.f8e56ed9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 14 Oct 2007 18:26:29 -0400
-Message-Id: <1192400789.3351.59.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Sun, 14 Oct 2007 18:28:13 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Hook compat_sys_nanosleep up to high res timer code
+Date: Mon, 15 Oct 2007 00:28:05 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Anton Blanchard <anton@samba.org>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+References: <20071014215437.GF26693@kryten>
+In-Reply-To: <20071014215437.GF26693@kryten>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710150028.06493.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/IKpOICjESAfXDR85c4vL7xekZ0rntGZLh4K6
+ QMyJn96LeOWFNja4+I2uMhqvf3d+2D9Qs5qnds+JJ/bnlCul6E
+ 4DkaNlTTsbo+QkprCXaag==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-10-14 at 12:21 -0700, Andrew Morton wrote:
-> On Sun, 14 Oct 2007 22:45:47 +0400 "Dave Milter" <davemilter@gmail.com> wrote:
+On Sunday 14 October 2007, Anton Blanchard wrote:
+> Now we have high res timers on ppc64 I thought Id test them. It turns
+> out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
+> is limited to HZ resolution.
 > 
-> > I build linux-2.6.23-mm1 and try to boot it using qemu,
-> > and it crashed with trace like this:
-> > do_page_fault
-> > error_code
-> > lock_acquire
-> > _spin_lock_irqsave
-> > gdth_timeout
-> > run_timer_softirq
-> > __do_softirq
-> > do_softirq
-> > 
-> > I have screenshot, but have no idea, is it legal to include it, if I
-> > sent copy to lkml.
-> > config of kernel in attachment,
-> > I apply all three patches from hot-fixes.
-> > 
+> The following patch makes compat_sys_nanosleep call hrtimer_nanosleep
+> and uses compat_alloc_user_space to avoid setting KERNEL_DS.
 > 
-> The screenshot is here:  http://userweb.kernel.org/~akpm/crash.png
-> 
-> It would appear that gdth_timeout() is passing a bad pointer into
-> spin_lock_irqsave().
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-There's a bug in the gdth rework in that the instance can be deleted
-from the list before the actual timer is stopped.  This can be worked
-around I think by the following patch; although we really should be
-stopping the timer from firing when the list goes empty.
+The code looks correct, but I think it would be nicer to change 
+hrtimer_nanosleep to take a kernel pointer and have all three
+callers (common_nsleep, sys_nanosleep and compat_sys_nanosleep)
+do the copy_to_user/put_compat_timespec in the caller.
 
-James
+This would also make it possible to get rid of set_fs() in
+compat_sys_clock_nanosleep().
 
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index e8010a7..7fa22be 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -3793,6 +3793,9 @@ static void gdth_timeout(ulong data)
-     gdth_ha_str *ha;
-     ulong flags;
- 
-+    if (list_empty(&gdth_instances))
-+	return;
-+
-     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
-     spin_lock_irqsave(&ha->smp_lock, flags);
- 
-
-
-
+	Arnd <><
