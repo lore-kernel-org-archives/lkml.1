@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXJNVg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXJNVh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763857AbXJNVg7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759698AbXJNVgv
+	id S1764052AbXJNVh6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 17:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761567AbXJNVhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:36:51 -0400
-Received: from b.mail.sonic.net ([64.142.19.5]:34873 "EHLO b.mail.sonic.net"
+	Sun, 14 Oct 2007 17:37:50 -0400
+Received: from rtr.ca ([76.10.145.34]:1842 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758621AbXJNVgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:36:51 -0400
-References: <47114B46.10403@sonic.net> <1192393469.7573.8.camel@heimdal.trondhjem.org> <47127FA8.6040506@sonic.net> <1B7E8ED9-7DA9-41CA-BDF9-219E71AAA905@screamingdolphin.net> <4712835C.5050400@sonic.net> <1192397541.7573.13.camel@heimdal.trondhjem.org>
-Message-Id: <38BD90D6-E300-4B7B-8244-C898A9A3AA0B@sonic.net>
-From: Scott Petler <scottp@sonic.net>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-In-Reply-To: <1192397541.7573.13.camel@heimdal.trondhjem.org>
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed;
-	delsp=yes
-X-Mailer: iPhone Mail (3A109a)
-Mime-Version: 1.0 (iPhone Mail 3A109a)
-Subject: Re: PROBLEM: kernel panic
+	id S1759698AbXJNVhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 17:37:50 -0400
+Message-ID: <47128C2C.5060502@rtr.ca>
+Date: Sun, 14 Oct 2007 17:37:48 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression:  2.6.23-rc9 okay, 2.6.23.1 resume problems
+References: <4712786B.3040009@rtr.ca> <200710142330.38057.rjw@sisk.pl>
+In-Reply-To: <200710142330.38057.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 14 Oct 2007 14:36:32 -0700
-Cc: "Doug Whitesell (LKML)" <dcw-kernel@screamingdolphin.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, I'll do that....
-Thanks
-
-Sent from my iPhone
-
-On Oct 14, 2007, at 2:32 PM, Trond Myklebust  
-<trond.myklebust@fys.uio.no> wrote:
-
->
-> On Sun, 2007-10-14 at 14:00 -0700, Scott Petler wrote:
->> Doug,
+Rafael J. Wysocki wrote:
+> On Sunday, 14 October 2007 22:13, Mark Lord wrote:
+>> Since upgrading to 2.6.23.1 from 2.6.23-rc9, resume-from-RAM has been misbehaving here.
 >>
->> I thought that might do it, it does seem to work.  I edited the  
->> driver
->> line in my xorg.conf
->> from nvidia to nv and then,
->> <alt><ctrl> F1
->> login as root
->> /etc/init.d/gdm stop
->> /etc/init.d/gdm start
+>> It takes much (+5-7 seconds) longer to resume *sometimes*, but not all/most of the time.
+>> And sometimes I get get flashing keyboard LEDs and have to hold the power button
+>> in for a full hard reset.
 >>
->> It came back up with the same flashing crap on the second monitor,  
->> so I
->> did it again with
->> the 2nd monitor turned off altogether, and I'll see how long it  
->> will run
->> on the single monitor
->> without the nvidia driver without crashing (maybe forever...).
+>> With 2.6.23-rc8/rc9, no such troubles.
 >>
->> Thanks,
->> Scott
->
-> Please don't forget to reboot, though. The kernel will remain tainted
-> until you've rebooted without loading the nvidia module.
->
-> Cheers
->  Trond
->
+>> Difficult to reproduce, other than perhaps once a day.
+>> Anybody want to fess up with a likely candidate?
+> 
+> Not really, but if you rule out all of the POWERPC and MIPS patches, there's
+> not much left ...
+
+Yeah, I didn't see much there either.
+
+I'll keep an eye on things over the next few days,
+and post again if it persists.
+
+I was using the powertop patches with -rc9, but not with 2.6.23.1.
+Maybe they helped (???).
+
+-ml
