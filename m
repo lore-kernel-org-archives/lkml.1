@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbXJNBOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbXJNBqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903AbXJNBOv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 21:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXJNBOo
+	id S1755384AbXJNBqq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 21:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXJNBqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 21:14:44 -0400
-Received: from mint.qinip.net ([62.100.30.37]:63058 "EHLO mint.qinip.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753816AbXJNBOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 21:14:43 -0400
-Date: Sun, 14 Oct 2007 03:14:40 +0200
-From: Arjan Opmeer <arjan@opmeer.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Message-ID: <20071014011440.GB15877@adopmeer.homeip.net>
-References: <20070914000015.GA20527@adopmeer.homeip.net> <d120d5000710091301h790db3c4nc44e71551a4bc408@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000710091301h790db3c4nc44e71551a4bc408@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ado@adopmeer.homeip.net
-Subject: Re: First stab at Elantech touchpad driver for 2.6.22.6. Testers
-	wanted!
-X-SA-Exim-Version: 4.2.1 (built Tue, 21 Aug 2007 23:39:36 +0000)
-X-SA-Exim-Scanned: Yes (on Ado.lan)
+	Sat, 13 Oct 2007 21:46:38 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:42983 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbXJNBqh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 21:46:37 -0400
+Subject: Re: [PATCH] JFS: Bio cleanup: Replace missing return statements
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071013122853.aafd3c00.randy.dunlap@oracle.com>
+References: <20071013191110.GA20203@havoc.gtf.org>
+	 <20071013122853.aafd3c00.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Sat, 13 Oct 2007 20:46:30 -0500
+Message-Id: <1192326390.6982.0.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi Dmitry,
-
-On Tue, Oct 09, 2007 at 04:01:58PM -0400, Dmitry Torokhov wrote:
-> On 9/13/07, Arjan Opmeer <arjan@opmeer.net> wrote:
-> >
-> > This is a first stab at a Linux driver for the Elantech touchpad as
-> > found on some laptops (e.g. MSI MS-1035 aka L725).
+On Sat, 2007-10-13 at 12:28 -0700, Randy Dunlap wrote:
+> On Sat, 13 Oct 2007 15:11:10 -0400 Jeff Garzik wrote:
 > 
-> Since the touchpad supports absolute mode I'd recommend removing
-> support for extended relative mode and concentrating on making
-> absolute mode work so that Synaptics X driver can be used with this
-> touchpad as well.
+> > 
+> > From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> > 
+> > commit 6712ecf8f648118c3363c142196418f89a510b90 removed some "return 0;"
+> > statements, rather than changing them to null returns.
+> 
+> Is my git tree mucked up?  It looks to me like it was commit
+> e30408b2a99cb7b8bf529c7dc2328a19d71894cf  that removed the return 0's.
 
-Well, from the few reports I got it seems not all Elantech touchpads are
-created equal. And as we don't have any documentation on these touchpads I
-really don't know whether they all support absolute mode, have the same
-parameters or use the same protocol for it.
+Yeah.  It was that one.  I cut and pasted the wrong one for the comment.
 
-So for the time being I really would like to keep support for absolute as
-well as relative mode in to make it easier for users to switch and test and
-find out and report where thing go wrong.
-
-Maybe that once we find out more about these touchpads and the possible
-different version we can focus on a solution that will fit all. But let's
-not do it while users are still trying whether the driver works for them at
-all... :)
-
-
-Arjan
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
