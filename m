@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763998AbXJNVs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbXJNVtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763998AbXJNVs1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbXJNVsQ
+	id S1764105AbXJNVtQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 17:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762864AbXJNVtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:48:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41355 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134AbXJNVsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:48:14 -0400
-Subject: Re: MSI interrupts and disable_irq
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4711C217.2010605@colorfullife.com>
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-	 <4710901F.8010206@colorfullife.com>
-	 <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-	 <4711C217.2010605@colorfullife.com>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 07:47:53 +1000
-Message-Id: <1192398473.6188.10.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Oct 2007 17:49:00 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58152 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761015AbXJNVs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 17:48:59 -0400
+Date: Sun, 14 Oct 2007 23:48:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       apiszcz@solarrain.com
+Subject: Re: In response to kernel compression e-mail a few months ago.
+In-Reply-To: <Pine.LNX.4.64.0710141650500.12466@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0710142348180.22801@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan>
+ <Pine.LNX.4.64.0710142144340.22801@fbirervta.pbzchgretzou.qr>
+ <20071014205008.GZ8181@ftp.linux.org.uk> <Pine.LNX.4.64.0710141650500.12466@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sun, 2007-10-14 at 09:15 +0200, Manfred Spraul wrote:
-> Yinghai Lu wrote:
-> > On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> >   
-> >> Someone around with a MSI capable board? The forcedeth driver does
-> >>     dev->irq = pci_dev->irq
-> >> in nv_probe(), especially before pci_enable_msi().
-> >> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
-> >> wrong interrupt....
-> >>     
-> >
-> > the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
-> >
-> >   
-> Where is that?
-> Otherwise I would propose the attached patch. My board is not 
-> MSI-capable, thus I can't test it myself.
+On Oct 14 2007 16:58, Justin Piszcz wrote:
+>
+> compress:
+>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 10544 war       20   0  700m 681m 1632 S  141 20.7   1:41.46 7z
 
-Why not just copy pcidev->irq to dev->irq once ?
-
-Ben.
-
-
+Just how you can utilize a CPU to 141% remains a mystery..
+[ to be noted this is sqrt(2)*100 ]
