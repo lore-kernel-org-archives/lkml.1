@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761120AbXJNRvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbXJNRvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761120AbXJNRvf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 13:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXJNRug
+	id S1762253AbXJNRvx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 13:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbXJNRur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 13:50:36 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35247 "EHLO
+	Sun, 14 Oct 2007 13:50:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35252 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760075AbXJNRue (ORCPT
+	with ESMTP id S1760353AbXJNRup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 13:50:34 -0400
-Date: Sun, 14 Oct 2007 19:51:04 +0200
+	Sun, 14 Oct 2007 13:50:45 -0400
+Date: Sun, 14 Oct 2007 19:51:15 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Auke Kok <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+To: yi.zhu@intel.com
+Cc: linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: [2.6 patch] e1000e/ethtool.c: fix error checks
-Message-ID: <20071014175104.GK4211@stusta.de>
+Subject: [2.6 patch] iwl4965-base.c: fix off-by-one errors
+Message-ID: <20071014175115.GL4211@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,27 +24,44 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You want to check for the value, not for the address.
-
-Spotted by the Coverity checker.
+This patch fixes two off-by-one errors resulting in array overflows 
+spotted by the Coverity checker.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- a/drivers/net/e1000e/ethtool.c
-+++ b/drivers/net/e1000e/ethtool.c
-@@ -1451,11 +1451,11 @@ static int e1000_loopback_test(struct e1000_adapter *adapter, u64 *data)
- 	}
+
+ drivers/net/wireless/iwlwifi/iwl4965-base.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- linux-2.6/drivers/net/wireless/iwlwifi/iwl4965-base.c.old	2007-10-14 16:52:21.000000000 +0200
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl4965-base.c	2007-10-14 16:59:37.000000000 +0200
+@@ -4489,23 +4489,23 @@ static u8 ratio2dB[100] = {
+ 	39, 39, 39, 39, 39, 40, 40, 40, 40, 40  /* 90 - 99 */
+ };
  
- 	*data = e1000_setup_desc_rings(adapter);
--	if (data)
-+	if (*data)
- 		goto out;
+ /* Calculates a relative dB value from a ratio of linear
+  *   (i.e. not dB) signal levels.
+  * Conversion assumes that levels are voltages (20*log), not powers (10*log). */
+ int iwl_calc_db_from_ratio(int sig_ratio)
+ {
+-	/* Anything above 1000:1 just report as 60 dB */
+-	if (sig_ratio > 1000)
++	/* 1000:1 or higher just report as 60 dB */
++	if (sig_ratio >= 1000)
+ 		return 60;
  
- 	*data = e1000_setup_loopback_test(adapter);
--	if (data)
-+	if (*data)
- 		goto err_loopback;
+-	/* Above 100:1, divide by 10 and use table,
++	/* 100:1 or higher, divide by 10 and use table,
+ 	 *   add 20 dB to make up for divide by 10 */
+-	if (sig_ratio > 100)
++	if (sig_ratio >= 100)
+ 		return (20 + (int)ratio2dB[sig_ratio/10]);
  
- 	*data = e1000_run_loopback_test(adapter);
+ 	/* We shouldn't see this */
+ 	if (sig_ratio < 1)
+ 		return 0;
+ 
+ 	/* Use table for ratios 1:1 - 99:1 */
+ 	return (int)ratio2dB[sig_ratio];
 
