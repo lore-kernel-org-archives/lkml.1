@@ -1,44 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbXJNRrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbXJNRt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbXJNRrQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 13:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbXJNRrA
+	id S1759367AbXJNRt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 13:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbXJNRtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 13:47:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47998 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbXJNRq7 (ORCPT
+	Sun, 14 Oct 2007 13:49:21 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35236 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757875AbXJNRtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 13:46:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <471255E4.3070009@s5r6.in-berlin.de>
-Date: Sun, 14 Oct 2007 19:46:12 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sun, 14 Oct 2007 13:49:21 -0400
+Date: Sun, 14 Oct 2007 19:49:50 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.55
+Message-ID: <20071014174950.GG4211@stusta.de>
 MIME-Version: 1.0
-To: David Newall <david@davidnewall.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Rob Landley <rob@landley.net>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Jens Axboe <axboe@suse.de>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <4711AF18.3030201@davidnewall.com>
-In-Reply-To: <4711AF18.3030201@davidnewall.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> That is so rude.
+Security fixes since 2.6.16.54:
+- CVE-2005-0504: fix buffer overflow in the moxa driver
+- CVE-2007-2453: random fixes
+- CVE-2007-3104: store sysfs inode nrs in s_ino to avoid readdir oopses
+- CVE-2007-3105: random: fix bound check ordering
+- CVE-2007-3848: Reset current->pdeath_signal on SUID binary execution
+- CVE-2007-4571: Convert snd-page-alloc proc file to use seq_file
+- CVE-2007-4573: x86_64: Zero extend all registers after ptrace in 32bit entry path
 
-Such responses sometimes happen after provocative posts like the thread
-starter's.  He could have asked straight away for help with fixing his
-boot environment instead of wrapping his question into a feigned design
-discussion.  It appeared as if he is out for a fight rather than
-interested in help.
--- 
-Stefan Richter
--=====-=-=== =-=- -===-
-http://arcgraph.de/sr/
+
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.54:
+
+Adrian Bunk (10):
+      unexport ktime_get_real
+      unexport neigh_update_hhs
+      unexport cpufreq_parse_governor
+      unexport csr1212_release_keyval
+      sound/core/pcm_lib.c: don't export static functions
+      unexport ip_conntrack_{,un}register_notifier
+      snd_mem_proc_read(): convert to list_for_each_entry*
+      Linux 2.6.16.55-rc1
+      Revert "TCP: Fix TCP handling of SACK in bidirectional flows"
+      Linux 2.6.16.55
+
+Andi Kleen (1):
+      x86_64: Zero extend all registers after ptrace in 32bit entry path (CVE-2007-4573)
+
+Dann Frazier (1):
+      fix buffer overflow in the moxa driver (CVE-2005-0504)
+
+Eric Sandeen (1):
+      sysfs: store sysfs inode nrs in s_ino to avoid readdir oopses (CVE-2007-3104)
+
+Kumar Gala (1):
+      [POWERPC] Flush registers to proper task context
+
+Marcel Holtmann (1):
+      Reset current->pdeath_signal on SUID binary execution (CVE-2007-3848)
+
+Matt Mackall (3):
+      random: fix error in entropy extraction (CVE-2007-2453 1 of 2)
+      random: fix seeding with zero entropy (CVE-2007-2453 2 of 2)
+      random: fix bound check ordering (CVE-2007-3105)
+
+Mikael Pettersson (1):
+      [SPARC]: fix sparc64 gcc 4.2 compile failure
+
+Nick Bowler (1):
+      [IPSEC] AH4: Update IPv4 options handling to conform to RFC 4302.
+
+Takashi Iwai (1):
+      Convert snd-page-alloc proc file to use seq_file (CVE-2007-4571)
+
+
+ Makefile                                     |    2 
+ arch/powerpc/kernel/process.c                |    6 -
+ arch/x86_64/ia32/ia32entry.S                 |   18 +++-
+ arch/x86_64/kernel/ptrace.c                  |    4 -
+ drivers/char/moxa.c                          |    8 +-
+ drivers/char/random.c                        |   76 +++++++++++--------
+ drivers/cpufreq/cpufreq.c                    |    1 
+ drivers/ieee1394/ieee1394_core.c             |    1 
+ fs/exec.c                                    |   13 ++-
+ fs/sysfs/dir.c                               |   16 ++--
+ fs/sysfs/inode.c                             |    1 
+ fs/sysfs/mount.c                             |    1 
+ include/asm-sparc/mostek.h                   |    2 
+ include/asm-sparc64/mostek.h                 |    2 
+ include/linux/sysfs.h                        |    1 
+ kernel/hrtimer.c                             |    2 
+ net/core/neighbour.c                         |    1 
+ net/ipv4/ah4.c                               |    2 
+ net/ipv4/netfilter/ip_conntrack_standalone.c |    2 
+ net/ipv4/tcp_input.c                         |    5 -
+ sound/core/memalloc.c                        |   72 ++++++++++--------
+ sound/core/pcm_lib.c                         |    4 -
+ 22 files changed, 137 insertions(+), 103 deletions(-)
