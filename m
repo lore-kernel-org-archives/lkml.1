@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764268AbXJNXgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbXJNXhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764268AbXJNXgp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 19:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbXJNXge
+	id S1763704AbXJNXhY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 19:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760627AbXJNXhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 19:36:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33069 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbXJNXgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 19:36:33 -0400
-Subject: Re: MSI interrupts and disable_irq
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Manfred Spraul <manfred@colorfullife.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <86802c440710141615g60fb9775oba590deb1a9fabde@mail.gmail.com>
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-	 <4710901F.8010206@colorfullife.com>
-	 <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-	 <4711C217.2010605@colorfullife.com> <1192398473.6188.10.camel@pasglop>
-	 <86802c440710141615g60fb9775oba590deb1a9fabde@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 09:36:12 +1000
-Message-Id: <1192404972.7014.0.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 14 Oct 2007 19:37:06 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60474
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760250AbXJNXhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 19:37:04 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: What still uses the block layer?
+Date: Sun, 14 Oct 2007 18:36:54 -0500
+User-Agent: KMail/1.9.6
+Cc: David Newall <david@davidnewall.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <4711AF18.3030201@davidnewall.com> <471255E4.3070009@s5r6.in-berlin.de>
+In-Reply-To: <471255E4.3070009@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710141836.55211.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 14 October 2007 12:46:12 pm Stefan Richter wrote:
+> David Newall wrote:
+> > That is so rude.
 
-On Sun, 2007-10-14 at 16:15 -0700, Yinghai Lu wrote:
-> On 10/14/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > On Sun, 2007-10-14 at 09:15 +0200, Manfred Spraul wrote:
-> > > Yinghai Lu wrote:
-> > > > On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> > > >
-> > > >> Someone around with a MSI capable board? The forcedeth driver does
-> > > >>     dev->irq = pci_dev->irq
-> > > >> in nv_probe(), especially before pci_enable_msi().
-> > > >> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
-> > > >> wrong interrupt....
-> > > >>
-> > > >
-> > > > the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
-> > > >
-> > > >
-> > > Where is that?
-> > > Otherwise I would propose the attached patch. My board is not
-> > > MSI-capable, thus I can't test it myself.
-> >
-> > Why not just copy pcidev->irq to dev->irq once ?
-> 
-> it seems e1000 is using np->pci_dev->irq directly too.
+When a reply contains as a reply to the first paragraph "you're wrong" with no 
+elaboration, and as a reply to the second paragraph nothing but expletives 
+and personal insults, I tend to stop reading.  It really doesn't come across 
+as a serious reply.
 
-Heh, allright, doesn't matter, I was just proposing to avoid one more
-indirection :-)
+I was at least attempting to ask a serious question.
 
-Ben.
+> Such responses sometimes happen after provocative posts like the thread
+> starter's.  He could have asked straight away for help with fixing his
+> boot environment instead of wrapping his question into a feigned design
+> discussion.  It appeared as if he is out for a fight rather than
+> interested in help.
 
+Actually, I was going through Documentation/block thinking about making a 
+00-INDEX for it, but my earlier questions of the scsi guys left me with the 
+impression that the block layer is _not_ used by the SCSI layer.  And since 
+every non-embedded modern storage device I'm aware of has been consumed by 
+the SCSI layer (despite none of them actually having a discernably closer 
+relationship to SCSI than ATA did), I didn't know whether or not it was more 
+appropriate to index this directory or request its deletion.  So I asked.
 
+Back when I  asked the scsi guys about this, I got no direct answer.  I 
+asked "where does the block layer work into this" in the context of questiosn 
+about the relationship between the scsi upper, middle, and lower layers, and 
+I never got a reply, even though the question was quoted back at me here:
+http://www.mail-archive.com/linux-scsi%40vger.kernel.org/msg09086.html
+
+The closest I got to an answer was later in the thread:
+http://www.mail-archive.com/linux-scsi%40vger.kernel.org/msg09131.html
+
+Which said:
+> That approach makes the Linux block layer either a nuisance,
+> irrelevant or a complete anachronism (in the case of OSD).
+> IMO the linux block layer should be morphed into a library
+> of internal queue handling routines. Storage upper level
+> drivers such as sd can continue to present the "block"
+> view ** of storage devices such as disks.
+
+The gist of the thread (and the documentation I was referred to) is that the 
+scsi "upper layer" presents /dev nodes and ioctls, the scsi mid-layer is a 
+routing layer very roughly analogus to a TCP/IP stack, and the scsi low-layer 
+drivers interface with specific pieces of hardware.  Apparently, the block 
+layer is not between any of these, they talk directly to each other.  This 
+would seem to indicate that I/O requests made to scsi devices are never 
+routed through a common block I/O request handling layer shared with non-SCSI 
+block devices.  I was not, however, certain of this, hence my attempt to 
+bring the topic back up.
+
+Oh, and sending a patch correcting Jens Axboe's address in this old 
+documentation.  He's apparently at Oracle now...
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
