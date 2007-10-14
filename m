@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbXJNQRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbXJNRHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbXJNQRZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 12:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbXJNQQe
+	id S1751666AbXJNRHH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 13:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbXJNRG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 12:16:34 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:62788 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756867AbXJNQQa (ORCPT
+	Sun, 14 Oct 2007 13:06:56 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:57164 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbXJNRGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 12:16:30 -0400
+	Sun, 14 Oct 2007 13:06:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=k3gQh0Du1VfMBsYYfyoQZ/kZlHgwe2JbR4r1RhoaatCGpT2BzY1Yr4xBfLxwH2nCXzL2pPuvPJwKOh6NScu1kcP5ceqEHtIb2eZp9LCx0zFKSo4k7urEapLwC2suoGY8vldvhwKou6PPMpmQek1Ck/W1xOthgxdFwWF/yjo4wHw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [git patches] IDE updates (part 2)
-Date: Sun, 14 Oct 2007 18:21:42 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk,
-       Jeff Garzik <jeff@garzik.org>
-References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk>
-In-Reply-To: <20071014001238.GP8181@ftp.linux.org.uk>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PRAx8Gylsd2LwTE+tIdM64AEvof655XA0nO8OdUIzhUb4VIu6SZzIJRRpRKd6qUnYu8Lzl1cZK5kaN541uP1vcaJbWzFhl+0R/ATi/pqmunzoBBbpSXYspq3Jw4IP9UY4B6WKcjKWyF+eu9N0R5FOTnc3UGAWGOhPhzZupAIojk=
+Message-ID: <386072610710141006kc3897b3s80db77d348971c7e@mail.gmail.com>
+Date: Mon, 15 Oct 2007 01:06:53 +0800
+From: "Wu, Bryan" <cooloney.lkml@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 02/10] Blackfin SPI driver: use new GPIO API and add error handling
+Cc: bryan.wu@analog.com, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Michael Hennerich" <michael.hennerich@analog.com>
+In-Reply-To: <200710121017.47645.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710141821.42255.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192158304-8277-1-git-send-email-bryan.wu@analog.com>
+	 <200710112326.34500.david-b@pacbell.net>
+	 <1192172077.6247.15.camel@roc-laptop>
+	 <200710121017.47645.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007, Al Viro wrote:
-> Proposed addition to icside part, provided that ARM folks ACK it - gets
-> icside to build and AFAICS it's correct:
+On 10/13/07, David Brownell <david-b@pacbell.net> wrote:
+> On Thursday 11 October 2007, Bryan Wu wrote:
+> > On Thu, 2007-10-11 at 23:26 -0700, David Brownell wrote:
+> > > On Thursday 11 October 2007, Bryan Wu wrote:
+> > > > @@ -1182,12 +1198,9 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
+> > > >                 return -ENOMEM;
+> > > >         }
+> > > >
+> > > > -       if (peripheral_request(P_SPI0_SCK, DRV_NAME) ||
+> > > > -                peripheral_request(P_SPI0_MISO, DRV_NAME) ||
+> > > > -                peripheral_request(P_SPI0_MOSI, DRV_NAME) ) {
+> > > > -
+> > > > +       if (setup_pin_mux(1)) {
+> > > >                 dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
+> > > > -               goto out_error_queue_alloc;
+> > > > +               goto out_error;
+> > > >         }
+> > > >
+> > > >         drv_data = spi_master_get_devdata(master);
+> > > >
+> > >
+> > > Still doesn't apply ... what tree are you generating this series against??
+> >
+> > I apply this patch on Linus git tree at 2.6.23 tag
+>
+> Then why don't my copies of that tree have the lines flagged
+> above with "-" ??
+>
+> In fact, if I look at the kernel.org GIT tree, it doesn't have
+> them either.  Your tree must have somehow gotten a bunch of
+> private changes.
+>
+>
+Yes, the GIT tree's code is without that lines, which are introduced
+by the first patch of my SPI update patches: Blackfin SPI driver:
+Initial supporting BF54x in SPI driver.
 
-the patch looks good and gets my ACK but it is for Jeff ;)
+So please apply the latest whole Blackfin SPI driver update patchset
+including 10 patches instead of 9 patches in previous email.
 
-> diff --git a/drivers/ata/pata_icside.c b/drivers/ata/pata_icside.c
-> index be30923..842fe08 100644
-> --- a/drivers/ata/pata_icside.c
-> +++ b/drivers/ata/pata_icside.c
-> @@ -332,12 +332,13 @@ static void ata_dummy_noret(struct ata_port *port)
->  {
->  }
->  
-> -static void pata_icside_postreset(struct ata_port *ap, unsigned int *classes)
-> +static void pata_icside_postreset(struct ata_link *link, unsigned int *classes)
->  {
-> +	struct ata_port *ap = link->ap;
->  	struct pata_icside_state *state = ap->host->private_data;
->  
->  	if (classes[0] != ATA_DEV_NONE || classes[1] != ATA_DEV_NONE)
-> -		return ata_std_postreset(ap, classes);
-> +		return ata_std_postreset(link, classes);
->  
->  	state->port[ap->port_no].disabled = 1;
->  
-> @@ -395,29 +396,30 @@ static struct ata_port_operations pata_icside_port_ops = {
->  
->  static void __devinit
->  pata_icside_setup_ioaddr(struct ata_port *ap, void __iomem *base,
-> -			 const struct portinfo *info)
-> +			 struct pata_icside_info *info,
-> +			 const struct portinfo *port)
->  {
->  	struct ata_ioports *ioaddr = &ap->ioaddr;
-> -	void __iomem *cmd = base + info->dataoffset;
-> +	void __iomem *cmd = base + port->dataoffset;
->  
->  	ioaddr->cmd_addr	= cmd;
-> -	ioaddr->data_addr	= cmd + (ATA_REG_DATA    << info->stepping);
-> -	ioaddr->error_addr	= cmd + (ATA_REG_ERR     << info->stepping);
-> -	ioaddr->feature_addr	= cmd + (ATA_REG_FEATURE << info->stepping);
-> -	ioaddr->nsect_addr	= cmd + (ATA_REG_NSECT   << info->stepping);
-> -	ioaddr->lbal_addr	= cmd + (ATA_REG_LBAL    << info->stepping);
-> -	ioaddr->lbam_addr	= cmd + (ATA_REG_LBAM    << info->stepping);
-> -	ioaddr->lbah_addr	= cmd + (ATA_REG_LBAH    << info->stepping);
-> -	ioaddr->device_addr	= cmd + (ATA_REG_DEVICE  << info->stepping);
-> -	ioaddr->status_addr	= cmd + (ATA_REG_STATUS  << info->stepping);
-> -	ioaddr->command_addr	= cmd + (ATA_REG_CMD     << info->stepping);
-> -
-> -	ioaddr->ctl_addr	= base + info->ctrloffset;
-> +	ioaddr->data_addr	= cmd + (ATA_REG_DATA    << port->stepping);
-> +	ioaddr->error_addr	= cmd + (ATA_REG_ERR     << port->stepping);
-> +	ioaddr->feature_addr	= cmd + (ATA_REG_FEATURE << port->stepping);
-> +	ioaddr->nsect_addr	= cmd + (ATA_REG_NSECT   << port->stepping);
-> +	ioaddr->lbal_addr	= cmd + (ATA_REG_LBAL    << port->stepping);
-> +	ioaddr->lbam_addr	= cmd + (ATA_REG_LBAM    << port->stepping);
-> +	ioaddr->lbah_addr	= cmd + (ATA_REG_LBAH    << port->stepping);
-> +	ioaddr->device_addr	= cmd + (ATA_REG_DEVICE  << port->stepping);
-> +	ioaddr->status_addr	= cmd + (ATA_REG_STATUS  << port->stepping);
-> +	ioaddr->command_addr	= cmd + (ATA_REG_CMD     << port->stepping);
-> +
-> +	ioaddr->ctl_addr	= base + port->ctrloffset;
->  	ioaddr->altstatus_addr	= ioaddr->ctl_addr;
->  
->  	ata_port_desc(ap, "cmd 0x%lx ctl 0x%lx",
-> -		      info->raw_base + info->dataoffset,
-> -		      info->raw_base + info->ctrloffset);
-> +		      info->raw_base + port->dataoffset,
-> +		      info->raw_base + port->ctrloffset);
->  
->  	if (info->raw_ioc_base)
->  		ata_port_desc(ap, "iocbase 0x%lx", info->raw_ioc_base);
-> @@ -441,7 +443,7 @@ static int __devinit pata_icside_register_v5(struct pata_icside_info *info)
->  	info->nr_ports = 1;
->  	info->port[0] = &pata_icside_portinfo_v5;
->  
-> -	info->raw_base = ecard_resource_start(ec, ECARD_RES_MEMC);
-> +	info->raw_base = ecard_resource_start(info->ec, ECARD_RES_MEMC);
->  
->  	return 0;
->  }
-> @@ -522,7 +524,7 @@ static int __devinit pata_icside_add_ports(struct pata_icside_info *info)
->  		ap->flags |= ATA_FLAG_SLAVE_POSS;
->  		ap->ops = &pata_icside_port_ops;
->  
-> -		pata_icside_setup_ioaddr(ap, info->base, info->port[i]);
-> +		pata_icside_setup_ioaddr(ap, info->base, info, info->port[i]);
->  	}
->  
->  	return ata_host_activate(host, ec->irq, ata_interrupt, 0,
-> 
-
-
+Thanks a lot
+Best Regards
