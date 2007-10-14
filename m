@@ -1,36 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXJNFXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbXJNFeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbXJNFXl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbXJNFXb
+	id S1757123AbXJNFeJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXJNFd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:23:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51245
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752719AbXJNFXa (ORCPT
+	Sun, 14 Oct 2007 01:33:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37015 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbXJNFd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:23:30 -0400
-Date: Sat, 13 Oct 2007 22:23:32 -0700 (PDT)
-Message-Id: <20071013.222332.74749961.davem@davemloft.net>
-To: komurojun-mbn@nifty.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [NOT VERY SAFE] [TCP]: Set initial_ssthresh default to zero in
- Cubic and BIC.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071014135356.19754635.komurojun-mbn@nifty.com>
-References: <20071014100245.914b784a.komurojun@nifty.com>
-	<20071014132851.8d6a9de3.komurojun@nifty.com>
-	<20071014135356.19754635.komurojun-mbn@nifty.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 14 Oct 2007 01:33:56 -0400
+Date: Sun, 14 Oct 2007 00:33:54 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V2] MMC/SD: Fix regression in 2.6.23-git3 due to change in calling add_uevent_var
+Message-ID: <4711aa42.y6JoJfYdYdcIu66P%Larry.Finger@lwfinger.net>
+User-Agent: Heirloom mailx 12.2 01/07/07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Komuro <komurojun-mbn@nifty.com>
-Date: Sun, 14 Oct 2007 13:53:56 +0900
+In commit 7eff2e7a8b65c25920207324e56611150eb1cd9a, the calling sequence
+for add_uevent_var was changed. This patch propagates this change to
+MMC/SD card support.
 
-> Sorry, my mailer's mail-address setting is wrong.
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+---
 
-Thank you for fixing this :-)
+Linus, Andrew,
+
+The wring patch was sent the first time.
+
+Sorry,
+
+Larry
+
+
+ drivers/mmc/core/sdio_bus.c |   19 +++++--------------
+ 1 file changed, 5 insertions(+), 14 deletions(-)
+
+Index: linux-2.6/drivers/mmc/core/sdio_bus.c
+===================================================================
+--- linux-2.6.orig/drivers/mmc/core/sdio_bus.c
++++ linux-2.6/drivers/mmc/core/sdio_bus.c
+@@ -96,30 +96,21 @@ static int sdio_bus_match(struct device 
+ }
+ 
+ static int
+-sdio_bus_uevent(struct device *dev, char **envp, int num_envp, char *buf,
+-		int buf_size)
++sdio_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	struct sdio_func *func = dev_to_sdio_func(dev);
+-	int i = 0, length = 0;
+ 
+-	if (add_uevent_var(envp, num_envp, &i,
+-			buf, buf_size, &length,
+-			"SDIO_CLASS=%02X", func->class))
++	if (add_uevent_var(env, "SDIO_CLASS=%02X", func->class))
+ 		return -ENOMEM;
+ 
+-	if (add_uevent_var(envp, num_envp, &i,
+-			buf, buf_size, &length,
+-			"SDIO_ID=%04X:%04X", func->vendor, func->device))
++	if (add_uevent_var(env, "SDIO_ID=%04X:%04X", func->vendor,
++			func->device))
+ 		return -ENOMEM;
+ 
+-	if (add_uevent_var(envp, num_envp, &i,
+-			buf, buf_size, &length,
+-			"MODALIAS=sdio:c%02Xv%04Xd%04X",
++	if (add_uevent_var(env, "MODALIAS=sdio:c%02Xv%04Xd%04X",
+ 			func->class, func->vendor, func->device))
+ 		return -ENOMEM;
+ 
+-	envp[i] = NULL;
+-
+ 	return 0;
+ }
+ 
