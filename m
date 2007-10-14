@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbXJNWYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763448AbXJNW0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761035AbXJNWYp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 18:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbXJNWYf
+	id S1763448AbXJNW0m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbXJNW0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 18:24:35 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:58394 "EHLO
+	Sun, 14 Oct 2007 18:26:32 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58423 "EHLO
 	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757494AbXJNWYf (ORCPT
+	with ESMTP id S1752361AbXJNW0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 18:24:35 -0400
-Subject: Re: What still uses the block layer?
+	Sun, 14 Oct 2007 18:26:31 -0400
+Subject: Re: linux-2.6.23-mm1 crashed
 From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-In-Reply-To: <20071013220539.GD29934@parisc-linux.org>
-References: <200710112011.22000.rob@landley.net>
-	 <20071013220539.GD29934@parisc-linux.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Milter <davemilter@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Boaz Harrosh <bharrosh@panasas.com>
+In-Reply-To: <20071014122144.f8e56ed9.akpm@linux-foundation.org>
+References: <2a382c6e0710141145j51286bd0o8a2eb307f7455cd@mail.gmail.com>
+	 <20071014122144.f8e56ed9.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Sun, 14 Oct 2007 18:24:32 -0400
-Message-Id: <1192400672.3351.56.camel@localhost.localdomain>
+Date: Sun, 14 Oct 2007 18:26:29 -0400
+Message-Id: <1192400789.3351.59.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
-> On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
-> > My impression from asking questions on the linux-scsi mailing list is that the 
-> > scsi upper/middle/lower layers doesn't use the block layer described in 
-> > Documentation/block/*.
+On Sun, 2007-10-14 at 12:21 -0700, Andrew Morton wrote:
+> On Sun, 14 Oct 2007 22:45:47 +0400 "Dave Milter" <davemilter@gmail.com> wrote:
 > 
-> Entirely incorrect.
+> > I build linux-2.6.23-mm1 and try to boot it using qemu,
+> > and it crashed with trace like this:
+> > do_page_fault
+> > error_code
+> > lock_acquire
+> > _spin_lock_irqsave
+> > gdth_timeout
+> > run_timer_softirq
+> > __do_softirq
+> > do_softirq
+> > 
+> > I have screenshot, but have no idea, is it legal to include it, if I
+> > sent copy to lkml.
+> > config of kernel in attachment,
+> > I apply all three patches from hot-fixes.
+> > 
+> 
+> The screenshot is here:  http://userweb.kernel.org/~akpm/crash.png
+> 
+> It would appear that gdth_timeout() is passing a bad pointer into
+> spin_lock_irqsave().
 
-OK, right ... could we please get a sense of decorum back on this list.
-
-Rob, if you didn't ask your alleged questions in such a pejorative
-manner, we'd get a lot further; and Matthew, if you didn't rise to the
-bait so spectacularly it wouldn't prolong these threads.
-
-Really, both of you, I have better things to do with my time than
-mediate behaviours that should have been educated out of you in the
-kindergarten sand pit.
+There's a bug in the gdth rework in that the instance can be deleted
+from the list before the actual timer is stopped.  This can be worked
+around I think by the following patch; although we really should be
+stopping the timer from firing when the list goes empty.
 
 James
+
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index e8010a7..7fa22be 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -3793,6 +3793,9 @@ static void gdth_timeout(ulong data)
+     gdth_ha_str *ha;
+     ulong flags;
+ 
++    if (list_empty(&gdth_instances))
++	return;
++
+     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+     spin_lock_irqsave(&ha->smp_lock, flags);
+ 
+
 
 
