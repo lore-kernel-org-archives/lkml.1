@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbXJNTMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbXJNTTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbXJNTMV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 15:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXJNTMM
+	id S1759404AbXJNTTy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 15:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXJNTTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 15:12:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:36791 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbXJNTMK (ORCPT
+	Sun, 14 Oct 2007 15:19:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38646 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751279AbXJNTTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 15:12:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WG9neKRYeQBb1ScATV//R983m8W1e2o0z/a4xuVz5av+SEt+prQmj+uTuH9yhaMwt+s4+juSOJwMslcO6HwYc+wgPlM5/Nq+aIYM/oafOIANTR90rPZxn6H5ZkD5F/rNZJAdR2aDyP9A4HIwZwbn6FLxkfGuwq1OZqy7H2xzg7Y=
-Message-ID: <64bb37e0710141212k58c5fc66s620d1f28e80bb40@mail.gmail.com>
-Date: Sun, 14 Oct 2007 21:12:08 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071014113914.7654759d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 14 Oct 2007 15:19:45 -0400
+Date: Sun, 14 Oct 2007 12:19:19 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove duplicate initializer (macvlan)
+Message-ID: <20071014121920.78677860@freepuppy.rosehill>
+In-Reply-To: <20071014182259.GY8181@ftp.linux.org.uk>
+References: <20071014182259.GY8181@ftp.linux.org.uk>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	 <4710B7C5.5050403@garzik.org>
-	 <64bb37e0710130732p303547e3n54cfa9dac34c53b5@mail.gmail.com>
-	 <64bb37e0710130740u78613f83wbd4f43d073bbe13d@mail.gmail.com>
-	 <64bb37e0710130813le68c48dve36f8473b197b84b@mail.gmail.com>
-	 <47110500.8050503@garzik.org>
-	 <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com>
-	 <20071013111853.7e67c6c3.akpm@linux-foundation.org>
-	 <64bb37e0710140454s61325fdfya43179b14ea26dc4@mail.gmail.com>
-	 <20071014113914.7654759d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sun, 14 Oct 2007 13:54:26 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
->
-> > > The page-owner code can pinpoint a leak source.  See
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/broken-out/page-owner-tracking-leak-detector.patch
-> > >
-> > > Enable CONFIG_DEBUG_SLAB_LEAK, check out /proc/slab_allocators
-> >
-> > Did that. The output of /proc/page_owner is ~350Mb, gzipped still ~7Mb.
-> >
-> > Taking only the first line from each stackdump it shows the following counts:
-> >
-> > ...
-> >
-> >  354042 [0xffffffff80266373] mempool_alloc+83
->
-> This one is suspicious.  Can you find the whole record for it?
+On Sun, 14 Oct 2007 19:22:59 +0100
+Al Viro <viro@ftp.linux.org.uk> wrote:
 
-I still have all 354042 records of it. ;)
-The first column is the times I found this line in page_owner.
-I divided the counts for the duplicate lines (mempool_alloc+83 and
-kcryptd_do_crypt+0) by two, so normalize them. There still are some
-false positive counts in there, so it does not match the 354042
-precisely.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  drivers/net/macvlan.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
+> index b7c81c8..2e4bcd5 100644
+> --- a/drivers/net/macvlan.c
+> +++ b/drivers/net/macvlan.c
+> @@ -178,7 +178,6 @@ static const struct header_ops macvlan_hard_header_ops = {
+>  	.create  	= macvlan_hard_header,
+>  	.rebuild	= eth_rebuild_header,
+>  	.parse		= eth_header_parse,
+> -	.rebuild	= eth_rebuild_header,
+>  	.cache		= eth_header_cache,
+>  	.cache_update	= eth_header_cache_update,
+>  };
 
-354036 Page allocated via order 0, mask 0x11202
-            1 (PFN/Block always differ) PFN 3072 Block 6 type 0          Flags
-354338 [0xffffffff80266373] mempool_alloc+83
-354338 [0xffffffff80266373] mempool_alloc+83
-354025 [0xffffffff802bb389] bio_alloc_bioset+185
-354058 [0xffffffff804d2b40] kcryptd_do_crypt+0
-354052 [0xffffffff804d2cc7] kcryptd_do_crypt+391
-354058 [0xffffffff804d2b40] kcryptd_do_crypt+0
-354052 [0xffffffff80245d3c] run_workqueue+204
-354062 [0xffffffff802467b0] worker_thread+0
+Yup, thanks Al
 
-I'm using dm-crypt with CONFIG_CRYPTO_TWOFISH_X86_64
-
-> The other info shows a tremendous memory leak, not via slab.  Looks like
-> someone is running alloc_pages() directly and isnb't giving them back.
-
-Blaming it on dm-crypt looks right, as the leak seems to happens, if
-there is (heavy) disk activity.
-(updatedb just ate ~500 Mb)
-
-Torsten
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
