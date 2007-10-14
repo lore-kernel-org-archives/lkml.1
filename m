@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXJNPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbXJNQQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbXJNPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 11:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXJNPhQ
+	id S1758118AbXJNQQl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 12:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbXJNQQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 11:37:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36430 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753065AbXJNPhP (ORCPT
+	Sun, 14 Oct 2007 12:16:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:24830 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756493AbXJNQQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 11:37:15 -0400
-Date: Sun, 14 Oct 2007 08:36:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+	Sun, 14 Oct 2007 12:16:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=RcZ+6dgjTtXBY3f/hJ7h5zlCh+H+qJ3cibE1RtMxhdQDAu6qQJz4VcMDnXuk6CLdstqxV+C7x4069+U8pTVEaopFyJnQgeG5jy0633FdKkdnYgobLZgBoUOJiMGDQJi7G2buyIe5O+exnn3GBhsHA7XjFsw6pnZWglWRc78NgFI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [git patches] IDE updates (part 1)
+Date: Sun, 14 Oct 2007 17:38:39 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove GPL restriction from set_dumpable()
-Message-ID: <20071014083644.2846f6b8@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0710141257030.20620@jikos.suse.cz>
-References: <Pine.LNX.4.64.0710141257030.20620@jikos.suse.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <200710120034.49730.bzolnier@gmail.com> <Pine.LNX.4.64N.0710121518030.21684@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0710121518030.21684@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200710141738.39838.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Oct 2007 13:04:31 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
+On Friday 12 October 2007, Maciej W. Rozycki wrote:
+> On Fri, 12 Oct 2007, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > * Kconfig facelift - as a result of this change users have three less
+> >   config options to worry about (BLK_DEV_IDEPCI, BLK_DEV_IDEDMA_PCI
+> >   and IDE_CHIPSETS) and can just select host drivers that they need
+> 
+>  Well, it depends on how you look at it.  If you have PCI, an on-board IDE 
+> interface and do not want any PCI IDE controllers, then you now have a 
+> zillion of options to disable instead of just one.  Have a look at 
+> "arch/mips/configs/sb1250-swarm_defconfig" for an example (hmm..., 
 
-> From: Jiri Kosina <jkosina@suse.cz>
-> 
-> remove GPL restriction from set_dumpable()
-> 
-> Commit 6c5d5238 introduced a set_dumpable() function that replaced
-> the direct access to mm_struct->dumpable. I don't think there is any
-> reason to restrict this function to EXPORT_SYMBOL_GPL() -- previously
-> any module could modify current->mm->dumpable without any
-> resitrictions, so it makes a little sense to turn this into 'internal
-> interface' at once.
-> 
+I see, having suddenly zillion options to go through and disable may be
+problem.  Fortunately not in this particular case because none of IDE PCI
+host drivers is enabled by default in drivers/ide/Kconfig.
 
-but modules really have no business setting process's dumpable flags...
-other than very internal modules.
+To be sure I've just checked it with:
+
+ARCH=mips make sb1250-swarm_defconfig menuconfig
+
+and it looks fine (all IDE PCI host drivers are disabled).
+
+However big thanks for raising this point.  I was unaware of such side-effect
+while working on the above change but from now on I'll keep this in mind. :)
+
+> CONFIG_BLK_DEV_IDE_SWARM disabled by default -- that should probably be 
+> changed; I'll cook a patch).  I guess it is not possible to make everyone 
+> happy at once though, so please do not treat it as a hard objection. :-)
+
+Hmm, it also seems that CONFIG_IDE_GENERIC=y may be removed now because
+IDE SWARM host driver does the probing itself?
+
+Thanks,
+Bart
