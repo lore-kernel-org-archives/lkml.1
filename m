@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbXJNW3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbXJNWbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764204AbXJNW3A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 18:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbXJNW2u
+	id S1764058AbXJNWbk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbXJNWba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 18:28:50 -0400
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:53435 "EHLO
-	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760086AbXJNW2t (ORCPT
+	Sun, 14 Oct 2007 18:31:30 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36072 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbXJNWb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 18:28:49 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "Stefan Heinrichsen" <gelbemauer@gmx.de>
-Subject: Re: Which companies are helping developing the kernel
-Date: Sun, 14 Oct 2007 23:28:46 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
-References: <20071014220622.203990@gmx.net>
-In-Reply-To: <20071014220622.203990@gmx.net>
+	Sun, 14 Oct 2007 18:31:29 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       David Miller <davem@davemloft.net>
+Subject: Re: Don't leak 'listeners' in netlink_kernel_create()
+References: <200710142337.01059.jesper.juhl@gmail.com>
+Date: Sun, 14 Oct 2007 16:30:06 -0600
+In-Reply-To: <200710142337.01059.jesper.juhl@gmail.com> (Jesper Juhl's message
+	of "Sun, 14 Oct 2007 23:37:00 +0200")
+Message-ID: <m1hckt5nyp.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710142328.46850.alistair@devzero.co.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007 23:06:22 Stefan Heinrichsen wrote:
-> Hello,
+Jesper Juhl <jesper.juhl@gmail.com> writes:
+
+> From: Jesper Juhl <jesper.juhl@gmail.com>
+> Subject: Don't leak 'listeners' in netlink_kernel_create()
 >
-> I posted this question at comp.linux.misc and where told this would be a
-> better place therefore. I would like to do a internship in the field of the
-> Linux kernel.
-> Can someone tell me where to find a list of companies (don't matter in
-> which country) that employ kernel developers?
+> The Coverity checker spotted that we'll leak the storage allocated 
+> to 'listeners' in netlink_kernel_create() when the
+>   if (!nl_table[unit].registered)
+> check is false.
+>
+> This patch avoids the leak.
+>
+>
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-I think Greg wrote a paper on this subject, so I've added him to CC in case he 
-has the link handy.
+This patch appears trivially correct to me.
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
--- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+> ---
+>
+>  af_netlink.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> --- linux-2.6/net/netlink/af_netlink.c~	2007-10-14 23:29:50.000000000 +0200
+> +++ linux-2.6/net/netlink/af_netlink.c	2007-10-14 23:29:50.000000000 +0200
+> @@ -1378,6 +1378,8 @@ netlink_kernel_create(struct net *net, i
+>  		nl_table[unit].cb_mutex = cb_mutex;
+>  		nl_table[unit].module = module;
+>  		nl_table[unit].registered = 1;
+> +	} else {
+> +		kfree(listeners);
+>  	}
+>  	netlink_table_ungrab();
+>  
