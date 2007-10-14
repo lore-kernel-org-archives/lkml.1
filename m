@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbXJNF5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbXJNF71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761290AbXJNF5y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760306AbXJNF5l
+	id S1760842AbXJNF71 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXJNF7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:57:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51031 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753872AbXJNF5j (ORCPT
+	Sun, 14 Oct 2007 01:59:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:28573 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754719AbXJNF7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:57:39 -0400
-Date: Sat, 13 Oct 2007 22:57:35 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: git-sched patch won't boot on SN arch, 2.6.23-mm1
-Message-Id: <20071013225735.58c6415c.pj@sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 14 Oct 2007 01:59:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bRSCYwDSUm9242GZlHSYZx7MZ8GD31TuJLJ5V8q1LmqxGKfCVOPQrvgcPYvr/zoWPxLFDHdaXJMGso8crhtTWNm79TFOxmX8VJVApOZbNjeNyUovE/m097yZbuRX9hQQJvG2LOK5yDTT8aa/TxlEarRs0PnHZ5resqL+pls9wFE=
+Message-ID: <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
+Date: Sat, 13 Oct 2007 22:59:15 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Manfred Spraul" <manfred@colorfullife.com>
+Subject: Re: MSI interrupts and disable_irq
+Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
+       nedev <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <4710901F.8010206@colorfullife.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
+	 <4710901F.8010206@colorfullife.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The git-sched patch in 2.6.23-mm1 freezes my ia64 SN Altix hard on boot.
-Not good (tm).
+On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
+> Jeff Garzik wrote:
+> >
+> > I think the scenario you outline is an illustration of the approach's
+> > fragility:  disable_irq() is a heavy hammer that originated with INTx,
+> > and it relies on a chip-specific disable method (kernel/irq/manage.c)
+> > that practically guarantees behavior will vary across MSI/INTx/etc.
+> >
+> I checked the code: IRQ_DISABLE is implemented in software, i.e.
+> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
+> handler] if IRQ_DISABLE is not set.
+> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
+>
+> Perhaps something corrupts dev->irq? The irq is requested with
+>     request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
+> and disabled with
+>     disable_irq_lockdep(dev->irq);
+>
+> Someone around with a MSI capable board? The forcedeth driver does
+>     dev->irq = pci_dev->irq
+> in nv_probe(), especially before pci_enable_msi().
+> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
+> wrong interrupt....
 
-Something broke between the git-sched patch of Sept 26 in 2.6.23-rc8-mm2
-and the git-sched patch of Oct 10 in 2.6.23-mm1 on my ia64 SN Altix
-system using sn2_defconfig.
+the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
 
-I can boot 2.6.23-rc8-mm2 fine, but I freeze early in boot
-on 2.6.23-mm1, after the following prints on the console:
-    McKinley Errata 9 workaround not needed; disabling it
-    SLUB: Genslabs=26, HWalign=128, Order=0-2, MinObjects=8, CPUs=8, Nodes=1024
-    Dentry cache hash table entries: 1048576 (order: 9, 8388608 bytes)
-    Inode-cache hash table entries: 524288 (order: 8, 4194304 bytes)
-    Mount-cache hash table entries: 1024
-    ACPI: Core revision 20070126
-    Boot processor id 0x0/0x0
-    Brought up 8 CPUs
-    Total of 8 processors activated (15564.80 BogoMIPS).
-
-The next output that I -would- have expected, based on successful boots
-without this patch, but never get, is:
-    net_namespace: 120 bytes
-    DMI not present or invalid.
-    xor: measuring software checksum speed
-       ia64      :  2692.000 MB/sec
-    xor: using function: ia64 (2692.000 MB/sec)
-    NET: Registered protocol family 16
-    ACPI  DSDT OEM Rev 0x20101
-
-My .config has the following elements matching "SCHED"
-    # CONFIG_FAIR_GROUP_SCHED is not set
-    CONFIG_IOSCHED_NOOP=y
-    CONFIG_IOSCHED_AS=y
-    CONFIG_IOSCHED_DEADLINE=y
-    CONFIG_IOSCHED_CFQ=y
-    CONFIG_DEFAULT_IOSCHED="anticipatory"
-    CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-    CONFIG_SCHED_SMT=y
-    # CONFIG_NET_SCHED is not set
-    # CONFIG_USB_EHCI_TT_NEWSCHED is not set
-    CONFIG_SCHED_DEBUG=y
-    # CONFIG_SCHEDSTATS is not set
-
-I'm pretty certain that I also saw this hang with the config setting:
-    CONFIG_FAIR_GROUP_SCHED=y
-though there is a small chance I'm confused on that point.
-
-You'll probably need more information, but I can't guess what,
-so ask away.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+YH
