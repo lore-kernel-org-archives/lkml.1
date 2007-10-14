@@ -1,106 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXJNFlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbXJNFnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbXJNFlr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXJNFlj
+	id S1759249AbXJNFnn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXJNFng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:41:39 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:27815 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXJNFli (ORCPT
+	Sun, 14 Oct 2007 01:43:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:62434 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbXJNFnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:41:38 -0400
-Date: Sun, 14 Oct 2007 07:41:10 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
-       mark_salyzyn@adaptec.com, ak@suse.de
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
-Message-ID: <20071014054110.GB4399@rhun.haifa.ibm.com>
-References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com>
+	Sun, 14 Oct 2007 01:43:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ePXSwoQHeYH8OMgG5GnFmP3JMI/SjQGl71kVu6KIKZAiH+2LvhA3JbPf70d1t5Tlx+1Iq0YAfP9QvByVkBGGazMoc6PIoZE8+3rj4RQN5nUvz4X6iNO6gEuX9vPlhbIyD3w6OSq4rZkrTqx7TGuQKcmB4x6Qi1AK8uMTnkLTj90=
+Subject: Re: 2.6.23: No text consoles with
+	FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200710132013.24024.elendil@planet.nl>
+References: <200710132013.24024.elendil@planet.nl>
+Content-Type: text/plain
+Date: Sun, 14 Oct 2007 13:43:21 +0800
+Message-Id: <1192340601.6548.11.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071010053057.GA24434@in.ibm.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 10, 2007 at 11:00:58AM +0530, Vivek Goyal wrote:
-> On Tue, Oct 09, 2007 at 11:06:23PM +0200, Muli Ben-Yehuda wrote:
-> > Hi Chandru,
-> > 
-> > Thanks for the patch. Comments on the patch below, but first a general
-> > question for my education: the main problem here that aacraid
-> > continues DMA'ing when it shouldn't. Why can't we shut it down
-> > cleanly? Even without the presence of an IOMMU, it seems dangerous to
-> > let an adapter continue DMA'ing to and from memory when the kernel is
-> > an inconsistent state.
-> > 
-> 
-> Hi Muli,
-> 
-> After the kernel crash, we can't rely on the crashed kernel's data
-> structures or methods any more. We can't call the device shutdown
-> methods of all the device drivers as we might be invoking a driver
-> which actually might have caused the crash. Hence we don't perform
-> any device shutdown in the case of kdump. Instead after the crash,
-> we try to take the shortest route to second kernel (Execute minimum
-> code in crashed kernel).
-> 
-> Whatever special handling is required to bring up the second kernel on 
-> a potentially unknown state hardware, is taken in second kernel.
+On Sat, 2007-10-13 at 20:13 +0200, Frans Pop wrote:
 
-That makes sense, but does it really make more sense to set-up proper
-IOMMU translation tables for DMA's which have been triggered from the
-first kernel than to either quiesce the device ASAP (this means before
-enabling IOMMU translation...) or to trap such DMA's and continue,
-rather than letting them go through?
+> I could solve this issue in two ways:
+> - boot with VGA=791 parameter (initial boot was without VGA= parameter)
+> - compile kernel without FRAMEBUFFER_CONSOLE_DETECT_PRIMARY set (I also
+>   unset FB_VIRTUAL, but without its boot param that should be a no-op)
 
-> We will not be too concerned about ongoing DMA's as long as there is no
-> corruption of tce tables. That would mean DMA is happening in first
-> kernel's memory buffer and second kernel is not impacted. But if TCE
-> tables themselves are corrupted, then it can potentially interfere with
-> second kernel's operation. Don't know how it can be addressed.
+After looking at vfb.c again, it seems the default is for vfb to be
+enabled and you have to actively disable vfb either with
 
-I worry about two cases: the first is TCE table corruption, the second
-is DMA's to areas which were fine in the first kernel but are wrong
-for the second kernel.
+video=vfb:disable or video=vfb:off
 
-> > The patch below looks reasonable *if* that is the least worst way
-> > of doing it - let's see if we can come up with something cleaner
-> > that doesn't rely in the new kernel on data (which may or may not
-> > be corrupted...) from the old kernel.
-> 
-> I think the issue here is that some DMA was going on when first
-> kernel crashed. After the crash, second kernel booted and created
-> new TCE tables and switched to it. This resulted in ongoing DMA
-> failure and hardware raised an alarm.
-> 
-> In this case, probably it would make sense to re-use the TCE tables
-> of previous kernel (until and unless we have a way to tell hardware
-> not to flag a DMA error if TCE mapping is changed while DMA is going
-> on ?)
+I have to change this behavior. In the meantime, try one of the above
+options.
 
-We don't have a way to do that, but we should be able to trap the DMA,
-figure out that we're in a kdump kernel, and then just ignore it and
-continue.
+(I was also under the impression that vfb must be explicitly enabled
+with a boot option...I remember now, the option vfb_enable defaults to
+false when compiled as a module, and to true if compiled statically.)
 
-> I think, we also need to reserve some TCE table entries (in first
-> kernel), which can be used by second kernel for saving kernel core
-> file to disk. There might be a case where first kernel has used up
-> all TCE entries and second kernel can't allocate more. I think ppc64
-> has taken the approach of freeing some entries in second kernel but
-> that will have the problem as you might be clearing an entry which
-> is being used by ongoing DMA.
+Tony
 
-That's a good point - how do PPC (or other architectures with an
-isolation-capable IOMMU) handle this whole issue?
-
-Cheers,
-Muli
--- 
-SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
-http://www.haifa.il.ibm.com/Workshops/systor2007/
-
-Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
