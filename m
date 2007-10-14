@@ -1,160 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbXJNHQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXJNHZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbXJNHQs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 03:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXJNHQi
+	id S1755279AbXJNHZf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 03:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXJNHZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 03:16:38 -0400
-Received: from ev1s-75-125-39-150.ev1servers.net ([75.125.39.150]:40685 "EHLO
-	colorfullife.mysite.adiungo.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751458AbXJNHQh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 03:16:37 -0400
-Message-ID: <4711C217.2010605@colorfullife.com>
-Date: Sun, 14 Oct 2007 09:15:35 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MSI interrupts and disable_irq
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>	 <4710901F.8010206@colorfullife.com> <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-In-Reply-To: <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050200000607050106040705"
+	Sun, 14 Oct 2007 03:25:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39211 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751311AbXJNHZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 03:25:27 -0400
+Date: Sun, 14 Oct 2007 09:25:23 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch 1/2] hdaps: fix locking
+Message-ID: <20071014072523.GB2766@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050200000607050106040705
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Here are a couple of fixes for the hdaps driver. I have kind of been
+blocking out the bug traces caused by these (the 2nd patch, actually)
+thinking that it's one of those transient / churn things... but it's
+getting annoying now because I think it turns off lockdep. After this
+patch it no longer produces warnings, but I don't actually know if it
+does the right thing (because I don't really know what the driver
+does or how to test it anyway!).
 
-Yinghai Lu wrote:
-> On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
->   
->> Someone around with a MSI capable board? The forcedeth driver does
->>     dev->irq = pci_dev->irq
->> in nv_probe(), especially before pci_enable_msi().
->> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
->> wrong interrupt....
->>     
->
-> the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
->
->   
-Where is that?
-Otherwise I would propose the attached patch. My board is not 
-MSI-capable, thus I can't test it myself.
+---
 
---
-    Manfred
+hdaps was using incorrect mutex_trylock return code.
 
---------------050200000607050106040705
-Content-Type: text/plain;
- name="patch-forcedeth-msi"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-forcedeth-msi"
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
---- 2.6/drivers/net/forcedeth.c	2007-10-07 17:33:18.000000000 +0200
-+++ build-2.6/drivers/net/forcedeth.c	2007-10-13 11:34:20.000000000 +0200
-@@ -988,7 +988,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq(dev->irq);
-+			enable_irq(np->pci_dev->irq);
- 	} else {
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-@@ -1004,7 +1004,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq(dev->irq);
-+			disable_irq(np->pci_dev->irq);
- 	} else {
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-@@ -1601,7 +1601,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq(dev->irq);
-+			disable_irq(np->pci_dev->irq);
- 	} else {
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 	}
-@@ -1619,7 +1619,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq(dev->irq);
-+			enable_irq(np->pci_dev->irq);
- 	} else {
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 	}
-@@ -3557,10 +3557,12 @@
- 	if (ret != 0 && np->msi_flags & NV_MSI_CAPABLE) {
- 		if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
- 			np->msi_flags |= NV_MSI_ENABLED;
-+			dev->irq = np->pci_dev->irq;
- 			if (request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev) != 0) {
- 				printk(KERN_INFO "forcedeth: request_irq failed %d\n", ret);
- 				pci_disable_msi(np->pci_dev);
- 				np->msi_flags &= ~NV_MSI_ENABLED;
-+				dev->irq = np->pci_dev->irq;
- 				goto out_err;
- 			}
+---
+Index: linux-2.6/drivers/hwmon/hdaps.c
+===================================================================
+--- linux-2.6.orig/drivers/hwmon/hdaps.c
++++ linux-2.6/drivers/hwmon/hdaps.c
+@@ -328,22 +328,20 @@ static void hdaps_mousedev_poll(unsigned
+ 	int x, y;
  
-@@ -3623,7 +3625,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq_lockdep(dev->irq);
-+			disable_irq_lockdep(np->pci_dev->irq);
- 		mask = np->irqmask;
- 	} else {
- 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
-@@ -3641,6 +3643,8 @@
- 	}
- 	np->nic_poll_irq = 0;
+ 	/* Cannot sleep.  Try nonblockingly.  If we fail, try again later. */
+-	if (mutex_trylock(&hdaps_mtx)) {
+-		mod_timer(&hdaps_timer,jiffies + HDAPS_POLL_PERIOD);
+-		return;
+-	}
++	if (!mutex_trylock(&hdaps_mtx))
++		goto out;
  
-+	/* disable_irq() contains synchronize_irq, thus no irq handler can run now */
-+
- 	if (np->recover_error) {
- 		np->recover_error = 0;
- 		printk(KERN_INFO "forcedeth: MAC in recoverable error state\n");
-@@ -3677,7 +3681,6 @@
- 		}
- 	}
+ 	if (__hdaps_read_pair(HDAPS_PORT_XPOS, HDAPS_PORT_YPOS, &x, &y))
+-		goto out;
++		goto out_lock;
  
--	/* FIXME: Do we need synchronize_irq(dev->irq) here? */
+ 	input_report_abs(hdaps_idev, ABS_X, x - rest_x);
+ 	input_report_abs(hdaps_idev, ABS_Y, y - rest_y);
+ 	input_sync(hdaps_idev);
  
- 	writel(mask, base + NvRegIrqMask);
- 	pci_push(base);
-@@ -3690,7 +3693,7 @@
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq_lockdep(dev->irq);
-+			enable_irq_lockdep(np->pci_dev->irq);
- 	} else {
- 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
- 			nv_nic_irq_rx(0, dev);
-@@ -4943,7 +4946,7 @@
- 	np->in_shutdown = 1;
- 	spin_unlock_irq(&np->lock);
- 	netif_poll_disable(dev);
--	synchronize_irq(dev->irq);
-+	synchronize_irq(np->pci_dev->irq);
+-	mod_timer(&hdaps_timer, jiffies + HDAPS_POLL_PERIOD);
+-
+-out:
++out_lock:
+ 	mutex_unlock(&hdaps_mtx);
++out:
++	mod_timer(&hdaps_timer, jiffies + HDAPS_POLL_PERIOD);
+ }
  
- 	del_timer_sync(&np->oom_kick);
- 	del_timer_sync(&np->nic_poll);
-
---------------050200000607050106040705--
+ 
