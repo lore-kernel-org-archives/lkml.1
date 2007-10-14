@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbXJNFBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbXJNFCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbXJNFBW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbXJNFBO
+	id S1758208AbXJNFCo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXJNFCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:01:14 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50242
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbXJNFBN (ORCPT
+	Sun, 14 Oct 2007 01:02:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34297 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbXJNFCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:01:13 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: akpm@linux-foundation.org
-Subject: [PATCH] Fix "make htmldocs" build break.
-Date: Sun, 14 Oct 2007 00:01:06 -0500
-User-Agent: KMail/1.9.6
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+	Sun, 14 Oct 2007 01:02:37 -0400
+X-Greylist: delayed 935 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Oct 2007 01:02:36 EDT
+Date: Sat, 13 Oct 2007 23:46:47 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
+       Michael Buesch <mb@bu3sch.de>
+Subject: [PATCH] ssb: Fix regression in 2.6.23-git3 due to change in
+ calling add_uevent_var
+Message-ID: <47119f37.hwmEVx/qSP6GAYhm%Larry.Finger@lwfinger.net>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710140001.06489.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+In commit 7eff2e7a8b65c25920207324e56611150eb1cd9a, the calling sequence
+for add_uevent_var was changed, but the ssb driver was not modified, which
+leads to a "Unable to handle kernel paging request" oops. This patch fixes
+the problem.
 
-Fix two htmldocs build breaks, introduced by moving include/linux/usb_gadget.h to
-include/linux/usb/gadget.h and combining resume.c and suspend.c into main.c in
-drivers/base/power.
-
-Signed-off-by: Rob Landley <rob@landley.net>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
 ---
 
- Documentation/DocBook/gadget.tmpl     |    6 +++---
- Documentation/DocBook/kernel-api.tmpl |    3 +--
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/ssb/main.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff -r aa4dbd059380 Documentation/DocBook/gadget.tmpl
---- a/Documentation/DocBook/gadget.tmpl	Sat Oct 13 18:16:49 2007 -0700
-+++ b/Documentation/DocBook/gadget.tmpl	Sat Oct 13 23:51:56 2007 -0500
-@@ -144,7 +144,7 @@ with the lowest level (which directly ha
- 	<para>This is the lowest software level.
- 	It is the only layer that talks to hardware,
- 	through registers, fifos, dma, irqs, and the like.
--	The <filename>&lt;linux/usb_gadget.h&gt;</filename> API abstracts
-+	The <filename>&lt;linux/usb/gadget.h&gt;</filename> API abstracts
- 	the peripheral controller endpoint hardware.
- 	That hardware is exposed through endpoint objects, which accept
- 	streams of IN/OUT buffers, and through callbacks that interact
-@@ -494,7 +494,7 @@ side drivers (and usbcore).
- <sect1 id="core"><title>Core Objects and Methods</title>
+Index: linux-2.6/drivers/ssb/main.c
+===================================================================
+--- linux-2.6.orig/drivers/ssb/main.c
++++ linux-2.6/drivers/ssb/main.c
+@@ -320,22 +320,17 @@ static int ssb_bus_match(struct device *
+ 	return 0;
+ }
  
- <para>These are declared in
--<filename>&lt;linux/usb_gadget.h&gt;</filename>,
-+<filename>&lt;linux/usb/gadget.h&gt;</filename>,
- and are used by gadget drivers to interact with
- USB peripheral controller drivers.
- </para>
-@@ -509,7 +509,7 @@ USB peripheral controller drivers.
- 	     unless the explanations are trivial.
- 	  -->
+-static int ssb_device_uevent(struct device *dev, char **envp, int num_envp,
+-			     char *buffer, int buffer_size)
++static int ssb_device_uevent(struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	struct ssb_device *ssb_dev = dev_to_ssb_dev(dev);
+-	int ret, i = 0, length = 0;
++	int ret;
  
--!Iinclude/linux/usb_gadget.h
-+!Iinclude/linux/usb/gadget.h
- </sect1>
+ 	if (!dev)
+ 		return -ENODEV;
  
- <sect1 id="utils"><title>Optional Utilities</title>
-diff -r aa4dbd059380 Documentation/DocBook/kernel-api.tmpl
---- a/Documentation/DocBook/kernel-api.tmpl	Sat Oct 13 18:16:49 2007 -0700
-+++ b/Documentation/DocBook/kernel-api.tmpl	Sat Oct 13 23:51:56 2007 -0500
-@@ -386,8 +386,7 @@ X!Edrivers/base/interface.c
- !Edrivers/base/bus.c
-      </sect1>
-      <sect1><title>Device Drivers Power Management</title>
--!Edrivers/base/power/resume.c
--!Edrivers/base/power/suspend.c
-+!Edrivers/base/power/main.c
-      </sect1>
-      <sect1><title>Device Drivers ACPI Support</title>
- <!-- Internal functions only
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+-	ret = add_uevent_var(envp, num_envp, &i,
+-			     buffer, buffer_size, &length,
+-			     "MODALIAS=ssb:v%04Xid%04Xrev%02X",
++	ret = add_uevent_var(env, "MODALIAS=ssb:v%04Xid%04Xrev%02X",
+ 			     ssb_dev->id.vendor, ssb_dev->id.coreid,
+ 			     ssb_dev->id.revision);
+-	envp[i] = NULL;
+-
+ 	return ret;
+ }
+ 
