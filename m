@@ -1,115 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763986AbXJNV6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763669AbXJNWFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763986AbXJNV6i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 17:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759698AbXJNV6b
+	id S1763669AbXJNWFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 18:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbXJNWFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 17:58:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:56037 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759534AbXJNV6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 17:58:30 -0400
-Date: Sun, 14 Oct 2007 16:54:37 -0500
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Hook compat_sys_nanosleep up to high res timer code
-Message-ID: <20071014215437.GF26693@kryten>
+	Sun, 14 Oct 2007 18:05:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:5745 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbXJNWFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 18:05:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=X3YBno+TnfyfHBs9yWIGFo+rs4hdCSELbEyXad5jCW4PjZc2X8M0HzRxHZ1la+3QwBDbGrMwWw/33/gysqlSy5Zxk0S0cDq0+lZWgvwNa/zir+R4z6a37MAgVS393AQdJWv/oq2dwhpvLyj6poi64Z6G4PESyU+WfRwAoUmnH3E=
+Message-ID: <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
+Date: Sun, 14 Oct 2007 17:05:12 -0500
+From: "Mark Weber" <crash@treysoft.com>
+Reply-To: crash@treysoft.com
+To: "Bart Samwel" <bart@samwel.tk>
+Subject: Re: hdparm standby timeout not working for WD raptors?
+Cc: "Mark Lord" <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <471284A7.1060800@samwel.tk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>
+	 <470E7B90.5060203@rtr.ca>
+	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>
+	 <470F7705.3@rtr.ca>
+	 <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>
+	 <47120D65.3080008@samwel.tk>
+	 <71b295590710141330g7a4779e5q2d6b8f50387ee971@mail.gmail.com>
+	 <471284A7.1060800@samwel.tk>
+X-Google-Sender-Auth: 83e316d502a3866c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/14/07, Bart Samwel <bart@samwel.tk> wrote:
+>
+> Just to be sure: you did use -S 60 to get 5 minutes, right?
 
-Now we have high res timers on ppc64 I thought Id test them. It turns
-out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
-is limited to HZ resolution.
+Yes. And hdparm is kind enough to print:
 
-The following patch makes compat_sys_nanosleep call hrtimer_nanosleep
-and uses compat_alloc_user_space to avoid setting KERNEL_DS.
+/dev/sda:
+ setting standby to 60 (5 minutes)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Here's a bizarre sequence which I just noticed:
+[extraneous blank lines removed for clarity]
 
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 3bae374..46795ac 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -40,62 +40,29 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
- 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
- }
- 
--static long compat_nanosleep_restart(struct restart_block *restart)
--{
--	unsigned long expire = restart->arg0, now = jiffies;
--	struct compat_timespec __user *rmtp;
--
--	/* Did it expire while we handled signals? */
--	if (!time_after(expire, now))
--		return 0;
--
--	expire = schedule_timeout_interruptible(expire - now);
--	if (expire == 0)
--		return 0;
--
--	rmtp = (struct compat_timespec __user *)restart->arg1;
--	if (rmtp) {
--		struct compat_timespec ct;
--		struct timespec t;
--
--		jiffies_to_timespec(expire, &t);
--		ct.tv_sec = t.tv_sec;
--		ct.tv_nsec = t.tv_nsec;
--		if (copy_to_user(rmtp, &ct, sizeof(ct)))
--			return -EFAULT;
--	}
--	/* The 'restart' block is already filled in */
--	return -ERESTART_RESTARTBLOCK;
--}
--
- asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
--		struct compat_timespec __user *rmtp)
-+				     struct compat_timespec __user *rmtp)
- {
--	struct timespec t;
--	struct restart_block *restart;
--	unsigned long expire;
-+	struct timespec tu;
-+	struct timespec __user *rmtp64;
-+	long ret;
- 
--	if (get_compat_timespec(&t, rqtp))
-+	if (get_compat_timespec(&tu, rqtp))
- 		return -EFAULT;
- 
--	if ((t.tv_nsec >= 1000000000L) || (t.tv_nsec < 0) || (t.tv_sec < 0))
-+	if (!timespec_valid(&tu))
- 		return -EINVAL;
- 
--	expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
--	expire = schedule_timeout_interruptible(expire);
--	if (expire == 0)
--		return 0;
-+	rmtp64 = compat_alloc_user_space(sizeof(*rmtp64));
-+	ret = hrtimer_nanosleep(&tu, rmtp64, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
- 
--	if (rmtp) {
--		jiffies_to_timespec(expire, &t);
--		if (put_compat_timespec(&t, rmtp))
-+	if (ret) {
-+		if (copy_from_user(&tu, rmtp64, sizeof(*rmtp64)) ||
-+		    put_compat_timespec(&tu, rmtp))
- 			return -EFAULT;
- 	}
--	restart = &current_thread_info()->restart_block;
--	restart->fn = compat_nanosleep_restart;
--	restart->arg0 = jiffies + expire;
--	restart->arg1 = (unsigned long) rmtp;
--	return -ERESTART_RESTARTBLOCK;
-+
-+	return ret;
- }
- 
- static inline long get_compat_itimerval(struct itimerval *o,
+>> hdparm -C /dev/sd[abcde]
+/dev/sda:  drive state is:  standby
+/dev/sdb:  drive state is:  standby
+/dev/sdc:  drive state is:  standby
+/dev/sdd:  drive state is:  standby
+/dev/sde:  drive state is:  standby
+
+>> hdparm -S 60 /dev/sda
+/dev/sda: setting standby to 60 (5 minutes)
+
+>> hdparm -C /dev/sd[abcde]
+/dev/sda: drive state is:  active/idle
+/dev/sdb: drive state is:  active/idle
+/dev/sdc: drive state is:  standby
+/dev/sdd: drive state is:  standby
+/dev/sde: drive state is:  standby
+
+Note that the -S 60 on /dev/sda affected
+/dev/sdb too! This is repeatable.
+
+I have these drives as RAID5 (software RAID).
+I don't know if that has anything to do with the
+failure of -S or not. Don't know if hdparm bypasses
+the RAID or not.
