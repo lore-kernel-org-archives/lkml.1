@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764324AbXJNXlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXJNXqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764324AbXJNXlE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 19:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXJNXky
+	id S1764226AbXJNXqH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 19:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXJNXpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 19:40:54 -0400
-Received: from rtr.ca ([76.10.145.34]:3199 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbXJNXky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 19:40:54 -0400
-Message-ID: <4712A904.9010304@rtr.ca>
-Date: Sun, 14 Oct 2007 19:40:52 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 14 Oct 2007 19:45:51 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40471
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263AbXJNXpu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 19:45:50 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: James Bottomley <James.Bottomley@steeleye.com>
+Subject: Re: What still uses the block layer?
+Date: Sun, 14 Oct 2007 18:45:44 -0500
+User-Agent: KMail/1.9.6
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <1192400672.3351.56.camel@localhost.localdomain>
+In-Reply-To: <1192400672.3351.56.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: crash@treysoft.com
-Cc: Bart Samwel <bart@samwel.tk>, linux-kernel@vger.kernel.org
-Subject: Re: hdparm standby timeout not working for WD raptors?
-References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>	 <470E7B90.5060203@rtr.ca>	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>	 <470F7705.3@rtr.ca>	 <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>	 <47120D65.3080008@samwel.tk>	 <71b295590710141330g7a4779e5q2d6b8f50387ee971@mail.gmail.com>	 <471284A7.1060800@samwel.tk> <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
-In-Reply-To: <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710141845.44750.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. How are you forcing the drives into standby?
+On Sunday 14 October 2007 5:24:32 pm James Bottomley wrote:
+> On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
+> > On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
+> > > My impression from asking questions on the linux-scsi mailing list is
+> > > that the scsi upper/middle/lower layers doesn't use the block layer
+> > > described in Documentation/block/*.
+> >
+> > Entirely incorrect.
+>
+> OK, right ... could we please get a sense of decorum back on this list.
 
-2. Have you reproduced this with a stock kernel.org kernel yet?
+Did I reply to the insult?
 
-One possibility is that these drives may be the kind that
-generate a "spurious" interrupt when they spin-down via the timer,
-and perhaps libata is "processing" that interrupt and sending
-additional command(s) that then wake the drive up again immediately.
+> Rob, if you didn't ask your alleged questions in such a pejorative
+> manner, we'd get a lot further
 
-To rule this out, you could try using drivers/ide for a moment or two,
-and see if the same problem persists with those drives.
+I'm not attempting to be pejorative.
 
-You could also try dumping /proc/interrupts in conjunction with "hdparm -S1",
-and we can compare that with a "known good" system.
+I admit a certain amount of personal annoyance that once the SCSI layer 
+consumes a category of device (USB, SATA, PATA), they can often _only_ be 
+used by going through the SCSI midlayer.  (This strikes me as analogous to 
+TCP/IP claiming ethernet and PPP devices so thoroughly that you can no longer 
+address them as eth1 or /dev/ttyS0.)
 
-Something like this:
+This has the annoying effect of bundling together different types of devices 
+and making device enumeration unnecessarily difficult: my laptop only has one 
+SATA hard drive and can't gain another without a soldering iron, but that 
+drive could move from /dev/sda to /dev/sdb if I reboot the system with a USB 
+key plugged in.  This seems like a regrettable loss of orthogonality to me.  
+I remember back when /dev/usb0 and /dev/hda were separate devices that showed 
+up in /dev, but these days "it's SCSI" seems to trump "it's USB", "it's ATA", 
+or "it's SATA".  (Even though none of those are actually SCSI hardware, they 
+just send a similar packet protocol across the wire.)
 
-hdparm -B255 /dev/sda
-hdparm -S1 /dev/sda
-cat /proc/interrupts
-sleep 6
-cat /proc/interrupts
+The fact that udev can theoretically unwind this hairball is not an excuse for 
+conflating different categories of devices in the first place.  Avoiding an 
+unnecessary problem seems superior to trying to get udev to solve it.  Note 
+that Ubuntu 7.04 solves it by sticking a UUID on every _partition_, and then 
+spinning up my external USB hard drive trying to find the root partition on a 
+reboot.  Tell me how this can be considered progress:
 
-Cheers
+> # /etc/fstab: static file system information.
+> #
+> # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+> proc            /proc           proc    defaults        0       0
+> # /dev/sda1
+> UUID=04d1b984-bd65-46f1-9a77-c158cf4bed1b /               ext3 
+defaults,errors=remount-ro,noatime 0       1
+> # /dev/sda5 
+> UUID=cdf0936d-9f19-42c6-b131-9fefcf1321ef none            swap    sw        
+0       0
+> /dev/scd0       /media/cdrom0   udf,iso9660 user,noauto   0       0 
+> UUID=86bbb512-ab7e-4a12-8618-1190f032c082  /boot ext3 defaults 0 0 
+
+Conflating categories of hardware that cannot easily be enumerated (USB) with 
+categories that can (the SATA hard drive in my laptop, of which there can be 
+only one) strikes me as a bad thing.  Putting them in a common "scsi device 
+pool" within which they do not enumerate consistently is not something I 
+enjoy dealing with.
+
+However, the response to my attempts to express this dissatisfaction on the 
+SCSI list a few months ago came too close to a flamewar for me to consider 
+continuing it productive.  I'd still love to update the "2.4 scsi howto" and 
+corresponding sg howto, but lack the expertise.  The SCSI layer really isn't 
+my area, and I was much happier back when I could avoid using it at all.
+
+The question I was trying to ask _here_ was about the block layer.  I seem not 
+to have asked it very well.  Sorry 'bout that.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
