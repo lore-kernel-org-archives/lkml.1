@@ -1,113 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbXJNBD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbXJNBOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbXJNBD6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 21:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXJNBDu
+	id S1757903AbXJNBOv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 21:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXJNBOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 21:03:50 -0400
-Received: from userg501.nifty.com ([202.248.238.81]:17298 "EHLO
-	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbXJNBDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 21:03:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=Q3ITL+zSqZsfxHsm22YnWd/292l1VB/FJVBxXzyuAyRNH0dcGTvZl2hQCCVgLbxEm
-	7mL0exqmpF35Hv3mT+rEw==
-X-Nifty-SrcIP: [219.104.15.224]
-Date: Sun, 14 Oct 2007 10:02:45 +0900
-From: Komuro <komurojun@nifty.com>
-To: davem@sunset.davemloft.net
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero
- in Cubic and BIC.
-Message-Id: <20071014100245.914b784a.komurojun@nifty.com>
-In-Reply-To: <20071014073658.d4352b8c.komurojun@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-	<20071014073658.d4352b8c.komurojun@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Oct 2007 21:14:44 -0400
+Received: from mint.qinip.net ([62.100.30.37]:63058 "EHLO mint.qinip.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753816AbXJNBOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 21:14:43 -0400
+Date: Sun, 14 Oct 2007 03:14:40 +0200
+From: Arjan Opmeer <arjan@opmeer.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Message-ID: <20071014011440.GB15877@adopmeer.homeip.net>
+References: <20070914000015.GA20527@adopmeer.homeip.net> <d120d5000710091301h790db3c4nc44e71551a4bc408@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000710091301h790db3c4nc44e71551a4bc408@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ado@adopmeer.homeip.net
+Subject: Re: First stab at Elantech touchpad driver for 2.6.22.6. Testers
+	wanted!
+X-SA-Exim-Version: 4.2.1 (built Tue, 21 Aug 2007 23:39:36 +0000)
+X-SA-Exim-Scanned: Yes (on Ado.lan)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear David
 
-Actually, tcp_sk(sk)->snd_ssthresh is not initialized,
-if initial_ssthresh is 0.
+Hi Dmitry,
 
-The patch should be
-
- static void bictcp_init(struct sock *sk)
- {
- 	bictcp_reset(inet_csk_ca(sk));
--	if (initial_ssthresh)
--		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
-+
-+	tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
- }
-
-Best Regards
-Komuro
-
-> 
-> Dear David
-> 
-> The patch "[TCP]: Set initial_ssthresh default to zero in Cubic and BIC."
-> is not very safe.
-> 
-> With this patch, ftp-transfer stops in my system.
-> (vsftpd-2.0.5-8)
-> 
-> Please revert this patch.
-> 
-> 
-> Best Regards
-> Komuro
-> 
-> >commit 66e1e3b20cbbf99da63e6c1af0fc6d39c2ed099a
-> >Author: David S. Miller <davem@sunset.davemloft.net>
-> >Date:   Wed Jun 13 01:03:53 2007 -0700
+On Tue, Oct 09, 2007 at 04:01:58PM -0400, Dmitry Torokhov wrote:
+> On 9/13/07, Arjan Opmeer <arjan@opmeer.net> wrote:
 > >
-> >    [TCP]: Set initial_ssthresh default to zero in Cubic and BIC.
-> >    
-> >    Because of the current default of 100, Cubic and BIC perform very
-> >    poorly compared to standard Reno.
-> >    
-> >    In the worst case, this change makes Cubic and BIC as aggressive as
-> >    Reno.  So this change should be very safe.
-> >    
-> >    Signed-off-by: David S. Miller <davem@davemloft.net>
-> >
-> >diff --git a/net/ipv4/tcp_bic.c b/net/ipv4/tcp_bic.c
-> >index 281c9f9..dd9ef65 100644
-> >--- a/net/ipv4/tcp_bic.c
-> >+++ b/net/ipv4/tcp_bic.c
-> >@@ -29,7 +29,7 @@ static int fast_convergence = 1;
-> > static int max_increment = 16;
-> > static int low_window = 14;
-> > static int beta = 819;		/* = 819/1024 (BICTCP_BETA_SCALE) */
-> >-static int initial_ssthresh = 100;
-> >+static int initial_ssthresh;
-> > static int smooth_part = 20;
-> > 
-> > module_param(fast_convergence, int, 0644);
-> >diff --git a/net/ipv4/tcp_cubic.c b/net/ipv4/tcp_cubic.c
-> >index 1422448..ebfaac2 100644
-> >--- a/net/ipv4/tcp_cubic.c
-> >+++ b/net/ipv4/tcp_cubic.c
-> >@@ -29,7 +29,7 @@
-> > static int fast_convergence __read_mostly = 1;
-> > static int max_increment __read_mostly = 16;
-> > static int beta __read_mostly = 819;	/* = 819/1024 (BICTCP_BETA_SCALE) */
-> >-static int initial_ssthresh __read_mostly = 100;
-> >+static int initial_ssthresh __read_mostly;
-> > static int bic_scale __read_mostly = 41;
-> > static int tcp_friendliness __read_mostly = 1;
-> > 
+> > This is a first stab at a Linux driver for the Elantech touchpad as
+> > found on some laptops (e.g. MSI MS-1035 aka L725).
+> 
+> Since the touchpad supports absolute mode I'd recommend removing
+> support for extended relative mode and concentrating on making
+> absolute mode work so that Synaptics X driver can be used with this
+> touchpad as well.
+
+Well, from the few reports I got it seems not all Elantech touchpads are
+created equal. And as we don't have any documentation on these touchpads I
+really don't know whether they all support absolute mode, have the same
+parameters or use the same protocol for it.
+
+So for the time being I really would like to keep support for absolute as
+well as relative mode in to make it easier for users to switch and test and
+find out and report where thing go wrong.
+
+Maybe that once we find out more about these touchpads and the possible
+different version we can focus on a solution that will fit all. But let's
+not do it while users are still trying whether the driver works for them at
+all... :)
 
 
--- 
-Komuro <komurojun@nifty.com>
+Arjan
+
