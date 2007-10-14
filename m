@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbXJNIpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXJNIza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbXJNIpJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 04:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXJNIoz
+	id S1755525AbXJNIza (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 04:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbXJNIzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 04:44:55 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33850 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbXJNIox (ORCPT
+	Sun, 14 Oct 2007 04:55:18 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40603 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbXJNIzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 04:44:53 -0400
-Date: Sun, 14 Oct 2007 09:44:08 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Ryan Finnie <ryan@finnie.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-In-Reply-To: <84144f020710121445p23fcc21am18482e01856cdc35@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0710140928470.23926@blonde.wat.veritas.com>
-References: <200710071920.l97JKJX5018871@agora.fsl.cs.sunysb.edu> 
- <20071011144740.136b31a8.akpm@linux-foundation.org> 
- <cfa94dc20710111512j9b6c038qf89c516ecd605411@mail.gmail.com> 
- <Pine.LNX.4.64.0710120129080.16588@blonde.wat.veritas.com>
- <84144f020710121445p23fcc21am18482e01856cdc35@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 14 Oct 2007 04:55:15 -0400
+Date: Sun, 14 Oct 2007 11:55:12 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Willy Tarreau <w@1wt.eu>
+cc: Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
+ bidirectional flows.
+In-Reply-To: <20071013181045.GB18155@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0710141129190.24841@kivilampi-30.cs.helsinki.fi>
+References: <20071013142822.%N@1wt.eu> <20071013143452.%N@1wt.eu>
+ <Pine.LNX.4.64.0710132007430.27718@kivilampi-30.cs.helsinki.fi>
+ <20071013172214.GA18155@1wt.eu> <20071013175036.GD4211@stusta.de>
+ <20071013181045.GB18155@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007, Pekka Enberg wrote:
-> On 10/12/07, Hugh Dickins <hugh@veritas.com> wrote:
-> > But I keep suspecting that the answer might be the patch below (which
-> > rather follows what drivers/block/rd.c is doing).  I'm especially
-> > worried that, rather than just AOP_WRITEPAGE_ACTIVATE being returned
-> > to userspace, bad enough in itself, you might be liable to hit that
-> > BUG_ON(page_mapped(page)).  shmem_writepage does not expect to be
-> > called by anyone outside mm/vmscan.c, but unionfs can now get to it?
+On Sat, 13 Oct 2007, Willy Tarreau wrote:
+> On Sat, Oct 13, 2007 at 07:50:36PM +0200, Adrian Bunk wrote:
+> > On Sat, Oct 13, 2007 at 07:22:14PM +0200, Willy Tarreau wrote:
+> > >...
+> > > Thanks for your help, I really appreciate it. In fact, I've reviewed them
+> > > four, but two of them did not apply and the code looked somewhat different,
+> > > so I considered them irrelevant to 2.6.20. I didn't understand that they
+> > > were all related, so maybe I checked them in a wrong order.
+> > > 
+> > > I'll recheck all that in the right sequence and will merge them four, or
+> > > get back to you if something still puzzles me.
+> > 
+> > I discussed this issue with Ilpo just yesterday regarding 2.6.16, and 
+> > the result of our discussion was that I reverted it.
 > 
-> Doesn't msync(2) get to it via mm/page-writeback.c:write_cache_pages()
-> without unionfs even?
+> OK.
+> 
+> > TCP being in some situations a bit more conservative than it should be 
 
-I believe not.  Please do double-check my assertions, I've always found
-the _writepages paths rather twisty; but my belief (supported by the
-fact that we've not hit shmem_writepage's BUG_ON(page_mapped(page))
-in five years) is that tmpfs/shmem opts out of all of that with its
-	.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
-in shmem_backing_dev_info, which avoids all those _writepages avenues
-(e.g. through bdi_cap_writeback_dirty tests), and write_cache_pages is
-just a subfunction of the _writepages.
+This of course understatement from what I wrote about the performance:
+"I would rather put it this way: Without those four patches TCP
+just is very much more conservative than with them but still
+works. " Emphasis on word very. Yet this isn't a correctness issue.
 
-So, while I don't disagree with your patch to write_cache_pages (though
-it wasn't clear to me whether it should break from or continue the loop
-if it ever does meet an AOP_WRITEPAGE_ACTIVATE), I don't think that's
-really the root of the problem.
+> > isn't a big issue and not worth backporting with a risk of introducing
+> > a regression.
 
-Hugh
+I agree that it's not that big issue due to the cases that are affected. 
+The flow must simulataneously be bidirectional and get at least one of the 
+directions to suffer from congestion. Considering that this problem has 
+been there very long (definately predates 2.6 series, probably it has 
+occured since ratehalving was added, I don't know when), and nobody has 
+complained because of poor performance, I'd claim it's highly unlikely 
+they will, in the near future... :-)
+
+> I agree with this. The impression I got from the description of the two
+> patches I merged was that the problems they fix were quite annoying. But
+> maybe I should take that with a grain of salt.
+
+No, it's not a grain of salt. I would say its utterly broken, out loud. 
+But many people are not that much into time-seq graphs (that I'm familiar 
+with), they are pleased when it seems to work well enough even though 
+from my perspective, it is simply unacceptable in worst cases (not 
+speaking of theoretical ones here, have seen very bad performance). Not 
+that it always is that bad, depends on phase of the opposite direction 
+what happens.
+
+Somebody asked me when those four patches were made about this, I put 
+these there back then:
+
+http://www.cs.helsinki.fi/u/ijjarvin/bidir-showcase/
+
+They are generated from my old test archives and thus may have a bit 
+differences in TCP variant, which may slightly differ from mainline
+here and there (my point was just to show how it breaks). Typical 
+people wouldn't even notice those minor differences compared with the 
+bidir brokeness which is very visible in all except in the fixed "ok"
+case. Please judge for yourself whether I overexaggrated or not... :-)
+
+
+-- 
+ i.
