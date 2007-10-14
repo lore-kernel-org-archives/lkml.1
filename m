@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXJNGee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbXJNGi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbXJNGee (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 02:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXJNGe1
+	id S1756928AbXJNGi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 02:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXJNGit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 02:34:27 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48602 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751188AbXJNGe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 02:34:26 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18wRH1ZWhIweFCQTi8SUnmctEsGffHiwmwsqi1/z3
-	0zrbKZJ6Fzx9zc
-Subject: Re: [PATCH] sched: high-res preemption tick
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1192317228.5625.8.camel@lappy>
-References: <1192222309.5897.3.camel@lappy>
-	 <1192259938.7369.4.camel@Homer.simpson.net>
-	 <1192265717.27435.44.camel@twins>  <1192267072.5897.5.camel@lappy>
-	 <1192317228.5625.8.camel@lappy>
-Content-Type: text/plain
-Date: Sun, 14 Oct 2007 08:34:20 +0200
-Message-Id: <1192343660.7594.19.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sun, 14 Oct 2007 02:38:49 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:53584 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258AbXJNGit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 02:38:49 -0400
+Message-ID: <4711B958.8020401@linux.vnet.ibm.com>
+Date: Sun, 14 Oct 2007 12:08:16 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] typo in ibm_newemac/rgmii.c
+References: <20071014045012.GS8181@ftp.linux.org.uk>
+In-Reply-To: <20071014045012.GS8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-10-14 at 01:13 +0200, Peter Zijlstra wrote:
-> On Sat, 2007-10-13 at 11:17 +0200, Peter Zijlstra wrote:
+Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
+> index bcd7fc6..3f57d6c 100644
+> --- a/drivers/net/ibm_newemac/rgmii.c
+> +++ b/drivers/net/ibm_newemac/rgmii.c
+> @@ -251,7 +251,7 @@ static int __devinit rgmii_probe(struct of_device *ofdev,
+>  	}
 > 
-> > > Ah, but HRTICK is not compatible with PREEMPT_RESTRICT, it will be
-> > > similar to !WAKEUP_PREEMPT.
-> > 
-> > (I do plan to fix that eventually, just need to do it)
-> 
-> I guess something like this ought to do, but its a tad late so I'm quite
-> sure :-)
+>  	/* Check for RGMII type */
+> -	if (device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
+> +	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
+>  		dev->type = RGMII_AXON;
+>  	else
+>  		dev->type = RGMII_STANDARD;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-2.6.23-smp-d-hrt + restrict fix patch
-[SUM]  0.0-300.1 sec    176 GBytes  5.03 Gbits/sec
-[SUM]  0.0-300.1 sec    175 GBytes  5.02 Gbits/sec
-[SUM]  0.0-300.1 sec    176 GBytes  5.05 Gbits/sec
+Hi,
 
-Context switches are further reduced (across the board) over
-PREEMPT_RESTRICT, dropping from ~7-8k to ~2.5k with this test, vs ~950
-for SCHED_BATCH and ~50k with this tree and no restriction.  Throughput
-is ~96% of SCHED_BATCH, vs ~55% with no restriction.  I see no
-interactivity regressions.
+The same patch was submitted on http://lkml.org/lkml/2007/10/13/8
 
-	-Mike
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
