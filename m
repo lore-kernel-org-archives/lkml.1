@@ -1,117 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbXJNTxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbXJNTzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbXJNTxR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 15:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbXJNTxE
+	id S1760755AbXJNTzc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 15:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbXJNTzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 15:53:04 -0400
-Received: from lucidpixels.com ([75.144.35.66]:50066 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbXJNTxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 15:53:02 -0400
-Date: Sun, 14 Oct 2007 15:53:01 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: linux-kernel@vger.kernel.org, apiszcz@solarrain.com
-Subject: Re: In response to kernel compression e-mail a few months ago.
-In-Reply-To: <Pine.LNX.4.64.0710142144340.22801@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0710141551140.3935@p34.internal.lan>
-References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan>
- <Pine.LNX.4.64.0710142144340.22801@fbirervta.pbzchgretzou.qr>
+	Sun, 14 Oct 2007 15:55:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:28245 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753692AbXJNTzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 15:55:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PXUXkxXo2wQdXy1oWao3hnKtehMqNkKzQsY/o6r1B8Oea7uR/D9SyxAfq1o09T3CcVRTIqc9BTyhBnNwsvIzD6NFtImwxkP13ooB4n3JjMlJApnGChnBS5fKshRssRlkAM4eDSH8wIirV0/MpglBeGKJwkDhKvFeewLPD7B0kV0=
+Message-ID: <86802c440710141255l3a02c50eja7b4b1b77aa8c1d8@mail.gmail.com>
+Date: Sun, 14 Oct 2007 12:55:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Manfred Spraul" <manfred@colorfullife.com>
+Subject: Re: MSI interrupts and disable_irq
+Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
+       nedev <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <4711C217.2010605@colorfullife.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
+	 <4710901F.8010206@colorfullife.com>
+	 <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
+	 <4711C217.2010605@colorfullife.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/14/07, Manfred Spraul <manfred@colorfullife.com> wrote:
+> Yinghai Lu wrote:
+> > On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
+> >
+> >> Someone around with a MSI capable board? The forcedeth driver does
+> >>     dev->irq = pci_dev->irq
+> >> in nv_probe(), especially before pci_enable_msi().
+> >> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
+> >> wrong interrupt....
+> >>
+> >
+> > the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
+> >
+> >
+> Where is that?
 
+in nv_request_irq
+                if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
+                        np->msi_flags |= NV_MSI_ENABLED;
+                        if (request_irq(np->pci_dev->irq, handler,
+IRQF_SHARED, dev->name, dev) != 0) {
 
-On Sun, 14 Oct 2007, Jan Engelhardt wrote:
+in request_irq
 
->
-> On Oct 14 2007 15:34, Justin Piszcz wrote:
->>
->> It turns out the one I did not test, was actually the best:
->>
->> Used: 7z -mx=9 a linux-2.6.16.17.tar.7z linux-2.6.16.17.tar
->>
->> $ du -sk * | sort -n
->> 32392 linux-2.6.16.17.tar.7z
->> 33520 linux-2.6.16.17.tar.lzma
->> 33760 linux-2.6.16.17.tar.rar
->> 38064 linux-2.6.16.17.tar.rz
->> 39472 linux-2.6.16.17.tar.szip
->> 39520 linux-2.6.16.17.tar.bz
->> 39936 linux-2.6.16.17.tar.bz2
->> 40000 linux-2.6.16.17.tar.bicom
->> 40656 linux-2.6.16.17.tar.sit
->> 47664 linux-2.6.16.17.tar.lha
->> 49968 linux-2.6.16.17.tar.dzip
->> 50000 linux-2.6.16.17.tar.gz
->> 51344 linux-2.6.16.17.tar.arj
->> 57552 linux-2.6.16.17.tar.lzo
->> 57984 linux-2.6.16.17.tar.F
->> 81136 linux-2.6.16.17.tar.Z
->> 94544 linux-2.6.16.17.tar.zoo
->> 101216 linux-2.6.16.17.tar.arc
->> 228608 linux-2.6.16.17.tar
->
-> What's with all these odd formats, and where is .zip? :)
-> Somehow... have you tried lrzip?
-$ apt-cache search lrzip
-$
+int request_irq(unsigned int irq, irq_handler_t handler,
+                unsigned long irqflags, const char *devname, void *dev_id)
+...
+        action->dev_id = dev_id;
+...
+        retval = setup_irq(irq, action);
 
-I tried most of the main ones in the standard testing distribution within 
-Debian.
+in setup_irq
+int setup_irq(unsigned int irq, struct irqaction *new)
+....
+        new->irq = irq;
 
-> Furthermore, if the files in the .tar archive were actually sorted..
-> (Obviously we shall pick .7z)
->
+it seems I missed that here new is irqaction instead of net_dev.
 
-Ah, how did I miss zip? :)
-
-$ du -sk * | sort -n
-32392 linux-2.6.16.17.tar.7z
-33520 linux-2.6.16.17.tar.lzma
-33760 linux-2.6.16.17.tar.rar
-38064 linux-2.6.16.17.tar.rz
-39472 linux-2.6.16.17.tar.szip
-39520 linux-2.6.16.17.tar.bz
-39936 linux-2.6.16.17.tar.bz2
-40000 linux-2.6.16.17.tar.bicom
-40656 linux-2.6.16.17.tar.sit
-47664 linux-2.6.16.17.tar.lha
-49940 linux-2.6.16.17.tar.zip
-49968 linux-2.6.16.17.tar.dzip
-50000 linux-2.6.16.17.tar.gz
-51344 linux-2.6.16.17.tar.arj
-57552 linux-2.6.16.17.tar.lzo
-57984 linux-2.6.16.17.tar.F
-81136 linux-2.6.16.17.tar.Z
-94544 linux-2.6.16.17.tar.zoo
-101216 linux-2.6.16.17.tar.arc
-228608 linux-2.6.16.17.tar
-
-$ du -sh * | sort -n
-32M linux-2.6.16.17.tar.7z
-33M linux-2.6.16.17.tar.lzma
-33M linux-2.6.16.17.tar.rar
-37M linux-2.6.16.17.tar.rz
-39M linux-2.6.16.17.tar.bicom
-39M linux-2.6.16.17.tar.bz
-39M linux-2.6.16.17.tar.bz2
-39M linux-2.6.16.17.tar.szip
-40M linux-2.6.16.17.tar.sit
-47M linux-2.6.16.17.tar.lha
-49M linux-2.6.16.17.tar.zip
-49M linux-2.6.16.17.tar.dzip
-49M linux-2.6.16.17.tar.gz
-50M linux-2.6.16.17.tar.arj
-56M linux-2.6.16.17.tar.lzo
-57M linux-2.6.16.17.tar.F
-79M linux-2.6.16.17.tar.Z
-92M linux-2.6.16.17.tar.zoo
-99M linux-2.6.16.17.tar.arc
-223M linux-2.6.16.17.tar
-
-Justin.
+YH
