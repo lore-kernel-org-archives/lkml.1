@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbXJNAYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbXJNAwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbXJNAYl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Oct 2007 20:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXJNAYc
+	id S1755875AbXJNAwh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Oct 2007 20:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXJNAw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Oct 2007 20:24:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38544 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbXJNAYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Oct 2007 20:24:31 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64N.0710121633480.21684@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0710121633480.21684@blysk.ds.pg.gda.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] frv: Remove duplicate output of .exit.data
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Sat, 13 Oct 2007 10:17:51 +0100
-Message-ID: <21428.1192267071@redhat.com>
+	Sat, 13 Oct 2007 20:52:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:11575 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339AbXJNAw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Oct 2007 20:52:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HUKn2pHfV22uciPIoxQWl4Ecc+W9cRuG2Fgy3K04l/tv1iW4xuz5L4bh1n1gHSkphB+/rYPDrGZYaW58D8W8sPkCDys+jxfdUuHq2nsIlDipNMkaITPCALUURM5YIglnZu31fWRVLbl3n7s2ABYJIOzjMywe0WXJwsTPtTs23pM=
+Message-ID: <5a4c581d0710131752t5cfd2d46s22fce917cd0b5716@mail.gmail.com>
+Date: Sun, 14 Oct 2007 02:52:26 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: patrizio.bassi@gmail.com
+Subject: Re: 2.6.23-git3 compilation broken, asm headers missing?
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Kernel," <linux-kernel@vger.kernel.org>
+In-Reply-To: <47115F09.3090504@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4710AD07.70000@gmail.com>
+	 <alpine.LFD.0.9999.0710131348310.12017@localhost.localdomain>
+	 <47115F09.3090504@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki <macro@linux-mips.org> wrote:
+On 10/14/07, Patrizio Bassi <patrizio.bassi@gmail.com> wrote:
+> Thomas Gleixner ha scritto:
+> > On Sat, 13 Oct 2007, Patrizio Bassi wrote:
+> >
+> >> include/linux/types.h:15:23: error: asm/types.h: No such file or directory
+> >> In file included from include/linux/prefetch.h:13,
+> >>                  from include/linux/list.h:8,
+> >>                  from include/linux/module.h:9,
+> >>                  from include/linux/crypto.h:21,
+> >>                  from arch/x86/kernel/asm-offsets_32.c:7,
+> >>                  from arch/x86/kernel/asm-offsets.c:2:
+> >>
+> >> full log attached.
+> >>
+> >
+> > That's a stale include/asm symlink. Can you save your .config file and do
+> >
+> > make mrproper
+> >
+> > please and check if it's solved.
+> >
+> > Thanks,
+> >
+> >       tglx
+> >
+> >
+> >
+> seems ok now
+>
+> Thanks!
 
->  When CONFIG_DEBUG_INFO is unset the input .exit.data sections are copied 
-> twice to vmlinux.  Remove the copy made to .init.text and keep one in 
-> .data only.
+Same issue here, and as well making mrproper fixes it.
 
-No, they aren't.  I believe the linker only makes one copy of each section,
-and once a copy is inserted, all other attempts to make a copy of it are
-ignored.
+Thanks, ciao,
 
-NAK.
+--alessandro
 
-David
+ "you feel the sweet breath of time
+  it's whispering, its truth not mine"
+
+   (Interpol, 'No I In Threesome')
