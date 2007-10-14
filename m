@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbXJNFIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXJNFSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbXJNFIc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXJNFIZ
+	id S1756257AbXJNFSz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXJNFSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:08:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45386 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbXJNFIZ (ORCPT
+	Sun, 14 Oct 2007 01:18:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:13923 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbXJNFSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:08:25 -0400
-Date: Sun, 14 Oct 2007 00:08:22 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] MMC/SD: Fix regression in 2.6.23-git3 due to change in
- calling add_uevent_var
-Message-ID: <4711a446.8AfaxKMSwd0Js8yn%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 14 Oct 2007 01:18:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=b61Fd+nmHPOmMK2vmWxq1iEv4452edc7C7f9/uOyb34F/xVuBarvkx1yOu20QAMh6dli+PcGJPyqHdoaWLs0gwp2v7c0KB4Ve8I/USqxFiGKfCxSPbtKMyB8N3QVFd/JfSpzPhdZcMv9x+NAOVCdiNHZ49VOj30PlfELd3IcJYI=
+Subject: Re: 2.6.23: No text consoles with
+	FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200710132013.24024.elendil@planet.nl>
+References: <200710132013.24024.elendil@planet.nl>
+Content-Type: text/plain
+Date: Sun, 14 Oct 2007 13:18:29 +0800
+Message-Id: <1192339109.6548.2.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 7eff2e7a8b65c25920207324e56611150eb1cd9a, the calling sequence
-for add_uevent_var was changed, but the ssb driver was not modified, which
-leads to a "Unable to handle kernel paging request" oops. This patch fixes
-the problem.
+On Sat, 2007-10-13 at 20:13 +0200, Frans Pop wrote:
+> While running a test with current Linus' git tree, I ran into the following
+> issue. The issue is also present in stable 2.6.23.
+> 
+> System x86_64; Pentium D; Intel 82945G/GZ on-board graphics
+> 
+> After initial boot messages all output to console stops. The last visible
+> messages are:
+> checking if image is initramfs...<6>Switched to high resolution mode on CPU 1
+> Switched to high resolution mode on CPU 0
+> 
+> After that, nothing until XOrg starts up and graphical login/desktop on VT7
+> are displayed normal.
+> Switching back to VT1-VT5 gives nothing: no login prompts, just nothing.
+> 
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Can you also post your dmesg and /proc/cdmline?
 
- drivers/ssb/main.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Tony
 
-Index: linux-2.6/drivers/ssb/main.c
-===================================================================
---- linux-2.6.orig/drivers/ssb/main.c
-+++ linux-2.6/drivers/ssb/main.c
-@@ -320,22 +320,17 @@ static int ssb_bus_match(struct device *
- 	return 0;
- }
- 
--static int ssb_device_uevent(struct device *dev, char **envp, int num_envp,
--			     char *buffer, int buffer_size)
-+static int ssb_device_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct ssb_device *ssb_dev = dev_to_ssb_dev(dev);
--	int ret, i = 0, length = 0;
-+	int ret;
- 
- 	if (!dev)
- 		return -ENODEV;
- 
--	ret = add_uevent_var(envp, num_envp, &i,
--			     buffer, buffer_size, &length,
--			     "MODALIAS=ssb:v%04Xid%04Xrev%02X",
-+	ret = add_uevent_var(env, "MODALIAS=ssb:v%04Xid%04Xrev%02X",
- 			     ssb_dev->id.vendor, ssb_dev->id.coreid,
- 			     ssb_dev->id.revision);
--	envp[i] = NULL;
--
- 	return ret;
- }
- 
+
