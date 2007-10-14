@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbXJNJae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbXJNJdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbXJNJae (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 05:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXJNJaZ
+	id S1756228AbXJNJdo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 05:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXJNJdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 05:30:25 -0400
-Received: from smtp23.orange.fr ([193.252.22.30]:16004 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754748AbXJNJaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 05:30:24 -0400
-X-ME-UUID: 20071013010326893.DA0161C0008F@mwinf2301.orange.fr
-Date: Sat, 13 Oct 2007 04:03:26 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
-Cc: irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [irda-users] [PATCH] irlmp_unregister_link needs to free lsaps
-	hashbin
-Message-ID: <20071013010326.GC8187@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
-References: <470F6EFB.6010704@cetrtapot.si>
+	Sun, 14 Oct 2007 05:33:37 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:58399
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbXJNJdg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 05:33:36 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [bug] usb build failure, latest -git
+Date: Sun, 14 Oct 2007 11:32:46 +0200
+User-Agent: KMail/1.9.6
+Cc: gregkh@suse.de, David Brownell <dbrownell@users.sourceforge.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-kernel@vger.kernel.org
+References: <20071014032948.GA25760@elte.hu>
+In-Reply-To: <20071014032948.GA25760@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <470F6EFB.6010704@cetrtapot.si>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710141132.46517.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hinko,
-
-On Fri, Oct 12, 2007 at 02:56:27PM +0200, hinko.kocevar@cetrtapot.si wrote:
-> Hi,
+On Sunday 14 October 2007 05:29:48 Ingo Molnar wrote:
 > 
-> While testing the mcs7780 based IrDA USB dongle I've stumbled upon
-> memory leak in irlmp_unregister_link(). Hashbin for lsaps is created in
-> irlmp_register_link and should probably be freed in irlmp_unregister_link().
+> FYI, the attached config fails to build on most recent -git with:
 > 
-> Signed-off-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+>  In file included from drivers/usb/host/ohci-hcd.c:1038:
+>  drivers/usb/host/ohci-ssb.c:120: error: 'ohci_bus_suspend' undeclared here (not in a function)
+>  drivers/usb/host/ohci-ssb.c:121: error: 'ohci_bus_resume' undeclared here (not in a function)
+>  make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
 > 
-> Best regards,
-> Hinko
+> found via randconfig testing.
 > 
-> ----
-> 
+> 	Ingo
 > 
 
-> --- linux-2.6.23/net/irda/irlmp.c.orig	2007-10-12 14:05:17.000000000 +0200
-> +++ linux-2.6.23/net/irda/irlmp.c	2007-10-12 14:05:41.000000000 +0200
-> @@ -353,6 +353,7 @@ void irlmp_unregister_link(__u32 saddr)
->  		/* Final cleanup */
->  		del_timer(&link->idle_timer);
->  		link->magic = 0;
-> +		hashbin_delete(link->lsaps, (FREE_FUNC) kfree);
-Good catch, but I think the right fix sould be:
-+             hashbin_delete(link->lsaps, (FREE_FUNC) __irlmp_close_lsap);
+A patch is already submitted, thanks.
 
-and I'll forward it. Thanks a lot.
-
-Cheers,
-Samuel.
-
-
->  		kfree(link);
->  	}
->  }
-
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >> http://get.splunk.com/
-> _______________________________________________
-> irda-users mailing list
-> irda-users@lists.sourceforge.net
-> http://lists.sourceforge.net/lists/listinfo/irda-users
-
-
+-- 
+Greetings Michael.
