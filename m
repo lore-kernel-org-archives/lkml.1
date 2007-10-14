@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbXJNTzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763265AbXJNUCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760755AbXJNTzc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 15:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbXJNTzV
+	id S1763265AbXJNUCA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 16:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXJNUBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 15:55:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:28245 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753692AbXJNTzT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 15:55:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PXUXkxXo2wQdXy1oWao3hnKtehMqNkKzQsY/o6r1B8Oea7uR/D9SyxAfq1o09T3CcVRTIqc9BTyhBnNwsvIzD6NFtImwxkP13ooB4n3JjMlJApnGChnBS5fKshRssRlkAM4eDSH8wIirV0/MpglBeGKJwkDhKvFeewLPD7B0kV0=
-Message-ID: <86802c440710141255l3a02c50eja7b4b1b77aa8c1d8@mail.gmail.com>
-Date: Sun, 14 Oct 2007 12:55:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Manfred Spraul" <manfred@colorfullife.com>
-Subject: Re: MSI interrupts and disable_irq
-Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       nedev <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <4711C217.2010605@colorfullife.com>
+	Sun, 14 Oct 2007 16:01:50 -0400
+Received: from rtr.ca ([76.10.145.34]:2671 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759123AbXJNUBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 16:01:50 -0400
+Message-ID: <471275AB.7090502@rtr.ca>
+Date: Sun, 14 Oct 2007 16:01:47 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: vignesh babu <vigneshbabu@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: wierd file perms
+References: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com> <20071013172848.GE16774@lug-owl.de> <47121943.2030902@rtr.ca> <Pine.LNX.4.64.0710141602520.22801@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710141602520.22801@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-	 <4710901F.8010206@colorfullife.com>
-	 <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-	 <4711C217.2010605@colorfullife.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> Yinghai Lu wrote:
-> > On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> >
-> >> Someone around with a MSI capable board? The forcedeth driver does
-> >>     dev->irq = pci_dev->irq
-> >> in nv_probe(), especially before pci_enable_msi().
-> >> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
-> >> wrong interrupt....
-> >>
-> >
-> > the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
-> >
-> >
-> Where is that?
+Jan Engelhardt wrote:
+> On Oct 14 2007 09:27, Mark Lord wrote:
+>> Jan-Benedict Glaw wrote:
+>>> On Sat, 2007-10-13 22:40:23 +0530, vignesh babu <vigneshbabu@gmail.com>
+>>> wrote:
+>>>> I was surprised and did an ls -l on the files and guess what I found:
+>>>>
+>>>> total 0
+>>>> ?--------- ? ? ? ?                ? fcntl.c
+>>>> ?--------- ? ? ? ?                ? fifo.c
+>>>> ?--------- ? ? ? ?                ? filesystems.c
+>>>> ?--------- ? ? ? ?                ? file_table.c
+>>>> ?--------- ? ? ? ?                ? freevxfs
+>>>>
+>>>> So end result is that, Im not able to delete the files or change perms
+>>>> or ownership even as root.
+>>> Most probably, your filesystem is broken and needs a fsck.
+>> No, this is perfectly normal behaviour, for when a directory
+>> has READ permissions but not EXECUTE permissions.
+> 
+> Er, close.
+> 
+> 	16:02 ichi:/dev/shm > md a
+> 	16:02 ichi:/dev/shm > touch a/b
+> 	16:02 ichi:/dev/shm > chmod 644 a
+> 	16:02 ichi:/dev/shm > ls -l a
+> 	/bin/ls: cannot access a/b: Permission denied
+> 	total 0
+> 	-????????? ? ? ? ?            ? b
+> 	16:02 ichi:/dev/shm > ls --version
+> 	ls (GNU coreutils) 6.9
+> 
+> 
+> There is a difference ..  "-?????????" vs "?---------".
 
-in nv_request_irq
-                if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
-                        np->msi_flags |= NV_MSI_ENABLED;
-                        if (request_irq(np->pci_dev->irq, handler,
-IRQF_SHARED, dev->name, dev) != 0) {
+That's just a version difference for GNU ls.
+Here, with ls (GNU coreutils) 5.97 it gives this:
 
-in request_irq
+?--------- ? ? ? ?                ? a/b
 
-int request_irq(unsigned int irq, irq_handler_t handler,
-                unsigned long irqflags, const char *devname, void *dev_id)
-...
-        action->dev_id = dev_id;
-...
-        retval = setup_irq(irq, action);
 
-in setup_irq
-int setup_irq(unsigned int irq, struct irqaction *new)
-....
-        new->irq = irq;
-
-it seems I missed that here new is irqaction instead of net_dev.
-
-YH
