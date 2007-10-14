@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbXJNNT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbXJNN1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbXJNNT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 09:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbXJNNTU
+	id S1757648AbXJNN1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 09:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbXJNN1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 09:19:20 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46640 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751419AbXJNNTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 09:19:19 -0400
-Date: Sun, 14 Oct 2007 15:19:48 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: -git mips defconfig compile error
-Message-ID: <20071014131948.GF4211@stusta.de>
+	Sun, 14 Oct 2007 09:27:36 -0400
+Received: from rtr.ca ([76.10.145.34]:2758 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752233AbXJNN1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 09:27:35 -0400
+Message-ID: <47121943.2030902@rtr.ca>
+Date: Sun, 14 Oct 2007 09:27:31 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: vignesh babu <vigneshbabu@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: wierd file perms
+References: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com> <20071013172848.GE16774@lug-owl.de>
+In-Reply-To: <20071013172848.GE16774@lug-owl.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 05dc8c02bf40090e9ed23932b1980ead48eb8870 causes the following 
-compile error with the mips defconfig:
+Jan-Benedict Glaw wrote:
+> On Sat, 2007-10-13 22:40:23 +0530, vignesh babu <vigneshbabu@gmail.com> wrote:
+>> I was surprised and did an ls -l on the files and guess what I found:
+>>
+>> total 0
+>> ?--------- ? ? ? ?                ? fcntl.c
+>> ?--------- ? ? ? ?                ? fifo.c
+>> ?--------- ? ? ? ?                ? filesystems.c
+>> ?--------- ? ? ? ?                ? file_table.c
+>> ?--------- ? ? ? ?                ? freevxfs
+>>
+>> So end result is that, Im not able to delete the files or change perms
+>> or ownership even as root.
+> 
+> Most probably, your filesystem is broken and needs a fsck.
 
-<--  snip  -->
+No, this is perfectly normal behaviour, for when a directory
+has READ permissions but not EXECUTE permissions.
 
-...
-  CC      drivers/video/logo/logo.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/video/logo/logo.c: In function 'fb_find_logo':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/video/logo/logo.c:91: error: 'mips_machgroup' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/video/logo/logo.c:91: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/video/logo/logo.c:91: error: for each function it appears in.)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/video/logo/logo.c:91: error: 'MACH_GROUP_SGI' undeclared (first use in this function)
-make[4]: *** [drivers/video/logo/logo.o] Error 1
+Eg.
 
-<--  snip  -->
+	mkdir a
+	touch a/b
+	chmod 644 a
+	ls -l a
 
-It seems the drivers/net/jazzsonic.c and drivers/video/logo/logo.c parts 
-that are part of the corresponding commit in the mips git tree got lost
-somewhere.
+Try it!
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Cheers
