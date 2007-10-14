@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbXJNFeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbXJNFf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbXJNFeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXJNFd5
+	id S1758597AbXJNFf0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXJNFfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:33:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37015 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbXJNFd4 (ORCPT
+	Sun, 14 Oct 2007 01:35:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50413 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751188AbXJNFfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:33:56 -0400
-Date: Sun, 14 Oct 2007 00:33:54 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2] MMC/SD: Fix regression in 2.6.23-git3 due to change in calling add_uevent_var
-Message-ID: <4711aa42.y6JoJfYdYdcIu66P%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Oct 2007 01:35:11 -0400
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Sat, 13 Oct 2007 22:35:08 -0700
+Message-Id: <20071014053508.30836.69658.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH] git scsi misc include fix
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 7eff2e7a8b65c25920207324e56611150eb1cd9a, the calling sequence
-for add_uevent_var was changed. This patch propagates this change to
-MMC/SD card support.
+From: Paul Jackson <pj@sgi.com>
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+The added line in scsi_eh.h:
+	struct scatterlist sense_sgl;
+fails to compile, with the error:
+	field 'sense_sgl' has incomplete type
+unless scatterlist.h happens to be included
+somehow already ... which it isn't always.
+
+So include scatterlist.h in scsi_eh.h directly.
+
+Signed-off-by: Paul Jackson <pj@sgi.com>
+
 ---
 
-Linus, Andrew,
+This patch goes after the patch 'git-scsi-misc.patch'
 
-The wring patch was sent the first time.
+ include/scsi/scsi_eh.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Sorry,
+--- 2.6.23-mm1.orig/include/scsi/scsi_eh.h	2007-10-13 01:13:26.568876534 -0700
++++ 2.6.23-mm1/include/scsi/scsi_eh.h	2007-10-13 01:31:32.911855338 -0700
+@@ -2,6 +2,7 @@
+ #define _SCSI_SCSI_EH_H
+ 
+ #include <scsi/scsi_cmnd.h>
++#include <linux/scatterlist.h>
+ struct scsi_device;
+ struct Scsi_Host;
+ 
 
-Larry
-
-
- drivers/mmc/core/sdio_bus.c |   19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
-
-Index: linux-2.6/drivers/mmc/core/sdio_bus.c
-===================================================================
---- linux-2.6.orig/drivers/mmc/core/sdio_bus.c
-+++ linux-2.6/drivers/mmc/core/sdio_bus.c
-@@ -96,30 +96,21 @@ static int sdio_bus_match(struct device 
- }
- 
- static int
--sdio_bus_uevent(struct device *dev, char **envp, int num_envp, char *buf,
--		int buf_size)
-+sdio_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct sdio_func *func = dev_to_sdio_func(dev);
--	int i = 0, length = 0;
- 
--	if (add_uevent_var(envp, num_envp, &i,
--			buf, buf_size, &length,
--			"SDIO_CLASS=%02X", func->class))
-+	if (add_uevent_var(env, "SDIO_CLASS=%02X", func->class))
- 		return -ENOMEM;
- 
--	if (add_uevent_var(envp, num_envp, &i,
--			buf, buf_size, &length,
--			"SDIO_ID=%04X:%04X", func->vendor, func->device))
-+	if (add_uevent_var(env, "SDIO_ID=%04X:%04X", func->vendor,
-+			func->device))
- 		return -ENOMEM;
- 
--	if (add_uevent_var(envp, num_envp, &i,
--			buf, buf_size, &length,
--			"MODALIAS=sdio:c%02Xv%04Xd%04X",
-+	if (add_uevent_var(env, "MODALIAS=sdio:c%02Xv%04Xd%04X",
- 			func->class, func->vendor, func->device))
- 		return -ENOMEM;
- 
--	envp[i] = NULL;
--
- 	return 0;
- }
- 
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
