@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbXJNTa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXJNTbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbXJNTa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 15:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbXJNTaU
+	id S1757451AbXJNTbT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 15:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbXJNTbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 15:30:20 -0400
-Received: from lucidpixels.com ([75.144.35.66]:38658 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbXJNTaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 15:30:20 -0400
-Date: Sun, 14 Oct 2007 15:30:18 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org
-cc: apiszcz@solarrain.com
-Subject: 2.6.23.1 x86 hardware monitoring bug?
-Message-ID: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-372300202-1192390218=:3935"
+	Sun, 14 Oct 2007 15:31:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42326 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755959AbXJNTbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 15:31:04 -0400
+Date: Sun, 14 Oct 2007 12:31:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Milter" <davemilter@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: linux-2.6.23-mm1 crashed
+Message-Id: <20071014123101.208b102b.akpm@linux-foundation.org>
+In-Reply-To: <2a382c6e0710141224n2b8a47c8v1346f1a9dedc7943@mail.gmail.com>
+References: <2a382c6e0710141145j51286bd0o8a2eb307f7455cd@mail.gmail.com>
+	<2a382c6e0710141224n2b8a47c8v1346f1a9dedc7943@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1463747160-372300202-1192390218=:3935
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+(please don't top-post!  edited...)
 
-As a regular user, I cannot see the sensors on the A-bit board, but I can=
-=20
-see the CPU temperature, how come I can see one but not the other?
+On Sun, 14 Oct 2007 23:24:39 +0400 "Dave Milter" <davemilter@gmail.com> wrote:
 
-Kernel: $ uname -a
-Linux mybox 2.6.23.1 #4 SMP PREEMPT Sun Oct 14 15:20:53 EDT 2007 i686 GNU/L=
-inux
-Distribution: Debian Lenny
+> On 10/14/07, Dave Milter <davemilter@gmail.com> wrote:
+> > I build linux-2.6.23-mm1 and try to boot it using qemu,
+> > and it crashed with trace like this:
+> > do_page_fault
+> > error_code
+> > lock_acquire
+> > _spin_lock_irqsave
+> > gdth_timeout
+> > run_timer_softirq
+> > __do_softirq
+> > do_softirq
+> >
+> > I have screenshot, but have no idea, is it legal to include it, if I
+> > sent copy to lkml.
+> > config of kernel in attachment,
+> > I apply all three patches from hot-fixes.
+> >
+>
+> By the way, because of oops happens on early stage of boot,
+> you not need any image to reproduce this bug:
+> something like this will be enough:
+> 1)cd /tmp/ && qemu-img create hda.img 10M
+> 2)cd linux/mm/source/code
+> 3)qemu -kernel arch/i386/boot/bzImage -hda /tmp/hda.img
+> 
+> if you add "-s" to qemu options you can after that do:
+> gdb vmlinux
+> $target remote localhost:1234
+> $br gth_timeout
+> $continue
+> 
 
-$ sensors
-abituguru3-isa-00e0
-Adapter: ISA adapter
-
-coretemp-isa-0000
-Adapter: ISA adapter
-temp1:       +35=B0C  (high =3D   +85=B0C)
-
-coretemp-isa-0001
-Adapter: ISA adapter
-temp1:       +36=B0C  (high =3D   +85=B0C)
-
-As root:
-
-# sensors
-abituguru3-isa-00e0
-Adapter: ISA adapter
-CPU Core:               +1.35 V  (min  +0.00 V, max  +1.60 V)
-DDR2:                   +2.02 V  (min  +1.60 V, max  +2.40 V)
-DDR2 VTT:               +1.01 V  (min  +0.80 V, max  +1.20 V)
-CPU VTT 1.2V:           +1.22 V  (min  +0.95 V, max  +1.45 V)
-MCH & PCIE 1.5V:        +1.50 V  (min  +1.20 V, max  +1.80 V)
-MCH 2.5V:               +2.58 V  (min  +2.00 V, max  +3.00 V)
-ICH 1.05V:              +1.04 V  (min  +0.85 V, max  +1.25 V)
-ATX +12V (24-Pin):     +12.18 V  (min  +9.60 V, max +14.40 V)
-ATX +12V (4-pin):      +12.24 V  (min  +9.60 V, max +14.40 V)
-ATX +5V:                +5.07 V  (min  +3.99 V, max  +6.00 V)
-+3.3V:                  +3.40 V  (min  +2.64 V, max  +3.94 V)
-5VSB:                   +5.10 V  (min  +3.99 V, max  +6.00 V)
-CPU:                      +43=B0C  (high =3D   +75=B0C, crit =3D   +85=B0C)
-System :                  +38=B0C  (high =3D   +55=B0C, crit =3D   +65=B0C)
-PWM1:                     +43=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM2:                     +43=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM3:                     +46=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM4:                     +40=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-CPU Fan:               1380 RPM  (min  300 RPM)
-NB Fan:                   0 RPM  (min  300 RPM)
-SYS Fan:                  0 RPM  (min  300 RPM)
-AUX1 Fan:                 0 RPM  (min  300 RPM)
-AUX2 Fan:                 0 RPM  (min  300 RPM)
-AUX3 Fan:                 0 RPM  (min  300 RPM)
-OTES1 Fan:                0 RPM  (min  300 RPM)
-
-coretemp-isa-0000
-Adapter: ISA adapter
-Core 0:      +39=B0C  (high =3D   +85=B0C)
-
-coretemp-isa-0001
-Adapter: ISA adapter
-Core 1:      +39=B0C  (high =3D   +85=B0C)
-
----1463747160-372300202-1192390218=:3935--
+I didn't notice that qemu was involved.  Does qemu have an emulator for the
+gdth hardware?  
