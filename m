@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbXJNF71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXJNGee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760842AbXJNF71 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXJNF7R
+	id S1756171AbXJNGee (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 02:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXJNGe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:59:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:28573 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbXJNF7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:59:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bRSCYwDSUm9242GZlHSYZx7MZ8GD31TuJLJ5V8q1LmqxGKfCVOPQrvgcPYvr/zoWPxLFDHdaXJMGso8crhtTWNm79TFOxmX8VJVApOZbNjeNyUovE/m097yZbuRX9hQQJvG2LOK5yDTT8aa/TxlEarRs0PnHZ5resqL+pls9wFE=
-Message-ID: <86802c440710132259o6e82f6s4bed7b25bd5636e9@mail.gmail.com>
-Date: Sat, 13 Oct 2007 22:59:15 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Manfred Spraul" <manfred@colorfullife.com>
-Subject: Re: MSI interrupts and disable_irq
-Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       nedev <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <4710901F.8010206@colorfullife.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 14 Oct 2007 02:34:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48602 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751188AbXJNGe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 02:34:26 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18wRH1ZWhIweFCQTi8SUnmctEsGffHiwmwsqi1/z3
+	0zrbKZJ6Fzx9zc
+Subject: Re: [PATCH] sched: high-res preemption tick
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1192317228.5625.8.camel@lappy>
+References: <1192222309.5897.3.camel@lappy>
+	 <1192259938.7369.4.camel@Homer.simpson.net>
+	 <1192265717.27435.44.camel@twins>  <1192267072.5897.5.camel@lappy>
+	 <1192317228.5625.8.camel@lappy>
+Content-Type: text/plain
+Date: Sun, 14 Oct 2007 08:34:20 +0200
+Message-Id: <1192343660.7594.19.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-	 <4710901F.8010206@colorfullife.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> Jeff Garzik wrote:
-> >
-> > I think the scenario you outline is an illustration of the approach's
-> > fragility:  disable_irq() is a heavy hammer that originated with INTx,
-> > and it relies on a chip-specific disable method (kernel/irq/manage.c)
-> > that practically guarantees behavior will vary across MSI/INTx/etc.
-> >
-> I checked the code: IRQ_DISABLE is implemented in software, i.e.
-> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
-> handler] if IRQ_DISABLE is not set.
-> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
->
-> Perhaps something corrupts dev->irq? The irq is requested with
->     request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
-> and disabled with
->     disable_irq_lockdep(dev->irq);
->
-> Someone around with a MSI capable board? The forcedeth driver does
->     dev->irq = pci_dev->irq
-> in nv_probe(), especially before pci_enable_msi().
-> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
-> wrong interrupt....
+On Sun, 2007-10-14 at 01:13 +0200, Peter Zijlstra wrote:
+> On Sat, 2007-10-13 at 11:17 +0200, Peter Zijlstra wrote:
+> 
+> > > Ah, but HRTICK is not compatible with PREEMPT_RESTRICT, it will be
+> > > similar to !WAKEUP_PREEMPT.
+> > 
+> > (I do plan to fix that eventually, just need to do it)
+> 
+> I guess something like this ought to do, but its a tad late so I'm quite
+> sure :-)
 
-the request_irq==>setup_irq will make dev->irq = pci_dev->irq.
+2.6.23-smp-d-hrt + restrict fix patch
+[SUM]  0.0-300.1 sec    176 GBytes  5.03 Gbits/sec
+[SUM]  0.0-300.1 sec    175 GBytes  5.02 Gbits/sec
+[SUM]  0.0-300.1 sec    176 GBytes  5.05 Gbits/sec
 
-YH
+Context switches are further reduced (across the board) over
+PREEMPT_RESTRICT, dropping from ~7-8k to ~2.5k with this test, vs ~950
+for SCHED_BATCH and ~50k with this tree and no restriction.  Throughput
+is ~96% of SCHED_BATCH, vs ~55% with no restriction.  I see no
+interactivity regressions.
+
+	-Mike
+
