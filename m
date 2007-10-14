@@ -1,111 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXJNO3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbXJNO6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXJNO3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 10:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXJNO3K
+	id S1757438AbXJNO6v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 10:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXJNO6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 10:29:10 -0400
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:52036 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754840AbXJNO3I (ORCPT
+	Sun, 14 Oct 2007 10:58:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:45949 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755584AbXJNO6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 10:29:08 -0400
-Message-id: <851112845212695018@pripojeni.net>
-Subject: [PATCH 1/1] Char: rocket, switch sleep_on to completion
-From: Jiri Slaby <jirislaby@gmail.com>
+	Sun, 14 Oct 2007 10:58:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Z51lBtbvP57HrmAFSi9D44EgGv8K9zSoAiyQ0zCtEJQxCn1eocgrKDRFv4sdMqK6AfVJDIfW9/kB4/Xe83y/EqUb0MfHdDIRv8TrdHwGtkIN2qUcO+1WjTG6O4rYpzk7nWrG/77g5IYwgDUd5kxqJnArh+q1Uvx5iG+Har5apoU=
+From: Denys Vlasenko <vda.linux@googlemail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 14 Oct 2007 10:29:08 -0400
+Subject: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+Date: Sun, 14 Oct 2007 15:58:26 +0100
+User-Agent: KMail/1.9.1
+Cc: Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710141558.27156.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rocket, switch sleep_on to completion
+Hi,
 
-- sleep_on is deprecated and racy, use completion instead
-- also check retval of interruptible function and return ERESTARTSYS
-  eventually
+Following patches debloat drivers/scsi/aic7xxx/*.
+I also had to add prototypes for ahc_lookup_scb
+and ahd_lookup_scb to .h files.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+1-debloat.patch
+Deinlines and moves big functions from .h to .c files.
+Adds prototypes for ahc_lookup_scb and ahd_lookup_scb to .h files.
 
----
-commit db2ca3cf492a6a8a4578e6adb869e1a20558b84e
-tree 4f732e546579c3482db61cc6e5e34087d4815a4b
-parent 9936225b4a065eec6eccd9700a680cc840280fdb
-author Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:44:04 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Mon, 08 Oct 2007 14:44:04 +0200
+2-addstatic.patch
+Adds statics, #ifdefs out huge amount of unused code, adds consts
 
- drivers/char/rocket.c     |   12 ++++++++----
- drivers/char/rocket_int.h |    7 +------
- 2 files changed, 9 insertions(+), 10 deletions(-)
+3-addconst.patch
+Adds more consts
 
-diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
-index 56cbba7..d790b08 100644
---- a/drivers/char/rocket.c
-+++ b/drivers/char/rocket.c
-@@ -84,6 +84,7 @@
- #include <linux/mutex.h>
- #include <linux/ioport.h>
- #include <linux/delay.h>
-+#include <linux/completion.h>
- #include <linux/wait.h>
- #include <linux/pci.h>
- #include <asm/uaccess.h>
-@@ -650,7 +651,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
- 	info->closing_wait = 3000;
- 	info->close_delay = 50;
- 	init_waitqueue_head(&info->open_wait);
--	init_waitqueue_head(&info->close_wait);
-+	init_completion(&info->close_wait);
- 	info->flags &= ~ROCKET_MODE_MASK;
- 	switch (pc104[board][line]) {
- 	case 422:
-@@ -878,7 +879,8 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
- 	if (tty_hung_up_p(filp))
- 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
- 	if (info->flags & ROCKET_CLOSING) {
--		interruptible_sleep_on(&info->close_wait);
-+		if (wait_for_completion_interruptible(&info->close_wait))
-+			return -ERESTARTSYS;
- 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
- 	}
- 
-@@ -983,8 +985,10 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
- 		return -ENOMEM;
- 
- 	if (info->flags & ROCKET_CLOSING) {
--		interruptible_sleep_on(&info->close_wait);
-+		retval = wait_for_completion_interruptible(&info->close_wait);
- 		free_page(page);
-+		if (retval)
-+			return retval;
- 		return ((info->flags & ROCKET_HUP_NOTIFY) ? -EAGAIN : -ERESTARTSYS);
- 	}
- 
-@@ -1176,7 +1180,7 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
- 	}
- 	info->flags &= ~(ROCKET_INITIALIZED | ROCKET_CLOSING | ROCKET_NORMAL_ACTIVE);
- 	tty->closing = 0;
--	wake_up_interruptible(&info->close_wait);
-+	complete_all(&info->close_wait);
- 	atomic_dec(&rp_num_ports_open);
- 
- #ifdef ROCKET_DEBUG_OPEN
-diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
-index b4c53df..55b8f2d 100644
---- a/drivers/char/rocket_int.h
-+++ b/drivers/char/rocket_int.h
-@@ -1163,13 +1163,8 @@ struct r_port {
- 	int read_status_mask;
- 	int cps;
- 
--#ifdef DECLARE_WAITQUEUE
- 	wait_queue_head_t open_wait;
--	wait_queue_head_t close_wait;
--#else
--	struct wait_queue *open_wait;
--	struct wait_queue *close_wait;
--#endif
-+	struct completion close_wait;
- 	spinlock_t slock;
- 	struct mutex write_mtx;
- };
+Driver code/data size reductions:
+
+Build with debugging on (CONFIG_AIC7XXX_DEBUG_ENABLE=y):
+   text    data     bss     dec     hex filename
+ 310865   49922    1204  361991   58607 linux-2.6.23.t/drivers/scsi/aic7xxx/built-in.o
+ 221987    2754    1204  225945   37299 linux-2.6.23-aic-3-addconst.t/drivers/scsi/aic7xxx/built-in.o
+
+With debugging off:
+   text    data     bss     dec     hex filename
+ 298896   42754    1172  342822   53b26 linux-2.6.23.tt/drivers/scsi/aic7xxx/built-in.o
+ 216068    2754    1172  219994   35b5a linux-2.6.23-aic-3-addconst.tt/drivers/scsi/aic7xxx/built-in.o
+
+make namespacecheck goes from 400+ functions to:
+  drivers/scsi/aic7xxx/aic79xx_core.o
+    ahd_inq
+    ahd_inw
+    ahd_outq
+    ahd_outw
+  drivers/scsi/aic7xxx/aic79xx_osm.o
+    ahd_insb
+  drivers/scsi/aic7xxx/aic7xxx_core.o
+    ahc_inq
+    ahc_outq
+  drivers/scsi/aic7xxx/aic7xxx_osm.o
+    ahc_insb
+
+None of these patches touch any logic, code changes are pretty minimal.
+
+Compile tested and applies cleanly to 2.6.23.
+I don't have this hardware anymore and cannot run test these patches.
+
+Please apply.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
