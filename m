@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbXJNFCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbXJNFFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758208AbXJNFCo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 01:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXJNFCh
+	id S1757396AbXJNFFm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 01:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXJNFFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 01:02:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34297 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902AbXJNFCh (ORCPT
+	Sun, 14 Oct 2007 01:05:32 -0400
+Received: from defg501.nifty.com ([202.248.238.128]:37735 "EHLO
+	defg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXJNFFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 01:02:37 -0400
-X-Greylist: delayed 935 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Oct 2007 01:02:36 EDT
-Date: Sat, 13 Oct 2007 23:46:47 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
-       Michael Buesch <mb@bu3sch.de>
-Subject: [PATCH] ssb: Fix regression in 2.6.23-git3 due to change in
- calling add_uevent_var
-Message-ID: <47119f37.hwmEVx/qSP6GAYhm%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 14 Oct 2007 01:05:31 -0400
+X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Oct 2007 01:05:31 EDT
+DomainKey-Signature: a=rsa-sha1; s=userg502; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=WqV6vIc5dI0QXDFOoSN0tR7Y6RyHdcZxQbis3mE3x57DGH6S9bBKdIZ7z0DUOp8YD
+	DyvRykKeCN2w08vmADaWA==
+X-Nifty-SrcIP: [222.159.205.57]
+Date: Sun, 14 Oct 2007 13:53:56 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: komurojun-mbn@nifty.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero
+ in Cubic and BIC.
+Message-Id: <20071014135356.19754635.komurojun-mbn@nifty.com>
+In-Reply-To: <20071014132851.8d6a9de3.komurojun@nifty.com>
+References: <20071006132601.f944f461.komurojun@nifty.com>
+	<20071014073658.d4352b8c.komurojun@nifty.com>
+	<20071014100245.914b784a.komurojun@nifty.com>
+	<20071014132851.8d6a9de3.komurojun@nifty.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 7eff2e7a8b65c25920207324e56611150eb1cd9a, the calling sequence
-for add_uevent_var was changed, but the ssb driver was not modified, which
-leads to a "Unable to handle kernel paging request" oops. This patch fixes
-the problem.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Dear David
 
- drivers/ssb/main.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Sorry, my mailer's mail-address setting is wrong.
 
-Index: linux-2.6/drivers/ssb/main.c
-===================================================================
---- linux-2.6.orig/drivers/ssb/main.c
-+++ linux-2.6/drivers/ssb/main.c
-@@ -320,22 +320,17 @@ static int ssb_bus_match(struct device *
- 	return 0;
- }
- 
--static int ssb_device_uevent(struct device *dev, char **envp, int num_envp,
--			     char *buffer, int buffer_size)
-+static int ssb_device_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct ssb_device *ssb_dev = dev_to_ssb_dev(dev);
--	int ret, i = 0, length = 0;
-+	int ret;
- 
- 	if (!dev)
- 		return -ENODEV;
- 
--	ret = add_uevent_var(envp, num_envp, &i,
--			     buffer, buffer_size, &length,
--			     "MODALIAS=ssb:v%04Xid%04Xrev%02X",
-+	ret = add_uevent_var(env, "MODALIAS=ssb:v%04Xid%04Xrev%02X",
- 			     ssb_dev->id.vendor, ssb_dev->id.coreid,
- 			     ssb_dev->id.revision);
--	envp[i] = NULL;
--
- 	return ret;
- }
- 
+
+Best Regards
+Komuro
