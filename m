@@ -1,92 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbXJNXhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764324AbXJNXlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763704AbXJNXhY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 19:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760627AbXJNXhG
+	id S1764324AbXJNXlE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 19:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXJNXky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 19:37:06 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60474
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760250AbXJNXhE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 19:37:04 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: What still uses the block layer?
-Date: Sun, 14 Oct 2007 18:36:54 -0500
-User-Agent: KMail/1.9.6
-Cc: David Newall <david@davidnewall.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <4711AF18.3030201@davidnewall.com> <471255E4.3070009@s5r6.in-berlin.de>
-In-Reply-To: <471255E4.3070009@s5r6.in-berlin.de>
+	Sun, 14 Oct 2007 19:40:54 -0400
+Received: from rtr.ca ([76.10.145.34]:3199 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753263AbXJNXky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 19:40:54 -0400
+Message-ID: <4712A904.9010304@rtr.ca>
+Date: Sun, 14 Oct 2007 19:40:52 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: crash@treysoft.com
+Cc: Bart Samwel <bart@samwel.tk>, linux-kernel@vger.kernel.org
+Subject: Re: hdparm standby timeout not working for WD raptors?
+References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>	 <470E7B90.5060203@rtr.ca>	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>	 <470F7705.3@rtr.ca>	 <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>	 <47120D65.3080008@samwel.tk>	 <71b295590710141330g7a4779e5q2d6b8f50387ee971@mail.gmail.com>	 <471284A7.1060800@samwel.tk> <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
+In-Reply-To: <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710141836.55211.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007 12:46:12 pm Stefan Richter wrote:
-> David Newall wrote:
-> > That is so rude.
+1. How are you forcing the drives into standby?
 
-When a reply contains as a reply to the first paragraph "you're wrong" with no 
-elaboration, and as a reply to the second paragraph nothing but expletives 
-and personal insults, I tend to stop reading.  It really doesn't come across 
-as a serious reply.
+2. Have you reproduced this with a stock kernel.org kernel yet?
 
-I was at least attempting to ask a serious question.
+One possibility is that these drives may be the kind that
+generate a "spurious" interrupt when they spin-down via the timer,
+and perhaps libata is "processing" that interrupt and sending
+additional command(s) that then wake the drive up again immediately.
 
-> Such responses sometimes happen after provocative posts like the thread
-> starter's.  He could have asked straight away for help with fixing his
-> boot environment instead of wrapping his question into a feigned design
-> discussion.  It appeared as if he is out for a fight rather than
-> interested in help.
+To rule this out, you could try using drivers/ide for a moment or two,
+and see if the same problem persists with those drives.
 
-Actually, I was going through Documentation/block thinking about making a 
-00-INDEX for it, but my earlier questions of the scsi guys left me with the 
-impression that the block layer is _not_ used by the SCSI layer.  And since 
-every non-embedded modern storage device I'm aware of has been consumed by 
-the SCSI layer (despite none of them actually having a discernably closer 
-relationship to SCSI than ATA did), I didn't know whether or not it was more 
-appropriate to index this directory or request its deletion.  So I asked.
+You could also try dumping /proc/interrupts in conjunction with "hdparm -S1",
+and we can compare that with a "known good" system.
 
-Back when I  asked the scsi guys about this, I got no direct answer.  I 
-asked "where does the block layer work into this" in the context of questiosn 
-about the relationship between the scsi upper, middle, and lower layers, and 
-I never got a reply, even though the question was quoted back at me here:
-http://www.mail-archive.com/linux-scsi%40vger.kernel.org/msg09086.html
+Something like this:
 
-The closest I got to an answer was later in the thread:
-http://www.mail-archive.com/linux-scsi%40vger.kernel.org/msg09131.html
+hdparm -B255 /dev/sda
+hdparm -S1 /dev/sda
+cat /proc/interrupts
+sleep 6
+cat /proc/interrupts
 
-Which said:
-> That approach makes the Linux block layer either a nuisance,
-> irrelevant or a complete anachronism (in the case of OSD).
-> IMO the linux block layer should be morphed into a library
-> of internal queue handling routines. Storage upper level
-> drivers such as sd can continue to present the "block"
-> view ** of storage devices such as disks.
-
-The gist of the thread (and the documentation I was referred to) is that the 
-scsi "upper layer" presents /dev nodes and ioctls, the scsi mid-layer is a 
-routing layer very roughly analogus to a TCP/IP stack, and the scsi low-layer 
-drivers interface with specific pieces of hardware.  Apparently, the block 
-layer is not between any of these, they talk directly to each other.  This 
-would seem to indicate that I/O requests made to scsi devices are never 
-routed through a common block I/O request handling layer shared with non-SCSI 
-block devices.  I was not, however, certain of this, hence my attempt to 
-bring the topic back up.
-
-Oh, and sending a patch correcting Jens Axboe's address in this old 
-documentation.  He's apparently at Oracle now...
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Cheers
