@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbXJNSeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXJNSfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762894AbXJNSeu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 14:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbXJNSed
+	id S1758619AbXJNSfI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 14:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762601AbXJNSem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 14:34:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47908 "EHLO
+	Sun, 14 Oct 2007 14:34:42 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47912 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761790AbXJNSec (ORCPT
+	with ESMTP id S1762537AbXJNSel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 14:34:32 -0400
+	Sun, 14 Oct 2007 14:34:41 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] synclink_gt endianness annotations
-Cc: linux-kernel@vger.kernel.org, paulkf@microgate.com
-Message-Id: <E1Ih8II-00040y-5c@ZenIV.linux.org.uk>
+Subject: [PATCH] fw-cdev __user annotations
+Cc: linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de
+Message-Id: <E1Ih8IS-00041I-60@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 14 Oct 2007 19:34:30 +0100
+Date: Sun, 14 Oct 2007 19:34:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/char/synclink_gt.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/firewire/fw-cdev.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
-index 2f97d2f..64e835f 100644
---- a/drivers/char/synclink_gt.c
-+++ b/drivers/char/synclink_gt.c
-@@ -206,10 +206,10 @@ static void flush_cond_wait(struct cond_wait **head);
-  */
- struct slgt_desc
- {
--	unsigned short count;
--	unsigned short status;
--	unsigned int pbuf;  /* physical address of data buffer */
--	unsigned int next;  /* physical address of next descriptor */
-+	__le16 count;
-+	__le16 status;
-+	__le32 pbuf;  /* physical address of data buffer */
-+	__le32 next;  /* physical address of next descriptor */
+diff --git a/drivers/firewire/fw-cdev.c b/drivers/firewire/fw-cdev.c
+index 7538864..0647130 100644
+--- a/drivers/firewire/fw-cdev.c
++++ b/drivers/firewire/fw-cdev.c
+@@ -722,10 +722,11 @@ static int ioctl_queue_iso(struct client *client, void *buffer)
+ 		buffer_end = 0;
+ 	}
  
- 	/* driver book keeping */
- 	char *buf;          /* virtual  address of data buffer */
+-	if (!access_ok(VERIFY_READ, request->packets, request->size))
++	p = (struct fw_cdev_iso_packet __user *)u64_to_uptr(request->packets);
++
++	if (!access_ok(VERIFY_READ, p, request->size))
+ 		return -EFAULT;
+ 
+-	p = (struct fw_cdev_iso_packet __user *)u64_to_uptr(request->packets);
+ 	end = (void __user *)p + request->size;
+ 	count = 0;
+ 	while (p < end) {
 -- 
 1.5.3.GIT
 
