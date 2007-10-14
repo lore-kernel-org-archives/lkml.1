@@ -1,65 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbXJNNHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbXJNNK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbXJNNHq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 09:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXJNNHi
+	id S1757635AbXJNNK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 09:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbXJNNKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 09:07:38 -0400
-Received: from customer-vserver-jkruis-1.all2all.org ([62.58.108.47]:60358
-	"EHLO jkruis.all2all.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754999AbXJNNHh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 09:07:37 -0400
-X-Greylist: delayed 1850 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Oct 2007 09:07:37 EDT
-Message-ID: <47120D65.3080008@samwel.tk>
-Date: Sun, 14 Oct 2007 14:36:53 +0200
-From: Bart Samwel <bart@samwel.tk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Sun, 14 Oct 2007 09:10:18 -0400
+Received: from mail.zelnet.ru ([80.92.97.13]:64801 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754560AbXJNNKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 09:10:16 -0400
+Message-ID: <47121520.90704@namesys.com>
+Date: Sun, 14 Oct 2007 17:09:52 +0400
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: crash@treysoft.com
-CC: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
-Subject: Re: hdparm standby timeout not working for WD raptors?
-References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>	 <470E7B90.5060203@rtr.ca>	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>	 <470F7705.3@rtr.ca> <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>
-In-Reply-To: <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Laurent Riffard <laurent.riffard@free.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>, Neil Brown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH] Reiser4: Drop 'size' argument from bio_endio and bi_end_io
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>	<470FDB41.2000102@free.fr> <20071012140023.30e5b30e.akpm@linux-foundation.org> <47109016.8000403@free.fr>
+In-Reply-To: <47109016.8000403@free.fr>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Weber wrote:
-> On 10/12/07, Mark Lord <lkml@rtr.ca> wrote:
->> That's interesting.
->>
->> So, either something is regularly accessing/polling the drive,
->> or it just doesn't work with the standby timer.
->>
->> Are there any interesting kernel messages being generated
->> during execution of those commands?
+Laurent Riffard wrote:
+
+>Reiser4: Drop 'size' argument from bio_endio and bi_end_io
+>
+>This patch pushes into Reiser4 the changes introduced by 
+>commit 6712ecf8f648118c3363c142196418f89a510b90:
+>
+>	As bi_end_io is only called once when the request is complete,
+>	the 'size' argument is now redundant.  Remove it.
+>
+>	Now there is no need for bio_endio to subtract the size completed
+>	from bi_size.  So don't do that either.
+>
+>	While we are at it, change bi_end_io to return void.
+>
+>Please review.
+>  
+>
+
+Thanks!
+
+Signed-Off-By: Edward Shishkin <edward@namesys.com>
+
+>Signed-Off-By: Laurent Riffard <laurent.riffard@free.fr>
+>---
+> fs/reiser4/flush_queue.c  |   10 ++--------
+> fs/reiser4/page_cache.c   |   24 ++++--------------------
+> fs/reiser4/status_flags.c |    7 +------
+> 3 files changed, 7 insertions(+), 34 deletions(-)
+>
+>Index: linux-2.6-mm/fs/reiser4/flush_queue.c
+>===================================================================
+>--- linux-2.6-mm.orig/fs/reiser4/flush_queue.c
+>+++ linux-2.6-mm/fs/reiser4/flush_queue.c
+>@@ -391,9 +391,8 @@ int atom_fq_parts_are_clean(txn_atom * a
+> }
+> #endif
+> /* Bio i/o completion routine for reiser4 write operations. */
+>-static int
+>-end_io_handler(struct bio *bio, unsigned int bytes_done UNUSED_ARG,
+>-	       int err)
+>+static void
+>+end_io_handler(struct bio *bio, int err)
+> {
+> 	int i;
+> 	int nr_errors = 0;
+>@@ -401,10 +400,6 @@ end_io_handler(struct bio *bio, unsigned
 > 
-> No messages to /var/log/messages as a result of those
-> commands; I ran several times and did a sync too, just
-> in case.
+> 	assert("zam-958", bio->bi_rw & WRITE);
 > 
-> I very much doubt that something is regularly accessing
-> the drives because I have a script that runs every 1/2 hour
-> to check and log status. The drives stay "standby" for
-> hours (even days) at a time unless I specifically access
-> something on the RAID array. Then, they stay "active/idle"
-> until I manually set them to "standby".
+>-	/* i/o op. is not fully completed */
+>-	if (bio->bi_size != 0)
+>-		return 1;
+>-
+> 	if (err == -EOPNOTSUPP)
+> 		set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
 > 
-> Anything else you'd like me to try?
+>@@ -447,7 +442,6 @@ end_io_handler(struct bio *bio, unsigned
+> 	}
+> 
+> 	bio_put(bio);
+>-	return 0;
+> }
+> 
+> /* Count I/O requests which will be submitted by @bio in given flush queues
+>Index: linux-2.6-mm/fs/reiser4/page_cache.c
+>===================================================================
+>--- linux-2.6-mm.orig/fs/reiser4/page_cache.c
+>+++ linux-2.6-mm/fs/reiser4/page_cache.c
+>@@ -320,18 +320,11 @@ reiser4_tree *reiser4_tree_by_page(const
+>    mpage_end_io_read() would also do. But it's static.
+> 
+> */
+>-static int
+>-end_bio_single_page_read(struct bio *bio, unsigned int bytes_done UNUSED_ARG,
+>-			 int err UNUSED_ARG)
+>+static void
+>+end_bio_single_page_read(struct bio *bio, int err UNUSED_ARG)
+> {
+> 	struct page *page;
+> 
+>-	if (bio->bi_size != 0) {
+>-		warning("nikita-3332", "Truncated single page read: %i",
+>-			bio->bi_size);
+>-		return 1;
+>-	}
+>-
+> 	page = bio->bi_io_vec[0].bv_page;
+> 
+> 	if (test_bit(BIO_UPTODATE, &bio->bi_flags)) {
+>@@ -342,7 +335,6 @@ end_bio_single_page_read(struct bio *bio
+> 	}
+> 	unlock_page(page);
+> 	bio_put(bio);
+>-	return 0;
+> }
+> 
+> /* completion handler for single page bio-based write.
+>@@ -350,25 +342,17 @@ end_bio_single_page_read(struct bio *bio
+>    mpage_end_io_write() would also do. But it's static.
+> 
+> */
+>-static int
+>-end_bio_single_page_write(struct bio *bio, unsigned int bytes_done UNUSED_ARG,
+>-			  int err UNUSED_ARG)
+>+static void
+>+end_bio_single_page_write(struct bio *bio, int err UNUSED_ARG)
+> {
+> 	struct page *page;
+> 
+>-	if (bio->bi_size != 0) {
+>-		warning("nikita-3333", "Truncated single page write: %i",
+>-			bio->bi_size);
+>-		return 1;
+>-	}
+>-
+> 	page = bio->bi_io_vec[0].bv_page;
+> 
+> 	if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+> 		SetPageError(page);
+> 	end_page_writeback(page);
+> 	bio_put(bio);
+>-	return 0;
+> }
+> 
+> /* ->readpage() method for formatted nodes */
+>Index: linux-2.6-mm/fs/reiser4/status_flags.c
+>===================================================================
+>--- linux-2.6-mm.orig/fs/reiser4/status_flags.c
+>+++ linux-2.6-mm/fs/reiser4/status_flags.c
+>@@ -15,12 +15,8 @@
+> /* This is our end I/O handler that marks page uptodate if IO was successful. It also
+>    unconditionally unlocks the page, so we can see that io was done.
+>    We do not free bio, because we hope to reuse that. */
+>-static int reiser4_status_endio(struct bio *bio, unsigned int bytes_done,
+>-				int err)
+>+static void reiser4_status_endio(struct bio *bio, int err)
+> {
+>-	if (bio->bi_size)
+>-		return 1;
+>-
+> 	if (test_bit(BIO_UPTODATE, &bio->bi_flags)) {
+> 		SetPageUptodate(bio->bi_io_vec->bv_page);
+> 	} else {
+>@@ -28,7 +24,6 @@ static int reiser4_status_endio(struct b
+> 		SetPageError(bio->bi_io_vec->bv_page);
+> 	}
+> 	unlock_page(bio->bi_io_vec->bv_page);
+>-	return 0;
+> }
+> 
+> /* Initialise status code. This is expected to be called from the disk format
+>
+>
+>-
+>To unsubscribe from this list: send the line "unsubscribe reiserfs-devel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>  
+>
 
-Some things to check:
-
-* Run "hdparm -I" on your drive. In the "Capabilities" section there is 
-a line "Standby timer values", for some drives this mentions a device 
-specific minimum. I know some drives that ignore any setting below 60 
-seconds.
-
-* I also know of quite a number of drives where hdparm -B settings 
-override the -S settings, even if you set the -S settings after the 
-hdparm -B settings. You could try combinations with various values of 
-hdparm -B, especially 1 and 255.
-
-Cheers,
-Bart
