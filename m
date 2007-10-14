@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbXJNRwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbXJNRxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762660AbXJNRwx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 13:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbXJNRvK
+	id S1758519AbXJNRxT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 13:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbXJNRvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 13:51:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35256 "EHLO
+	Sun, 14 Oct 2007 13:51:14 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35258 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759382AbXJNRvH (ORCPT
+	with ESMTP id S1758644AbXJNRvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 13:51:07 -0400
-Date: Sun, 14 Oct 2007 19:51:37 +0200
+	Sun, 14 Oct 2007 13:51:12 -0400
+Date: Sun, 14 Oct 2007 19:51:42 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] ivtv: fix NULL dereference
-Message-ID: <20071014175137.GM4211@stusta.de>
+To: mb@bu3sch.de, st3@riseup.net, Larry.Finger@lwfinger.net
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: b43{,legacy}_start can return uninitialized value
+Message-ID: <20071014175142.GN4211@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,22 +23,61 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We shouldn't dereference "itv" when we know it's NULL...
+drivers/net/wireless/b43/main.c:b43_start() consists of the
+following code:
+
+<--  snip -->
+
+static int b43_start(struct ieee80211_hw *hw)
+{
+        struct b43_wl *wl = hw_to_b43_wl(hw);
+        struct b43_wldev *dev = wl->current_dev;
+        int did_init = 0;
+        int err;
+
+        mutex_lock(&wl->mutex);
+
+        if (b43_status(dev) < B43_STAT_INITIALIZED) {
+                err = b43_wireless_core_init(dev);
+                if (err)
+                        goto out_mutex_unlock;
+                did_init = 1;
+        }
+
+        if (b43_status(dev) < B43_STAT_STARTED) {
+                err = b43_wireless_core_start(dev);
+                if (err) {
+                        if (did_init)
+                                b43_wireless_core_exit(dev);
+                        goto out_mutex_unlock;
+                }
+        }
+
+ out_mutex_unlock:
+        mutex_unlock(&wl->mutex);
+
+        return err;
+}
+
+<--  snip  -->
+
+
+If (b43_status(dev) == B43_STAT_STARTED) this function returns the value 
+of an uninitialized variable.
+
+drivers/net/wireless/b43legacy/main.c:b43legacy_start() has the same 
+issue.
 
 Spotted by the Coverity checker.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
----
---- linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c.old	2007-10-14 19:17:12.000000000 +0200
-+++ linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c	2007-10-14 19:18:05.000000000 +0200
-@@ -947,7 +947,7 @@ int ivtv_v4l2_open(struct inode *inode, 
- 	if (itv == NULL) {
- 		/* Couldn't find a device registered
- 		   on that minor, shouldn't happen! */
--		IVTV_WARN("No ivtv device found on minor %d\n", minor);
-+		printk(KERN_WARNING "No ivtv device found on minor %d\n", minor);
- 		return -ENXIO;
- 	}
- 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
