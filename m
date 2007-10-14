@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbXJNKf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbXJNKjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbXJNKf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 06:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXJNKfN
+	id S1756773AbXJNKjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 06:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbXJNKjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 06:35:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:3038 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755275AbXJNKfK (ORCPT
+	Sun, 14 Oct 2007 06:39:05 -0400
+Received: from [212.12.190.105] ([212.12.190.105]:38273 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755367AbXJNKjC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 06:35:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ub8ByacjqC8jD4Lxn23oWSX0CVG8U6GeYy7IO3fy3eW1ksxRtDoJUg1+fPX1la7Uu1k7dTvdTW35Df2xXN0YRxwSZgYTLF6bg/MUt1eQlIfs0k2TQwdKdDSAiJ1NWqsRhGwR2Bt1nDE1LCUTXwD5+mPmumWwAjiNmBBy18oGm4g=
-Message-ID: <64bb37e0710140335g648a86ebmebdf32a6068abcf8@mail.gmail.com>
-Date: Sun, 14 Oct 2007 12:35:08 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [git patches] libata update
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20071012194002.GA1545@havoc.gtf.org>
+	Sun, 14 Oct 2007 06:39:02 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.20.21 review 12/35] TCP: Fix TCP handling of SACK in
+Date: Sun, 14 Oct 2007 13:38:51 +0300
+User-Agent: KMail/1.5
+Cc: netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071012194002.GA1545@havoc.gtf.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200710141338.51927.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/07, Jeff Garzik <jeff@garzik.org> wrote:
-> [ I just sent this upstream to Andrew and Linus ]
-> * Turn on ACPI by default (watch for bug reports!).  This should make
->   suspend/resume work a lot better.
+Ilpo Järvinen wrote:
+> Willy Tarreau wrote:
+> > I agree with this. The impression I got from the description of the two
+> > patches I merged was that the problems they fix were quite annoying. But
+> > maybe I should take that with a grain of salt.
+>
+> No, it's not a grain of salt. I would say its utterly broken, out loud.
+> But many people are not that much into time-seq graphs (that I'm familiar
+> with), they are pleased when it seems to work well enough even though
+> from my perspective, it is simply unacceptable in worst cases (not
+> speaking of theoretical ones here, have seen very bad performance). Not
+> that it always is that bad, depends on phase of the opposite direction
+> what happens.
+>
+> Somebody asked me when those four patches were made about this, I put
+> these there back then:
+>
+> http://www.cs.helsinki.fi/u/ijjarvin/bidir-showcase/
+>
+> They are generated from my old test archives and thus may have a bit
+> differences in TCP variant, which may slightly differ from mainline
+> here and there (my point was just to show how it breaks). Typical
+> people wouldn't even notice those minor differences compared with the
+> bidir brokeness which is very visible in all except in the fixed "ok"
+> case. Please judge for yourself whether I overexaggrated or not... :-)
 
-Bug report for 2.6.23-mm1:
-scsi8 : pata_amd
-scsi9 : pata_amd
-ata9: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xffa0 irq 14
-ata10: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xffa8 irq 15
-ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index
-(0FFFFFFFF) is beyond end of object [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0.IDE0.GTM_] (Node ffff810100318a20), AE_AML_PACKAGE_LIMIT
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0.IDE0.CHN0._GTM] (Node ffff8101003187c0),
-AE_AML_PACKAGE_LIMIT
-ata9: ACPI get timing mode failed (AE 0x300d)
-ata9.01: ATA-7: Maxtor 6L250R0, BAH41G10, max UDMA/133
-ata9.01: 490234752 sectors, multi 16: LBA48
-ata9.01: limited to UDMA/33 due to 40-wire cable
-ata9.01: configured for UDMA/33
-ata10: port disabled. ignoring.
+It would probably be helpful, if you could post a specific testcase and a 
+combo-patch of your fixes.
 
-libata-Bug, ACPI-Bug or just bad code in the BIOS?
-The detection of the 40-wire cable is correct, also that there is only
-one drive at this IDE port.
 
-pata_amd is build as module and is driving the IDE part of a nVidia MCP55.
+Thanks!
 
-Torsten
+--
+Al
+
