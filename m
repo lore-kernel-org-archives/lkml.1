@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbXJOF5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbXJOGGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbXJOF5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 01:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXJOF5J
+	id S1757169AbXJOGGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 02:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXJOGGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 01:57:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:17401 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753405AbXJOF5I convert rfc822-to-8bit (ORCPT
+	Mon, 15 Oct 2007 02:06:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55219 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbXJOGGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 01:57:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m4BpRVVzItov85q6Pa3gbrSL+BCB+G9fujfivyxvAmKiC6aXiQM30YEsDaZEjnPiIvsLx/FgUgjSnPF1UP9lbPqS+IFLVQP2VgiQWIPSimOXB9dlMDTaFdoc2a+O0e9g6aGo/5SaZ3m9pjsvFkZNUngO6PNcYXEqrIcCrKRN65Q=
-Message-ID: <a8e1da0710142257g628d3d1bq635a5deefb5fb4cc@mail.gmail.com>
-Date: Mon, 15 Oct 2007 13:57:05 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: bbpetkov@yahoo.de
-Subject: Re: usb+sysfs: duplicate filename 'bInterfaceNumber'
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <20071014151538.GA9539@gollum.tnic>
+	Mon, 15 Oct 2007 02:06:01 -0400
+Date: Sun, 14 Oct 2007 23:00:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Rob Landley <rob@landley.net>
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015060015.GB32268@kroah.com>
+References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <1192400672.3351.56.camel@localhost.localdomain> <200710141845.44750.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071014151538.GA9539@gollum.tnic>
+In-Reply-To: <200710141845.44750.rob@landley.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/07, Borislav Petkov <bbpetkov@yahoo.de> wrote:
-> Hi,
->
-> i get the following warning on yesterday's git tree (v2.6.23-2840-g752097c):
->
-> Oct 14 09:07:15 zmei kernel: [   49.368030] sysfs: duplicate filename 'bInterfaceNumber' can not be created
-> Oct 14 09:07:15 zmei kernel: [   49.368086] WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
-> Oct 14 09:07:15 zmei kernel: [   49.368134]  [<c010527c>] show_trace_log_lvl+0x1a/0x2f
-> Oct 14 09:07:15 zmei kernel: [   49.368220]  [<c0105da0>] show_trace+0x12/0x14
-> Oct 14 09:07:15 zmei kernel: [   49.368300]  [<c0105db8>] dump_stack+0x16/0x18
-> Oct 14 09:07:15 zmei kernel: [   49.368379]  [<c019f2ee>] sysfs_add_one+0x57/0xbc
-> Oct 14 09:07:15 zmei kernel: [   49.368461]  [<c019edeb>] sysfs_add_file+0x49/0x71
-> Oct 14 09:07:15 zmei kernel: [   49.368541]  [<c01a05c2>] sysfs_create_group+0x86/0xe8
-> Oct 14 09:07:15 zmei kernel: [   49.368621]  [<c024f5da>] usb_create_sysfs_intf_files+0x27/0x9b
-> Oct 14 09:07:15 zmei kernel: [   49.368704]  [<c024c28b>] usb_set_configuration+0x454/0x466
-> Oct 14 09:07:15 zmei kernel: [   49.368787]  [<c0252b97>] generic_probe+0x53/0x94
-> Oct 14 09:07:15 zmei kernel: [   49.368867]  [<c024d4f7>] usb_probe_device+0x35/0x3b
-> Oct 14 09:07:15 zmei kernel: [   49.368947]  [<c022a46c>] driver_probe_device+0xcb/0x14f
-> Oct 14 09:07:15 zmei kernel: [   49.369039]  [<c022a4f8>] __device_attach+0x8/0xa
-> Oct 14 09:07:15 zmei kernel: [   49.369119]  [<c02298d5>] bus_for_each_drv+0x3b/0x63
-> Oct 14 09:07:15 zmei kernel: [   49.369199]  [<c022a589>] device_attach+0x70/0x85
-> Oct 14 09:07:15 zmei kernel: [   49.369279]  [<c022984c>] bus_attach_device+0x29/0x77
-> Oct 14 09:07:15 zmei kernel: [   49.369359]  [<c0228abc>] device_add+0x28c/0x445
-> Oct 14 09:07:15 zmei kernel: [   49.369439]  [<c0247c7a>] usb_new_device+0x44/0x82
-> Oct 14 09:07:15 zmei kernel: [   49.369519]  [<c02486ec>] hub_thread+0x666/0x9c2
-> Oct 14 09:07:15 zmei kernel: [   49.369598]  [<c01370e9>] kthread+0x3b/0x62
-> Oct 14 09:07:15 zmei kernel: [   49.369679]  [<c0104eaf>] kernel_thread_helper+0x7/0x10
-> Oct 14 09:07:15 zmei kernel: [   49.369759]  =======================
->
-> The usb hub in question is named 4-1:1.0 and it has an extension connected to it
-> which is used to activate the 2 usb connectors at the side of the pc's monitor.
-> Correct me if i'm wrong but from what i've understood so far from reading the code,
-> i think, it adds the bInterfaceNumber-file after calling usb_create_sysfs_intf_files(intf).
-> However, the currently active usbhost interface alternate setting is the only one active
-> so the bInterfaceNumber exists already and therefore the warning, but this is
-> just a guess since i'm not that fluent in the usb internals.
-Hi,
-I have encountered the same problem which was  reported in
-http://lkml.org/lkml/2007/9/29/45
+On Sun, Oct 14, 2007 at 06:45:44PM -0500, Rob Landley wrote:
+> On Sunday 14 October 2007 5:24:32 pm James Bottomley wrote:
+> > On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
+> > > On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
+> > > > My impression from asking questions on the linux-scsi mailing list is
+> > > > that the scsi upper/middle/lower layers doesn't use the block layer
+> > > > described in Documentation/block/*.
+> > >
+> > > Entirely incorrect.
+> >
+> > OK, right ... could we please get a sense of decorum back on this list.
+> 
+> Did I reply to the insult?
+> 
+> > Rob, if you didn't ask your alleged questions in such a pejorative
+> > manner, we'd get a lot further
+> 
+> I'm not attempting to be pejorative.
+> 
+> I admit a certain amount of personal annoyance that once the SCSI layer 
+> consumes a category of device (USB, SATA, PATA), they can often _only_ be 
+> used by going through the SCSI midlayer.  (This strikes me as analogous to 
+> TCP/IP claiming ethernet and PPP devices so thoroughly that you can no longer 
+> address them as eth1 or /dev/ttyS0.)
 
-For the first one "usbcore duplicated sysfs filename" , I have submit
-a patch to fix it.
+If you hate USB storage devices using scsi, please use the ub driver,
+that is what it was written for.
 
-For the "bInterfaceNumber" one, I have no idea, the same problem still
-exist in the latest 23-mm1 tree.
+> This has the annoying effect of bundling together different types of devices 
+> and making device enumeration unnecessarily difficult: my laptop only has one 
+> SATA hard drive and can't gain another without a soldering iron, but that 
+> drive could move from /dev/sda to /dev/sdb if I reboot the system with a USB 
+> key plugged in.  This seems like a regrettable loss of orthogonality to me.  
+> I remember back when /dev/usb0 and /dev/hda were separate devices that showed 
+> up in /dev, but these days "it's SCSI" seems to trump "it's USB", "it's ATA", 
+> or "it's SATA".  (Even though none of those are actually SCSI hardware, they 
+> just send a similar packet protocol across the wire.)
 
+When did usb-storage devices ever show up as /dev/usb0?  USB flash disks
+are really SCSI devices, look at the USB storage spec for proof of that.
 
->
-> .config attached.
->
-> --
-> Regards/Gruß,
->     Boris.
->
->
+thanks,
+
+greg k-h
