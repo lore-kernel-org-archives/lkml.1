@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbXJOBR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764307AbXJOBSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbXJOBR1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 21:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbXJOBRT
+	id S1764307AbXJOBSi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 21:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXJOBSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 21:17:19 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55537 "EHLO gir.skynet.ie"
+	Sun, 14 Oct 2007 21:18:30 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51676 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbXJOBRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 21:17:18 -0400
-Date: Mon, 15 Oct 2007 02:17:15 +0100 (IST)
+	id S1753452AbXJOBS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 21:18:29 -0400
+Date: Mon, 15 Oct 2007 02:18:27 +0100 (IST)
 From: Dave Airlie <airlied@linux.ie>
 X-X-Sender: airlied@skynet.skynet.ie
 To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: [git pull] drm patches for 2.6.24-rc1
-Message-ID: <Pine.LNX.4.64.0710150214200.27521@skynet.skynet.ie>
+cc: linux-kernel@vger.kernel.org
+Subject: [git pull] agp patches for 2.6.24-rc1
+Message-ID: <Pine.LNX.4.64.0710150217190.27521@skynet.skynet.ie>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,151 +24,246 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Linus,
 
-This contains a major macro removal and ioctl related usercopy cleanups, 
-it also fixes a bug in the intel interrupt code with a dodgy calloc size.
+Please pull from 'agp-patches' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
 
-Please pull the 'drm-patches' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+to receive the following updates:
 
-Dave.
+  drivers/char/agp/agp.h        |    7 +++++--
+  drivers/char/agp/ali-agp.c    |   27 ++++++++++++++++-----------
+  drivers/char/agp/amd-k7-agp.c |    9 ++-------
+  drivers/char/agp/backend.c    |   12 ++++++++----
+  drivers/char/agp/generic.c    |   19 +++++++++++++------
+  drivers/char/agp/i460-agp.c   |    4 ++--
+  drivers/char/agp/intel-agp.c  |    6 ++++--
+  7 files changed, 50 insertions(+), 34 deletions(-)
 
-  drivers/char/drm/drm.h            |   20 +-
-  drivers/char/drm/drmP.h           |  237 +++++++------
-  drivers/char/drm/drm_agpsupport.c |  130 +++-----
-  drivers/char/drm/drm_auth.c       |   48 ++--
-  drivers/char/drm/drm_bufs.c       |  203 ++++-------
-  drivers/char/drm/drm_context.c    |  177 ++++------
-  drivers/char/drm/drm_dma.c        |   11 +-
-  drivers/char/drm/drm_drawable.c   |   67 ++---
-  drivers/char/drm/drm_drv.c        |  186 ++++++-----
-  drivers/char/drm/drm_fops.c       |   34 +-
-  drivers/char/drm/drm_ioc32.c      |    2 +-
-  drivers/char/drm/drm_ioctl.c      |  196 +++++-------
-  drivers/char/drm/drm_irq.c        |   98 +++----
-  drivers/char/drm/drm_lock.c       |   75 ++---
-  drivers/char/drm/drm_os_linux.h   |   10 -
-  drivers/char/drm/drm_pciids.h     |    2 -
-  drivers/char/drm/drm_scatter.c    |   48 +--
-  drivers/char/drm/drm_vm.c         |    4 +-
-  drivers/char/drm/i810_dma.c       |  312 ++++++------------
-  drivers/char/drm/i810_drm.h       |    5 -
-  drivers/char/drm/i810_drv.h       |    9 +-
-  drivers/char/drm/i830_dma.c       |  210 +++++-------
-  drivers/char/drm/i830_drv.h       |   15 +-
-  drivers/char/drm/i830_irq.c       |   30 +--
-  drivers/char/drm/i915_dma.c       |  214 ++++++-------
-  drivers/char/drm/i915_drv.h       |   36 ++-
-  drivers/char/drm/i915_irq.c       |  128 +++----
-  drivers/char/drm/i915_mem.c       |  125 +++----
-  drivers/char/drm/mga_dma.c        |  140 ++++-----
-  drivers/char/drm/mga_drv.h        |   21 +-
-  drivers/char/drm/mga_state.c      |  197 +++++-------
-  drivers/char/drm/mga_warp.c       |    8 +-
-  drivers/char/drm/r128_cce.c       |  138 ++++-----
-  drivers/char/drm/r128_drm.h       |   18 -
-  drivers/char/drm/r128_drv.h       |   23 +-
-  drivers/char/drm/r128_state.c     |  351 +++++++++-----------
-  drivers/char/drm/r300_cmdbuf.c    |   68 ++--
-  drivers/char/drm/radeon_cp.c      |  146 ++++-----
-  drivers/char/drm/radeon_drv.h     |   43 ++--
-  drivers/char/drm/radeon_irq.c     |   34 +--
-  drivers/char/drm/radeon_mem.c     |  108 +++----
-  drivers/char/drm/radeon_state.c   |  683 +++++++++++++++++--------------------
-  drivers/char/drm/savage_bci.c     |  145 ++++-----
-  drivers/char/drm/savage_drv.h     |    9 +-
-  drivers/char/drm/savage_state.c   |  200 ++++++------
-  drivers/char/drm/sis_drv.c        |    2 +-
-  drivers/char/drm/sis_drv.h        |    5 +-
-  drivers/char/drm/sis_mm.c         |  112 +++----
-  drivers/char/drm/via_dma.c        |  144 ++++-----
-  drivers/char/drm/via_dmablit.c    |   54 ++--
-  drivers/char/drm/via_drv.h        |   22 +-
-  drivers/char/drm/via_irq.c        |   47 ++--
-  drivers/char/drm/via_map.c        |   14 +-
-  drivers/char/drm/via_mm.c         |   83 ++---
-  drivers/char/drm/via_verifier.c   |    8 +-
-  drivers/char/drm/via_video.c      |   20 +-
-  56 files changed, 2359 insertions(+), 3116 deletions(-)
+Dave Airlie (1):
+       AGP fix race condition between unmapping and freeing pages
 
-commit ace3dff5b7f0bf5a647e60dcd0c0a7d46792f5d9
-Author: Xavier Bachelot <xavier@bachelot.org>
-Date:   Mon Oct 15 11:09:35 2007 +1000
+Jesper Juhl (1):
+       fix use after free in amd create gatt pages
 
-     via invalid device ids removal
+diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
+index 8955e7f..b83824c 100644
+--- a/drivers/char/agp/agp.h
++++ b/drivers/char/agp/agp.h
+@@ -58,6 +58,9 @@ struct gatt_mask {
+  	 * devices this will probably be ignored */
+  };
 
-     0x1106, 0x7204 is unknown and thus is not an IGP/GPU.
-     0x1106, 0x3304 is K8M800 hostbridge, not an IGP/GPU.
-     None of them are in drm git tree.
++#define AGP_PAGE_DESTROY_UNMAP 1
++#define AGP_PAGE_DESTROY_FREE 2
++
+  struct aper_size_info_8 {
+  	int size;
+  	int num_entries;
+@@ -113,7 +116,7 @@ struct agp_bridge_driver {
+  	struct agp_memory *(*alloc_by_type) (size_t, int);
+  	void (*free_by_type)(struct agp_memory *);
+  	void *(*agp_alloc_page)(struct agp_bridge_data *);
+-	void (*agp_destroy_page)(void *);
++	void (*agp_destroy_page)(void *, int flags);
+          int (*agp_type_to_mask_type) (struct agp_bridge_data *, int);
+  };
 
-     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-     Signed-off-by: Dave Airlie <airlied@redhat.com>
+@@ -267,7 +270,7 @@ int agp_generic_remove_memory(struct agp_memory *mem, off_t pg_start, int type);
+  struct agp_memory *agp_generic_alloc_by_type(size_t page_count, int type);
+  void agp_generic_free_by_type(struct agp_memory *curr);
+  void *agp_generic_alloc_page(struct agp_bridge_data *bridge);
+-void agp_generic_destroy_page(void *addr);
++void agp_generic_destroy_page(void *addr, int flags);
+  void agp_free_key(int key);
+  int agp_num_entries(void);
+  u32 agp_collect_device_status(struct agp_bridge_data *bridge, u32 mode, u32 command);
+diff --git a/drivers/char/agp/ali-agp.c b/drivers/char/agp/ali-agp.c
+index 4941ddb..aa5ddb7 100644
+--- a/drivers/char/agp/ali-agp.c
++++ b/drivers/char/agp/ali-agp.c
+@@ -156,29 +156,34 @@ static void *m1541_alloc_page(struct agp_bridge_data *bridge)
+  	return addr;
+  }
 
-commit eed0f722b3fccb1eb2706b5f484cb511d46f70b8
-Author: chaohong guo <Minskey.Guo@Sun.COM>
-Date:   Mon Oct 15 10:45:49 2007 +1000
+-static void ali_destroy_page(void * addr)
++static void ali_destroy_page(void * addr, int flags)
+  {
+  	if (addr) {
+-		global_cache_flush();	/* is this really needed?  --hch */
+-		agp_generic_destroy_page(addr);
+-		global_flush_tlb();
++		if (flags & AGP_PAGE_DESTROY_UNMAP) {
++			global_cache_flush();	/* is this really needed?  --hch */
++			agp_generic_destroy_page(addr, flags);
++			global_flush_tlb();
++		} else
++			agp_generic_destroy_page(addr, flags);
+  	}
+  }
 
-     radeon: Commit the ring after each partial texture upload blit.
+-static void m1541_destroy_page(void * addr)
++static void m1541_destroy_page(void * addr, int flags)
+  {
+  	u32 temp;
 
-     This makes sure each blit starts as early as possible, which may improve
-     texture upload performance in some cases.
+  	if (addr == NULL)
+  		return;
 
-     Signed-off-by: Dave Airlie <airlied@redhat.com>
+-	global_cache_flush();
++	if (flags & AGP_PAGE_DESTROY_UNMAP) {
++		global_cache_flush();
 
-commit 54583bf4efda79388fc13163e35c016c8bc5de81
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Sun Oct 14 21:21:30 2007 +1000
+-	pci_read_config_dword(agp_bridge->dev, ALI_CACHE_FLUSH_CTRL, &temp);
+-	pci_write_config_dword(agp_bridge->dev, ALI_CACHE_FLUSH_CTRL,
+-			(((temp & ALI_CACHE_FLUSH_ADDR_MASK) |
+-			  virt_to_gart(addr)) | ALI_CACHE_FLUSH_EN));
+-	agp_generic_destroy_page(addr);
++		pci_read_config_dword(agp_bridge->dev, ALI_CACHE_FLUSH_CTRL, &temp);
++		pci_write_config_dword(agp_bridge->dev, ALI_CACHE_FLUSH_CTRL,
++				       (((temp & ALI_CACHE_FLUSH_ADDR_MASK) |
++					 virt_to_gart(addr)) | ALI_CACHE_FLUSH_EN));
++	}
++	agp_generic_destroy_page(addr, flags);
+  }
 
-     i915: fix vbl swap allocation size.
 
-     Oops...
+diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-k7-agp.c
+index f60bca7..1405a42 100644
+--- a/drivers/char/agp/amd-k7-agp.c
++++ b/drivers/char/agp/amd-k7-agp.c
+@@ -100,21 +100,16 @@ static int amd_create_gatt_pages(int nr_tables)
 
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
+  	for (i = 0; i < nr_tables; i++) {
+  		entry = kzalloc(sizeof(struct amd_page_map), GFP_KERNEL);
++		tables[i] = entry;
+  		if (entry == NULL) {
+-			while (i > 0) {
+-				kfree(tables[i-1]);
+-				i--;
+-			}
+-			kfree(tables);
+  			retval = -ENOMEM;
+  			break;
+  		}
+-		tables[i] = entry;
+  		retval = amd_create_page_map(entry);
+  		if (retval != 0)
+  			break;
+  	}
+-	amd_irongate_private.num_tables = nr_tables;
++	amd_irongate_private.num_tables = i;
+  	amd_irongate_private.gatt_pages = tables;
 
-commit c153f45f9b7e30289157bba3ff5682291df16caa
-Author: Eric Anholt <eric@anholt.net>
-Date:   Mon Sep 3 12:06:45 2007 +1000
+  	if (retval != 0)
+diff --git a/drivers/char/agp/backend.c b/drivers/char/agp/backend.c
+index 1b47c89..832ded2 100644
+--- a/drivers/char/agp/backend.c
++++ b/drivers/char/agp/backend.c
+@@ -189,9 +189,11 @@ static int agp_backend_initialize(struct agp_bridge_data *bridge)
 
-     drm: Replace DRM_IOCTL_ARGS with (dev, data, file_priv) and remove DRM_DEVICE.
+  err_out:
+  	if (bridge->driver->needs_scratch_page) {
+-		bridge->driver->agp_destroy_page(
+-				gart_to_virt(bridge->scratch_page_real));
++		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
++						 AGP_PAGE_DESTROY_UNMAP);
+  		flush_agp_mappings();
++		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
++						 AGP_PAGE_DESTROY_FREE);
+  	}
+  	if (got_gatt)
+  		bridge->driver->free_gatt_table(bridge);
+@@ -215,9 +217,11 @@ static void agp_backend_cleanup(struct agp_bridge_data *bridge)
 
-     The data is now in kernel space, copied in/out as appropriate according to t
-     This results in DRM_COPY_{TO,FROM}_USER going away, and error paths to deal
-     with those failures.  This also means that XFree86 4.2.0 support for i810 DR
-     is lost.
+  	if (bridge->driver->agp_destroy_page &&
+  	    bridge->driver->needs_scratch_page) {
+-		bridge->driver->agp_destroy_page(
+-				gart_to_virt(bridge->scratch_page_real));
++		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
++						 AGP_PAGE_DESTROY_UNMAP);
+  		flush_agp_mappings();
++		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
++						 AGP_PAGE_DESTROY_FREE);
+  	}
+  }
 
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
+diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+index 3db4f40..64b2f6d 100644
+--- a/drivers/char/agp/generic.c
++++ b/drivers/char/agp/generic.c
+@@ -195,9 +195,12 @@ void agp_free_memory(struct agp_memory *curr)
+  	}
+  	if (curr->page_count != 0) {
+  		for (i = 0; i < curr->page_count; i++) {
+-			curr->bridge->driver->agp_destroy_page(gart_to_virt(curr->memory[i]));
++			curr->bridge->driver->agp_destroy_page(gart_to_virt(curr->memory[i]), AGP_PAGE_DESTROY_UNMAP);
+  		}
+  		flush_agp_mappings();
++		for (i = 0; i < curr->page_count; i++) {
++			curr->bridge->driver->agp_destroy_page(gart_to_virt(curr->memory[i]), AGP_PAGE_DESTROY_FREE);
++		}
+  	}
+  	agp_free_key(curr->key);
+  	agp_free_page_array(curr);
+@@ -1176,7 +1179,7 @@ void *agp_generic_alloc_page(struct agp_bridge_data *bridge)
+  EXPORT_SYMBOL(agp_generic_alloc_page);
 
-commit b589ee5943a9610ebaea6e4e3433f2ae4d812b0b
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Tue Aug 28 15:16:47 2007 +1000
 
-     drm: remove XFREE86_VERSION macros.
+-void agp_generic_destroy_page(void *addr)
++void agp_generic_destroy_page(void *addr, int flags)
+  {
+  	struct page *page;
 
-     These are no longer needed or being used.
+@@ -1184,10 +1187,14 @@ void agp_generic_destroy_page(void *addr)
+  		return;
 
-     Signed-off-by: Dave Airlie <airlied@redhat.com>
+  	page = virt_to_page(addr);
+-	unmap_page_from_agp(page);
+-	put_page(page);
+-	free_page((unsigned long)addr);
+-	atomic_dec(&agp_bridge->current_memory_agp);
++	if (flags & AGP_PAGE_DESTROY_UNMAP)
++		unmap_page_from_agp(page);
++
++	if (flags & AGP_PAGE_DESTROY_FREE) {
++		put_page(page);
++		free_page((unsigned long)addr);
++		atomic_dec(&agp_bridge->current_memory_agp);
++	}
+  }
+  EXPORT_SYMBOL(agp_generic_destroy_page);
 
-commit 6c340eac0285f3d62406d2d902d0e96fbf2a5dc0
-Author: Eric Anholt <eric@anholt.net>
-Date:   Sat Aug 25 20:23:09 2007 +1000
+diff --git a/drivers/char/agp/i460-agp.c b/drivers/char/agp/i460-agp.c
+index 75d2aca..70117df 100644
+--- a/drivers/char/agp/i460-agp.c
++++ b/drivers/char/agp/i460-agp.c
+@@ -536,10 +536,10 @@ static void *i460_alloc_page (struct agp_bridge_data *bridge)
+  	return page;
+  }
 
-     drm: Replace filp in ioctl arguments with drm_file *file_priv.
-
-     As a fallout, replace filp storage with file_priv storage for "unique
-     identifier of a client" all over the DRM.  There is a 1:1 mapping, so this
-     should be a noop.  This could be a minor performance improvement, as everyth
-     on Linux dereferenced filp to get file_priv anyway, while only the mmap ioct
-     went the other direction.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 20caafa6ecb2487d9b223aa33e7cc704f912a758
-Author: Eric Anholt <eric@anholt.net>
-Date:   Sat Aug 25 19:22:43 2007 +1000
-
-     drm: Remove DRM_ERR OS macro.
-
-     This was used to make all ioctl handlers return -errno on linux and errno on
-     *BSD.  Instead, just return -errno in shared code, and flip sign on return f
-     shared code to *BSD code.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
+-static void i460_destroy_page (void *page)
++static void i460_destroy_page (void *page, int flags)
+  {
+  	if (I460_IO_PAGE_SHIFT <= PAGE_SHIFT) {
+-		agp_generic_destroy_page(page);
++		agp_generic_destroy_page(page, flags);
+  		global_flush_tlb();
+  	}
+  }
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index 141ca17..d879619 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -400,9 +400,11 @@ static void intel_i810_free_by_type(struct agp_memory *curr)
+  		if (curr->page_count == 4)
+  			i8xx_destroy_pages(gart_to_virt(curr->memory[0]));
+  		else {
+-			agp_bridge->driver->agp_destroy_page(
+-				 gart_to_virt(curr->memory[0]));
++			agp_bridge->driver->agp_destroy_page(gart_to_virt(curr->memory[0]),
++							     AGP_PAGE_DESTROY_UNMAP);
+  			global_flush_tlb();
++			agp_bridge->driver->agp_destroy_page(gart_to_virt(curr->memory[0]),
++							     AGP_PAGE_DESTROY_FREE);
+  		}
+  		agp_free_page_array(curr);
+  	}
