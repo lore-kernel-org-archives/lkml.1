@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761557AbXJOW0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763887AbXJOW0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761557AbXJOW0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXJOW0H
+	id S1763887AbXJOW0d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbXJOW0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:26:07 -0400
-Received: from waste.org ([66.93.16.53]:1287 "EHLO cinder.waste.org"
+	Mon, 15 Oct 2007 18:26:08 -0400
+Received: from waste.org ([66.93.16.53]:1289 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754551AbXJOW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755530AbXJOW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Oct 2007 18:26:06 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
@@ -16,47 +16,31 @@ Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        David Rientjes <rientjes@google.com>,
        Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <1.290135367@selenic.com>
-Message-Id: <4.290135367@selenic.com>
-Subject: [PATCH 3/11] maps3: move is_swap_pte
-Date: Mon, 15 Oct 2007 17:26:00 -0500
+Message-Id: <1.290135367@selenic.com>
+Subject: [PATCH 0/11] maps3: pagemap monitoring v3
+Date: Mon, 15 Oct 2007 17:25:57 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move is_swap_pte helper function to swapops.h for use by pagemap code
+This patchset is version 3 of my /proc/pid/pagemaps code.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+Rather than submit about 30 incremental patches atop an existing 20 or
+so where many of the intermediate states are broken and get undone
+anyway, I've respun this as a much smaller set of 11 patches.
 
-Index: l/include/linux/swapops.h
-===================================================================
---- l.orig/include/linux/swapops.h	2007-10-09 17:36:25.000000000 -0500
-+++ l/include/linux/swapops.h	2007-10-10 11:46:34.000000000 -0500
-@@ -42,6 +42,12 @@ static inline pgoff_t swp_offset(swp_ent
- 	return entry.val & SWP_OFFSET_MASK(entry);
- }
- 
-+/* check whether a pte points to a swap entry */
-+static inline int is_swap_pte(pte_t pte)
-+{
-+	return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
-+}
-+
- /*
-  * Convert the arch-dependent pte representation of a swp_entry_t into an
-  * arch-independent swp_entry_t.
-Index: l/mm/migrate.c
-===================================================================
---- l.orig/mm/migrate.c	2007-10-09 17:37:59.000000000 -0500
-+++ l/mm/migrate.c	2007-10-10 11:46:34.000000000 -0500
-@@ -114,11 +114,6 @@ int putback_lru_pages(struct list_head *
- 	return count;
- }
- 
--static inline int is_swap_pte(pte_t pte)
--{
--	return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
--}
--
- /*
-  * Restore a potential migration pte to a working pte entry
-  */
+Changes in this series:
+
+- headers gone again (as recommended by Dave Hansen and Alan Cox)
+- 64-bit entries (as per discussion with Andi Kleen)
+- swap pte information exported (from Dave Hansen)
+- page walker callback for holes (from Dave Hansen)
+- direct put_user I/O (as suggested by Rusty Russell)
+- split kpagemap into kpagecount and kpageflags
+
+I've dropped one cleanup patch from Rusty from the current series,
+mmaps2-vma-out-of-mem_size_stats.patch, which I didn't find to be an
+improvement.
+
+Andrew, please replace the current maps2* patches with this set at
+your convenience. I've included the above change list in the relevant
+patches.
