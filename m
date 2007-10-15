@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765365AbXJOODZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764922AbXJOOED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765365AbXJOODZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 10:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759714AbXJOODA
+	id S1764922AbXJOOED (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 10:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbXJOODu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 10:03:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49549 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756554AbXJOOC6 (ORCPT
+	Mon, 15 Oct 2007 10:03:50 -0400
+Received: from smtp-out4.libero.it ([212.52.84.46]:35034 "EHLO
+	smtp-out4.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759554AbXJOODt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 10:02:58 -0400
-Date: Mon, 15 Oct 2007 07:02:17 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: Larry.Finger@lwfinger.net, mb@bu3sch.de, st3@riseup.net,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] jiffies_round -> jiffies_round_relative conversion -
- b43/b43legacy
-Message-ID: <20071015070217.34c59728@laptopd505.fenrus.org>
-In-Reply-To: <20071015054223.GD3257@kryten>
-References: <20071015053428.GA3257@kryten>
-	<20071015053801.GB3257@kryten>
-	<20071015054034.GC3257@kryten>
-	<20071015054223.GD3257@kryten>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Mon, 15 Oct 2007 10:03:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAC4QE0fAqBEH/2dsb2JhbAAMj2M8
+Date: Mon, 15 Oct 2007 16:03:48 +0200
+Message-Id: <JPYHQC$87667B305A81C3D8E0F878CDCEF42E86@libero.it>
+Subject: RF Nr 9527BCV-33-7-7-7
+MIME-Version: 1.0
+X-Sensitivity: 3
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+From: "euromillioawards" <euromillioawards@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl19)
+X-SenderIP: 81.202.161.49
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 00:42:23 -0500
-Anton Blanchard <anton@samba.org> wrote:
+YOU 'VE WON.
 
-> 
-> When rounding a relative timeout we need to use
-> round_jiffies_relative(). 
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+You have won $655,000.00 Dollars in DE EUROMILLIONES ONLINE INT.LOTTERY SPAIN.For further development for Clearification and procedure please Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es) TEL: +34 692 486 797.
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+(1) Tic Nr: 6460DGH
+(2) Sr Nr: 0909AOB09
+(3) LU Nr: 726726XZJHN
+(4) BT Nr: 2GH267XZZ1-5-42
+(5) RF Nr 9527BCV-33-7-7-7
+
+Regards.
+Mss.Sodic Lasy
+
+
