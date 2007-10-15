@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764165AbXJOAf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbXJOAp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764165AbXJOAf4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 20:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXJOAfr
+	id S1764225AbXJOAp6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 20:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbXJOAps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 20:35:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42721 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbXJOAfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 20:35:47 -0400
-From: Neil Brown <neilb@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 15 Oct 2007 10:35:39 +1000
+	Sun, 14 Oct 2007 20:45:48 -0400
+Received: from web31803.mail.mud.yahoo.com ([68.142.207.66]:34579 "HELO
+	web31803.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751818AbXJOApr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 20:45:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=TfDhMQx1/tJiem5tYEria9sEmV5g/6ONA+TuSaFT5F814fyVLh0EgPIZRbe6Rf9s7IMC8FzVcvto4nAG28C8GSvoyp460532HNo+/un15SyqtaqHKomXprXeU59sAK2TDcnZBI8WQDu5LqJ2hj4am3uvgMaaje3uEZRU9rndo1o=;
+X-YMail-OSG: OQPAaegVM1kSG40.H.Hk3RaughHXHjPy76_RyAiwsvgcYlpRxxdOuaUEdZI.2SVJ7ZIaPA--
+Date: Sun, 14 Oct 2007 17:45:46 -0700 (PDT)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: What still uses the block layer?
+To: James Bottomley <James.Bottomley@SteelEye.com>,
+       Matthew Wilcox <matthew@wil.cx>
+Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+In-Reply-To: <1192400672.3351.56.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18194.46555.18395.586488@notabene.brown>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-In-Reply-To: message from Sam Ravnborg on Tuesday October 9
-References: <20071008173706.GA12026@uranus.ravnborg.org>
-	<10940.1191883390@lwn.net>
-	<18186.50640.970552.719041@notabene.brown>
-	<20071009174433.GB25750@uranus.ravnborg.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <838477.92423.qm@web31803.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday October 9, sam@ravnborg.org wrote:
-> Hi Neil.
+--- James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
+> > On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
+> > > My impression from asking questions on the linux-scsi mailing list is that the 
+> > > scsi upper/middle/lower layers doesn't use the block layer described in 
+> > > Documentation/block/*.
 > > 
-> >    From:        The Author, Primary Author, or Authors of the patch.
-> >                 Authors should also provide a Signed-off-by: tag.
-> > 
-> >                 Purpose: to give credit to authors
-> The SCM should include this info and we should not duplicate this
-> in the changelog's.
-> I know some tools require this format but that's something else.
-
-If the SCM stores some tags in special places, that is fine with me.
-The remove the need for the tag and an understanding of why it exists.
-Can 'git' store a list of Authors?  Do we want to allow a list?
-
+> > Entirely incorrect.
 > 
-> > > +
-> > > +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
-> > > +		patch is, to the best of his or her knowledge, legally able
-> > > +		to be merged into the mainline and distributed under the
-> > > +		terms of the GNU General Public License, version 2.  See
-> > > +		the Developer's Certificate of Origin, found in
-> > > +		Documentation/SubmittingPatches, for the precise meaning of
-> > > +		Signed-off-by.
-> > 
-> >                 Purpose: to allow subsequent review of the originality of 
-> >                 the contribution should copyright questions arise.
+> OK, right ... could we please get a sense of decorum back on this list.
 > 
-> We often use s-o-b to docuemnt the path a patch took from origin (the
-> top-most s-o-b) to tree apply (lowest s-o-b).
-> This is IIUC part of the intended behaviour of s-o-b but it is not
-> clear from the above text.
-
-My understanding of Andrew Morton's position on s-o-b is that it is an
-unordered set.  I know this because when I have sent him patches with
-a proper From: line, he has complained and begrudingly took the first
-s-o-b, but said he didn't like to.
-So there seems to be disagreement on this (I think it looks like a
-path to - but apparently not to everyone).
-
+> Rob, if you didn't ask your alleged questions in such a pejorative
+> manner, we'd get a lot further; and Matthew, if you didn't rise to the
+> bait so spectacularly it wouldn't prolong these threads.
 > 
-> 
-> > > +
-> > > +Acked-by:	The person named (who should be an active developer in the
-> > > +		area addressed by the patch) is aware of the patch and has
-> > > +		no objection to its inclusion.  An Acked-by tag does not
-> > > +		imply any involvement in the development of the patch or
-> > > +		that a detailed review was done.
-> > 
-> >                 Purpose:  to inform upstream aggregators that
-> > 		consensus was achieved for the change.  This is
-> > 		particularly relevant for changes that affect multiple
-> > 		Maintenance Domains.
-> > 
-> consensus seems too strong a wording here. consensus imply more than one
-> that agree on the patch where I often see people give their "Acked-by:" by
-> simple changelog reading.
+> Really, both of you, I have better things to do with my time than
+> mediate behaviours that should have been educated out of you in the
+> kindergarten sand pit.
 
-I'm failing to follow your logic.
-You seem to be contrasting:
-  "consensus imply more than one that agree"
-     which I agree with:  "From" plus all "Acked-By" will be more than
-     one in all cases that "Acked-By" is used
-with
-  "people give their "Acked-by:" by simple changlog reading"
-     which I also agree with but this just highlights that "Acked-by"
-     is different from "Reviewed-by" 
+I really didn't find Rob's email "pejorative" at all.  It seems to me
+he was just asking for clarification, information and trying to
+understand how it all works and ties together.  His email seemed
+genuine enough of a person just asking to understand how it all works.
 
-Confused.
+Matthew's expletive and extremely rude response really shows
+the general attitude of the linux-scsi people.
 
-Thanks,
-NeilBrown
+Heck, I got a similar response just a week ago here on the
+list, trying to convince Garzik and his band, that storage nodes
+SHOULD NOT be SAS WWN generators.  Should I have even tried?  That's
+the question.
+
+Good luck everyone,
+   Luben
+
