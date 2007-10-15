@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764725AbXJOTZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbXJOT1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764725AbXJOTZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbXJOTZR
+	id S1765505AbXJOT1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759200AbXJOT1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:25:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50047 "EHLO mx3.mail.elte.hu"
+	Mon, 15 Oct 2007 15:27:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50464 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756608AbXJOTZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:25:15 -0400
-Date: Mon, 15 Oct 2007 21:24:56 +0200
+	id S1759224AbXJOT1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:27:16 -0400
+Date: Mon, 15 Oct 2007 21:27:03 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>,
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
        James Bottomley <James.Bottomley@SteelEye.com>
 Subject: Re: [patch] scsi: fix crash in gdth_timeout()
-Message-ID: <20071015192456.GA9046@elte.hu>
-References: <20071015165534.GA17833@elte.hu> <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org>
+Message-ID: <20071015192703.GA7279@elte.hu>
+References: <20071015165534.GA17833@elte.hu> <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org> <4713A9FA.4050209@garzik.org> <4713B4E7.2050001@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org>
+In-Reply-To: <4713B4E7.2050001@panasas.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,35 +36,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-> On Mon, 15 Oct 2007, Ingo Molnar wrote:
-> > 
-> > A further problem is probably that the GDTH timer is not stopped by a
-> > failed GDTH probe?
+> > Honestly, the driver is probably rarely run by people that lack the 
+> > hardware, I bet...
 > 
-> Indeed. Maybe this is a better fix?
+> It was all "flight by instruments only". I called for HW testers and 
+> none came forward. All these changes, apart from "successful downgrade 
+> to messy" where also needed in order to push important changes to 
+> scsi.
 > 
-> That driver is pretty messy, and this should have been found ealier. 
-> James? Boaz?
+> But a little bird said that QEMU might simulate this HW. SO I guess it 
+> is QEMU time for me.
 
-> @@ -5213,6 +5213,10 @@ static int __init gdth_init(void)
->  #endif /* CONFIG_PCI */
->  
->  	TRACE2(("gdth_detect() %d controller detected\n", gdth_ctr_count));
-> +
-> +	if (list_empty(&gdth_instances))
-> +		return -ENODEV;
-
-indeed - with this patch instead of the one i did the CONFIG_SCSI_GDTH=y 
-bzImage boots up fine too, and no crash:
-
- Calling initcall 0x80a417e0: gdth_init+0x0/0xb20()
- GDT-HA: Storage RAID Controller Driver. Version: 3.05
- GDT-HA: Found 0 PCI Storage RAID Controllers
- initcall 0x80a417e0: gdth_init+0x0/0xb20() returned -19.
- initcall 0x80a417e0 ran for 5 msecs: gdth_init+0x0/0xb20()
-
-Tested-by: Ingo Molnar <mingo@elte.hu>
+heh. Incidentally i was thinking about using KVM for automated testing. 
+Important pieces of hardware should get an in-KVM simulator/emulator, 
+that way developers who do not own that hardware can do functionality 
+testing too. So basically the highest-quality drivers would have an 
+"inverse driver" in KVM, which simulates the hardware. (that model is 
+evidently useful to the hardware maker even for new hardware: it can 
+then also be used to test the Linux compatibility and Linux performance 
+of future planned releases of the hardware, etc.)
 
 	Ingo
