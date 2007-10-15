@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbXJOBxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764325AbXJOCCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764525AbXJOBxj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 21:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJOBxb
+	id S1764325AbXJOCCO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 22:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXJOCB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 21:53:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33062 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754004AbXJOBxa (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 21:53:30 -0400
-Date: Mon, 15 Oct 2007 11:53:03 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Howells <dhowells@redhat.com>
-Cc: viro@ftp.linux.org.uk, kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/52] CRED: Introduce a COW credentials record
-Message-ID: <20071015015303.GC995458@sgi.com>
-References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk> <20071012160524.15119.18793.stgit@warthog.procyon.org.uk>
+	Sun, 14 Oct 2007 22:01:59 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42141 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbXJOCB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 22:01:58 -0400
+Date: Mon, 15 Oct 2007 03:01:57 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: mchehab@infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC] vivi, videobuf_to_vmalloc() and related breakage
+Message-ID: <20071015020157.GC8181@ftp.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071012160524.15119.18793.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 05:05:24PM +0100, David Howells wrote:
-> diff --git a/fs/xfs/xfs_acl.c b/fs/xfs/xfs_acl.c
-> index 4ca4beb..a460508 100644
-> --- a/fs/xfs/xfs_acl.c
-> +++ b/fs/xfs/xfs_acl.c
-> @@ -383,7 +383,7 @@ xfs_acl_allow_set(
->  	error = bhv_vop_getattr(vp, &va, 0, NULL);
->  	if (error)
->  		return error;
-> -	if (va.va_uid != current->fsuid && !capable(CAP_FOWNER))
-> +	if (va.va_uid != current->cred->uid && !capable(CAP_FOWNER))
+	AFAICS, videobuf-vmalloc use of mem->vma and mem->vmalloc is
+bogus.
 
-current_fsuid() should be used here.
+You obtain the latter with vmalloc_user(); so far, so good.  Then you have
+        retval=remap_vmalloc_range(vma, mem->vmalloc,0);
+where vma is given to you by mmap(); again, fine - we get the memory
+pointed to be mem->vmalloc() mapped at vma->vm_start.
 
->  		return EPERM;
->  	return error;
->  }
-> @@ -457,13 +457,13 @@ xfs_acl_access(
->  		switch (fap->acl_entry[i].ae_tag) {
->  		case ACL_USER_OBJ:
->  			seen_userobj = 1;
-> -			if (fuid != current->fsuid)
-> +			if (fuid != current->cred->uid)
->  				continue;
->  			matched.ae_tag = ACL_USER_OBJ;
->  			matched.ae_perm = allows;
->  			break;
->  		case ACL_USER:
-> -			if (fap->acl_entry[i].ae_id != current->fsuid)
-> +			if (fap->acl_entry[i].ae_id != current->cred->uid)
+Now we get the trouble: things like
 
-and here as well....
+static void vivi_fillbuff(struct vivi_dev *dev,struct vivi_buffer *buf)
+{
+	...
+	void *vbuf=videobuf_to_vmalloc (&buf->vb);
+	...
+	copy_to_user(vbuf + ..., ..., ...)
 
-Cheers,
+get vbuf equal to ->vmalloc of buf->vp.priv and that is _not_ a userland
+address.  Giving it to copy_to_user() is not going to do anything good.
+On some targets it'll fail, on some - write to unrelated user memory.
+What is going on there?  If that's an attempt to copy into that buffer
+allocated by vmalloc_user(), why are we doing copy_to_user() at all?
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+But there's more; we have made a copy of vma (kmalloc+memcpy), stored it in
+mem->vma and later we cheerfully do remap_vmalloc_range(mem->vma,....).
+And kfree that mem->vma immediately afterwards.  What the hell?  It might
+not break now, but that seems to be playing very fast and loose with the
+warranties provided by VM.
