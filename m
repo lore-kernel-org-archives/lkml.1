@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933162AbXJORsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763930AbXJORsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933162AbXJORsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762515AbXJORsG
+	id S1763930AbXJORsq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940AbXJORsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:48:06 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:61633 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761777AbXJORsC (ORCPT
+	Mon, 15 Oct 2007 13:48:20 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:39814 "EHLO
+	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932813AbXJORsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:48:02 -0400
-Date: Mon, 15 Oct 2007 13:47:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 4/7] RT: Add support for updating push-rt priority under
- PI boost
-In-Reply-To: <20071013001554.7444.3543.stgit@novell1.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710151347161.26495@gandalf.stny.rr.com>
-References: <20071013001052.7444.8363.stgit@novell1.haskins.net>
- <20071013001554.7444.3543.stgit@novell1.haskins.net>
+	Mon, 15 Oct 2007 13:48:17 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Date: Mon, 15 Oct 2007 19:48:03 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "Barry Kasindorf" <barry.kasindorf@amd.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23] oProfile: op_model_athalon.c support for AMD
+ Family10h (Barcelona) Performance Counters
+Message-ID: <20071015174802.GS11245@erda.amd.com>
+References: <47139CAB.4000107@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <47139CAB.4000107@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 15 Oct 2007 17:48:03.0572 (UTC)
+ FILETIME=[89075340:01C80F53]
+X-WSS-ID: 6B0D785F0601915146-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 12 Oct 2007, Gregory Haskins wrote:
-
-Again no description.
-
--- Steve
-
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+On 15.10.07 13:00:27, Barry Kasindorf wrote:
+> 
+> oProfile Driver Module Patch for AMD Family10h Kernel 2.6.23
+> This patch is for controlling the upper 32bits of the event ctrl msrs.
+> This includes the upper 4 bits of the event select and the Guest Only 
+> and Host Only bits
+> This patch is necessary to make Event Based Profiling work reliably on a 
+> Family10h processor
+> 
 > ---
->
->  kernel/sched.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 50c88e8..62f9f0b 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4663,6 +4663,7 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
->  		 * this runqueue and our priority is higher than the current's
->  		 */
->  		if (task_running(rq, p)) {
-> +			set_rq_prio(rq, p->prio);
->  			if (p->prio > oldprio)
->  				resched_task(rq->curr);
->  		} else {
-> @@ -4722,6 +4723,9 @@ void set_user_nice(struct task_struct *p, long nice)
->  		 */
->  		if (delta < 0 || (delta > 0 && task_running(rq, p)))
->  			resched_task(rq->curr);
-> +
-> +		if (delta && task_running(rq, p))
-> +			set_rq_prio(rq, p->prio);
+>  op_model_athlon.c |   22 ++++++++++++++++------
+>  1 file changed, 16 insertions(+), 6 deletions(-)
+> ---
+> 
+> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> 
+> diff -Naur linux-2.6.23.orig/arch/i386/oprofile/op_model_athlon.c 
+> linux-2.6.23.pmc/arch/i386/oprofile/op_model_athlon.c
+> --- linux-2.6.23.orig/arch/i386/oprofile/op_model_athlon.c	2007-10-09 
+> 16:31:38.000000000 -0400
+> +++ linux-2.6.23.pmc/arch/i386/oprofile/op_model_athlon.c	2007-10-15 
+> 11:02:39.000000000 -0400
+
+[]
+
+> @@ -70,7 +74,8 @@
+>  		if (unlikely(!CTRL_IS_RESERVED(msrs,i)))
+>  			continue;
+>  		CTRL_READ(low, high, msrs, i);
+> -		CTRL_CLEAR(low);
+> +		CTRL_CLEAR_LO(low);
+> +		CTRL_CLEAR_HI(low);
+
+Should be probably this:
+
+CTRL_CLEAR_HI(high);
+
+>  		CTRL_WRITE(low, high, msrs, i);
 >  	}
->  out_unlock:
->  	task_rq_unlock(rq, &flags);
->
->
->
+> 
+
+[]
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
+
