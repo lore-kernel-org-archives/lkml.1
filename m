@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbXJOHNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbXJOHYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbXJOHNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 03:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbXJOHNO
+	id S1755462AbXJOHYc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 03:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbXJOHYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 03:13:14 -0400
-Received: from frosty.hhs.nl ([145.52.2.15]:35229 "EHLO frosty.hhs.nl"
+	Mon, 15 Oct 2007 03:24:24 -0400
+Received: from mail.hevs.ch ([153.109.23.15]:36985 "EHLO mail.hevs.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753393AbXJOHNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 03:13:13 -0400
-Message-ID: <47130F16.3000706@hhs.nl>
-Date: Mon, 15 Oct 2007 08:56:22 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+	id S1750777AbXJOHYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 03:24:23 -0400
+X-Greylist: delayed 1943 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 03:24:23 EDT
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: linux-wireless@vger.kernel.org
+Subject: [PATCH] zd1211rw, fix oops when ejecting install media
+Date: Mon, 15 Oct 2007 08:51:52 +0200
+User-Agent: KMail/1.9.7
+Cc: dsd@gentoo.org, kune@deine-taler.de, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Jim Cromie <jim.cromie@gmail.com>
-CC: Linux kernel <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [ patch .24-rc0 0/5 ] SuperIO locks coordinator
-References: <4712F4D4.4050707@gmail.com>
-In-Reply-To: <4712F4D4.4050707@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 15102007 #409386, status: clean
+Content-Disposition: inline
+Message-Id: <200710150851.52995.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jim Cromie wrote:
-> this patchset (on hwmon-git) re-introduces superio_locks module, 
-> previously RFC'd here, where I 'borrowed' another thread..
-> 
-> http://marc.info/?l=linux-kernel&m=115821759424601&w=2
-> 
-> The module shares out slots/shared-reservations containing
-> a mutex, so that multiple modules can coordinate access to
-> the sio-port.
-> 
-> Im crossposting - LKML for more reviewers, lm-sensors for
-> folks with the hardware and (perhaps) more interest.
-> 
-> If its not too late, please consider for 2.6.24-rc0
-> 
-> 01 - adds superio_locks module
-> 
-> User-drivers specify the sio-port characteristics they can support
-> device-ids, sio-port-addrs, enter & exit sequences, etc in 
-> a struct superio_search (in __devinit, preferably). 
-> 
-> superio_find() then searches existing slots/shared-reservations 
-> for a matching sio-port, and returns it if found. 
-> Otherwize it probes port-addrs, specified by find() user, 
-> and makes and returns a new reservation.
-> 
->     superio_find()	finds and reserves the slot, 
-> 			returned as ptr or null
->     superio_release()	relinguishes the slot (ref-counted)
-> 
-> Once theyve got the reservation in struct superio * gate 
-> (as named in patches 2-5) they *may* use
-> 
->     superio_lock(gate)
->     superio_enter/exit(gate)
->     superio_inb/w(gate, regaddr),
->     superio_outb/w(gate, regaddr, val)
-> 
-> or they can do it themselves with inb/outb, by using gate->sioaddr, etc.
-> 
+The disconnect function can dereference the net_device structure before it is
+allocated. This is the case when ejecting the device installer.
 
-<snip>
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
 
-> 
-> - Hans, I think Ive added all your suggestions, thanks.
-> 
+---
 
-Your welcome, at a first look over things look pretty sane now. I'm willing to 
-do a full review of this, but first I would like to see some more input from 
-others.
+Hello!
 
-Regards,
+Patch against 2.6.23.
+This patch fixes the bug I've submitted to linux-wireless friday in the
+"zd1211rw on 2.6.23 oops ejecting device" thread.
 
-Hans
+Regards
+
+Marc
+
+--- drivers/net/wireless/zd1211rw/zd_usb.c.orig	2007-10-15 08:29:16.000000000 +0200
++++ drivers/net/wireless/zd1211rw/zd_usb.c	2007-10-15 08:29:32.000000000 +0200
+@@ -1041,14 +1041,17 @@ error:
+ static void disconnect(struct usb_interface *intf)
+ {
+ 	struct net_device *netdev = zd_intf_to_netdev(intf);
+-	struct zd_mac *mac = zd_netdev_mac(netdev);
+-	struct zd_usb *usb = &mac->chip.usb;
++	struct zd_mac *mac;
++	struct zd_usb *usb;
+ 
+ 	/* Either something really bad happened, or we're just dealing with
+ 	 * a DEVICE_INSTALLER. */
+ 	if (netdev == NULL)
+ 		return;
+ 
++	mac = zd_netdev_mac(netdev);
++	usb = &mac->chip.usb;
++
+ 	dev_dbg_f(zd_usb_dev(usb), "\n");
+ 
+ 	zd_netdev_disconnect(netdev);
+
 
