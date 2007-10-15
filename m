@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbXJOX4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbXJOX6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759372AbXJOX4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbXJOX4O
+	id S1758690AbXJOX6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXJOX6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:56:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49095 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754832AbXJOX4M (ORCPT
+	Mon, 15 Oct 2007 19:58:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49399
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751926AbXJOX6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:56:12 -0400
-Date: Mon, 15 Oct 2007 16:55:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: pj@sgi.com, willy@linux.intel.com, linux-kernel@vger.kernel.org,
-       andrew.vasquez@qlogic.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] git scsi misc include fix
-Message-Id: <20071015165504.987e9dac.akpm@linux-foundation.org>
-In-Reply-To: <1192491330.14524.16.camel@localhost.localdomain>
-References: <20071014053508.30836.69658.sendpatchset@jackhammer.engr.sgi.com>
-	<1192491330.14524.16.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 15 Oct 2007 19:58:24 -0400
+Date: Mon, 15 Oct 2007 16:58:28 -0700 (PDT)
+Message-Id: <20071015.165828.59656315.davem@davemloft.net>
+To: david-b@pacbell.net
+Cc: stern@rowland.harvard.edu, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071015233910.5A17123BC99@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20071009.213507.78708496.davem@davemloft.net>
+	<20071015.150124.78710191.davem@davemloft.net>
+	<20071015233910.5A17123BC99@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 19:35:30 -0400
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
+From: David Brownell <david-b@pacbell.net>
+Date: Mon, 15 Oct 2007 16:39:10 -0700
 
-> On Sat, 2007-10-13 at 22:35 -0700, Paul Jackson wrote:
-> > From: Paul Jackson <pj@sgi.com>
-> > 
-> > The added line in scsi_eh.h:
-> > 	struct scatterlist sense_sgl;
-> > fails to compile, with the error:
-> > 	field 'sense_sgl' has incomplete type
-> > unless scatterlist.h happens to be included
-> > somehow already ... which it isn't always.
-> > 
-> > So include scatterlist.h in scsi_eh.h directly.
-> > 
-> > Signed-off-by: Paul Jackson <pj@sgi.com>
-> > 
-> > ---
-> > 
-> > This patch goes after the patch 'git-scsi-misc.patch'
-> > 
-> >  include/scsi/scsi_eh.h |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > --- 2.6.23-mm1.orig/include/scsi/scsi_eh.h	2007-10-13 01:13:26.568876534 -0700
-> > +++ 2.6.23-mm1/include/scsi/scsi_eh.h	2007-10-13 01:31:32.911855338 -0700
-> > @@ -2,6 +2,7 @@
-> >  #define _SCSI_SCSI_EH_H
-> >  
-> >  #include <scsi/scsi_cmnd.h>
-> > +#include <linux/scatterlist.h>
-> >  struct scsi_device;
-> >  struct Scsi_Host;
+> > Bad news, even with the rwsem after a lot more testing I can still
+> > trigger the hang in ohci_hub_control() :-(
+> >
+> > I think we need to go back to considering the total serialization
+> > approach to this problem.
 > 
-> 
-> I've added linux-scsi which should be cc'd on all SCSI issues.
-> 
-> I don't quite believe this, though.  The requirement for struct
-> scatterlist is the same before and after the gid scsi-misc patch.  If
-> the compile fails with git-scsi-misc because of a missing scatterlist
-> include, it should also fail with vanilla 2.6.23 without the git
-> patch ... could you see if you can find out why it doesn't?
-> 
+> We shouldn't need that.  What happens if you add an msleep(5)
+> before ehci-hcd::ehci_run() drops ehci_cf_port_reset_rwsem?
 
-git-scsi-misc adds this:
+What happens is the heisenbug will go away for another week.
 
-struct scsi_eh_save {
-	int result;
-	enum dma_data_direction data_direction;
-	unsigned char cmd_len;
-	unsigned char cmnd[MAX_COMMAND_SIZE];
+> The theory there being that the switch triggered by setting CF
+> doesn't take effect instantaneously, contrary to the effective
+> assumption of that code.  A delay of 5 msec seems like it should
+> be more than enough, but that's kind of a guess ... it's good to
+> keep that low, since unfortunately that's in the critical path
+> for OLPC "resume from idle".
 
-	void *buffer;
-	unsigned bufflen;
-	unsigned short use_sg;
-	int resid;
+I want to help with this, but if I even breath on the kernel the bug
+goes away.  The race just gets harder to trigger, and if we just keep
+adding things it'll make the problem go away but for the absolutely
+wrong reasons.
 
-	struct scatterlist sense_sgl;
-};
+The only way we will provably fix this is to make sure EHCI initialize
+fully, first, regardless of kernel config or what userland does.
 
-which will not compile unless the includer has earlier included
-scatterlist.h.
+Also, David, you haven't done anything with the feedback I gave to the
+most recent revision of the OHCI hub reset anti-wedge patch.  You
+removed the debug logging when the outer-loop timeout expires, and I
+asked that you put that back so that if it happens there is some
+chance to know that this is what happened.  If it's not supposed to
+happen, there is no harm in putting the debugging log message there
+so that if the impossible does happen we find out about it.
+
+I really don't think it's appropriate for that bug fix to sit yet
+another week.
