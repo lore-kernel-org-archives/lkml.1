@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764359AbXJOMzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764688AbXJOM4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764359AbXJOMzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 08:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbXJOMzM
+	id S1764688AbXJOM4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 08:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759511AbXJOM4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 08:55:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:52432 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758956AbXJOMzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 08:55:10 -0400
-Date: Mon, 15 Oct 2007 14:54:49 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Roland Dreier <roland@digitalvampire.org>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Brian Gerst <bgerst@didntduck.org>
-Subject: Re: x86: merge some trivially mergeable headers
-In-Reply-To: <871wbytmnr.fsf@shaolin.home.digitalvampire.org>
-Message-ID: <alpine.LFD.0.9999.0710151450080.22612@localhost.localdomain>
-References: <87bqb2u4ez.fsf@shaolin.home.digitalvampire.org> <alpine.LFD.0.9999.0710132307360.12017@localhost.localdomain> <871wbytmnr.fsf@shaolin.home.digitalvampire.org>
+	Mon, 15 Oct 2007 08:56:16 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58768 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759062AbXJOM4P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 08:56:15 -0400
+Date: Mon, 15 Oct 2007 14:56:44 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: mb@bu3sch.de, st3@riseup.net, Larry.Finger@lwfinger.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [-mm Patch] drivers/net/wireless/b43/main.c: fix an
+	uninitialized variable
+Message-ID: <20071015125644.GB5417@stusta.de>
+References: <20071014175142.GN4211@stusta.de> <20071015113445.GO2444@hacking>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071015113445.GO2444@hacking>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland,
-
-On Sat, 13 Oct 2007, Roland Dreier wrote:
->  > Roland, thanks for providing this. I have some of those already, but I 
->  > really appreciate the help. I take yours and the previously posted and 
->  > push them out into a cleanup branch on my x86 git tree.
+On Mon, Oct 15, 2007 at 07:34:45PM +0800, WANG Cong wrote:
 > 
-> No problem, this merging work is the perfect thing when I need a
-> break-- mindless enough to be relaxing, but useful enough that I don't
-> feel guilty...
+> Fix an uninitialized variable in drivers/net/wireless/b43/main.c::b43_start().
 > 
-> Anyway, I assume you meant to write "I [will] take yours", since I
-> don't see anything at all in tglx/linux-2.6-x86.git right now.  I'll
-> check again on Monday and base my work on your tree.
+> From: Adrian Bunk <bunk@kernel.org>
 
-I meant the patch, which was posted by Brian earlier, which had some
-overlap with yours.
+A technical remark regarding these two patches:
 
-I applied both and fixed the Kbuild entries as well. On top of those I
-run my "find-duplicates-harder" script and fixed another bunch.
+These are your patches, not mine.
 
-You can find the current state of affairs in the "cleanup" branch of
-my x86 git tree.
+You can note formally or informally that I reported/forwarded these 
+issues, but I'm neither in a legal sense the author of these patches nor
+am I in a technical sense responsible for their correctness [1], and a 
+From: tag is therefore not appropriate.
 
-Thanks,
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
+> ---
+>  drivers/net/wireless/b43/main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23-mm1/drivers/net/wireless/b43/main.c
+> ===================================================================
+> --- linux-2.6.23-mm1.orig/drivers/net/wireless/b43/main.c
+> +++ linux-2.6.23-mm1/drivers/net/wireless/b43/main.c
+> @@ -3495,7 +3495,7 @@ static int b43_start(struct ieee80211_hw
+>  	struct b43_wl *wl = hw_to_b43_wl(hw);
+>  	struct b43_wldev *dev = wl->current_dev;
+>  	int did_init = 0;
+> -	int err;
+> +	int err = 0;
+>  
+>  	mutex_lock(&wl->mutex);
 
-	tglx
+cu
+Adrian
+
+[1] they might or might not be correct (I don't know)
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
