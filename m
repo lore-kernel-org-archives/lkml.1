@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXJOUVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbXJOUYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbXJOUVp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764824AbXJOUVZ
+	id S934065AbXJOUYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXJOUYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:21:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36316 "EHLO mx1.suse.de"
+	Mon, 15 Oct 2007 16:24:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59906 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764389AbXJOUVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:21:23 -0400
-Message-ID: <4713CC33.4040900@suse.com>
-Date: Mon, 15 Oct 2007 16:23:15 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1754494AbXJOUY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:24:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: mgross@linux.intel.com
+Subject: Re: 2.6.23-mm1
+Date: Mon, 15 Oct 2007 22:40:02 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710122332.41944.rjw@sisk.pl> <20071015160914.GA18550@linux.intel.com>
+In-Reply-To: <20071015160914.GA18550@linux.intel.com>
 MIME-Version: 1.0
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-Subject: Re: 2.6.23-mm1: BUG in reiserfs_delete_xattrs
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47129992.4040903@free.fr> <20071015084052.GA21870@infradead.org> <4713B1E7.2010504@suse.com> <4713C82C.7020609@free.fr>
-In-Reply-To: <4713C82C.7020609@free.fr>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710152240.03543.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Laurent Riffard wrote:
-> Le 15.10.2007 20:31, Jeff Mahoney a écrit :
->> Christoph Hellwig wrote:
->>> On Mon, Oct 15, 2007 at 12:34:58AM +0200, Laurent Riffard wrote:
->>>> reiserfs_delete_xattrs
->>>> reiserfs_delete_inode
->>>> generic_delete_inode
->>>> generic_drop_inode
->>>> iput
->>>> do_unlinkat
->>>> sys_unlink
->>>> sys_enter_past_esp
->>>>
->>>> I reported a similar BUG in 2.6.22-rc8-mm2 (see
->>>> http://lkml.org/lkml/2007/9/27/235). Dave Hansen sent a patch for it, I
->>>> tested it and it was OK for 2.6.22-rc8-mm2.
->>>>
->>>> I tried this patch on 2.6.23-mm1, and it fixed the BUGs here too.
->>> The delete path is a similar case as the one Dave fixed, also cause by
->>> a NULL vfsmount passed to dentry_open, but through a different code-path.
->>>
->>> Untested fix for this problem below:
->> Here's a patch I worked up the other night that kills off struct file
->> completely from the xattr code. I've tested it locally.
+On Monday, 15 October 2007 18:09, Mark Gross wrote:
+> On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
+> > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > 
+> > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> > >   to stabilise things for the 2.6.23 merge.
+> > > 
+> > >   But that didn't stop all the subsystem maintainers from going nuts, with
+> > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
+> > >   a bit better.
+> > 
+> > I get many traces similar to the one below from it (w/ hotfixes):
+> > 
+> > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
 > 
-> Sorry Jeff, your patch does not apply on 2.6.23-mm1. The 'struct file'
-> removal from reiserfs_xattr_ function is already in -mm
-> (make-reiserfs-stop-using-struct-file-for-internal.patch).
+> This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
+> processor_idle.c is registering a acpi_processor_latency_notify 
 > 
-> The Dave's patch I was refering to is this one: 
+> my code changed the notifier call from blocking_notifier_call_chain to
+> srcu_notifier_call_chain, because dynamic creation of notifier chains at
+> runtime where easier with the srcu_notifier_call_chain than the
+> blocking_notifier_call_chain.  
+> 
+> As dynamic creation of PM_QOS parameters are no longer needed I can
+> change the notifiers back to match what was in lanency.c
+> 
+> However; looking at the call tree differences between
+> blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
+> difference in irq enabling / disabling.  I'm not confident this will
+> address this yet.
 
-I'd guess not. This patch was actually against mainline. I should've
-specified. I can work up one against -mm later today if it's needed.
+Well, you can send me a patch to check. :-)
 
-- -Jeff
+> I'll change the PM_QOS params patch to use blocking notifiers and test
+> on a 64bit boot and see what happens.  I've been needing to setup my
+> x86_64 dev box for a while now anyway.
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+OK, thanks.
 
-iD8DBQFHE8wyLPWxlyuTD7IRAiJrAJ4nC6gwH1cFjWx6BI04O5fDIRftmACcD2wb
-whyXThHlIBK2phnZ6Pf8Pb8=
-=Kx6k
------END PGP SIGNATURE-----
+Greetings,
+Rafael
