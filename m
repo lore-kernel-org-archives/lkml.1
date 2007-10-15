@@ -1,71 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbXJOWJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbXJOWM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764032AbXJOWJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbXJOWJJ
+	id S1760224AbXJOWM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXJOWMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:09:09 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:49125 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756242AbXJOWJH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 18:09:07 -0400
-X-IronPort-AV: i="4.21,279,1188792000"; 
-   d="scan'208"; a="41778185:sNHT37770096"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3] Blackfin serial driver: this driver enable SPORTs on Blackfin emulate UART
-Date: Mon, 15 Oct 2007 18:10:02 -0400
-User-Agent: KMail/1.9.5
-Cc: "Bryan Wu" <bryan.wu@analog.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1192098220-25828-1-git-send-email-bryan.wu@analog.com> <1192098220-25828-4-git-send-email-bryan.wu@analog.com> <20071015133326.995a4f38.akpm@linux-foundation.org>
-In-Reply-To: <20071015133326.995a4f38.akpm@linux-foundation.org>
+	Mon, 15 Oct 2007 18:12:49 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58896 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbXJOWMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 18:12:48 -0400
+To: Stefan Monnier <monnier@iro.umontreal.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Killing a network connection
+From: Andi Kleen <andi@firstfloor.org>
+References: <jwvodf01b5i.fsf-monnier+gmane.linux.kernel@gnu.org>
+Date: Tue, 16 Oct 2007 00:12:46 +0200
+In-Reply-To: <jwvodf01b5i.fsf-monnier+gmane.linux.kernel@gnu.org> (Stefan Monnier's message of "Mon\, 15 Oct 2007 14\:40\:59 -0400")
+Message-ID: <p73przg10yp.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710151810.02291.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 15 Oct 2007 22:09:05.0837 (UTC) FILETIME=[00774DD0:01C80F78]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 15 Oct 2007 16:33, Andrew Morton pondered:
-> 
-> > Subject: [PATCH 3/3] Blackfin serial driver: this driver enable SPORTs
-> on Blackfin emulate UART
-> 
-> That's a bit hard to parse.
-> 
+Stefan Monnier <monnier@iro.umontreal.ca> writes:
+>
+> The main use for me is to deal with dangling connections due to taking
+> network interfaces up&down with different IP addresses (typically the wlan0
+> interface where the IP is different because I've modes from an AP to
+> another).  Of course, maybe there's another way to solve this particular
+> problem, in case I'd like to hear about it as well.
 
-Blackfin's have a synchronous Serial Peripheral pORT (SPORT). 
+Long ago I did a 2.4 patch that solved exactly this problem. It introduced
+a new ifconfig flag "dynamic" and when a dynamic address went down
+all TCP connections originating from it were killed. It's still available
+in older SUSE releases. I might post a forward port later.
 
-Unlike SPI, UART, I2C, or CAN interfaces which are designed for specific 
-industry standard compatible communication only, the SPORT support a variety 
-(software programmable) serial data communication protocols:
- - A-law or µ-law companding according to G.711 specification
- - Multichannel or Time-Division-Multiplexed (TDM) modes
- - Stereo Audio I2S Mode
- - TDM Modes for Multi-Channel audio codecs
- - H.100 Telephony standard support
- - others, but if anyone really cares, they need to read the chip specs...
-
-Bryan's patch takes the SPORT, and makes a standard UART out of it 
-(exposing /dev/ttySS0) for those people who don't have enough hardware UARTs 
-in their system.
-
-Is it a SPORT driver that emulates a UART, or a UART driver on the SPORT? I 
-think it is the latter...
-
-Maybe:
-
-[PATCH 3/3] Blackfin serial driver: enables a UART interface for the SPORT
-
-
-Which still doesn't make any sense, until you know what a SPORT is :)
-
--Robin
+-Andi
