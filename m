@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933292AbXJOT4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXJOT4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933292AbXJOT4H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933369AbXJOTzN
+	id S933617AbXJOT4j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbXJOT4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:55:13 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:1417 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933342AbXJOTzI (ORCPT
+	Mon, 15 Oct 2007 15:56:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51561 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933295AbXJOT4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:55:08 -0400
-Date: Mon, 15 Oct 2007 21:54:28 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Mark Gross <mgross@linux.intel.com>, Rik van Riel <riel@surriel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071015195428.GF25076@vanheusden.com>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015191732.GA1841@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015191732.GA1841@martell.zuzino.mipt.ru>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sun Oct 14 00:32:21 CEST 2007
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 15 Oct 2007 15:56:18 -0400
+Date: Mon, 15 Oct 2007 12:49:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Arapov <aarapov@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org,
+       davem@redhat.com, jgarzik@redhat.com
+Subject: Re: [PATCH] ipv4: kernel panic when only one unsecured port
+ available
+Message-Id: <20071015124919.30ed8f06.akpm@linux-foundation.org>
+In-Reply-To: <m3fy0k9yod.fsf@bandura.englab.brq.redhat.com>
+References: <m3fy0k9yod.fsf@bandura.englab.brq.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > http://kernelnewbies.org/KernelProjects
-> > 
-> > Is there already a make config option that will do a good job at setting
-> > a default .config file based on what is already running on a system?  
-> > 
-> > I get tiered of trimming down my .config for my laptop build so it takes
-> > less than 30min to build a kernel.
+On Tue, 09 Oct 2007 15:59:14 +0200
+Anton Arapov <aarapov@redhat.com> wrote:
+
+> Steps to reproduce:
+> Server:
+>   [root@server ~]# cat /etc/exports
+>   /export *(ro,insecure)
+> // there is insecure ... I am using ports like "1024 to 61000"
+>   [root@server ~] service nfs restart 
 > 
-> Ehh? You do it once, then leave it aside or in /proc/config.gz, on new
-> kernel copy it back, "make oldconfig", answer several questions and here
-> we go.
+> Client:
+>   1.[root@client ~]# echo 32768 32768 > /proc/sys/net/ipv4/ip_local_port_range
+>   32768   32768
+> // two same numbers, for ex "32769 32769" etc.
+>   2.[root@client ~]# cat /proc/sys/net/ipv4/ip_local_port_range
+>   32768   32768
+>   3.[root@client ~]# mount server:/export /import
+>   
+> Actual results:
+>   Kernel always panics 
+> 
+> --------------------------------------------------------------------
+> [PATCH] ipv4: kernel panic when only one unsecured port available
+> 
+>   Patch prevents division by zero. Kernel panics if only one 
+> unsecured port available.
+> 
+> Signed-off-by: Anton Arapov <aarapov@redhat.com>
+> ---
+> 
+>  net/ipv4/inet_connection_sock.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_sock.c
+> index fbe7714..00ad079 100644
+> --- a/net/ipv4/inet_connection_sock.c
+> +++ b/net/ipv4/inet_connection_sock.c
+> @@ -80,7 +80,7 @@ int inet_csk_get_port(struct inet_hashinfo *hashinfo,
+>  		int low = sysctl_local_port_range[0];
+>  		int high = sysctl_local_port_range[1];
+>  		int remaining = (high - low) + 1;
+> -		int rover = net_random() % (high - low) + low;
+> +		int rover = net_random() % remaining + low;
+>  
+>  		do {
+>  			head = &hashinfo->bhash[inet_bhashfn(rover, hashinfo->bhash_size)];
+> 
 
-Ah yes, but then you buy a new system to which the old config does not
-apply.
+This code has recently been reworked, but from my reading, that
+divide-by-zero can still occur.  And given that the numbers in
+/proc/sys/net/ipv4/ip_local_port_range are inclusive, the arithmetic in
+inet_csk_get_port() seems to just be wrong?
+
+So we have this, against David's current devel tree:
+
+--- a/net/ipv4/inet_connection_sock.c~ipv4-kernel-panic-when-only-one-unsecured-port-available
++++ a/net/ipv4/inet_connection_sock.c
+@@ -93,7 +93,7 @@ int inet_csk_get_port(struct inet_hashin
+ 		int remaining, rover, low, high;
+ 
+ 		inet_get_local_port_range(&low, &high);
+-		remaining = high - low;
++		remaining = high - low + 1;
+ 		rover = net_random() % remaining + low;
+ 
+ 		do {
+_
 
 
-Folkert van Heusden
-
--- 
-www.vanheusden.com/multitail - win een vlaai van multivlaai! zorg
-ervoor dat multitail opgenomen wordt in Fedora Core, AIX, Solaris of
-HP/UX en win een vlaai naar keuze
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+btw, mime-mangled gpg-fancified emails are rather a pain to handle at the
+receivnig end.  Good old text/plain works better, please.
