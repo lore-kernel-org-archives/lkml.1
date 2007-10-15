@@ -1,89 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764912AbXJOQ4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765327AbXJORBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764912AbXJOQ4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760252AbXJOQ4F
+	id S1765327AbXJORBL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763110AbXJORAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:56:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38795 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbXJOQ4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:56:03 -0400
-Date: Mon, 15 Oct 2007 18:55:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch] scsi: fix crash in gdth_timeout()
-Message-ID: <20071015165534.GA17833@elte.hu>
+	Mon, 15 Oct 2007 13:00:47 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:17708 "EHLO
+	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762437AbXJORAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 13:00:45 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Message-ID: <47139CAB.4000107@amd.com>
+Date: Mon, 15 Oct 2007 13:00:27 -0400
+From: "Barry Kasindorf" <barry.kasindorf@amd.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.23] oProfile: op_model_athalon.c support for AMD
+ Family10h (Barcelona) Performance Counters
+X-OriginalArrivalTime: 15 Oct 2007 17:00:27.0814 (UTC)
+ FILETIME=[E2DD3C60:01C80F4C]
+X-WSS-ID: 6B0D43250601904488-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-the patch below fixes a bootup-crash bug merged via today's SCSI git 
-merge:
+oProfile Driver Module Patch for AMD Family10h Kernel 2.6.23
+This patch is for controlling the upper 32bits of the event ctrl msrs.
+This includes the upper 4 bits of the event select and the Guest Only 
+and Host Only bits
+This patch is necessary to make Event Based Profiling work reliably on a 
+Family10h processor
 
- commit df3d80f5a5c74168be42788364d13cf6c83c7b9c
- Merge: 3d06f7a... c8e91b0...
- Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
- Date:   Mon Oct 15 08:19:33 2007 -0700
-
-     Merge master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
-
---------------------->
-Subject: scsi: fix crash in gdth_timeout()
-From: Ingo Molnar <mingo@elte.hu>
-
-fix the following bootup crash in gdth_timeout():
-
-[   40.739625] BUG: spinlock bad magic on CPU#1, swapper/1
-[   40.744822]  lock: 788a6e40, .magic: 784d8cec, .owner: <none>/-1, .owner_cpu: 2018346022
-[   40.752881]  [<78104f2c>] show_trace_log_lvl+0x1a/0x2f
-[   40.757994]  [<781058d1>] show_trace+0x12/0x14
-[   40.762414]  [<781058e9>] dump_stack+0x16/0x18
-[   40.766833]  [<782f1683>] spin_bug+0xa1/0xa9
-[   40.771079]  [<782f17b0>] _raw_spin_lock+0x1e/0xe4
-[   40.775846]  [<78643f9f>] _spin_lock_irqsave+0x53/0x64
-[   40.781461]  [<784b224a>] gdth_timeout+0x1c/0xa6
-[   40.786054]  [<7812632f>] run_timer_softirq+0x142/0x1a4
-[   40.791254]  [<78123fb8>] __do_softirq+0x7b/0xf1
-[   40.795847]  [<78105fb8>] do_softirq+0x61/0xc7
-[   40.800267]  =======================
-
-the bug is that list_first_entry() assumes a non-empty list.
-
-A further problem is probably that the GDTH timer is not stopped by a
-failed GDTH probe?
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/scsi/gdth.c |    3 +++
- 1 file changed, 3 insertions(+)
+  op_model_athlon.c |   22 ++++++++++++++++------
+  1 file changed, 16 insertions(+), 6 deletions(-)
+---
 
-Index: linux/drivers/scsi/gdth.c
-===================================================================
---- linux.orig/drivers/scsi/gdth.c
-+++ linux/drivers/scsi/gdth.c
-@@ -3793,6 +3793,9 @@ static void gdth_timeout(ulong data)
-     gdth_ha_str *ha;
-     ulong flags;
- 
-+    if (list_empty(&gdth_instances))
-+	    return;
+Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+
+diff -Naur linux-2.6.23.orig/arch/i386/oprofile/op_model_athlon.c 
+linux-2.6.23.pmc/arch/i386/oprofile/op_model_athlon.c
+--- linux-2.6.23.orig/arch/i386/oprofile/op_model_athlon.c	2007-10-09 
+16:31:38.000000000 -0400
++++ linux-2.6.23.pmc/arch/i386/oprofile/op_model_athlon.c	2007-10-15 
+11:02:39.000000000 -0400
+@@ -1,6 +1,6 @@
+  /**
+   * @file op_model_athlon.h
+- * athlon / K7 model-specific MSR operations
++ * athlon / K7 / K8 / Family10h model-specific MSR operations
+   *
+   * @remark Copyright 2002 OProfile authors
+   * @remark Read the file COPYING
+@@ -31,12 +31,16 @@
+  #define CTRL_WRITE(l,h,msrs,c) do {wrmsr(msrs->controls[(c)].addr, 
+(l), (h));} while (0)
+  #define CTRL_SET_ACTIVE(n) (n |= (1<<22))
+  #define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
+-#define CTRL_CLEAR(x) (x &= (1<<21))
++#define CTRL_CLEAR_LO(x) (x &= (1<<21))
++#define CTRL_CLEAR_HI(x) ( x &= 0xfffffcf0 )
+  #define CTRL_SET_ENABLE(val) (val |= 1<<20)
+  #define CTRL_SET_USR(val,u) (val |= ((u & 1) << 16))
+  #define CTRL_SET_KERN(val,k) (val |= ((k & 1) << 17))
+  #define CTRL_SET_UM(val, m) (val |= (m << 8))
+-#define CTRL_SET_EVENT(val, e) (val |= e)
++#define CTRL_SET_EVENT_LOW(val, e) (val |= (e & 0xff))
++#define CTRL_SET_EVENT_HIGH(val,e) (val |= ((e >> 8) & 0xf))
++#define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
++#define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
+
+  static unsigned long reset_value[NUM_COUNTERS];
+
+@@ -70,7 +74,8 @@
+  		if (unlikely(!CTRL_IS_RESERVED(msrs,i)))
+  			continue;
+  		CTRL_READ(low, high, msrs, i);
+-		CTRL_CLEAR(low);
++		CTRL_CLEAR_LO(low);
++		CTRL_CLEAR_HI(low);
+  		CTRL_WRITE(low, high, msrs, i);
+  	}
+
+@@ -89,12 +94,17 @@
+  			CTR_WRITE(counter_config[i].count, msrs, i);
+
+  			CTRL_READ(low, high, msrs, i);
+-			CTRL_CLEAR(low);
++			CTRL_CLEAR_LO(low);
++			CTRL_CLEAR_HI(high);
+  			CTRL_SET_ENABLE(low);
+  			CTRL_SET_USR(low, counter_config[i].user);
+  			CTRL_SET_KERN(low, counter_config[i].kernel);
+  			CTRL_SET_UM(low, counter_config[i].unit_mask);
+-			CTRL_SET_EVENT(low, counter_config[i].event);
++			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
++			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
++			CTRL_SET_HOST_ONLY(high, 0);
++			CTRL_SET_GUEST_ONLY(high, 0);
 +
-     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
-     spin_lock_irqsave(&ha->smp_lock, flags);
- 
+  			CTRL_WRITE(low, high, msrs, i);
+  		} else {
+  			reset_value[i] = 0;
+
+
+
