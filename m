@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXJOSB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765608AbXJOSCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417AbXJOSB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbXJOSAz
+	id S1765608AbXJOSCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXJOSBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:00:55 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48272 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997AbXJOSAw (ORCPT
+	Mon, 15 Oct 2007 14:01:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54294 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763771AbXJOSBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:00:52 -0400
-Date: Mon, 15 Oct 2007 12:00:50 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: Rob Landley <rob@landley.net>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Jens Axboe <axboe@suse.de>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015180050.GB25488@parisc-linux.org>
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015172513.GA5738@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 15 Oct 2007 14:01:31 -0400
+Subject: Re: [2.6 patch] ivtv: fix NULL dereference
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Adrian Bunk <bunk@kernel.org>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710142003.20323.hverkuil@xs4all.nl>
+References: <20071014175137.GM4211@stusta.de>
+	 <200710142003.20323.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 15 Oct 2007 16:01:20 -0200
+Message-Id: <1192471280.5240.121.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 10:25:13AM -0700, Greg KH wrote:
-> Use mount-by-label instead, it's much saner and handles device name
-> movement just fine (as does the UUID method that you seem to hate.)
-> Look in /dev/disk/ for a wide range of options that you have in which to
-> choose how to pick your block devices.
 
-But you still have to spin up the disc to read the label (which seems
-like a legitimate complaint to me).
+Em Dom, 2007-10-14 às 20:03 +0200, Hans Verkuil escreveu:
+> On Sunday 14 October 2007 19:51:37 Adrian Bunk wrote:
+> > We shouldn't dereference "itv" when we know it's NULL...
+> >
+> > Spotted by the Coverity checker.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> >
+> > ---
+> > --- linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c.old	2007-10-14
+> > 19:17:12.000000000 +0200 +++
+> > linux-2.6/drivers/media/video/ivtv/ivtv-fileops.c	2007-10-14
+> > 19:18:05.000000000 +0200 @@ -947,7 +947,7 @@ int
+> > ivtv_v4l2_open(struct inode *inode,
+> >  	if (itv == NULL) {
+> >  		/* Couldn't find a device registered
+> >  		   on that minor, shouldn't happen! */
+> > -		IVTV_WARN("No ivtv device found on minor %d\n", minor);
+> > +		printk(KERN_WARNING "No ivtv device found on minor %d\n", minor);
+> >  		return -ENXIO;
+> >  	}
+> 
+> 
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+> 
+> Mauro, can you merge this with 2.6.24 as well? Or shall I add it to my 
+> ivtv tree with my other outstanding fixes?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I'm applying it. I prefer to handle the fix changesets first, in
+separate requests.
+
+Later, I'll pull from your ivtv tree, together with the changesets
+you're working for 2.6.25.
+
+Btw, as I've received the patch via Adrian's e-mail, I've changed your
+tag to "Reviewed-by".
+ 
+Cheers,
+Mauro
+
