@@ -1,126 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764874AbXJOLvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764948AbXJOLvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764874AbXJOLvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760361AbXJOLuq
+	id S1764948AbXJOLvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764797AbXJOLvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:50:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:51301 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759166AbXJOLuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:50:44 -0400
-Message-Id: <20071015115043.244612028@strauss.suse.de>
-References: <20071015115042.391348549@strauss.suse.de>
-User-Agent: quilt/0.46-60
-Date: Mon, 15 Oct 2007 13:50:44 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Cc: akpm@linux-foundation.org, ak@suse.de
-Subject: [patch 2/2] Check if the crashkernel area is behind BSS
-Content-Disposition: inline; filename=crashkernel_check_end
+	Mon, 15 Oct 2007 07:51:03 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:49666 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764775AbXJOLvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 07:51:00 -0400
+Date: Mon, 15 Oct 2007 13:53:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071015115359.GB3015@ff.dom.local>
+References: <20071012082534.GB1962@ff.dom.local> <470F337A.9090205@aitel.hist.no> <20071012091213.GC1962@ff.dom.local> <470F6C43.4090905@aitel.hist.no> <20071012132929.GA4013@ff.dom.local> <47133E44.3070708@aitel.hist.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47133E44.3070708@aitel.hist.no>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch checks if the crashkernel base address is after the end of BSS
-on i386 and x86_64.
+On Mon, Oct 15, 2007 at 12:17:40PM +0200, Helge Hafting wrote:
+> Jarek Poplawski wrote:
+> >On Fri, Oct 12, 2007 at 02:44:51PM +0200, Helge Hafting wrote:
+> >...
+> >  
+> >>The point is that we _trust_ intel when they says "this will work".
+> >>Therefore, we can use the optimizations. It was never about
+> >>legal matters. If we didn't trust intel, then we couldn't
+> >>use their processors at all.
+> >>    
+> >
+> >But there was nothing about trust. Usually you don't trust somebody
+> >but somebody's opinions. The problem is there was no valid opinion,
+> >or this opinion has been changed now (no reason to not trust yet...).
+> >  
+> "Trusting people or their opinions" is only about use of the
+> english language, and not that intersting to bring up here.
+> Surely you know that lots of people here have english as
+> a secondary language only. Intersting for me to know, but
+> probably not for everybody else.
 
-Having "Kernel bss" in the resource tree is not sufficient since that only
-prevents "crash kernel" from appearing in the resource tree and therefore kexec
-from loading the crashdump kernel since it checks /proc/iomem. However, the
-crashkernel memory would still be reserved.
+Of curse, I know this problem: sometimes it's very hard to make people
+believe it's my secondary language! But this time I didn't see any
+language problem. I simply poined out that sometimes trusting could be
+not enough - not necessarily in this case.
 
+> >>We couldn't take the chance before. It was not documented
+> >>to work, verification by testing would not be trivial at all for
+> >>this case.
+> >>Linux is about "stability first, then performance".
+> >>Now we _know_ that we can have this optimization without
+> >>compromising stability. Nobody knew before!
+> >>    
+> >
+> >So, you think this would be the first or the least credibly
+> >verified undocumented feature used in linux? Then, it seems
+> >I can try to install this linux on my laptop at last! (...
+> >And, I can trust you, it will not break anything...?)
+> >  
+> I never claimed that linux will work on your laptop, so no:
+> You can't take my word for that, because I never gave it!
+> It is well known that some laptops don't work with linux,
+> I have no idea if yours will work, I don't even know what kind it is.
 
+OK, this was supposed to be a joke... (Btw, can you remember burning
+linux laptops?) I thought this "stability first" a bit funny, but this
+was a really bad joke, sorry.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Thanks for these additional explanations - you are completely right!
 
----
- arch/x86/kernel/setup_32.c |   31 +++++++++++++++++++++----------
- arch/x86/kernel/setup_64.c |   31 +++++++++++++++++++++----------
- 2 files changed, 42 insertions(+), 20 deletions(-)
-
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -403,18 +403,29 @@ static void __init reserve_crashkernel(v
- 	ret = parse_crashkernel(boot_command_line, total_mem,
- 			&crash_size, &crash_base);
- 	if (ret == 0 && crash_size > 0) {
--		if (crash_base > 0) {
--			printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--					"for crashkernel (System RAM: %ldMB)\n",
--					(unsigned long)(crash_size >> 20),
--					(unsigned long)(crash_base >> 20),
--					(unsigned long)(total_mem >> 20));
--			crashk_res.start = crash_base;
--			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size);
--		} else
-+		if (crash_base <= 0) {
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-+			return;
-+		}
-+
-+		if (base < virt_to_phys(&_end)) {
-+			printk(KERN_WARNING "base address for crashkernel "
-+					"(%luMB) is too low -- 0M-%luMB area "
-+					"is needed by the kernel\n",
-+					base >> 20,  virt_to_phys(&_end) << 20);
-+			return;
-+		}
-+
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(total_mem >> 20));
-+
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size - 1;
-+		reserve_bootmem(crash_base, crash_size);
- 	}
- }
- #else
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -210,18 +210,29 @@ static void __init reserve_crashkernel(v
- 	ret = parse_crashkernel(boot_command_line, free_mem,
- 			&crash_size, &crash_base);
- 	if (ret == 0 && crash_size) {
--		if (crash_base > 0) {
--			printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--					"for crashkernel (System RAM: %ldMB)\n",
--					(unsigned long)(crash_size >> 20),
--					(unsigned long)(crash_base >> 20),
--					(unsigned long)(free_mem >> 20));
--			crashk_res.start = crash_base;
--			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size);
--		} else
-+		if (crash_base <= 0) {
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-+			return;
-+		}
-+
-+		if (crash_base < virt_to_phys(&_end)) {
-+			printk(KERN_WARNING "base address for crashkernel "
-+					"(%lluMB) is too low -- 0M-%luMB area "
-+					"is needed by the kernel\n",
-+					crash_base >> 20,
-+					virt_to_phys(&_end) << 20);
-+			return;
-+		}
-+
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(free_mem >> 20));
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size - 1;
-+		reserve_bootmem(crash_base, crash_size);
- 	}
- }
- #else
-
--- 
+Regards,
+Jarek P.
