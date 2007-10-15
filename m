@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbXJON07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXJON3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758911AbXJON07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 09:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764982AbXJON0o
+	id S1764933AbXJON3a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 09:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbXJON3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 09:26:44 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:48117 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764974AbXJON0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 09:26:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eUrcjfU09y7UO8XJxynBtGbi/inZbGWyp+Cj/GnnWNNXauSJvhh5zcvZybGUjqrJHfv6mOb67pCIrrN6Fn+oHmtA3fZnja3oGFEYOpRJhyYcT63EhQJsQW2D8Y5kR/zpoT2JNKkOUeEtoGTwpBB4fTyJBjA/b/rWS3RdU1BYhp0=
-Message-ID: <b647ffbd0710150626v4273814esce681daa4467f173@mail.gmail.com>
-Date: Mon, 15 Oct 2007 15:26:42 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][PATCH] sched: SCHED_FIFO watchdog timer
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Lennart Poettering" <mztabzr@0pointer.de>
-In-Reply-To: <1192315867.5625.6.camel@lappy>
+	Mon, 15 Oct 2007 09:29:22 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:40542 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757109AbXJON3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 09:29:21 -0400
+Message-ID: <47136B2F.9070904@free.fr>
+Date: Mon, 15 Oct 2007 15:29:19 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alexey Starikovskiy <aystarik@gmail.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       robert.moore@intel.com, len.brown@intel.com
+Subject: Re: halt does not shut the system down
+References: <470A58AF.9080402@free.fr> <470C9731.6030200@free.fr> <470F4535.3050004@free.fr> <470F4F58.4080900@gmail.com> <470F7264.8070205@free.fr> <471342C8.2030305@free.fr> <47134ACF.8040608@gmail.com>
+In-Reply-To: <47134ACF.8040608@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192222309.5897.3.camel@lappy> <1192315867.5625.6.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/10/2007, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> The below patch is an idea proposed by tglx and depends on sched-devel +
-> the hrtick patch previously posted.
->
-> The current watchdog action is to demote the task to SCHED_NORMAL,
-> however it might be wanted to deliver a signal instead (or have more per
-> task configuration state). Which is why I added Lennart to the CC list
-> as I gathered he would like something like this for PulseAudio.
->
-> ---
-> Subject: sched: SCHED_FIFO watchdog timer
+Alexey Starikovskiy wrote:
 
-Why only SHCED_FIFO and not SCHED_RR?
-Their (mis)behavior is similar wrt SCHED_NORMAL tasks.
+> John Sigler wrote:
+> 
+>> Alexey Starikovskiy wrote:
+>> 
+>>> Could you please open bug at bugzilla.kernel.org and put all
+>>> these files there?
+>> 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=9148
+>> 
+>> Writing 15361 (i.e. 0x3C01) to ACPI_REGISTER_PM1A_CONTROL appears
+>> to hang my system in acpi_os_write_port(). What can I do about that?
+> 
+> That is supposed to turn your machine off. At least we now know that
+> ACPI did try to turn it off. You could also try different kernel or
+> defconfig.
 
+What's defconfig? .config? Which option(s) might have an impact?
 
-> +#ifdef CONFIG_SCHED_HRT_TICK
-> +static int fifo_watchdog(struct rq *rq, struct task_struct *p, int queued)
-> +{
-> +       if (likely(!queued || p->policy != SCHED_FIFO))
-> +               return 0;
-> +
-> +       /*
-> +        * task has been naughty, turn into SCHED_NORMAL
-> +        */
-> +       printk(KERN_INFO "SCHED_FIFO task %s/%d exceeded his runtime quota,"
-> +                       " demoting to regular task\n", p->comm, task_pid_nr(p));
-> +       deactivate_task(rq, p, 0);
-> +       __setscheduler(rq, p, SCHED_NORMAL, 0);
-> +       activate_task(rq, p, 0);
-> +       resched_task(p);
+>> Is it a BIOS issue? a kernel issue? a hardware issue?
+> 
+> I think _other_ OS could turn your machine off just fine, so the
+> issue is not HW, not BIOS. Probably, first thing to try is 2.6.23.1
+> as it was just released and has some changes in power management
+> section...
 
-I guess, put_prev_task() / set_curr_task() should be called (for the
-case of task_running(p)) to make it group-scheduler-friendly (as it's
-done e.g. in sched_setscheduler()).
+I have the same problem in 2.6.23.1 (cf. my bug report in the database)
 
-(normilize_task() should probably do the same)
+I'll ask the manufacturer whether they could get poweroff to work.
 
-
--- 
-Best regards,
-Dmitry Adamushko
+Regards.
