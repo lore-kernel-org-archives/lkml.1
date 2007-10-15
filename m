@@ -1,419 +1,612 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934282AbXJOSgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbXJOShm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934282AbXJOSgz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933894AbXJOSdx
+	id S933348AbXJOShm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933895AbXJOSeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:33:53 -0400
-Received: from mail.windriver.com ([147.11.1.11]:47767 "EHLO mail.wrs.com"
+	Mon, 15 Oct 2007 14:34:00 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47777 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933885AbXJOSdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:33:49 -0400
-Message-ID: <4713B255.5010708@windriver.com>
-Date: Mon, 15 Oct 2007 13:32:53 -0500
+	id S1763843AbXJOSdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:33:55 -0400
+Message-ID: <4713B259.4080507@windriver.com>
+Date: Mon, 15 Oct 2007 13:32:57 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-CC: mpm@selenic.com
-Subject: [PATCH 6/21] KGDB: This is the simple KGDB over Ethernet I/O driver
- that NET_POLL
+CC: hch@infradead.org
+Subject: [PATCH 7/21] KGDB: This adds the basic support for i386. 
 Content-Type: multipart/mixed;
- boundary="------------050001060306040408030508"
-X-OriginalArrivalTime: 15 Oct 2007 18:33:37.0202 (UTC) FILETIME=[E6662920:01C80F59]
+ boundary="------------050404000107020009040409"
+X-OriginalArrivalTime: 15 Oct 2007 18:33:41.0031 (UTC) FILETIME=[E8AE6B70:01C80F59]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------050001060306040408030508
+--------------050404000107020009040409
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
---------------050001060306040408030508
+--------------050404000107020009040409
 Content-Type: text/x-patch;
- name="eth.patch"
+ name="i386-lite.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="eth.patch"
+ filename="i386-lite.patch"
 
-eth.patch
+i386-lite.patch
 
 From: Jason Wessel <jason.wessel@windriver.com>
-CC: mpm@selenic.com
-Subject: [PATCH] This is the simple KGDB over Ethernet I/O driver that NET_POLL
+CC: hch@infradead.org
+Subject: [PATCH] This adds the basic support for i386.  
 
-At one point this was very similar to the version Matt Mackall wrote
-to allow for the use of KGDB over ethernet.  Since then it has been
-reworked to fit into the unified KGDB model.
+In order to support early debugginer with kgdb when used with kgdb via
+rs232 some traps must be initialized sooner rather than later, but it
+is safe to always do this. The arch i386 now calls parse_early_param() to
+explicitly look at anything marked early_param().  KGDB also adds a
+few more notify_die() calls in areas where KGDB needs to take a peek
+sometimes.  To achieve better back trace results from the debugger
+some labels were added to the switch_to macros.
 
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+Signed-off-by: Milind Dumbare <milind@linsyssoft.com>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
 ---
- Documentation/kernel-parameters.txt |    7 
- drivers/net/Makefile                |    1 
- drivers/net/kgdboe.c                |  294 ++++++++++++++++++++++++++++++++++++
- lib/Kconfig.kgdb                    |   22 ++
- 4 files changed, 324 insertions(+)
- create mode 100644 drivers/net/kgdboe.c
+ arch/x86/kernel/Makefile_32   |    1 
+ arch/x86/kernel/kgdb-jmp_32.S |   74 ++++++++++
+ arch/x86/kernel/kgdb_32.c     |  300 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup_32.c    |    2 
+ arch/x86/kernel/traps_32.c    |   12 +
+ arch/x86/mm/fault_32.c        |    4 
+ include/asm-x86/kdebug_32.h   |    1 
+ include/asm-x86/kgdb_32.h     |   51 +++++++
+ lib/Kconfig.kgdb              |    2 
+ 9 files changed, 442 insertions(+), 5 deletions(-)
+ create mode 100644 arch/x86/kernel/kgdb-jmp.S
+ create mode 100644 arch/x86/kernel/kgdb.c
+ create mode 100644 include/asm-x86/kgdb.h
 
---- a/drivers/net/Makefile
-+++ b/drivers/net/Makefile
-@@ -231,6 +231,7 @@ obj-$(CONFIG_ETRAX_ETHERNET) += cris/
- obj-$(CONFIG_ENP2611_MSF_NET) += ixp2000/
- 
- obj-$(CONFIG_NETCONSOLE) += netconsole.o
-+obj-$(CONFIG_KGDBOE) += kgdboe.o
- 
- obj-$(CONFIG_FS_ENET) += fs_enet/
- 
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -35,6 +35,7 @@ obj-y				+= sysenter_32.o vsyscall_32.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+ obj-$(CONFIG_EFI) 		+= efi_32.o efi_stub_32.o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
++obj-$(CONFIG_KGDB)		+= kgdb_32.o kgdb-jmp_32.o
+ obj-$(CONFIG_VM86)		+= vm86_32.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
 --- /dev/null
-+++ b/drivers/net/kgdboe.c
-@@ -0,0 +1,294 @@
++++ b/arch/x86/kernel/kgdb-jmp_32.S
+@@ -0,0 +1,74 @@
 +/*
-+ * drivers/net/kgdboe.c
++ * arch/x86/kernel/kgdb-jmp_32.S
 + *
-+ * A network interface for GDB.
-+ * Based upon 'gdbserial' by David Grothe <dave@gcom.com>
-+ * and Scott Foehner <sfoehner@engr.sgi.com>
++ * Save and restore system registers so that within a limited frame we
++ * may have a fault and "jump back" to a known safe location.
 + *
-+ * Maintainers: Amit S. Kale <amitkale@linsyssoft.com> and
-+ * 		Tom Rini <trini@kernel.crashing.org>
++ * Author: George Anzinger <george@mvista.com>
 + *
-+ * 2004 (c) Amit S. Kale <amitkale@linsyssoft.com>
-+ * 2004-2005 (c) MontaVista Software, Inc.
-+ * 2005-2007 (c) Wind River Systems, Inc.
-+ *
-+ * Contributors at various stages not listed above:
-+ * San Mehat <nettwerk@biodome.org>, Robert Walsh <rjwalsh@durables.org>,
-+ * wangdi <wangdi@clusterfs.com>, Matt Mackall <mpm@selenic.com>,
-+ * Pavel Machek <pavel@suse.cz>, Jason Wessel <jason.wessel@windriver.com>
++ * Cribbed from glibc, which carries the following:
++ * Copyright (C) 1996, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
++ * Copyright (C) 2005 by MontaVista Software.
 + *
 + * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
++ * version 2. This program as licensed "as is" without any warranty of
++ * any kind, whether express or implied.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/interrupt.h>
++#include <linux/linkage.h>
++
++#define PCOFF		0
++#define LINKAGE		4		/* just the return address */
++#define PTR_SIZE	4
++#define PARMS		LINKAGE		/* no space for saved regs */
++#define JMPBUF		PARMS
++#define VAL		JMPBUF+PTR_SIZE
++
++#define JB_BX		0
++#define JB_SI		1
++#define JB_DI		2
++#define JB_BP		3
++#define JB_SP		4
++#define JB_PC		5
++
++/* This must be called prior to kgdb_fault_longjmp and
++ * kgdb_fault_longjmp must not be called outside of the context of the
++ * last call to kgdb_fault_setjmp.
++ * kgdb_fault_setjmp(int *jmp_buf[6])
++ */
++ENTRY(kgdb_fault_setjmp)
++	movl JMPBUF(%esp), %eax
++
++	/* Save registers.  */
++	movl	%ebx, (JB_BX*4)(%eax)
++	movl	%esi, (JB_SI*4)(%eax)
++	movl	%edi, (JB_DI*4)(%eax)
++	/* Save SP as it will be after we return.  */
++	leal	JMPBUF(%esp), %ecx
++	movl	%ecx, (JB_SP*4)(%eax)
++	movl	PCOFF(%esp), %ecx	/* Save PC we are returning to now.  */
++	movl	%ecx, (JB_PC*4)(%eax)
++	movl	%ebp, (JB_BP*4)(%eax)	/* Save caller's frame pointer.  */
++
++	/* Restore state so we can now try the access. */
++	movl	JMPBUF(%esp), %ecx	/* User's jmp_buf in %ecx.  */
++	/* Save the return address now.  */
++	movl	(JB_PC*4)(%ecx), %edx
++	/* Restore registers.  */
++	movl	$0, %eax
++	movl	(JB_SP*4)(%ecx), %esp
++	jmp	*%edx		/* Jump to saved PC. */
++
++/* kgdb_fault_longjmp(int *jmp_buf[6]) */
++ENTRY(kgdb_fault_longjmp)
++	movl	JMPBUF(%esp), %ecx	/* User's jmp_buf in %ecx.  */
++	/* Save the return address now.  */
++	movl	(JB_PC*4)(%ecx), %edx
++	/* Restore registers.  */
++	movl	(JB_BX*4)(%ecx), %ebx
++	movl	(JB_SI*4)(%ecx), %esi
++	movl	(JB_DI*4)(%ecx), %edi
++	movl	(JB_BP*4)(%ecx), %ebp
++	movl	$1, %eax
++	movl	(JB_SP*4)(%ecx), %esp
++	jmp	*%edx		/* Jump to saved PC. */
+--- /dev/null
++++ b/arch/x86/kernel/kgdb_32.c
+@@ -0,0 +1,300 @@
++/*
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2, or (at your option) any
++ * later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ */
++
++/*
++ * Copyright (C) 2000-2001 VERITAS Software Corporation.
++ */
++/*
++ *  Contributor:     Lake Stevens Instrument Division$
++ *  Written by:      Glenn Engel $
++ *  Updated by:	     Amit Kale<akale@veritas.com>
++ *  Updated by:	     Tom Rini <trini@kernel.crashing.org>
++ *  Modified for 386 by Jim Kingdon, Cygnus Support.
++ *  Origianl kgdb, compatibility with 2.1.xx kernel by
++ *  David Grothe <dave@gcom.com>
++ *  Additional support from Tigran Aivazian <tigran@sco.com>
++ */
++
 +#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/smp.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <asm/vm86.h>
++#include <asm/system.h>
++#include <linux/ptrace.h>		/* for linux pt_regs struct */
 +#include <linux/kgdb.h>
-+#include <linux/netpoll.h>
 +#include <linux/init.h>
++#include <linux/kdebug.h>
++#include <asm/apicdef.h>
++#include <asm/desc.h>
 +
-+#include <asm/atomic.h>
++#include "mach_ipi.h"
 +
-+#define IN_BUF_SIZE 512		/* power of 2, please */
-+#define NOT_CONFIGURED_STRING "not_configured"
-+#define OUT_BUF_SIZE 30		/* We don't want to send too big of a packet. */
-+#define MAX_KGDBOE_CONFIG_STR 256
++/* Put the error code here just in case the user cares.  */
++int gdb_i386errcode;
++/* Likewise, the vector number here (since GDB only gets the signal
++   number through the usual means, and that's not very specific).  */
++int gdb_i386vector = -1;
 +
-+static char in_buf[IN_BUF_SIZE], out_buf[OUT_BUF_SIZE];
-+static int in_head, in_tail, out_count;
-+static atomic_t in_count;
-+/* 0 = unconfigured, 1 = netpoll options parsed, 2 = fully configured. */
-+static int configured;
-+static struct kgdb_io local_kgdb_io_ops;
-+static int use_dynamic_mac;
++void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	gdb_regs[_EAX] = regs->eax;
++	gdb_regs[_EBX] = regs->ebx;
++	gdb_regs[_ECX] = regs->ecx;
++	gdb_regs[_EDX] = regs->edx;
++	gdb_regs[_ESI] = regs->esi;
++	gdb_regs[_EDI] = regs->edi;
++	gdb_regs[_EBP] = regs->ebp;
++	gdb_regs[_DS] = regs->xds;
++	gdb_regs[_ES] = regs->xes;
++	gdb_regs[_PS] = regs->eflags;
++	gdb_regs[_CS] = regs->xcs;
++	gdb_regs[_PC] = regs->eip;
++	gdb_regs[_ESP] = (int)(&regs->esp);
++	gdb_regs[_SS] = __KERNEL_DS;
++	gdb_regs[_FS] = 0xFFFF;
++	gdb_regs[_GS] = 0xFFFF;
++}
 +
-+MODULE_DESCRIPTION("KGDB driver for network interfaces");
-+MODULE_LICENSE("GPL");
-+static char config[MAX_KGDBOE_CONFIG_STR] = NOT_CONFIGURED_STRING;
-+static struct kparam_string kps = {
-+	.string = config,
-+	.maxlen = MAX_KGDBOE_CONFIG_STR,
++/*
++ * Extracts ebp, esp and eip values understandable by gdb from the values
++ * saved by switch_to.
++ * thread.esp points to ebp. flags and ebp are pushed in switch_to hence esp
++ * prior to entering switch_to is 8 greater then the value that is saved.
++ * If switch_to changes, change following code appropriately.
++ */
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	gdb_regs[_EAX] = 0;
++	gdb_regs[_EBX] = 0;
++	gdb_regs[_ECX] = 0;
++	gdb_regs[_EDX] = 0;
++	gdb_regs[_ESI] = 0;
++	gdb_regs[_EDI] = 0;
++	gdb_regs[_EBP] = *(unsigned long *)p->thread.esp;
++	gdb_regs[_DS] = __KERNEL_DS;
++	gdb_regs[_ES] = __KERNEL_DS;
++	gdb_regs[_PS] = 0;
++	gdb_regs[_CS] = __KERNEL_CS;
++	gdb_regs[_PC] = p->thread.eip;
++	gdb_regs[_ESP] = p->thread.esp;
++	gdb_regs[_SS] = __KERNEL_DS;
++	gdb_regs[_FS] = 0xFFFF;
++	gdb_regs[_GS] = 0xFFFF;
++}
++
++void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	regs->eax = gdb_regs[_EAX];
++	regs->ebx = gdb_regs[_EBX];
++	regs->ecx = gdb_regs[_ECX];
++	regs->edx = gdb_regs[_EDX];
++	regs->esi = gdb_regs[_ESI];
++	regs->edi = gdb_regs[_EDI];
++	regs->ebp = gdb_regs[_EBP];
++	regs->xds = gdb_regs[_DS];
++	regs->xes = gdb_regs[_ES];
++	regs->eflags = gdb_regs[_PS];
++	regs->xcs = gdb_regs[_CS];
++	regs->eip = gdb_regs[_PC];
++}
++
++static struct hw_breakpoint {
++	unsigned enabled;
++	unsigned type;
++	unsigned len;
++	unsigned addr;
++} breakinfo[4] = {
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
 +};
 +
-+static void rx_hook(struct netpoll *np, int port, char *msg, int len,
-+		    struct sk_buff *skb)
++void kgdb_disable_hw_debug(struct pt_regs *regs)
 +{
-+	int i;
++	/* Disable hardware debugging while we are in kgdb */
++	asm volatile ("movl %0,%%db7": /* no output */ :"r" (0));
++}
 +
-+	np->remote_port = port;
++void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
++{
++	/* Master processor is completely in the debugger */
++	gdb_i386vector = e_vector;
++	gdb_i386errcode = err_code;
++}
 +
-+	/* Copy the MAC address if we need to. */
-+	if (use_dynamic_mac) {
-+		memcpy(np->remote_mac, eth_hdr(skb)->h_source,
-+				sizeof(np->remote_mac));
-+		use_dynamic_mac = 0;
-+	}
++#ifdef CONFIG_SMP
++void kgdb_roundup_cpus(unsigned long flags)
++{
++	send_IPI_allbutself(APIC_DM_NMI);
++}
++#endif
 +
-+	/*
-+	 * This could be GDB trying to attach.  But it could also be GDB
-+	 * finishing up a session, with kgdb_connected=0 but GDB sending
-+	 * an ACK for the final packet.  To make sure we don't try and
-+	 * make a breakpoint when GDB is leaving, make sure that if
-+	 * !kgdb_connected the only len == 1 packet we allow is ^C.
-+	 */
-+	if (!kgdb_connected && (len != 1 || msg[0] == 3) &&
-+	    !atomic_read(&kgdb_setting_breakpoint))
-+		tasklet_schedule(&kgdb_tasklet_breakpoint);
++int kgdb_arch_handle_exception(int e_vector, int signo,
++			       int err_code, char *remcom_in_buffer,
++			       char *remcom_out_buffer,
++			       struct pt_regs *linux_regs)
++{
++	long addr;
++	char *ptr;
++	int newPC;
++	int dr6;
 +
-+	for (i = 0; i < len; i++) {
-+		if (msg[i] == 3)
-+			tasklet_schedule(&kgdb_tasklet_breakpoint);
++	switch (remcom_in_buffer[0]) {
++	case 'c':
++	case 's':
++		/* try to read optional parameter, pc unchanged if no parm */
++		ptr = &remcom_in_buffer[1];
++		if (kgdb_hex2long(&ptr, &addr))
++			linux_regs->eip = addr;
++		newPC = linux_regs->eip;
 +
-+		if (atomic_read(&in_count) >= IN_BUF_SIZE) {
-+			/* buffer overflow, clear it */
-+			in_head = 0;
-+			in_tail = 0;
-+			atomic_set(&in_count, 0);
-+			break;
++		/* clear the trace bit */
++		linux_regs->eflags &= ~TF_MASK;
++		atomic_set(&cpu_doing_single_step, -1);
++
++		/* set the trace bit if we're stepping */
++		if (remcom_in_buffer[0] == 's') {
++			linux_regs->eflags |= TF_MASK;
++			debugger_step = 1;
++			atomic_set(&cpu_doing_single_step,
++			raw_smp_processor_id());
 +		}
-+		in_buf[in_head++] = msg[i];
-+		in_head &= (IN_BUF_SIZE - 1);
-+		atomic_inc(&in_count);
-+	}
++
++		asm volatile ("movl %%db6, %0\n":"=r" (dr6));
++		if (!(dr6 & 0x4000)) {
++			long breakno;
++			for (breakno = 0; breakno < 4; ++breakno) {
++				if (dr6 & (1 << breakno) &&
++				    breakinfo[breakno].type == 0) {
++					/* Set restore flag */
++					linux_regs->eflags |= X86_EFLAGS_RF;
++					break;
++				}
++			}
++		}
++		asm volatile ("movl %0, %%db6\n"::"r" (0));
++
++		return (0);
++	}			/* switch */
++	/* this means that we do not want to exit from the handler */
++	return -1;
 +}
 +
-+static struct netpoll np = {
-+	.dev_name = "eth0",
-+	.name = "kgdboe",
-+	.rx_hook = rx_hook,
-+	.local_port = 6443,
-+	.remote_port = 6442,
-+	.remote_mac = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
++static inline int single_step_cont(struct pt_regs *regs,
++			struct die_args *args)
++{
++	/* single step exception from kernel space to user space so
++	 * eat the exception and continue the process
++	 */
++	printk(KERN_ERR "KGDB: trap/step from kernel to user space,"
++			" resuming...\n");
++	kgdb_arch_handle_exception(args->trapnr, args->signr,
++			args->err, "c", "", regs);
++
++	return NOTIFY_STOP;
++}
++
++static int kgdb_notify(struct notifier_block *self, unsigned long cmd,
++		       void *ptr)
++{
++	struct die_args *args = ptr;
++	struct pt_regs *regs = args->regs;
++
++	switch (cmd) {
++	case DIE_NMI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMI_IPI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			if (kgdb_nmihook(raw_smp_processor_id(), regs))
++				return NOTIFY_DONE;
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMIWATCHDOG:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		/* Enter debugger */
++		break;
++	case DIE_DEBUG:
++		if (atomic_read(&cpu_doing_single_step) ==
++			raw_smp_processor_id() &&
++			user_mode(regs))
++			return single_step_cont(regs, args);
++		/* fall through */
++	default:
++		if (user_mode(regs))
++			return NOTIFY_DONE;
++	}
++
++	if (kgdb_may_fault) {
++		kgdb_fault_longjmp(kgdb_fault_jmp_regs);
++		return NOTIFY_STOP;
++	}
++
++	if (kgdb_handle_exception(args->trapnr, args->signr,
++	   args->err, regs))
++		return NOTIFY_DONE;
++
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block kgdb_notifier = {
++	.notifier_call = kgdb_notify,
 +};
 +
-+static void eth_pre_exception_handler(void)
++int kgdb_arch_init(void)
 +{
-+	/* Increment the module count when the debugger is active */
-+	if (!kgdb_connected)
-+		try_module_get(THIS_MODULE);
-+	netpoll_set_trap(1);
-+}
-+
-+static void eth_post_exception_handler(void)
-+{
-+	/* decrement the module count when the debugger detaches */
-+	if (!kgdb_connected)
-+		module_put(THIS_MODULE);
-+	netpoll_set_trap(0);
-+}
-+
-+static int eth_get_char(void)
-+{
-+	int chr;
-+
-+	while (atomic_read(&in_count) == 0)
-+		netpoll_poll(&np);
-+
-+	chr = in_buf[in_tail++];
-+	in_tail &= (IN_BUF_SIZE - 1);
-+	atomic_dec(&in_count);
-+	return chr;
-+}
-+
-+static void eth_flush_buf(void)
-+{
-+	if (out_count && np.dev) {
-+		netpoll_send_udp(&np, out_buf, out_count);
-+		memset(out_buf, 0, sizeof(out_buf));
-+		out_count = 0;
-+	}
-+}
-+
-+static void eth_put_char(u8 chr)
-+{
-+	out_buf[out_count++] = chr;
-+	if (out_count == OUT_BUF_SIZE)
-+		eth_flush_buf();
-+}
-+
-+static int option_setup(char *opt)
-+{
-+	char opt_scratch[MAX_KGDBOE_CONFIG_STR];
-+
-+	/* If we're being given a new configuration, copy it in. */
-+	if (opt != config)
-+		strcpy(config, opt);
-+	/* But work on a copy as netpoll_parse_options will eat it. */
-+	strcpy(opt_scratch, opt);
-+	configured = !netpoll_parse_options(&np, opt_scratch);
-+
-+	use_dynamic_mac = 1;
-+
-+	return 0;
-+}
-+__setup("kgdboe=", option_setup);
-+
-+/* With our config string set by some means, configure kgdboe. */
-+static int configure_kgdboe(void)
-+{
-+	/* Try out the string. */
-+	option_setup(config);
-+
-+	if (!configured) {
-+		printk(KERN_ERR "kgdboe: configuration incorrect - kgdboe not "
-+		       "loaded.\n");
-+		printk(KERN_ERR "  Usage: kgdboe=[src-port]@[src-ip]/[dev],"
-+				"[tgt-port]@<tgt-ip>/<tgt-macaddr>\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Bring it up. */
-+	if (netpoll_setup(&np)) {
-+		printk(KERN_ERR "kgdboe: netpoll_setup failed kgdboe failed\n");
-+		return -EINVAL;
-+	}
-+
-+	if (kgdb_register_io_module(&local_kgdb_io_ops)) {
-+		netpoll_cleanup(&np);
-+		return -EINVAL;
-+	}
-+
-+	configured = 2;
-+
++	register_die_notifier(&kgdb_notifier);
 +	return 0;
 +}
 +
-+static int init_kgdboe(void)
++/*
++ * Skip an int3 exception when it occurs after a breakpoint has been
++ * removed. Backtrack eip by 1 since the int3 would have caused it to
++ * increment by 1.
++ */
++
++int kgdb_skipexception(int exception, struct pt_regs *regs)
 +{
-+	int ret;
-+
-+	/* Already done? */
-+	if (configured == 2)
-+		return 0;
-+
-+	/* OK, go ahead and do it. */
-+	ret = configure_kgdboe();
-+
-+	if (configured == 2)
-+		printk(KERN_INFO "kgdboe: debugging over ethernet enabled\n");
-+
-+	return ret;
-+}
-+
-+static void cleanup_kgdboe(void)
-+{
-+	netpoll_cleanup(&np);
-+	configured = 0;
-+	kgdb_unregister_io_module(&local_kgdb_io_ops);
-+}
-+
-+static int param_set_kgdboe_var(const char *kmessage, struct kernel_param *kp)
-+{
-+	char kmessage_save[MAX_KGDBOE_CONFIG_STR];
-+	int msg_len = strlen(kmessage);
-+
-+	if (msg_len + 1 > MAX_KGDBOE_CONFIG_STR) {
-+		printk(KERN_ERR "%s: string doesn't fit in %u chars.\n",
-+		       kp->name, MAX_KGDBOE_CONFIG_STR - 1);
-+		return -ENOSPC;
-+	}
-+
-+	if (kgdb_connected) {
-+		printk(KERN_ERR "kgdboe: Cannot reconfigure while KGDB is "
-+				"connected.\n");
-+		return 0;
-+	}
-+
-+	/* Start the reconfiguration process by saving the old string */
-+	strncpy(kmessage_save, config, sizeof(kmessage_save));
-+
-+
-+	/* Copy in the new param and strip out invalid characters so we
-+	 * can optionally specify the MAC.
-+	 */
-+	strncpy(config, kmessage, sizeof(config));
-+	msg_len--;
-+	while (msg_len > 0 &&
-+			(config[msg_len] < ',' || config[msg_len] > 'f')) {
-+		config[msg_len] = '\0';
-+		msg_len--;
-+	}
-+
-+	/* Check to see if we are unconfiguring the io module and that it
-+	 * was in a fully configured state, as this is the only time that
-+	 * netpoll_cleanup should get called
-+	 */
-+	if (configured == 2 && strcmp(config, NOT_CONFIGURED_STRING) == 0) {
-+		printk(KERN_INFO "kgdboe: reverting to unconfigured state\n");
-+		cleanup_kgdboe();
-+		return 0;
-+	} else
-+		/* Go and configure with the new params. */
-+		configure_kgdboe();
-+
-+	if (configured == 2)
-+		return 0;
-+
-+	/* If the new string was invalid, revert to the previous state, which
-+	 * is at a minimum not_configured. */
-+	strncpy(config, kmessage_save, sizeof(config));
-+	if (strcmp(kmessage_save, NOT_CONFIGURED_STRING) != 0) {
-+		printk(KERN_INFO "kgdboe: reverting to prior configuration\n");
-+		/* revert back to the original config */
-+		strncpy(config, kmessage_save, sizeof(config));
-+		configure_kgdboe();
++	if (exception == 3 && kgdb_isremovedbreak(regs->eip - 1)) {
++		regs->eip -= 1;
++		return 1;
 +	}
 +	return 0;
 +}
 +
-+static struct kgdb_io local_kgdb_io_ops = {
-+	.read_char = eth_get_char,
-+	.write_char = eth_put_char,
-+	.init = init_kgdboe,
-+	.flush = eth_flush_buf,
-+	.pre_exception = eth_pre_exception_handler,
-+	.post_exception = eth_post_exception_handler
++unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
++{
++	if (exception == 3)
++		return instruction_pointer(regs) - 1;
++
++	return instruction_pointer(regs);
++}
++
++struct kgdb_arch arch_kgdb_ops = {
++	.gdb_bpt_instr = {0xcc},
++};
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -113,6 +113,7 @@ EXPORT_SYMBOL(ist_info);
+ #endif
+ 
+ extern void early_cpu_init(void);
++extern void early_trap_init(void);
+ extern int root_mountflags;
+ 
+ unsigned long saved_videomode;
+@@ -503,6 +504,7 @@ void __init setup_arch(char **cmdline_p)
+ 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
+ 	pre_setup_arch_hook();
+ 	early_cpu_init();
++	early_trap_init();
+ 
+ 	/*
+ 	 * FIXME: This isn't an official loader_type right
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -895,6 +895,7 @@ fastcall void __kprobes do_debug(struct 
+ 	 */
+ clear_dr7:
+ 	set_debugreg(0, 7);
++	notify_die(DIE_DEBUG, "debug2", regs, condition, error_code, SIGTRAP);
+ 	return;
+ 
+ debug_vm86:
+@@ -1160,6 +1161,12 @@ static void __init set_task_gate(unsigne
+ 	_set_gate(n, DESCTYPE_TASK, (void *)0, (gdt_entry<<3));
+ }
+ 
++/* Some traps need to be set early. */
++void __init early_trap_init(void) {
++	set_intr_gate(1, &debug);
++	set_system_intr_gate(3, &int3); /* int3 can be called from all */
++	set_intr_gate(14, &page_fault);
++}
+ 
+ void __init trap_init(void)
+ {
+@@ -1176,10 +1183,8 @@ void __init trap_init(void)
+ #endif
+ 
+ 	set_trap_gate(0,&divide_error);
+-	set_intr_gate(1,&debug);
+ 	set_intr_gate(2,&nmi);
+-	set_system_intr_gate(3, &int3); /* int3/4 can be called from all */
+-	set_system_gate(4,&overflow);
++	set_system_gate(4, &overflow); /* int4/5 can be called from all */
+ 	set_trap_gate(5,&bounds);
+ 	set_trap_gate(6,&invalid_op);
+ 	set_trap_gate(7,&device_not_available);
+@@ -1189,7 +1194,6 @@ void __init trap_init(void)
+ 	set_trap_gate(11,&segment_not_present);
+ 	set_trap_gate(12,&stack_segment);
+ 	set_trap_gate(13,&general_protection);
+-	set_intr_gate(14,&page_fault);
+ 	set_trap_gate(15,&spurious_interrupt_bug);
+ 	set_trap_gate(16,&coprocessor_error);
+ 	set_trap_gate(17,&alignment_check);
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -517,6 +517,10 @@ no_context:
+  	if (is_prefetch(regs, address, error_code))
+  		return;
+ 
++	if (notify_die(DIE_PAGE_FAULT_NO_CONTEXT, "no context", regs,
++				error_code, 14, SIGSEGV) == NOTIFY_STOP)
++		return;
++
+ /*
+  * Oops. The kernel tried to access some bad page. We'll have to
+  * terminate things with extreme prejudice.
+--- a/include/asm-x86/kdebug_32.h
++++ b/include/asm-x86/kdebug_32.h
+@@ -28,6 +28,7 @@ enum die_val {
+ 	DIE_CALL,
+ 	DIE_NMI_IPI,
+ 	DIE_PAGE_FAULT,
++	DIE_PAGE_FAULT_NO_CONTEXT,
+ };
+ 
+ #endif
+--- /dev/null
++++ b/include/asm-x86/kgdb_32.h
+@@ -0,0 +1,51 @@
++#ifdef __KERNEL__
++#ifndef _ASM_KGDB_H_
++#define _ASM_KGDB_H_
++
++#include <asm-generic/kgdb.h>
++
++/*
++ * Copyright (C) 2001-2004 Amit S. Kale
++ */
++
++/************************************************************************/
++/* BUFMAX defines the maximum number of characters in inbound/outbound buffers*/
++/* at least NUMREGBYTES*2 are needed for register packets */
++/* Longer buffer is needed to list all threads */
++#define BUFMAX			1024
++
++/* Number of bytes of registers.  */
++#define NUMREGBYTES		64
++/* Number of bytes of registers we need to save for a setjmp/longjmp. */
++#define NUMCRITREGBYTES		24
++
++/*
++ *  Note that this register image is in a different order than
++ *  the register image that Linux produces at interrupt time.
++ *
++ *  Linux's register image is defined by struct pt_regs in ptrace.h.
++ *  Just why GDB uses a different order is a historical mystery.
++ */
++enum regnames { _EAX,		/* 0 */
++	_ECX,			/* 1 */
++	_EDX,			/* 2 */
++	_EBX,			/* 3 */
++	_ESP,			/* 4 */
++	_EBP,			/* 5 */
++	_ESI,			/* 6 */
++	_EDI,			/* 7 */
++	_PC,			/* 8 also known as eip */
++	_PS,			/* 9 also known as eflags */
++	_CS,			/* 10 */
++	_SS,			/* 11 */
++	_DS,			/* 12 */
++	_ES,			/* 13 */
++	_FS,			/* 14 */
++	_GS			/* 15 */
 +};
 +
-+module_init(init_kgdboe);
-+module_exit(cleanup_kgdboe);
-+module_param_call(kgdboe, param_set_kgdboe_var, param_get_string, &kps, 0644);
-+MODULE_PARM_DESC(kgdboe, " kgdboe=[src-port]@[src-ip]/[dev],"
-+		 "[tgt-port]@<tgt-ip>/<tgt-macaddr>\n");
++#define BREAKPOINT()		asm("   int $3");
++#define BREAK_INSTR_SIZE	1
++#define CACHE_FLUSH_IS_SAFE	1
++#endif				/* _ASM_KGDB_H_ */
++#endif				/* __KERNEL__ */
 --- a/lib/Kconfig.kgdb
 +++ b/lib/Kconfig.kgdb
-@@ -65,8 +65,30 @@ config KGDB_8250_NOMODULE
- 	  Uses generic serial port (8250) to communicate with the host
- 	  GDB.  This is independent of the normal (SERIAL_8250) driver
- 	  for this chipset.
-+
-+config KGDBOE_NOMODULE
-+	bool "KGDB: On ethernet - in kernel"
-+	depends on NET
-+	select KGDBOE
-+	help
-+	  Uses the NETPOLL API to communicate with the host GDB via UDP.
-+	  In order for this to work, the ethernet interface specified must
-+	  support the NETPOLL API, and this must be initialized at boot.
-+	  See the documentation for syntax.
- endchoice
- 
-+config KGDBOE
-+	tristate "KGDB: On ethernet" if !KGDBOE_NOMODULE
-+	depends on m && KGDB && NET
-+	select NETPOLL
-+	select NETPOLL_TRAP
-+	select NET_POLL_CONTROLLER
-+	help
-+	  Uses the NETPOLL API to communicate with the host GDB via UDP.
-+	  In order for this to work, the ethernet interface specified must
-+	  support the NETPOLL API, and this must be initialized at boot.
-+	  See the documentation for syntax.
-+
- config KGDB_8250
- 	tristate "KGDB: On generic serial port (8250)" if !KGDB_8250_NOMODULE
- 	depends on m && KGDB_ONLY_MODULES
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -780,6 +780,13 @@ and is between 256 and 4096 characters. 
- 	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
- 			See header of drivers/scsi/ips.c.
- 
-+	kgdboe=		[HW] Setup the local ip information and host ip
-+			information when the network driver supports
-+			NETPOLL and kgdboe is configured as a built in.
-+			Options are:
-+			[src-port]@<src-ip>/[dev],[tgt-port]@<tgt-ip>/<tgt-mac>
-+			IE: kgdboe=@10.0.1.2/,@10.0.0.1.3/
-+
- 	ports=		[IP_VS_FTP] IPVS ftp helper module
- 			Default is 21.
- 			Up to 8 (IP_VS_APP_MAX_PORTS) ports
+@@ -13,7 +13,7 @@ config UNWIND_INFO
+ config KGDB
+ 	bool "KGDB: kernel debugging with remote gdb"
+ 	select WANT_EXTRA_DEBUG_INFORMATION
+-	depends on DEBUG_KERNEL
++	depends on DEBUG_KERNEL && (X86)
+ 	help
+ 	  If you say Y here, it will be possible to remotely debug the
+ 	  kernel using gdb.  Documentation of kernel debugger is available
 
---------------050001060306040408030508--
+--------------050404000107020009040409--
