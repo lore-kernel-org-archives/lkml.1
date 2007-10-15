@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbXJOTvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764390AbXJOTvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764373AbXJOTvZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbXJOTvQ
+	id S1764390AbXJOTvn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbXJOTvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 15 Oct 2007 15:51:16 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:36060 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756174AbXJOTvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:51:14 -0400
-Date: Mon, 15 Oct 2007 21:51:10 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@atrey.karlin.mff.cz, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Atari keyboard: incorporate additional review comments
-Message-ID: <Pine.LNX.4.64.0710152150260.22973@anakin>
+Received: from waste.org ([66.93.16.53]:36046 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758084AbXJOTvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:51:15 -0400
+Date: Mon, 15 Oct 2007 14:51:11 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/21] KGDB: Pass skb via NET_POLL rx routine
+Message-ID: <20071015195111.GS19691@waste.org>
+References: <4713B251.7000400@windriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4713B251.7000400@windriver.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atari keyboard: incorporate additional review comments:
-  o Kill reference to source file name
-  o Return error value from input_register_device() instead of -ENOMEM
+On Mon, Oct 15, 2007 at 01:32:49PM -0500, Jason Wessel wrote:
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
----
- arch/m68k/atari/atakeyb.c       |    2 --
- drivers/input/keyboard/atakbd.c |    7 ++++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+> netpoll_pass_skb_to_rx_hook.patch
+> 
+> From: Jason Wessel <jason.wessel@windriver.com>
+> CC: mpm@selenic.com
+> Subject: [PATCH] Pass skb via NET_POLL rx routine
+> 
+> This patch is a chane to the NET POLL api so that the MAC address or
+> IP frame information can be parsed by the driver that wishes to use
+> it.  Speficially for kgdboe, it is used to automatically collect the
+> MAC address of the GDB host.
+> 
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -1,6 +1,4 @@
- /*
-- * linux/arch/m68k/atari/atakeyb.c
-- *
-  * Atari Keyboard driver for 680x0 Linux
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
---- a/drivers/input/keyboard/atakbd.c
-+++ b/drivers/input/keyboard/atakbd.c
-@@ -217,7 +217,7 @@ static void atakbd_interrupt(unsigned ch
- 
- static int __init atakbd_init(void)
- {
--	int i;
-+	int i, error;
- 
- 	if (!MACH_IS_ATARI || !ATARIHW_PRESENT(ST_MFP))
- 		return -EIO;
-@@ -247,9 +247,10 @@ static int __init atakbd_init(void)
- 	}
- 
- 	/* error check */
--	if (input_register_device(atakbd_dev)) {
-+	error = input_register_device(atakbd_dev);
-+	if (error) {
- 		input_free_device(atakbd_dev);
--		return -ENOMEM;
-+		return error;
- 	}
- 
- 	atari_input_keyboard_interrupt_hook = atakbd_interrupt;
+Looks great.
 
-Gr{oetje,eeting}s,
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Mathematics is the supreme nostalgia of our time.
