@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765280AbXJOW27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765344AbXJOW3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765280AbXJOW27 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760549AbXJOW0R
+	id S1765344AbXJOW3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbXJOW0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:26:17 -0400
-Received: from waste.org ([66.93.16.53]:1298 "EHLO cinder.waste.org"
+	Mon, 15 Oct 2007 18:26:18 -0400
+Received: from waste.org ([66.93.16.53]:1299 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756242AbXJOW0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757002AbXJOW0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Oct 2007 18:26:09 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
@@ -17,135 +17,298 @@ Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        David Rientjes <rientjes@google.com>,
        Fengguang Wu <wfg@mail.ustc.edu.cn>
 In-Reply-To: <1.290135367@selenic.com>
-Message-Id: <3.290135367@selenic.com>
-Subject: [PATCH 2/11] maps3: introduce task_size_of for all arches
-Date: Mon, 15 Oct 2007 17:25:59 -0500
+Message-Id: <10.290135367@selenic.com>
+Subject: [PATCH 9/11] maps3: add /proc/pid/pagemap interface
+Date: Mon, 15 Oct 2007 17:26:06 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the /proc/<pid>/pagemap code[1], we need to able to query how
-much virtual address space a particular task has.  The trick is
-that we do it through /proc and can't use TASK_SIZE since it
-references "current" on some arches.  The process opening the
-/proc file might be a 32-bit process opening a 64-bit process's
-pagemap file.
+From: Matt Mackall <mpm@selenic.com>
 
-x86_64 already has a TASK_SIZE_OF() macro:
+This interface provides a mapping for each page in an address space to its
+physical page frame number, allowing precise determination of what pages are
+mapped and what pages are shared between processes.
 
-#define TASK_SIZE_OF(child)     ((test_tsk_thread_flag(child, TIF_IA32)) ? IA32_PAGE_OFFSET : TASK_SIZE64)
+New in this version:
 
-I'd like to have that for other architectures.  So, add it
-for all the architectures that actually use "current" in 
-their TASK_SIZE.  For the others, just add a quick #define
-in sched.h to use plain old TASK_SIZE.
+- headers gone again (as recommended by Dave Hansen and Alan Cox)
+- 64-bit entries (as per discussion with Andi Kleen)
+- swap pte information exported (from Dave Hansen)
+- page walker callback for holes (from Dave Hansen)
+- direct put_user I/O (as suggested by Rusty Russell)
 
-1. http://www.linuxworld.com/news/2007/042407-kernel.html
+This patch folds in cleanups and swap PTE support from Dave Hansen
+<haveblue@us.ibm.com>.
 
-- MIPS portion from Ralf Baechle <ralf@linux-mips.org>
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 Signed-off-by: Matt Mackall <mpm@selenic.com>
----
 
- lxc-dave/include/asm-ia64/processor.h    |    3 ++-
- lxc-dave/include/asm-mips/processor.h    |    4 ++++
- lxc-dave/include/asm-parisc/processor.h  |    3 ++-
- lxc-dave/include/asm-powerpc/processor.h |    4 +++-
- lxc-dave/include/asm-s390/processor.h    |    2 ++
- lxc-dave/include/linux/sched.h           |    4 ++++
- 6 files changed, 17 insertions(+), 3 deletions(-)
-
-Index: l/include/asm-ia64/processor.h
+Index: l/fs/proc/base.c
 ===================================================================
---- l.orig/include/asm-ia64/processor.h	2007-10-09 17:37:58.000000000 -0500
-+++ l/include/asm-ia64/processor.h	2007-10-10 11:46:30.000000000 -0500
-@@ -31,7 +31,8 @@
-  * each (assuming 8KB page size), for a total of 8TB of user virtual
-  * address space.
-  */
--#define TASK_SIZE		(current->thread.task_size)
-+#define TASK_SIZE_OF(tsk)	((tsk)->thread.task_size)
-+#define TASK_SIZE       	TASK_SIZE_OF(current)
- 
- /*
-  * This decides where the kernel will search for a free chunk of vm
-Index: l/include/asm-mips/processor.h
-===================================================================
---- l.orig/include/asm-mips/processor.h	2007-10-09 17:37:58.000000000 -0500
-+++ l/include/asm-mips/processor.h	2007-10-10 11:46:30.000000000 -0500
-@@ -45,6 +45,8 @@ extern unsigned int vced_count, vcei_cou
-  * space during mmap's.
-  */
- #define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
-+#define TASK_SIZE_OF(tsk)						\
-+	(test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
- #endif
- 
- #ifdef CONFIG_64BIT
-@@ -65,6 +67,8 @@ extern unsigned int vced_count, vcei_cou
- #define TASK_UNMAPPED_BASE						\
- 	(test_thread_flag(TIF_32BIT_ADDR) ?				\
- 		PAGE_ALIGN(TASK_SIZE32 / 3) : PAGE_ALIGN(TASK_SIZE / 3))
-+#define TASK_SIZE_OF(tsk)						\
-+	(test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
- #endif
- 
- #define NUM_FPU_REGS	32
-Index: l/include/asm-parisc/processor.h
-===================================================================
---- l.orig/include/asm-parisc/processor.h	2007-10-09 17:36:49.000000000 -0500
-+++ l/include/asm-parisc/processor.h	2007-10-10 11:46:30.000000000 -0500
-@@ -32,7 +32,8 @@
- #endif
- #define current_text_addr() ({ void *pc; current_ia(pc); pc; })
- 
--#define TASK_SIZE               (current->thread.task_size)
-+#define TASK_SIZE_OF(tsk)       ((tsk)->thread.task_size)
-+#define TASK_SIZE	         (current->thread.task_size)
- #define TASK_UNMAPPED_BASE      (current->thread.map_base)
- 
- #define DEFAULT_TASK_SIZE32	(0xFFF00000UL)
-Index: l/include/asm-powerpc/processor.h
-===================================================================
---- l.orig/include/asm-powerpc/processor.h	2007-10-09 17:37:58.000000000 -0500
-+++ l/include/asm-powerpc/processor.h	2007-10-10 11:46:30.000000000 -0500
-@@ -99,7 +99,9 @@ extern struct task_struct *last_task_use
-  */
- #define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
- 
--#define TASK_SIZE (test_thread_flag(TIF_32BIT) ? \
-+#define TASK_SIZE	  (test_thread_flag(TIF_32BIT) ? \
-+		TASK_SIZE_USER32 : TASK_SIZE_USER64)
-+#define TASK_SIZE_OF(tsk) (test_tsk_thread_flag(tsk, TIF_32BIT) ? \
- 		TASK_SIZE_USER32 : TASK_SIZE_USER64)
- 
- /* This decides where the kernel will search for a free chunk of vm
-Index: l/include/asm-s390/processor.h
-===================================================================
---- l.orig/include/asm-s390/processor.h	2007-10-09 17:37:58.000000000 -0500
-+++ l/include/asm-s390/processor.h	2007-10-10 11:46:30.000000000 -0500
-@@ -75,6 +75,8 @@ extern struct task_struct *last_task_use
- 
- # define TASK_SIZE		(test_thread_flag(TIF_31BIT) ? \
- 					(0x80000000UL) : (0x40000000000UL))
-+# define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk, TIF_31BIT) ? \
-+					(0x80000000UL) : (0x40000000000UL))
- # define TASK_UNMAPPED_BASE	(TASK_SIZE / 2)
- # define DEFAULT_TASK_SIZE	(0x40000000000UL)
- 
-Index: l/include/linux/sched.h
-===================================================================
---- l.orig/include/linux/sched.h	2007-10-09 17:37:59.000000000 -0500
-+++ l/include/linux/sched.h	2007-10-10 11:46:30.000000000 -0500
-@@ -1880,6 +1880,10 @@ static inline void inc_syscw(struct task
+--- l.orig/fs/proc/base.c	2007-10-14 13:39:00.000000000 -0500
++++ l/fs/proc/base.c	2007-10-15 17:18:09.000000000 -0500
+@@ -635,7 +635,7 @@ out_no_task:
  }
  #endif
  
-+#ifndef TASK_SIZE_OF
-+#define TASK_SIZE_OF(tsk)	TASK_SIZE
-+#endif
-+
- #endif /* __KERNEL__ */
- 
+-static loff_t mem_lseek(struct file * file, loff_t offset, int orig)
++loff_t mem_lseek(struct file * file, loff_t offset, int orig)
+ {
+ 	switch (orig) {
+ 	case 0:
+@@ -2034,6 +2034,7 @@ static const struct pid_entry tgid_base_
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",      S_IRUGO, smaps),
++	REG("pagemap",    S_IRUSR, pagemap),
  #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
+@@ -2320,6 +2321,7 @@ static const struct pid_entry tid_base_s
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",     S_IRUGO, smaps),
++	REG("pagemap",    S_IRUSR, pagemap),
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
+Index: l/fs/proc/internal.h
+===================================================================
+--- l.orig/fs/proc/internal.h	2007-10-14 13:39:00.000000000 -0500
++++ l/fs/proc/internal.h	2007-10-15 17:18:09.000000000 -0500
+@@ -45,11 +45,13 @@ extern int proc_tid_stat(struct task_str
+ extern int proc_tgid_stat(struct task_struct *, char *);
+ extern int proc_pid_status(struct task_struct *, char *);
+ extern int proc_pid_statm(struct task_struct *, char *);
++extern loff_t mem_lseek(struct file * file, loff_t offset, int orig);
+ 
+ extern const struct file_operations proc_maps_operations;
+ extern const struct file_operations proc_numa_maps_operations;
+ extern const struct file_operations proc_smaps_operations;
+ extern const struct file_operations proc_clear_refs_operations;
++extern const struct file_operations proc_pagemap_operations;
+ 
+ void free_proc_entry(struct proc_dir_entry *de);
+ 
+Index: l/fs/proc/task_mmu.c
+===================================================================
+--- l.orig/fs/proc/task_mmu.c	2007-10-14 18:07:26.000000000 -0500
++++ l/fs/proc/task_mmu.c	2007-10-15 17:18:09.000000000 -0500
+@@ -5,7 +5,10 @@
+ #include <linux/highmem.h>
+ #include <linux/ptrace.h>
+ #include <linux/pagemap.h>
++#include <linux/ptrace.h>
+ #include <linux/mempolicy.h>
++#include <linux/swap.h>
++#include <linux/swapops.h>
+ 
+ #include <asm/elf.h>
+ #include <asm/uaccess.h>
+@@ -519,6 +522,202 @@ const struct file_operations proc_clear_
+ 	.write		= clear_refs_write,
+ };
+ 
++struct pagemapread {
++	char __user *out, *end;
++};
++
++#define PM_ENTRY_BYTES sizeof(u64)
++#define PM_RESERVED_BITS    3
++#define PM_RESERVED_OFFSET  (64 - PM_RESERVED_BITS)
++#define PM_RESERVED_MASK    (((1LL<<PM_RESERVED_BITS)-1) << PM_RESERVED_OFFSET)
++#define PM_SPECIAL(nr)      (((nr) << PM_RESERVED_OFFSET) | PM_RESERVED_MASK)
++#define PM_NOT_PRESENT      PM_SPECIAL(1LL)
++#define PM_SWAP             PM_SPECIAL(2LL)
++#define PM_END_OF_BUFFER    1
++
++static int add_to_pagemap(unsigned long addr, u64 pfn,
++			  struct pagemapread *pm)
++{
++	/*
++	 * Make sure there's room in the buffer for an
++	 * entire entry.  Otherwise, only copy part of
++	 * the pfn.
++	 */
++	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
++		if(copy_to_user(pm->out, &pfn, pm->end - pm->out))
++			return -EFAULT;
++		pm->out = pm->end;
++		return PM_END_OF_BUFFER;
++	}
++
++	if(put_user(pfn, pm->out))
++		return -EFAULT;
++	pm->out += PM_ENTRY_BYTES;
++	return 0;
++}
++
++static int pagemap_pte_hole(unsigned long start, unsigned long end,
++				void *private)
++{
++	struct pagemapread *pm = private;
++	unsigned long addr;
++	int err = 0;
++	for (addr = start; addr < end; addr += PAGE_SIZE) {
++		err = add_to_pagemap(addr, PM_NOT_PRESENT, pm);
++		if (err)
++			break;
++	}
++	return err;
++}
++
++u64 swap_pte_to_pagemap_entry(pte_t pte)
++{
++	swp_entry_t e = pte_to_swp_entry(pte);
++	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
++}
++
++static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
++			     void *private)
++{
++	struct pagemapread *pm = private;
++	pte_t *pte;
++	int err = 0;
++
++	pte = pte_offset_map(pmd, addr);
++	for (; addr != end; pte++, addr += PAGE_SIZE) {
++		u64 pfn = PM_NOT_PRESENT;
++		if (is_swap_pte(*pte))
++			pfn = swap_pte_to_pagemap_entry(*pte);
++		else if (pte_present(*pte))
++			pfn = pte_pfn(*pte);
++		err = add_to_pagemap(addr, pfn, pm);
++		if (err)
++			return err;
++	}
++	pte_unmap(pte - 1);
++
++	cond_resched();
++
++	return err;
++}
++
++static struct mm_walk pagemap_walk =
++{
++	.pmd_entry = pagemap_pte_range,
++	.pte_hole = pagemap_pte_hole
++};
++
++/*
++ * /proc/pid/pagemap - an array mapping virtual pages to pfns
++ *
++ * For each page in the address space, this file contains one 64-bit
++ * entry representing the corresponding physical page frame number
++ * (PFN) if the page is present. If there is a swap entry for the
++ * physical page, then an encoding of the swap file number and the
++ * page's offset into the swap file are returned. If no page is
++ * present at all, PM_NOT_PRESENT is returned. This allows determining
++ * precisely which pages are mapped (or in swap) and comparing mapped
++ * pages between processes.
++ *
++ * Efficient users of this interface will use /proc/pid/maps to
++ * determine which areas of memory are actually mapped and llseek to
++ * skip over unmapped regions.
++ */
++static ssize_t pagemap_read(struct file *file, char __user *buf,
++			    size_t count, loff_t *ppos)
++{
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
++	struct page **pages, *page;
++	unsigned long uaddr, uend;
++	struct mm_struct *mm;
++	struct pagemapread pm;
++	int pagecount;
++	int ret = -ESRCH;
++
++	if (!task)
++		goto out;
++
++	ret = -EACCES;
++	if (!ptrace_may_attach(task))
++		goto out;
++
++	ret = -EINVAL;
++	/* file position must be aligned */
++	if (*ppos % PM_ENTRY_BYTES)
++		goto out;
++
++	ret = 0;
++	mm = get_task_mm(task);
++	if (!mm)
++		goto out;
++
++	ret = -ENOMEM;
++	uaddr = (unsigned long)buf & PAGE_MASK;
++	uend = (unsigned long)(buf + count);
++	pagecount = (PAGE_ALIGN(uend) - uaddr) / PAGE_SIZE;
++	pages = kmalloc(pagecount * sizeof(struct page *), GFP_KERNEL);
++	if (!pages)
++		goto out_task;
++
++	down_read(&current->mm->mmap_sem);
++	ret = get_user_pages(current, current->mm, uaddr, pagecount,
++			     1, 0, pages, NULL);
++	up_read(&current->mm->mmap_sem);
++
++	if (ret < 0)
++		goto out_free;
++
++	pm.out = buf;
++	pm.end = buf + count;
++
++	if (!ptrace_may_attach(task)) {
++		ret = -EIO;
++	} else {
++		unsigned long src = *ppos;
++		unsigned long svpfn = src / PM_ENTRY_BYTES;
++		unsigned long start_vaddr = svpfn << PAGE_SHIFT;
++		unsigned long end_vaddr = TASK_SIZE_OF(task);
++
++		/* watch out for wraparound */
++		if (svpfn > TASK_SIZE_OF(task) >> PAGE_SHIFT)
++			start_vaddr = end_vaddr;
++
++		/*
++		 * The odds are that this will stop walking way
++		 * before end_vaddr, because the length of the
++		 * user buffer is tracked in "pm", and the walk
++		 * will stop when we hit the end of the buffer.
++		 */
++		ret = walk_page_range(mm, start_vaddr, end_vaddr,
++					&pagemap_walk, &pm);
++		if (ret == PM_END_OF_BUFFER)
++			ret = 0;
++		/* don't need mmap_sem for these, but this looks cleaner */
++		*ppos += pm.out - buf;
++		if (!ret)
++			ret = pm.out - buf;
++	}
++
++	for (; pagecount; pagecount--) {
++		page = pages[pagecount-1];
++		if (!PageReserved(page))
++			SetPageDirty(page);
++		page_cache_release(page);
++	}
++	mmput(mm);
++out_free:
++	kfree(pages);
++out_task:
++	put_task_struct(task);
++out:
++	return ret;
++}
++
++const struct file_operations proc_pagemap_operations = {
++	.llseek		= mem_lseek, /* borrow this */
++	.read		= pagemap_read,
++};
++
+ #ifdef CONFIG_NUMA
+ extern int show_numa_map(struct seq_file *m, void *v);
+ 
+@@ -552,4 +751,3 @@ const struct file_operations proc_numa_m
+ 	.release	= seq_release_private,
+ };
+ #endif
+-
