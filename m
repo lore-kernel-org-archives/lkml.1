@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbXJOJHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbXJOJRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbXJOJHc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXJOJHF
+	id S1757932AbXJOJRT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbXJOJRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:07:05 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:56532 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753751AbXJOJHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:07:01 -0400
-Date: Mon, 15 Oct 2007 11:10:00 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071015090959.GB1875@ff.dom.local>
-References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local> <20071015080924.GA32562@wotan.suse.de>
+	Mon, 15 Oct 2007 05:17:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41960 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754009AbXJOJRK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 05:17:10 -0400
+Date: Mon, 15 Oct 2007 02:16:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory
+ pressure
+Message-Id: <20071015021624.7d5233bd.akpm@linux-foundation.org>
+In-Reply-To: <200710160006.19735.nickpiggin@yahoo.com.au>
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<200710160006.19735.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015080924.GA32562@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 10:09:24AM +0200, Nick Piggin wrote:
-...
-> Has performance really been much problem for you? (even before the
-> lfence instruction, when you theoretically had to use a locked op)?
-> I mean, I'd struggle to find a place in the Linux kernel where there
-> is actually a measurable difference anywhere... and we're pretty
-> performance critical and I think we have a reasonable amount of lockless
-> code (I guess we may not have a lot of tight computational loops, though).
-> I'd be interested to know what, if any, application had found these
-> barriers to be problematic...
+On Tue, 16 Oct 2007 00:06:19 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-I'm not performance-words at all, so I can't help you, sorry. But, I
-understand people who care about this, and think there is a popular
-conviction barriers and locked instructions are costly, so I'm
-surprised there is any "problem" now with finding these gains...
+> On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
+> > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
+> > unmaintained, so decided to sent the patch to you :-).
+> > I have CCed Ted, who did work on the code in the 90s. I found no current
+> > email address of Chad Page.
+> 
+> This really needs to be fixed...
 
-> The thing is that those documents are not defining what a particular
-> implementation does, but how the architecture is defined (ie. what
-> must some arbitrary software/hardware provide and what may it expect).
+rd.c is fairly mind-boggling vfs abuse.
 
-I'm not sure this is the right way to tell it. If there is no
-distinction between what is and what could be, how can I believe in
-similar Alpha or Itanium stuff? IMHO, these manuals sometimes look
-like they describe some real hardware mechanisms, and sometimes they
-mention about possible changes and reserved features too. So, when
-they don't mention you could think it's a present behavior.
+> I can't make up my mind between the approaches to fixing it.
+> 
+> On one hand, I would actually prefer to really mark the buffers
+> dirty (as in: Eric's fix for this problem[*]) than this patch,
+> and this seems a bit like a bandaid...
+> 
+> On the other hand, the wound being covered by the bandaid is
+> actually the code in the buffer layer that does this latent
+> "cleaning" of the page because it sadly doesn't really keep
+> track of the pagecache state. But it *still* feels like we
+> should be marking the rd page's buffers dirty which should
+> avoid this problem anyway.
+> 
+> [*] However, hmm, with Eric's patch I guess we'd still have a hole
+> where filesystems that write their buffers by hand think they are
+> "cleaning" these things and we're back to square one. That could
+> be fixed by marking the buffers dirty again?
+> 
+> Why were Eric's patches dropped, BTW? I don't remember.
 
-> It's pretty natural that Intel started out with a weaker guarantee
-> than their CPUs of the time actually supported, and tightened it up
-> after (presumably) deciding not to implement such relaxed semantics
-> for the forseeable future.
-
-As a matter of fact it's not natural for me at all. I expected the
-other direction, and I still doubt programmers' intentions could be
-"automatically" predicted good enough, so IMHO, it's not for long.
-Of course, it doesn't seem to be any help for linux or bsd
-programmers, which still have to think about different architectures.
-
-Regards,
-Jarek P.
+runtime problems, iirc.
