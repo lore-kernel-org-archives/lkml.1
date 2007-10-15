@@ -1,110 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbXJOQFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764493AbXJOQFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbXJOQFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbXJOQFF
+	id S1764493AbXJOQFl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761629AbXJOQFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:05:05 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:60533 "EHLO smtp4-g19.free.fr"
+	Mon, 15 Oct 2007 12:05:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10138 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755741AbXJOQFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:05:03 -0400
-Message-ID: <47138FAD.8050805@free.fr>
-Date: Mon, 15 Oct 2007 18:05:01 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	id S1761345AbXJOQFU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 12:05:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
+   d="scan'208";a="174307839"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: NMI watchdog
-References: <470F3BE0.4050807@free.fr> <20071012074836.79e6a064@laptopd505.fenrus.org>
-In-Reply-To: <20071012074836.79e6a064@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] drivers/pci, drivers/dma: kill unused vars
+Date: Mon, 15 Oct 2007 09:05:18 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03393355@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20071013190724.GA20132@havoc.gtf.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/pci, drivers/dma: kill unused vars
+Thread-Index: AcgNzEvHljxyxmu1TKm1oK80yEcdQABeANUQ
+References: <20071013190724.GA20132@havoc.gtf.org>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Jeff Garzik" <jeff@garzik.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+X-OriginalArrivalTime: 15 Oct 2007 16:05:19.0710 (UTC) FILETIME=[2F149FE0:01C80F45]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-
-> John Sigler wrote:
+>-----Original Message-----
+>From: Jeff Garzik [mailto:jeff@garzik.org] 
+>Sent: Saturday, October 13, 2007 12:07 PM
+>To: Andrew Morton; Linus Torvalds
+>Cc: LKML; Greg KH; Nelson, Shannon; Williams, Dan J
+>Subject: [PATCH] drivers/pci, drivers/dma: kill unused vars
+>
+>
+>Kill two never-used (not even in hidden debug macros) variables,
+>noticed by the compiler.
+>
+>Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>---
+> drivers/dma/ioatdma.c                  |    1 -
+> drivers/pci/hotplug/pci_hotplug_core.c |    2 --
+> 2 files changed, 3 deletions(-)
+>
+>diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
+>index 41b18c5..d9db64b 100644
+>--- a/drivers/dma/ioatdma.c
+>+++ b/drivers/dma/ioatdma.c
+>@@ -244,7 +244,6 @@ static void 
+>ioat_dma_free_chan_resources(struct dma_chan *chan)
+> 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+> 	struct ioat_device *ioat_device = to_ioat_device(chan->device);
+> 	struct ioat_desc_sw *desc, *_desc;
+>-	u16 chanctrl;
+> 	int in_use_descs = 0;
 > 
->> I'm experiencing a full system lockup. I'm using an out-of-tree
->> driver which I suspect is responsible. I'm trying to enable the NMI
->> watchdog.
+> 	ioat_dma_memcpy_cleanup(ioat_chan);
+
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+
+FYI - this code gets heavily revised by ioat patches in -mm that Andrew
+is planning on merging soon.
+
+sln
+
+>diff --git a/drivers/pci/hotplug/pci_hotplug_core.c 
+>b/drivers/pci/hotplug/pci_hotplug_core.c
+>index f0eba53..01c351c 100644
+>--- a/drivers/pci/hotplug/pci_hotplug_core.c
+>+++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>@@ -689,8 +689,6 @@ int pci_hp_deregister (struct hotplug_slot *slot)
+> int __must_check pci_hp_change_slot_info(struct hotplug_slot *slot,
+> 					 struct hotplug_slot_info *info)
+> {
+>-	int retval;
+>-
+> 	if ((slot == NULL) || (info == NULL))
+> 		return -ENODEV;
 > 
-> one thing worth a shot is enabling lockdep.. that often finds deadlocks
-> for you ;)
-
-I enabled every option I thought might be useful.
-
-I booted the system, fired a serial console, bumped the priority of the 
-serial port IRQ handler to 80 and the priority of the shell in the 
-serial console to 70, set the console log level to 9 using SysRq.
-
-I then connected via ssh, loaded the driver module (the output showed up 
-in the serial console), started 4 processes, and had a complete system 
-lock-up within 10 seconds.
-
-Nothing on the serial console :-(
-
-The system didn't even respond to SysRq...
-
-How do kernel hackers debug these problems?
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_PRINTK_TIME is not set
-# CONFIG_ENABLE_MUST_CHECK is not set
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_SCHED_DEBUG=y
-# CONFIG_SCHEDSTATS is not set
-CONFIG_TIMER_STATS=y
-CONFIG_DEBUG_SLAB=y
-CONFIG_DEBUG_SLAB_LEAK=y
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-# CONFIG_LOCK_STAT is not set
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-CONFIG_STACKTRACE=y
-CONFIG_PREEMPT_TRACE=y
-# CONFIG_EVENT_TRACE is not set
-# CONFIG_FUNCTION_TRACE is not set
-# CONFIG_WAKEUP_TIMING is not set
-# CONFIG_CRITICAL_PREEMPT_TIMING is not set
-# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_LIST is not set
-# CONFIG_FRAME_POINTER is not set
-CONFIG_FORCED_INLINING=y
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_FAULT_INJECTION is not set
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-# CONFIG_DEBUG_STACK_USAGE is not set
-# CONFIG_DEBUG_PAGEALLOC is not set
-CONFIG_DEBUG_RODATA=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
+>
