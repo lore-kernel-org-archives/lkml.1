@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763499AbXJOXjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXJOXkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763499AbXJOXjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXJOXjN
+	id S1758093AbXJOXkD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbXJOXjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:39:13 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:46392 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755764AbXJOXjM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:39:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=O47OiWuKVOnd/KxVe2LFQHk4I1WR8HVT+8502TTB7uj1GbQwB2eUen+1BVn6jv+ktr6h1qVIJb8x0yx5+Lf9hPENjv0lUwgkHMzyK/aTOVntnD6eCGlVEk9CHNrBcrxkKloYoRS/jkl2UaRBrz1N6AfEJfNx9aI9dhIjpk+ITfY=  ;
-X-YMail-OSG: cu8wNvMVM1lbqgtJFZytfrRsouaxd6VaN4EffpR9jV_HfeqF_Hgdl4mN8E6xvPiuavlGcnqQlQ--
-Date: Mon, 15 Oct 2007 16:39:10 -0700
-From: David Brownell <david-b@pacbell.net>
-To: davem@davemloft.net
-Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
-Cc: stern@rowland.harvard.edu, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, greg@kroah.com
-References: <200710091443.54998.david-b@pacbell.net>
- <20071009.150040.55724885.davem@davemloft.net>
- <20071009.213507.78708496.davem@davemloft.net>
- <20071015.150124.78710191.davem@davemloft.net>
-In-Reply-To: <20071015.150124.78710191.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071015233910.5A17123BC99@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	Mon, 15 Oct 2007 19:39:52 -0400
+Received: from main.gmane.org ([80.91.229.2]:57711 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755736AbXJOXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:39:51 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Johan Brannlund <johan_brn@yahoo.com>
+Subject: Lots of disk activity on resume from s2ram
+Date: Mon, 15 Oct 2007 21:53:21 +0000 (UTC)
+Message-ID: <pan.2007.10.15.21.53.21@yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: blk-137-105-82.eastlink.ca
+User-Agent: Pan/0.132 (Waxed in Black)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Bad news, even with the rwsem after a lot more testing I can still
-> trigger the hang in ohci_hub_control() :-(
->
-> I think we need to go back to considering the total serialization
-> approach to this problem.
+Hi. I've noticed that with recent kernels (starting somewhere between 
+2.6.20 and 2.6.22) I sometimes get *lots* of disk activity on resume from 
+suspend to ram. About 2/3 of the time, the system resumes normally but in 
+the remaining 1/3 of the time, the hard drive light stays on almost solid 
+and the machine is very, very slow to respond. The only way I've found to 
+reliably recover from this is if I can get to a command prompt fast 
+enough and do "shutdown -r now". There's not much cpu activity at all, it 
+just seems to be disk io that's killing interactivity. This also happens 
+if I resume just from an empty gnome desktop with no applications 
+running, so I don't think it's due to swapping.
 
-We shouldn't need that.  What happens if you add an msleep(5)
-before ehci-hcd::ehci_run() drops ehci_cf_port_reset_rwsem?
+Some kernels affected: 2.6.22, 2.6.23+hrt patches, Ubuntu Gutsy kernel 
+(2.6.22-14). These are all 64-bit kernels running on an HP nx6125 laptop 
+- single-core Turion 64 processor, 1 gig of ram. To the best of my 
+recollection, this problem did *not* appear with 2.6.20.
 
-The theory there being that the switch triggered by setting CF
-doesn't take effect instantaneously, contrary to the effective
-assumption of that code.  A delay of 5 msec seems like it should
-be more than enough, but that's kind of a guess ... it's good to
-keep that low, since unfortunately that's in the critical path
-for OLPC "resume from idle".
+I put some dmesg output from the vm block dumping and some vmstat output 
+at http://nullinfinity.org/tmp/s2ram/ . The dmesg logs are from the same 
+resume, just a little while apart. The vmstat is from a different resume.
 
-- Dave
+Any workarounds, patches, tips for further debugging etc would be 
+appreciated.
+
+- Johan
 
