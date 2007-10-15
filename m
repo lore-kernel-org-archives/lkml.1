@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759648AbXJOV6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbXJOV6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759648AbXJOV6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbXJOV57
+	id S1761471AbXJOV6p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbXJOV6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:57:59 -0400
-Received: from as3.cineca.com ([130.186.84.211]:47839 "EHLO as3.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363AbXJOV56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:57:58 -0400
-Message-ID: <4713E25D.6090302@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+	Mon, 15 Oct 2007 17:58:35 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:38786 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756850AbXJOV6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 17:58:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=j0PaUbJJ8Y7GtmoH4G9JEfgfKENf64upwIPc8EvQaXgxcyncgtQxMiVCL9FIHMKUVzaY8Mpdyd4aeZfwf6eFOe4z6qp1SI7XM0Yl6cDuRPrMFPYGBoZavmoAz8yz+qItNsask8dLwKRXh6ZfUwcQNtOj0FevRA8fWsdHeVbOFP0=
+Message-ID: <9a8748490710151458o73267df1tcfb35fb5ae71d598@mail.gmail.com>
+Date: Mon, 15 Oct 2007 23:58:32 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH 04/12] Clean up duplicate includes in arch/i386/xen/
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       "Chris Wright" <chrisw@sous-sol.org>,
+       "Keir Fraser" <keir@xensource.com>, "Stable Kernel" <stable@kernel.org>
+In-Reply-To: <20071015210114.891237072@goop.org>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
-Subject: Re: [NFS] nfsd closes port 2049
-References: <47139C02.9020009@cineca.it> <18195.52347.544844.155538@notabene.brown>
-In-Reply-To: <18195.52347.544844.155538@notabene.brown>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 15 Oct 2007 23:57:47 +0200 (MEST)
+Content-Disposition: inline
+References: <20071015204840.074767068@goop.org>
+	 <20071015210114.891237072@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Monday October 15, a.righi@cineca.it wrote:
->> Hi all,
->>
->> I'm trying to debug a weird problem with nfsd on a 2.6.16.27-0.6-smp
->> kernel.
->>
->> 1 server: SuSE SLES 10 x86_64, config attached
->> 256 clients: RHEL4 Update 4 2.6.9-42.ELsmp x86_64
->>
->> Using nfs v3.
->>
->> The clients have been happily talking to the server for several days
->> without incident.
->>
->> The weird thing is that at a certain point the socket opened on port
->> 2049 on the NFS server is being closed for unknown reasons (or better
->> for unknown reasons for me!).
-> 
-> This is fixed in any release based on 2.6.16.31 or later.
-> The relevant mainline patch is 
->     1a047060a99f274a7c52cfea8159e4142a14b8a7
-> as below.
-> So update your kernel package.
+On 15/10/2007, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> This patch cleans up duplicate includes in
+>         arch/i386/xen/
+>
 
-Thanks Neil, looking at the source and in my logs this seems to explain
-perfectly my problem. I'll try the patch ASAP.
+Just for the record; this patch is
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
--Andrea
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+> ---
+>  arch/x86/xen/enlighten.c |    1 -
+>  arch/x86/xen/mmu.c       |    2 --
+>  2 files changed, 3 deletions(-)
+>
+> ===================================================================
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -25,7 +25,6 @@
+>  #include <linux/mm.h>
+>  #include <linux/page-flags.h>
+>  #include <linux/highmem.h>
+> -#include <linux/smp.h>
+>
+>  #include <xen/interface/xen.h>
+>  #include <xen/interface/physdev.h>
+> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+> index 4ae038a..35691a2 100644
+> ===================================================================
+> --- a/arch/x86/xen/mmu.c
+> +++ b/arch/x86/xen/mmu.c
+> @@ -41,7 +41,6 @@
+>  #include <linux/sched.h>
+>  #include <linux/highmem.h>
+>  #include <linux/bug.h>
+> -#include <linux/sched.h>
+>
+>  #include <asm/pgtable.h>
+>  #include <asm/tlbflush.h>
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
