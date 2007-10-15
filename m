@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbXJOHlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbXJOHnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbXJOHlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 03:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXJOHlK
+	id S1758898AbXJOHnr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 03:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbXJOHnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 03:41:10 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:59020 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753741AbXJOHlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 03:41:09 -0400
-Date: Mon, 15 Oct 2007 09:44:05 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071015074405.GA1875@ff.dom.local>
-References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 15 Oct 2007 03:43:40 -0400
+Received: from n1.cetrtapot.si ([89.212.80.162]:61976 "EHLO n1.cetrtapot.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753370AbXJOHnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 03:43:39 -0400
+Message-ID: <47131A0B.1050000@cetrtapot.si>
+Date: Mon, 15 Oct 2007 09:43:07 +0200
+From: "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Samuel Ortiz <samuel@sortiz.org>
+Cc: irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [irda-users] [PATCH] irlmp_unregister_link needs to free lsaps
+ hashbin
+References: <470F6EFB.6010704@cetrtapot.si> <20071013010326.GC8187@sortiz.org>
+In-Reply-To: <20071013010326.GC8187@sortiz.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 08:13:52AM -0700, Linus Torvalds wrote:
+Samuel Ortiz wrote:
+> Hi Hinko,
 > 
+> On Fri, Oct 12, 2007 at 02:56:27PM +0200, hinko.kocevar@cetrtapot.si wrote:
+>> Hi,
+>>
+>> While testing the mcs7780 based IrDA USB dongle I've stumbled upon
+>> memory leak in irlmp_unregister_link(). Hashbin for lsaps is created in
+>> irlmp_register_link and should probably be freed in irlmp_unregister_link().
+>>
+>> Signed-off-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+>>
+>> Best regards,
+>> Hinko
+>>
+>> ----
+>>
+>>
 > 
-> On Fri, 12 Oct 2007, Jarek Poplawski wrote:
-...
-> So no, there's no way a software person could have afforded to say "it 
-> seems to work on my setup even without the barrier". On a dual-socket 
-> setup with s shared bus, that says absolutely *nothing* about the 
-> behaviour of the exact same CPU when used with a multi-bus chipset. Not to 
-> mention another revisions of the same CPU - much less a whole other 
-> microarchitecture.
+>> --- linux-2.6.23/net/irda/irlmp.c.orig	2007-10-12 14:05:17.000000000 +0200
+>> +++ linux-2.6.23/net/irda/irlmp.c	2007-10-12 14:05:41.000000000 +0200
+>> @@ -353,6 +353,7 @@ void irlmp_unregister_link(__u32 saddr)
+>>  		/* Final cleanup */
+>>  		del_timer(&link->idle_timer);
+>>  		link->magic = 0;
+>> +		hashbin_delete(link->lsaps, (FREE_FUNC) kfree);
+> Good catch, but I think the right fix sould be:
+> +             hashbin_delete(link->lsaps, (FREE_FUNC) __irlmp_close_lsap);
+> 
 
-Yes, I still can't believe this, but after some more reading I start
-to admit such things can happen in computer "science" too... I've
-mentioned a lost performance, but as a matter of fact I've been more
-concerned with the problem of truth:
+You're probably right since struct lsap_cb get inserted into the hashbin.
 
-From: Intel(R) 64 and IA-32 Architectures Software Developer's Manual
-Volume 3A:
+Regards,
+Hinko
 
-   "7.2.2 Memory Ordering in P6 and More Recent Processor Families
-    ...
-    1. Reads can be carried out speculatively and in any order.
-    ..."
+-- 
+ČETRTA POT, d.o.o., Kranj
+Planina 3
+4000 Kranj
+Slovenia, Europe
+Tel. +386 (0) 4 280 66 03
+E-mail: hinko.kocevar@cetrtapot.si
+Http: www.cetrtapot.si
 
-So, it looks to me like almost the 1-st Commandment. Some people (like
-me) did believe this, others tried to check, and it was respected for
-years notwithstanding nobody had ever seen such an event.
-
-And then, a few years later, we have this:
-
-From: Intel(R) 64 Architecture Memory Ordering White Paper
-
-    "2 Memory ordering for write-back (WB) memory
-     ...
-     Intel 64 memory ordering obeys the following principles:
-     1. Loads are not reordered with other loads.
-     ..."
-
-I know, technically this doesn't have to be a contradiction (for not
-WB), but to me it's something like: "OK, Elvis lives and this guy is
-not real Paul McCartney too" in an official CIA statement!
-
-...
-> Also, please note that we didn't even just change the barriers immediately 
-> when the docs came out. I want to do it soon - still *early* in the 2.6.24 
-> development cycle - exactly because bugs happen, and if somebody notices 
-> something strange, we'll have more time to perhaps decide that "oops, 
-> there's something bad going on, let's undo this for the real 2.6.24 
-> release until we can figure out the exact pattern".
-
-I'm still so "dazed and confused" that I can't tell this (or anything)
-is right...
-
-Thanks very much for so extensive and sound explanation,
-
-Jarek P.
-
-PS: Btw, I apologize Helge for not trusting her: "verification by
-testing would not be trivial" words.
