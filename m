@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762475AbXJOLHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbXJOLI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762475AbXJOLHq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbXJOLHj
+	id S1764182AbXJOLI7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760465AbXJOLIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:07:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56023 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757094AbXJOLHi (ORCPT
+	Mon, 15 Oct 2007 07:08:44 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:50752 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760065AbXJOLIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:07:38 -0400
-Date: Mon, 15 Oct 2007 13:07:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs@oss.sgi.com,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
-       Morten =?iso-8859-1?B?QsO4Z2Vza292?= 
-	<xen-users@morten.bogeskov.dk>,
-       xfs-masters@oss.sgi.com
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-Message-ID: <20071015110735.GA11748@one.firstfloor.org>
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com> <p731wbw4t3h.fsf@bingen.suse.de> <200710160056.47458.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
+	Mon, 15 Oct 2007 07:08:42 -0400
+Message-ID: <47134A1B.8000001@linux.vnet.ibm.com>
+Date: Mon, 15 Oct 2007 16:38:11 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
+       stable@kernel.org
+Subject: [BUG] Linux 2.6.23.1 - Open Firmware exception handler invoked
+References: <20071012170140.GA18498@kroah.com>
+In-Reply-To: <20071012170140.GA18498@kroah.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710160056.47458.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 12:56:46AM +1000, Nick Piggin wrote:
-> Is this true even if you don't write through those old mappings?
+Hi,
 
-I think it happened for reads too.  It is a little counter intuitive
-because in theory the CPU doesn't need to write back non dirty lines,
-but in the one case which took so long to debug exactly this happened
-somehow.
+The Open Firmware exception handler is begin invoked, on power5 lpar.
 
-At it is undefined for reads and writes in the architecture so 
-better be safe than sorry.
+boot: 2.6.23.1
+Please wait, loading kernel...
+Allocated 03500000 bytes for kernel @ 01c00000
+   Elf64 kernel loaded...
+Loading ramdisk...
+ramdisk loaded 0020d000 @ 06b00000
+DEFAULT CATCH!, exception-handler=fff00300 
+at   %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+Open Firmware exception handler entered from non-OF code
 
-And x86 CPUs are out of order and do speculative executation
-and that can lead to arbitary memory accesses even if the code
-never touches an particular address.
+Client's Fix Pt Regs:
+ 00 0223100003080000 00000000018bfac0 0000000004bbeaf8 00000000018bfb48
+ 04 00000000018bfc90 0000000000c39a48 0000000000000000 5c3a03080000a0fa
+ 08 0000000000000001 0000000000000000 05910000194c0223 000000005cae0000
+ 0c 0000000003f1eaf8 0000000000000000 0000000000000000 0000000000000000
+ 10 0000000000000000 0000000000c39a48 0000000000000000 00000000018bfc90
+ 14 0000000000c00000 000000000020d000 0000000000000000 0000000008b00000
+ 18 0000000000280004 00000000018bff04 0000000000000001 0000000000000000
+ 1c 0000000008b00000 0000000000c39a48 c000000004d1e530 0000000008b00000
+Special Regs:
+    %IV: 00000300     %CR: 44000028    %XER: 00000000  %DSISR: 08000000 
+  %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+    %LR: c000000002027428    %CTR: c0000000020273f0 
+   %DAR: 05910000194c02eb 
+Virtual PID = 0 
+PFW: Unable to send error log!
+ ofdbg
+0 > 
 
-Newer Intel CPUs have something called self-snoop which was supposed
-to handle this; but in some situations it doesn't seem to catch it
-either.
+# cat /proc/cpuinfo 
+processor       : 0
+cpu             : POWER5+ (gs)
+clock           : 1498.500000MHz
+revision        : 2.0 (pvr 003b 0200)
 
-> Is DRM or AGP then not also broken with lazy highmem flushing, or
-> how do they solve that?
+processor       : 1
+cpu             : POWER5+ (gs)
+clock           : 1498.500000MHz
+revision        : 2.0 (pvr 003b 0200)
 
-AGP doesn't allocate highmem pages.  Not sure about the DRM code.
-
--Andi
+timebase        : 187199000
+platform        : pSeries
+machine         : CHRP IBM,9133-55A
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
