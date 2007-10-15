@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbXJOSVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933526AbXJOSVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbXJOSVa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXJOSVT
+	id S933526AbXJOSVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765698AbXJOSV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:21:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56953 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756243AbXJOSVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:21:18 -0400
-Message-ID: <4713AF99.30304@pobox.com>
-Date: Mon, 15 Oct 2007 14:21:13 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 15 Oct 2007 14:21:27 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1916 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764824AbXJOSV0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:21:26 -0400
+Date: Mon, 15 Oct 2007 19:21:18 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: "Mike D. Day" <ncmike@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] checkpatch: Fix line number reporting
+Message-ID: <20071015182118.GA4459@shadowen.org>
+References: <20071012193751.GA31579@shadowen.org> <200710131835.l9DIZCYp030867@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-CC: thockin@hockin.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] natsemi: Use round_jiffies() for slow timers
-References: <470C210C.6030800@pobox.com> <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
-In-Reply-To: <1192010744-12204-1-git-send-email-broonie@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710131835.l9DIZCYp030867@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> Unless we have failed to fill the RX ring the timer used by the natsemi
-> driver is not particularly urgent and can use round_jiffies() to allow
-> grouping with other timers.
+On Sat, Oct 13, 2007 at 02:35:12PM -0400, Erez Zadok wrote:
+> In message <20071012193751.GA31579@shadowen.org>, Andy Whitcroft writes:
+> > On Fri, Oct 12, 2007 at 03:26:54PM -0400, Mike D. Day wrote:
+> > > Fix line number reporting when checking source files (as opposed to
+> > > patches)
+> > > 
+> > > Signed-off-by: Mike D. Day <ncmike@us.ibm.com>
+> > 
+> > Sorry you've had to fix this about 4 times, mostly because of ongoing
+> > changes, and slow replication getting in the way.  I've applied this
+> > and you should find it in -next when replication hits.  md5sum is
+> > below of the version with it in, so you can make sure you've got
+> > the right one.
+> > 
+> > 54f053c50265e44a6041e3147dc66a69  checkpatch.pl
+> > 
+> > -apw
 > 
-> Signed-off-by: Mark Brown <broonie@sirena.org.uk>
-> ---
-> Rediffed against current netdev-2.6.git#upstream
+> Andy, I've tested the --emacs feature in the above latest
+> checkpatch.pl-next.  Below is a patch that completes the functionality of
+> the --emacs option: it ensures that only the cc-style error messages are
+> printed, no extra context lines or caret lines, no extra newlines, etc.
+> Although this patch changes every call to a message-producing function, it
+> is a trivial change, and I believe it's the cleanest way to handle the
+> separation between the terse cc-style messages and the verbose default
+> messages.  With this patch, I can finally test a single source file as
+> follows:
 > 
->  drivers/net/natsemi.c |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
+> $ ./scripts/checkpatch.pl -q -q --emacs --file path/name/to/file
 
-applied and the pci_enabie_device() return value patch
+Ok I don't understand why the rest of the lines are a problem?  At least
+with emacs the extra context lines are just ignored right?  Are you
+trying to use this as a summary?
 
-
+-apw
