@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbXJOJ0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbXJOJ0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755023AbXJOJ0Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbXJOJ0N
+	id S1758232AbXJOJ0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbXJOJ0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:26:13 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41220
+	Mon, 15 Oct 2007 05:26:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41227
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757717AbXJOJ0K (ORCPT
+	with ESMTP id S1757848AbXJOJ0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:26:10 -0400
+	Mon, 15 Oct 2007 05:26:11 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
-To: Greg KH <greg@kroah.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Subject: Re: What still uses the block layer?
-Date: Mon, 15 Oct 2007 03:36:15 -0500
+Date: Mon, 15 Oct 2007 04:26:04 -0500
 User-Agent: KMail/1.9.6
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+Cc: David Newall <david@davidnewall.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com>
-In-Reply-To: <20071015060015.GB32268@kroah.com>
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de>
+In-Reply-To: <4712FE33.3000400@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710150336.15774.rob@landley.net>
+Message-Id: <200710150426.04924.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 1:00:15 am Greg KH wrote:
-> If you hate USB storage devices using scsi, please use the ub driver,
-> that is what it was written for.
-
-For the embedded space, the ability to configure out the scsi layer is 
-interesting from a size perspective.  I bookmarked that a while back, but had 
-forgotten about it.  Thanks for the reminder.
-
-For the desktop I don't object to the scsi layer.  I object to the naming.  
-Merging a half-dozen different types of devices into a single name space, and 
-then warning us that the order they appear within that namespace could be the 
-result of race conditions...  Seems like an artificially inflated problem to 
-me.  Don't merge them together and each namespace is a smaller problem, often 
-with only a single device or with a stable relationship between the devices.
-
-(That said, the answer to my original question, "is the block layer still in 
-use" seems to be yes, so creating a 00-INDEX for Documentation/block is a 
-good thing, and I'll go do that.  I acknowledge that I asked this question 
-_horribly_, due to having other unresolved issues with the scsi layer...)
-
-> When did usb-storage devices ever show up as /dev/usb0?  USB flash disks
-> are really SCSI devices, look at the USB storage spec for proof of that.
-
-Um, possibly I _was_ playing with the ub driver and got a /dev/ub0.  (I 
-vaguely recall playing with back around...  February?  When did it wander 
-across Pavel's blog...  I don't actually remember if I got it to work or 
-not.)  Possibly this is from playing with a usb scanner back around 2004.  (I 
-just dragged out my other USB device from that period, an ethernet dongle, 
-but it doesn't create /dev anything.  Just shows up as usb2. :)
-
-The point I was trying to make is that it seems to me like it would be 
-possible to keep the namespace separate here, and thus reduce the enumeration 
-problems to the point where common cases (like my laptop) aren't impacted by 
-them during early boot.  I don't think anybody (outside the embedded space) 
-is actually upset that /dev/hda now goes through the scsi layer:  they're 
-upset Ubuntu 7.04 no longer calls it /dev/hda.
-
-> thanks,
+On Monday 15 October 2007 12:44:19 am Stefan Richter wrote:
+> Rob Landley wrote:
+> > I was at least attempting to ask a serious question.
 >
-> greg k-h
+> ...
+>
+> > Actually, I was going through Documentation/block thinking about making a
+> > 00-INDEX for it, but my earlier questions of the scsi guys left me with
+> > the impression that the block layer is _not_ used by the SCSI layer.
+>
+> Ah, so it was about your documentation work.
 
-Thank you,
+Well, triggered by.  (This documentation stuff makes me poke into corners of 
+the kernel I ordinarily otherwise avoid, for various reasons.  I don't 
+currently have the luxury of saying "beats me how this bit works, not my 
+area".)
+
+> I already forgot the 
+> context of your previous inquiries.  Alas the tone of them already did
+> some damage, leading to responses like these.
+
+Sorry about that.  My social skills are finite, I tend to exhaust them when I 
+do too much at once. :(
+
+The resulting documentation should be very polite and apolitical. :)
+
+> > since
+> > every non-embedded modern storage device I'm aware of has been consumed
+> > by the SCSI layer (despite none of them actually having a discernably
+> > closer relationship to SCSI than ATA did)
+>
+> The Linux SCSI subsystems don't consume, they provide services; nowadays
+> not only for SCSI hardware and SCSI protocols but also for a number of
+> subsystems whose tasks are similar enough to SCSI subsystems to make the
+> SCSI core and upper SCSI layer useful to them too.
+
+This discussion has clarified for me that my objection isn't the scsi layer 
+itself, it's the /dev/sd? namespace combining devices that would otherwise 
+be /dev/hda, /dev/nd0, /dev/ub0 (or usb0 or some such), and /dev/sata into a 
+single linear namespace that's unreliably ordered. 
+
+> BTW:
+> | Now that IDE disks have been rerouted through the scsi layer, SATA goes
+> | through the scsi layer, USB goes through the scsi layer, firewire goes
+> | through the scsi layer...
+>
+> As a side note, SBP-2 is a SCSI transport protocol, hence ieee1394/sbp2
+> and firewire/fw-sbp2 are Linux SCSI low-level drivers.  Anything else
+> would be just wrong and infeasible in this particular case.
+
+My "scsi mid layer" vs "block layer" question was about whether I should read 
+up on the block layer if the scsi mid layer didn't use it.  Neil Brown just 
+sent me a nice email (which I'll have to reread in the morning when I'm more 
+awake) that helps there.
+
+The "ide/sata/usb/firewire->scsi" complaint didn't belong in the same email as 
+the original question, it's a line of questioning I put on hold on linux-scsi 
+back in August when the thread started getting a bit heated for my tastes.
+
+To clarify, I think that merging ide, sata, usb, firewire, and others into a 
+single device namespace causes each type of device to inherit that 
+namespace's cumulative ordering issues, which is a bad thing.  I have no real 
+attachment to the underlying scsi or block layers.  I've never seriously 
+worked on either (although I'm trying to understand both).
+
+For example, usb devices are never easy to order.  IDE devices (back when they 
+had their own namespace) were trivial to order back when /dev/hda couldn't 
+move without use of a screwdriver.  USB and IDE devices are very different in 
+that it's not possible to plug a USB device into an IDE controller (not 
+without one _heck_ of an adapter) and vice versa.  USB devices usually live 
+outside the computer's case, and IDE devices inside the case.  They're not 
+the same thing.
+
+Combining USB and IDE into the same /dev/sd? namespace makes enumerating the 
+IDE devices much harder than in the traditional "/dev/hdb doesn't move 
+without a screwdriver" model.  The merger creates a new problem for IDE, one 
+which didn't exist before: the addition or removal of other unrelated types 
+of devices may change this device's location next boot.  It may be possible 
+to add additional complication to the system to compensate, but what was the 
+advantage of merging the namespaces in the first place?
 
 Rob
 -- 
