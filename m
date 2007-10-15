@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbXJOJiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbXJOJhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760692AbXJOJiZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbXJOJiN
+	id S1760146AbXJOJhB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXJOJgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:38:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35743 "EHLO mx2.mail.elte.hu"
+	Mon, 15 Oct 2007 05:36:53 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40872 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757878AbXJOJiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:38:12 -0400
-Date: Mon, 15 Oct 2007 11:38:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Avi Kivity <avi@qumranet.com>
-Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time
-	accounting.
-Message-ID: <20071015093800.GA22818@elte.hu>
-References: <46E550EF.5080209@bull.net>
+	id S1754902AbXJOJgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 05:36:53 -0400
+To: David Chinner <dgc@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xfs@oss.sgi.com,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
+       Morten =?iso-8859-1?Q?B=C3=B8geskov?= 
+	<xen-users@morten.bogeskov.dk>,
+       xfs-masters@oss.sgi.com, nickpiggin@yahoo.com.au
+Subject: Re: Interaction between Xen and XFS: stray RW mappings
+From: Andi Kleen <andi@firstfloor.org>
+References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com>
+Date: Mon, 15 Oct 2007 11:36:50 +0200
+In-Reply-To: <20071014225618.GN23367404@sgi.com> (David Chinner's message of "Mon\, 15 Oct 2007 08\:56\:18 +1000")
+Message-ID: <p731wbw4t3h.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E550EF.5080209@bull.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Chinner <dgc@sgi.com> writes:
+>
+> And yes, we delay unmapping pages until we have a batch of them
+> to unmap. vmap and vunmap do not scale, so this is batching helps
+> alleviate some of the worst of the problems.
 
-* Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+You're keeping vmaps around for already freed pages?
 
-> [PATCH 4/4] Modify KVM to update guest time accounting.
+That will be a big problem for proper PAT support, which needs
+to track all mappings to memory. It's not just a problem for Xen.
 
-FYI, KVM abstracted its guest-mode entry code recently so this did not 
-apply - find below the reworked patch.
+In fact I suspect it is already broken with DRM or AGP for example which
+can use UC and WC mappings -- if you keep the mapping around and
+DRM or AGP turns the page in another mapping uncacheable you're
+creating an illegal cache attribute alias. These are known to occasionally
+create cache corruptions on several x86s; giving ___VERY___ hard to debug
+bugs once a blue moon.
 
-	Ingo
+Probably it'll require some generic VM batching mechanism where
+Xen or PAT code can hook into the list or force unmap the mappings
+as needed.
 
-------------------->
-Subject: sched: guest CPU accounting: maintain guest state in KVM
-From: Laurent Vivier <Laurent.Vivier@bull.net>
+Definitely needs to be fixed if true. You're lucky that Xen caught it
+in time.
 
-Modify KVM to update guest time accounting.
-
-[ mingo@elte.hu: ported to 2.6.24 KVM. ]
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
-Acked-by: Avi Kivity <avi@qumranet.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/kvm/kvm.h      |   16 ++++++++++++++++
- drivers/kvm/kvm_main.c |    2 ++
- 2 files changed, 18 insertions(+)
-
-Index: linux/drivers/kvm/kvm.h
-===================================================================
---- linux.orig/drivers/kvm/kvm.h
-+++ linux/drivers/kvm/kvm.h
-@@ -624,6 +624,22 @@ void kvm_mmu_unload(struct kvm_vcpu *vcp
- 
- int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 
-+/*
-+ * Compatibility define - PF_VCPU is only available in v2.6.24+ kernels:
-+ */
-+#ifndef PF_VCPU
-+# define PF_VCPU	0
-+#endif
-+
-+static inline void kvm_guest_enter(void)
-+{
-+	current->flags |= PF_VCPU;
-+}
-+
-+static inline void kvm_guest_exit(void)
-+{
-+}
-+
- static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				     u32 error_code)
- {
-Index: linux/drivers/kvm/kvm_main.c
-===================================================================
---- linux.orig/drivers/kvm/kvm_main.c
-+++ linux/drivers/kvm/kvm_main.c
-@@ -2046,6 +2046,7 @@ again:
- 		kvm_x86_ops->inject_pending_vectors(vcpu, kvm_run);
- 
- 	vcpu->guest_mode = 1;
-+	kvm_guest_enter();
- 
- 	if (vcpu->requests)
- 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
-@@ -2053,6 +2054,7 @@ again:
- 
- 	kvm_x86_ops->run(vcpu, kvm_run);
- 
-+	kvm_guest_exit();
- 	vcpu->guest_mode = 0;
- 	local_irq_enable();
- 
+-Andi
