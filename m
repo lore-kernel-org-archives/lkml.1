@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbXJOT5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933466AbXJOT6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbXJOT5m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932605AbXJOT52
+	id S933466AbXJOT6A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933873AbXJOT5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:57:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46177
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932924AbXJOT50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:57:26 -0400
-Date: Mon, 15 Oct 2007 12:57:31 -0700 (PDT)
-Message-Id: <20071015.125731.79447899.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       shemminger@linux-foundation.org
-Subject: Re: WARNING: at net/core/dev.c:2161 net_rx_action()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071015112430.GA30006@elte.hu>
-References: <20071015112430.GA30006@elte.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Oct 2007 15:57:46 -0400
+Received: from waste.org ([66.93.16.53]:49833 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933867AbXJOT5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:57:45 -0400
+Date: Mon, 15 Oct 2007 14:57:41 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/21] KGDB: This is the simple KGDB over Ethernet I/O driver that NET_POLL
+Message-ID: <20071015195741.GV19691@waste.org>
+References: <4713B255.5010708@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4713B255.5010708@windriver.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 15 Oct 2007 13:24:30 +0200
+On Mon, Oct 15, 2007 at 01:32:53PM -0500, Jason Wessel wrote:
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
-> got this warning with Linus' latest -git tree:
+> eth.patch
 > 
->   WARNING: at net/core/dev.c:2161 net_rx_action()
->    [<80564db4>] net_rx_action+0xce/0x186
->    [<8011ba98>] __do_softirq+0x6c/0xcf
->    [<8011bb2d>] do_softirq+0x32/0x36
->    [<8011bcae>] irq_exit+0x35/0x40
->    [<80104fdb>] do_IRQ+0x5c/0x71
->    [<801048cd>] do_nmi+0x8f/0x238
->    [<801033a3>] common_interrupt+0x23/0x30
->    =======================
+> From: Jason Wessel <jason.wessel@windriver.com>
+> CC: mpm@selenic.com
+> Subject: [PATCH] This is the simple KGDB over Ethernet I/O driver that NET_POLL
+> 
+> At one point this was very similar to the version Matt Mackall wrote
+> to allow for the use of KGDB over ethernet.  Since then it has been
+> reworked to fit into the unified KGDB model.
+> 
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
-This is a driver bug, the work "budget" passed into a driver's
-->poll() handler should never be exceeded.  That's what this
-warning assertion is checking.
+Looks fine to me.
 
-What ethernet card is in your system and what driver is being
-used to drive it?
+Acked-by: Matt Mackall <mpm@selenic.com>
 
+-- 
+Mathematics is the supreme nostalgia of our time.
