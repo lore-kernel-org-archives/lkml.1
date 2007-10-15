@@ -1,115 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764816AbXJOUAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbXJOUAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764816AbXJOUAL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbXJOT7z
+	id S933095AbXJOUAm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbXJOUAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:59:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:40836 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbXJOT7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:59:54 -0400
-Message-ID: <4713C6B9.1010402@goop.org>
-Date: Mon, 15 Oct 2007 12:59:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] xen-netfront: use net_device's stats structure
-References: <470C2737.60403@goop.org> <4713AFC3.8000403@pobox.com>
-In-Reply-To: <4713AFC3.8000403@pobox.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+	Mon, 15 Oct 2007 16:00:16 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53998 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763638AbXJOUAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:00:13 -0400
+Subject: Re: [PATCH 2/7] RT: Wrap the RQ notion of priority to make it
+	conditional
+From: Gregory Haskins <ghaskins@novell.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <Pine.LNX.4.58.0710151343300.26495@gandalf.stny.rr.com>
+References: <20071013001052.7444.8363.stgit@novell1.haskins.net>
+	 <20071013001543.7444.6025.stgit@novell1.haskins.net>
+	 <Pine.LNX.4.58.0710151343300.26495@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 15:57:36 -0400
+Message-Id: <1192478256.4067.85.camel@ghaskins-t60p.haskins.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> ACK patches 1-3, but they still do not apply.
->
-> Since net-2.6.24 has gone upstream, you may send diffs against
-> torvalds/linux-2.6.git if you like -- there are no outstanding
-> dependencies at this time.
+On Mon, 2007-10-15 at 13:45 -0400, Steven Rostedt wrote:
+> 
+> --
+> 
+> On Fri, 12 Oct 2007, Gregory Haskins wrote:
+> 
+> > A little cleanup to avoid #ifdef proliferation later in the series
+> >
+> > Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> 
+> NACK
+> 
+> > ---
+> >
+> >  kernel/sched.c |   23 ++++++++++++++++++++---
+> >  1 files changed, 20 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 0a1ad0e..c9afc8a 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -255,6 +255,10 @@ struct cfs_rq {
+> >  #endif
+> >  };
+> >
+> > +#if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+> > +#define  ENABLE_RQ_PRIORITY   /* Steve wants this conditional on PREEMPT_RT */
+> 
+> Yes, I do want it conditional. But only because we want to test it first,
+> so the condition is really temporary. I agree with Peter that this should
+> be for non PREEMPT_RT as well, and I'll work on a patch for upstream.
+> 
+> But these defines setting defines is just ugly.
 
-Yes, there was a larger patch which globally rolled all the private
-stats structures into the netdev one, so the xen-specfic one was
-redundant, and someone else submitted the deadcode removal one, so the
-only outstanding patch is this one:
+Ok.  Keep in mind the spirit of the patch was to wrap the setting so we
+didn't need more #ifdefs later, not so much to make that define.  I can
+clean up the ifdef of ifdef part no problem.  I was just trying to keep
+it one place to make the inevitable future change to share with non
+PREEMPT_RT easier ;)
 
-Subject: xen-netfront: rearrange netfront structure to separate tx and rx
 
-Keep tx and rx elements separate on different cachelines to prevent
-bouncing.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Jeff Garzik <jgarzik@pobox.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>
-
----
- drivers/net/xen-netfront.c |   37 ++++++++++++++++++-------------------
- 1 file changed, 18 insertions(+), 19 deletions(-)
-
-===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -74,22 +74,12 @@ struct netfront_info {
- 
- 	struct napi_struct napi;
- 
-+	unsigned int evtchn;
-+	struct xenbus_device *xbdev;
-+
-+	spinlock_t   tx_lock;
- 	struct xen_netif_tx_front_ring tx;
--	struct xen_netif_rx_front_ring rx;
--
--	spinlock_t   tx_lock;
--	spinlock_t   rx_lock;
--
--	unsigned int evtchn;
--
--	/* Receive-ring batched refills. */
--#define RX_MIN_TARGET 8
--#define RX_DFL_MIN_TARGET 64
--#define RX_MAX_TARGET min_t(int, NET_RX_RING_SIZE, 256)
--	unsigned rx_min_target, rx_max_target, rx_target;
--	struct sk_buff_head rx_batch;
--
--	struct timer_list rx_refill_timer;
-+	int tx_ring_ref;
- 
- 	/*
- 	 * {tx,rx}_skbs store outstanding skbuffs. Free tx_skb entries
-@@ -108,13 +98,22 @@ struct netfront_info {
- 	grant_ref_t grant_tx_ref[NET_TX_RING_SIZE];
- 	unsigned tx_skb_freelist;
- 
-+	spinlock_t   rx_lock ____cacheline_aligned_in_smp;
-+	struct xen_netif_rx_front_ring rx;
-+	int rx_ring_ref;
-+
-+	/* Receive-ring batched refills. */
-+#define RX_MIN_TARGET 8
-+#define RX_DFL_MIN_TARGET 64
-+#define RX_MAX_TARGET min_t(int, NET_RX_RING_SIZE, 256)
-+	unsigned rx_min_target, rx_max_target, rx_target;
-+	struct sk_buff_head rx_batch;
-+
-+	struct timer_list rx_refill_timer;
-+
- 	struct sk_buff *rx_skbs[NET_RX_RING_SIZE];
- 	grant_ref_t gref_rx_head;
- 	grant_ref_t grant_rx_ref[NET_RX_RING_SIZE];
--
--	struct xenbus_device *xbdev;
--	int tx_ring_ref;
--	int rx_ring_ref;
- 
- 	unsigned long rx_pfn_array[NET_RX_RING_SIZE];
- 	struct multicall_entry rx_mcl[NET_RX_RING_SIZE+1];
-
+> 
+> -- Steve
+> 
+> 
+> > +#endif /* CONFIG_PREEMPT_RT */
+> > +
+> >  /* Real-Time classes' related field in a runqueue: */
+> >  struct rt_rq {
+> >  	struct rt_prio_array active;
+> > @@ -304,6 +308,9 @@ struct rq {
+> >  #ifdef CONFIG_PREEMPT_RT
+> >  	unsigned long rt_nr_running;
+> >  	unsigned long rt_nr_uninterruptible;
+> > +#endif
+> > +
+> > +#ifdef ENABLE_RQ_PRIORITY
+> >  	int curr_prio;
+> >  #endif
+> >
+> > @@ -365,6 +372,16 @@ struct rq {
+> >  static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+> >  static DEFINE_MUTEX(sched_hotcpu_mutex);
+> >
+> > +#ifdef ENABLE_RQ_PRIORITY
+> > +static inline void set_rq_prio(struct rq *rq, int prio)
+> > +{
+> > +	rq->curr_prio = prio;
+> > +}
+> > +
+> > +#else
+> > +#define set_rq_prio(rq, prio) do { } while(0)
+> > +#endif
+> > +
+> >  static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
+> >  {
+> >  	rq->curr->sched_class->check_preempt_curr(rq, p);
+> > @@ -2331,9 +2348,9 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
+> >  	 */
+> >  	prev_state = prev->state;
+> >  	_finish_arch_switch(prev);
+> > -#if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+> > -	rq->curr_prio = current->prio;
+> > -#endif
+> > +
+> > +	set_rq_prio(rq, current->prio);
+> > +
+> >  	finish_lock_switch(rq, prev);
+> >  #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+> >  	/*
+> >
+> >
+> >
 
