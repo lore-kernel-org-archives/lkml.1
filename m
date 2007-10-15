@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbXJOObW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbXJOOgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759403AbXJOObW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 10:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbXJOObN
+	id S1759051AbXJOOgj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 10:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbXJOOgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 10:31:13 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50248 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbXJOObM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 10:31:12 -0400
-Date: Mon, 15 Oct 2007 16:32:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Neil Brown <neilb@suse.de>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: reviewer's statement of oversight
-Message-ID: <20071015143239.GA21361@uranus.ravnborg.org>
-References: <20071008173706.GA12026@uranus.ravnborg.org> <10940.1191883390@lwn.net> <18186.50640.970552.719041@notabene.brown> <20071009174433.GB25750@uranus.ravnborg.org> <18194.46555.18395.586488@notabene.brown>
-Mime-Version: 1.0
+	Mon, 15 Oct 2007 10:36:31 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:35210 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755299AbXJOOga (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 10:36:30 -0400
+X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 10:36:30 EDT
+Date: Mon, 15 Oct 2007 16:25:46 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [RFC][PATCH] sched: SCHED_FIFO watchdog timer
+Message-ID: <20071015142546.GA7851@tango.0pointer.de>
+References: <1192222309.5897.3.camel@lappy> <1192315867.5625.6.camel@lappy>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18194.46555.18395.586488@notabene.brown>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1192315867.5625.6.camel@lappy>
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 10:35:39AM +1000, Neil Brown wrote:
-> On Tuesday October 9, sam@ravnborg.org wrote:
-> > Hi Neil.
-> > > 
-> > >    From:        The Author, Primary Author, or Authors of the patch.
-> > >                 Authors should also provide a Signed-off-by: tag.
-> > > 
-> > >                 Purpose: to give credit to authors
-> > The SCM should include this info and we should not duplicate this
-> > in the changelog's.
-> > I know some tools require this format but that's something else.
-> 
-> If the SCM stores some tags in special places, that is fine with me.
-> The remove the need for the tag and an understanding of why it exists.
-> Can 'git' store a list of Authors?  Do we want to allow a list?
-git stores to my best knowledge only a single author.
-Infrequently we need a list but then people have solved it putting
-relevant people in s-o-b and by give credit in changelog.
-This is IMHO good enugh.
+On Sun, 14.10.07 00:51, Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
 
+> The below patch is an idea proposed by tglx and depends on sched-devel +
+> the hrtick patch previously posted.
 > 
-> > 
-> > > > +
-> > > > +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
-> > > > +		patch is, to the best of his or her knowledge, legally able
-> > > > +		to be merged into the mainline and distributed under the
-> > > > +		terms of the GNU General Public License, version 2.  See
-> > > > +		the Developer's Certificate of Origin, found in
-> > > > +		Documentation/SubmittingPatches, for the precise meaning of
-> > > > +		Signed-off-by.
-> > > 
-> > >                 Purpose: to allow subsequent review of the originality of 
-> > >                 the contribution should copyright questions arise.
-> > 
-> > We often use s-o-b to docuemnt the path a patch took from origin (the
-> > top-most s-o-b) to tree apply (lowest s-o-b).
-> > This is IIUC part of the intended behaviour of s-o-b but it is not
-> > clear from the above text.
-> 
-> My understanding of Andrew Morton's position on s-o-b is that it is an
-> unordered set.  I know this because when I have sent him patches with
-> a proper From: line, he has complained and begrudingly took the first
-> s-o-b, but said he didn't like to.
-> So there seems to be disagreement on this (I think it looks like a
-> path to - but apparently not to everyone).
-With the current definition you need to supply BOTH a from: and a s-o-b.
-I usually request a s-o-b when it is missing no matter what other content 
-is present in the changelog.
+> The current watchdog action is to demote the task to SCHED_NORMAL,
+> however it might be wanted to deliver a signal instead (or have more per
+> task configuration state). Which is why I added Lennart to the CC list
+> as I gathered he would like something like this for PulseAudio.
 
-> 
-> > 
-> > 
-> > > > +
-> > > > +Acked-by:	The person named (who should be an active developer in the
-> > > > +		area addressed by the patch) is aware of the patch and has
-> > > > +		no objection to its inclusion.  An Acked-by tag does not
-> > > > +		imply any involvement in the development of the patch or
-> > > > +		that a detailed review was done.
-> > > 
-> > >                 Purpose:  to inform upstream aggregators that
-> > > 		consensus was achieved for the change.  This is
-> > > 		particularly relevant for changes that affect multiple
-> > > 		Maintenance Domains.
-> > > 
-> > consensus seems too strong a wording here. consensus imply more than one
-> > that agree on the patch where I often see people give their "Acked-by:" by
-> > simple changelog reading.
-> 
-> I'm failing to follow your logic.
-> You seem to be contrasting:
->   "consensus imply more than one that agree"
->      which I agree with:  "From" plus all "Acked-By" will be more than
->      one in all cases that "Acked-By" is used
-I did not realise that "concensus" in this context refered to both the
-one that give the "Acked-by" and the author.
-Viewing it this way I agree with the intent and the text.
+Indeed! Having this in the kernel would allow us to enable RT
+scheduling for PulseAudio by default without bad effects. I was thinking about
+adding some kind of babysitting process to userspace -- but doing this as
+an RLIMIT in the kernel strikes me a much better idea!
 
-	Sam
+I think it would make a lot of sense to make the API very similar to
+RLIMIT_CPU, i.e. also send out SIGXCPU and SIGKILL, with the single
+difference that RLIMIT_CPU sends out a signal depending on the total
+CPU time used for the process and the new RLIMIT based on the time the
+process spent without sleeping. That would be a very reasonable
+extension to the current RLIMIT_CPU model.
+
+Thank you very much for doing this patch!
+
+Lennart
+
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net         ICQ# 11060553
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
