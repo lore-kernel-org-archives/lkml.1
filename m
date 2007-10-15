@@ -1,175 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXJOU6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbXJOVBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbXJOU6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXJOU6k
+	id S1757019AbXJOVBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbXJOVBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:58:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60034 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbXJOU6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:58:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm] PM: Rework struct platform_suspend_ops fixup
-Date: Mon, 15 Oct 2007 23:14:17 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Joseph Fannin <jfannin@gmail.com>,
-       Domen Puncer <domen.puncer@telargo.com>,
-       Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Mon, 15 Oct 2007 17:01:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36264 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754455AbXJOVBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 17:01:08 -0400
+Date: Mon, 15 Oct 2007 14:00:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: aarapov@redhat.com, linux-kernel@vger.kernel.org,
+       linux-netdev@vger.kernel.org, davem@redhat.com, jgarzik@redhat.com
+Subject: Re: [PATCH] ipv4: kernel panic when only one unsecured port
+ available
+Message-Id: <20071015140025.84e73297.akpm@linux-foundation.org>
+In-Reply-To: <20071015.130614.129757419.davem@davemloft.net>
+References: <m3fy0k9yod.fsf@bandura.englab.brq.redhat.com>
+	<20071015124919.30ed8f06.akpm@linux-foundation.org>
+	<20071015.130614.129757419.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710152314.18690.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Mon, 15 Oct 2007 13:06:14 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-A recently merged powerpc update has overlapped with the changes introduced by
-the following patches:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Mon, 15 Oct 2007 12:49:19 -0700
+> 
+> > This code has recently been reworked, but from my reading, that
+> > divide-by-zero can still occur.  And given that the numbers in
+> > /proc/sys/net/ipv4/ip_local_port_range are inclusive, the arithmetic in
+> > inet_csk_get_port() seems to just be wrong?
+> > 
+> > So we have this, against David's current devel tree:
+> 
+> I'm pretty sure we took care of this, but maybe not :-)
 
-pm-rename-struct-pm_ops-and-related-things.patch
-pm-rework-struct-platform_suspend_ops.patch
+<looks>
 
-As a result, mpc5200 and lite5200 need to be modified to follow the reworked
-suspend core.
+OK, in ipv4_local_port_range() we have 
 
-Thanks to Joseph Fannin <jfannin@gmail.com> for reporting the problem and
-helping to fix it.
+                if (range[1] <= range[0])
+                        ret = -EINVAL;
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/powerpc/platforms/52xx/lite5200_pm.c |   33 ++++++++++++++++++++----------
- arch/powerpc/platforms/52xx/mpc52xx_pm.c  |    4 +--
- include/asm-powerpc/mpc52xx.h             |    6 +++--
- 3 files changed, 28 insertions(+), 15 deletions(-)
+which will prevent the crashes.
 
-Index: linux-2.6.23-mm1/include/asm-powerpc/mpc52xx.h
-===================================================================
---- linux-2.6.23-mm1.orig/include/asm-powerpc/mpc52xx.h
-+++ linux-2.6.23-mm1/include/asm-powerpc/mpc52xx.h
-@@ -18,6 +18,8 @@
- #include <asm/prom.h>
- #endif /* __ASSEMBLY__ */
- 
-+#include <linux/suspend.h>
-+
- 
- /* ======================================================================== */
- /* Structures mapping of some unit register set                             */
-@@ -267,9 +269,9 @@ extern int mpc52xx_set_wakeup_gpio(u8 pi
- extern int __init lite5200_pm_init(void);
- 
- /* lite5200 calls mpc5200 suspend functions, so here they are */
--extern int mpc52xx_pm_prepare(suspend_state_t);
-+extern int mpc52xx_pm_prepare(void);
- extern int mpc52xx_pm_enter(suspend_state_t);
--extern int mpc52xx_pm_finish(suspend_state_t);
-+extern void mpc52xx_pm_finish(void);
- extern char saved_sram[0x4000]; /* reuse buffer from mpc52xx suspend */
- #endif
- #endif /* CONFIG_PM */
-Index: linux-2.6.23-mm1/arch/powerpc/platforms/52xx/lite5200_pm.c
-===================================================================
---- linux-2.6.23-mm1.orig/arch/powerpc/platforms/52xx/lite5200_pm.c
-+++ linux-2.6.23-mm1/arch/powerpc/platforms/52xx/lite5200_pm.c
-@@ -1,5 +1,5 @@
- #include <linux/init.h>
--#include <linux/pm.h>
-+#include <linux/suspend.h>
- #include <asm/io.h>
- #include <asm/time.h>
- #include <asm/mpc52xx.h>
-@@ -18,6 +18,8 @@ static void __iomem *sram;
- static const int sram_size = 0x4000;	/* 16 kBytes */
- static void __iomem *mbar;
- 
-+static suspend_state_t lite5200_pm_target_state;
-+
- static int lite5200_pm_valid(suspend_state_t state)
- {
- 	switch (state) {
-@@ -29,13 +31,22 @@ static int lite5200_pm_valid(suspend_sta
- 	}
- }
- 
--static int lite5200_pm_prepare(suspend_state_t state)
-+static int lite5200_pm_set_target(suspend_state_t state)
-+{
-+	if (lite5200_pm_valid(state)) {
-+		lite5200_pm_target_state = state;
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
-+static int lite5200_pm_prepare(void)
- {
- 	/* deep sleep? let mpc52xx code handle that */
--	if (state == PM_SUSPEND_STANDBY)
--		return mpc52xx_pm_prepare(state);
-+	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY)
-+		return mpc52xx_pm_prepare();
- 
--	if (state != PM_SUSPEND_MEM)
-+	if (lite5200_pm_target_state != PM_SUSPEND_MEM)
- 		return -EINVAL;
- 
- 	/* map registers */
-@@ -190,17 +201,17 @@ static int lite5200_pm_enter(suspend_sta
- 	return 0;
- }
- 
--static int lite5200_pm_finish(suspend_state_t state)
-+static void lite5200_pm_finish(void)
- {
- 	/* deep sleep? let mpc52xx code handle that */
--	if (state == PM_SUSPEND_STANDBY) {
--		return mpc52xx_pm_finish(state);
-+	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY) {
-+		mpc52xx_pm_finish();
- 	}
--	return 0;
- }
- 
--static struct pm_ops lite5200_pm_ops = {
-+static struct platform_suspend_ops lite5200_pm_ops = {
- 	.valid		= lite5200_pm_valid,
-+	.set_target	= lite5200_pm_set_target,
- 	.prepare	= lite5200_pm_prepare,
- 	.enter		= lite5200_pm_enter,
- 	.finish		= lite5200_pm_finish,
-@@ -208,6 +219,6 @@ static struct pm_ops lite5200_pm_ops = {
- 
- int __init lite5200_pm_init(void)
- {
--	pm_set_ops(&lite5200_pm_ops);
-+	suspend_set_ops(&lite5200_pm_ops);
- 	return 0;
- }
-Index: linux-2.6.23-mm1/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-===================================================================
---- linux-2.6.23-mm1.orig/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ linux-2.6.23-mm1/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -57,7 +57,7 @@ int mpc52xx_set_wakeup_gpio(u8 pin, u8 l
- 	return 0;
- }
- 
--static int mpc52xx_pm_prepare(void)
-+int mpc52xx_pm_prepare(void)
- {
- 	/* map the whole register space */
- 	mbar = mpc52xx_find_and_map("mpc5200");
-@@ -163,7 +163,7 @@ int mpc52xx_pm_enter(suspend_state_t sta
- 	return 0;
- }
- 
--static void mpc52xx_pm_finish(void)
-+void mpc52xx_pm_finish(void)
- {
- 	/* call board resume code */
- 	if (mpc52xx_suspend.board_resume_finish)
+But is it good to disallow high=low?  This disallows a port range of one
+single port.  Unless "high" is exclusive.  But
+Documentation/filesystems/proc.txt says
+
+: ip_local_port_range
+: -------------------
+:
+: Range of  ports  used  by  TCP  and UDP to choose the local port. Contains two
+: numbers, the  first  number  is the lowest port, the second number the highest
+: local port.  Default  is  1024-4999.  Should  be  changed  to  32768-61000 for
+: high-usage systems.
+
+ie: inclusive.
+
+Documentation/networking/ip-sysctl.txt says
+
+: ip_local_port_range - 2 INTEGERS
+: 	Defines the local port range that is used by TCP and UDP to
+: 	choose the local port. The first number is the first, the 
+: 	second the last local port number. Default value depends on
+: 	amount of memory available on the system:
+: 	> 128Mb 32768-61000
+: 	< 128Mb 1024-4999 or even less.
+: 	This number defines number of active connections, which this
+: 	system can issue simultaneously to systems not supporting
+: 	TCP extensions (timestamps). With tcp_tw_recycle enabled
+: 	(i.e. by default) range 1024-4999 is enough to issue up to
+: 	2000 connections per second to systems supporting timestamps.
+
+also inclusive.
+
+
