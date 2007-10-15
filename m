@@ -1,122 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbXJOTpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbXJOTrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761193AbXJOTpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXJOTpb
+	id S1764220AbXJOTrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXJOTrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:45:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35580 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbXJOTp3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:45:29 -0400
-Message-ID: <4713C34E.5080607@bull.net>
-Date: Mon, 15 Oct 2007 21:45:18 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Mon, 15 Oct 2007 15:47:32 -0400
+Received: from as3.cineca.com ([130.186.84.211]:38754 "EHLO as3.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756276AbXJOTra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:47:30 -0400
+X-Greylist: delayed 4789 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 15:47:30 EDT
+Message-ID: <4713B033.6040207@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time	accounting.
-References: <46E550EF.5080209@bull.net> <20071015093800.GA22818@elte.hu> <47133732.2090809@qumranet.com> <20071015095125.GB28367@elte.hu> <47133ABD.8050608@qumranet.com> <471346B0.8050102@bull.net> <47134BCE.1080306@qumranet.com> <4713510D.2050208@bull.net> <471357E4.90904@qumranet.com> <47135D1B.1060004@bull.net> <47139959.7090900@qumranet.com>
-In-Reply-To: <47139959.7090900@qumranet.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/10/2007 21:51:50,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/10/2007 21:51:53,
-	Serialize complete at 15/10/2007 21:51:53
+To: "Talpey, Thomas" <Thomas.Talpey@netapp.com>
+Cc: neilb@cse.unsw.edu.au, nfs@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS]  nfsd closes port 2049
+References: <47139C02.9020009@cineca.it> <EXNANE01sVxONvzyJxA000006ff@exnane01.hq.netapp.com>
+In-Reply-To: <EXNANE01sVxONvzyJxA000006ff@exnane01.hq.netapp.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Mon, 15 Oct 2007 20:23:46 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No more comments: I agree.
+Talpey, Thomas wrote:
+>> Oct 13 05:20:56 node0101 kernel: nfsd_acceptable failed at ffff8100c7873700
+> 
+> Sounds like the filesystem became unexported, or unexportable
+> due to turning off an "x" bit somewhere along the directory tree.
+> Were all these clients accessing a single mountpoint? Check
+> /etc/exports, and that directory.
 
-We can move the "&= ~PF_VCPU" to kvm_guest_exit() and remove it from 
-account_system_time(). Moreover it will simplify the code for s390...
+Thomas,
 
-Regards,
-Laurent
+thanks for the quick reply. Here is the /etc/exports (all clients are
+accessing the same mountpoint):
 
-Avi Kivity wrote:
-> Laurent Vivier wrote:
->> Avi Kivity wrote:
->>  
->>> Laurent Vivier wrote:
->>>
->>>  
->>>
->>>    
->>>>> But if we didn't get an interrupt in that time?
->>>>>
->>>>> We can clear it a bit later, after local_irq_enable() in
->>>>> __vcpu_run(). However we need a nop instruction first because "sti"
->>>>> keeps interrupts
->>>>> disabled for one more instruction.
->>>>>             
->>>> IMHO, I think it is better to let kvm_guest_exit() empty (you can
->>>> remove it, if
->>>> you want):
->>>>
->>>> 1st case:
->>>> - unset PF_VCPU in kvm_guest_exit(), all the tick is always for system
->>>> time.
->>>> Guest time is always 0.
->>>>
->>>> 1st case and half:
->>>>
->>>> - like 1st case but we move kvm_guest_exit() as you propose and the
->>>> reason of
->>>> the interrupt is the tick interrupt. The tick is for guest time only.
->>>> I think
->>>> the probability is very low.
->>>>         
->>> If the guest is executing for 10% of the time, the probability is
->>> exactly 10%, no?
->>>     
->>
->> I think you know that better than me.
->>
->> But is there homogeneity in probability ?
->>   
-> 
-> It's exactly the same issue as with systime and usertime.  The interrupt 
-> samples the program counter at various points at a fairly low frequency 
-> (milliseconds) while syscalls last a few dozens of microseconds.  
-> Probability makes it average out correctly in the end.
-> 
-> [Ingo, what about dyntick?  suppose you have just one process that calls 
-> read() from /dev/zero repeatedly.  There'd be very few (or no) 
-> interrupts -- what happens to accounting accuracy?]
-> 
->> I mean, if the guest has a lot I/O, it is interrupted by them and the
->> probability to be interrupted by a tick is lower than the time passed 
->> in the VCPU ?
->>   
-> 
-> Suppose the time to service the I/O is exactly equal to the amount 
-> running in guest mode.   Then the probability of the interrupt happening 
-> in guest mode is equal to it happening outside guest mode and you'd get 
-> 50% guest, 50% system/user, which is what you want.
-> 
-> 
->>  
->>>> 2nd case:
->>>> - don't unset PF_VCPU in kvm_guest_exit(), all the tick is for guest
->>>> time.
->>>>         
->>> But then even execution in ->handle_exit() is accounted as guest time,
->>> which is wrong.
->>>     
->>
->> System time and User time are wrong too as the tick is accounted to 
->> the side
->> where it appears, even if CPU has executed code from the other side in a
->> sub-part of the tick. It's not a good argument.
->>   
-> 
-> It's at least consistent... the same errors for everyone, so it averages 
-> out in the end.
-> 
+node0101:~ # cat /etc/exports
+# See the exports(5) manpage for a description of the syntax of this file.
+# This file contains a list of all directories that are to be exported to
+# other computers via NFS (Network File System).
+# This file used by rpc.nfsd and rpc.mountd. See their manpages for details
+# on how make changes in this file effective.
 
+/eni01      *.eni01.cineca.it(rw,no_root_squash,async,fsid=745)
+
+And:
+
+node0101:~ # exportfs -v
+/eni01          *.eni01.cineca.it(rw,async,wdelay,no_root_squash,fsid=745)
+
+The expoted directory is still available during the faulty condition.
+
+It's a gpfs mountpoint exported to the clients by NFS (don't think gpfs
+is an issue, I've used the same configuration in a lot of similar cases
+without any problem).
+
+node0101:~ # mount
+/dev/mapper/root_vg-root_lv on / type ext3 (rw,acl,user_xattr)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+debugfs on /sys/kernel/debug type debugfs (rw)
+udev on /dev type tmpfs (rw)
+devpts on /dev/pts type devpts (rw,mode=0620,gid=5)
+/dev/sda1 on /boot type ext2 (rw,acl,user_xattr)
+/dev/mapper/root_vg-home_lv on /home type ext3 (rw,acl,user_xattr)
+/dev/mapper/root_vg-tmp_lv on /tmp type ext3 (rw,acl,user_xattr)
+/dev/mapper/root_vg-usr_lv on /usr type ext3 (rw,acl,user_xattr)
+/dev/mapper/root_vg-var_lv on /var type ext3 (rw,acl,user_xattr)
+/dev/gpfs_eni01 on /eni01 type gpfs (rw,mtime,quota=userquota;groupquota;filesetquota,dev=gpfs_eni01,autostart)
+nfsd on /proc/fs/nfsd type nfsd (rw)
+node0101:~ # df -hT /eni01
+Filesystem    Type    Size  Used Avail Use% Mounted on
+/dev/gpfs_eni01
+              gpfs     18T  292G   18T   2% /eni01
+node0101:~ # stat /eni01/
+  File: `/eni01/'
+  Size: 32768           Blocks: 64         IO Block: 32768  directory
+Device: 11h/17d Inode: 3           Links: 17
+Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2007-10-15 20:08:21.000000000 +0200
+Modify: 2007-10-15 15:43:08.846245519 +0200
+Change: 2007-10-15 15:43:08.846245519 +0200
+
+BTW I see some dropped packets in the network interfaces used to export
+the filesystem (bond0):
+
+node0101:~ # ifconfig bond0
+bond0     Link encap:Ethernet  HWaddr 00:15:17:23:F1:29
+          inet addr:10.130.0.11  Bcast:10.130.255.255  Mask:255.255.0.0
+          inet6 addr: fe80::215:17ff:fe23:f129/64 Scope:Link
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:9000  Metric:1
+          RX packets:594282923 errors:0 dropped:2253 overruns:0 frame:0
+          TX packets:549363611 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:149828096309 (142887.2 Mb)  TX bytes:199133526153 (189908.5 Mb)
+
+node0101:~ # ifconfig eth3
+eth3      Link encap:Ethernet  HWaddr 00:15:17:23:F1:29
+          inet6 addr: fe80::215:17ff:fe23:f129/64 Scope:Link
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:9000  Metric:1
+          RX packets:320861616 errors:0 dropped:1384 overruns:0 frame:0
+          TX packets:265916198 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:103186260542 (98406.0 Mb)  TX bytes:98671309326 (94100.2 Mb)
+          Base address:0x7420 Memory:e7960000-e7980000
+
+node0101:~ # ifconfig eth5
+eth5      Link encap:Ethernet  HWaddr 00:15:17:23:F1:29
+          inet6 addr: fe80::215:17ff:fe23:f129/64 Scope:Link
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:9000  Metric:1
+          RX packets:273428614 errors:0 dropped:869 overruns:0 frame:0
+          TX packets:283454604 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:46645599519 (44484.7 Mb)  TX bytes:100463595893 (95809.5 Mb)
+          Base address:0x5420 Memory:e7e60000-e7e80000
+
+Could it lead to potential NFS problems (even if it sounds quite strange)?
+
+-Andrea
