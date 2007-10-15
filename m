@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbXJOGGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbXJOGIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757169AbXJOGGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 02:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXJOGGD
+	id S1759998AbXJOGIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 02:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbXJOGIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 02:06:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55219 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752718AbXJOGGB (ORCPT
+	Mon, 15 Oct 2007 02:08:16 -0400
+Received: from outbound0.mx.meer.net ([209.157.153.23]:3457 "EHLO
+	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753405AbXJOGIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 02:06:01 -0400
-Date: Sun, 14 Oct 2007 23:00:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Rob Landley <rob@landley.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015060015.GB32268@kroah.com>
-References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <1192400672.3351.56.camel@localhost.localdomain> <200710141845.44750.rob@landley.net>
+	Mon, 15 Oct 2007 02:08:15 -0400
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Hitachi disk: spurious completions during NCQ
+References: <9cP6K-6rV-29@gated-at.bofh.it>
+From: Don Mullis <dwm@meer.net>
+Date: Sun, 14 Oct 2007 23:07:51 -0700
+In-Reply-To: <9cP6K-6rV-29@gated-at.bofh.it> (Luca Tettamanti's message of "Wed\, 10 Oct 2007 21\:10\:22 +0200")
+Message-ID: <87zlyksyfc.fsf@meer.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710141845.44750.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 14, 2007 at 06:45:44PM -0500, Rob Landley wrote:
-> On Sunday 14 October 2007 5:24:32 pm James Bottomley wrote:
-> > On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
-> > > On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
-> > > > My impression from asking questions on the linux-scsi mailing list is
-> > > > that the scsi upper/middle/lower layers doesn't use the block layer
-> > > > described in Documentation/block/*.
-> > >
-> > > Entirely incorrect.
-> >
-> > OK, right ... could we please get a sense of decorum back on this list.
-> 
-> Did I reply to the insult?
-> 
-> > Rob, if you didn't ask your alleged questions in such a pejorative
-> > manner, we'd get a lot further
-> 
-> I'm not attempting to be pejorative.
-> 
-> I admit a certain amount of personal annoyance that once the SCSI layer 
-> consumes a category of device (USB, SATA, PATA), they can often _only_ be 
-> used by going through the SCSI midlayer.  (This strikes me as analogous to 
-> TCP/IP claiming ethernet and PPP devices so thoroughly that you can no longer 
-> address them as eth1 or /dev/ttyS0.)
 
-If you hate USB storage devices using scsi, please use the ub driver,
-that is what it was written for.
+> ata3.00: spurious completions during NCQ issue=0x0 SAct=0x407fd FIS=005040a1:00020000
+> ata3.00: cmd 61/08:00:c7:5a:82/00:00:1b:00:00/40 tag 0 cdb 0x0 data 4096 out
+>          res 50/00:10:07:5b:82/00:00:1b:00:00/40 Emask 0x2 (HSM violation)
 
-> This has the annoying effect of bundling together different types of devices 
-> and making device enumeration unnecessarily difficult: my laptop only has one 
-> SATA hard drive and can't gain another without a soldering iron, but that 
-> drive could move from /dev/sda to /dev/sdb if I reboot the system with a USB 
-> key plugged in.  This seems like a regrettable loss of orthogonality to me.  
-> I remember back when /dev/usb0 and /dev/hda were separate devices that showed 
-> up in /dev, but these days "it's SCSI" seems to trump "it's USB", "it's ATA", 
-> or "it's SATA".  (Even though none of those are actually SCSI hardware, they 
-> just send a similar packet protocol across the wire.)
 
-When did usb-storage devices ever show up as /dev/usb0?  USB flash disks
-are really SCSI devices, look at the USB storage spec for proof of that.
+This has been seen with several Hitachi drives.  There's speculation
+that it's due to a bug in the drive firmware:
 
-thanks,
+http://groups.google.it/group/linux.kernel/browse_thread/thread/a4bd3c19565a2009/389817602f0cd551?hl=it&lnk=st&q=hitachi+hsm+violation&rnum=3#389817602f0cd551
+https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/137470
 
-greg k-h
+
+A workaround:
+
+Index: /etc/rc.local
+===================================================================
+--- .orig/etc/rc.local  2007-10-13 14:57:10.000000000 -0700
++++ /etc/rc.local       2007-10-13 14:59:21.000000000 -0700
+@@ -11,4 +11,7 @@
+ #
+ # By default this script does nothing.
+
++# See https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/137470/
++echo 1 > /sys/block/sda/device/queue_depth
++
+ exit 0
