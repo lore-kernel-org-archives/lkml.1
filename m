@@ -1,128 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765905AbXJOSFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbXJOSGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765905AbXJOSFQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXJOSFA
+	id S933293AbXJOSGE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758873AbXJOSFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:05:00 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:51348 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754743AbXJOSE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:04:59 -0400
-X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
-   d="scan'208";a="113996048"
-X-Mailer: QUALCOMM Windows Eudora Version 7.1.0.9
-Date: Mon, 15 Oct 2007 14:04:08 -0400
-To: righiandr@users.sourceforge.net
-From: "Talpey, Thomas" <Thomas.Talpey@netapp.com>
-Subject: Re: [NFS]  nfsd closes port 2049
-Cc: neilb@cse.unsw.edu.au, nfs@lists.sourceforge.net,
+	Mon, 15 Oct 2007 14:05:53 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:56426 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757340AbXJOSFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:05:51 -0400
+Date: Mon, 15 Oct 2007 14:05:34 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47139C02.9020009@cineca.it>
-References: <47139C02.9020009@cineca.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-ID: <EXNANE01sVxONvzyJxA000006ff@exnane01.hq.netapp.com>
-X-OriginalArrivalTime: 15 Oct 2007 18:04:27.0036 (UTC) FILETIME=[D33805C0:01C80F55]
+Subject: Re: [PATCH 5/7] RT: Add support for low-priority wake-up to push_rt
+ feature
+In-Reply-To: <20071013001559.7444.4125.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0710151349290.26495@gandalf.stny.rr.com>
+References: <20071013001052.7444.8363.stgit@novell1.haskins.net>
+ <20071013001559.7444.4125.stgit@novell1.haskins.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Oct 13 05:20:56 node0101 kernel: nfsd_acceptable failed at ffff8100c7873700
 
-Sounds like the filesystem became unexported, or unexportable
-due to turning off an "x" bit somewhere along the directory tree.
-Were all these clients accessing a single mountpoint? Check
-/etc/exports, and that directory.
+--
+On Fri, 12 Oct 2007, Gregory Haskins wrote:
 
-Tom.
+> There are three events that require consideration for redistributing RT
+> tasks:
+>
+> 1) When one or more higher-priority tasks preempts a lower-one from a
+>    RQ
+> 2) When a lower-priority task is woken up on a RQ
+> 3) When a RQ downgrades its current priority
+>
+> Steve Rostedt's push_rt patch addresses (1).  It hooks in right after
+> a new task has been switched-in.  If this was the result of an RT
+> preemption, or if more than one task was awoken at the same time, we
+> can try to push some of those other tasks away.
+>
+> This patch addresses (2).  When we wake up a task, we check to see
+> if it would preempt the current task on the queue.  If it will not, we
+> attempt to find a better suited CPU (e.g. one running something lower
+> priority than the task being woken) and try to activate the task there.
+>
+> Finally, we have (3).  In theory, we only need to balance_rt_tasks() if
+> the following conditions are met:
+>    1) One or more CPUs are in overload, AND
+>    2) We are about to switch to a task that lowers our priority.
+>
+> (3) will be addressed in a later patch.
+>
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+>
+>  kernel/sched.c |   68 ++++++++++++++++++++++++++++++++++----------------------
+>  1 files changed, 41 insertions(+), 27 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 62f9f0b..3c71156 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1628,6 +1628,12 @@ out:
+>  	return ret;
+>  }
+>
+> +/* Push all tasks that we can to other CPUs */
+> +static void push_rt_tasks(struct rq *this_rq)
+> +{
+> +	while (push_rt_task(this_rq));
 
+Loop conditions like this must be written as:
 
+   while (push_rt_task(this_rq))
+	;
 
+So we don't accidently put something inside the loop if we forget to add
+the semicolon, like:
 
-At 12:57 PM 10/15/2007, Andrea Righi wrote:
->Hi all,
+   while (push_rt_task(this_rq)
+
+   do_something_not_expected_to_loop();
+
+Of course you end your function after that and thus we would get an
+compile error if the semicolon were to be missing. But we might add
+code afterwards.
+
+> +}
+> +
+>  /*
+>   * Pull RT tasks from other CPUs in the RT-overload
+>   * case. Interrupts are disabled, local rq is locked.
+> @@ -1988,7 +1994,33 @@ out_set_cpu:
+>  		this_cpu = smp_processor_id();
+>  		cpu = task_cpu(p);
+>  	}
+> -
+> +
+> +	/*
+> +	 * If a newly woken up RT task cannot preempt the
+> +	 * current (RT) task (on a target runqueue) then try
+> +	 * to find another CPU it can preempt:
+> +	 */
+> +	if (rt_task(p) && !TASK_PREEMPTS_CURR(p, rq)) {
+> +		cpumask_t cpu_mask;
+> +		cpus_and(cpu_mask, cpu_online_map, p->cpus_allowed);
+
+Hmm, maybe I should put that mask into the find_lowest_cpu function.
+Of course I changed this a little in my last patch.
+
+> +
+> +		new_cpu = find_lowest_cpu(&cpu_mask, p, rq);
+> +		if ((new_cpu != -1) && (new_cpu != cpu)) {
+> +			set_task_cpu(p, new_cpu);
+> +			spin_unlock(&rq->lock);
+> +
+> +			/* The new lock was already acquired in find_lowest */
+> +			rq = cpu_rq(new_cpu);
+> +			old_state = p->state;
+> +			if (!(old_state & state))
+> +				goto out;
+> +			if (p->se.on_rq)
+> +				goto out_running;
+> +
+> +			this_cpu = smp_processor_id();
+
+Could we have preempted to get a new this_cpu?
+
+> +			cpu = task_cpu(p);
+> +		}
+> +	}
+>  out_activate:
+>  #endif /* CONFIG_SMP */
+>  	update_rq_clock(rq);
+> @@ -2002,30 +2034,13 @@ out_activate:
+>  	 * to find another CPU it can preempt:
+>  	 */
+>  	if (rt_task(p) && !TASK_PREEMPTS_CURR(p, rq)) {
+> -		struct rq *this_rq = cpu_rq(this_cpu);
+>  		/*
+> -		 * Special-case: the task on this CPU can be
+> -		 * preempted. In that case there's no need to
+> -		 * trigger reschedules on other CPUs, we can
+> -		 * mark the current task for reschedule.
+> -		 *
+> -		 * (Note that it's safe to access this_rq without
+> -		 * extra locking in this particular case, because
+> -		 * we are on the current CPU.)
+> +		 * FIXME: Do we still need to do this here anymore, or
+> +		 * does the preemption-check above suffice.  The path
+> +		 * that makes my head hurt is when we have the
+> +		 * task_running->out_activate path
+>  		 */
+> -		if (TASK_PREEMPTS_CURR(p, this_rq))
+> -			set_tsk_need_resched(this_rq->curr);
+> -		else
+> -			/*
+> -			 * Neither the intended target runqueue
+> -			 * nor the current CPU can take this task.
+> -			 * Trigger a reschedule on all other CPUs
+> -			 * nevertheless, maybe one of them can take
+> -			 * this task:
+> -			 */
+> -			smp_send_reschedule_allbutself_cpumask(p->cpus_allowed);
+> -
+> -		schedstat_inc(this_rq, rto_wakeup);
+> +		push_rt_tasks(rq);
+
+I think the question is, doesn't this make the above not needed? The
+push_rt_tasks should do what the previous condition did.
+
+Maybe I'm missing something.
+
+>  	} else {
+>  		/*
+>  		 * Sync wakeups (i.e. those types of wakeups where the waker
+> @@ -2360,13 +2375,12 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
+>  	 * the lock was owned by prev, we need to release it
+>  	 * first via finish_lock_switch and then reaquire it.
+>  	 */
+> -	if (unlikely(rt_task(current))) {
+> +	if (unlikely(rq->rt_nr_running > 1)) {
+
+Heh, I guess that would work.
+
+-- Steve
+
+>  		spin_lock(&rq->lock);
+> -		/* push_rt_task will return true if it moved an RT */
+> -		while (push_rt_task(rq))
+> -			;
+> +		push_rt_tasks(rq);
+>  		spin_unlock(&rq->lock);
+>  	}
+> +
+>  #endif
+>  	fire_sched_in_preempt_notifiers(current);
+>  	trace_stop_sched_switched(current);
 >
->I'm trying to debug a weird problem with nfsd on a 2.6.16.27-0.6-smp
->kernel.
 >
->1 server: SuSE SLES 10 x86_64, config attached
->256 clients: RHEL4 Update 4 2.6.9-42.ELsmp x86_64
 >
->Using nfs v3.
->
->The clients have been happily talking to the server for several days
->without incident.
->
->The weird thing is that at a certain point the socket opened on port
->2049 on the NFS server is being closed for unknown reasons (or better
->for unknown reasons for me!). With unknown reasons I mean that I don't
->see any critical error message in the logs, even with debug verbosity
->enabled. I've enabled the max debug verbosity with:
->
->echo 2147483647 > /proc/sys/sunrpc/nfsd_debug
->
->The failures in the accept()s confirms that the server socket is working
->fine and suddenly it has been closed (I did some attempts with a simple
->netcat from localhost to check the socket availability):
->
-># bzcat /var/log/messages-20071013.bz2 | grep accept
->Oct 13 00:30:05 node0101 kernel: svc: tcp_accept ffff81015ea1d380 sock 
->ffff81015ce1a780
->Oct 13 00:30:05 node0101 kernel: svc: tcp_accept ffff8100c7997c00 allocated
->Oct 13 00:30:06 node0101 kernel: svc: tcp_accept ffff81015ea1d380 sock 
->ffff81015ce1a780
->Oct 13 00:30:06 node0101 kernel: svc: tcp_accept ffff8100c7997c00 allocated
->Oct 13 00:32:30 node0101 kernel: svc: tcp_accept ffff81015ea1d380 sock 
->ffff81015ce1a780
->Oct 13 00:32:30 node0101 kernel: svc: tcp_accept ffff8100c7997c00 allocated
->Oct 13 00:32:31 node0101 kernel: svc: tcp_accept ffff81015ea1d380 sock 
->ffff81015ce1a780
->Oct 13 00:32:31 node0101 kernel: svc: tcp_accept ffff8100c7997c00 allocated
->Oct 13 05:20:56 node0101 kernel: nfsd_acceptable failed at ffff8100c7873700
->Oct 13 05:51:06 node0101 kernel: nfsd_acceptable failed at ffff8100cba472f0
->Oct 13 09:51:11 node0101 kernel: nfsd_acceptable failed at ffff8100c6dbba40
->Oct 13 11:04:33 node0101 kernel: nfsd_acceptable failed at ffff8100ce485a40
->Oct 13 11:51:30 node0101 kernel: nfsd_acceptable failed at ffff8100c95552f0
->
->The other strange thing is that the server receives a lot of requests to
->close the connection from the clients, for example:
->
->node0101:~ # bzcat /var/log/messages-20071013.bz2 | grep "close 1$"
->...
->Oct 12 18:07:15 node0101 kernel: svc: tcp_recv ffff810114f16dc0 data 1 
->conn 0 close 1
->Oct 12 18:07:54 node0101 kernel: svc: tcp_recv ffff810114e07c80 data 0 
->conn 0 close 1
->Oct 12 18:10:58 node0101 kernel: svc: tcp_recv ffff810114fcc880 data 1 
->conn 0 close 1
->Oct 12 18:11:54 node0101 kernel: svc: tcp_recv ffff81010e940a80 data 0 
->conn 0 close 1
->Oct 12 18:13:40 node0101 kernel: svc: tcp_recv ffff81013e4cd6c0 data 1 
->conn 0 close 1
->Oct 12 18:13:45 node0101 kernel: svc: tcp_recv ffff810111acd8c0 data 1 
->conn 0 close 1
->Oct 12 18:15:25 node0101 kernel: svc: tcp_recv ffff810112431c80 data 0 
->conn 0 close 1
->Oct 12 18:16:00 node0101 kernel: svc: tcp_recv ffff810114f58980 data 1 
->conn 0 close 1
->Oct 12 18:16:17 node0101 kernel: svc: tcp_recv ffff810114f58180 data 1 
->conn 0 close 1
->Oct 12 18:16:27 node0101 kernel: svc: tcp_recv ffff81011130cc80 data 1 
->conn 0 close 1
->Oct 12 18:16:37 node0101 kernel: svc: tcp_recv ffff81011130ca80 data 1 
->conn 0 close 1
->Oct 12 18:17:03 node0101 kernel: svc: tcp_recv ffff81011130c880 data 1 
->conn 0 close 1
->Oct 12 18:20:18 node0101 kernel: svc: tcp_recv ffff8100d67be9c0 data 1 
->conn 0 close 1
->Oct 12 18:22:52 node0101 kernel: svc: tcp_recv ffff810111a23bc0 data 0 
->conn 0 close 1
->...
->
->Is it an expected behaviour or a potential symptom of a problem? Which
->info could I search in the logs?
->
->Any help appreciated.
->
->Thanks,
->-Andrea
