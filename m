@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXJOOCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765365AbXJOODZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759749AbXJOOCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 10:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765277AbXJOOCd
+	id S1765365AbXJOODZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 10:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759714AbXJOODA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 10:02:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49537 "EHLO
+	Mon, 15 Oct 2007 10:03:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49549 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765266AbXJOOCb (ORCPT
+	with ESMTP id S1756554AbXJOOC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 10:02:31 -0400
-Date: Mon, 15 Oct 2007 07:01:54 -0700
+	Mon, 15 Oct 2007 10:02:58 -0400
+Date: Mon, 15 Oct 2007 07:02:17 -0700
 From: Arjan van de Ven <arjan@linux.intel.com>
 To: Anton Blanchard <anton@samba.org>
-Cc: rt2400-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
+Cc: Larry.Finger@lwfinger.net, mb@bu3sch.de, st3@riseup.net,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
 Subject: Re: [PATCH] jiffies_round -> jiffies_round_relative conversion -
- rt2x00
-Message-ID: <20071015070154.4002340f@laptopd505.fenrus.org>
-In-Reply-To: <20071015054034.GC3257@kryten>
+ b43/b43legacy
+Message-ID: <20071015070217.34c59728@laptopd505.fenrus.org>
+In-Reply-To: <20071015054223.GD3257@kryten>
 References: <20071015053428.GA3257@kryten>
 	<20071015053801.GB3257@kryten>
 	<20071015054034.GC3257@kryten>
+	<20071015054223.GD3257@kryten>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,7 +31,7 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 00:40:34 -0500
+On Mon, 15 Oct 2007 00:42:23 -0500
 Anton Blanchard <anton@samba.org> wrote:
 
 > 
