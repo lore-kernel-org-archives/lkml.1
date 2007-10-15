@@ -1,90 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764396AbXJOLjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbXJOLlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764396AbXJOLjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbXJOLjM
+	id S1762824AbXJOLlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbXJOLlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:39:12 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50751 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755539AbXJOLjK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:39:10 -0400
-Message-ID: <47135150.8040901@bull.net>
-Date: Mon, 15 Oct 2007 13:38:56 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Mon, 15 Oct 2007 07:41:02 -0400
+Received: from thunk.org ([69.25.196.29]:44293 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755700AbXJOLk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 07:40:59 -0400
+Date: Mon, 15 Oct 2007 07:40:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+Message-ID: <20071015114003.GB21216@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Rob Landley <rob@landley.net>,
+	James Bottomley <James.Bottomley@steeleye.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+	Suparna Bhattacharya <suparna@in.ibm.com>,
+	Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <20071015014503.GF9715@thunk.org> <200710150304.00901.rob@landley.net> <200710152337.45252.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time accounting.
-References: <46E550EF.5080209@bull.net> <471346B0.8050102@bull.net> <47134BCE.1080306@qumranet.com> <200710151333.21078.borntraeger@de.ibm.com>
-In-Reply-To: <200710151333.21078.borntraeger@de.ibm.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/10/2007 13:45:34,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/10/2007 13:45:36,
-	Serialize complete at 15/10/2007 13:45:36
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig49F5BEEB615E63CA953CABAF"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710152337.45252.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig49F5BEEB615E63CA953CABAF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Oct 15, 2007 at 11:37:44PM +1000, Nick Piggin wrote:
+> I hate to go completely offtopic here, but disks are so incredibly
+> slow when compared to RAM that there is really nothing the kernel
+> can do about this. Presumably the job will finish, given infinite
+> time.
 
-Christian Borntraeger wrote:
-> Am Montag, 15. Oktober 2007 schrieb Avi Kivity:
->> We can clear it a bit later, after local_irq_enable() in __vcpu_run().=
- =20
->> However we need a nop instruction first because "sti" keeps interrupts=
-=20
->> disabled for one more instruction.
->=20
-> Ah, I see. The host interrupt  behaves different and instead of running=
- the
-> interrupt handler, it exits the vmrun on x86? The interrupt handler wil=
-l be
-> called some cycles after the sti?
-> That is different to s390. We can run the guest code for a long time an=
-d the
-> host instruction pointer stays on the sie instruction. That means, we c=
-an=20
-> interrupt sie and continue by simply setting the instrution pointer (PS=
-W)=20
-> back to the sie instruction.
->=20
-> Any idea how to make this proper on all architectures? I will have a lo=
-ok.
+About 6 weeks ago, on a 2.6.23-rc kernel, I accidentally typed "make
+-j", and left off the 4 before I hit the return key.  About 2-3
+minutes later, the box locked pretty tight.  I managed to switch to a
+VT console before I lost total control of X (took many, many minutes
+to do the switch), but after many minutes, managed to get logged into
+the console, but I wasn't able to get a ps command to complete so I
+could start killing processes.  (I probably should have just done a
+"killall make" right away, but hindsight is 20/20.)
 
-I think the solution is to have an arch dependent kvm_guest_exit(): empty=
- for
-x86, clearing the bit for s390.
+The console was showing that the OOM killer was attempting to kill
+processes, but apparently not fast enough to stem the tide of all of
+the new processes getting generated by the make -j.  (I'm guessing
+that it was killing the gcc processes and not the make processes.)
 
-Regards,
-Laurent
---=20
----------------- Laurent.Vivier@bull.net  -----------------
-"Given enough eyeballs, all bugs are shallow" E. S. Raymond
+> Would an oom-kill-someone-now sysrq be of help, I wonder?
 
+I tried sysrq-f (oom_kill), but no dice.  Given that the oom killer
+was active and apparently triggering on its own, this wasn't all that
+surprising.
 
---------------enig49F5BEEB615E63CA953CABAF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+The interesting thing is I tried to do an sysrq-e (send SIGTERM to all
+processes except), waited 5 minutes or so, then tried an alt-sysrq-i
+(send SIGKILL to all processes except init), and the system was still
+thrashing itself to death, even after giving it plenty of time to try
+to recover.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
+I finally gave up and held down the power button.  This was on a box
+with 4 gigs memory (but only 3 gigs visible thanks a cheap
+BIOS/chipset) and 4 gigs swap (mainly intended for suspend/resume).
 
-iD8DBQFHE1FQ9Kffa9pFVzwRAvdLAJ9KjKWLnyEpvc4R2V2uE2X6dSt/RQCeMs+d
-ul7RLxTE6SJg3s1oJfqcBn0=
-=jZC9
------END PGP SIGNATURE-----
+I chalked it up to me being stupid (I should have noticed and
+Ctrl-C'ed the make -j much more quickly, or if I were a sysadmin on a
+time-sharing system with users I didn't trust, configured RLIMIT_NPROC
+and/or per-user container resource limits) and the OOM killer not
+being aggressive enough in such a situation.  But having better things
+to do, I didn't go whining on LKML about it, although I have to say
+that the kernel behavior isn't exactly ideal.  One of these days when
+I have time, I'll try investigating it with a few memlocked processes
+running at real-time priorities and Systemtap and figure out what the
+heck was going on....
 
---------------enig49F5BEEB615E63CA953CABAF--
+I suppose I should just configure suspending to a file instead of a
+swap partition, but I've just historically trusted suspend/resume to a
+swap partition much more than to a file.  Or maybe I should hack in a
+sysctl to prevent any swapping even though the swap partition is
+configured (so only suspend/resume will use it).
+
+					- Ted
