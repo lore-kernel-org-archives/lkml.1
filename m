@@ -1,83 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbXJOXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbXJOXRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757690AbXJOXLn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbXJOXLf
+	id S1756819AbXJOXRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbXJOXRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:11:35 -0400
-Received: from waste.org ([66.93.16.53]:34300 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbXJOXLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:11:34 -0400
-Date: Mon, 15 Oct 2007 18:11:06 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags interfaces
-Message-ID: <20071015231106.GX19691@waste.org>
-References: <11.290135367@selenic.com> <1192488513.6118.98.camel@localhost>
-MIME-Version: 1.0
+	Mon, 15 Oct 2007 19:17:23 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:53875 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750876AbXJOXRW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:17:22 -0400
+Date: Mon, 15 Oct 2007 19:12:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, systemtap@sources.redhat.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20071015231209.GA18994@Krystal>
+References: <20070918211324.161373216@polymtl.ca> <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com> <20070921125819.GA13129@Krystal> <20070921133006.GF8964@redhat.com> <20070921133820.GD13129@Krystal> <20071015194120.GA22562@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1192488513.6118.98.camel@localhost>
+In-Reply-To: <20071015194120.GA22562@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:08:19 up 77 days, 23:27,  3 users,  load average: 1.47, 1.03, 0.97
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 03:48:33PM -0700, Dave Hansen wrote:
-> On Mon, 2007-10-15 at 17:26 -0500, Matt Mackall wrote:
-> > From: Matt Mackall <mpm@selenic.com>
-> > 
-> > This makes physical page map counts available to userspace. Together
-> > with /proc/pid/pagemap and /proc/pid/clear_refs, this can be used to
-> > monitor memory usage on a per-page basis.
-> ...
-> > +       while (count > 0) {
-> > +               ppage = pfn_to_page(pfn++);
-> > +               if (!ppage)
-> > +                       pflags = 0;
-> > +               else
-> > +                       pflags = ppage->flags;
-> > +
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Hi -
 > 
-> This one makes me worry a little bit.  Are we sure that this won't
-> expose a wee bit too much to userspace?
+> I wrote:
 > 
-> I can see it making sense to clear the page refs, then inspect whether
-> the page has been referenced again.  But, I worry that people are going
-> to start doing things like read NUMA, SPARSEMEM, or other internal
-> information out of these.
+> > [...]
+> > > The marker metadata must be stored in at least one place in the kernel
+> > > image - this just happens to be a convenient one that David Smith's
+> > > recent systemtap code used.  Without it, we'd probably have to do a
+> > > more complicated search, following the pointers within the __markers
+> > > structs.  [...]
+> 
+> Our team is farther along adapting to this change against 2.6.23-mm1,
+> and we have run into a complication.  It's more of a distribution
+> issue.
+> 
+> We would prefer to retain systemtap's capability to build
+> instrumentation for a kernel other than the currently running one.
+> Such instrumentation can be then copied and run on a distinct machine.
+> This has meant relying on development data: make install_headers +
+> Makefiles (as packaged by Fedora/RHEL), and to a lesser extent
+> separated debugging information.
+> 
+> Markers are attractive partly because they don't require debugging
+> information, so the data needs to be found in an executable image.
+> But we prefer not to force the executable image itself to be
+> installed, for example because /boot is relatively small.  So we would
+> prefer something in between: something small that we can put into the
+> development package.
+> 
+> If there exists sympathy to this problem, Roland McGrath supposes we
+> could implement a standardized solution, a file like Module.symvers,
+> containing the marker names & format strings extracted at build time.
+> Any opinions?
+> 
 
-Hmm, I would have thought you'd find the NUMA bits especially interesting.
-Being able to, say, colorize a process' memory map by what nodes its
-pages land on could be very telling.
+Hi Frank,
 
-> I've seen quite a few patches lately that do creative things with these
-> *cough*clameter*cough*, and I worry that they're too fluid to get
-> exposed to userspace.
+I think the main issue with the solution you propose is that it doesn't
+deal with markers in modules, am I right ?
 
-That is a concern. In general, I think getting too cute with page
-flags and struct page in general is a bad idea because the rules here
-are already so complex/fragile/confusing/underdocumented, but there's
-definitely a lot of pressure in that direction.
- 
-> Could we just have /proc/kpagereferenced?  Is there a legitimate need
-> for other flags to be visible?
+I will soon come with a marker iterator and a module that provides a
+userspace -and in kernel- interface to enable/disable markers. Actually,
+I already have the code ready in my LTTng snapshots. I can provide a
+link if you want to have a look.
 
-Referenced, dirty, uptodate, lru, active, slab, writeback, reclaim,
-and buddy all look like they might be interesting to me from the point
-of view of watching what's happening in the VM graphically in
-real-time.
+> 
+> PS. I wonder why the marker name/format strings are put into a
+> __markers_strings object section at all, considering that the only
+> place where that is used again appears to be this code in
+> kernel/module.c:
+> 
+>         markersstringsindex = find_sec(hdr, sechdrs, secstrings,
+>                                         "__markers_strings");
+> 
+> and the "markersstringsindex" variable is never used.
+> 
 
-For instance, watching the slab bit I can watch a 'find /' fill up
-huge swaths of contiguous dcache memory, then get fragmented to hell
-and never recover when I do a large userspace malloc. In other words,
-this thing actually lets you see all the crap that happens in the VM
-that we usually handwave about.
+Considering that  I want to minimize the impact on the system, I put the
+marker strings in their own memory location rather than clobbering the
+memory containing the kernel strings (which will likely be used more
+often than markers). It makes sure that I don't pollute cachelines
+otherwise containing useful kernel strings.
+
+Mathieu
+
+> 
+> - FChE
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
