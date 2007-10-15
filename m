@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbXJOVHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXJOVIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759403AbXJOVHw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXJOVHn
+	id S1759935AbXJOVIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXJOVIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:07:43 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45134 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752463AbXJOVHm (ORCPT
+	Mon, 15 Oct 2007 17:08:38 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:65339 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbXJOVIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:07:42 -0400
-X-Sasl-enc: JT53ll6oGP8QZl+HalwepsLcFvwmiZpjVCajOJeHdADK 1192482461
-Date: Mon, 15 Oct 2007 19:07:37 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jeremy Katz <katzj@redhat.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       davej@redhat.com
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Message-ID: <20071015210737.GA15293@khazad-dum.debian.net>
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
+	Mon, 15 Oct 2007 17:08:37 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1192481110-9299-1-git-send-email-katzj@redhat.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18195.54994.682714.474626@stoffel.org>
+Date: Mon, 15 Oct 2007 17:08:34 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: bamakhrama@gmail.com
+Cc: linux-smp@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Flynn's Original Paper about Computer Organization
+In-Reply-To: <40378e40710151152q5d96a51r88e8f27f69836d6c@mail.gmail.com>
+References: <40378e40710151152q5d96a51r88e8f27f69836d6c@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Jeremy Katz wrote:
-> There are standard keycodes for brightness and volume; map the events to
-> emit them so that things work properly
 
-NAK.  It is the completely wrong thing to do for IBM thinkpads which process
-volume and brightness completely in firmware.
+Mohamed> I am looking for Michael Flynn original paper about computer
+Mohamed> organization in which Flynn devised the so-called "Flynn
+Mohamed> Taxonomy". I tried Google, IEEE Xplore, ACM, Yahoo but in
+Mohamed> vain. I would be very grateful if someone can post a scanned
+Mohamed> version of the manuscript.  Here is the citation as generated
+Mohamed> by the paper BibTeX entry in Google scholar:
 
-And the input subsystem maintainer has made it extremely clear in various
-threads that the input devices are *not* to be used as a notification
-service for on-screen-display or other such stuff.  If you send volume and
-brightness *key* events to userspace, it is supposed to act on them and
-raise/lower brightness/volume, which is the wrong thing to do on thinkpads.
-Never mind that HAL is ignoring the input maintainer's directions and
-violating this.
+Mohamed> Michael J. Flynn. Some Computer Organizations and Their
+Mohamed> Effectiveness. IEEE Transactions on Computers, 21(9):948{960,
+Mohamed> 1972.
 
-We should fix the backlight class to be more useful and support poll() or
-somesuch, for userspace to track the backlight level in a resource-friendly
-way for OSD (the only sane thing to do on an IBM thinkpad with such events).
-And an ALSA mixer to provide a proper path to the thinkpad-acpi volume
-functionality is also in my schedule for 2.6.25.
+Goto any large university library or computer science department, they
+should be able to find this for you.  This isn't an LKML issue.
 
-As for Lenovo thinkpads, brightness control is to be processed by the ACPI
-video module, so brightness hot keys are not to be reported by default there
-either.  I am not so sure about the volume keys, but your patch touches the
-IBM keymap *and* you provide no testing information for the various Lenovo
-models, so I have to NAK it as well until more information is available.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+John
