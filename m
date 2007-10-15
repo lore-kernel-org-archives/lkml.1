@@ -1,234 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934444AbXJOSmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765730AbXJOSmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934444AbXJOSmX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbXJOSer
+	id S1765730AbXJOSmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933950AbXJOSes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:34:47 -0400
-Received: from mail.windriver.com ([147.11.1.11]:47928 "EHLO mail.wrs.com"
+	Mon, 15 Oct 2007 14:34:48 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47931 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933348AbXJOSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:34:31 -0400
-Message-ID: <4713B289.20204@windriver.com>
-Date: Mon, 15 Oct 2007 13:33:45 -0500
+	id S933935AbXJOSee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:34:34 -0400
+Message-ID: <4713B28C.3030905@windriver.com>
+Date: Mon, 15 Oct 2007 13:33:48 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-CC: rusty@rustcorp.com.au
-Subject: [PATCH 16/21] KGDB: This allows for KGDB to better deal with autoloaded
- modules.
+CC: ak@suse.de
+Subject: [PATCH 17/21] KGDB: This adds hardware breakpoint support for i386.
 Content-Type: multipart/mixed;
- boundary="------------000009000908050906030406"
-X-OriginalArrivalTime: 15 Oct 2007 18:34:28.0876 (UTC) FILETIME=[0532FCC0:01C80F5A]
+ boundary="------------070200000602030509060106"
+X-OriginalArrivalTime: 15 Oct 2007 18:34:31.0985 (UTC) FILETIME=[070D6210:01C80F5A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------000009000908050906030406
+--------------070200000602030509060106
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
---------------000009000908050906030406
+--------------070200000602030509060106
 Content-Type: text/x-patch;
- name="module.patch"
+ name="i386-hw_breakpoints.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="module.patch"
+ filename="i386-hw_breakpoints.patch"
 
-module.patch
+i386-hw_breakpoints.patch
 
 From: Jason Wessel <jason.wessel@windriver.com>
-CC: rusty@rustcorp.com.au
-Subject: [PATCH] This allows for KGDB to better deal with autoloaded modules.
+CC: ak@suse.de
+Subject: [PATCH] This adds hardware breakpoint support for i386.
 
-With more information in the kernel, gdb can be modified in such a way
-as to automatically read the kernel module section information and
-allow for easy kernel module debugging.  This patch can be found at:
+This is the minimal set of routines support hw breakpoints on the x86
+arch.  It has the known limitation that the system boot will wipe out
+the hw breakpoints at cpu_init time and any user space hw breakpoints
+will wipe out the kernel breakpoints.
 
-ftp://ftp.<countrycode>.kernel.org/pub/linux/kernel/people/trini/patches/gdb/6.3/gdb-6.3-kgdb-module-notification.patch
-
-In gdb the solib-search-path must contain the location of any module
-to be debugged.  When a module is loaded GDB acts like a shared
-library has been loaded and will collect the information about the
-memory location so the kernel module can be debugged or inspected.
-
-Even when not using kgdb+gdb, it is quite useful for a
-debugger+ICE/jtag to have the module section information.
+In the future this implementation could change such that the the
+kernel space may have its own context to swap in for hw breakpoints.
+For now this minimal implementation works well given the limitations.
 
 Signed-off-by: Milind Dumbare <milind@linsyssoft.com>
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+ arch/x86/kernel/kgdb_32.c |  128 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 121 insertions(+), 7 deletions(-)
 ---
- include/linux/module.h |   16 +++++++++++++
- kernel/module.c        |   60 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 76 insertions(+)
 
-Index: linux-2.6-kgdb/include/linux/module.h
-===================================================================
---- linux-2.6-kgdb.orig/include/linux/module.h
-+++ linux-2.6-kgdb/include/linux/module.h
-@@ -226,8 +226,17 @@ enum module_state
- 	MODULE_STATE_LIVE,
- 	MODULE_STATE_COMING,
- 	MODULE_STATE_GOING,
-+	MODULE_STATE_GONE,
+--- a/arch/x86/kernel/kgdb_32.c
++++ b/arch/x86/kernel/kgdb_32.c
+@@ -14,12 +14,15 @@
+ 
+ /*
+  * Copyright (C) 2000-2001 VERITAS Software Corporation.
++ * Copyright (C) 2007 Wind River Systems, Inc.
++ * Copyright (C) 2007 MontaVista Software, Inc.
+  */
+ /*
+  *  Contributor:     Lake Stevens Instrument Division$
+  *  Written by:      Glenn Engel $
+  *  Updated by:	     Amit Kale<akale@veritas.com>
+  *  Updated by:	     Tom Rini <trini@kernel.crashing.org>
++ *  Updated by:	     Jason Wessel <jason.wessel@windriver.com>
+  *  Modified for 386 by Jim Kingdon, Cygnus Support.
+  *  Origianl kgdb, compatibility with 2.1.xx kernel by
+  *  David Grothe <dave@gcom.com>
+@@ -124,10 +127,115 @@ static struct hw_breakpoint {
+ 	{ .enabled = 0 },
  };
  
-+#ifdef CONFIG_KGDB
-+#define MAX_SECTNAME 31
-+struct mod_section {
-+	void *address;
-+	char name[MAX_SECTNAME + 1];
-+};
-+#endif
-+
- /* Similar stuff for section attributes. */
- struct module_sect_attr
- {
-@@ -255,6 +264,13 @@ struct module
- 	/* Unique handle for this module */
- 	char name[MODULE_NAME_LEN];
- 
-+#ifdef CONFIG_KGDB
-+	/* keep kgdb info at the begining so that gdb doesn't have a chance to
-+	 * miss out any fields */
-+	unsigned long num_sections;
-+	struct mod_section *mod_sections;
-+#endif
-+
- 	/* Sysfs stuff. */
- 	struct module_kobject mkobj;
- 	struct module_param_attrs *param_attrs;
-Index: linux-2.6-kgdb/kernel/module.c
-===================================================================
---- linux-2.6-kgdb.orig/kernel/module.c
-+++ linux-2.6-kgdb/kernel/module.c
-@@ -65,6 +65,7 @@ extern int module_sysfs_initialized;
-  * (add/delete uses stop_machine). */
- static DEFINE_MUTEX(module_mutex);
- static LIST_HEAD(modules);
-+static DECLARE_MUTEX(notify_mutex);
- 
- static BLOCKING_NOTIFIER_HEAD(module_notify_list);
- 
-@@ -710,6 +711,12 @@ sys_delete_module(const char __user *nam
- 	if (ret != 0)
- 		goto out;
- 
-+	down(&notify_mutex);
-+	blocking_notifier_call_chain(&module_notify_list, MODULE_STATE_GOING,
-+								 mod);
-+	up(&notify_mutex);
-+
-+
- 	/* Never wait if forced. */
- 	if (!forced && module_refcount(mod) != 0)
- 		wait_for_zero_refcount(mod);
-@@ -722,6 +729,11 @@ sys_delete_module(const char __user *nam
- 	}
- 	free_module(mod);
- 
-+	down(&notify_mutex);
-+	blocking_notifier_call_chain(&module_notify_list, MODULE_STATE_GONE,
-+			NULL);
-+	up(&notify_mutex);
-+
-  out:
- 	mutex_unlock(&module_mutex);
- 	return ret;
-@@ -842,6 +854,9 @@ static ssize_t show_initstate(struct mod
- 	case MODULE_STATE_GOING:
- 		state = "going";
- 		break;
-+	case MODULE_STATE_GONE:
-+		state = "gone";
-+		break;
- 	}
- 	return sprintf(buffer, "%s\n", state);
- }
-@@ -1206,6 +1221,11 @@ static void free_module(struct module *m
- 	/* Arch-specific cleanup. */
- 	module_arch_cleanup(mod);
- 
-+#ifdef CONFIG_KGDB
-+	/* kgdb info */
-+	vfree(mod->mod_sections);
-+#endif
-+
- 	/* Module unload stuff */
- 	module_unload_free(mod);
- 
-@@ -1465,6 +1485,30 @@ static void setup_modinfo(struct module 
- 	}
- }
- 
-+#ifdef CONFIG_KGDB
-+int add_modsects(struct module *mod, Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
-+		const char *secstrings)
++static void kgdb_correct_hw_break(void)
 +{
-+	 int i;
++	int breakno;
++	int breakbit;
++	int correctit = 0;
++	unsigned long dr7;
 +
-+	 mod->num_sections = hdr->e_shnum - 1;
-+	 mod->mod_sections = vmalloc((hdr->e_shnum - 1) *
-+		sizeof(struct mod_section));
++	get_debugreg(dr7, 7);
++	for (breakno = 0; breakno < 4; breakno++) {
++		breakbit = 2 << (breakno << 1);
++		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 |= breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++			dr7 |= ((breakinfo[breakno].len << 2) |
++				 breakinfo[breakno].type) <<
++			       ((breakno << 2) + 16);
++			switch (breakno) {
++			case 0:
++				set_debugreg(breakinfo[0].addr, 0);
++				break;
 +
-+	 if (mod->mod_sections == NULL)
-+		 return -ENOMEM;
++			case 1:
++				set_debugreg(breakinfo[1].addr, 1);
++				break;
 +
-+	 for (i = 1; i < hdr->e_shnum; i++) {
-+		 mod->mod_sections[i - 1].address = (void *)sechdrs[i].sh_addr;
-+		 strncpy(mod->mod_sections[i - 1].name, secstrings +
-+				 sechdrs[i].sh_name, MAX_SECTNAME);
-+		 mod->mod_sections[i - 1].name[MAX_SECTNAME] = '\0';
++			case 2:
++				set_debugreg(breakinfo[2].addr, 2);
++				break;
++
++			case 3:
++				set_debugreg(breakinfo[3].addr, 3);
++				break;
++			}
++		} else if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 &= ~breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++		}
 +	}
++	if (correctit)
++		set_debugreg(dr7, 7);
++}
 +
++static int kgdb_remove_hw_break(unsigned long addr, int len,
++				enum kgdb_bptype bptype)
++{
++	int i;
++
++	for (i = 0; i < 4; i++)
++		if (breakinfo[i].addr == addr && breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
++
++	breakinfo[i].enabled = 0;
 +	return 0;
 +}
-+#endif
 +
- #ifdef CONFIG_KALLSYMS
- static int is_exported(const char *name, const struct module *mod)
++static void kgdb_remove_all_hw_break(void)
++{
++	int i;
++
++	for (i = 0; i < 4; i++)
++		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
++}
++
++static int kgdb_set_hw_break(unsigned long addr, int len,
++			     enum kgdb_bptype bptype)
++{
++	int i;
++	unsigned type;
++
++	for (i = 0; i < 4; i++)
++		if (!breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
++
++	switch (bptype) {
++	case bp_hardware_breakpoint:
++		type = 0;
++		len  = 1;
++		break;
++	case bp_write_watchpoint:
++		type = 1;
++		break;
++	case bp_access_watchpoint:
++		type = 3;
++		break;
++	default:
++		return -1;
++	}
++
++	if (len == 1 || len == 2 || len == 4)
++		breakinfo[i].len  = len - 1;
++	else
++		return -1;
++
++	breakinfo[i].enabled = 1;
++	breakinfo[i].addr = addr;
++	breakinfo[i].type = type;
++	return 0;
++}
++
+ void kgdb_disable_hw_debug(struct pt_regs *regs)
  {
-@@ -1880,6 +1924,12 @@ static struct module *load_module(void _
+ 	/* Disable hardware debugging while we are in kgdb */
+-	asm volatile ("movl %0,%%db7": /* no output */ :"r" (0));
++	set_debugreg(0, 7);
+ }
  
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
+ void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
+@@ -172,12 +280,12 @@ int kgdb_arch_handle_exception(int e_vec
+ 			linux_regs->eflags |= TF_MASK;
+ 			debugger_step = 1;
+ 			atomic_set(&cpu_doing_single_step,
+-			raw_smp_processor_id());
++				   raw_smp_processor_id());
+ 		}
  
-+#ifdef CONFIG_KGDB
-+	err = add_modsects(mod, hdr, sechdrs, secstrings);
-+	 if (err < 0)
-+		 goto nomodsectinfo;
-+#endif
-+
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
-@@ -1940,6 +1990,11 @@ static struct module *load_module(void _
-  arch_cleanup:
- 	module_arch_cleanup(mod);
-  cleanup:
-+
-+#ifdef CONFIG_KGDB
-+nomodsectinfo:
-+	vfree(mod->mod_sections);
-+#endif
- 	module_unload_free(mod);
- 	module_free(mod, mod->module_init);
-  free_core:
-@@ -2011,6 +2066,11 @@ sys_init_module(void __user *umod,
- 		/* Init routine failed: abort.  Try to protect us from
-                    buggy refcounters. */
- 		mod->state = MODULE_STATE_GOING;
-+		down(&notify_mutex);
-+		blocking_notifier_call_chain(&module_notify_list,
-+				MODULE_STATE_GOING,
-+				mod);
-+		up(&notify_mutex);
- 		synchronize_sched();
- 		if (mod->unsafe)
- 			printk(KERN_ERR "%s: module is now stuck!\n",
+-		asm volatile ("movl %%db6, %0\n":"=r" (dr6));
++		get_debugreg(dr6, 6);
+ 		if (!(dr6 & 0x4000)) {
+-			long breakno;
++			int breakno;
+ 			for (breakno = 0; breakno < 4; ++breakno) {
+ 				if (dr6 & (1 << breakno) &&
+ 				    breakinfo[breakno].type == 0) {
+@@ -187,10 +295,11 @@ int kgdb_arch_handle_exception(int e_vec
+ 				}
+ 			}
+ 		}
+-		asm volatile ("movl %0, %%db6\n"::"r" (0));
++		set_debugreg(0, 6);
++		kgdb_correct_hw_break();
+ 
+-		return (0);
+-	}			/* switch */
++		return 0;
++	}
+ 	/* this means that we do not want to exit from the handler */
+ 	return -1;
+ }
+@@ -297,4 +406,9 @@ unsigned long kgdb_arch_pc(int exception
+ 
+ struct kgdb_arch arch_kgdb_ops = {
+ 	.gdb_bpt_instr = {0xcc},
++	.flags = KGDB_HW_BREAKPOINT,
++	.set_hw_breakpoint = kgdb_set_hw_break,
++	.remove_hw_breakpoint = kgdb_remove_hw_break,
++	.remove_all_hw_break = kgdb_remove_all_hw_break,
++	.correct_hw_break = kgdb_correct_hw_break,
+ };
 
---------------000009000908050906030406--
+--------------070200000602030509060106--
