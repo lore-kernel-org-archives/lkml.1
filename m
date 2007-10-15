@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933117AbXJOSMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932820AbXJOSOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933117AbXJOSMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbXJOSMT
+	id S932820AbXJOSOh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbXJOSO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:12:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46196 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754348AbXJOSMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:12:18 -0400
-Message-ID: <4713AD7F.8030906@garzik.org>
-Date: Mon, 15 Oct 2007 14:12:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 15 Oct 2007 14:14:28 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:43496 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbXJOSO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:14:27 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 15 Oct 2007 11:14:24 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: Michael Kerrisk <mtk-manpages@gmx.net>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>, geoff@gclare.org.uk,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: Revised signalfd man-page
+In-Reply-To: <47130EA1.6000300@gmail.com>
+Message-ID: <Pine.LNX.4.64.0710151103591.5204@alien.or.mcafeemobile.com>
+References: <46FB9FB9.8080201@gmx.net> <Pine.LNX.4.64.0709271000420.763@alien.or.mcafeemobile.com>
+ <47130EA1.6000300@gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: James.Bottomley@steeleye.com, linux-scsi <linux-scsi@vger.kernel.org>
-CC: akpm@linux-foundation.org, kristen.c.accardi@intel.com, htejun@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 1/1] scsi: expose AN support to user space
-References: <200710032104.l93L40CM008614@imap1.linux-foundation.org> <470FE29A.7050605@garzik.org>
-In-Reply-To: <470FE29A.7050605@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> akpm@linux-foundation.org wrote:
->> From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
->>
->> If a scsi_device supports async notification for media change, then 
->> let user
->> space know this capability exists by creating a new sysfs entry
->> "media_change_notify", which will be 1 if it is supported, and 0 if not
->> supported.  Create a routine which allows scsi devices to send a 
->> uevent when
->> media change events occur.
->>
->> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
->> Acked-by: Jeff Garzik <jeff@garzik.org>
->> Cc: Tejun Heo <htejun@gmail.com>
->> Cc: James Bottomley <James.Bottomley@steeleye.com>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+On Mon, 15 Oct 2007, Michael Kerrisk wrote:
+
+> Hi Davide,
 > 
-> Ping?
+> There were two questions that you overlooked in my earlier draft of the
+> signalfd man page.  I've revised one of the questions slightly.  Could you
+> look at these please:
 
-Re-Ping?
+I think I already answered those, no? Anyway ...
 
-This patch works (it has been working for months), is ACK'd by me, 
-addresses some of the feedback given in August, and has not received any 
-comments despite the SCSI maintainers being To'd or CC'd for weeks 
-(months, if you include the older thread).
 
-Further, this patch is required to round out interrupt-driven media 
-change notification, that which eliminates the CD-ROM polling that 
-userspace has done since the dawn of time.
 
-It was not in the merge window SCSI push, while being in -mm for a while 
-and linux-scsi having the patch for a while.  Which means, if the 
-silence continues, it must wait 4-6 months for 2.6.25 release, for no 
-apparent reason.
+> .SS execve(2) semantics
+> [TO BE COMPLETED]
+> .\" FIXME
+> .\" Davide, what are the intended semantics after an execve()?
+> .\" I would hope that the descriptor remains available, and can
+> .\" be used to read any queued signals.  This is analogous with
+> .\" traditional behavior, where blocked signals that are pending
+> .\" prior to an execve() remain pending after the execve().
+> .\"
+> .\" Below, was my original question, based on how things
+> .\" worked at one point, but perhaps they have changed by now:
+> .\"===
+> .\" As far as I can work out, after an execve() the file descriptor
+> .\" is still available, but reads from it always return 0, even if:
+> .\"
+> .\" a) there were signals pending before the execve().
+> .\"    However, sigpending() shows the signal as pending,
+> .\"    and the signal can be accepted using sigwaitinfo().
+> .\"
+> .\" b) we generate the signal after the exec.
+> .\"
+> .\" Is this intended behavior (the "orphaned sighand" condition
+> .\" described above?)?  Is it a bug?
 
-	Jeff
+With the new code Linus already merged, signalfd does not attach to the 
+sighand anymore, so the "orphaned sighand" behaviour is no more there.
+An exec() will carry the fd over, and you will be able to use the fd in 
+the same way you did before the exec(). If sigpending()/sigwaitinfo() will 
+show signals available, so it should signalfd.
+
+
+
+> .SS Thread semantics
+> [TO BE COMPLETED]
+> .\" FIXME Davide, a signal can be directed to the process as
+> .\" a whole, or to a particular thread.  What are the intended
+> .\" semantics for signalfd()?  If a thread calls signalfd(),
+> .\" does the resulting file descriptor return just those
+> .\" signals directed to [the thread and the process as a whole],
+> .\" or will it also receive signals that are targeted at
+> .\" other threads in the process?
+
+It'll return the signals that would be normally returned to the thread 
+with the standard signal delivery methods. That is, calling thread private 
+signals, and calling thread-group shared signals.
+
+
+
+- Davide
 
 
