@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbXJORdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXJORed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760862AbXJORdp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXJORdf
+	id S1758010AbXJORed (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXJOReU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:33:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:60419 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbXJORde (ORCPT
+	Mon, 15 Oct 2007 13:34:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59218 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752853AbXJOReS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:33:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iTHYXh/++cOL58zvQGRInKUm7OE7OfZQvo56A5cC7MYNvaMUEtSq2PFCxZgI6tUSN6KFa665AElU9er4LhZGRc9vfIYY1tq5EHsImcFE5HsskQ9j+om3OcFaVsVRFKnJcedPNsjVqveFM6fOt2lk7H6xRQgUQ7d6YEB8KTwfOms=
-Message-ID: <d120d5000710151033u44df579fr82588a7a6c7065d@mail.gmail.com>
-Date: Mon, 15 Oct 2007 13:33:31 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Subject: Re: [PATCH 2/3] Input/Touchscreen Driver: add support AD7877 touchscreen driver
-Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <600D5CB4DFD93545BF61FF01473D11AC0F2B13C2@limkexm2.ad.analog.com>
+	Mon, 15 Oct 2007 13:34:18 -0400
+Date: Mon, 15 Oct 2007 10:33:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Rob Landley <rob@landley.net>
+Cc: Julian Calaby <julian.calaby@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015173357.GB5738@kroah.com>
+References: <200710112011.22000.rob@landley.net> <200710150304.00901.rob@landley.net> <646765f40710150206j75af4c4dwac4f4565451b64b1@mail.gmail.com> <200710150508.37332.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <600D5CB4DFD93545BF61FF01473D11AC0F2B13C2@limkexm2.ad.analog.com>
+In-Reply-To: <200710150508.37332.rob@landley.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
-
-On 10/15/07, Hennerich, Michael <Michael.Hennerich@analog.com> wrote:
+On Mon, Oct 15, 2007 at 05:08:36AM -0500, Rob Landley wrote:
+> On Monday 15 October 2007 4:06:20 am Julian Calaby wrote:
+> > On 10/15/07, Rob Landley <rob@landley.net> wrote:
+> > > I note that the eth0 and eth1 names are dynamically assigned on a first
+> > > come first serve basis (like scsi).  This never causes me a problem
+> > > because the driver loading order is constant, and once you figure out
+> > > that eth0 is gigabit and eth1 is the 80211g it _stays_ that way across
+> > > reboots, reliably. Yeah, it's a heuristic.  Hands up everybody relying on
+> > > such a heuristic in the real world.
 > >
-> >> +
-> >> +static int ad7877_read(struct device *dev, u16 reg)
-> >> +{
-> >> +       struct spi_device       *spi = to_spi_device(dev);
-> >> +       struct ser_req          *req = kzalloc(sizeof *req,
-> GFP_KERNEL);
-> >
-> >How many reads can happen at once? Maybe allocate 1 ser_req per
-> >touchcsreen when creating it?
->
-> ad7877_read_adc, ad7877_read and ad7877_write are just used by the sysfs
-> hooks. Touchscreen samples are read by the kthread using a different
-> message struct. So far each sysfs invocation got its own storage for the
-> spi message, which then is handed over to the SPI bus driver.
-> The SPI bus driver serializes transfers in a kthread.
->
-> Two different processes could access the drivers sysfs hooks.
->
-> Using one ser_req per touch screen could require additional locking?
-> Things at is, looks pretty safe to me.
->
+> > Umm, not quite, from my experiences with pre-production wireless
+> > drivers, (another story, another time) fancy stuff is being done in
+> > udev to make sure that your gigabit card is always assigned to eth0.
+> 
+> I remember building a 2.4 kernel, statically linking in all the drivers, and 
+> getting the ethernet devices showing up in a reliable order for years.  Where 
+> does the need for fancy stuff come in?
 
-OK, fair enough.
+Because PCI devices reorder their bus numbers all the time.  And we have
+ethernet devices hanging off of USB connections now (yes, even built-in
+to the machine), and we have network connections on other hot-pluggable
+busses (remember, PCI is hot pluggable.)
 
--- 
-Dmitry
+So, the distros need to name network devices in a persistant way, that
+is why the distros now do this.  If you don't like the distro doing it,
+complain to them, it's not a kernel issue :)
+
+thanks,
+
+greg k-h
