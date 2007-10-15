@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbXJOM74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbXJONBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764654AbXJOM74 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 08:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760115AbXJOM7s
+	id S1764840AbXJONBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 09:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760127AbXJONBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 08:59:48 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:55796
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759403AbXJOM7s (ORCPT
+	Mon, 15 Oct 2007 09:01:05 -0400
+Received: from userg502.nifty.com ([202.248.238.82]:57270 "EHLO
+	userg502.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760115AbXJONBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 08:59:48 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [bug] usb build failure, latest -git
-Date: Mon, 15 Oct 2007 14:58:54 +0200
-User-Agent: KMail/1.9.6
-Cc: Al Viro <viro@ftp.linux.org.uk>, gregkh@suse.de,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-References: <20071014032948.GA25760@elte.hu> <20071014033549.GQ8181@ftp.linux.org.uk> <20071015105344.GA17028@elte.hu>
-In-Reply-To: <20071015105344.GA17028@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 15 Oct 2007 09:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg502; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=SADOlF5w+LDfFV1v5LQkPTPdU27h827hWtfwisSQy12kJpTv30RPZ8RxilNlvH4ln
+	QSZX+BIzqYXgrl53oCL+Q==
+X-Nifty-SrcIP: [220.145.30.228]
+Date: Mon, 15 Oct 2007 21:59:49 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: shemminger@linux.foundation.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero
+ in Cubic and BIC.
+Message-Id: <20071015215949.50399c00.komurojun-mbn@nifty.com>
+In-Reply-To: <20071014135356.19754635.komurojun-mbn@nifty.com>
+References: <20071006132601.f944f461.komurojun@nifty.com>
+	<20071014073658.d4352b8c.komurojun@nifty.com>
+	<20071014100245.914b784a.komurojun@nifty.com>
+	<20071014132851.8d6a9de3.komurojun@nifty.com>
+	<20071014135356.19754635.komurojun-mbn@nifty.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710151458.54817.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 12:53:44 Ingo Molnar wrote:
-> 
-> * Al Viro <viro@ftp.linux.org.uk> wrote:
-> 
-> > On Sun, Oct 14, 2007 at 05:29:48AM +0200, Ingo Molnar wrote:
-> > > 
-> > > FYI, the attached config fails to build on most recent -git with:
-> > > 
-> > >  In file included from drivers/usb/host/ohci-hcd.c:1038:
-> > >  drivers/usb/host/ohci-ssb.c:120: error: 'ohci_bus_suspend' undeclared here (not in a function)
-> > >  drivers/usb/host/ohci-ssb.c:121: error: 'ohci_bus_resume' undeclared here (not in a function)
-> > >  make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
-> > 
-> > Subject: [PATCH] ohci-ssb with !CONFIG_PM
-> 
-> there's a new build failure with latest -git:
-> 
->  drivers/built-in.o: In function `ssb_ohci_probe':
->  ohci-hcd.c:(.text+0xbff39): undefined reference to `ssb_device_enable'
->  ohci-hcd.c:(.text+0xbff6f): undefined reference to `ssb_admatch_base'
->  ohci-hcd.c:(.text+0xbff8b): undefined reference to `ssb_admatch_size'
->  ohci-hcd.c:(.text+0xbffe5): undefined reference to `ssb_device_disable'
->  [...]
-> 
-> config attached.
-> 
-> 	Ingo
-> 
+Dear shemminger
 
-I'm not sure why this happens. SSB is Y and ohci-hcd is also Y.
-So why doesn't it find the syms?
+>In which case it is zero because that is the default value.
 
--- 
-Greetings Michael.
+The default value of snd_ssthresh is 0x7fffffff, isn't it?
+
+[linux/net/ipv4/tcp_ipv4.c]
+static int tcp_v4_init_sock(struct sock *sk)
+...
+        tp->snd_ssthresh = 0x7fffffff;  /* Infinity */
+...
+
+Best Regards
+Komuro
+
+
+> 
+> Actually, tcp_sk(sk)->snd_ssthresh is not initialized,
+> if initial_ssthresh is 0.
+> 
+> The patch should be
+> 
+>  static void bictcp_init(struct sock *sk)
+>  {
+>  	bictcp_reset(inet_csk_ca(sk));
+> -	if (initial_ssthresh)
+> -		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
+> +
+> +	tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
+>  }
+>
