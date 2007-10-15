@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765175AbXJOQjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765004AbXJOQlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765175AbXJOQjI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759689AbXJOQi4
+	id S1765004AbXJOQlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbXJOQlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:38:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56620 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757935AbXJOQiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:38:55 -0400
-Subject: Re: nfs mmap adventure (was: 2.6.23-mm1)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <1192463489.7529.11.camel@heimdal.trondhjem.org>
-References: <1192451324.27435.71.camel@twins>
-	 <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	 <21859.1192457172@redhat.com>
-	 <1192463489.7529.11.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 18:38:34 +0200
-Message-Id: <1192466314.27435.84.camel@twins>
+	Mon, 15 Oct 2007 12:41:06 -0400
+Received: from smtp20.orange.fr ([80.12.242.26]:9138 "EHLO smtp20.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758256AbXJOQlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 12:41:03 -0400
+X-ME-UUID: 20071015164102595.9144D1C0009E@mwinf2006.orange.fr
+Date: Mon, 15 Oct 2007 18:36:55 +0200
+From: Philippe Elie <phil.el@wanadoo.fr>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071015163655.GB2884@zaniah>
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015142352.GA21259@uranus.ravnborg.org> <20071015163154.GA2884@zaniah>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015163154.GA2884@zaniah>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 11:51 -0400, Trond Myklebust wrote:
-> On Mon, 2007-10-15 at 15:06 +0100, David Howells wrote:
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > I get funny SIGBUS' like so:
-> > > 
-> > > fault
-> > >   if (->page_mkwrite() < 0)
-> > >     nfs_vm_page_mkwrite()
-> > >       nfs_write_begin()
-> > >         nfs_flush_incompatible()
-> > >           nfs_wb_page()
-> > >             nfs_wb_page_priority()
-> > >               nfs_sync_mapping_wait()
-> > >                 nfs_wait_on_request_locked()
-> > >                   nfs_wait_on_request()
-> > >                     nfs_wait_bit_interruptible()
-> > >                       return -ERESTARTSYS
-> > >     SIGBUS
-> > > 
-> > > trying to figure out what to do about this...
-> > > 
-> > 
-> > Hmmm...  It sounds like the fault handler should deliver the appropriate
-> > signal, should ->page_mkwrite() return ERESTARTSYS, and then retry the access
-> > instruction that caused the fault when the signal handler has finished
-> > running.
+On Mon, 15 Oct 2007 at 18:31 +0000, Philippe Elie wrote:
+
+> On Mon, 15 Oct 2007 at 16:23 +0000, Sam Ravnborg wrote:
 > 
-> If you signal the process before msync() has completed, or before you
-> have completed unmapping the region then your writes can potentially be
-> lost. Why should we be providing any guarantees beyond that?
+> > Hi Rik.
+> > 
+> > On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
+> > > The kernel newbies community often gets inquiries from CS students who
+> > > need a project for their studies and would like to do something with
+> > > the Linux kernel, but would also like their code to be useful to the
+> > > community afterwards.
+> > > 
+> 
+> ... 
+> 
+> > Increase speed for a build with no updates
+> > ==========================================
+> > On a resonably fast machine with a decent config it takes
+> > roughly 10 seconds to do a make where nothing is updated.
+> > Generating one single Makefile is assumed to speed up things
+> > and will in addition allow a simpler syntax as what is used today
+> > for some of the uglier constructs.
+> > 
+> > Contact: Sam Ravnborg <sam@ravnborg.org>
+> > Difficulty: 5
+> > Language: Perl or C
+> 
+> Isn't make -j 2 or more implemented by running multiple make in sub-dirs ?
+> Parallel make is more and more used even on cheap hardware.
 
-Good point, I'm trying to figure out where my signal is comming from.
+Errm, I misread what you said, it can be a single Makefile in each sub-dirs
 
+> 
+> -- 
+> Phe
+> 
 
