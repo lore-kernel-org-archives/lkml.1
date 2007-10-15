@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXJOSuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935167AbXJOSvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXJOSuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934959AbXJOSqz
+	id S935167AbXJOSvF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935104AbXJOSs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:46:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39480 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934950AbXJOSqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:46:53 -0400
-Message-ID: <4713B58B.9050905@garzik.org>
-Date: Mon, 15 Oct 2007 14:46:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Rob Landley <rob@landley.net>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com>
-In-Reply-To: <20071015172513.GA5738@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 15 Oct 2007 14:48:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43682 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934895AbXJOSsZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:48:25 -0400
+Date: Mon, 15 Oct 2007 11:47:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, mingo@elte.hu
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20071015114738.6b5a25c7.akpm@linux-foundation.org>
+In-Reply-To: <20071015104647.14e60bc5@laptopd505.fenrus.org>
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Oct 15, 2007 at 03:36:15AM -0500, Rob Landley wrote:
->> The point I was trying to make is that it seems to me like it would be 
->> possible to keep the namespace separate here, and thus reduce the enumeration 
->> problems to the point where common cases (like my laptop) aren't impacted by 
->> them during early boot.
+On Mon, 15 Oct 2007 10:46:47 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
+
 > 
-> Proposals on how to do this would be gladly reviewed.
+> Subject: Give kjournald a IOPRIO_CLASS_RT io priority
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> 
+> With latencytop, I noticed that the (in memory) atime updates during a
+> kernel build had latencies of 600 msec or longer; this is obviously not so
+> nice behavior. Other EXT3 journal related operations had similar or even
+> longer latencies.
+> 
+> Digging into this a bit more, it appears to be an interaction between EXT3
+> and CFQ in that CFQ tries to be fair to everyone, including kjournald.
+> However, in reality, kjournald is "special" in that it does a lot of journal
+> work and effectively this leads to a twisted kind of "mass priority
+> inversion" type of behavior.
+> 
+> The good news is that CFQ already has the infrastructure to make certain
+> processes special... JBD just wasn't using that quite yet.
+> 
+> The patch below makes kjournald of the IOPRIO_CLASS_RT priority to break
+> this priority inversion behavior. With this patch, the latencies for atime
+> updates (and similar operation) go down by a factor of 3x to 4x !
+> 
 
-Agreed.
+Seems a pretty fundamental change which could do with some careful
+benchmarking, methinks.
 
+See, your patch amounts to "do more seeks to improve one test case". 
+Surely other testcases will worsen.  What are they?
 
-> But again, please remember that these USB devices are really SCSI
-> devices.  Same for SATA devices.  There is a reason they are using the
-> SCSI layer, and it isn't just because the developers felt like it :)
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> 
+> 
+> diff -purN linux-2.6.23-rc9.org/fs/jbd/journal.c linux-2.6.23-rc9.lt/fs/jbd/journal.c
+> --- linux-2.6.23-rc9.org/fs/jbd/journal.c	2007-10-02 05:24:52.000000000 +0200
+> +++ linux-2.6.23-rc9.lt/fs/jbd/journal.c	2007-10-14 00:06:55.000000000 +0200
+> @@ -35,6 +35,7 @@
+>  #include <linux/kthread.h>
+>  #include <linux/poison.h>
+>  #include <linux/proc_fs.h>
+> +#include <linux/ioprio.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/page.h>
+> @@ -131,6 +132,8 @@ static int kjournald(void *arg)
+>  	printk(KERN_INFO "kjournald starting.  Commit interval %ld seconds\n",
+>  			journal->j_commit_interval / HZ);
+>  
+> +	current->ioprio =  (IOPRIO_CLASS_RT << IOPRIO_CLASS_SHIFT) | 4;
+> +
 
-/somewhat/ true I'm afraid:  libata uses the SCSI layer for ATAPI 
-devices because they are essentially bridges to SCSI devices.  It uses 
-the SCSI layer for ATA devices because the SCSI layer provided a huge 
-amount of infrastructure that would need to have been otherwise 
-duplicated, /then/ massaged into coordinating between <jgarzik's ATA 
-layer> and <SCSI layer> when dealing with ATAPI.
-
-There is also a detail that was of /huge/ value when introducing a new 
-device class:  distro installers automatically work, if you use SCSI. 
-If you use a new block device type, that behaves differently from other 
-types and is on a different major, you have to poke the distros into 
-action or do it yourself.
-
-IOW, it was the high Just Works(tm) value of the SCSI layer when it came 
-to ATA (not ATAPI) devices.
-
-For the future, ATA will eventually be more independent (though the SCSI 
-simulator will be available as an option, for compat), but the value is 
-big enough to put that task on the back-burner.
-
-	Jeff
-
-
-
+Might be worth a code comment?
