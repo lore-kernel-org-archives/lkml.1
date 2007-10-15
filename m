@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765441AbXJOREB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbXJOREw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765441AbXJOREB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXJORDa
+	id S932581AbXJOREw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbXJORER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:03:30 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:39049 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183AbXJORD1 (ORCPT
+	Mon, 15 Oct 2007 13:04:17 -0400
+Received: from sd-green-bigip-66.dreamhost.com ([208.97.132.66]:39488 "EHLO
+	spaceymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1765540AbXJOREN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:03:27 -0400
-Date: Mon, 15 Oct 2007 18:03:20 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-In-Reply-To: <20071015125301.GC3015@ff.dom.local>
-Message-ID: <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
-References: <20071015125301.GC3015@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 15 Oct 2007 13:04:13 -0400
+In-Reply-To: <20071014190128.6e3cdb44@bree.surriel.com>
+References: <20071014190128.6e3cdb44@bree.surriel.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <46B80811-A804-4C51-82A1-96B258D801B5@screamingdolphin.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: "Doug Whitesell (LKML)" <dcw-kernel@screamingdolphin.net>
+Subject: Re: WANTED: kernel projects for CS students
+Date: Mon, 15 Oct 2007 10:04:10 -0700
+To: Rik van Riel <riel@surriel.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Jarek Poplawski wrote:
 
-> Could you explain why cancel_work_sync() is better here than
-> flush_scheduled_work() wrt. rtnl_lock()?
+On Oct 14, 2007, at 4:01 PM, Rik van Riel wrote:
 
- Well, this is actually the bit that made cancel_work_sync() be written in 
-the first place.  The short story is the netlink lock is most probably 
-held at this point (depending on the usage of phy_disconnect()) and there 
-is also an event waiting in the queue that requires the lock, so if 
-flush_scheduled_work() is called here a deadlock will happen.
+> The kernel newbies community often gets inquiries from CS students who
+> need a project for their studies and would like to do something with
+> the Linux kernel, but would also like their code to be useful to the
+> community afterwards.
+>
+> In order to make it easier for them, I am trying to put together a
+> page with projects that:
+> - Are self contained enough that the students can implement the
+>   project by themselves, since that is often a university requirement.
+> - Are self contained enough that Linux could merge the code (maybe
+>   with additional changes) after the student has been working on it
+>   for a few months.
+> - Are large enough to qualify as a student project, luckily there is
+>   flexibility here since we get inquiries for anything from 6 week
+>   projects to 6 month projects.
+>
+> If you have ideas on what projects would be useful, please add them
+> to this page (or email me):
+>
+> http://kernelnewbies.org/KernelProjects
 
- Let me find a reference for a longer story...:
+I'm also quite interested in what compsci students can do for the  
+kernel project. I'm currently doing a little embedded development and  
+research at school, but I and a few others would jump at the chance  
+to work on the kernel (besides finding duplicate problems that the  
+x86 merge is already taking care of, of course. ;)
 
-http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=Pine.LNX.4.64N.0610031509380.4642%40blysk.ds.pg.gda.pl
+Also (as an aside), we're looking at redoing our operating systems  
+curriculum out here at school...anyone aware of (relatively good) OS  
+curricula? (time scope: one semester.)
 
-and then discussed again:
-
-http://www.uwsg.indiana.edu/hypermail/linux/kernel/0612.0/0593.html
-
-  Maciej
+regards/thanks,
+--
+Doug Whitesell
+CSU Channel Islands - Computer Science
+"Unprecedented performance: nothing we had has ever worked like this  
+before..."
