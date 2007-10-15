@@ -1,217 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765972AbXJOTw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932813AbXJOTw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765972AbXJOTw1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759260AbXJOTv5
+	id S932813AbXJOTw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760113AbXJOTwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:51:57 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:42207 "EHLO smtp3-g19.free.fr"
+	Mon, 15 Oct 2007 15:52:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50417 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759477AbXJOTvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:51:55 -0400
-Message-ID: <4713C4DA.8090708@free.fr>
-Date: Mon, 15 Oct 2007 21:51:54 +0200
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	id S1759938AbXJOTv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:51:59 -0400
+Message-ID: <4713C4DB.4090407@garzik.org>
+Date: Mon, 15 Oct 2007 15:51:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-Subject: Re: 2.6.23-mm1: BUG in reiserfs_delete_xattrs
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47129992.4040903@free.fr> <20071015084052.GA21870@infradead.org>
-In-Reply-To: <20071015084052.GA21870@infradead.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+CC: Vlad Codrea <vladc6@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] : IDE-CS Add additional id string (corsair, 1GB)
+References: <313705.92960.qm@web54404.mail.yahoo.com> <20071014230556.47ffe9cd.Kristoffer.Ericson@Gmail.com>
+In-Reply-To: <20071014230556.47ffe9cd.Kristoffer.Ericson@Gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 15.10.2007 10:40, Christoph Hellwig a écrit :
-> On Mon, Oct 15, 2007 at 12:34:58AM +0200, Laurent Riffard wrote:
->> reiserfs_delete_xattrs
->> reiserfs_delete_inode
->> generic_delete_inode
->> generic_drop_inode
->> iput
->> do_unlinkat
->> sys_unlink
->> sys_enter_past_esp
->>
->> I reported a similar BUG in 2.6.22-rc8-mm2 (see
->> http://lkml.org/lkml/2007/9/27/235). Dave Hansen sent a patch for it, I
->> tested it and it was OK for 2.6.22-rc8-mm2.
->>
->> I tried this patch on 2.6.23-mm1, and it fixed the BUGs here too.
+Kristoffer Ericson wrote:
+> Greetings,
 > 
-> The delete path is a similar case as the one Dave fixed, also cause by
-> a NULL vfsmount passed to dentry_open, but through a different code-path.
+> Of course. Not sure how you want it so I've kept the patches seperate for now.
 > 
-> Untested fix for this problem below:
+> Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 
-Does work fine, thanks.
+applied to pata_pcmcia
 
-Tested-by: Laurent Riffard <laurent.riffard@free.fr>
-
- 
-> Index: linux-2.6.23-rc8/fs/reiserfs/xattr.c
-> ===================================================================
-> --- linux-2.6.23-rc8.orig/fs/reiserfs/xattr.c	2007-09-30 14:13:46.000000000 +0200
-> +++ linux-2.6.23-rc8/fs/reiserfs/xattr.c	2007-09-30 14:18:30.000000000 +0200
-> @@ -207,9 +207,8 @@ static struct dentry *get_xa_file_dentry
->   * we're called with i_mutex held, so there are no worries about the directory
->   * changing underneath us.
->   */
-> -static int __xattr_readdir(struct file *filp, void *dirent, filldir_t filldir)
-> +static int __xattr_readdir(struct inode *inode, void *dirent, filldir_t filldir)
->  {
-> -	struct inode *inode = filp->f_path.dentry->d_inode;
->  	struct cpu_key pos_key;	/* key of current position in the directory (key of directory entry) */
->  	INITIALIZE_PATH(path_to_entry);
->  	struct buffer_head *bh;
-> @@ -352,24 +351,19 @@ static int __xattr_readdir(struct file *
->   * this is stolen from vfs_readdir
->   *
->   */
-> -static
-> -int xattr_readdir(struct file *file, filldir_t filler, void *buf)
-> +static int xattr_readdir(struct inode *inode, filldir_t filler, void *buf)
->  {
-> -	struct inode *inode = file->f_path.dentry->d_inode;
->  	int res = -ENOTDIR;
-> -	if (!file->f_op || !file->f_op->readdir)
-> -		goto out;
-> +
->  	mutex_lock_nested(&inode->i_mutex, I_MUTEX_XATTR);
-> -//        down(&inode->i_zombie);
->  	res = -ENOENT;
->  	if (!IS_DEADDIR(inode)) {
->  		lock_kernel();
-> -		res = __xattr_readdir(file, buf, filler);
-> +		res = __xattr_readdir(inode, buf, filler);
->  		unlock_kernel();
->  	}
-> -//        up(&inode->i_zombie);
->  	mutex_unlock(&inode->i_mutex);
-> -      out:
-> +
->  	return res;
->  }
->  
-> @@ -721,7 +715,6 @@ reiserfs_delete_xattrs_filler(void *buf,
->  /* This is called w/ inode->i_mutex downed */
->  int reiserfs_delete_xattrs(struct inode *inode)
->  {
-> -	struct file *fp;
->  	struct dentry *dir, *root;
->  	int err = 0;
->  
-> @@ -742,15 +735,8 @@ int reiserfs_delete_xattrs(struct inode 
->  		return 0;
->  	}
->  
-> -	fp = dentry_open(dir, NULL, O_RDWR);
-> -	if (IS_ERR(fp)) {
-> -		err = PTR_ERR(fp);
-> -		/* dentry_open dputs the dentry if it fails */
-> -		goto out;
-> -	}
-> -
->  	lock_kernel();
-> -	err = xattr_readdir(fp, reiserfs_delete_xattrs_filler, dir);
-> +	err = xattr_readdir(dir->d_inode, reiserfs_delete_xattrs_filler, dir);
->  	if (err) {
->  		unlock_kernel();
->  		goto out_dir;
-> @@ -770,7 +756,7 @@ int reiserfs_delete_xattrs(struct inode 
->  	unlock_kernel();
->  
->        out_dir:
-> -	fput(fp);
-> +	dput(dir);
->  
->        out:
->  	if (!err)
-> @@ -812,7 +798,6 @@ reiserfs_chown_xattrs_filler(void *buf, 
->  
->  int reiserfs_chown_xattrs(struct inode *inode, struct iattr *attrs)
->  {
-> -	struct file *fp;
->  	struct dentry *dir;
->  	int err = 0;
->  	struct reiserfs_chown_buf buf;
-> @@ -836,13 +821,6 @@ int reiserfs_chown_xattrs(struct inode *
->  		goto out;
->  	}
->  
-> -	fp = dentry_open(dir, NULL, O_RDWR);
-> -	if (IS_ERR(fp)) {
-> -		err = PTR_ERR(fp);
-> -		/* dentry_open dputs the dentry if it fails */
-> -		goto out;
-> -	}
-> -
->  	lock_kernel();
->  
->  	attrs->ia_valid &= (ATTR_UID | ATTR_GID | ATTR_CTIME);
-> @@ -850,7 +828,7 @@ int reiserfs_chown_xattrs(struct inode *
->  	buf.attrs = attrs;
->  	buf.inode = inode;
->  
-> -	err = xattr_readdir(fp, reiserfs_chown_xattrs_filler, &buf);
-> +	err = xattr_readdir(dir->d_inode, reiserfs_chown_xattrs_filler, &buf);
->  	if (err) {
->  		unlock_kernel();
->  		goto out_dir;
-> @@ -860,7 +838,7 @@ int reiserfs_chown_xattrs(struct inode *
->  	unlock_kernel();
->  
->        out_dir:
-> -	fput(fp);
-> +	dput(dir);
->  
->        out:
->  	attrs->ia_valid = ia_valid;
-> @@ -1008,7 +986,6 @@ reiserfs_listxattr_filler(void *buf, con
->   */
->  ssize_t reiserfs_listxattr(struct dentry * dentry, char *buffer, size_t size)
->  {
-> -	struct file *fp;
->  	struct dentry *dir;
->  	int err = 0;
->  	struct reiserfs_listxattr_buf buf;
-> @@ -1031,13 +1008,6 @@ ssize_t reiserfs_listxattr(struct dentry
->  		goto out;
->  	}
->  
-> -	fp = dentry_open(dir, NULL, O_RDWR);
-> -	if (IS_ERR(fp)) {
-> -		err = PTR_ERR(fp);
-> -		/* dentry_open dputs the dentry if it fails */
-> -		goto out;
-> -	}
-> -
->  	buf.r_buf = buffer;
->  	buf.r_size = buffer ? size : 0;
->  	buf.r_pos = 0;
-> @@ -1045,7 +1015,7 @@ ssize_t reiserfs_listxattr(struct dentry
->  
->  	REISERFS_I(dentry->d_inode)->i_flags |= i_has_xattr_dir;
->  
-> -	err = xattr_readdir(fp, reiserfs_listxattr_filler, &buf);
-> +	err = xattr_readdir(dir->d_inode, reiserfs_listxattr_filler, &buf);
->  	if (err)
->  		goto out_dir;
->  
-> @@ -1055,7 +1025,7 @@ ssize_t reiserfs_listxattr(struct dentry
->  		err = buf.r_pos;
->  
->        out_dir:
-> -	fput(fp);
-> +	dput(dir);
->  
->        out:
->  	reiserfs_read_unlock_xattr_i(dentry->d_inode);
-> 
 
