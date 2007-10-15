@@ -1,83 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934519AbXJOUIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934485AbXJOUJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934519AbXJOUIt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934246AbXJOUI3
+	id S934485AbXJOUJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXJOUJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:08:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:22217 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934438AbXJOUI1 (ORCPT
+	Mon, 15 Oct 2007 16:09:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55355 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755047AbXJOUJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:08:27 -0400
-Subject: Re: [PATCH] RT: fix spin_trylock_irq
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux RT Users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.58.0710151406230.26495@gandalf.stny.rr.com>
-References: <20071011142417.1d965820@bull.net>
-	 <Pine.LNX.4.58.0710111046170.20114@gandalf.stny.rr.com>
-	 <1192470246.17527.15.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0710151406230.26495@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 13:06:56 -0700
-Message-Id: <1192478816.17527.58.camel@imap.mvista.com>
+	Mon, 15 Oct 2007 16:09:45 -0400
+Date: Mon, 15 Oct 2007 21:13:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [RESEND] [PATCH] sparc support for new termios
+Message-ID: <20071015211312.21d0e3cd@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 14:14 -0400, Steven Rostedt wrote:
+From: Dave Miller <davem@davemloft.net>
+Signed-off-by: David Miller <davem@davemloft.net>
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-> > This is the second fix for this .. The first was in this email (over a
-> > month ago)
-> >
-> > http://lkml.org/lkml/2007/8/31/318
-> 
-> You're right I missed that. (I even read it). But for fixes like this, (or
-> any patches that are not in the tree), you really need to resend the
-> series.
-
-In hindsight I should have resent, but I didn't .. Really it's a matter
-of frustration on my part. Where I submit patches that should be
-included , but they are ignored for no clear reason .. Then I submit
-again, and the patches are ignored again for no clear reason..
-
-Comparing mainline and -rt isn't very interesting since , -rt has few
-patches sent in against it .. Andrew is bound to loose a patch here and
-there on accident, but -rt has so few patches sent in that we shouldn't
-be loosing any.
-
-> When Ingo posts patches to LKML on CFS, if there's a little fix like this,
-> he'll add that to his next queue and repost.
-
-That's a git tree tho , so apples and oranges ..
-
-> >
-> > The above was emailed to Thomas, but I also sent you that link in IRC as
-> > a link of patches to include .. I'll be happy to audit my code better,
-> > but you should also audit your inclusion process better.. There have
-> > been too many missed patches, and too many double and triples fixes..
-> 
-> There wouldn't be if we didn't have to go looking for patches on patches
-> that are out of the series. If you see that a series is broken, don't
-> patch against it. Resend the series!
-
-In all fairness you asked for links to patches, and that's is what I
-gave you ..
-
-> Patches must be against upstream, unless they are more RFC (like what
-> Gregory is doing). But when you want them to go upstream, they must be
-> against upstream.  I don't have the time to look for little fixes that
-> you've done to your own patches that have not been pulled in yet.
-
-Not sure what your getting at.. I specifically directed you to a patch.
-I don't think that means you had to look for it, all you have to do was
-include it ..
-
-Daniel
-
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc/ioctls.h linux-2.6.23-mm1/include/asm-sparc/ioctls.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc/ioctls.h	2007-10-15 15:01:58.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc/ioctls.h	2007-10-15 15:26:51.000000000 +0100
+@@ -15,6 +15,10 @@
+ #define TCSETS		_IOW('T', 9, struct termios)
+ #define TCSETSW		_IOW('T', 10, struct termios)
+ #define TCSETSF		_IOW('T', 11, struct termios)
++#define TCGETS2		_IOR('T', 12, struct termios2)
++#define TCSETS2		_IOW('T', 13, struct termios2)
++#define TCSETSW2	_IOW('T', 14, struct termios2)
++#define TCSETSF2	_IOW('T', 15, struct termios2)
+ 
+ /* Note that all the ioctls that are not available in Linux have a 
+  * double underscore on the front to: a) avoid some programs to
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc/termbits.h linux-2.6.23-mm1/include/asm-sparc/termbits.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc/termbits.h	2007-10-15 15:01:58.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc/termbits.h	2007-10-15 15:26:51.000000000 +0100
+@@ -31,6 +31,18 @@
+ #endif
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	cc_t _x_cc[2];                  /* padding to match ktermios */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+@@ -160,6 +172,7 @@
+ #define CLOCAL	  0x00000800
+ #define CBAUDEX   0x00001000
+ /* We'll never see these speeds with the Zilogs, but for completeness... */
++#define  BOTHER   0x00001000
+ #define  B57600   0x00001001
+ #define  B115200  0x00001002
+ #define  B230400  0x00001003
+@@ -189,6 +202,8 @@
+ #define CMSPAR	  0x40000000  /* mark or space (stick) parity */
+ #define CRTSCTS	  0x80000000  /* flow control */
+ 
++#define IBSHIFT	  16		/* Shift from CBAUD to CIBAUD */
++
+ /* c_lflag bits */
+ #define ISIG	0x00000001
+ #define ICANON	0x00000002
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc/termios.h linux-2.6.23-mm1/include/asm-sparc/termios.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc/termios.h	2007-10-15 15:03:38.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc/termios.h	2007-10-15 15:26:59.000000000 +0100
+@@ -108,6 +108,48 @@
+ 
+ #define user_termios_to_kernel_termios(k, u) \
+ ({ \
++	int err; \
++	err  = get_user((k)->c_iflag, &(u)->c_iflag); \
++	err |= get_user((k)->c_oflag, &(u)->c_oflag); \
++	err |= get_user((k)->c_cflag, &(u)->c_cflag); \
++	err |= get_user((k)->c_lflag, &(u)->c_lflag); \
++	err |= get_user((k)->c_line,  &(u)->c_line); \
++	err |= copy_from_user((k)->c_cc, (u)->c_cc, NCCS); \
++	if((k)->c_lflag & ICANON) { \
++		err |= get_user((k)->c_cc[VEOF], &(u)->c_cc[VEOF]); \
++		err |= get_user((k)->c_cc[VEOL], &(u)->c_cc[VEOL]); \
++	} else { \
++		err |= get_user((k)->c_cc[VMIN],  &(u)->c_cc[_VMIN]); \
++		err |= get_user((k)->c_cc[VTIME], &(u)->c_cc[_VTIME]); \
++	} \
++	err |= get_user((k)->c_ispeed,  &(u)->c_ispeed); \
++	err |= get_user((k)->c_ospeed,  &(u)->c_ospeed); \
++	err; \
++})
++
++#define kernel_termios_to_user_termios(u, k) \
++({ \
++	int err; \
++	err  = put_user((k)->c_iflag, &(u)->c_iflag); \
++	err |= put_user((k)->c_oflag, &(u)->c_oflag); \
++	err |= put_user((k)->c_cflag, &(u)->c_cflag); \
++	err |= put_user((k)->c_lflag, &(u)->c_lflag); \
++	err |= put_user((k)->c_line, &(u)->c_line); \
++	err |= copy_to_user((u)->c_cc, (k)->c_cc, NCCS); \
++	if(!((k)->c_lflag & ICANON)) { \
++		err |= put_user((k)->c_cc[VMIN],  &(u)->c_cc[_VMIN]); \
++		err |= put_user((k)->c_cc[VTIME], &(u)->c_cc[_VTIME]); \
++	} else { \
++		err |= put_user((k)->c_cc[VEOF], &(u)->c_cc[VEOF]); \
++		err |= put_user((k)->c_cc[VEOL], &(u)->c_cc[VEOL]); \
++	} \
++	err |= put_user((k)->c_ispeed, &(u)->c_ispeed); \
++	err |= put_user((k)->c_ospeed, &(u)->c_ospeed); \
++	err; \
++})
++
++#define user_termios_to_kernel_termios_1(k, u) \
++({ \
+ 	get_user((k)->c_iflag, &(u)->c_iflag); \
+ 	get_user((k)->c_oflag, &(u)->c_oflag); \
+ 	get_user((k)->c_cflag, &(u)->c_cflag); \
+@@ -124,7 +166,7 @@
+ 	0; \
+ })
+ 
+-#define kernel_termios_to_user_termios(u, k) \
++#define kernel_termios_to_user_termios_1(u, k) \
+ ({ \
+ 	put_user((k)->c_iflag, &(u)->c_iflag); \
+ 	put_user((k)->c_oflag, &(u)->c_oflag); \
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc64/ioctls.h linux-2.6.23-mm1/include/asm-sparc64/ioctls.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc64/ioctls.h	2007-10-15 15:01:58.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc64/ioctls.h	2007-10-15 15:26:59.000000000 +0100
+@@ -16,6 +16,10 @@
+ #define TCSETS		_IOW('T', 9, struct termios)
+ #define TCSETSW		_IOW('T', 10, struct termios)
+ #define TCSETSF		_IOW('T', 11, struct termios)
++#define TCGETS2		_IOR('T', 12, struct termios2)
++#define TCSETS2		_IOW('T', 13, struct termios2)
++#define TCSETSW2	_IOW('T', 14, struct termios2)
++#define TCSETSF2	_IOW('T', 15, struct termios2)
+ 
+ /* Note that all the ioctls that are not available in Linux have a 
+  * double underscore on the front to: a) avoid some programs to
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc64/termbits.h linux-2.6.23-mm1/include/asm-sparc64/termbits.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc64/termbits.h	2007-10-15 15:01:59.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc64/termbits.h	2007-10-15 15:26:59.000000000 +0100
+@@ -5,8 +5,6 @@
+ 
+ typedef unsigned char   cc_t;
+ typedef unsigned int    speed_t;
+-
+-/* XXX is this right for sparc64?  it was an unsigned long... XXX */
+ typedef unsigned int    tcflag_t;
+ 
+ #define NCC 8
+@@ -33,6 +31,18 @@
+ #endif
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	cc_t _x_cc[2];                  /* padding to match ktermios */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+@@ -161,6 +171,7 @@
+ #define HUPCL	  0x00000400
+ #define CLOCAL	  0x00000800
+ #define CBAUDEX   0x00001000
++#define  BOTHER   0x00001000
+ #define  B57600   0x00001001
+ #define  B115200  0x00001002
+ #define  B230400  0x00001003
+@@ -190,6 +201,8 @@
+ #define CMSPAR    0x40000000  /* mark or space (stick) parity */
+ #define CRTSCTS	  0x80000000  /* flow control */
+ 
++#define IBSHIFT	  16		/* Shift from CBAUD to CIBAUD */
++
+ /* c_lflag bits */
+ #define ISIG	0x00000001
+ #define ICANON	0x00000002
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/include/asm-sparc64/termios.h linux-2.6.23-mm1/include/asm-sparc64/termios.h
+--- linux.vanilla-2.6.23-mm1/include/asm-sparc64/termios.h	2007-10-15 15:03:38.000000000 +0100
++++ linux-2.6.23-mm1/include/asm-sparc64/termios.h	2007-10-15 15:26:59.000000000 +0100
+@@ -123,6 +123,8 @@
+ 		err |= get_user((k)->c_cc[VMIN],  &(u)->c_cc[_VMIN]); \
+ 		err |= get_user((k)->c_cc[VTIME], &(u)->c_cc[_VTIME]); \
+ 	} \
++	err |= get_user((k)->c_ispeed,  &(u)->c_ispeed); \
++	err |= get_user((k)->c_ospeed,  &(u)->c_ospeed); \
+ 	err; \
+ })
+ 
+@@ -142,6 +144,46 @@
+ 		err |= put_user((k)->c_cc[VEOF], &(u)->c_cc[VEOF]); \
+ 		err |= put_user((k)->c_cc[VEOL], &(u)->c_cc[VEOL]); \
+ 	} \
++	err |= put_user((k)->c_ispeed, &(u)->c_ispeed); \
++	err |= put_user((k)->c_ospeed, &(u)->c_ospeed); \
++	err; \
++})
++
++#define user_termios_to_kernel_termios_1(k, u) \
++({ \
++	int err; \
++	err  = get_user((k)->c_iflag, &(u)->c_iflag); \
++	err |= get_user((k)->c_oflag, &(u)->c_oflag); \
++	err |= get_user((k)->c_cflag, &(u)->c_cflag); \
++	err |= get_user((k)->c_lflag, &(u)->c_lflag); \
++	err |= get_user((k)->c_line,  &(u)->c_line); \
++	err |= copy_from_user((k)->c_cc, (u)->c_cc, NCCS); \
++	if((k)->c_lflag & ICANON) { \
++		err |= get_user((k)->c_cc[VEOF], &(u)->c_cc[VEOF]); \
++		err |= get_user((k)->c_cc[VEOL], &(u)->c_cc[VEOL]); \
++	} else { \
++		err |= get_user((k)->c_cc[VMIN],  &(u)->c_cc[_VMIN]); \
++		err |= get_user((k)->c_cc[VTIME], &(u)->c_cc[_VTIME]); \
++	} \
++	err; \
++})
++
++#define kernel_termios_to_user_termios_1(u, k) \
++({ \
++	int err; \
++	err  = put_user((k)->c_iflag, &(u)->c_iflag); \
++	err |= put_user((k)->c_oflag, &(u)->c_oflag); \
++	err |= put_user((k)->c_cflag, &(u)->c_cflag); \
++	err |= put_user((k)->c_lflag, &(u)->c_lflag); \
++	err |= put_user((k)->c_line, &(u)->c_line); \
++	err |= copy_to_user((u)->c_cc, (k)->c_cc, NCCS); \
++	if(!((k)->c_lflag & ICANON)) { \
++		err |= put_user((k)->c_cc[VMIN],  &(u)->c_cc[_VMIN]); \
++		err |= put_user((k)->c_cc[VTIME], &(u)->c_cc[_VTIME]); \
++	} else { \
++		err |= put_user((k)->c_cc[VEOF], &(u)->c_cc[VEOF]); \
++		err |= put_user((k)->c_cc[VEOL], &(u)->c_cc[VEOL]); \
++	} \
+ 	err; \
+ })
+ 
