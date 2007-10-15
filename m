@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbXJOIgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbXJOIho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbXJOIgx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 04:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbXJOIgn
+	id S1758085AbXJOIho (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 04:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXJOIhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 04:36:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47026
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755075AbXJOIgm (ORCPT
+	Mon, 15 Oct 2007 04:37:35 -0400
+Received: from web31803.mail.mud.yahoo.com ([68.142.207.66]:49043 "HELO
+	web31803.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755050AbXJOIhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 04:36:42 -0400
-Date: Mon, 15 Oct 2007 01:36:47 -0700 (PDT)
-Message-Id: <20071015.013647.95041541.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: davem@sunset.davemloft.net, jgarzik@pobox.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: drivers/net/niu.c: possible array overflows
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071014175024.GH4211@stusta.de>
-References: <20071014175024.GH4211@stusta.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Oct 2007 04:37:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=4zM3oQpBCkeFZmxJWcwxyKFaKdI9HsPJenXYTmiKtQxBkt6cVbeFr4svUNDHUOmj277qd1jsJuxtWccV3qy4z235C1FuZLuV9XM4iOJJh4dE7AP2USbXsROpXBk67bkt3FtWb4g+gLk4rbbZByTXqVCw5wc5Ub3MJU3Ks8xFYJw=;
+X-YMail-OSG: g.FnJj8VM1kdlRKbHn3W4z2B5s6NszzGxE2aAhYOXqtnitUfeYoMCGto_AhT92x4rNhtNA--
+Date: Mon, 15 Oct 2007 01:37:33 -0700 (PDT)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: What still uses the block layer?
+To: Rob Landley <rob@landley.net>
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+In-Reply-To: <200710150151.31080.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <283583.99423.qm@web31803.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Sun, 14 Oct 2007 19:50:24 +0200
+--- Rob Landley <rob@landley.net> wrote:
+> On Sunday 14 October 2007 7:45:46 pm Luben Tuikov wrote:
+> > Matthew's expletive and extremely rude response really shows
+> > the general attitude of the linux-scsi people.
+> 
+> No, it doesn't.  James Bottomley has been exceedingly polite and helpful, as 
+> were several other people on the linux-scsi list when I asked them about this 
+> stuff back in August.
 
-> The Coverity checker spotted the following in drivers/net/niu.c:
+I wasn't referring to him specifically.  He also stepped into the WWN
+thread in the same manner as he did in your thread.
 
-Thanks for the report Adrian, I'll fix it like this:
+> Religion, politics, and anything remotely related to hotplug appear to be 
+> topics to avoid in polite company if you want it to remain polite.  (My 
+> gripes with scsi mostly have to do with device enumeration.  My attempts to 
+> use sysfs also have to do with device enumeration.  I've spotted a trend 
+> here.)
+> 
+> Rob
+> -- 
+> "One of my most productive days was throwing away 1000 lines of code."
+>   - Ken Thompson.
+> 
 
-commit 503211a947ab13fb44d920f78f1e19057efc277f
-Author: David S. Miller <davem@sunset.davemloft.net>
-Date:   Mon Oct 15 01:36:24 2007 -0700
-
-    [NIU]: Fix write past end of array in niu_pci_probe_sprom().
-    
-    Noticed by Coverity checker and reported by Adrian Bunk.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/niu.c b/drivers/net/niu.c
-index 43bfe7e..54166bd 100644
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -6213,7 +6213,7 @@ static int __devinit niu_pci_probe_sprom(struct niu *np)
- 	val = nr64(ESPC_MOD_STR_LEN);
- 	niudbg(PROBE, "SPROM: MOD_STR_LEN[%llu]\n",
- 	       (unsigned long long) val);
--	if (val > 8 * 4)
-+	if (val >= 8 * 4)
- 		return -EINVAL;
- 
- 	for (i = 0; i < val; i += 4) {
-@@ -6229,7 +6229,7 @@ static int __devinit niu_pci_probe_sprom(struct niu *np)
- 	val = nr64(ESPC_BD_MOD_STR_LEN);
- 	niudbg(PROBE, "SPROM: BD_MOD_STR_LEN[%llu]\n",
- 	       (unsigned long long) val);
--	if (val > 4 * 4)
-+	if (val >= 4 * 4)
- 		return -EINVAL;
- 
- 	for (i = 0; i < val; i += 4) {
