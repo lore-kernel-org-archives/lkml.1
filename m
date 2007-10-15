@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759035AbXJOGhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760164AbXJOGkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759035AbXJOGhl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 02:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXJOGhc
+	id S1760164AbXJOGkd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 02:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXJOGkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 02:37:32 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42069 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbXJOGhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 02:37:32 -0400
-Date: Mon, 15 Oct 2007 16:37:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Olaf Hering <olaf@aepfle.de>, linux-kernel@vger.kernel.org
-Subject: Re: apm system does not power off anymore
-Message-Id: <20071015163720.09630ee4.sfr@canb.auug.org.au>
-In-Reply-To: <20071014232316.4beb160f.akpm@linux-foundation.org>
-References: <20071012125426.GA16626@aepfle.de>
-	<20071014232316.4beb160f.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Mon, 15 Oct 2007 02:40:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54341 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751436AbXJOGkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 02:40:21 -0400
+Date: Sun, 14 Oct 2007 23:40:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: HighPoint Linux Team <linux@highpoint-tech.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com
+Subject: Re: [PATCH] hptiop: avoid buffer overflow when returning sense data
+Message-Id: <20071014234014.45b5469b.akpm@linux-foundation.org>
+In-Reply-To: <200710151442.52230.linux@highpoint-tech.com>
+References: <200605101704.27491.linux@highpoint-tech.com>
+	<200605161438.09717.linux@highpoint-tech.com>
+	<200708291510.53793.linux@highpoint-tech.com>
+	<200710151442.52230.linux@highpoint-tech.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Oct_2007_16_37_20_+1000_IBQ6XW/P0VFUwO0S"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Oct_2007_16_37_20_+1000_IBQ6XW/P0VFUwO0S
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 15 Oct 2007 14:42:52 +0800 HighPoint Linux Team <linux@highpoint-tech.com> wrote:
 
-On Sun, 14 Oct 2007 23:23:16 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> Also, it's bad that the operator has to provide some special boot command=
--line
-> option to make the machine work properly.  Please consider this to be a
-> bug.  Has it always needed apm=3Dpower-off?
+> 
+> avoid buffer overflow when returning sense data.
+> 
 
-It has always been that way because the behaviour of APM on SMP is not
-defined.  We discovered early that it will work (at least for powering
-off) for most SMP machines as long as the APM calls are done on CPU 0.
-However on an SMP machine that does not cope, very bad things happen -
-thus the operator has to explictly enable the power off behaviour on an
-SMP box.  (On UP power off is enabled by default.)
+That's really not enough information, sorry.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> index 8b384fa..d32a4a9 100644
+> --- a/drivers/scsi/hptiop.c
+> +++ b/drivers/scsi/hptiop.c
+> @@ -375,8 +375,9 @@ static void hptiop_host_request_callback
+>  		scp->result = SAM_STAT_CHECK_CONDITION;
+>  		memset(&scp->sense_buffer,
+>  				0, sizeof(scp->sense_buffer));
+> -		memcpy(&scp->sense_buffer,
+> -			&req->sg_list, le32_to_cpu(req->dataxfer_length));
+> +		memcpy(&scp->sense_buffer, &req->sg_list,
+> +				min(sizeof(scp->sense_buffer),
+> +					le32_to_cpu(req->dataxfer_length)));
+>  		break;
+>  
+>  	default:
 
---Signature=_Mon__15_Oct_2007_16_37_20_+1000_IBQ6XW/P0VFUwO0S
-Content-Type: application/pgp-signature
+See, we know what the fix does, but we don't know what the consequences are
+if the user's kernel doesn't have this fix.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHEwqlTgG2atn1QN8RAhmfAJ9FuQ4LGfLUKmPLGkYk551eFDsoKQCeIs94
-Sn9SKQdbWOopzCM27BJxwlU=
-=epC5
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Oct_2007_16_37_20_+1000_IBQ6XW/P0VFUwO0S--
+So we are not able to work out whether this fix should be backported to
+2.6.23.x and even to 2.6.22.x?
