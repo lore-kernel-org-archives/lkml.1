@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764082AbXJOLqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764652AbXJOLsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764082AbXJOLqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbXJOLqP
+	id S1764652AbXJOLsH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbXJOLrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:46:15 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63134 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757709AbXJOLqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:46:14 -0400
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [TOMOYO 05/15](repost) Domain transition handler functions.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <Xine.LNX.4.64.0710030529580.6431@us.intercode.com.au>
-	<200710032204.DFF51552.OFOSOFMVQtHLJF@I-love.SAKURA.ne.jp>
-	<1191417864.5599.2.camel@lappy>
-	<200710032319.ABF69743.VJQMLHFOFOtFOS@I-love.SAKURA.ne.jp>
-	<1191421736.5599.18.camel@lappy>
-In-Reply-To: <1191421736.5599.18.camel@lappy>
-Message-Id: <200710152046.JBJ81710.OMFQOVFOLJSHtF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 15 Oct 2007 20:46:10 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 15 Oct 2007 07:47:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:41468 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757050AbXJOLrx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 07:47:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JLNBFDqHTEUMXYQwTrI1SukuiDzNze2Yu11VVk0w8d0VADdKpxcJa6D2fkQwDE2E3SWUX5xD0OCjWkgMd2wg72TMSXQpp2zw7nWhr10PVtQQMI78erBiv0WkB/T/al2AuhP2nQ6f9JIA+aSMvKxfnZ68Z054n1m5INyOEafBgVI=
+Message-ID: <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
+Date: Mon, 15 Oct 2007 14:47:52 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Erez Zadok" <ezk@cs.sunysb.edu>
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
+Cc: "Hugh Dickins" <hugh@veritas.com>, "Ryan Finnie" <ryan@finnie.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       cjwatson@ubuntu.com, linux-mm@kvack.org
+In-Reply-To: <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI>
+	 <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
+X-Google-Sender-Auth: b53b24ca58b034e7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-Peter Zijlstra wrote:
-> > append_function() {
-> > 
-> >   down(semaphore_for_write_protect);
-> >   ...
-> >   ptr = head;
-> >   while (ptr->next) ptr = ptr->next;
-> >   ptr->next = new_entry;
-> >   ...
-> >   up(semaphore_for_write_protect);
-> > 
-> > }
-> 
-> If at all possible, use struct mutex.
+On 10/15/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> Pekka, with a small change to your patch (to handle time-based cache
+> coherency), your patch worked well and passed all my tests.  Thanks.
+>
+> So now I wonder if we still need the patch to prevent AOP_WRITEPAGE_ACTIVATE
+> from being returned to userland.  I guess we still need it, b/c even with
+> your patch, generic_writepages() can return AOP_WRITEPAGE_ACTIVATE back to
+> the VFS and we need to ensure that doesn't "leak" outside the kernel.
 
-Fixed in the fourth submission ( http://lkml.org/lkml/2007/10/11/140 ).
+I wonder whether _not setting_ BDI_CAP_NO_WRITEBACK implies that
+->writepage() will never return AOP_WRITEPAGE_ACTIVATE for
+!wbc->for_reclaim case which would explain why we haven't hit this bug
+before. Hugh, Andrew?
 
-Thank you.
+And btw, I think we need to fix ecryptfs too.
 
+                                           Pekka
