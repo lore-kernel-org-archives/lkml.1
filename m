@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760350AbXJOKNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbXJOKPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760350AbXJOKNc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 06:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbXJOKNX
+	id S1762224AbXJOKPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 06:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbXJOKPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 06:13:23 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:34605 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757646AbXJOKNW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 06:13:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qN81VBpUaxZGfxTZOcBUD6TvozKFxnUtZBkRrKiWAUAshXVWyEQwbY3jkRok93mUPxZNqSn3BPv/kjMTo2iyQXdPKusPZrMZSyZDlUZ9kAjvUxQL/iW43TsFWmFwLAxy10Qxv/dM8CyLqQbZjxk5CNEEGLdiB1Tdq+WPus+AFlk=  ;
-X-YMail-OSG: k0Pz3gYVM1nmbCp2NOW0Tq9OZCrUd6KpdgtqGbIMJXcs9rf9
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-Date: Tue, 16 Oct 2007 01:23:32 +1000
-User-Agent: KMail/1.9.5
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710160006.19735.nickpiggin@yahoo.com.au> <20071015021624.7d5233bd.akpm@linux-foundation.org>
-In-Reply-To: <20071015021624.7d5233bd.akpm@linux-foundation.org>
+	Mon, 15 Oct 2007 06:15:15 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57730 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757848AbXJOKPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 06:15:10 -0400
+Date: Mon, 15 Oct 2007 06:15:09 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Rudolf Marek <r.marek@assembler.cz>
+cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, apiszcz@solarrain.com,
+       lm-sensors <lm-sensors@lm-sensors.org>, linux-kernel@vger.kernel.org,
+       Hans de Goede <j.w.r.degoede@hhs.nl>
+Subject: Re: [lm-sensors] 2.6.23.1 x86 hardware monitoring bug?
+In-Reply-To: <47132EE2.1050208@assembler.cz>
+Message-ID: <Pine.LNX.4.64.0710150614390.14804@p34.internal.lan>
+References: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>
+ <20071015025331.GA3676@jupiter.solarsys.private>
+ <Pine.LNX.4.64.0710150406220.9867@p34.internal.lan> <47132EE2.1050208@assembler.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710160123.32434.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 19:16, Andrew Morton wrote:
-> On Tue, 16 Oct 2007 00:06:19 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
-> > > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
-> > > unmaintained, so decided to sent the patch to you :-).
-> > > I have CCed Ted, who did work on the code in the 90s. I found no
-> > > current email address of Chad Page.
-> >
-> > This really needs to be fixed...
->
-> rd.c is fairly mind-boggling vfs abuse.
 
-Why do you say that? I guess it is _different_, by necessity(?)
-Is there anything that is really bad? I guess it's not nice
-for operating on the pagecache from its request_fn, but the
-alternative is to duplicate pages for backing store and buffer
-cache (actually that might not be a bad alternative really).
+
+On Mon, 15 Oct 2007, Rudolf Marek wrote:
+
+> Hi,
+>
+> Most likely you have distro and custom libsensors installed on the system. 
+> (and different PATH for root)
+>
+> Please check how many of libsensors libraries is installed.
+>
+> Thanks,
+>
+> Rudolf
+>
+
+I only had one, in /app (lm-sensors-2.10.2) -- which has been removed, 
+thanks..
+
+Justin.
