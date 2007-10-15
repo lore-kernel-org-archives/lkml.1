@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXJOTzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933292AbXJOT4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932928AbXJOTzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932261AbXJOTyy
+	id S933292AbXJOT4H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933369AbXJOTzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:54:54 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:54898 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932262AbXJOTyx (ORCPT
+	Mon, 15 Oct 2007 15:55:13 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:1417 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933342AbXJOTzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:54:53 -0400
-Message-ID: <4713C582.4000504@debian.org>
-Date: Mon, 15 Oct 2007 21:54:42 +0200
-From: Giacomo Catenazzi <cate@debian.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Mark Gross <mgross@linux.intel.com>, Rik van Riel <riel@surriel.com>,
+	Mon, 15 Oct 2007 15:55:08 -0400
+Date: Mon, 15 Oct 2007 21:54:28 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Mark Gross <mgross@linux.intel.com>, Rik van Riel <riel@surriel.com>,
        linux-kernel@vger.kernel.org
 Subject: Re: WANTED: kernel projects for CS students
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015183017.GB23130@uranus.ravnborg.org>
-In-Reply-To: <20071015183017.GB23130@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071015195428.GF25076@vanheusden.com>
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015191732.GA1841@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015191732.GA1841@martell.zuzino.mipt.ru>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Sun Oct 14 00:32:21 CEST 2007
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
+	key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
->> On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
->>> The kernel newbies community often gets inquiries from CS students who
->>> need a project for their studies and would like to do something with
->>> the Linux kernel, but would also like their code to be useful to the
->>> community afterwards.
->>>
->>> In order to make it easier for them, I am trying to put together a
->>> page with projects that:
->>> - Are self contained enough that the students can implement the
->>>   project by themselves, since that is often a university requirement.
->>> - Are self contained enough that Linux could merge the code (maybe
->>>   with additional changes) after the student has been working on it
->>>   for a few months.
->>> - Are large enough to qualify as a student project, luckily there is
->>>   flexibility here since we get inquiries for anything from 6 week
->>>   projects to 6 month projects.
->>>
->>> If you have ideas on what projects would be useful, please add them
->>> to this page (or email me):
->>>
->>> http://kernelnewbies.org/KernelProjects
->> Is there already a make config option that will do a good job at setting
->> a default .config file based on what is already running on a system?  
-> I have discussed this briefly with Kay Sievers.
-> What udev can provide is the list of modules needed, so what the kernel
-> need to provide is a simple module to CONFIG option(s) converter + a base
-> config to start out with.
-> Nothing particular difficult but needs a few days work to do.
+> > > http://kernelnewbies.org/KernelProjects
+> > 
+> > Is there already a make config option that will do a good job at setting
+> > a default .config file based on what is already running on a system?  
+> > 
+> > I get tiered of trimming down my .config for my laptop build so it takes
+> > less than 30min to build a kernel.
+> 
+> Ehh? You do it once, then leave it aside or in /proc/config.gz, on new
+> kernel copy it back, "make oldconfig", answer several questions and here
+> we go.
 
-could you explain better what you need?  I think I've already such
-tools ;-)
+Ah yes, but then you buy a new system to which the old config does not
+apply.
 
-ciao
-	cate
+
+Folkert van Heusden
+
+-- 
+www.vanheusden.com/multitail - win een vlaai van multivlaai! zorg
+ervoor dat multitail opgenomen wordt in Fedora Core, AIX, Solaris of
+HP/UX en win een vlaai naar keuze
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
