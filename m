@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbXJOUFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934159AbXJOUGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064AbXJOUFJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbXJOUE5
+	id S934159AbXJOUGX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758094AbXJOUGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:04:57 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:36074 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbXJOUE4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:04:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qxfGCbCV5aESWynCjM664v0x+E/Tw+S/MdRbPKlhiK2hUF4XjdCf5yASOGC9CuDBLYj8V4NujrDajy3QgfTooCrUuJxk0Um7Aj4DlflJxlSHzxZgZUY9cAgDHKUE/MgvDw7ZjKoj0+eAt6q+tXT7+lJjsmftl/yx7rqtDxMH/I0=
-Message-ID: <35fbaa3e0710151304k138f2ff1l90da195dcdefb96a@mail.gmail.com>
-Date: Mon, 15 Oct 2007 23:04:54 +0300
-From: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
-Cc: "Willy Tarreau" <w@1wt.eu>, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20071015103033.65b47dea.zaitcev@redhat.com>
+	Mon, 15 Oct 2007 16:06:08 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:49569 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932943AbXJOUGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:06:04 -0400
+Message-ID: <4713C82C.7020609@free.fr>
+Date: Mon, 15 Oct 2007 22:06:04 +0200
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
+To: Jeff Mahoney <jeffm@suse.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Subject: Re: 2.6.23-mm1: BUG in reiserfs_delete_xattrs
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47129992.4040903@free.fr> <20071015084052.GA21870@infradead.org> <4713B1E7.2010504@suse.com>
+In-Reply-To: <4713B1E7.2010504@suse.com>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192383445.8372.18.camel@dell1.softservecom.com>
-	 <20071014182542.GA2832@1wt.eu>
-	 <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
-	 <20071015103033.65b47dea.zaitcev@redhat.com>
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete,
+Le 15.10.2007 20:31, Jeff Mahoney a écrit :
+> Christoph Hellwig wrote:
+>> On Mon, Oct 15, 2007 at 12:34:58AM +0200, Laurent Riffard wrote:
+>>> reiserfs_delete_xattrs
+>>> reiserfs_delete_inode
+>>> generic_delete_inode
+>>> generic_drop_inode
+>>> iput
+>>> do_unlinkat
+>>> sys_unlink
+>>> sys_enter_past_esp
+>>>
+>>> I reported a similar BUG in 2.6.22-rc8-mm2 (see
+>>> http://lkml.org/lkml/2007/9/27/235). Dave Hansen sent a patch for it, I
+>>> tested it and it was OK for 2.6.22-rc8-mm2.
+>>>
+>>> I tried this patch on 2.6.23-mm1, and it fixed the BUGs here too.
+>> The delete path is a similar case as the one Dave fixed, also cause by
+>> a NULL vfsmount passed to dentry_open, but through a different code-path.
+>>
+>> Untested fix for this problem below:
+> 
+> Here's a patch I worked up the other night that kills off struct file
+> completely from the xattr code. I've tested it locally.
 
-On 10/15/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> On Sun, 14 Oct 2007 23:45:36 +0300, "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
->
-> > Also IMHO the more drivers are in the tree the more users will use it.
-> > Once it will be merged in the mainline then it will be backported to
-> > enterprise kernels and would gain wide usage.
->
-> At least in case of RHEL, such backports never were automatic. In any
-> case, RHEL 2.1 and 3 do not receive new drivers anymore. We only do
-> bugfixes if something comes up. Realistically speaking, 2.4 kernels
-> are just too old for anyone to use. So, I think it would be best for
-> you to think in terms of Willy's tree only.
->
-> > +     in_end_size = le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize);
-> > +     out_end_size = le16_to_cpu(dev->interrupt_out_endpoint->wMaxPacketSize);
->
-> Did you verify if this works? We use pre-swapped descriptors in 2.4.
-> I suspect you allocate 256 times more memory than necessary.
->
-> > +static void adu_delete(struct adu_device *dev)
-> > +     kfree(dev);
->
-> > +static int adu_release_internal(struct adu_device *dev)
-> > +     if (dev->udev == NULL) {
-> > +             adu_delete(dev);
->
-> > +static int adu_open(struct inode *inode, struct file *file)
-> > +     retval = adu_release_internal(dev);
-> > +     up(&dev->sem);
->
-> The above very clearly is a use-after-free, in case the device was
-> open across a disconnect. Solution: Use minor_table_mutex to lock
-> dev->open_count instead of dev->sem. There's no rule that the lock
-> has to live inside the same structure with members it locks.
+Sorry Jeff, your patch does not apply on 2.6.23-mm1. The 'struct file'
+removal from reiserfs_xattr_ function is already in -mm
+(make-reiserfs-stop-using-struct-file-for-internal.patch).
 
-Thanks for your notes. Will check and correct it asap.
+The Dave's patch I was refering to is this one: 
 
-Vitaliy
+==== BEGIN =====
+The bug is caused by reiserfs creating a special 'struct file' with a
+NULL vfsmount.  
+
+/* Opens a file pointer to the attribute associated with inode */
+static struct file *open_xa_file(const struct inode *inode, const char
+*name,
+                                 int flags)
+{
+...
+        fp = dentry_open(xafile, NULL, O_RDWR);
+        /* dentry_open dputs the dentry if it fails */
+
+
+As Christoph just said, this is somewhat of a bandaid.  But, it
+shouldn't hurt anything.
+
+---
+
+ lxc-dave/fs/file_table.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN fs/open.c~fix-reiserfs-oops fs/open.c
+diff -puN fs/file_table.c~fix-reiserfs-oops fs/file_table.c
+--- lxc/fs/file_table.c~fix-reiserfs-oops	2007-09-27 13:32:20.000000000 -0700
++++ lxc-dave/fs/file_table.c	2007-09-27 13:33:11.000000000 -0700
+@@ -236,7 +236,7 @@ void fastcall __fput(struct file *file)
+ 	fops_put(file->f_op);
+ 	if (file->f_mode & FMODE_WRITE) {
+ 		put_write_access(inode);
+-		if (!special_file(inode->i_mode))
++		if (!special_file(inode->i_mode) && mnt)
+ 			mnt_drop_write(mnt);
+ 	}
+ 	put_pid(file->f_owner.pid);
+diff -puN include/linux/mount.h~fix-reiserfs-oops include/linux/mount.h
+==== END ====
+
+Dave sent it privately to me... I guess this "bandaid" is no longer
+needed now, is it?
+
+~~
+laurent
+
