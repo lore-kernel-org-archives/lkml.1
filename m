@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765707AbXJORMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765681AbXJORO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765707AbXJORMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765518AbXJORMl
+	id S1765681AbXJORO1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbXJOROS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:12:41 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:36585 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765297AbXJORMj (ORCPT
+	Mon, 15 Oct 2007 13:14:18 -0400
+Received: from 74-92-59-67-NewEngland.hfc.comcastbusiness.net ([74.92.59.67]:59037
+	"EHLO shelob.surriel.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755640AbXJOROQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:12:39 -0400
-Date: Mon, 15 Oct 2007 12:12:37 -0500
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, gregkh <greg@kroah.com>,
-       akpm <akpm@linux-foundation.org>, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH] pci: implement "pci=noaer"
-Message-ID: <20071015171237.GD4891@austin.ibm.com>
-References: <20071005131758.5dd8cf85.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071005131758.5dd8cf85.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+	Mon, 15 Oct 2007 13:14:16 -0400
+Date: Mon, 15 Oct 2007 13:13:43 -0400
+From: Rik van Riel <riel@surriel.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071015131343.5879d405@bree.surriel.com>
+In-Reply-To: <20071015104034.GM2444@hacking>
+References: <20071014190128.6e3cdb44@bree.surriel.com>
+	<20071015104034.GM2444@hacking>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Oct 2007 18:40:34 +0800
+WANG Cong <xiyou.wangcong@gmail.com> wrote:
 
-
-On Fri, Oct 05, 2007 at 01:17:58PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> >http://kernelnewbies.org/KernelProjects
 > 
-> For cases in which CONFIG_PCIEAER=y (such as distro kernels), allow users
-> to disable PCIE Advanced Error Reporting by using "pci=noaer" on the
-> kernel command line.
+> Thanks very much, Rik. I need this eagerly.
+> 
+> I want to find a kernel project that can both be my graduation thesis
+> and contribute to the Linux kernel community. I read that page and
+> think your project--Swapout Clustering is interesting for me.
+> Is it alright for me to work on it? And can you give some help?
 
-Looks reasonable to me. 
+You would be the third student to take on that project
+simultaneously.  That is not a problem for me (on the
+contrary, it increases the chances of one codebase being
+likeable to Linus), but it does decrease the chances of
+your patch being the one to make it upstream.
 
-(sorry for the belated reply... I also saw this in gregkh's patch
-series. Since the email was addressed to me, I figure I should 
-at least say "yes I read it". Dunno if "Yes-I-read-it-by:" is 
-the same as "Acked by:", if it is, then acked-by me.. )
+Still, it should be a fun project to implement and
+benchmark, so go ahead if you want.
 
---linas
-
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
