@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXJOVNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbXJOVNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbXJOVNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbXJOVMw
+	id S1760272AbXJOVNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbXJOVNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:12:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:24259 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbXJOVMu (ORCPT
+	Mon, 15 Oct 2007 17:13:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33804 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751939AbXJOVNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:12:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XpICp1e4W1LXPwmt7YdHx1KVM3xaadaQ791YV7tuPPNw10ZHYoJbpI7yuwGpgMiWEDzAWnw+06TqmcpfkZ8OMbXc4G+j4J1iUFIX3STerhmxUAjxPGXK4cfeAn1I8oZIhX2kz0qBDUtBmzuaEWG0W+c1Nbj/0tdIiqkzXKPPLeM=
-Message-ID: <d120d5000710151412s5381353bx4ac07529e5da2bc0@mail.gmail.com>
-Date: Mon, 15 Oct 2007 17:12:48 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [git pull] Input updates for 2.6.24-rc0
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0710151341540.6887@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Oct 2007 17:13:30 -0400
+Date: Mon, 15 Oct 2007 14:12:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       mingo@elte.hu
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20071015141236.62b075c6.akpm@linux-foundation.org>
+In-Reply-To: <20071015161315.4fe18e07@bree.surriel.com>
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>
+	<20071015114738.6b5a25c7.akpm@linux-foundation.org>
+	<20071015161315.4fe18e07@bree.surriel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200710131614.35356.dmitry.torokhov@gmail.com>
-	 <d120d5000710151328k6f413b76i21809691d9a18fe8@mail.gmail.com>
-	 <alpine.LFD.0.999.0710151341540.6887@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->
-> On Mon, 15 Oct 2007, Dmitry Torokhov wrote:
-> >
-> > *ping*
->
-> Thanks, pulled and pushed out.
->
-> Can you check that applesmc looks sane after the merge conflict? The
-> conflict itself looked pretty trivial, and it compiles for me, but I'd
-> still like somebody who knows those things to double-check..
->
+On Mon, 15 Oct 2007 16:13:15 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-Yep, it looks good from here.
+> Since you have been involved a lot with ext3 development,
+> which kinds of workloads do you think will show a performance
+> degradation with Arjan's patch?   What should I test?
 
-Thanks.
+Gee.  Expect the unexpected ;)
 
--- 
-Dmitry
+One problem might be when kjournald is doing its ordered-mode data
+writeback at the start of commit.  That writeout will now be
+higher-priority and might impact other tasks which are doing synchronous
+file overwrites (ie: no commits) or O_DIRECT reads or writes or just plain
+old reads.
+
+If the aggregate number of seeks over the long term is the same as before
+then of course the overall throughput should be the same, in which case the
+impact might only be upon latency.  However if for some reason the total
+number of seeks is increased then there will be throughput impacts as well.
+
+So as a starting point I guess one could set up a
+copy-a-kernel-tree-in-a-loop running in the background and then see what
+impact that has upon a large-linear-read, upon a
+read-a-different-kernel-tree and upon some database-style multithreaded
+O_DIRECT reader/overwriter.
