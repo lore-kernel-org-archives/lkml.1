@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXJOP1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbXJOPkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbXJOP1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 11:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXJOP1N
+	id S1759985AbXJOPkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 11:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXJOPkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 11:27:13 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:47560 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbXJOP1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 11:27:13 -0400
-Date: Mon, 15 Oct 2007 16:27:03 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: David Howells <dhowells@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] frv: Remove duplicate output of .exit.data
-In-Reply-To: <21428.1192267071@redhat.com>
-Message-ID: <Pine.LNX.4.64N.0710151624140.16262@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0710121633480.21684@blysk.ds.pg.gda.pl>
- <21428.1192267071@redhat.com>
+	Mon, 15 Oct 2007 11:40:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58567 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754344AbXJOPkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 11:40:45 -0400
+Date: Mon, 15 Oct 2007 11:40:31 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Andi Kleen <andi@firstfloor.org>,
+       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
+Message-ID: <20071015154031.GA30754@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andy Whitcroft <apw@shadowen.org>,
+	Mark Langsdorf <mark.langsdorf@amd.com>,
+	Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk,
+	linux-kernel@vger.kernel.org
+References: <200710091446.38432.mark.langsdorf@amd.com> <p73fy0k3ve8.fsf@bingen.suse.de> <200710091543.21350.mark.langsdorf@amd.com> <20071011075958.GK1130@shadowen.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071011075958.GK1130@shadowen.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007, David Howells wrote:
+On Thu, Oct 11, 2007 at 08:59:58AM +0100, Andy Whitcroft wrote:
+ 
+ > >  	/* get fid did for hardware pstate transition */
+ > >  	pstate = index & HW_PSTATE_MASK;
+ > > -	if (pstate > MAX_HW_PSTATE)
+ > > +	if (pstate > data->max_hw_pstate);
+ > >  		return 0;
+ > 
+ > checkpatch picked up this dodgy if.  I suspect that the ';' is wrong
+ > from the context.
+ 
+Indeed.  Mark/Andreas, want to send me a new patch against latest
+Linus HEAD ?  I didn't apply the old one yet, as it conflicted with
+the changes already queued for merging.
 
-> >  When CONFIG_DEBUG_INFO is unset the input .exit.data sections are copied 
-> > twice to vmlinux.  Remove the copy made to .init.text and keep one in 
-> > .data only.
-> 
-> No, they aren't.  I believe the linker only makes one copy of each section,
-> and once a copy is inserted, all other attempts to make a copy of it are
-> ignored.
+Thanks,
 
- Fair enough -- a quick test shows you are right.  Wouldn't it deserve a 
-comment, though?  I know hardly anybody dares looking into these scripts, 
-;-) but those who do, may not be sure this setup is intentional.
+	Dave
 
-  Maciej
+-- 
+http://www.codemonkey.org.uk
