@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbXJOXFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbXJOXF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759898AbXJOXFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXJOXFk
+	id S1757723AbXJOXF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXJOXFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:05:40 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55288 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756903AbXJOXFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:05:39 -0400
-Subject: Re: [PATCH 4/11] maps3: introduce a generic page walker
-From: Dave Hansen <haveblue@us.ibm.com>
+	Mon, 15 Oct 2007 19:05:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49503 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751385AbXJOXFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:05:11 -0400
+Date: Tue, 16 Oct 2007 09:04:33 +1000
+From: David Chinner <dgc@sgi.com>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       "ADAM G. LITKE [imap]" <agl@us.ibm.com>
-In-Reply-To: <4713EC5B.7050000@goop.org>
-References: <5.290135367@selenic.com>  <4713EC5B.7050000@goop.org>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 16:05:13 -0700
-Message-Id: <1192489513.6118.111.camel@localhost>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Keir Fraser <keir@xensource.com>,
+       Stable Kernel <stable@kernel.org>, David Chinner <dgc@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       XFS masters <xfs-masters@oss.sgi.com>,
+       Morten =?iso-8859-1?B?QsO4Z2Vza292?= 
+	<xen-users@morten.bogeskov.dk>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>
+Subject: Re: [PATCH 12/12] xfs: eagerly remove vmap mappings to avoid upsetting Xen
+Message-ID: <20071015230432.GO995458@sgi.com>
+References: <20071015204840.074767068@goop.org> <20071015210115.506967748@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015210115.506967748@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 15:40 -0700, Jeremy Fitzhardinge wrote:
-> Can pte_hole be used to create new mappings while we're traversing the
-> pagetable?  Apparently not, because it continues after calling it. 
+On Mon, Oct 15, 2007 at 01:48:52PM -0700, Jeremy Fitzhardinge wrote:
+> XFS leaves stray mappings around when it vmaps memory to make it
+> virtually contigious.  This upsets Xen if one of those pages is being
+> recycled into a pagetable, since it finds an extra writable mapping of
+> the page.
+> 
+> This patch solves the problem in a brute force way, by making XFS
+> always eagerly unmap its mappings.  David Chinner says this shouldn't
+> have any performance impact on filesystems with default block sizes;
+> it will only affect filesystems with large block sizes.
 
-For now, we should probably document that these functions assume that
-the appropriate locks are held, and that there are no changes being made
-to the pagetables as we walk.
+Looks fine, Jeremy. I'll pull this into our dev tree and it should
+get pushed with the .24 XFS merge (if someone doesn't pull these
+patches directly).
 
-However, I can see that people might want to use these in the future for
-establishing ptes.  Perhaps a special code coming back from the
-->pte_hole() function could indicate changes were made to the
-pagetables.  I guess we could at least retry part of the loop where the
-hole call was made, like:
+Cheers,
 
-+int walk_page_range(struct mm_struct *mm,...
-+{
-...
-+       pgd = pgd_offset(mm, addr);
-+       do {
-+               next = pgd_addr_end(addr, end);
-+               if (pgd_none_or_clear_bad(pgd)) {
-+                       if (walk->pte_hole)
-+                               err = walk->pte_hole(addr, next, private);
-			if (err == -EAGAIN) { // or whatever we want
-				pgd--;
-				err = 0;
-			}
-+                       if (err)
-+                               break;
-+                       continue;
-+               }
-
-That wouldn't allow changes behind the walker, but it should allow them
-in the range that was walked by the ->pte_hole() function.
-
--- Dave
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
