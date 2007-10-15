@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbXJORpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXJORpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932741AbXJORpO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbXJORo5
+	id S932978AbXJORpr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765517AbXJORpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:44:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33853 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755040AbXJORo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:44:56 -0400
-Message-ID: <4713A705.60403@garzik.org>
-Date: Mon, 15 Oct 2007 13:44:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 15 Oct 2007 13:45:10 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:42623 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764854AbXJORpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 13:45:08 -0400
+Date: Mon, 15 Oct 2007 18:45:05 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: -git mips defconfig compile error
+Message-ID: <20071015174505.GA19857@linux-mips.org>
+References: <20071014131948.GF4211@stusta.de> <20071015095535.GB9896@linux-mips.org> <Pine.LNX.4.64N.0710151715200.16262@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Theodore Tso <tytso@mit.edu>, Rob Landley <rob@landley.net>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710112011.22000.rob@landley.net>	<200710141845.44750.rob@landley.net>	<20071015014503.GF9715@thunk.org>	<200710150304.00901.rob@landley.net>	<20071015132106.GE21216@thunk.org> <20071015142945.2cb27911@the-village.bc.nu>
-In-Reply-To: <20071015142945.2cb27911@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64N.0710151715200.16262@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> You can pull a Model and Serial number via hdparm -i, but it's not as
->> easy to manipulate as a fixed-length MAC address.  That's why people
->> tend to use filesystem UUID's.   
+On Mon, Oct 15, 2007 at 05:19:43PM +0100, Maciej W. Rozycki wrote:
+
+> > The logo.c bit I've sent out a few weeks ago so I'm just waiting for that
+> > patch to resurface at the other end of the wormhole.
 > 
-> ATA8 at the moment looks set to add a true "MAC" or "WWN" type identifier
-> to each device.. Right now model/serial is not always unique.
+>  Hmm, I would have waited for this to happen before committing the change 
+> depending on it not to keep things known-broken then...  That's what I do 
+> with my bits, e.g. I have an update to platform code waiting till 
+> sb1250-mac.c changes come over here.
 
-WWN was added in ATA-7, AFAICS.
+Na, much more trivial.  After a little looking into what went wrong I
+found that I meant to strip only the jazzsonic segment because of another
+jazzsonic patch from Fleedwood.  But I stripped the logo.c bit as well.
 
-However, I've seen quite a few ATA-7 devices that do not bother to fill 
-it in.  I wonder if ATA-8 device firmwares will act with similar 
-slackness.  :)
-
-	Jeff
-
-
-
+  Ralf
