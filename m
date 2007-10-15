@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764856AbXJONhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763652AbXJONq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764856AbXJONhr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 09:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758917AbXJONhh
+	id S1763652AbXJONq7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 09:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXJONqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 09:37:37 -0400
-Received: from hu-out-0506.google.com ([72.14.214.237]:24688 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757787AbXJONhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 09:37:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=LM10WhnSxhZBeTv2j+LCncTyi6R6+lUDRejI7ie6U2ltWuc9zLxkXBq1C6dUU/xvtNehgGZecl1ndmXceS1eWJWH6L7J/FNWJV+LzFA56+kH+y/wkBL3wFfO1N9r5NTacCQbOzXSlXlnz2P0iF3cAjTaayaR0xjCe1nGYf+38Mg=
-Date: Mon, 15 Oct 2007 21:33:56 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, mb@bu3sch.de, st3@riseup.net,
-       Larry.Finger@lwfinger.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [-mm Patch] drivers/net/wireless/b43/main.c: fix an
-	uninitialized variable
-Message-ID: <20071015133356.GQ2444@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20071014175142.GN4211@stusta.de> <20071015113445.GO2444@hacking> <20071015125644.GB5417@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015125644.GB5417@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 15 Oct 2007 09:46:50 -0400
+Received: from hyat.suomi.net ([82.128.152.22]:61086 "EHLO hyat.suomi.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756554AbXJONqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 09:46:49 -0400
+X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 09:46:49 EDT
+Date: Mon, 15 Oct 2007 16:16:21 +0300
+From: =?ISO-8859-1?Q?Pekka_Sepp=E4nen?= <pexu@kapsi.fi>
+Subject: [PATCH] radio-gemtek: fix 'VID_HARDWARE_GEMTEK' undeclared
+In-reply-to: <20071015111345.GA26777@elte.hu>
+To: Linux and Kernel Video <video4linux-list@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Douglas Schilling Landgraf <dougsland@gmail.com>,
+       Trent Piepho <xyzzy@speakeasy.org>, Ingo Molnar <mingo@elte.hu>
+Message-id: <47136825.9010101@kapsi.fi>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 8BIT
+X-DNA-MailScanner-Information: Please contact the ISP for more information
+X-DNA-MailScanner: Found to be clean
+X-DNA-MailScanner-SpamCheck: not spam, SpamAssassin (not cached, score=-0.91,
+	required 5, AWL -0.01, BAYES_00 -1.00, RDNS_DYNAMIC 0.10)
+X-DNA-MailScanner-From: pexu@kapsi.fi
+References: <20071015111345.GA26777@elte.hu>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 02:56:44PM +0200, Adrian Bunk wrote:
->On Mon, Oct 15, 2007 at 07:34:45PM +0800, WANG Cong wrote:
->> 
->> Fix an uninitialized variable in drivers/net/wireless/b43/main.c::b43_start().
->> 
->> From: Adrian Bunk <bunk@kernel.org>
+Remove obsolete V4L v1 reference.
 
-Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Pekka Seppänen <pexu@kapsi.fi>
+---
 
->
->A technical remark regarding these two patches:
->
->These are your patches, not mine.
->
->You can note formally or informally that I reported/forwarded these 
->issues, but I'm neither in a legal sense the author of these patches nor
->am I in a technical sense responsible for their correctness [1], and a 
->From: tag is therefore not appropriate.
->
+Ingo Molnar wrote:
+> randconfig testing of latest -git found this build bug:
+> 
+> drivers/media/radio/radio-gemtek.c:557: error: 'VID_HARDWARE_GEMTEK' undeclared here (not in a function)
+> 
+> config attached.
 
-OK. I look through Jonathan's patch[1], but didn't find a proper tag
-as you suggested. I think the "Reported-by:" tag may be appropriate,
-as the above.
+.hardware = VID_HARDWARE_GEMTEK was from pre-V4L2 era module. My bad, sorry folks.
 
-So, we need a "Reported-by:" tag, Jonathan. Could you please consider
-to add it into your patch? I didn't see it in -mm1 tree or I can give
-you a patch.
-
-CC: Jonathan Corbet <corbet@lwn.net>
-
-Thanks!
-
-[1] http://lkml.org/lkml/2007/10/11/255
-
--- 
-May the Source Be With You.
+diff -up v4l-dvb/linux/drivers/media/radio/radio-gemtek.c{.orig,}
+--- v4l-dvb/linux/drivers/media/radio/radio-gemtek.c.orig       2007-10-15 15:52:38.000000000 +0300
++++ v4l-dvb/linux/drivers/media/radio/radio-gemtek.c    2007-10-15 15:52:53.000000000 +0300
+@@ -555,7 +555,6 @@ static struct video_device gemtek_radio
+        .owner                  = THIS_MODULE,
+        .name                   = "GemTek Radio card",
+        .type                   = VID_TYPE_TUNER,
+-       .hardware               = VID_HARDWARE_GEMTEK,
+        .fops                   = &gemtek_fops,
+        .vidioc_querycap        = vidioc_querycap,
+        .vidioc_g_tuner         = vidioc_g_tuner,
