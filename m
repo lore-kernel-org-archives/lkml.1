@@ -1,163 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764794AbXJOXli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbXJOXrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764794AbXJOXli (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762814AbXJOXlT
+	id S1760713AbXJOXrJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbXJOXq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:41:19 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38221 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759657AbXJOXlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:41:17 -0400
-From: Neil Brown <neilb@suse.de>
-To: Rob Landley <rob@landley.net>
-Date: Tue, 16 Oct 2007 09:41:02 +1000
+	Mon, 15 Oct 2007 19:46:57 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28688 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbXJOXq4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:46:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=fpI0lsNfkAOXT0v7g7YIM1iUCRjbgt1wsI+4+ddS5EFk5+4pYb9YOXKrLHa0O5k07
+	M8tvTB1Vh3W1Xov8tgySg==
+Date: Mon, 15 Oct 2007 16:45:32 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: [PATCH 2/11] maps3: introduce task_size_of for all arches
+In-Reply-To: <3.290135367@selenic.com>
+Message-ID: <alpine.DEB.0.9999.0710151643260.18722@chino.kir.corp.google.com>
+References: <3.290135367@selenic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18195.64142.416450.912504@notabene.brown>
-Cc: Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-In-Reply-To: message from Rob Landley on Monday October 15
-References: <200710112011.22000.rob@landley.net>
-	<200710150304.00901.rob@landley.net>
-	<18195.19678.500863.613193@notabene.brown>
-	<200710151634.57407.rob@landley.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday October 15, rob@landley.net wrote:
-> > Therefore it is best to not have stable single-number naming schemes
-> > for any devices on any machines.  Why?  Because it ensure there will
-> > not be any second class citizens.
-> 
-> This is where we disagree.  The existence of devices you cannot stably 
-> enumerate does not eliminate the existence of devices you trivially can.
+On Mon, 15 Oct 2007, Matt Mackall wrote:
 
-No, but it dramatically reduces that value of being able to enumerate
-those devices.
+> Index: l/include/asm-mips/processor.h
+> ===================================================================
+> --- l.orig/include/asm-mips/processor.h	2007-10-09 17:37:58.000000000 -0500
+> +++ l/include/asm-mips/processor.h	2007-10-10 11:46:30.000000000 -0500
+> @@ -45,6 +45,8 @@ extern unsigned int vced_count, vcei_cou
+>   * space during mmap's.
+>   */
+>  #define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
+> +#define TASK_SIZE_OF(tsk)						\
+> +	(test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
+>  #endif
+>  
+>  #ifdef CONFIG_64BIT
+> @@ -65,6 +67,8 @@ extern unsigned int vced_count, vcei_cou
+>  #define TASK_UNMAPPED_BASE						\
+>  	(test_thread_flag(TIF_32BIT_ADDR) ?				\
+>  		PAGE_ALIGN(TASK_SIZE32 / 3) : PAGE_ALIGN(TASK_SIZE / 3))
+> +#define TASK_SIZE_OF(tsk)						\
+> +	(test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
+>  #endif
+>  
+>  #define NUM_FPU_REGS	32
 
-> 
-> Pulling out the "IBM numa cluster with multiple SAS enclosures _and_ firewire" 
-> infrastructure to find the root partition on my hard drive may be good for 
-> the IBM numa clusters, but only at the expense of complicating this part of 
-> my laptop's infrastructure by an order of magnitude, and making embedded 
-> systems nearly impossible to put together.  If "one size fits all" were true, 
-> my cell phone would be running Red Hat Enterprise.
-> 
-> > If some devices that are even reasonably common (e.g. IDE drives) are
-> > stable, then some application developers or system integrators will
-> > work under the assumption of stability and whatever they build will
-> > break when you try it on different hardware.
-> 
-> So you break the IDE drives to get laptop users to debug the Niagra set?  The 
+These need to use test_tsk_thread_flag(tsk, TIF_32BIT_ADDR).
 
-Breaking old behaviour is always bad... My computers with IDE
-interfaces still see stable "/dev/hda" devices.  Are you saying the
-devices that used to be "hda" are now "sdb" ??  Maybe there is a
-.config option...
+> Index: l/include/asm-parisc/processor.h
+> ===================================================================
+> --- l.orig/include/asm-parisc/processor.h	2007-10-09 17:36:49.000000000 -0500
+> +++ l/include/asm-parisc/processor.h	2007-10-10 11:46:30.000000000 -0500
+> @@ -32,7 +32,8 @@
+>  #endif
+>  #define current_text_addr() ({ void *pc; current_ia(pc); pc; })
+>  
+> -#define TASK_SIZE               (current->thread.task_size)
+> +#define TASK_SIZE_OF(tsk)       ((tsk)->thread.task_size)
+> +#define TASK_SIZE	         (current->thread.task_size)
+>  #define TASK_UNMAPPED_BASE      (current->thread.map_base)
+>  
+>  #define DEFAULT_TASK_SIZE32	(0xFFF00000UL)
 
-> solution is to make the easy cases hard?
+TASK_SIZE_OF() should be defined in terms of TASK_SIZE, just like it is 
+for ia64.
 
-Is it really that hard?
+> Index: l/include/asm-powerpc/processor.h
+> ===================================================================
+> --- l.orig/include/asm-powerpc/processor.h	2007-10-09 17:37:58.000000000 -0500
+> +++ l/include/asm-powerpc/processor.h	2007-10-10 11:46:30.000000000 -0500
+> @@ -99,7 +99,9 @@ extern struct task_struct *last_task_use
+>   */
+>  #define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
+>  
+> -#define TASK_SIZE (test_thread_flag(TIF_32BIT) ? \
+> +#define TASK_SIZE	  (test_thread_flag(TIF_32BIT) ? \
+> +		TASK_SIZE_USER32 : TASK_SIZE_USER64)
+> +#define TASK_SIZE_OF(tsk) (test_tsk_thread_flag(tsk, TIF_32BIT) ? \
+>  		TASK_SIZE_USER32 : TASK_SIZE_USER64)
+>  
 
-> > Note that stable names a still a very real option.  udev provides
-> > several.  /dev/disk-by-path/XXX will be stable for lots of "screwed
-> > in" devices.  /dev/disk-by-id will be stable for devices the report a
-> > unique id. etc.
-> 
-> Here it's
-> 
->   ls /dev/disk/by-path/
->   pci-0000:00:1f.2-scsi-0:0:0:0        pci-0000:00:1f.2-scsi-0:0:0:0-part4
->   pci-0000:00:1f.2-scsi-0:0:0:0-part1  pci-0000:00:1f.2-scsi-0:0:0:0-part5
->   pci-0000:00:1f.2-scsi-0:0:0:0-part2  pci-0000:00:1f.2-scsi-0:0:0:0-part6
->   pci-0000:00:1f.2-scsi-0:0:0:0-part3  pci-0000:00:1f.2-scsi-1:0:0:0
-> 
-> And this is an improvement?
+Same.
 
-Depends on your metric.
+>  /* This decides where the kernel will search for a free chunk of vm
+> Index: l/include/asm-s390/processor.h
+> ===================================================================
+> --- l.orig/include/asm-s390/processor.h	2007-10-09 17:37:58.000000000 -0500
+> +++ l/include/asm-s390/processor.h	2007-10-10 11:46:30.000000000 -0500
+> @@ -75,6 +75,8 @@ extern struct task_struct *last_task_use
+>  
+>  # define TASK_SIZE		(test_thread_flag(TIF_31BIT) ? \
+>  					(0x80000000UL) : (0x40000000000UL))
+> +# define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk, TIF_31BIT) ? \
+> +					(0x80000000UL) : (0x40000000000UL))
+>  # define TASK_UNMAPPED_BASE	(TASK_SIZE / 2)
+>  # define DEFAULT_TASK_SIZE	(0x40000000000UL)
+>  
 
-"Easy to type" - I guess /dev/hda1 wins hands down.
-"Can be used in a script or config file and is guaranteed always to
-work until a screwdriver is used to change that device or it's
-controller"
-  I think
-      /dev/disk/by-path/pci-0000:00:1f.2-scsi-0:0:0:0-part1
-is quite acceptable.
-What is your metric?
-
-
-> 
-> > The different between IDE, SATA, SCSI and even USB is peripheral for
-> > the large majority of uses, and I think maintaining the distinction in
-> > the major/minor number or in the "primary" /dev name is - for the
-> > above reasons - more of a cost that a value.
-> 
-> Is your definition of "the large majority of uses" where ncr Voyager, the 
-> Amiga, and current macintosh laptops are all one use each, or is your 
-> definition of "the large majority of uses" the one where each "use" is an 
-> installation, of which there are millions of PCs (and even more ARM cell 
-> phones), and something like three instances of Voyager?
-
-My definition of "the large majority or uses" is "mkfs, fsck, mount,
-fdisk, system-install-process".
-
-Different people differentiate devices in different ways.  A system
-integrator might know about the hardware path.  An end user might know
-about drive brands or sizes.  A casual user might just think "internal
-or external".  The kernel cannot support all these different
-approaches to naming.  It really is best if it uses arbitrary names,
-and provides access to descriptions that the user can choose between.
-udev facilitates this with links in /dev/disk/.  A system install can
-facilitate this even more by reporting size/manufacturer information etc.
-
-> 
-> I realize that both views are valid.  This is why the US has a house and a 
-> senate, and filters things through both views.  My gripe is that forcing my 
-> laptop to look at my USB devices to find my SATA hard drive is aligned with 
-> only one of those viewpoints, and completely opposed to the other.
-
-I'm guessing you are talking about mount-by-uuid? This effectively has
-to look at the filesystem of all devices to discover which one has the
-correct UUID, though it can cache the information for efficiency.
-
-Maybe it is just an implementation issue.  Suppose that everytime a
-device were discovered, it were examined to see what was stored on it,
-and this information was stored in a cache.
-Then to find a particular filesystem to mount, you just look in the
-cache and if the info isn't there yet, just wait or fail as
-appropriate. 
-Then we don't "look at my USB devices to find my SATA hard drive" but
-rather "look at each device as it is attached to find out what is in
-it", which seems like a sensible thing to do...
-
-> 
-> An approach that makes things much easier on laptops is seen to hurt big iron, 
-> not because it the approach itself has a direct negative impact on big iron, 
-> but only because then laptops are not saddled with the problems of big iron.
-
-I think your "laptops vs big iron" contrast is making the gap seem
-bigger than it really is.  Naming issues are present in laptops and
-easily get significant is modest servers.
-
-> 
-> Why do you allow uni-processor kernel builds then?
-
-Funny you should suggest that...
-I don't think OpenSuSE10.3 includes any UP kernels.  There is code in
-the kernel which detects the single processor case and removes some
-the more expense "LOCK" operations to reduce the cost of using an SMP
-kernel on a UP computer.
-There is real value in reducing the number of options, and people have
-obviously put work into making that a cost-effective proposition.
-
-NeilBrown
+Same.
