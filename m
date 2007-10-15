@@ -1,102 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbXJOC5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbXJOC7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764360AbXJOC5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 22:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXJOC5F
+	id S1758060AbXJOC7i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 22:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXJOC7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 22:57:05 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:15058 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbXJOC5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 22:57:04 -0400
-Date: Sun, 14 Oct 2007 22:53:31 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, apiszcz@solarrain.com,
-       Hans de Goede <j.w.r.degoede@hhs.nl>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: 2.6.23.1 x86 hardware monitoring bug?
-Message-ID: <20071015025331.GA3676@jupiter.solarsys.private>
-References: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 14 Oct 2007 22:59:30 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57032 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754533AbXJOC73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 22:59:29 -0400
+Date: Sun, 14 Oct 2007 19:59:08 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Stefan Heinrichsen <gelbemauer@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: Which companies are helping developing the kernel
+Message-ID: <20071015025908.GA6223@suse.de>
+References: <20071014220622.203990@gmx.net> <200710142328.46850.alistair@devzero.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <200710142328.46850.alistair@devzero.co.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Justin:
+On Sun, Oct 14, 2007 at 11:28:46PM +0100, Alistair John Strachan wrote:
+> On Sunday 14 October 2007 23:06:22 Stefan Heinrichsen wrote:
+> > Hello,
+> >
+> > I posted this question at comp.linux.misc and where told this would be a
+> > better place therefore. I would like to do a internship in the field of the
+> > Linux kernel.
+> > Can someone tell me where to find a list of companies (don't matter in
+> > which country) that employ kernel developers?
+> 
+> I think Greg wrote a paper on this subject, so I've added him to CC in case he 
+> has the link handy.
 
-(added some CCs)
+Yeah, but my paper didn't really track companies very well.  The lwn.net
+article is the best, and below is my version of who did things in
+2.6.23.  Note, the lack of a company is not an indicator that they did
+nothing, just that I could not easily determine someone worked for them.
+I'll try to send out my "who are you working for" emails in a week or so
+to see if I can further categorize the "unknowns".
 
-* Justin Piszcz <jpiszcz@lucidpixels.com> [2007-10-14 15:30:18 -0400]:
-> As a regular user, I cannot see the sensors on the A-bit board, but I can 
-> see the CPU temperature, how come I can see one but not the other?
-> 
-> Kernel: $ uname -a
-> Linux mybox 2.6.23.1 #4 SMP PREEMPT Sun Oct 14 15:20:53 EDT 2007 i686 
-> GNU/Linux
-> Distribution: Debian Lenny
-> 
-> $ sensors
-> abituguru3-isa-00e0
-> Adapter: ISA adapter
-> 
-> coretemp-isa-0000
-> Adapter: ISA adapter
-> temp1:       +35°C  (high =   +85°C)
-> 
-> coretemp-isa-0001
-> Adapter: ISA adapter
-> temp1:       +36°C  (high =   +85°C)
-> 
-> As root:
-> 
-> # sensors
-> abituguru3-isa-00e0
-> Adapter: ISA adapter
-> CPU Core:               +1.35 V  (min  +0.00 V, max  +1.60 V)
-> DDR2:                   +2.02 V  (min  +1.60 V, max  +2.40 V)
-> DDR2 VTT:               +1.01 V  (min  +0.80 V, max  +1.20 V)
-> CPU VTT 1.2V:           +1.22 V  (min  +0.95 V, max  +1.45 V)
-> MCH & PCIE 1.5V:        +1.50 V  (min  +1.20 V, max  +1.80 V)
-> MCH 2.5V:               +2.58 V  (min  +2.00 V, max  +3.00 V)
-> ICH 1.05V:              +1.04 V  (min  +0.85 V, max  +1.25 V)
-> ATX +12V (24-Pin):     +12.18 V  (min  +9.60 V, max +14.40 V)
-> ATX +12V (4-pin):      +12.24 V  (min  +9.60 V, max +14.40 V)
-> ATX +5V:                +5.07 V  (min  +3.99 V, max  +6.00 V)
-> +3.3V:                  +3.40 V  (min  +2.64 V, max  +3.94 V)
-> 5VSB:                   +5.10 V  (min  +3.99 V, max  +6.00 V)
-> CPU:                      +43°C  (high =   +75°C, crit =   +85°C)
-> System :                  +38°C  (high =   +55°C, crit =   +65°C)
-> PWM1:                     +43°C  (high =   +80°C, crit =   +90°C)
-> PWM2:                     +43°C  (high =   +80°C, crit =   +90°C)
-> PWM3:                     +46°C  (high =   +80°C, crit =   +90°C)
-> PWM4:                     +40°C  (high =   +80°C, crit =   +90°C)
-> CPU Fan:               1380 RPM  (min  300 RPM)
-> NB Fan:                   0 RPM  (min  300 RPM)
-> SYS Fan:                  0 RPM  (min  300 RPM)
-> AUX1 Fan:                 0 RPM  (min  300 RPM)
-> AUX2 Fan:                 0 RPM  (min  300 RPM)
-> AUX3 Fan:                 0 RPM  (min  300 RPM)
-> OTES1 Fan:                0 RPM  (min  300 RPM)
-> 
-> coretemp-isa-0000
-> Adapter: ISA adapter
-> Core 0:      +39°C  (high =   +85°C)
-> 
-> coretemp-isa-0001
-> Adapter: ISA adapter
-> Core 1:      +39°C  (high =   +85°C)
+thanks,
 
-Strange.  What does 'ls -lH /sys/class/hwmon/hwmon*/device' say?
+greg k-h
+-------------------------
 
-Regards,
+Processed 7075 csets from 992 developers
+126 employers found
 
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
+Top changeset contributors by employer
+(Unknown)                 1116 (15.8%)
+(None)                     843 (11.9%)
+Red Hat                    827 (11.7%)
+IBM                        557 (7.9%)
+Linux Foundation           528 (7.5%)
+Novell                     449 (6.3%)
+Intel                      242 (3.4%)
+Oracle                     158 (2.2%)
+MIPS Technologies          143 (2.0%)
+Nokia                      133 (1.9%)
+NetApp                     119 (1.7%)
+NTT                         99 (1.4%)
+Astaro                      97 (1.4%)
+MontaVista                  90 (1.3%)
+(Consultant)                86 (1.2%)
+SGI                         84 (1.2%)
+Qumranet                    74 (1.0%)
+QLogic                      70 (1.0%)
+(Academia)                  70 (1.0%)
+SWsoft                      64 (0.9%)
+Analog Devices              61 (0.9%)
+HP                          60 (0.8%)
+Sony                        59 (0.8%)
+rPath                       56 (0.8%)
+XenSource                   53 (0.7%)
+CERN                        49 (0.7%)
+CC Computer Consultants     48 (0.7%)
+Freescale                   47 (0.7%)
+Fujitsu                     47 (0.7%)
+Tripeaks                    46 (0.7%)
+linutronix                  44 (0.6%)
+Snapgear                    39 (0.6%)
+Simtec                      34 (0.5%)
+Atmel                       28 (0.4%)
+Google                      28 (0.4%)
+Cisco                       27 (0.4%)
+Toshiba                     25 (0.4%)
+Broadcom                    25 (0.4%)
+SteelEye                    24 (0.3%)
+Renesas Technology          23 (0.3%)
+Mellanox                    21 (0.3%)
+LSI Logic                   17 (0.2%)
+Adaptec                     16 (0.2%)
+Wipro                       15 (0.2%)
+Marvell                     14 (0.2%)
+Miracle Linux               14 (0.2%)
+Solid Boot Ltd.             14 (0.2%)
+AMD                         12 (0.2%)
+Hitachi                     11 (0.2%)
+ARM                         11 (0.2%)
+Canonical                   10 (0.1%)
+XIV Information Systems      9 (0.1%)
+OpenedHand                   9 (0.1%)
+Open Grid Computing          9 (0.1%)
+Veritas                      8 (0.1%)
+Secretlab                    7 (0.1%)
+Neterion                     7 (0.1%)
+Katalix Systems              7 (0.1%)
+SANPeople                    7 (0.1%)
+Digi International           7 (0.1%)
+Znyx Networks                6 (0.1%)
+Wind River                   6 (0.1%)
+NEC                          6 (0.1%)
+Wolfson Microelectronics     6 (0.1%)
+SUNY Computer Science        6 (0.1%)
+NetXen                       6 (0.1%)
+NVidia                       6 (0.1%)
+Myricom                      6 (0.1%)
+Chelsio                      5 (0.1%)
+Realtek                      5 (0.1%)
+IPUnity-Glenayre             5 (0.1%)
+Linux Networx                5 (0.1%)
+Barco                        4 (0.1%)
+SIOS Technology              4 (0.1%)
+MIPS                         4 (0.1%)
+University of Aberdeen       4 (0.1%)
+PiKRON s.r.o                 4 (0.1%)
+Pardus                       4 (0.1%)
+Crash Barrier                4 (0.1%)
+Tresys                       4 (0.1%)
+ClusterFS                    4 (0.1%)
+Macq Electronique            3 (0.0%)
+OLPC                         3 (0.0%)
+CompuLab                     3 (0.0%)
+DENX Software Engineering    3 (0.0%)
+Embedded Alley Solutions     3 (0.0%)
+Twin Sun                     3 (0.0%)
+Transmode Systems            3 (0.0%)
+Cosmosbay~Vectis             3 (0.0%)
+Pengutronix                  2 (0.0%)
+Sierra Wireless              2 (0.0%)
+Real-Time Remedies           2 (0.0%)
+Bull                         2 (0.0%)
+ScaleMP Inc.                 2 (0.0%)
+Samsung                      2 (0.0%)
+MicroGate Systems            2 (0.0%)
+Atomide                      2 (0.0%)
+US National Security Agency    2 (0.0%)
+VMWare                       2 (0.0%)
+Verismo                      2 (0.0%)
+Akamai Technologies          2 (0.0%)
+CE Linux Forum               2 (0.0%)
+Siemens                      1 (0.0%)
+ONELAN                       1 (0.0%)
+Xorcom                       1 (0.0%)
+EXOSEC                       1 (0.0%)
+LWN.net                      1 (0.0%)
+Texas Instruments            1 (0.0%)
+Promise Technology           1 (0.0%)
+VA Linux Systems Japan       1 (0.0%)
+University of Sevilla        1 (0.0%)
+Motorola                     1 (0.0%)
+HES-SO Valais Wallis         1 (0.0%)
+SYSGO                        1 (0.0%)
+Via                          1 (0.0%)
+Telecom-Service              1 (0.0%)
+Hauppauge                    1 (0.0%)
+DSA                          1 (0.0%)
+Vivecode                     1 (0.0%)
+Mandriva                     1 (0.0%)
+ATRON electronic             1 (0.0%)
+Cytronics & Melware          1 (0.0%)
+M&N Solutions                1 (0.0%)
+Rockwell                     1 (0.0%)
+8D Technologies              1 (0.0%)
+University of Cambridge      1 (0.0%)
 
