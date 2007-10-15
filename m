@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbXJOQSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762497AbXJOQT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932104AbXJOQSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759171AbXJOQSY
+	id S1762497AbXJOQT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbXJOQTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:18:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46061 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757952AbXJOQSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:18:23 -0400
-Date: Mon, 15 Oct 2007 18:18:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: WARNING: at net/core/dev.c:2161 net_rx_action()
-Message-ID: <20071015161816.GA3730@elte.hu>
-References: <20071015112430.GA30006@elte.hu> <20071015112705.GA31150@elte.hu>
+	Mon, 15 Oct 2007 12:19:51 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:53680 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755741AbXJOQTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 12:19:50 -0400
+Date: Mon, 15 Oct 2007 17:19:43 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+cc: Adrian Bunk <bunk@kernel.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: -git mips defconfig compile error
+In-Reply-To: <20071015095535.GB9896@linux-mips.org>
+Message-ID: <Pine.LNX.4.64N.0710151715200.16262@blysk.ds.pg.gda.pl>
+References: <20071014131948.GF4211@stusta.de> <20071015095535.GB9896@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015112705.GA31150@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Oct 2007, Ralf Baechle wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> The logo.c bit I've sent out a few weeks ago so I'm just waiting for that
+> patch to resurface at the other end of the wormhole.
 
-> >   WARNING: at net/core/dev.c:2161 net_rx_action()
-> >    [<80564db4>] net_rx_action+0xce/0x186
-> >    [<8011ba98>] __do_softirq+0x6c/0xcf
-> >    [<8011bb2d>] do_softirq+0x32/0x36
-> >    [<8011bcae>] irq_exit+0x35/0x40
-> >    [<80104fdb>] do_IRQ+0x5c/0x71
-> >    [<801048cd>] do_nmi+0x8f/0x238
-> >    [<801033a3>] common_interrupt+0x23/0x30
-> >    =======================
-> > 
-> > box is operating fine otherwise. config and bootlog attached. This 
-> > warning got introduced by:
-> 
-> unfortunately the warning seems spurious - i just rebooted the box 
-> into the same kernel and the message did not trigger again.
+ Hmm, I would have waited for this to happen before committing the change 
+depending on it not to keep things known-broken then...  That's what I do 
+with my bits, e.g. I have an update to platform code waiting till 
+sb1250-mac.c changes come over here.
 
-update: i got this warning for a second time now with another config - 
-so i guess if someone sent me a fix-patch or debug-patch i would 
-eventually trigger it within a day again.
-
-	Ingo
+  Maciej
