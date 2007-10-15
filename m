@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764451AbXJOBpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbXJOBqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764451AbXJOBpx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 21:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXJOBpo
+	id S1764612AbXJOBqO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 21:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762601AbXJOBpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 21:45:44 -0400
-Received: from mga11.intel.com ([192.55.52.93]:42378 "EHLO mga11.intel.com"
+	Sun, 14 Oct 2007 21:45:49 -0400
+Received: from thunk.org ([69.25.196.29]:34424 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752361AbXJOBpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 21:45:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,274,1188802800"; 
-   d="scan'208";a="173762494"
-Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1192168345.17539.42.camel@caritas-dev.intel.com>
-References: <1192168345.17539.42.camel@caritas-dev.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 15 Oct 2007 09:47:14 +0800
-Message-Id: <1192412834.28792.16.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 15 Oct 2007 01:44:53.0520 (UTC) FILETIME=[FB793100:01C80ECC]
+	id S1759869AbXJOBpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 21:45:47 -0400
+Date: Sun, 14 Oct 2007 21:45:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Rob Landley <rob@landley.net>
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015014503.GF9715@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Rob Landley <rob@landley.net>,
+	James Bottomley <James.Bottomley@steeleye.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+	Suparna Bhattacharya <suparna@in.ibm.com>,
+	Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <1192400672.3351.56.camel@localhost.localdomain> <200710141845.44750.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710141845.44750.rob@landley.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Peter and Andi,
+On Sun, Oct 14, 2007 at 06:45:44PM -0500, Rob Landley wrote:
+> I admit a certain amount of personal annoyance that once the SCSI
+> layer consumes a category of device (USB, SATA, PATA), they can
+> often _only_ be used by going through the SCSI midlayer.  (This
+> strikes me as analogous to TCP/IP claiming ethernet and PPP devices
+> so thoroughly that you can no longer address them as eth1 or
+> /dev/ttyS0.)
 
-Do you think this patch set is ready for merging? Otherwise what I can
-do to make it ready?
+That's because modern USB, ATAPI (what was once known as IDE), SATA
+really *all* using the SCSI command protocols at the low level, just
+as Ethernet and PPP interfaces really are fundamentally the same
+thing.  You can rail against it, but that's the mark of someone who
+refuses to accept reality.
 
-Best Regards,
-Huang Ying
+> This has the annoying effect of bundling together different types of
+> devices and making device enumeration unnecessarily difficult: my
+> laptop only has one SATA hard drive and can't gain another without a
+> soldering iron, but that drive could move from /dev/sda to /dev/sdb
+> if I reboot the system with a USB key plugged in.  This seems like a
+> regrettable loss of orthogonality to me.  I remember back when
+> /dev/usb0 and /dev/hda were separate devices that showed up in /dev,
+> but these days "it's SCSI" seems to trump "it's USB", "it's ATA", or
+> "it's SATA".  (Even though none of those are actually SCSI hardware,
+> they just send a similar packet protocol across the wire.)
 
-On Fri, 2007-10-12 at 13:52 +0800, Huang, Ying wrote:
-> This patchset defines a 32-bit boot protocol for i386/x86_64 platform,
-> adds an extensible boot parameter passing mechanism, export the boot
-> parameters via sysfs.
-> 
-> The patchset has been tested against 2.6.23-rc8-mm2 kernel on x86_64
-> and i386.
-> 
-> This patchset is based on the proposal of Peter Anvin.
-> 
-> 
-> Known Issues:
-> 
-> - Where is safe to place the linked list of setup_data?  Because the
->   length of the linked list of setup_data is variable, it can not be
->   copied into BSS segment of kernel as that of "zero page". We must
->   find a safe place for it, where it will not be overwritten by kernel
->   during booting up. The i386 kernel will overwrite some pages after
->   _end. The x86_64 kernel will overwrite some pages from 0x1000 on.
-> 
-> - The fields in zero page are fairly complex (such as struct
->   edd_info). Is it necessary to document every field inside the first
->   level fields, until the primary data type? Or is it sufficient to
->   provide the C struct name only?
-> 
-> 
-> v5:
-> 
-> - Use bt_ioremap/bt_iounmap in copy_setup_data.
-> 
-> v4:
-> 
-> - Reserve setup_data and boot parameters for accessing during
->   runtime.
-> - Export boot parameters via sysfs.
-> 
-> v3:
-> 
-> - Move hd0_info and hd1_info back to zero page for compatibility.
-> 
-> v2:
-> 
-> - Increase the boot protocol version number
-> - Check version number before parsing setup data.
-> - Revise zero page description according to the source code and move
->   them to zero-page.txt.
+You're showing your ignorance here.  In fact in the past few years,
+ATA and SCSI has been converging significantly, with the ATAPI
+specification has essentially incorporating the SCSI protocol by
+reference and by value --- with the point that SAS was developed by
+the SCSI Trade Association, and SAS is effectively a superset of SATA,
+to the point where with care, you can actually mix SAS and SATA drives
+on the same in enclosure (SAS and SATA are physically compatible on
+the connector level).
+
+More to the point, with SATA, hot plugging has been designed in, so
+probing order is not going to be well defined, just as with USB
+devices.  And there are already relatively common situations where the
+same disk can show up via multiple different interfaces.
+
+For example, if you have a modern Thinkpad with an secondary SATA hard
+drive in an Ultrabay, and you plug it into the Ultrabay in your T60,
+it will show up as a SATA drive.  However, if you plug it into the
+Advanced dock, it shows up as a USB device.  And with iSCSI not only
+can you encapsulate a SCSI command stream over USB, you can do so over
+IP as well.  In any case, regardless of how the physical SATA drive is
+attached to the system, you want it to show up as the same device and
+be mounted in the same location.
+
+That's why identifying filesystem by UUID's or Labels is so critical.
+This is not a new concept; we've had the capability to do this for
+over a decade, and I always knew it would be necessary for us to do
+this sooner or later --- which is why I added the UUID support to ext2
+back in 1996.
+
+> The fact that udev can theoretically unwind this hairball is not an
+> excuse for conflating different categories of devices in the first
+> place.
+
+See the thinkpad Ultrabay drive example above.  You address hosts by
+IP address; it doesn't matter whether you access them via a PPP
+interface, or a wireless interface, or a ethernet interface.
+Similarly, a disk could in theory be accessible over USB, SATA, or
+iSCSI, and the Thinkpad example is only one such where the same
+filesystem might be accessible over multiple interfaces.  And with
+multipath fiber channel SAN's (and I hate to break it to you, but FC
+also uses SCSI protocols) storage is very much looking more and more
+like networking.
+
+						- Ted
