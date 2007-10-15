@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbXJOGlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbXJOGmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764414AbXJOGlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 02:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbXJOGlJ
+	id S1764525AbXJOGmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 02:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXJOGmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 02:41:09 -0400
-Received: from smtp110.biz.mail.re2.yahoo.com ([206.190.53.9]:21988 "HELO
-	smtp110.biz.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753377AbXJOGlH (ORCPT
+	Mon, 15 Oct 2007 02:42:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37653 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752507AbXJOGmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 02:41:07 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 02:41:07 EDT
-X-YMail-OSG: dTC1YPQVM1n3RBDOgoMree79vmxw.TZVLvOOUGwEq5cx6J_S
-From: HighPoint Linux Team <linux@highpoint-tech.com>
-Organization: HighPoint Technologies, Inc.
-To: "Andrew Morton" <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] hptiop: avoid buffer overflow when returning sense data
-Date: Mon, 15 Oct 2007 14:42:52 +0800
-User-Agent: KMail/1.5.3
-Cc: James.Bottomley@SteelEye.com
-References: <200605101704.27491.linux@highpoint-tech.com> <200605161438.09717.linux@highpoint-tech.com> <200708291510.53793.linux@highpoint-tech.com>
-In-Reply-To: <200708291510.53793.linux@highpoint-tech.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 15 Oct 2007 02:42:31 -0400
+Date: Sun, 14 Oct 2007 23:41:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Olaf Hering <olaf@aepfle.de>, linux-kernel@vger.kernel.org
+Subject: Re: apm system does not power off anymore
+Message-Id: <20071014234149.39a4f08a.akpm@linux-foundation.org>
+In-Reply-To: <20071015163720.09630ee4.sfr@canb.auug.org.au>
+References: <20071012125426.GA16626@aepfle.de>
+	<20071014232316.4beb160f.akpm@linux-foundation.org>
+	<20071015163720.09630ee4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710151442.52230.linux@highpoint-tech.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Oct 2007 16:37:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-avoid buffer overflow when returning sense data.
+> On Sun, 14 Oct 2007 23:23:16 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > Also, it's bad that the operator has to provide some special boot command-line
+> > option to make the machine work properly.  Please consider this to be a
+> > bug.  Has it always needed apm=power-off?
+> 
+> It has always been that way because the behaviour of APM on SMP is not
+> defined.  We discovered early that it will work (at least for powering
+> off) for most SMP machines as long as the APM calls are done on CPU 0.
+> However on an SMP machine that does not cope, very bad things happen -
+> thus the operator has to explictly enable the power off behaviour on an
+> SMP box.  (On UP power off is enabled by default.)
 
-Signed-off-by: HighPoint Linux Team <linux@highpoint-tech.com>
----
+hrm, OK.
 
-diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
-index 8b384fa..d32a4a9 100644
---- a/drivers/scsi/hptiop.c
-+++ b/drivers/scsi/hptiop.c
-@@ -375,8 +375,9 @@ static void hptiop_host_request_callback
- 		scp->result = SAM_STAT_CHECK_CONDITION;
- 		memset(&scp->sense_buffer,
- 				0, sizeof(scp->sense_buffer));
--		memcpy(&scp->sense_buffer,
--			&req->sg_list, le32_to_cpu(req->dataxfer_length));
-+		memcpy(&scp->sense_buffer, &req->sg_list,
-+				min(sizeof(scp->sense_buffer),
-+					le32_to_cpu(req->dataxfer_length)));
- 		break;
- 
- 	default:
+But it could have been controlled by a more-user-friendly runtime knob, I
+guess.  Not that it's worth changing that now.
 
