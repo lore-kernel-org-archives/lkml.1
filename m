@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765695AbXJORmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXJORmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765695AbXJORmZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXJORmR
+	id S932847AbXJORmx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764047AbXJORmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:42:17 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:34533 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbXJORmP (ORCPT
+	Mon, 15 Oct 2007 13:42:39 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:55132 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756646AbXJORmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:42:15 -0400
-Date: Mon, 15 Oct 2007 18:42:07 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-cc: Jay Estabrook <Jay.Estabrook@hp.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] tgafb: Remove a redundant non-mono test in mono imageblit
-Message-ID: <Pine.LNX.4.64N.0710151836490.16262@blysk.ds.pg.gda.pl>
+	Mon, 15 Oct 2007 13:42:37 -0400
+Date: Mon, 15 Oct 2007 13:42:04 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/7] RT: Add a per-cpu rt_overload indication
+In-Reply-To: <20071013001538.7444.80168.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0710151340390.26495@gandalf.stny.rr.com>
+References: <20071013001052.7444.8363.stgit@novell1.haskins.net>
+ <20071013001538.7444.80168.stgit@novell1.haskins.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- There is a test in tgafb_mono_imageblit() for a colour image with a 
-fall-back to cfb_imageblit().  The test is not necessary as the only 
-caller, which is tgafb_imageblit(), checks it too and only invokes this 
-function for monochrome images.  It looks like a left-over from before 
-some changes to tgafb_imageblit().
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Checked with checkpatch.pl and at the run time with an 8-bit TC frame
-buffer on a MIPS host.
 
- Please apply.
+--
+On Fri, 12 Oct 2007, Gregory Haskins wrote:
 
-  Maciej
+> The system currently evaluates all online CPUs whenever one or more enters
+> an rt_overload condition.  This suffers from scalability limitations as
+> the # of online CPUs increases.  So we introduce a cpumask to track
+> exactly which CPUs need RT balancing.
+>
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> CC: Peter W. Morreale <pmorreale@novell.com>
 
-patch-mips-2.6.23-rc5-20070904-tgafb-mono_imageblit-depth-0
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c	2007-09-04 04:55:46.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c	2007-10-14 20:32:13.000000000 +0000
-@@ -636,15 +636,6 @@ tgafb_mono_imageblit(struct fb_info *inf
- 
- 	is8bpp = info->var.bits_per_pixel == 8;
- 
--	/* For copies that aren't pixel expansion, there's little we
--	   can do better than the generic code.  */
--	/* ??? There is a DMA write mode; I wonder if that could be
--	   made to pull the data from the image buffer...  */
--	if (image->depth > 1) {
--		cfb_imageblit(info, image);
--		return;
--	}
--
- 	dx = image->dx;
- 	dy = image->dy;
- 	width = image->width;
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+This patch seems reasonable to me. I'll pull it into the queue unless
+there's any NACKs.
+
+-- Steve
+
+> ---
+>
+>  kernel/sched.c |   12 +++++++++---
+>  1 files changed, 9 insertions(+), 3 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 86ff36d..0a1ad0e 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -632,6 +632,7 @@ static inline struct rq *this_rq_lock(void)
+>
+>  #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+>  static __cacheline_aligned_in_smp atomic_t rt_overload;
+> +static cpumask_t rto_cpus;
+>  #endif
+>
+>  static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+> @@ -640,8 +641,11 @@ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+>  	if (rt_task(p)) {
+>  		rq->rt_nr_running++;
+>  # ifdef CONFIG_SMP
+> -		if (rq->rt_nr_running == 2)
+> +		if (rq->rt_nr_running == 2) {
+> +			cpu_set(rq->cpu, rto_cpus);
+> +			smp_wmb();
+>  			atomic_inc(&rt_overload);
+> +		}
+>  # endif
+>  	}
+>  #endif
+> @@ -654,8 +658,10 @@ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+>  		WARN_ON(!rq->rt_nr_running);
+>  		rq->rt_nr_running--;
+>  # ifdef CONFIG_SMP
+> -		if (rq->rt_nr_running == 1)
+> +		if (rq->rt_nr_running == 1) {
+>  			atomic_dec(&rt_overload);
+> +			cpu_clear(rq->cpu, rto_cpus);
+> +		}
+>  # endif
+>  	}
+>  #endif
+> @@ -1624,7 +1630,7 @@ static void balance_rt_tasks(struct rq *this_rq, int this_cpu)
+>  	 */
+>  	next = pick_next_task(this_rq, this_rq->curr);
+>
+> -	for_each_online_cpu(cpu) {
+> +	for_each_cpu_mask(cpu, rto_cpus) {
+>  		if (cpu == this_cpu)
+>  			continue;
+>  		src_rq = cpu_rq(cpu);
+>
+>
+>
