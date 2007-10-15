@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbXJOQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764808AbXJOQIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbXJOQIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbXJOQIF
+	id S1764808AbXJOQIe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763444AbXJOQIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:08:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52023 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757815AbXJOQID (ORCPT
+	Mon, 15 Oct 2007 12:08:24 -0400
+Received: from s1.mailresponder.info ([193.24.237.10]:3792 "EHLO
+	s1.mailresponder.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763368AbXJOQIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:08:03 -0400
-Date: Mon, 15 Oct 2007 10:08:00 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Rob Landley <rob@landley.net>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015160800.GA324@parisc-linux.org>
-References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710150426.04924.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 15 Oct 2007 12:08:22 -0400
+X-Greylist: delayed 315 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 12:08:21 EDT
+Subject: Inquiry data and emulated SG devices
+From: Mathieu Fluhr <mfluhr@nero.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Nero AG
+Date: Mon, 15 Oct 2007 18:02:11 +0200
+Message-Id: <1192464131.3234.25.camel@de-c-l-110.nero-de.internal>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 04:26:04AM -0500, Rob Landley wrote:
-> For example, usb devices are never easy to order.  IDE devices (back when they 
-> had their own namespace) were trivial to order back when /dev/hda couldn't 
-> move without use of a screwdriver.
+Hello all,
 
-Ah, but it could.  If you had more than one IDE controller (which is
-even possible on laptops; the Fujitsu P7120 is one that I'm familiar
-with that has more than one), the initialisation order *of the
-controllers* would change which was hda and which was hde.
 
-> Combining USB and IDE into the same /dev/sd? namespace makes enumerating the 
-> IDE devices much harder than in the traditional "/dev/hdb doesn't move 
-> without a screwdriver" model.  The merger creates a new problem for IDE, one 
-> which didn't exist before: the addition or removal of other unrelated types 
-> of devices may change this device's location next boot.  It may be possible 
-> to add additional complication to the system to compensate, but what was the 
-> advantage of merging the namespaces in the first place?
+First of all, let me introduce myself a little bit. I am the responsable
+for the development of the Nero Linux burning application. So I have
+access to all the source code of the application.
 
-It's not something anyone particularly set out to do, it's just how
-it worked out.  It was justified by saying "ok, this goes from a 99%
-solution to a 96% solution, but there's 100% solution called uuids".
-I don't particularly agree with this line of argumentation, but it did
-hold sway.
+
+Now let's go with the story: It seems that there is a slight problem in
+the libata (and also the new pata_xxx) interfaces with the data returned
+by the INQUIRY cmd since every S-ATA or IDE device is assumed to be a
+SCSI dev.
+
+Normally, the IDE devices (physical type) can be differentied with the
+format field of the inquiry data, i.e. the last bytes (ANSI version) are
+set to 0 -> This is done and works great with USB external devices for
+example.
+
+
+The thing is that with S-ATA/IDE devices when using the libata/pata
+driver, the version field is (always?) set to 5, as any _real_ SCSI
+device, and thus the physical device type cannot be checked anymore.
+
+I cannot go so deep in details, but our burn engine is differentiating
+IDE and read-good-old-SCSI devices and handles them sometimes in a
+different way, so this differenciation is really important for us.
+
+   -> How can I detect the real physical device type now?
+
+
+
+Best Regards,
+Mathieu
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+*********************************************************
+Mathieu Fluhr
+Linux Development Team Leader
+
+E-mail: mfluhr@nero.com
+
+
+NERO - BECAUSE TECHNOLOGY COUNTS
+www.nero.com
+
+*********************************************************
+Nero AG
+Im Stoeckmaedle 13-15
+76307 Karlsbad
+Germany
+
+Vorstand/CEO: Richard Lesser
+Aufsichtsratvorsitzender/chairman of the supervisory board: Jim Corbett
+
+Amtsgericht Mannheim HRB 362519
+*********************************************************
+This e-mail may contain confidential and/or
+privileged information. If you are not the intended
+recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy
+this e-mail. Any unauthorised copying, disclosure
+or distribution of the material in this e-mail is
+strictly forbidden.
+********************************************************* 
+
