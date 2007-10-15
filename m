@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXJOVla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbXJOVpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759426AbXJOVla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXJOVlX
+	id S1758543AbXJOVpx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXJOVpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:41:23 -0400
-Received: from mx-outbound02.utstar.com ([203.193.54.71]:42666 "EHLO
-	hk-mail2.utstar.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753858AbXJOVlW convert rfc822-to-8bit (ORCPT
+	Mon, 15 Oct 2007 17:45:44 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:9637 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbXJOVpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:41:22 -0400
-X-Greylist: delayed 1803 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 17:41:21 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Problem:  CPU sleep when calling a function in another object for the first time.
-Date: Tue, 16 Oct 2007 05:11:07 +0800
-Message-ID: <E9FB75D95739914DBDEDC1867C740F4FD4E64C@ITLHZEXCH01.us.utstar.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Problem:  CPU sleep when calling a function in another object for the first time.
-Thread-Index: AcgPb+cpq9QQvri3RNinmYleLBLcog==
-From: "John Marconi" <john.marconi@utstar.com>
-To: <linux-kernel@vger.kernel.org>
+	Mon, 15 Oct 2007 17:45:43 -0400
+Subject: Re: [PATCH] RT: fix spin_trylock_irq
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux RT Users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.9999.0710152308220.22612@localhost.localdomain>
+References: <20071011142417.1d965820@bull.net>
+	 <Pine.LNX.4.58.0710111046170.20114@gandalf.stny.rr.com>
+	 <1192470246.17527.15.camel@imap.mvista.com>
+	 <Pine.LNX.4.58.0710151406230.26495@gandalf.stny.rr.com>
+	 <1192478816.17527.58.camel@imap.mvista.com>
+	 <alpine.LFD.0.9999.0710152308220.22612@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 14:44:10 -0700
+Message-Id: <1192484650.17527.76.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 2007-10-15 at 23:35 +0200, Thomas Gleixner wrote:
+> On Mon, 15 Oct 2007, Daniel Walker wrote:
+> > On Mon, 2007-10-15 at 14:14 -0400, Steven Rostedt wrote:
+> > 
+> > > > This is the second fix for this .. The first was in this email (over a
+> > > > month ago)
+> > > >
+> > > > http://lkml.org/lkml/2007/8/31/318
+> > > 
+> > > You're right I missed that. (I even read it). But for fixes like this, (or
+> > > any patches that are not in the tree), you really need to resend the
+> > > series.
+> > 
+> > In hindsight I should have resent, but I didn't .. Really it's a matter
+> > of frustration on my part. Where I submit patches that should be
+> > included , but they are ignored for no clear reason .. Then I submit
+> > again, and the patches are ignored again for no clear reason..
+> 
+> You were asked to rebase your patches against the latest -rt
+> kernel. And you bluntly refused to.
 
-I have been seeing a problem in which one of my CPUs goes to sleep for
-40ms in the middle of running a user-space program.  The problem occurs
-when I have a function in object file X call another function in object
-file Y.  If I add a gettimeofday right before the function call occurs,
-and then also right at the beginning of the called function, I see a
-40ms delay.  This only occurs on the first call to any function in file
-Y.  Once a function in file Y is called, all other calls to functions in
-this file are immediate.
+Nope , I did rebase my patches when Steven asked me to ..
 
-I have added a kernel profiler to the timer interrupt of this CPU - and
-find that during this 40ms period, the CPU is in r4k_wait - which looks
-like cpu_idle is running.  It almost seems like file Y is being loaded
-into memory to be used.
+> I knew exactly why I ignored the patches when I was moving -rt
+> forward. Simply because I had not enough time to review them in
+> detail. Ingo acked them in principle, but we had subtle wreckage from
+> such changes before and I had no intention to put more risk into a non
+> trivial merge.
+> 
+> Sorry, you have provided sloppy patches more than once and requested
+> us to pick random bugfixes from a broken ftp server or from the
+> mailing list. It's you who wrote the track record, not us.
 
-The program in question is using pthreads and each thread is on a
-separate CPU.  Each CPU is dedicated to running a single thread and
-nothing else.  The files X and Y are two object files linked into a
-single ELF binary.  The kernel version is 2.6.14 and this is a MIPS
-based processor.
+Oh boy here we go again .. Let just stop right here..
 
-Does anyone have any ideas why this delay might be occurring?
+> I'm finally fed up with your prima ballerina attitudes. Either you
+> want to be part of this project or not. If yes, then please accept
+> that you are not setting the rules how this works. If no, please stop
+> whining at us and look for a nice sandpit where you can play these
+> silly games.
+>  
+> 	tglx
 
-Thank you in advance,
-John
