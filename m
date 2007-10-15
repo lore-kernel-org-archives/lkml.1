@@ -1,176 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXJOIIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbXJOIJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbXJOIIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 04:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXJOIID
+	id S1759504AbXJOIJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 04:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbXJOIJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 04:08:03 -0400
-Received: from lucidpixels.com ([75.144.35.66]:40824 "EHLO lucidpixels.com"
+	Mon, 15 Oct 2007 04:09:27 -0400
+Received: from mail.suse.de ([195.135.220.2]:45448 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750926AbXJOIIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 04:08:00 -0400
-Date: Mon, 15 Oct 2007 04:07:59 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-kernel@vger.kernel.org,
-       apiszcz@solarrain.com, lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: 2.6.23.1 x86 hardware monitoring bug?
-In-Reply-To: <471309AE.408@hhs.nl>
-Message-ID: <Pine.LNX.4.64.0710150407221.9867@p34.internal.lan>
-References: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>
- <20071015025331.GA3676@jupiter.solarsys.private> <471309AE.408@hhs.nl>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1644065452-1192435679=:9867"
+	id S1751746AbXJOIJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 04:09:26 -0400
+Date: Mon, 15 Oct 2007 10:09:24 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071015080924.GA32562@wotan.suse.de>
+References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015074405.GA1875@ff.dom.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Oct 15, 2007 at 09:44:05AM +0200, Jarek Poplawski wrote:
+> On Fri, Oct 12, 2007 at 08:13:52AM -0700, Linus Torvalds wrote:
+> > 
+> > 
+> > On Fri, 12 Oct 2007, Jarek Poplawski wrote:
+> ...
+> > So no, there's no way a software person could have afforded to say "it 
+> > seems to work on my setup even without the barrier". On a dual-socket 
+> > setup with s shared bus, that says absolutely *nothing* about the 
+> > behaviour of the exact same CPU when used with a multi-bus chipset. Not to 
+> > mention another revisions of the same CPU - much less a whole other 
+> > microarchitecture.
+> 
+> Yes, I still can't believe this, but after some more reading I start
+> to admit such things can happen in computer "science" too... I've
+> mentioned a lost performance, but as a matter of fact I've been more
+> concerned with the problem of truth:
+> 
+> From: Intel(R) 64 and IA-32 Architectures Software Developer's Manual
+> Volume 3A:
+> 
+>    "7.2.2 Memory Ordering in P6 and More Recent Processor Families
+>     ...
+>     1. Reads can be carried out speculatively and in any order.
+>     ..."
+> 
+> So, it looks to me like almost the 1-st Commandment. Some people (like
+> me) did believe this, others tried to check, and it was respected for
+> years notwithstanding nobody had ever seen such an event.
 
----1463747160-1644065452-1192435679=:9867
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+I'd say that's exactly what Intel wanted. It's pretty common (we do
+it all the time in the kernel too) to create an API which places a
+stronger requirement on the caller than is actually required. It can
+make changes much less painful.
 
+Has performance really been much problem for you? (even before the
+lfence instruction, when you theoretically had to use a locked op)?
+I mean, I'd struggle to find a place in the Linux kernel where there
+is actually a measurable difference anywhere... and we're pretty
+performance critical and I think we have a reasonable amount of lockless
+code (I guess we may not have a lot of tight computational loops, though).
+I'd be interested to know what, if any, application had found these
+barriers to be problematic...
 
+ 
+> And then, a few years later, we have this:
+> 
+> From: Intel(R) 64 Architecture Memory Ordering White Paper
+> 
+>     "2 Memory ordering for write-back (WB) memory
+>      ...
+>      Intel 64 memory ordering obeys the following principles:
+>      1. Loads are not reordered with other loads.
+>      ..."
+> 
+> I know, technically this doesn't have to be a contradiction (for not
+> WB), but to me it's something like: "OK, Elvis lives and this guy is
+> not real Paul McCartney too" in an official CIA statement!
 
-On Mon, 15 Oct 2007, Hans de Goede wrote:
+The thing is that those documents are not defining what a particular
+implementation does, but how the architecture is defined (ie. what
+must some arbitrary software/hardware provide and what may it expect).
 
-> Mark M. Hoffman wrote:
->> Hi Justin:
->>=20
->> (added some CCs)
->>=20
->> * Justin Piszcz <jpiszcz@lucidpixels.com> [2007-10-14 15:30:18 -0400]:
->>> As a regular user, I cannot see the sensors on the A-bit board, but I c=
-an=20
->>> see the CPU temperature, how come I can see one but not the other?
->>>=20
->
-> What does "which sensors" say as user, and what as root?
-> What does "ldd `which sensors`" say as user and what as root?
->
-> I have the feeling you have 2 different versions of lm-sensors installed =
-in=20
-> root is using one, and the user the other.
->
-> Regards,
->
-> Hans
-Arg, you were correct-- my error, it had been a special version that I=20
-had to install to get the coretemp several months ago, it is working now.
+It's pretty natural that Intel started out with a weaker guarantee
+than their CPUs of the time actually supported, and tightened it up
+after (presumably) deciding not to implement such relaxed semantics
+for the forseeable future.
 
-
-$ sensors
-abituguru3-isa-00e0
-Adapter: ISA adapter
-CPU Core:               +1.35 V  (min  +0.00 V, max  +1.60 V)
-DDR2:                   +2.00 V  (min  +1.60 V, max  +2.40 V)
-DDR2 VTT:               +1.00 V  (min  +0.80 V, max  +1.20 V)
-CPU VTT 1.2V:           +1.22 V  (min  +0.95 V, max  +1.45 V)
-MCH & PCIE 1.5V:        +1.50 V  (min  +1.20 V, max  +1.80 V)
-MCH 2.5V:               +2.58 V  (min  +2.00 V, max  +3.00 V)
-ICH 1.05V:              +1.04 V  (min  +0.85 V, max  +1.25 V)
-ATX +12V (24-Pin):     +12.18 V  (min  +9.60 V, max +14.40 V)
-ATX +12V (4-pin):      +12.24 V  (min  +9.60 V, max +14.40 V)
-ATX +5V:                +5.07 V  (min  +3.99 V, max  +6.00 V)
-+3.3V:                  +3.40 V  (min  +2.64 V, max  +3.94 V)
-5VSB:                   +5.10 V  (min  +3.99 V, max  +6.00 V)
-CPU:                      +39=B0C  (high =3D   +75=B0C, crit =3D   +85=B0C)
-System :                  +34=B0C  (high =3D   +55=B0C, crit =3D   +65=B0C)
-PWM1:                     +38=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM2:                     +38=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM3:                     +41=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-PWM4:                     +36=B0C  (high =3D   +80=B0C, crit =3D   +90=B0C)
-CPU Fan:               1380 RPM  (min  300 RPM)
-NB Fan:                   0 RPM  (min  300 RPM)
-SYS Fan:                  0 RPM  (min  300 RPM)
-AUX1 Fan:                 0 RPM  (min  300 RPM)
-AUX2 Fan:                 0 RPM  (min  300 RPM)
-AUX3 Fan:                 0 RPM  (min  300 RPM)
-OTES1 Fan:                0 RPM  (min  300 RPM)
-
-coretemp-isa-0000
-Adapter: ISA adapter
-Core 0:      +34=B0C  (high =3D   +85=B0C)
-
-coretemp-isa-0001
-Adapter: ISA adapter
-Core 1:      +35=B0C  (high =3D   +85=B0C)
-
-Sorry for the trouble.
-
-Justin.
-
->
->
->>> Kernel: $ uname -a
->>> Linux mybox 2.6.23.1 #4 SMP PREEMPT Sun Oct 14 15:20:53 EDT 2007 i686=
-=20
->>> GNU/Linux
->>> Distribution: Debian Lenny
->>>=20
->>> $ sensors
->>> abituguru3-isa-00e0
->>> Adapter: ISA adapter
->>>=20
->>> coretemp-isa-0000
->>> Adapter: ISA adapter
->>> temp1:       +35=B0C  (high =3D   +85=B0C)
->>>=20
->>> coretemp-isa-0001
->>> Adapter: ISA adapter
->>> temp1:       +36=B0C  (high =3D   +85=B0C)
->>>=20
->>> As root:
->>>=20
->>> # sensors
->>> abituguru3-isa-00e0
->>> Adapter: ISA adapter
->>> CPU Core:               +1.35 V  (min  +0.00 V, max  +1.60 V)
->>> DDR2:                   +2.02 V  (min  +1.60 V, max  +2.40 V)
->>> DDR2 VTT:               +1.01 V  (min  +0.80 V, max  +1.20 V)
->>> CPU VTT 1.2V:           +1.22 V  (min  +0.95 V, max  +1.45 V)
->>> MCH & PCIE 1.5V:        +1.50 V  (min  +1.20 V, max  +1.80 V)
->>> MCH 2.5V:               +2.58 V  (min  +2.00 V, max  +3.00 V)
->>> ICH 1.05V:              +1.04 V  (min  +0.85 V, max  +1.25 V)
->>> ATX +12V (24-Pin):     +12.18 V  (min  +9.60 V, max +14.40 V)
->>> ATX +12V (4-pin):      +12.24 V  (min  +9.60 V, max +14.40 V)
->>> ATX +5V:                +5.07 V  (min  +3.99 V, max  +6.00 V)
->>> +3.3V:                  +3.40 V  (min  +2.64 V, max  +3.94 V)
->>> 5VSB:                   +5.10 V  (min  +3.99 V, max  +6.00 V)
->>> CPU:                      +43=B0C  (high =3D   +75=B0C, crit =3D   +85=
-=B0C)
->>> System :                  +38=B0C  (high =3D   +55=B0C, crit =3D   +65=
-=B0C)
->>> PWM1:                     +43=B0C  (high =3D   +80=B0C, crit =3D   +90=
-=B0C)
->>> PWM2:                     +43=B0C  (high =3D   +80=B0C, crit =3D   +90=
-=B0C)
->>> PWM3:                     +46=B0C  (high =3D   +80=B0C, crit =3D   +90=
-=B0C)
->>> PWM4:                     +40=B0C  (high =3D   +80=B0C, crit =3D   +90=
-=B0C)
->>> CPU Fan:               1380 RPM  (min  300 RPM)
->>> NB Fan:                   0 RPM  (min  300 RPM)
->>> SYS Fan:                  0 RPM  (min  300 RPM)
->>> AUX1 Fan:                 0 RPM  (min  300 RPM)
->>> AUX2 Fan:                 0 RPM  (min  300 RPM)
->>> AUX3 Fan:                 0 RPM  (min  300 RPM)
->>> OTES1 Fan:                0 RPM  (min  300 RPM)
->>>=20
->>> coretemp-isa-0000
->>> Adapter: ISA adapter
->>> Core 0:      +39=B0C  (high =3D   +85=B0C)
->>>=20
->>> coretemp-isa-0001
->>> Adapter: ISA adapter
->>> Core 1:      +39=B0C  (high =3D   +85=B0C)
->>=20
->> Strange.  What does 'ls -lH /sys/class/hwmon/hwmon*/device' say?
->>=20
->> Regards,
->>=20
->
->
----1463747160-1644065452-1192435679=:9867--
