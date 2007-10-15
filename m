@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbXJOHnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXJOHpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbXJOHnr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 03:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbXJOHnk
+	id S1757982AbXJOHpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 03:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXJOHpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 03:43:40 -0400
-Received: from n1.cetrtapot.si ([89.212.80.162]:61976 "EHLO n1.cetrtapot.si"
+	Mon, 15 Oct 2007 03:45:11 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:6539 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbXJOHnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 03:43:39 -0400
-Message-ID: <47131A0B.1050000@cetrtapot.si>
-Date: Mon, 15 Oct 2007 09:43:07 +0200
-From: "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1754612AbXJOHpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 03:45:10 -0400
+Date: Mon, 15 Oct 2007 09:45:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Milan Broz <mbroz@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com
+Subject: Re: 2.6.23-mm1
+Message-ID: <20071015074500.GE5380@kernel.dk>
+References: <47110500.8050503@garzik.org> <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com> <20071013111853.7e67c6c3.akpm@linux-foundation.org> <64bb37e0710140454s61325fdfya43179b14ea26dc4@mail.gmail.com> <20071014113914.7654759d.akpm@linux-foundation.org> <64bb37e0710141212k58c5fc66s620d1f28e80bb40@mail.gmail.com> <20071014122613.5bbe4fc3.akpm@linux-foundation.org> <4712922F.6010005@redhat.com> <20071015065022.GC5380@kernel.dk> <18195.5992.545271.871100@notabene.brown>
 MIME-Version: 1.0
-To: Samuel Ortiz <samuel@sortiz.org>
-Cc: irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [irda-users] [PATCH] irlmp_unregister_link needs to free lsaps
- hashbin
-References: <470F6EFB.6010704@cetrtapot.si> <20071013010326.GC8187@sortiz.org>
-In-Reply-To: <20071013010326.GC8187@sortiz.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18195.5992.545271.871100@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Ortiz wrote:
-> Hi Hinko,
+On Mon, Oct 15 2007, Neil Brown wrote:
+> On Monday October 15, jens.axboe@oracle.com wrote:
+> > On Mon, Oct 15 2007, Milan Broz wrote:
+> > > 
+> > > clone->bi_size is zero here now, so crypt_free_buffer_pages will not
+> > > work correctly (previously there was count of processed bytes).
+> > > 
+> > > But because it seems that bio cannot be processed partially now, we can
+> > > simplify crypt_free_buffer_pages to always remove all allocated pages.
+> > 
+> > Neil, this doesn't look very good. dm-crypt needs to know the clone io
+> > size, so ->bi_size was definitely used properly in this context before.
+> > Now it's gone. Suggestions on how to fix that up?
 > 
-> On Fri, Oct 12, 2007 at 02:56:27PM +0200, hinko.kocevar@cetrtapot.si wrote:
->> Hi,
->>
->> While testing the mcs7780 based IrDA USB dongle I've stumbled upon
->> memory leak in irlmp_unregister_link(). Hashbin for lsaps is created in
->> irlmp_register_link and should probably be freed in irlmp_unregister_link().
->>
->> Signed-off-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
->>
->> Best regards,
->> Hinko
->>
->> ----
->>
->>
-> 
->> --- linux-2.6.23/net/irda/irlmp.c.orig	2007-10-12 14:05:17.000000000 +0200
->> +++ linux-2.6.23/net/irda/irlmp.c	2007-10-12 14:05:41.000000000 +0200
->> @@ -353,6 +353,7 @@ void irlmp_unregister_link(__u32 saddr)
->>  		/* Final cleanup */
->>  		del_timer(&link->idle_timer);
->>  		link->magic = 0;
->> +		hashbin_delete(link->lsaps, (FREE_FUNC) kfree);
-> Good catch, but I think the right fix sould be:
-> +             hashbin_delete(link->lsaps, (FREE_FUNC) __irlmp_close_lsap);
-> 
+> How about the following - even more code simplification gained by this
+> approach :-)
 
-You're probably right since struct lsap_cb get inserted into the hashbin.
+Looks good to me.
 
-Regards,
-Hinko
+> I originally had the patch for removing the 'size' argument after a
+> patch (series) that made bi_size unchanged.   It seemed that patch
+> would face a harder path upstream so I re-ordered them and missed this
+> dependency.  Mea Culpa.
+> 
+> > 
+> > I've been less than impressed with the bi_end_io() patchset so far, it's
+> > been full of typos and bad conversions. I'm tempted to revert the whole
+> > thing, clearly it wasn't ready for merge.
+> 
+> I must have missed something ....
+> 
+> I've seen:  A fix for a bi_end_io in jfs that I missed.
+>             A correction for that fix ("return 0" was remove instead
+>                of just the '0' removed)
+>             Some fixed for code that is only in -mm (which I didn't do
+>               because I thought you wanted it against a non-mm tree).
+
+XFS update, s390 block driver, gfs2 update, ocfs2 update, powerpc
+axonram block driver.
+
+> I think it was definitely ready for merging in -mm.  Possibly not for
+> mainline just yet.
+
+What's done is done, I just hope we've seen the last of it now.
 
 -- 
-ČETRTA POT, d.o.o., Kranj
-Planina 3
-4000 Kranj
-Slovenia, Europe
-Tel. +386 (0) 4 280 66 03
-E-mail: hinko.kocevar@cetrtapot.si
-Http: www.cetrtapot.si
+Jens Axboe
 
