@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXJOXkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763770AbXJOXlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbXJOXkD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbXJOXjw
+	id S1763770AbXJOXlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXJOXlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:39:52 -0400
-Received: from main.gmane.org ([80.91.229.2]:57711 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbXJOXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:39:51 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Johan Brannlund <johan_brn@yahoo.com>
-Subject: Lots of disk activity on resume from s2ram
-Date: Mon, 15 Oct 2007 21:53:21 +0000 (UTC)
-Message-ID: <pan.2007.10.15.21.53.21@yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: blk-137-105-82.eastlink.ca
-User-Agent: Pan/0.132 (Waxed in Black)
+	Mon, 15 Oct 2007 19:41:14 -0400
+Received: from sullivan.realtime.net ([205.238.132.226]:3909 "EHLO
+	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909AbXJOXlN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:41:13 -0400
+Date: Mon, 15 Oct 2007 18:40:43 -0500 (CDT)
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] sched domain sysctl: free kstrdup allocations
+Message-Id: <mm-sched-2b@bga.com>
+In-Reply-To: <20071015074700.GC32064@elte.hu>
+References: <mm-sched-0@bga.com>, <mm-sched-2@bga.com>,
+	<20071015074700.GC32064@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi. I've noticed that with recent kernels (starting somewhere between 
-2.6.20 and 2.6.22) I sometimes get *lots* of disk activity on resume from 
-suspend to ram. About 2/3 of the time, the system resumes normally but in 
-the remaining 1/3 of the time, the hard drive light stays on almost solid 
-and the machine is very, very slow to respond. The only way I've found to 
-reliably recover from this is if I can get to a command prompt fast 
-enough and do "shutdown -r now". There's not much cpu activity at all, it 
-just seems to be disk io that's killing interactivity. This also happens 
-if I resume just from an empty gnome desktop with no applications 
-running, so I don't think it's due to swapping.
+The procnames for the cpu and domain were allocated via kstrdup and so
+should also be freed.   The names for the files are static, but we
+can differentiate them by the presence of the proc_handler.  If a
+kstrdup (of < 32 characters) fails the sysctl code will not see the
+procname or remaining table entries, but any child tables and names
+will be reclaimed upon free.
 
-Some kernels affected: 2.6.22, 2.6.23+hrt patches, Ubuntu Gutsy kernel 
-(2.6.22-14). These are all 64-bit kernels running on an HP nx6125 laptop 
-- single-core Turion 64 processor, 1 gig of ram. To the best of my 
-recollection, this problem did *not* appear with 2.6.20.
+Signed-off-by: Milton Miller <miltonm@bga.com>
+--- 
 
-I put some dmesg output from the vm block dumping and some vmstat output 
-at http://nullinfinity.org/tmp/s2ram/ . The dmesg logs are from the same 
-resume, just a little while apart. The vmstat is from a different resume.
+Hi Ingo.
 
-Any workarounds, patches, tips for further debugging etc would be 
-appreciated.
+It occurred to me this morning that the procname field was dynamically
+allocated and needed to be freed.  I started to put in break statements
+when allocation failed but it was approaching 50% error handling code.
 
-- Johan
+I came up with this alternative of looping while entry->mode is set and
+checking proc_handler instead of ->table.  Alternatively, the string
+version of the domain name and cpu number could be stored the structs.
 
+I verified by compiling CONFIG_DEBUG_SLAB and checking the allocation
+counts after taking a cpuset exclusive and back.
+
+milton
+
+Index: kernel/kernel/sched.c
+===================================================================
+--- kernel.orig/kernel/sched.c	2007-10-15 12:21:38.000000000 -0500
++++ kernel/kernel/sched.c	2007-10-15 12:22:12.000000000 -0500
+@@ -5290,11 +5290,20 @@ static struct ctl_table *sd_alloc_ctl_en
+ 
+ static void sd_free_ctl_entry(struct ctl_table **tablep)
+ {
+-	struct ctl_table *entry = *tablep;
++	struct ctl_table *entry;
+ 
+-	for (entry = *tablep; entry->procname; entry++)
++	/*
++	 * In the intermediate directories, both the child directory and
++	 * procname are dynamically allocated and could fail but the mode
++	 * will always be set.  In the lowest directory the names are
++	 * static strings and all have proc handlers.
++	 */
++	for (entry = *tablep; entry->mode; entry++) {
+ 		if (entry->child)
+ 			sd_free_ctl_entry(&entry->child);
++		if (entry->proc_handler == NULL)
++			kfree(entry->procname);
++	}
+ 
+ 	kfree(*tablep);
+ 	*tablep = NULL;
