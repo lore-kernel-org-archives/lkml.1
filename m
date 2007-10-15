@@ -1,86 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765276AbXJOQa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765304AbXJOQbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765276AbXJOQa6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760173AbXJOQaa
+	id S1765304AbXJOQbd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761777AbXJOQbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:30:30 -0400
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:58393 "EHLO
+	Mon, 15 Oct 2007 12:31:11 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:58398 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758334AbXJOQa2 (ORCPT
+	with ESMTP id S1760719AbXJOQbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:30:28 -0400
-Message-id: <30460624014748892@pripojeni.net>
+	Mon, 15 Oct 2007 12:31:09 -0400
+Message-id: <147808606859926968@pripojeni.net>
 In-reply-to: <25409162611123630013@pripojeni.net>
-Subject: [PATCH 3/5] Char: rocket, remove pci_read_config_dword(CLASS_REVISION)
+Subject: [PATCH 4/5] Char: rocket, remove potential leak in module_init
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Oct 2007 12:30:28 -0400
+Date: Mon, 15 Oct 2007 12:31:09 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rocket, remove pci_read_config_dword(CLASS_REVISION)
+rocket, remove potential leak in module_init
 
-We may use pdev->revision instead of reading pci config space directly, so
-remove pci_read_config_dword invoking.
+if (controller && !request_region) then we leaked a tty driver struct,
+fix it by adding function deinit tail with goto-ing into it (and from other
+fail paths too)
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 2b2c0385d705ce1f4207595f8fda12c25ee39de3
-tree 2c09638bcb6ee3f671dd3038c21efeb2b958e6dc
-parent ad37fddef12ce908078883fdc27297216c6d122e
-author Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 14:42:18 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 14:42:18 +0200
+commit 8aa70f167a6ae0f80af0d73a5365c81f2e146709
+tree 3f44eb6baabbf501738c857b6114010ac408108e
+parent 2b2c0385d705ce1f4207595f8fda12c25ee39de3
+author Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:13:01 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:13:01 +0200
 
- drivers/char/rocket.c |   15 ++++-----------
- 1 files changed, 4 insertions(+), 11 deletions(-)
+ drivers/char/rocket.c |   34 ++++++++++++++++++++--------------
+ 1 files changed, 20 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
-index 5fd1ed7..e4bcfa2 100644
+index e4bcfa2..27bb0cd 100644
 --- a/drivers/char/rocket.c
 +++ b/drivers/char/rocket.c
-@@ -1869,8 +1869,6 @@ static __init int register_PCI(int i, struct pci_dev *dev)
- 	int fast_clock = 0;
- 	int altChanRingIndicator = 0;
- 	int ports_per_aiop = 8;
--	int ret;
--	unsigned int class_rev;
- 	WordIO_t ConfigIO = 0;
- 	ByteIO_t UPCIRingInd = 0;
+@@ -2355,14 +2355,14 @@ static const struct tty_operations rocket_ops = {
+  */
+ static int __init rp_init(void)
+ {
+-	int retval, pci_boards_found, isa_boards_found, i;
++	int ret = -ENOMEM, pci_boards_found, isa_boards_found, i;
  
-@@ -1878,12 +1876,6 @@ static __init int register_PCI(int i, struct pci_dev *dev)
- 		return 0;
+ 	printk(KERN_INFO "RocketPort device driver module, version %s, %s\n",
+ 	       ROCKET_VERSION, ROCKET_DATE);
  
- 	rcktpt_io_addr[i] = pci_resource_start(dev, 0);
--	ret = pci_read_config_dword(dev, PCI_CLASS_REVISION, &class_rev);
--
--	if (ret) {
--		printk(KERN_INFO "  Error during register_PCI(), unable to read config dword \n");
--		return 0;
--	}
+ 	rocket_driver = alloc_tty_driver(MAX_RP_PORTS);
+ 	if (!rocket_driver)
+-		return -ENOMEM;
++		goto err;
  
- 	rcktpt_type[i] = ROCKET_TYPE_NORMAL;
- 	rocketModel[i].loadrm2 = 0;
-@@ -2037,8 +2029,9 @@ static __init int register_PCI(int i, struct pci_dev *dev)
- 		ports_per_aiop = 6;
- 		str = "6-port";
+ 	/*
+ 	 *  If board 1 is non-zero, there is at least one ISA configured.  If controller is 
+@@ -2377,8 +2377,11 @@ static int __init rp_init(void)
  
--		/*  If class_rev is 1, the rocketmodem flash must be loaded.  If it is 2 it is a "socketed" version. */
--		if ((class_rev & 0xFF) == 1) {
-+		/*  If revision is 1, the rocketmodem flash must be loaded.
-+		 *  If it is 2 it is a "socketed" version. */
-+		if (dev->revision == 1) {
- 			rcktpt_type[i] = ROCKET_TYPE_MODEMII;
- 			rocketModel[i].loadrm2 = 1;
- 		} else {
-@@ -2053,7 +2046,7 @@ static __init int register_PCI(int i, struct pci_dev *dev)
- 		max_num_aiops = 1;
- 		ports_per_aiop = 4;
- 		str = "4-port";
--		if ((class_rev & 0xFF) == 1) {
-+		if (dev->revision == 1) {
- 			rcktpt_type[i] = ROCKET_TYPE_MODEMII;
- 			rocketModel[i].loadrm2 = 1;
- 		} else {
+ 	/*  If an ISA card is configured, reserve the 4 byte IO space for the Mudbac controller */
+ 	if (controller && (!request_region(controller, 4, "Comtrol RocketPort"))) {
+-		printk(KERN_INFO "Unable to reserve IO region for first configured ISA RocketPort controller 0x%lx.  Driver exiting \n", controller);
+-		return -EBUSY;
++		printk(KERN_ERR "Unable to reserve IO region for first "
++			"configured ISA RocketPort controller 0x%lx.  "
++			"Driver exiting\n", controller);
++		ret = -EBUSY;
++		goto err_tty;
+ 	}
+ 
+ 	/*  Store ISA variable retrieved from command line or .conf file. */
+@@ -2419,11 +2422,10 @@ static int __init rp_init(void)
+ #endif
+ 	tty_set_operations(rocket_driver, &rocket_ops);
+ 
+-	retval = tty_register_driver(rocket_driver);
+-	if (retval < 0) {
+-		printk(KERN_INFO "Couldn't install tty RocketPort driver (error %d)\n", -retval);
+-		put_tty_driver(rocket_driver);
+-		return -1;
++	ret = tty_register_driver(rocket_driver);
++	if (ret < 0) {
++		printk(KERN_ERR "Couldn't install tty RocketPort driver\n");
++		goto err_tty;
+ 	}
+ 
+ #ifdef ROCKET_DEBUG_OPEN
+@@ -2450,14 +2452,18 @@ static int __init rp_init(void)
+ 	max_board = pci_boards_found + isa_boards_found;
+ 
+ 	if (max_board == 0) {
+-		printk(KERN_INFO "No rocketport ports found; unloading driver.\n");
+-		del_timer_sync(&rocket_timer);
+-		tty_unregister_driver(rocket_driver);
+-		put_tty_driver(rocket_driver);
+-		return -ENXIO;
++		printk(KERN_ERR "No rocketport ports found; unloading driver\n");
++		ret = -ENXIO;
++		goto err_ttyu;
+ 	}
+ 
+ 	return 0;
++err_ttyu:
++	tty_unregister_driver(rocket_driver);
++err_tty:
++	put_tty_driver(rocket_driver);
++err:
++	return ret;
+ }
+ 
+ 
