@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXJOVIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXJOVNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbXJOVIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXJOVIi
+	id S1758997AbXJOVNA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbXJOVMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:08:38 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:65339 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752333AbXJOVIh (ORCPT
+	Mon, 15 Oct 2007 17:12:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:24259 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbXJOVMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:08:37 -0400
+	Mon, 15 Oct 2007 17:12:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XpICp1e4W1LXPwmt7YdHx1KVM3xaadaQ791YV7tuPPNw10ZHYoJbpI7yuwGpgMiWEDzAWnw+06TqmcpfkZ8OMbXc4G+j4J1iUFIX3STerhmxUAjxPGXK4cfeAn1I8oZIhX2kz0qBDUtBmzuaEWG0W+c1Nbj/0tdIiqkzXKPPLeM=
+Message-ID: <d120d5000710151412s5381353bx4ac07529e5da2bc0@mail.gmail.com>
+Date: Mon, 15 Oct 2007 17:12:48 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [git pull] Input updates for 2.6.24-rc0
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0710151341540.6887@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18195.54994.682714.474626@stoffel.org>
-Date: Mon, 15 Oct 2007 17:08:34 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: bamakhrama@gmail.com
-Cc: linux-smp@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Flynn's Original Paper about Computer Organization
-In-Reply-To: <40378e40710151152q5d96a51r88e8f27f69836d6c@mail.gmail.com>
-References: <40378e40710151152q5d96a51r88e8f27f69836d6c@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+References: <200710131614.35356.dmitry.torokhov@gmail.com>
+	 <d120d5000710151328k6f413b76i21809691d9a18fe8@mail.gmail.com>
+	 <alpine.LFD.0.999.0710151341540.6887@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/15/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Mon, 15 Oct 2007, Dmitry Torokhov wrote:
+> >
+> > *ping*
+>
+> Thanks, pulled and pushed out.
+>
+> Can you check that applesmc looks sane after the merge conflict? The
+> conflict itself looked pretty trivial, and it compiles for me, but I'd
+> still like somebody who knows those things to double-check..
+>
 
-Mohamed> I am looking for Michael Flynn original paper about computer
-Mohamed> organization in which Flynn devised the so-called "Flynn
-Mohamed> Taxonomy". I tried Google, IEEE Xplore, ACM, Yahoo but in
-Mohamed> vain. I would be very grateful if someone can post a scanned
-Mohamed> version of the manuscript.  Here is the citation as generated
-Mohamed> by the paper BibTeX entry in Google scholar:
+Yep, it looks good from here.
 
-Mohamed> Michael J. Flynn. Some Computer Organizations and Their
-Mohamed> Effectiveness. IEEE Transactions on Computers, 21(9):948{960,
-Mohamed> 1972.
+Thanks.
 
-Goto any large university library or computer science department, they
-should be able to find this for you.  This isn't an LKML issue.
-
-John
+-- 
+Dmitry
