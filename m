@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbXJOP4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbXJOP7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbXJOP4L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 11:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXJOPzz
+	id S1760653AbXJOP7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 11:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXJOP7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 11:55:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51221 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752714AbXJOPzy (ORCPT
+	Mon, 15 Oct 2007 11:59:33 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:59895 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400AbXJOP7c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 11:55:54 -0400
-Date: Mon, 15 Oct 2007 08:55:41 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: shemminger@linux.foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero
- in Cubic and BIC.
-Message-ID: <20071015085541.48ec63ae@freepuppy.rosehill>
-In-Reply-To: <20071015215949.50399c00.komurojun-mbn@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-	<20071014073658.d4352b8c.komurojun@nifty.com>
-	<20071014100245.914b784a.komurojun@nifty.com>
-	<20071014132851.8d6a9de3.komurojun@nifty.com>
-	<20071014135356.19754635.komurojun-mbn@nifty.com>
-	<20071015215949.50399c00.komurojun-mbn@nifty.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Oct 2007 11:59:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=jj015UZe4gT/xdxWv+EetdLjapqqm9TeN+7127ahHwMmsH98O5aCiGi+euAdCpzBdr8AtKNTu1nVHS2aTuQ2JfRtMbDdbtEk0TicnOoct/E5vsdh9oMpXj1HXLdtGYoWaD2oQ21WGKhOrhOlnIppiOX2JXmjP/15/KUfrkUhyGM=
+Message-ID: <47138E56.2040903@gmail.com>
+Date: Mon, 15 Oct 2007 11:59:18 -0400
+From: Florin Malita <fmalita@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070813)
+MIME-Version: 1.0
+To: mchehab@infradead.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] V4L: possible leak in em28xx_init_isoc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 21:59:49 +0900
-Komuro <komurojun-mbn@nifty.com> wrote:
+Coverity (CID 1929) spotted the following: if a transfer buffer 
+allocation fails, the last allocated urb is leaked (it hasn't been 
+stored in dev->urb[] yet so em28xx_uninit_isoc misses it). The patch 
+also includes a small typo fix.
 
-> Dear shemminger
-> 
-> >In which case it is zero because that is the default value.
-> 
-> The default value of snd_ssthresh is 0x7fffffff, isn't it?
-> 
-> [linux/net/ipv4/tcp_ipv4.c]
-> static int tcp_v4_init_sock(struct sock *sk)
-> ...
->         tp->snd_ssthresh = 0x7fffffff;  /* Infinity */
-> ...
-> 
-> Best Regards
-> Komuro
-> 
-> 
+Signed-off-by: Florin Malita <fmalita@gmail.com>
+---
 
-Yes that value means that TCP stays in slow start until the first loss.
-This makes TCP behave as expected in the RFC's.
+ drivers/media/video/em28xx/em28xx-core.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+diff --git a/drivers/media/video/em28xx/em28xx-core.c b/drivers/media/video/em28xx/em28xx-core.c
+index d3282ec..d56484f 100644
+--- a/drivers/media/video/em28xx/em28xx-core.c
++++ b/drivers/media/video/em28xx/em28xx-core.c
+@@ -648,7 +648,7 @@ void em28xx_uninit_isoc(struct em28xx *dev)
+  */
+ int em28xx_init_isoc(struct em28xx *dev)
+ {
+-	/* change interface to 3 which allowes the biggest packet sizes */
++	/* change interface to 3 which allows the biggest packet sizes */
+ 	int i, errCode;
+ 	const int sb_size = EM28XX_NUM_PACKETS * dev->max_pkt_size;
+ 
+@@ -673,6 +673,7 @@ int em28xx_init_isoc(struct em28xx *dev)
+ 					("unable to allocate %i bytes for transfer buffer %i\n",
+ 					 sb_size, i);
+ 			em28xx_uninit_isoc(dev);
++			usb_free_urb(urb);
+ 			return -ENOMEM;
+ 		}
+ 		memset(dev->transfer_buffer[i], 0, sb_size);
+
