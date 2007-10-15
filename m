@@ -1,81 +1,646 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXJOSjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934369AbXJOSkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934142AbXJOSjy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764756AbXJOSeh
+	id S934369AbXJOSkl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXJOSem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:34:37 -0400
-Received: from mail.windriver.com ([147.11.1.11]:47819 "EHLO mail.wrs.com"
+	Mon, 15 Oct 2007 14:34:42 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47874 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933909AbXJOSeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:34:10 -0400
-Message-ID: <4713B274.1030505@windriver.com>
-Date: Mon, 15 Oct 2007 13:33:24 -0500
+	id S933904AbXJOSeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:34:15 -0400
+Message-ID: <4713B278.7010502@windriver.com>
+Date: Mon, 15 Oct 2007 13:33:28 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: ak@suse.de
-Subject: [PATCH 11/21] KGDB: This adds a call to notify_die()
+Subject: [PATCH 12/21] KGDB: This adds support for the x86_64 architecture.
 Content-Type: multipart/mixed;
- boundary="------------010202050301090106030208"
-X-OriginalArrivalTime: 15 Oct 2007 18:34:07.0656 (UTC) FILETIME=[F88D1280:01C80F59]
+ boundary="------------040608080100000904080700"
+X-OriginalArrivalTime: 15 Oct 2007 18:34:11.0781 (UTC) FILETIME=[FB027F50:01C80F59]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------010202050301090106030208
+--------------040608080100000904080700
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
---------------010202050301090106030208
+--------------040608080100000904080700
 Content-Type: text/x-patch;
- name="x86_64-no_context_hook.patch"
+ name="x86_64-lite.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="x86_64-no_context_hook.patch"
+ filename="x86_64-lite.patch"
 
-x86_64-no_context_hook.patch
+x86_64-lite.patch
 
 From: Jason Wessel <jason.wessel@windriver.com>
 CC: ak@suse.de
-Subject: [PATCH] This adds a call to notify_die()
+Subject: [PATCH] This adds support for the x86_64 architecture.
 
-A call to notify_die is added in the "no context" portion of
-do_page_fault() as someone on the chain might care and want to do a
-fixup.
+An extra annotation is added to the switch_to in order to aid in stack
+tracing from gdb or other external hardware debuggers.
 
+Signed-off-by: Milind Dumbare <milind@linsyssoft.com>
 Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/x86/mm/fault_64.c      |    4 ++++
- include/asm-x86/kdebug_64.h |    1 +
- 2 files changed, 5 insertions(+)
+ arch/x86/kernel/Makefile_64   |    1 
+ arch/x86/kernel/kgdb-jmp_64.S |   65 +++++++
+ arch/x86/kernel/kgdb_64.c     |  384 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/traps_64.c    |    7 
+ arch/x86_64/Kconfig.debug     |    3 
+ include/asm-x86/kgdb_64.h     |   52 +++++
+ include/asm-x86/system_64.h   |    6 
+ lib/Kconfig.kgdb              |    1 
+ 8 files changed, 514 insertions(+), 5 deletions(-)
+ create mode 100644 arch/x86/kernel/kgdb-jmp.S
+ create mode 100644 arch/x86/kernel/kgdb.c
+ create mode 100644 include/asm-x86/kgdb.h
 
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -531,6 +531,10 @@ no_context:
- 	if (is_errata93(regs, address))
- 		return; 
+--- a/arch/x86_64/Kconfig.debug
++++ b/arch/x86_64/Kconfig.debug
+@@ -55,7 +55,4 @@ config DEBUG_STACK_USAGE
  
-+	if (notify_die(DIE_PAGE_FAULT_NO_CONTEXT, "no context", regs,
-+				error_code, 14, SIGSEGV) == NOTIFY_STOP)
+ 	  This option will slow down process creation somewhat.
+ 
+-#config X86_REMOTE_DEBUG
+-#       bool "kgdb debugging stub"
+-
+ endmenu
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -33,6 +33,7 @@ obj-$(CONFIG_IOMMU)		+= pci-gart_64.o ap
+ obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
+ obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes_64.o
++obj-$(CONFIG_KGDB)		+= kgdb_64.o kgdb-jmp_64.o
+ obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+ obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
+ obj-$(CONFIG_K8_NB)		+= k8.o
+--- /dev/null
++++ b/arch/x86/kernel/kgdb-jmp_64.S
+@@ -0,0 +1,65 @@
++/*
++ * arch/x86/kernel/kgdb-jmp.S
++ *
++ * Save and restore system registers so that within a limited frame we
++ * may have a fault and "jump back" to a known safe location.
++ *
++ * Author: Tom Rini <trini@kernel.crashing.org>
++ *
++ * Cribbed from glibc, which carries the following:
++ * Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
++ * Copyright (C) 2005 by MontaVista Software.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program as licensed "as is" without any warranty of
++ * any kind, whether express or implied.
++ */
++
++#include <linux/linkage.h>
++
++#define JB_RBX		0
++#define JB_RBP		1
++#define JB_R12		2
++#define JB_R13		3
++#define JB_R14		4
++#define JB_R15		5
++#define JB_RSP		6
++#define JB_PC		7
++
++	.code64
++
++/* This must be called prior to kgdb_fault_longjmp and
++ * kgdb_fault_longjmp must not be called outside of the context of the
++ * last call to kgdb_fault_setjmp.
++ */
++ENTRY(kgdb_fault_setjmp)
++	/* Save registers. */
++	movq %rbx, (JB_RBX*8)(%rdi)
++	movq %rbp, (JB_RBP*8)(%rdi)
++	movq %r12, (JB_R12*8)(%rdi)
++	movq %r13, (JB_R13*8)(%rdi)
++	movq %r14, (JB_R14*8)(%rdi)
++	movq %r15, (JB_R15*8)(%rdi)
++	leaq 8(%rsp), %rdx	/* Save SP as it will be after we return. */
++	movq %rdx, (JB_RSP*8)(%rdi)
++	movq (%rsp), %rax	/* Save PC we are returning to now. */
++	movq %rax, (JB_PC*8)(%rdi)
++	/* Set return value for setjmp. */
++	mov $0,%eax
++	movq (JB_PC*8)(%rdi),%rdx
++	movq (JB_RSP*8)(%rdi),%rsp
++	jmpq *%rdx
++
++ENTRY(kgdb_fault_longjmp)
++	/* Restore registers. */
++	movq (JB_RBX*8)(%rdi),%rbx
++	movq (JB_RBP*8)(%rdi),%rbp
++	movq (JB_R12*8)(%rdi),%r12
++	movq (JB_R13*8)(%rdi),%r13
++	movq (JB_R14*8)(%rdi),%r14
++	movq (JB_R15*8)(%rdi),%r15
++	/* Set return value for setjmp. */
++	movq (JB_PC*8)(%rdi),%rdx
++	movq (JB_RSP*8)(%rdi),%rsp
++	mov $1,%eax
++	jmpq *%rdx
+--- /dev/null
++++ b/arch/x86/kernel/kgdb_64.c
+@@ -0,0 +1,384 @@
++/*
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2, or (at your option) any
++ * later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ */
++
++/*
++ * Copyright (C) 2004 Amit S. Kale <amitkale@linsyssoft.com>
++ * Copyright (C) 2000-2001 VERITAS Software Corporation.
++ * Copyright (C) 2002 Andi Kleen, SuSE Labs
++ * Copyright (C) 2004 LinSysSoft Technologies Pvt. Ltd.
++ */
++/****************************************************************************
++ *  Contributor:     Lake Stevens Instrument Division$
++ *  Written by:      Glenn Engel $
++ *  Updated by:	     Amit Kale<akale@veritas.com>
++ *  Modified for 386 by Jim Kingdon, Cygnus Support.
++ *  Origianl kgdb, compatibility with 2.1.xx kernel by
++ *  David Grothe <dave@gcom.com>
++ *  Integrated into 2.2.5 kernel by Tigran Aivazian <tigran@sco.com>
++ *  X86_64 changes from Andi Kleen's patch merged by Jim Houston
++ */
++
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/smp.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <asm/system.h>
++#include <linux/ptrace.h>		/* for linux pt_regs struct */
++#include <linux/kgdb.h>
++#include <linux/init.h>
++#include <linux/kdebug.h>
++#include <asm/apicdef.h>
++#include <asm/mach_apic.h>
++#include <asm/debugreg.h>
++
++/* Put the error code here just in case the user cares.  */
++int gdb_x86_64errcode;
++/* Likewise, the vector number here (since GDB only gets the signal
++   number through the usual means, and that's not very specific).  */
++int gdb_x86_64vector = -1;
++
++void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	gdb_regs[_RAX] = regs->rax;
++	gdb_regs[_RBX] = regs->rbx;
++	gdb_regs[_RCX] = regs->rcx;
++	gdb_regs[_RDX] = regs->rdx;
++	gdb_regs[_RSI] = regs->rsi;
++	gdb_regs[_RDI] = regs->rdi;
++	gdb_regs[_RBP] = regs->rbp;
++	gdb_regs[_PS] = regs->eflags;
++	gdb_regs[_PC] = regs->rip;
++	gdb_regs[_R8] = regs->r8;
++	gdb_regs[_R9] = regs->r9;
++	gdb_regs[_R10] = regs->r10;
++	gdb_regs[_R11] = regs->r11;
++	gdb_regs[_R12] = regs->r12;
++	gdb_regs[_R13] = regs->r13;
++	gdb_regs[_R14] = regs->r14;
++	gdb_regs[_R15] = regs->r15;
++	gdb_regs[_RSP] = regs->rsp;
++}
++
++extern void thread_return(void);
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	gdb_regs[_RAX] = 0;
++	gdb_regs[_RBX] = 0;
++	gdb_regs[_RCX] = 0;
++	gdb_regs[_RDX] = 0;
++	gdb_regs[_RSI] = 0;
++	gdb_regs[_RDI] = 0;
++	gdb_regs[_RBP] = *(unsigned long *)p->thread.rsp;
++	gdb_regs[_PS] = *(unsigned long *)(p->thread.rsp + 8);
++	gdb_regs[_PC] = (unsigned long)&thread_return;
++	gdb_regs[_R8] = 0;
++	gdb_regs[_R9] = 0;
++	gdb_regs[_R10] = 0;
++	gdb_regs[_R11] = 0;
++	gdb_regs[_R12] = 0;
++	gdb_regs[_R13] = 0;
++	gdb_regs[_R14] = 0;
++	gdb_regs[_R15] = 0;
++	gdb_regs[_RSP] = p->thread.rsp;
++}
++
++void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	regs->rax = gdb_regs[_RAX];
++	regs->rbx = gdb_regs[_RBX];
++	regs->rcx = gdb_regs[_RCX];
++	regs->rdx = gdb_regs[_RDX];
++	regs->rsi = gdb_regs[_RSI];
++	regs->rdi = gdb_regs[_RDI];
++	regs->rbp = gdb_regs[_RBP];
++	regs->eflags = gdb_regs[_PS];
++	regs->rip = gdb_regs[_PC];
++	regs->r8 = gdb_regs[_R8];
++	regs->r9 = gdb_regs[_R9];
++	regs->r10 = gdb_regs[_R10];
++	regs->r11 = gdb_regs[_R11];
++	regs->r12 = gdb_regs[_R12];
++	regs->r13 = gdb_regs[_R13];
++	regs->r14 = gdb_regs[_R14];
++	regs->r15 = gdb_regs[_R15];
++}				/* gdb_regs_to_regs */
++
++struct hw_breakpoint {
++	unsigned enabled;
++	unsigned type;
++	unsigned len;
++	unsigned long addr;
++} breakinfo[4] = {
++	{enabled:0},
++	{enabled:0},
++	{enabled:0},
++	{enabled:0}
++};
++
++void kgdb_disable_hw_debug(struct pt_regs *regs)
++{
++	/* Disable hardware debugging while we are in kgdb */
++	asm volatile ("movq %0,%%db7": /* no output */ :"r" (0UL));
++}
++
++void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
++{
++	/* Master processor is completely in the debugger */
++	gdb_x86_64vector = e_vector;
++	gdb_x86_64errcode = err_code;
++}
++
++void kgdb_roundup_cpus(unsigned long flags)
++{
++	send_IPI_allbutself(APIC_DM_NMI);
++}
++
++int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
++			       char *remcomInBuffer, char *remcomOutBuffer,
++			       struct pt_regs *linux_regs)
++{
++	unsigned long addr;
++	unsigned long breakno;
++	char *ptr;
++	int newPC;
++	unsigned long dr6;
++
++	switch (remcomInBuffer[0]) {
++	case 'c':
++	case 's':
++		/* try to read optional parameter, pc unchanged if no parm */
++		ptr = &remcomInBuffer[1];
++		if (kgdb_hex2long(&ptr, &addr))
++			linux_regs->rip = addr;
++		newPC = linux_regs->rip;
++
++		/* clear the trace bit */
++		linux_regs->eflags &= ~TF_MASK;
++
++		atomic_set(&cpu_doing_single_step, -1);
++		/* set the trace bit if we're stepping */
++		if (remcomInBuffer[0] == 's') {
++			linux_regs->eflags |= TF_MASK;
++			debugger_step = 1;
++			if (kgdb_contthread)
++				atomic_set(&cpu_doing_single_step,
++					   raw_smp_processor_id());
++
++		}
++
++		asm volatile ("movq %%db6, %0\n":"=r" (dr6));
++		if (!(dr6 & 0x4000)) {
++			for (breakno = 0; breakno < 4; ++breakno) {
++				if (dr6 & (1 << breakno)) {
++					if (breakinfo[breakno].type == 0) {
++						/* Set restore flag */
++						linux_regs->eflags |=
++						    X86_EFLAGS_RF;
++						break;
++					}
++				}
++			}
++		}
++		asm volatile ("movq %0, %%db6\n"::"r" (0UL));
++
++		return 0;
++	}
++	/* this means that we do not want to exit from the handler */
++	return -1;
++}
++
++static struct pt_regs *in_interrupt_stack(unsigned long rsp, int cpu)
++{
++	struct pt_regs *regs = NULL;
++	unsigned long end = (unsigned long)cpu_pda(cpu)->irqstackptr;
++
++	if (rsp <= end && rsp >= end - IRQSTACKSIZE + 8)
++		regs = *(((struct pt_regs **)end) - 1);
++
++	return regs;
++}
++
++static struct pt_regs *in_exception_stack(unsigned long rsp, int cpu)
++{
++	struct tss_struct *init_tss = &__get_cpu_var(init_tss);
++	struct pt_regs *regs;
++	int i;
++
++	for (i = 0; i < N_EXCEPTION_STACKS; i++)
++		if (rsp >= init_tss[cpu].ist[i] &&
++		    rsp <= init_tss[cpu].ist[i] + EXCEPTION_STKSZ) {
++			regs = (void *) init_tss[cpu].ist[i] + EXCEPTION_STKSZ;
++			return regs - 1;
++		}
++
++	return NULL;
++}
++
++void kgdb_shadowinfo(struct pt_regs *regs, char *buffer, unsigned threadid)
++{
++	static char intr_desc[] = "Stack at interrupt entrypoint";
++	static char exc_desc[] = "Stack at exception entrypoint";
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		kgdb_mem2hex(intr_desc, buffer, strlen(intr_desc));
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			kgdb_mem2hex(exc_desc, buffer, strlen(exc_desc));
++	}
++}
++
++struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs, int threadid)
++{
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		return current;
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			return current;
++	}
++
++	return NULL;
++}
++
++struct pt_regs *kgdb_shadow_regs(struct pt_regs *regs, int threadid)
++{
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		return stregs;
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			return stregs;
++	}
++
++	return NULL;
++}
++
++static inline int single_step_cont(struct pt_regs *regs,
++			struct die_args *args)
++{
++	/* single step exception from kernel space to user space so
++	 * eat the exception and continue the process
++	 */
++	printk(KERN_ERR "KGDB: trap/step from kernel to user space,"
++			" resuming...\n");
++	kgdb_arch_handle_exception(args->trapnr, args->signr,
++			args->err, "c", "", regs);
++
++	return NOTIFY_STOP;
++}
++
++static int kgdb_notify(struct notifier_block *self, unsigned long cmd,
++		       void *ptr)
++{
++	struct die_args *args = ptr;
++	struct pt_regs *regs = args->regs;
++
++	switch (cmd) {
++	case DIE_NMI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMI_IPI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			if (kgdb_nmihook(raw_smp_processor_id(), regs))
++				return NOTIFY_DONE;
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMIWATCHDOG:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		/* Enter debugger */
++		break;
++	case DIE_DEBUG:
++		if (atomic_read(&cpu_doing_single_step) ==
++			raw_smp_processor_id() &&
++			user_mode(regs))
++			return single_step_cont(regs, args);
++		/* fall through */
++	default:
++		if (user_mode(regs))
++			return NOTIFY_DONE;
++	}
++
++	if (kgdb_may_fault) {
++		kgdb_fault_longjmp(kgdb_fault_jmp_regs);
++		return NOTIFY_STOP;
++	}
++
++	if (kgdb_handle_exception(args->trapnr, args->signr,
++		args->err, regs))
++		return NOTIFY_DONE;
++
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block kgdb_notifier = {
++	.notifier_call = kgdb_notify,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
++int kgdb_arch_init(void)
++{
++	register_die_notifier(&kgdb_notifier);
++	return 0;
++}
++
++/*
++ * Skip an int3 exception when it occurs after a breakpoint has been
++ * removed. Backtrack eip by 1 since the int3 would have caused it to
++ * increment by 1.
++ */
++
++int kgdb_skipexception(int exception, struct pt_regs *regs)
++{
++	if (exception == 3 && kgdb_isremovedbreak(regs->rip - 1)) {
++		regs->rip -= 1;
++		return 1;
++	}
++	return 0;
++}
++
++unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
++{
++	if (exception == 3)
++		return instruction_pointer(regs) - 1;
++	return instruction_pointer(regs);
++}
++
++struct kgdb_arch arch_kgdb_ops = {
++	.gdb_bpt_instr = {0xcc},
++	.flags = KGDB_HW_BREAKPOINT,
++	.shadowth = 1,
++};
+--- /dev/null
++++ b/include/asm-x86/kgdb_64.h
+@@ -0,0 +1,52 @@
++#ifdef __KERNEL__
++#ifndef _ASM_KGDB_H_
++#define _ASM_KGDB_H_
++
++/*
++ * Copyright (C) 2001-2004 Amit S. Kale
++ */
++
++#include <asm-generic/kgdb.h>
++
++/*
++ *  Note that this register image is in a different order than
++ *  the register image that Linux produces at interrupt time.
++ *
++ *  Linux's register image is defined by struct pt_regs in ptrace.h.
++ *  Just why GDB uses a different order is a historical mystery.
++ */
++#define _RAX	0
++#define _RDX	1
++#define _RCX	2
++#define _RBX	3
++#define _RSI	4
++#define _RDI	5
++#define _RBP	6
++#define _RSP	7
++#define _R8	8
++#define _R9	9
++#define _R10	10
++#define _R11	11
++#define _R12	12
++#define _R13	13
++#define _R14	14
++#define _R15	15
++#define _PC	16
++#define _PS	17
++
++/* Number of bytes of registers.  */
++#define NUMREGBYTES		((_PS+1)*8)
++#define NUMCRITREGBYTES		(8 * 8)		/* 8 registers. */
++
++#ifndef __ASSEMBLY__
++/* BUFMAX defines the maximum number of characters in inbound/outbound
++ * buffers at least NUMREGBYTES*2 are needed for register packets, and
++ * a longer buffer is needed to list all threads. */
++#define BUFMAX			1024
++#define BREAKPOINT()		asm("   int $3");
++#define CHECK_EXCEPTION_STACK() ((&__get_cpu_var(init_tss))[0].ist[0])
++#define BREAK_INSTR_SIZE	1
++#define CACHE_FLUSH_IS_SAFE	1
++#endif				/* !__ASSEMBLY__ */
++#endif				/* _ASM_KGDB_H_ */
++#endif				/* __KERNEL__ */
+--- a/include/asm-x86/system_64.h
++++ b/include/asm-x86/system_64.h
+@@ -22,7 +22,9 @@
+ 
+ /* Save restore flags to clear handle leaking NT */
+ #define switch_to(prev,next,last) \
+-	asm volatile(SAVE_CONTEXT						    \
++       asm volatile(".globl __switch_to_begin\n\t"			\
++		     "__switch_to_begin:\n\t"				\
++		     SAVE_CONTEXT					\
+ 		     "movq %%rsp,%P[threadrsp](%[prev])\n\t" /* save RSP */	  \
+ 		     "movq %P[threadrsp](%[next]),%%rsp\n\t" /* restore RSP */	  \
+ 		     "call __switch_to\n\t"					  \
+@@ -34,6 +36,8 @@
+ 		     "movq %%rax,%%rdi\n\t" 					  \
+ 		     "jc   ret_from_fork\n\t"					  \
+ 		     RESTORE_CONTEXT						    \
++		     "\n.globl __switch_to_end\n\t"			\
++		     "__switch_to_end:\n\t"				\
+ 		     : "=a" (last)					  	  \
+ 		     : [next] "S" (next), [prev] "D" (prev),			  \
+ 		       [threadrsp] "i" (offsetof(struct task_struct, thread.rsp)), \
+--- a/lib/Kconfig.kgdb
++++ b/lib/Kconfig.kgdb
+@@ -13,6 +13,7 @@ config UNWIND_INFO
+ config KGDB
+ 	bool "KGDB: kernel debugging with remote gdb"
+ 	select WANT_EXTRA_DEBUG_INFORMATION
++	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
+ 	depends on DEBUG_KERNEL && (X86 || MIPS || IA64 || PPC)
+ 	help
+ 	  If you say Y here, it will be possible to remotely debug the
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -546,8 +546,13 @@ void die(const char * str, struct pt_reg
+ 
+ void __kprobes die_nmi(char *str, struct pt_regs *regs, int do_panic)
+ {
+-	unsigned long flags = oops_begin();
++	unsigned long flags;
+ 
++	if (notify_die(DIE_NMIWATCHDOG, "nmi", regs, 0, 2, SIGINT)
++			== NOTIFY_STOP)
 +		return;
 +
- /*
-  * Oops. The kernel tried to access some bad page. We'll have to
-  * terminate things with extreme prejudice.
---- a/include/asm-x86/kdebug_64.h
-+++ b/include/asm-x86/kdebug_64.h
-@@ -23,6 +23,7 @@ enum die_val {
- 	DIE_CALL,
- 	DIE_NMI_IPI,
- 	DIE_PAGE_FAULT,
-+	DIE_PAGE_FAULT_NO_CONTEXT,
- };
- 
- extern void printk_address(unsigned long address);
++	flags = oops_begin();
+ 	/*
+ 	 * We are in trouble anyway, lets at least try
+ 	 * to get a message out.
 
---------------010202050301090106030208--
+--------------040608080100000904080700--
