@@ -1,162 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764925AbXJONV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764806AbXJONYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764925AbXJONV7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 09:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760373AbXJONVs
+	id S1764806AbXJONYf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 09:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760852AbXJONY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 09:21:48 -0400
-Received: from thunk.org ([69.25.196.29]:58584 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759795AbXJONVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 09:21:47 -0400
-Date: Mon, 15 Oct 2007 09:21:06 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Rob Landley <rob@landley.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015132106.GE21216@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Rob Landley <rob@landley.net>,
-	James Bottomley <James.Bottomley@steeleye.com>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-	Suparna Bhattacharya <suparna@in.ibm.com>,
-	Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015014503.GF9715@thunk.org> <200710150304.00901.rob@landley.net>
+	Mon, 15 Oct 2007 09:24:27 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:22262 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757815AbXJONYZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 09:24:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uYpsdSVsI0y1qMJNbNmPDiCnw0jzbZ9qqZKtyqyXDlJs1HXyGGtfUuukn6/FApLA03vkjJuuzWzMmjYYzkbxrd6nJpvLodxEWidMQiJOJBYKjzSehwwYe4C3aB8m4FSKgZhiDPYYAcLivLIwBdIDDgtMzXfFdfZmDCo4i3D7NwE=
+Message-ID: <d120d5000710150624p25a87bb0k19e21b8bec914be2@mail.gmail.com>
+Date: Mon, 15 Oct 2007 09:24:23 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: [patch 1/8] m68k: Atari input drivers cleanup
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       "Michael Schmitz" <schmitz@biophys.uni-duesseldorf.de>
+In-Reply-To: <20071013123412.197946192@mail.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200710150304.00901.rob@landley.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <20071013123123.085686856@mail.of.borg>
+	 <20071013123412.197946192@mail.of.borg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 03:04:00AM -0500, Rob Landley wrote:
-> Ok, I'll bite.  If it's all "real" scsi, why does ioctl(SG_EMULATED_HOST) 
-> exist? exist if it's all "real" scsi?
+Hi Geert,
 
-SG_EMULATED_HOST was added before Linux 2.4, at least six or seven
-years ago.  Back then the migration of ATA devices through the various
-versions the ATAPI specification and then into SATA was very early in
-its evolution, and back then, yes there were people who considered
-anything that didn't use the honking huge parallel SCSI cables not
-"real" SCSI.  Over time, that distinction at both the physical
-connector level and logical level has declined to the point of almost
-non-existence.  It's note quite at the point where SAS exists only to
-justify massive prices differences between commodity and "data-center
-grade" disks to the benefit of hard drive manufacturers, but it's
-darned close.  (There are differences such as voltage levels so that
-the max cable differences for SAS are larger, etc., but those could
-have been optional additions to the SATA spec, and allegedly SAS
-drives are supposedly manufactered to be more robust --- although some
-recent papers published at FAST have raised some interesting questions
-about how true those marketing claims really are in practice.)
+On 10/13/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> m68k: Atari input drivers cleanup:
+>  - memleak on failed init/register of input devices fixed
+>  - correct keycodes table (Atari keycodes are almost, but not entirely, equal
+>    to Linux keycodes).
+>
+> Signed-off-by: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> > just 
-> > as Ethernet and PPP interfaces really are fundamentally the same
-> > thing.
-> 
-> They're the same thing?
-> 
-> Do you mean that on a system with both, going:
->   ifconfig eth1 66.92.53.140
->   ifconfig ppp 192.168.0.42
-> 
-> Would be functionally equivalent to:
->   ifconfig eth1 192.168.0.42
->   ifconfig ppp 66.92.53.140
+Looks much better, thank you.
 
-No, of course not.  But we don't have separate IP stacks for ethernet
-and ppp devices.  And how we connect to a host via ssh makes no
-difference whether we accessed it via Ethernet or PPP.  And I would
-argue that how we address a filesystem should also make no difference
-depending on the path to hard drive.
+>
+> -       input_register_device(atakbd_dev);
+> +       /* error check */
+> +       if (input_register_device(atakbd_dev)) {
+> +               input_free_device(atakbd_dev);
+> +               return -ENOMEM;
+> +       }
+>
 
-> By the way, ethernet cards contain a unique MAC address.  Hard
-> drives do not seem to, or if they do it's not being consistently
-> exposed in a way I can find.
+I'd be more happy if we returned real error reported by
+input_register_device() instead of substituting it with -ENOMEM.
 
-You can pull a Model and Serial number via hdparm -i, but it's not as
-easy to manipulate as a fixed-length MAC address.  That's why people
-tend to use filesystem UUID's.   
-
-> > More to the point, with SATA, hot plugging has been designed in, so
-> > probing order is not going to be well defined,
-> 
-> The spec may define the capability to hotplug, but your average
-> laptop doesn't not offer the capability to hotplug anything into its
-> SATA controllers.  The hard drive is screwed in (due to the
-> portability part of laptopness), all the controllers wired onto the
-> motherboard are accounted for, none are exposed externally.  What
-> _is_ exposed externally is USB, and if you want to add an extra hard
-> drive you can buy a cheap USB one at Fry's.
-
-That may be true for laptops today, but Linux doesn't run just on
-servers.  You can easily get home servers with hot-swap SATA bays.  My
-home fileserver, which is a white box I purchased on my own nickel,
-NOT IBM big iron, has 3TB of raw storage for less than $10,000 a year
-ago.  Today, that amount of home storage with hot-swap SATA drives and
-a battery-backed hardware RAID controller could probably be purchased
-for about half that price. 
-
-And even for laptops, if you need the performance, you can get Cardbus
-cards that will allow you to connect eSATA drives to your laptop at
-Fry's.
-
-So even if you ignore "big data center" interconnects like FC, this
-problem exists even for commodity grade SATA devices.
-
-I agree at the moment we have an issue where if the root device isn't
-guaranteed, it forces people to use initrd's, and the quality and
-debuggability of initrd's between distro's is highly variable and not
-standardized.  In practice though the /dev/sda is actually pretty
-stable on laptops, especially if you end up compiling ehci and uhci
-support as modules (which is a good idea from a power savings point of
-view anyway).  The reason why Ubuntu and other distributions are using
-UUID-based labels is not just because of the root device, but also for
-all of the other disks that might be mounted on the system, including
-some that might be using USB devices that don't have stable /dev
-names. 
-
-> It's necessary for IBM big iron to do this.  It's generally not
-> necessary for laptops or embedded systems to do this if they
-> distinguish between _types_ of devices, which is something they
-> until recently did for the types of devices I was interested in, and
-> something they _stopped_ doing when everything got merged into the
-> scsi layer, and I consider this a regression.
-
-As another example, it's easy to see a home media server running Linux
-which doesn't have any expansion bays for additional hard drive --- so
-the only way a user could expand their storage is by using one or more
-permanently connected USB disks.  So we do need to solve the general
-device enumeration problem in the general case; it's not just the case
-of IBM "big iron" as you seem to think.
-
-> No, distinguishing between types of devices is not a perfect
-> solution to device enumeration, but it was sufficient for all my use
-> cases for many years, and would still be if the kernel still did it,
-> and I'm not alone here.
-
-News flash!  The kernel wasn't built just for you, and over time, more
-and more people will have multiple disk drives of the same type, so we
-will need to solve the device naming problem sooner or later.  Why not
-solve it sooner, especially given that a number of companies (not just
-IBM) are funding the organization that is paying *your* salary are
-interested in solving the general case?  
-
-Furthermore, I've already pointed a number of situations where the
-home user might have multiple USB devices on their system today, and
-that is probably going to go up over time, not down.  Have you seen
-how cheap 500GB USB disks are at Costco?  And for a typical
-unsophisticated user, plugging in another 500G USB disk when they need
-more storage is a lot easier than cracking open the computer case and
-futzing with screws and disk cables and power connectors.
-
-		     	    	     	    - Ted
+-- 
+Dmitry
