@@ -1,47 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbXJNXq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXJOACX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbXJNXq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 19:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764052AbXJNXqD
+	id S1764226AbXJOACX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 20:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760101AbXJOACP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 19:46:03 -0400
-Received: from ozlabs.org ([203.10.76.45]:58130 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763715AbXJNXqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 19:46:00 -0400
-Date: Sun, 14 Oct 2007 18:42:43 -0500
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: NO_HZ and cpu monitoring tools
-Message-ID: <20071014234242.GB24519@kryten>
+	Sun, 14 Oct 2007 20:02:15 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:22774 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759939AbXJOACO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 20:02:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=lEUDLx2oaPtAyl9Q9U99bF/z3x7A85AvYhoh/jRmQaWGJP08LLGIHtVAdDwBY0J4Svc3khdQhVrvEiqivJbDPqV67VwxbJ1ae9lAv+RWOv6uBZZVCnswHBuuELJ2eiFNutN4gM75SRW4HNJ07NH062RhZic3Vl3z2vcb+qsbU1g=
+Message-ID: <71b295590710141702r48be29f3s9308ab7dd8f7363c@mail.gmail.com>
+Date: Sun, 14 Oct 2007 19:02:12 -0500
+From: "Mark Weber" <crash@treysoft.com>
+Reply-To: crash@treysoft.com
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: hdparm standby timeout not working for WD raptors?
+Cc: "Bart Samwel" <bart@samwel.tk>, linux-kernel@vger.kernel.org
+In-Reply-To: <4712A904.9010304@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <71b295590710061011g3cd43317i8eff3a7dce2a188@mail.gmail.com>
+	 <470E7B90.5060203@rtr.ca>
+	 <71b295590710112207v72b9eb8aqc19e59c610f20dd@mail.gmail.com>
+	 <470F7705.3@rtr.ca>
+	 <71b295590710121519i55d3471fha16210e698094bec@mail.gmail.com>
+	 <47120D65.3080008@samwel.tk>
+	 <71b295590710141330g7a4779e5q2d6b8f50387ee971@mail.gmail.com>
+	 <471284A7.1060800@samwel.tk>
+	 <71b295590710141505x54ca0a8fwebfd75ab4fdf2e71@mail.gmail.com>
+	 <4712A904.9010304@rtr.ca>
+X-Google-Sender-Auth: 31a148ec57a50eb4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/14/07, Mark Lord <lkml@rtr.ca> wrote:
+> 1. How are you forcing the drives into standby?
 
-Hi,
+hdparm -y
 
-When using a NO_HZ kernel on ppc64, I noticed top gives some interesting
-results:
 
-Cpu0  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu4  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu5  :  1.1%us,  0.0%sy,  0.0%ni, 98.9%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu6  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-Cpu7  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
 
-Notice how only 2 cpus report idle time. Im guessing this happens if 
-a core sleeps for longer than the update period in top. Where should
-this be fixed?
+> 2. Have you reproduced this with a stock kernel.org kernel yet?
 
-It would be possible for the proc read method to add in the right number
-of idle jiffies, or top could just assume no increment means 100% idle.
+No; maybe later this week.
 
-Anton
+
+
+> One possibility is that these drives may be the kind that
+> generate a "spurious" interrupt when they spin-down via the timer,
+> and perhaps libata is "processing" that interrupt and sending
+> additional command(s) that then wake the drive up again immediately.
+>
+> To rule this out, you could try using drivers/ide for a moment or two,
+> and see if the same problem persists with those drives.
+>
+> You could also try dumping /proc/interrupts in conjunction with "hdparm -S1",
+> and we can compare that with a "known good" system.
+>
+> Something like this:
+>
+> hdparm -B255 /dev/sda
+> hdparm -S1 /dev/sda
+> cat /proc/interrupts
+> sleep 6
+> cat /proc/interrupts
+
+
+
+
+Here's the log for the second suggestion:
+
+
+
+narf ~ # hdparm -B255 /dev/sda
+
+/dev/sda:
+ setting Advanced Power Management level to disabled
+ HDIO_DRIVE_CMD failed: Input/output error
+
+narf ~ # hdparm -S1 /dev/sda
+
+/dev/sda:
+ setting standby to 1 (5 seconds)
+narf ~ # cat /proc/interrupts
+           CPU0
+  0:       2268   IO-APIC-edge      timer
+  1:          2   IO-APIC-edge      i8042
+  8:          5   IO-APIC-edge      rtc
+  9:          0   IO-APIC-fasteoi   acpi
+ 12:          4   IO-APIC-edge      i8042
+ 14:     206827   IO-APIC-edge      ide0
+ 16:     350813   IO-APIC-fasteoi   sata_promise, uhci_hcd:usb5
+ 17:   39596029   IO-APIC-fasteoi   eth0
+ 18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 19:     728947   IO-APIC-fasteoi   libata, uhci_hcd:usb3
+ 20:          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+NMI:          0
+LOC:    2736793
+ERR:          0
+MIS:          0
+narf ~ # sleep 6
+narf ~ # cat /proc/interrupts
+           CPU0
+  0:       2268   IO-APIC-edge      timer
+  1:          2   IO-APIC-edge      i8042
+  8:          5   IO-APIC-edge      rtc
+  9:          0   IO-APIC-fasteoi   acpi
+ 12:          4   IO-APIC-edge      i8042
+ 14:     206828   IO-APIC-edge      ide0
+ 16:     350813   IO-APIC-fasteoi   sata_promise, uhci_hcd:usb5
+ 17:   39596069   IO-APIC-fasteoi   eth0
+ 18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 19:     728947   IO-APIC-fasteoi   libata, uhci_hcd:usb3
+ 20:          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+NMI:          0
+LOC:    2736881
+ERR:          0
+MIS:          0
