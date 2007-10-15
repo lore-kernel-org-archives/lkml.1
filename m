@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765730AbXJOSmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbXJOSn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765730AbXJOSmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933950AbXJOSes
+	id S934704AbXJOSn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbXJOSet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:34:48 -0400
-Received: from mail.windriver.com ([147.11.1.11]:47931 "EHLO mail.wrs.com"
+	Mon, 15 Oct 2007 14:34:49 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47940 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933935AbXJOSee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:34:34 -0400
-Message-ID: <4713B28C.3030905@windriver.com>
-Date: Mon, 15 Oct 2007 13:33:48 -0500
+	id S933482AbXJOSek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:34:40 -0400
+Message-ID: <4713B290.9060309@windriver.com>
+Date: Mon, 15 Oct 2007 13:33:52 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: ak@suse.de
-Subject: [PATCH 17/21] KGDB: This adds hardware breakpoint support for i386.
+Subject: [PATCH 18/21] KGDB: This adds hardware breakpoint support for x86_64.
 Content-Type: multipart/mixed;
- boundary="------------070200000602030509060106"
-X-OriginalArrivalTime: 15 Oct 2007 18:34:31.0985 (UTC) FILETIME=[070D6210:01C80F5A]
+ boundary="------------030800050607060402000007"
+X-OriginalArrivalTime: 15 Oct 2007 18:34:36.0032 (UTC) FILETIME=[0976E800:01C80F5A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070200000602030509060106
+--------------030800050607060402000007
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
---------------070200000602030509060106
+--------------030800050607060402000007
 Content-Type: text/x-patch;
- name="i386-hw_breakpoints.patch"
+ name="x86_64-hw_breakpoints.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="i386-hw_breakpoints.patch"
+ filename="x86_64-hw_breakpoints.patch"
 
-i386-hw_breakpoints.patch
+x86_64-hw_breakpoints.patch
 
 From: Jason Wessel <jason.wessel@windriver.com>
 CC: ak@suse.de
-Subject: [PATCH] This adds hardware breakpoint support for i386.
+Subject: [PATCH] This adds hardware breakpoint support for x86_64.
 
-This is the minimal set of routines support hw breakpoints on the x86
-arch.  It has the known limitation that the system boot will wipe out
-the hw breakpoints at cpu_init time and any user space hw breakpoints
-will wipe out the kernel breakpoints.
+This is the minimal set of routines support hw breakpoints on the
+x86_64 arch.  It has the known limitation that the system boot will
+wipe out the hw breakpoints at cpu_init time and any user space hw
+breakpoints will wipe out the kernel breakpoints.
 
 In the future this implementation could change such that the the
 kernel space may have its own context to swap in for hw breakpoints.
@@ -56,30 +56,40 @@ Signed-off-by: Milind Dumbare <milind@linsyssoft.com>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
- arch/x86/kernel/kgdb_32.c |  128 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 121 insertions(+), 7 deletions(-)
+ arch/x86/kernel/kgdb_64.c |  145 ++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 128 insertions(+), 17 deletions(-)
 ---
 
---- a/arch/x86/kernel/kgdb_32.c
-+++ b/arch/x86/kernel/kgdb_32.c
-@@ -14,12 +14,15 @@
- 
- /*
+--- a/arch/x86/kernel/kgdb_64.c
++++ b/arch/x86/kernel/kgdb_64.c
+@@ -17,6 +17,8 @@
   * Copyright (C) 2000-2001 VERITAS Software Corporation.
-+ * Copyright (C) 2007 Wind River Systems, Inc.
+  * Copyright (C) 2002 Andi Kleen, SuSE Labs
+  * Copyright (C) 2004 LinSysSoft Technologies Pvt. Ltd.
++ * Copyright (C) 2007 Jason Wessel, Wind River Systems, Inc.
 + * Copyright (C) 2007 MontaVista Software, Inc.
   */
- /*
+ /****************************************************************************
   *  Contributor:     Lake Stevens Instrument Division$
-  *  Written by:      Glenn Engel $
-  *  Updated by:	     Amit Kale<akale@veritas.com>
-  *  Updated by:	     Tom Rini <trini@kernel.crashing.org>
-+ *  Updated by:	     Jason Wessel <jason.wessel@windriver.com>
-  *  Modified for 386 by Jim Kingdon, Cygnus Support.
-  *  Origianl kgdb, compatibility with 2.1.xx kernel by
-  *  David Grothe <dave@gcom.com>
-@@ -124,10 +127,115 @@ static struct hw_breakpoint {
- 	{ .enabled = 0 },
+@@ -116,22 +118,127 @@ void gdb_regs_to_regs(unsigned long *gdb
+ 	regs->r15 = gdb_regs[_R15];
+ }				/* gdb_regs_to_regs */
+ 
+-struct hw_breakpoint {
++static struct hw_breakpoint {
+ 	unsigned enabled;
+ 	unsigned type;
+ 	unsigned len;
+ 	unsigned long addr;
+ } breakinfo[4] = {
+-	{enabled:0},
+-	{enabled:0},
+-	{enabled:0},
+-	{enabled:0}
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
  };
  
 +static void kgdb_correct_hw_break(void)
@@ -190,51 +200,68 @@ Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
  void kgdb_disable_hw_debug(struct pt_regs *regs)
  {
  	/* Disable hardware debugging while we are in kgdb */
--	asm volatile ("movl %0,%%db7": /* no output */ :"r" (0));
-+	set_debugreg(0, 7);
+-	asm volatile ("movq %0,%%db7": /* no output */ :"r" (0UL));
++	set_debugreg(0UL, 7);
  }
  
  void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
-@@ -172,12 +280,12 @@ int kgdb_arch_handle_exception(int e_vec
+@@ -151,7 +258,6 @@ int kgdb_arch_handle_exception(int e_vec
+ 			       struct pt_regs *linux_regs)
+ {
+ 	unsigned long addr;
+-	unsigned long breakno;
+ 	char *ptr;
+ 	int newPC;
+ 	unsigned long dr6;
+@@ -167,8 +273,8 @@ int kgdb_arch_handle_exception(int e_vec
+ 
+ 		/* clear the trace bit */
+ 		linux_regs->eflags &= ~TF_MASK;
+-
+ 		atomic_set(&cpu_doing_single_step, -1);
++
+ 		/* set the trace bit if we're stepping */
+ 		if (remcomInBuffer[0] == 's') {
  			linux_regs->eflags |= TF_MASK;
- 			debugger_step = 1;
- 			atomic_set(&cpu_doing_single_step,
--			raw_smp_processor_id());
-+				   raw_smp_processor_id());
+@@ -179,20 +285,21 @@ int kgdb_arch_handle_exception(int e_vec
+ 
  		}
  
--		asm volatile ("movl %%db6, %0\n":"=r" (dr6));
+-		asm volatile ("movq %%db6, %0\n":"=r" (dr6));
 +		get_debugreg(dr6, 6);
  		if (!(dr6 & 0x4000)) {
--			long breakno;
 +			int breakno;
++
  			for (breakno = 0; breakno < 4; ++breakno) {
- 				if (dr6 & (1 << breakno) &&
- 				    breakinfo[breakno].type == 0) {
-@@ -187,10 +295,11 @@ int kgdb_arch_handle_exception(int e_vec
+-				if (dr6 & (1 << breakno)) {
+-					if (breakinfo[breakno].type == 0) {
+-						/* Set restore flag */
+-						linux_regs->eflags |=
+-						    X86_EFLAGS_RF;
+-						break;
+-					}
++				if (dr6 & (1 << breakno) &&
++				    breakinfo[breakno].type == 0) {
++					/* Set restore flag */
++					linux_regs->eflags |= X86_EFLAGS_RF;
++					break;
  				}
  			}
  		}
--		asm volatile ("movl %0, %%db6\n"::"r" (0));
-+		set_debugreg(0, 6);
+-		asm volatile ("movq %0, %%db6\n"::"r" (0UL));
++		set_debugreg(0UL, 6);
 +		kgdb_correct_hw_break();
  
--		return (0);
--	}			/* switch */
-+		return 0;
-+	}
- 	/* this means that we do not want to exit from the handler */
- 	return -1;
- }
-@@ -297,4 +406,9 @@ unsigned long kgdb_arch_pc(int exception
- 
- struct kgdb_arch arch_kgdb_ops = {
+ 		return 0;
+ 	}
+@@ -381,4 +488,8 @@ struct kgdb_arch arch_kgdb_ops = {
  	.gdb_bpt_instr = {0xcc},
-+	.flags = KGDB_HW_BREAKPOINT,
+ 	.flags = KGDB_HW_BREAKPOINT,
+ 	.shadowth = 1,
 +	.set_hw_breakpoint = kgdb_set_hw_break,
 +	.remove_hw_breakpoint = kgdb_remove_hw_break,
 +	.remove_all_hw_break = kgdb_remove_all_hw_break,
 +	.correct_hw_break = kgdb_correct_hw_break,
  };
 
---------------070200000602030509060106--
+--------------030800050607060402000007--
