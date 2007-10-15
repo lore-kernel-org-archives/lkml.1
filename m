@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXJOPCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbXJOPEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759789AbXJOPCs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 11:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXJOPCk
+	id S1762240AbXJOPEd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 11:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXJOPEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 11:02:40 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:57213 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752143AbXJOPCj (ORCPT
+	Mon, 15 Oct 2007 11:04:24 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:60808 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754341AbXJOPEX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 11:02:39 -0400
-Date: Mon, 15 Oct 2007 17:02:37 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] arch/i386/kernel/smpboot.c:setup_trampoline() must be __cpuinit
-Message-ID: <20071015150237.GA19610@janus>
-References: <20070709184200.GA2496@janus> <20070709194540.GJ3492@stusta.de> <20070709194853.GA3601@janus> <20070710000552.GM3492@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070710000552.GM3492@stusta.de>
-User-Agent: Mutt/1.4.1i
+	Mon, 15 Oct 2007 11:04:23 -0400
+Message-ID: <4713815A.3020300@lwfinger.net>
+Date: Mon, 15 Oct 2007 10:03:54 -0500
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, mb@bu3sch.de,
+       John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [-mm Patch] drivers/net/wireless/b43legacy/main.c: initialize
+ the	correct return value
+References: <20071014175142.GN4211@stusta.de> <20071015115936.GP2444@hacking>
+In-Reply-To: <20071015115936.GP2444@hacking>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 02:05:52AM +0200, Adrian Bunk wrote:
-> This patch fixes the following section mismatch reported by
-> Frank van Maarseveen:
+WANG Cong wrote:
+> Initialize "err" in drivers/net/wireless/b43legacy/main.c::b43legacy_start()
+> in case of returning an uninitialized value.
 > 
-> <--  snip  -->
-> 
-> ...
->   MODPOST vmlinux
-> WARNING: arch/i386/kernel/built-in.o(.text+0xf201): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
-> WARNING: arch/i386/kernel/built-in.o(.text+0xf207): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-> WARNING: arch/i386/kernel/built-in.o(.text+0xf21a): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-> ...
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> From: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 > 
 > ---
+>  drivers/net/wireless/b43/main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> @stable:
-> Harmless but annoying warnings present when building an i386 SMP kernel 
-> with CONFIG_HOTPLUG_CPU=n and gcc < 4.0 .
-> 
-> --- linux-2.6.22-rc6-mm1/arch/i386/kernel/smpboot.c.old	2007-07-10 01:26:07.000000000 +0200
-> +++ linux-2.6.22-rc6-mm1/arch/i386/kernel/smpboot.c	2007-07-10 01:26:18.000000000 +0200
-> @@ -117,7 +117,7 @@
->   * has made sure it's suitably aligned.
->   */
+> Index: linux-2.6.23-mm1/drivers/net/wireless/b43legacy/main.c
+> ===================================================================
+> --- linux-2.6.23-mm1.orig/drivers/net/wireless/b43legacy/main.c
+> +++ linux-2.6.23-mm1/drivers/net/wireless/b43legacy/main.c
+> @@ -3306,7 +3306,7 @@ static int b43legacy_start(struct ieee80
+>  	struct b43legacy_wl *wl = hw_to_b43legacy_wl(hw);
+>  	struct b43legacy_wldev *dev = wl->current_dev;
+>  	int did_init = 0;
+> -	int err;
+> +	int err = 0;
 >  
-> -static unsigned long __devinit setup_trampoline(void)
-> +static unsigned long __cpuinit setup_trampoline(void)
->  {
->  	memcpy(trampoline_base, trampoline_data, trampoline_end - trampoline_data);
->  	return virt_to_phys(trampoline_base);
-> 
+>  	mutex_lock(&wl->mutex);
 
-This one hasn't been merged yet.
+I sent the equivalent patch to John Linville yesterday.
 
--- 
-Frank
+Larry
+
