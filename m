@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764301AbXJOMDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbXJOMHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764301AbXJOMDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 08:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbXJOMDH
+	id S1763703AbXJOMHs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 08:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbXJOMHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 08:03:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:7264 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757559AbXJOMDF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 08:03:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=oxoZI7Pbyudvj4j4fNMy+72BV47Tcz9hcdQ+53znD94c8uQ6Mdl50br2KN9VMsAUIU+aOEPqbvE050pQxtsCLZGUaZ35wIHJoU+G/U2BNUL0x0gOaz2ccgyBaqSqqsUJYRfMzovZncyHXBUpiqTHKkl9br9mqLO6fa88miVUqY8=
-Date: Mon, 15 Oct 2007 19:59:36 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: mb@bu3sch.de, st3@riseup.net, Larry.Finger@lwfinger.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: [-mm Patch] drivers/net/wireless/b43legacy/main.c: initialize the
-	correct return value
-Message-ID: <20071015115936.GP2444@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20071014175142.GN4211@stusta.de>
+	Mon, 15 Oct 2007 08:07:40 -0400
+Received: from il.qumranet.com ([82.166.9.18]:59522 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754894AbXJOMHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 08:07:40 -0400
+Message-ID: <471357E4.90904@qumranet.com>
+Date: Mon, 15 Oct 2007 14:07:00 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071014175142.GN4211@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time	accounting.
+References: <46E550EF.5080209@bull.net> <20071015093800.GA22818@elte.hu> <47133732.2090809@qumranet.com> <20071015095125.GB28367@elte.hu> <47133ABD.8050608@qumranet.com> <471346B0.8050102@bull.net> <47134BCE.1080306@qumranet.com> <4713510D.2050208@bull.net>
+In-Reply-To: <4713510D.2050208@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Laurent Vivier wrote:
 
-Initialize "err" in drivers/net/wireless/b43legacy/main.c::b43legacy_start()
-in case of returning an uninitialized value.
+  
 
-From: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+>> But if we didn't get an interrupt in that time?
+>>
+>> We can clear it a bit later, after local_irq_enable() in __vcpu_run(). 
+>> However we need a nop instruction first because "sti" keeps interrupts
+>> disabled for one more instruction.
+>>     
+>
+> IMHO, I think it is better to let kvm_guest_exit() empty (you can remove it, if
+> you want):
+>
+> 1st case:
+> - unset PF_VCPU in kvm_guest_exit(), all the tick is always for system time.
+> Guest time is always 0.
+>
+> 1st case and half:
+>
+> - like 1st case but we move kvm_guest_exit() as you propose and the reason of
+> the interrupt is the tick interrupt. The tick is for guest time only. I think
+> the probability is very low.
+>   
 
----
- drivers/net/wireless/b43/main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If the guest is executing for 10% of the time, the probability is 
+exactly 10%, no?
 
-Index: linux-2.6.23-mm1/drivers/net/wireless/b43legacy/main.c
-===================================================================
---- linux-2.6.23-mm1.orig/drivers/net/wireless/b43legacy/main.c
-+++ linux-2.6.23-mm1/drivers/net/wireless/b43legacy/main.c
-@@ -3306,7 +3306,7 @@ static int b43legacy_start(struct ieee80
- 	struct b43legacy_wl *wl = hw_to_b43legacy_wl(hw);
- 	struct b43legacy_wldev *dev = wl->current_dev;
- 	int did_init = 0;
--	int err;
-+	int err = 0;
- 
- 	mutex_lock(&wl->mutex);
- 
+> 2nd case:
+> - don't unset PF_VCPU in kvm_guest_exit(), all the tick is for guest time.
+>   
+
+But then even execution in ->handle_exit() is accounted as guest time, 
+which is wrong.
+
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
