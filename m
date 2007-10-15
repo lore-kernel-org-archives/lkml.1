@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764639AbXJOGzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764541AbXJOG5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764639AbXJOGzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 02:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbXJOGy5
+	id S1764541AbXJOG5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 02:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbXJOG5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 02:54:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:26590 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755591AbXJOGy4 (ORCPT
+	Mon, 15 Oct 2007 02:57:30 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:19836 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbXJOG53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 02:54:56 -0400
+	Mon, 15 Oct 2007 02:57:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=OdQRvTf9URpw+JOGeGseqAp4UqGS6TQrTMc3tGSf0mlYWwknIUg4R5FR+XpChVvfLwBupRPVYA6e7GmS61B433C3DS9Uwi8MeBT3f4lcyxtVcE81l4eQazI9sTAtMYZp/nj14ZgscimwC5FSjjGPGsR0u1oTyLdz0q8epbPfyvk=
-Message-ID: <35f686220710142354k66e1b9acwf65864b138ffd26@mail.gmail.com>
-Date: Mon, 15 Oct 2007 12:24:55 +0530
-From: "Alok kataria" <alokkataria1@gmail.com>
-To: "Andi Kleen" <ak@suse.de>, hugh@veritas.com
-Subject: ARCH_FREE_PTE_NR 5350 on x86_64
-Cc: linux-kernel@vger.kernel.org
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=a+191evNdEOuuoM1MYFaPFx1iSm/blIlVT2/wgD2aQDTZwQtioY1Rwl09jxCDyNpIe4SJVat8aqXojDRznTeuEepbMmpZF7VbCOoZuEV9wnOdu6xe6kDIZH/YkCO24StYvqrirbc/6OHI+rL5CwYhPCG3zVYHn39DM/kH0L5pPM=
+Message-ID: <47130EA1.6000300@gmail.com>
+Date: Mon, 15 Oct 2007 08:54:25 +0200
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Michael Kerrisk <mtk-manpages@gmx.net>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>, geoff@gclare.org.uk,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: Revised signalfd man-page
+References: <46FB9FB9.8080201@gmx.net> <Pine.LNX.4.64.0709271000420.763@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0709271000420.763@alien.or.mcafeemobile.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Davide,
 
-Looking at the tlb_flush code path and its co-relation with
-ARCH_FREE_PTE_NR, on x86-64 architecture. I think we still don't use
-the ARCH_FREE_PTE_NR of 5350 as the caching value for the mmu_gathers
-structure, instead fallback to using 506 due to some typo errors in
-the code.
+There were two questions that you overlooked in my earlier draft of the
+signalfd man page.  I've revised one of the questions slightly.  Could you
+look at these please:
 
-Found this link in the archives.
+.SS execve(2) semantics
+[TO BE COMPLETED]
+.\" FIXME
+.\" Davide, what are the intended semantics after an execve()?
+.\" I would hope that the descriptor remains available, and can
+.\" be used to read any queued signals.  This is analogous with
+.\" traditional behavior, where blocked signals that are pending
+.\" prior to an execve() remain pending after the execve().
+.\"
+.\" Below, was my original question, based on how things
+.\" worked at one point, but perhaps they have changed by now:
+.\"===
+.\" As far as I can work out, after an execve() the file descriptor
+.\" is still available, but reads from it always return 0, even if:
+.\"
+.\" a) there were signals pending before the execve().
+.\"    However, sigpending() shows the signal as pending,
+.\"    and the signal can be accepted using sigwaitinfo().
+.\"
+.\" b) we generate the signal after the exec.
+.\"
+.\" Is this intended behavior (the "orphaned sighand" condition
+.\" described above?)?  Is it a bug?
+.\"===
+.\"
+.SS Thread semantics
+[TO BE COMPLETED]
+.\" FIXME Davide, a signal can be directed to the process as
+.\" a whole, or to a particular thread.  What are the intended
+.\" semantics for signalfd()?  If a thread calls signalfd(),
+.\" does the resulting file descriptor return just those
+.\" signals directed to [the thread and the process as a whole],
+.\" or will it also receive signals that are targeted at
+.\" other threads in the process?
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0509.1/1821.html
 
-I don't think anything has been done on this yet (looked at 2.6.23).
-Do let me know if its only a typo that needs a fix, or we are still
-waiting for some other other changes to come into effect.
+Cheers,
 
-Thanks,
-Alok.
+Michael
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
