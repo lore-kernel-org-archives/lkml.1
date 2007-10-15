@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934840AbXJOSs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934004AbXJOStk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934840AbXJOSs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbXJOSoO
+	id S934004AbXJOStk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbXJOSpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:44:14 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:8442 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934794AbXJOSoN (ORCPT
+	Mon, 15 Oct 2007 14:45:52 -0400
+Received: from mga07.intel.com ([143.182.124.22]:25788 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934849AbXJOSpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:44:13 -0400
-Message-ID: <4713B4E7.2050001@panasas.com>
-Date: Mon, 15 Oct 2007 20:43:51 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 15 Oct 2007 14:45:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
+   d="scan'208";a="299135349"
+Date: Mon, 15 Oct 2007 11:45:09 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071015184509.GA18821@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015183017.GB23130@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [patch] scsi: fix crash in gdth_timeout()
-References: <20071015165534.GA17833@elte.hu> <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org> <4713A9FA.4050209@garzik.org>
-In-Reply-To: <4713A9FA.4050209@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Oct 2007 18:43:53.0527 (UTC) FILETIME=[55C1E470:01C80F5B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015183017.GB23130@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15 2007 at 19:57 +0200, Jeff Garzik <jeff@garzik.org> wrote:
-> Linus Torvalds wrote:
->> On Mon, 15 Oct 2007, Ingo Molnar wrote:
->>> A further problem is probably that the GDTH timer is not stopped by a
->>> failed GDTH probe?
->> Indeed. Maybe this is a better fix?
->>
->> That driver is pretty messy, and this should have been found ealier. 
->> James? Boaz?
+On Mon, Oct 15, 2007 at 08:30:17PM +0200, Sam Ravnborg wrote:
+> On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
+> > On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
+> > > The kernel newbies community often gets inquiries from CS students who
+> > > need a project for their studies and would like to do something with
+> > > the Linux kernel, but would also like their code to be useful to the
+> > > community afterwards.
+> > > 
+> > > In order to make it easier for them, I am trying to put together a
+> > > page with projects that:
+> > > - Are self contained enough that the students can implement the
+> > >   project by themselves, since that is often a university requirement.
+> > > - Are self contained enough that Linux could merge the code (maybe
+> > >   with additional changes) after the student has been working on it
+> > >   for a few months.
+> > > - Are large enough to qualify as a student project, luckily there is
+> > >   flexibility here since we get inquiries for anything from 6 week
+> > >   projects to 6 month projects.
+> > > 
+> > > If you have ideas on what projects would be useful, please add them
+> > > to this page (or email me):
+> > > 
+> > > http://kernelnewbies.org/KernelProjects
+> > 
+> > Is there already a make config option that will do a good job at setting
+> > a default .config file based on what is already running on a system?  
+> I have discussed this briefly with Kay Sievers.
+> What udev can provide is the list of modules needed, so what the kernel
+> need to provide is a simple module to CONFIG option(s) converter + a base
+> config to start out with.
+> Nothing particular difficult but needs a few days work to do.
 > 
-> FWIW, the gdth driver was "super-messy".  With this latest SCSI pull, 
-> that severity has been successfully downgraded to "messy" :)
-> 
-> IMO some easy-to-fix breakage was inevitable with such a large volume of 
-> fundamental changes.
-> 
-> Honestly, the driver is probably rarely run by people that lack the 
-> hardware, I bet...
-> 
-> 	Jeff
 
-It was all "flight by instruments only". I called for HW testers and none 
-came forward. All these changes, apart from "successful downgrade to messy"
-where also needed in order to push important changes to scsi.
+that would be cool.
 
-But a little bird said that QEMU might simulate this HW. SO I guess it is
-QEMU time for me.
-
-Boaz
+--mgross
