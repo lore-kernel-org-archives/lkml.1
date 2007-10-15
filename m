@@ -1,125 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbXJOWik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbXJOWj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbXJOWik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXJOWib
+	id S1759323AbXJOWj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXJOWjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:38:31 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36577 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbXJOWia (ORCPT
+	Mon, 15 Oct 2007 18:39:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53556
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752088AbXJOWjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 18:38:30 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710160006.19735.nickpiggin@yahoo.com.au>
-	<200710151105.57442.borntraeger@de.ibm.com>
-	<200710160038.03524.nickpiggin@yahoo.com.au>
-	<m1ejfwkyty.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 15 Oct 2007 16:37:58 -0600
-In-Reply-To: <m1ejfwkyty.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 15 Oct 2007 12:38:33 -0600")
-Message-ID: <m18x64knqx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 15 Oct 2007 18:39:48 -0400
+Date: Mon, 15 Oct 2007 15:39:53 -0700 (PDT)
+Message-Id: <20071015.153953.106262983.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       shemminger@linux-foundation.org, jgarzik@pobox.com
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071015223009.GA27425@elte.hu>
+References: <20071015220357.GA7174@elte.hu>
+	<20071015220720.GA16101@elte.hu>
+	<20071015223009.GA27425@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 16 Oct 2007 00:30:09 +0200
 
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
->
->> On Monday 15 October 2007 19:05, Christian Borntraeger wrote:
->>> Am Montag, 15. Oktober 2007 schrieb Nick Piggin:
->>> > On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
->>> > > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
->>> > > unmaintained, so decided to sent the patch to you :-).
->>> > > I have CCed Ted, who did work on the code in the 90s. I found no
->>> > > current email address of Chad Page.
->>> >
->>> > This really needs to be fixed...
->>>
->>> I obviously agree ;-)
->>> We have seen this problem happen several times.
->>>
->>> > I can't make up my mind between the approaches to fixing it.
->>> >
->>> > On one hand, I would actually prefer to really mark the buffers
->>> > dirty (as in: Eric's fix for this problem[*]) than this patch,
->>> > and this seems a bit like a bandaid...
->>>
->>> I have never seen these patches, so I cannot comment on them.
->>
->>> > On the other hand, the wound being covered by the bandaid is
->>> > actually the code in the buffer layer that does this latent
->>> > "cleaning" of the page because it sadly doesn't really keep
->>> > track of the pagecache state. But it *still* feels like we
->>> > should be marking the rd page's buffers dirty which should
->>> > avoid this problem anyway.
->>>
->>> Yes, that would solve the problem as well. As long as we fix
->>> the problem, I am happy. On the other hand, do you see any
->>> obvious problem with this "bandaid"?
->>
->> I don't think so -- in fact, it could be the best candidate for
->> a minimal fix for stable kernels (anyone disagree? if not, maybe
->> you could also send this to the stable maintainers?).
->
-> A minor one.  It still leaves us with buffer heads out of sync with
-> struct page.
->
->> But I do want to have this fixed in a "nice" way. eg. I'd like
->> it to mark the buffers dirty because that actually results in
->> more reuse of generic kernel code, and also should make rd
->> behave more naturally (I like using it to test filesystems
->> because it can expose a lot more concurrency than something like
->> loop on tmpfs). It should also be possible to actually have
->> rd's buffer heads get reclaimed as well, preferably while
->> exercising the common buffer paths and without writing much new
->> code.
->
-> We actually allow that currently for clean pages which is part
-> of what makes this tricky.
->
->> All of that is secondary to fixing the data corruption problem
->> of course! But the fact that those alternate patches do exist now
->> means I want to just bring them into the discussion again before
->> merging one or the other.
->
-> The core of my original fix was to modify init_page_buffers so that
-> when we added buffers to a dirty page the buffers became dirty.
->
-> Modifying the generic code is a bit spooky because it requires us
-> to audit the kernel to make certain nothing else depends on the
-> current behavior in odd ways.  Although since init_page_buffers
-> is only called when we are adding buffer heads to an existing
-> page I still think that was the proper change.
->
-> The historical reason for my patches not getting merged the first
-> time is there was some weird issue with reiserfs ramdisks and so
-> Andrew disabled the code, and then dropped it when he had discovered
-> he had the patch disabled for several releases.  I don't think
-> any causal relationship was ever established.  But I didn't
-> hear enough about the reiserfs ramdisk issue, to make a guess
-> what was going on.
->
-> So it looks to me like the important invariant we need to maintain
-> is that when a ramdisk page is dirty it always has buffers and those
-> buffers are dirty as well.  With a little care we can ensure this
-> happens with just modifications to rd.c
+> Subject: forcedeth: fix the NAPI poll function
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> fix the forcedeth NAPI poll function to not emit this warning:
+> 
+> [  186.635916] WARNING: at net/core/dev.c:2166 net_rx_action()
+> [  186.641351]  [<c060d9f5>] net_rx_action+0x145/0x1b0
+> [  186.646191]  [<c011d752>] __do_softirq+0x42/0x90
+> [  186.650784]  [<c011d7c6>] do_softirq+0x26/0x30
+> [  186.655202]  [<c011db48>] local_bh_enable+0x48/0xa0
+> [  186.660055]  [<c06023e0>] lock_sock_nested+0xa0/0xc0
+> [  186.664995]  [<c065da16>] tcp_recvmsg+0x16/0xbc0
+> [  186.669588]  [<c013e94b>] __generic_file_aio_write_nolock+0x27b/0x520
+> [  186.676001]  [<c0601d75>] sock_common_recvmsg+0x45/0x70
+> [  186.681202]  [<c05ff5df>] sock_aio_read+0x11f/0x140
+> [  186.686054]  [<c015c086>] do_sync_read+0xc6/0x110
+> [  186.690735]  [<c012b9b0>] autoremove_wake_function+0x0/0x40
+> [  186.696280]  [<c060dcfc>] net_tx_action+0x3c/0xe0
+> [  186.700961]  [<c015c9c2>] vfs_read+0x132/0x140
+> [  186.705378]  [<c015cd41>] sys_read+0x41/0x70
+> [  186.709625]  [<c0102b66>] sysenter_past_esp+0x5f/0x89
+> [  186.714651]  =======================
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Hah.  I looked over my last round of patches again and I have been able
-to verify by review the parts I was a little iffy about and I have
-found where in my cleanups I had missed a layering violation in the
-ramdisk code, and removed some needed code.  Which probably accounts
-for the reiserfs ramdisk problems.  Updated patches in a minute.
+Excellent catch:
 
-Eric
+Acked-by: David S. Miller <davem@davemloft.net>
