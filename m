@@ -1,88 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXJOJ2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbXJOJiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbXJOJ2E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbXJOJ1y
+	id S1760692AbXJOJiZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbXJOJiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:27:54 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:44328 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755916AbXJOJ1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:27:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NP/UD5s2EnsZ2XcWy5oefaMFkHyWMuKwdFMmFTcjSLm75c2DQK/Ttqm//tch2KknwAfa9LWaQe8ubyaT9kdv5pKjWaxLUxIwRSEKp2C7NTnB4kJD9C6udWO6YIls+0V3gw1cWu+ETyYWJBqbZT09Ngt8KOouOjYaU1P3NQ46lfA=  ;
-X-YMail-OSG: Joa3W1IVM1l3nZd1eR5.LaqlkKpkKvuxNLdKewRfQXYVza8c
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-Date: Tue, 16 Oct 2007 00:38:03 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710160006.19735.nickpiggin@yahoo.com.au> <200710151105.57442.borntraeger@de.ibm.com>
-In-Reply-To: <200710151105.57442.borntraeger@de.ibm.com>
+	Mon, 15 Oct 2007 05:38:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35743 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757878AbXJOJiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 05:38:12 -0400
+Date: Mon, 15 Oct 2007 11:38:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Avi Kivity <avi@qumranet.com>
+Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time
+	accounting.
+Message-ID: <20071015093800.GA22818@elte.hu>
+References: <46E550EF.5080209@bull.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710160038.03524.nickpiggin@yahoo.com.au>
+In-Reply-To: <46E550EF.5080209@bull.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 19:05, Christian Borntraeger wrote:
-> Am Montag, 15. Oktober 2007 schrieb Nick Piggin:
-> > On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
-> > > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
-> > > unmaintained, so decided to sent the patch to you :-).
-> > > I have CCed Ted, who did work on the code in the 90s. I found no
-> > > current email address of Chad Page.
-> >
-> > This really needs to be fixed...
->
-> I obviously agree ;-)
-> We have seen this problem happen several times.
->
-> > I can't make up my mind between the approaches to fixing it.
-> >
-> > On one hand, I would actually prefer to really mark the buffers
-> > dirty (as in: Eric's fix for this problem[*]) than this patch,
-> > and this seems a bit like a bandaid...
->
-> I have never seen these patches, so I cannot comment on them.
 
-> > On the other hand, the wound being covered by the bandaid is
-> > actually the code in the buffer layer that does this latent
-> > "cleaning" of the page because it sadly doesn't really keep
-> > track of the pagecache state. But it *still* feels like we
-> > should be marking the rd page's buffers dirty which should
-> > avoid this problem anyway.
->
-> Yes, that would solve the problem as well. As long as we fix
-> the problem, I am happy. On the other hand, do you see any
-> obvious problem with this "bandaid"?
+* Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-I don't think so -- in fact, it could be the best candidate for
-a minimal fix for stable kernels (anyone disagree? if not, maybe
-you could also send this to the stable maintainers?).
+> [PATCH 4/4] Modify KVM to update guest time accounting.
 
-But I do want to have this fixed in a "nice" way. eg. I'd like
-it to mark the buffers dirty because that actually results in
-more reuse of generic kernel code, and also should make rd
-behave more naturally (I like using it to test filesystems
-because it can expose a lot more concurrency than something like
-loop on tmpfs). It should also be possible to actually have
-rd's buffer heads get reclaimed as well, preferably while
-exercising the common buffer paths and without writing much new
-code.
+FYI, KVM abstracted its guest-mode entry code recently so this did not 
+apply - find below the reworked patch.
 
-All of that is secondary to fixing the data corruption problem
-of course! But the fact that those alternate patches do exist now
-means I want to just bring them into the discussion again before
-merging one or the other.
+	Ingo
+
+------------------->
+Subject: sched: guest CPU accounting: maintain guest state in KVM
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+
+Modify KVM to update guest time accounting.
+
+[ mingo@elte.hu: ported to 2.6.24 KVM. ]
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+Acked-by: Avi Kivity <avi@qumranet.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/kvm/kvm.h      |   16 ++++++++++++++++
+ drivers/kvm/kvm_main.c |    2 ++
+ 2 files changed, 18 insertions(+)
+
+Index: linux/drivers/kvm/kvm.h
+===================================================================
+--- linux.orig/drivers/kvm/kvm.h
++++ linux/drivers/kvm/kvm.h
+@@ -624,6 +624,22 @@ void kvm_mmu_unload(struct kvm_vcpu *vcp
+ 
+ int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 
++/*
++ * Compatibility define - PF_VCPU is only available in v2.6.24+ kernels:
++ */
++#ifndef PF_VCPU
++# define PF_VCPU	0
++#endif
++
++static inline void kvm_guest_enter(void)
++{
++	current->flags |= PF_VCPU;
++}
++
++static inline void kvm_guest_exit(void)
++{
++}
++
+ static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+ 				     u32 error_code)
+ {
+Index: linux/drivers/kvm/kvm_main.c
+===================================================================
+--- linux.orig/drivers/kvm/kvm_main.c
++++ linux/drivers/kvm/kvm_main.c
+@@ -2046,6 +2046,7 @@ again:
+ 		kvm_x86_ops->inject_pending_vectors(vcpu, kvm_run);
+ 
+ 	vcpu->guest_mode = 1;
++	kvm_guest_enter();
+ 
+ 	if (vcpu->requests)
+ 		if (test_and_clear_bit(KVM_TLB_FLUSH, &vcpu->requests))
+@@ -2053,6 +2054,7 @@ again:
+ 
+ 	kvm_x86_ops->run(vcpu, kvm_run);
+ 
++	kvm_guest_exit();
+ 	vcpu->guest_mode = 0;
+ 	local_irq_enable();
+ 
