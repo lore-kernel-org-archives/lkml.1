@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932813AbXJOTw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933087AbXJOTyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932813AbXJOTw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760113AbXJOTwD
+	id S933087AbXJOTyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbXJOTyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:52:03 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50417 "EHLO mail.dvmed.net"
+	Mon, 15 Oct 2007 15:54:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50456 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759938AbXJOTv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:51:59 -0400
-Message-ID: <4713C4DB.4090407@garzik.org>
-Date: Mon, 15 Oct 2007 15:51:55 -0400
+	id S1759078AbXJOTyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:54:24 -0400
+Message-ID: <4713C568.2060708@garzik.org>
+Date: Mon, 15 Oct 2007 15:54:16 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-CC: Vlad Codrea <vladc6@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] : IDE-CS Add additional id string (corsair, 1GB)
-References: <313705.92960.qm@web54404.mail.yahoo.com> <20071014230556.47ffe9cd.Kristoffer.Ericson@Gmail.com>
-In-Reply-To: <20071014230556.47ffe9cd.Kristoffer.Ericson@Gmail.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk
+Subject: Re: [git patches] IDE updates (part 2)
+References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk>
+In-Reply-To: <20071014001238.GP8181@ftp.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -27,13 +30,12 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristoffer Ericson wrote:
-> Greetings,
-> 
-> Of course. Not sure how you want it so I've kept the patches seperate for now.
-> 
-> Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Al Viro wrote:
+> Proposed addition to icside part, provided that ARM folks ACK it - gets
+> icside to build and AFAICS it's correct:
 
-applied to pata_pcmcia
+ACK from me too...  ARM folks?
+
+
 
 
