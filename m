@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763634AbXJOPoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763103AbXJOPpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763634AbXJOPoB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 11:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbXJOPnj
+	id S1763103AbXJOPpL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 11:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbXJOPo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 11:43:39 -0400
-Received: from pat.uio.no ([129.240.10.15]:54954 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755105AbXJOPnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 11:43:37 -0400
-Subject: Re: nfs mmap adventure (was: 2.6.23-mm1)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <1192451324.27435.71.camel@twins>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	 <1192451324.27435.71.camel@twins>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 11:43:18 -0400
-Message-Id: <1192462998.7529.3.camel@heimdal.trondhjem.org>
+	Mon, 15 Oct 2007 11:44:57 -0400
+Received: from lazybastard.de ([212.112.238.170]:53592 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbXJOPo4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 11:44:56 -0400
+Date: Mon, 15 Oct 2007 17:40:27 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Rik van Riel <riel@surriel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071015154027.GA21250@lazybastard.org>
+References: <20071014190128.6e3cdb44@bree.surriel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.1, required=12.0, autolearn=disabled, AWL=0.122)
-X-UiO-Scanned: 97A88463BBC1DFD381963A32CC051FEF0042C1E0
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 1 maxlevel 200 minaction 2 bait 0 mail/h: 1047 total 4502686 max/h 8345 blacklist 0 greylist 0 ratelimit 1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071014190128.6e3cdb44@bree.surriel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2007-10-15 at 14:28 +0200, Peter Zijlstra wrote:
-> I get funny SIGBUS' like so:
+On Sun, 14 October 2007 19:01:28 -0400, Rik van Riel wrote:
 > 
-> fault
->   if (->page_mkwrite() < 0)
->     nfs_vm_page_mkwrite()
->       nfs_write_begin()
->         nfs_flush_incompatible()
->           nfs_wb_page()
->             nfs_wb_page_priority()
->               nfs_sync_mapping_wait()
->                 nfs_wait_on_request_locked()
->                   nfs_wait_on_request()
->                     nfs_wait_bit_interruptible()
->                       return -ERESTARTSYS
->     SIGBUS
-> 
-> trying to figure out what to do about this...
+> If you have ideas on what projects would be useful, please add them
+> to this page (or email me):
 
-Why? If someone is interrupting the write, then a SIGBUS is pretty much
-expected.
+Maybe this:
 
-  Trond
+Allow removal of select from Kconfig files
 
+Difficulty: 4
+
+Many config options depend on other options is unrelated submenus.  As a
+result, people have complained about not being able to select the
+desired option because they finding all dependencies is too complicated.
+Select solves this problem and creates a near-identical new one.  Now it
+is just as hard to turn some options _off_ as it was before to turn
+others _on_.
+
+The solution would be to have smarter tools that give the user
+information roughly like this:
+  [ ] CONFIG_FOO
+      If you enable this option, you will also enable CONFIG_BAR.
+Or :
+  [x] CONFIG_BAR
+      If you disable this option you will also disable CONFIG_FOO
+      and CONFIG_FOO2.
+
+Difficulty is somewhat increased by the number of tools that require
+such functionality.  Support for xconfig and menuconfig appears to have
+priority as those users have a harder time grepping the kernel.
+
+Jörn
+
+-- 
+There is no worse hell than that provided by the regrets
+for wasted opportunities.
+-- Andre-Louis Moreau in Scarabouche
