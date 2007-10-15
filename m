@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXJORpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763496AbXJORqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbXJORpr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765517AbXJORpK
+	id S1763496AbXJORqN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbXJORpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:45:10 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:42623 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764854AbXJORpI (ORCPT
+	Mon, 15 Oct 2007 13:45:44 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:53302 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932942AbXJORpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:45:08 -0400
-Date: Mon, 15 Oct 2007 18:45:05 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: -git mips defconfig compile error
-Message-ID: <20071015174505.GA19857@linux-mips.org>
-References: <20071014131948.GF4211@stusta.de> <20071015095535.GB9896@linux-mips.org> <Pine.LNX.4.64N.0710151715200.16262@blysk.ds.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64N.0710151715200.16262@blysk.ds.pg.gda.pl>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 15 Oct 2007 13:45:41 -0400
+Subject: Re: [PATCH] RT: fix spin_trylock_irq
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux RT Users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0710111046170.20114@gandalf.stny.rr.com>
+References: <20071011142417.1d965820@bull.net>
+	 <Pine.LNX.4.58.0710111046170.20114@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 10:44:06 -0700
+Message-Id: <1192470246.17527.15.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 05:19:43PM +0100, Maciej W. Rozycki wrote:
+On Thu, 2007-10-11 at 10:49 -0400, Steven Rostedt wrote:
 
-> > The logo.c bit I've sent out a few weeks ago so I'm just waiting for that
-> > patch to resurface at the other end of the wormhole.
+> > ---
+> >  include/linux/spinlock.h |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > Index: linux-2.6.23-rc9-rt2/include/linux/spinlock.h
+> > ===================================================================
+> > --- linux-2.6.23-rc9-rt2.orig/include/linux/spinlock.h
+> > +++ linux-2.6.23-rc9-rt2/include/linux/spinlock.h
+> > @@ -501,7 +501,7 @@ do {									\
+> >
+> >  #define spin_trylock_irq(lock)	\
+> >  	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irq,		\
+> > -		__spin_trylock_irq, lock))
+> > +		_spin_trylock_irq, lock))
+> >
+> >  #define spin_trylock_irqsave(lock, flags) \
+> >  	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irqsave, 	\
 > 
->  Hmm, I would have waited for this to happen before committing the change 
-> depending on it not to keep things known-broken then...  That's what I do 
-> with my bits, e.g. I have an update to platform code waiting till 
-> sb1250-mac.c changes come over here.
+> Thanks! Applied.
+> 
+> Daniel, this BUG was introduced by your conversion to PICK_FUNCTION patch.
+> Please be more careful, and do an audit of your patch. (I don't have time
+> ATM). This could also be the source of other bugs I've been chasing.
+> 
+> I might be pulling the PICK_FUNCTION patches if there's more bugs like
+> this.
 
-Na, much more trivial.  After a little looking into what went wrong I
-found that I meant to strip only the jazzsonic segment because of another
-jazzsonic patch from Fleedwood.  But I stripped the logo.c bit as well.
+This is the second fix for this .. The first was in this email (over a
+month ago)
 
-  Ralf
+http://lkml.org/lkml/2007/8/31/318
+
+The above was emailed to Thomas, but I also sent you that link in IRC as
+a link of patches to include .. I'll be happy to audit my code better,
+but you should also audit your inclusion process better.. There have
+been too many missed patches, and too many double and triples fixes..
+
+Daniel
+
