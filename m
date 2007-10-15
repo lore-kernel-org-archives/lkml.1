@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXJOS2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXJOS3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXJOS2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXJOS2A
+	id S933174AbXJOS3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761028AbXJOS2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:28:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:61828 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764880AbXJOS17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:27:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=ch9xhLSdO4jXghBWG7QSEQAf4B+4+jpVxupf4Rxby6wlxZAAQfFAW0J53uQbhTKTfUsFHC+MNdUacI1YIdxOC35vEdp2DKMdZpFQlxioXovhKbNOasAxAIy5BDsSXH4ZsWrGr7kfPGdqeS/X9uI2JQTfZmvQWZ/zZBFH/muyiOI=
-Date: Mon, 15 Oct 2007 20:27:43 +0200
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: bryan.wu@analog.com, Andrey Panin <pazke@donpac.ru>,
-       Roel Kluin <12o3l@tiscali.nl>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
-Message-ID: <20071015182743.GA2529@Ahmed>
-References: <1192459625.6215.17.camel@roc-laptop> <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
-MIME-Version: 1.0
+	Mon, 15 Oct 2007 14:28:48 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38555 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757919AbXJOS2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:28:47 -0400
+Date: Mon, 15 Oct 2007 20:30:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071015183017.GB23130@uranus.ravnborg.org>
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <20071015170411.GB18550@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 11:48:17AM -0400, Dmitry Torokhov wrote:
-> Hi Bryan,
+On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
+> On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
+> > The kernel newbies community often gets inquiries from CS students who
+> > need a project for their studies and would like to do something with
+> > the Linux kernel, but would also like their code to be useful to the
+> > community afterwards.
+> > 
+> > In order to make it easier for them, I am trying to put together a
+> > page with projects that:
+> > - Are self contained enough that the students can implement the
+> >   project by themselves, since that is often a university requirement.
+> > - Are self contained enough that Linux could merge the code (maybe
+> >   with additional changes) after the student has been working on it
+> >   for a few months.
+> > - Are large enough to qualify as a student project, luckily there is
+> >   flexibility here since we get inquiries for anything from 6 week
+> >   projects to 6 month projects.
+> > 
+> > If you have ideas on what projects would be useful, please add them
+> > to this page (or email me):
+> > 
+> > http://kernelnewbies.org/KernelProjects
 > 
-> On 10/15/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > +
-> > +static int ad7142_thread(void *nothing)
-> > +{
-> > +       do {
-> > +               wait_for_completion(&ad7142_completion);
-> > +               ad7142_decode();
-> > +               enable_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX);
-> > +       } while (!kthread_should_stop());
-> > +
-> 
-> No, this is not going to work well:
-> - you at least need to reinitialize the completion before enabling
-> IRQ, otherwise you will spin in a very tight loop
-> - if noone would touch the joystick ad7142_clsoe would() block
-> infinitely because noone would signal the completion and
-> ad7142_thread() would never stop.
-> 
-> Completion is just not a good abstraction here... Please use work
-> abstraction and possibly a separate workqueue.
-> 
+> Is there already a make config option that will do a good job at setting
+> a default .config file based on what is already running on a system?  
+I have discussed this briefly with Kay Sievers.
+What udev can provide is the list of modules needed, so what the kernel
+need to provide is a simple module to CONFIG option(s) converter + a base
+config to start out with.
+Nothing particular difficult but needs a few days work to do.
 
-Bryan, I'm very interested in the technical advantage of using a completion
-here.
-
-In my _not-experienced_ opinion, I remember completions was created mainly for
-"create_task, wait till task got finished, go on" case. Why using it in a
-different context while workqueues was created for a similar situation to
-ad7142 one (non-irq context bottom-half) ?
-
-Regards,
-
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+	Sam
