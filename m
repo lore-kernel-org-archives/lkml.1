@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXJOW0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbXJOW1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbXJOW0u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbXJOW0J
+	id S1754411AbXJOW1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbXJOW0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:26:09 -0400
-Received: from waste.org ([66.93.16.53]:1290 "EHLO cinder.waste.org"
+	Mon, 15 Oct 2007 18:26:11 -0400
+Received: from waste.org ([66.93.16.53]:1288 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755629AbXJOW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753315AbXJOW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Oct 2007 18:26:06 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
@@ -17,172 +17,116 @@ Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        David Rientjes <rientjes@google.com>,
        Fengguang Wu <wfg@mail.ustc.edu.cn>
 In-Reply-To: <1.290135367@selenic.com>
-Message-Id: <6.290135367@selenic.com>
-Subject: [PATCH 5/11] maps3: use pagewalker in clear_refs and smaps
-Date: Mon, 15 Oct 2007 17:26:02 -0500
+Message-Id: <2.290135367@selenic.com>
+Subject: [PATCH 1/11] maps3: add proportional set size accounting in smaps
+Date: Mon, 15 Oct 2007 17:25:58 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the generic pagewalker for smaps and clear_refs
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 
+The "proportional set size" (PSS) of a process is the count of pages it has
+in memory, where each page is divided by the number of processes sharing
+it.  So if a process has 1000 pages all to itself, and 1000 shared with one
+other process, its PSS will be 1500.
+
+               - lwn.net: "ELC: How much memory are applications really using?"
+
+The PSS proposed by Matt Mackall is a very nice metic for measuring an
+process's memory footprint.  So collect and export it via
+/proc/<pid>/smaps.
+
+Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the
+job.  They are comprehensive tools.  But for PSS, let's do it in the simple
+way.
+
+Cc: John Berthels <jjberthels@gmail.com>
+Cc: Bernardo Innocenti <bernie@codewiz.org>
+Cc: Padraig Brady <P@draigBrady.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
 Signed-off-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Hugh Dickins <hugh@veritas.com>
+---
+
+ fs/proc/task_mmu.c |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletion(-)
 
 Index: l/fs/proc/task_mmu.c
 ===================================================================
---- l.orig/fs/proc/task_mmu.c	2007-10-14 13:36:56.000000000 -0500
-+++ l/fs/proc/task_mmu.c	2007-10-14 13:37:08.000000000 -0500
-@@ -116,6 +116,7 @@ static void pad_len_spaces(struct seq_fi
- 
- struct mem_size_stats
- {
-+	struct vm_area_struct *vma;
- 	unsigned long resident;
- 	unsigned long shared_clean;
- 	unsigned long shared_dirty;
-@@ -145,13 +146,6 @@ struct mem_size_stats
- #define PSS_DIV_BITS	12
+--- l.orig/fs/proc/task_mmu.c	2007-10-14 13:35:31.000000000 -0500
++++ l/fs/proc/task_mmu.c	2007-10-14 13:36:56.000000000 -0500
+@@ -122,6 +122,27 @@ struct mem_size_stats
+ 	unsigned long private_clean;
+ 	unsigned long private_dirty;
+ 	unsigned long referenced;
++
++	/*
++	 * Proportional Set Size(PSS): my share of RSS.
++	 *
++	 * PSS of a process is the count of pages it has in memory, where each
++	 * page is divided by the number of processes sharing it.  So if a
++	 * process has 1000 pages all to itself, and 1000 shared with one other
++	 * process, its PSS will be 1500.               - Matt Mackall, lwn.net
++	 */
++	u64 	      pss;
++	/*
++	 * To keep (accumulated) division errors low, we adopt 64bit pss and
++	 * use some low bits for division errors. So (pss >> PSS_DIV_BITS)
++	 * would be the real byte count.
++	 *
++	 * A shift of 12 before division means(assuming 4K page size):
++	 * 	- 1M 3-user-pages add up to 8KB errors;
++	 * 	- supports mapcount up to 2^24, or 16M;
++	 * 	- supports PSS up to 2^52 bytes, or 4PB.
++	 */
++#define PSS_DIV_BITS	12
  };
  
--struct pmd_walker {
--	struct vm_area_struct *vma;
--	void *private;
--	void (*action)(struct vm_area_struct *, pmd_t *, unsigned long,
--		       unsigned long, void *);
--};
--
- static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
- {
- 	struct proc_maps_private *priv = m->private;
-@@ -241,11 +235,11 @@ static int show_map(struct seq_file *m, 
- 	return show_map_internal(m, v, NULL);
- }
- 
--static void smaps_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
--			    unsigned long addr, unsigned long end,
--			    void *private)
-+static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-+			   void *private)
- {
- 	struct mem_size_stats *mss = private;
-+	struct vm_area_struct *vma = mss->vma;
+ struct pmd_walker {
+@@ -195,6 +216,7 @@ static int show_map_internal(struct seq_
+ 		seq_printf(m,
+ 			   "Size:           %8lu kB\n"
+ 			   "Rss:            %8lu kB\n"
++			   "Pss:            %8lu kB\n"
+ 			   "Shared_Clean:   %8lu kB\n"
+ 			   "Shared_Dirty:   %8lu kB\n"
+ 			   "Private_Clean:  %8lu kB\n"
+@@ -202,6 +224,7 @@ static int show_map_internal(struct seq_
+ 			   "Referenced:     %8lu kB\n",
+ 			   (vma->vm_end - vma->vm_start) >> 10,
+ 			   mss->resident >> 10,
++			   (unsigned long)(mss.pss >> (10 + PSS_DIV_BITS)),
+ 			   mss->shared_clean  >> 10,
+ 			   mss->shared_dirty  >> 10,
+ 			   mss->private_clean >> 10,
+@@ -226,6 +249,7 @@ static void smaps_pte_range(struct vm_ar
  	pte_t *pte, ptent;
  	spinlock_t *ptl;
  	struct page *page;
-@@ -283,12 +277,13 @@ static void smaps_pte_range(struct vm_ar
++	int mapcount;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+@@ -242,16 +266,19 @@ static void smaps_pte_range(struct vm_ar
+ 		/* Accumulate the size in pages that have been accessed. */
+ 		if (pte_young(ptent) || PageReferenced(page))
+ 			mss->referenced += PAGE_SIZE;
+-		if (page_mapcount(page) >= 2) {
++		mapcount = page_mapcount(page);
++		if (mapcount >= 2) {
+ 			if (pte_dirty(ptent))
+ 				mss->shared_dirty += PAGE_SIZE;
+ 			else
+ 				mss->shared_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << PSS_DIV_BITS) / mapcount;
+ 		} else {
+ 			if (pte_dirty(ptent))
+ 				mss->private_dirty += PAGE_SIZE;
+ 			else
+ 				mss->private_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << PSS_DIV_BITS);
+ 		}
  	}
  	pte_unmap_unlock(pte - 1, ptl);
- 	cond_resched();
-+	return 0;
- }
- 
--static void clear_refs_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
--				 unsigned long addr, unsigned long end,
--				 void *private)
-+static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
-+				unsigned long end, void *private)
- {
-+	struct vm_area_struct *vma = private;
- 	pte_t *pte, ptent;
- 	spinlock_t *ptl;
- 	struct page *page;
-@@ -309,71 +304,10 @@ static void clear_refs_pte_range(struct 
- 	}
- 	pte_unmap_unlock(pte - 1, ptl);
- 	cond_resched();
-+	return 0;
- }
- 
--static inline void walk_pmd_range(struct pmd_walker *walker, pud_t *pud,
--				  unsigned long addr, unsigned long end)
--{
--	pmd_t *pmd;
--	unsigned long next;
--
--	for (pmd = pmd_offset(pud, addr); addr != end;
--	     pmd++, addr = next) {
--		next = pmd_addr_end(addr, end);
--		if (pmd_none_or_clear_bad(pmd))
--			continue;
--		walker->action(walker->vma, pmd, addr, next, walker->private);
--	}
--}
--
--static inline void walk_pud_range(struct pmd_walker *walker, pgd_t *pgd,
--				  unsigned long addr, unsigned long end)
--{
--	pud_t *pud;
--	unsigned long next;
--
--	for (pud = pud_offset(pgd, addr); addr != end;
--	     pud++, addr = next) {
--		next = pud_addr_end(addr, end);
--		if (pud_none_or_clear_bad(pud))
--			continue;
--		walk_pmd_range(walker, pud, addr, next);
--	}
--}
--
--/*
-- * walk_page_range - walk the page tables of a VMA with a callback
-- * @vma - VMA to walk
-- * @action - callback invoked for every bottom-level (PTE) page table
-- * @private - private data passed to the callback function
-- *
-- * Recursively walk the page table for the memory area in a VMA, calling
-- * a callback for every bottom-level (PTE) page table.
-- */
--static inline void walk_page_range(struct vm_area_struct *vma,
--				   void (*action)(struct vm_area_struct *,
--						  pmd_t *, unsigned long,
--						  unsigned long, void *),
--				   void *private)
--{
--	unsigned long addr = vma->vm_start;
--	unsigned long end = vma->vm_end;
--	struct pmd_walker walker = {
--		.vma		= vma,
--		.private	= private,
--		.action		= action,
--	};
--	pgd_t *pgd;
--	unsigned long next;
--
--	for (pgd = pgd_offset(vma->vm_mm, addr); addr != end;
--	     pgd++, addr = next) {
--		next = pgd_addr_end(addr, end);
--		if (pgd_none_or_clear_bad(pgd))
--			continue;
--		walk_pud_range(&walker, pgd, addr, next);
--	}
--}
-+static struct mm_walk smaps_walk = { .pmd_entry = smaps_pte_range };
- 
- static int show_smap(struct seq_file *m, void *v)
- {
-@@ -381,11 +315,15 @@ static int show_smap(struct seq_file *m,
- 	struct mem_size_stats mss;
- 
- 	memset(&mss, 0, sizeof mss);
-+	mss.vma = vma;
- 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
--		walk_page_range(vma, smaps_pte_range, &mss);
-+		walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
-+				&smaps_walk, &mss);
- 	return show_map_internal(m, v, &mss);
- }
- 
-+static struct mm_walk clear_refs_walk = { .pmd_entry = clear_refs_pte_range };
-+
- void clear_refs_smap(struct mm_struct *mm)
- {
- 	struct vm_area_struct *vma;
-@@ -393,7 +331,8 @@ void clear_refs_smap(struct mm_struct *m
- 	down_read(&mm->mmap_sem);
- 	for (vma = mm->mmap; vma; vma = vma->vm_next)
- 		if (vma->vm_mm && !is_vm_hugetlb_page(vma))
--			walk_page_range(vma, clear_refs_pte_range, NULL);
-+			walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
-+					&clear_refs_walk, vma);
- 	flush_tlb_mm(mm);
- 	up_read(&mm->mmap_sem);
- }
