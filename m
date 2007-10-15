@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765344AbXJOW3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764880AbXJOW3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765344AbXJOW3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbXJOW0S
+	id S1764880AbXJOW3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761694AbXJOW0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:26:18 -0400
-Received: from waste.org ([66.93.16.53]:1299 "EHLO cinder.waste.org"
+	Mon, 15 Oct 2007 18:26:19 -0400
+Received: from waste.org ([66.93.16.53]:1300 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757002AbXJOW0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 18:26:09 -0400
+	id S1757333AbXJOW0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 18:26:11 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 X-PatchBomber: http://selenic.com/scripts/mailpatches
@@ -17,298 +17,151 @@ Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        David Rientjes <rientjes@google.com>,
        Fengguang Wu <wfg@mail.ustc.edu.cn>
 In-Reply-To: <1.290135367@selenic.com>
-Message-Id: <10.290135367@selenic.com>
-Subject: [PATCH 9/11] maps3: add /proc/pid/pagemap interface
-Date: Mon, 15 Oct 2007 17:26:06 -0500
+Message-Id: <11.290135367@selenic.com>
+Subject: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags interfaces
+Date: Mon, 15 Oct 2007 17:26:07 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Matt Mackall <mpm@selenic.com>
 
-This interface provides a mapping for each page in an address space to its
-physical page frame number, allowing precise determination of what pages are
-mapped and what pages are shared between processes.
+This makes physical page map counts available to userspace. Together
+with /proc/pid/pagemap and /proc/pid/clear_refs, this can be used to
+monitor memory usage on a per-page basis.
 
-New in this version:
-
-- headers gone again (as recommended by Dave Hansen and Alan Cox)
-- 64-bit entries (as per discussion with Andi Kleen)
-- swap pte information exported (from Dave Hansen)
-- page walker callback for holes (from Dave Hansen)
-- direct put_user I/O (as suggested by Rusty Russell)
-
-This patch folds in cleanups and swap PTE support from Dave Hansen
-<haveblue@us.ibm.com>.
-
+[bunk@stusta.de: make struct proc_kpagemap static]
 Signed-off-by: Matt Mackall <mpm@selenic.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Index: l/fs/proc/base.c
+Index: l/fs/proc/proc_misc.c
 ===================================================================
---- l.orig/fs/proc/base.c	2007-10-14 13:39:00.000000000 -0500
-+++ l/fs/proc/base.c	2007-10-15 17:18:09.000000000 -0500
-@@ -635,7 +635,7 @@ out_no_task:
- }
- #endif
- 
--static loff_t mem_lseek(struct file * file, loff_t offset, int orig)
-+loff_t mem_lseek(struct file * file, loff_t offset, int orig)
- {
- 	switch (orig) {
- 	case 0:
-@@ -2034,6 +2034,7 @@ static const struct pid_entry tgid_base_
- #ifdef CONFIG_MMU
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",      S_IRUGO, smaps),
-+	REG("pagemap",    S_IRUSR, pagemap),
- #endif
- #ifdef CONFIG_SECURITY
- 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
-@@ -2320,6 +2321,7 @@ static const struct pid_entry tid_base_s
- #ifdef CONFIG_MMU
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",     S_IRUGO, smaps),
-+	REG("pagemap",    S_IRUSR, pagemap),
- #endif
- #ifdef CONFIG_SECURITY
- 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
-Index: l/fs/proc/internal.h
-===================================================================
---- l.orig/fs/proc/internal.h	2007-10-14 13:39:00.000000000 -0500
-+++ l/fs/proc/internal.h	2007-10-15 17:18:09.000000000 -0500
-@@ -45,11 +45,13 @@ extern int proc_tid_stat(struct task_str
- extern int proc_tgid_stat(struct task_struct *, char *);
- extern int proc_pid_status(struct task_struct *, char *);
- extern int proc_pid_statm(struct task_struct *, char *);
-+extern loff_t mem_lseek(struct file * file, loff_t offset, int orig);
- 
- extern const struct file_operations proc_maps_operations;
- extern const struct file_operations proc_numa_maps_operations;
- extern const struct file_operations proc_smaps_operations;
- extern const struct file_operations proc_clear_refs_operations;
-+extern const struct file_operations proc_pagemap_operations;
- 
- void free_proc_entry(struct proc_dir_entry *de);
- 
-Index: l/fs/proc/task_mmu.c
-===================================================================
---- l.orig/fs/proc/task_mmu.c	2007-10-14 18:07:26.000000000 -0500
-+++ l/fs/proc/task_mmu.c	2007-10-15 17:18:09.000000000 -0500
-@@ -5,7 +5,10 @@
- #include <linux/highmem.h>
- #include <linux/ptrace.h>
- #include <linux/pagemap.h>
-+#include <linux/ptrace.h>
- #include <linux/mempolicy.h>
-+#include <linux/swap.h>
-+#include <linux/swapops.h>
- 
- #include <asm/elf.h>
+--- l.orig/fs/proc/proc_misc.c	2007-10-09 17:37:57.000000000 -0500
++++ l/fs/proc/proc_misc.c	2007-10-10 11:46:50.000000000 -0500
+@@ -46,6 +46,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/crash_dump.h>
+ #include <linux/pid_namespace.h>
++#include <linux/bootmem.h>
  #include <asm/uaccess.h>
-@@ -519,6 +522,202 @@ const struct file_operations proc_clear_
- 	.write		= clear_refs_write,
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+@@ -656,6 +657,106 @@ static const struct file_operations proc
  };
+ #endif
  
-+struct pagemapread {
-+	char __user *out, *end;
-+};
-+
-+#define PM_ENTRY_BYTES sizeof(u64)
-+#define PM_RESERVED_BITS    3
-+#define PM_RESERVED_OFFSET  (64 - PM_RESERVED_BITS)
-+#define PM_RESERVED_MASK    (((1LL<<PM_RESERVED_BITS)-1) << PM_RESERVED_OFFSET)
-+#define PM_SPECIAL(nr)      (((nr) << PM_RESERVED_OFFSET) | PM_RESERVED_MASK)
-+#define PM_NOT_PRESENT      PM_SPECIAL(1LL)
-+#define PM_SWAP             PM_SPECIAL(2LL)
-+#define PM_END_OF_BUFFER    1
-+
-+static int add_to_pagemap(unsigned long addr, u64 pfn,
-+			  struct pagemapread *pm)
-+{
-+	/*
-+	 * Make sure there's room in the buffer for an
-+	 * entire entry.  Otherwise, only copy part of
-+	 * the pfn.
-+	 */
-+	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
-+		if(copy_to_user(pm->out, &pfn, pm->end - pm->out))
-+			return -EFAULT;
-+		pm->out = pm->end;
-+		return PM_END_OF_BUFFER;
-+	}
-+
-+	if(put_user(pfn, pm->out))
-+		return -EFAULT;
-+	pm->out += PM_ENTRY_BYTES;
-+	return 0;
-+}
-+
-+static int pagemap_pte_hole(unsigned long start, unsigned long end,
-+				void *private)
-+{
-+	struct pagemapread *pm = private;
-+	unsigned long addr;
-+	int err = 0;
-+	for (addr = start; addr < end; addr += PAGE_SIZE) {
-+		err = add_to_pagemap(addr, PM_NOT_PRESENT, pm);
-+		if (err)
-+			break;
-+	}
-+	return err;
-+}
-+
-+u64 swap_pte_to_pagemap_entry(pte_t pte)
-+{
-+	swp_entry_t e = pte_to_swp_entry(pte);
-+	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
-+}
-+
-+static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-+			     void *private)
-+{
-+	struct pagemapread *pm = private;
-+	pte_t *pte;
-+	int err = 0;
-+
-+	pte = pte_offset_map(pmd, addr);
-+	for (; addr != end; pte++, addr += PAGE_SIZE) {
-+		u64 pfn = PM_NOT_PRESENT;
-+		if (is_swap_pte(*pte))
-+			pfn = swap_pte_to_pagemap_entry(*pte);
-+		else if (pte_present(*pte))
-+			pfn = pte_pfn(*pte);
-+		err = add_to_pagemap(addr, pfn, pm);
-+		if (err)
-+			return err;
-+	}
-+	pte_unmap(pte - 1);
-+
-+	cond_resched();
-+
-+	return err;
-+}
-+
-+static struct mm_walk pagemap_walk =
-+{
-+	.pmd_entry = pagemap_pte_range,
-+	.pte_hole = pagemap_pte_hole
-+};
-+
-+/*
-+ * /proc/pid/pagemap - an array mapping virtual pages to pfns
++#define KPMSIZE sizeof(u64)
++#define KPMMASK (KPMSIZE - 1)
++/* /proc/kpagecount - an array exposing page counts
 + *
-+ * For each page in the address space, this file contains one 64-bit
-+ * entry representing the corresponding physical page frame number
-+ * (PFN) if the page is present. If there is a swap entry for the
-+ * physical page, then an encoding of the swap file number and the
-+ * page's offset into the swap file are returned. If no page is
-+ * present at all, PM_NOT_PRESENT is returned. This allows determining
-+ * precisely which pages are mapped (or in swap) and comparing mapped
-+ * pages between processes.
-+ *
-+ * Efficient users of this interface will use /proc/pid/maps to
-+ * determine which areas of memory are actually mapped and llseek to
-+ * skip over unmapped regions.
++ * Each entry is a u64 representing the corresponding
++ * physical page count.
 + */
-+static ssize_t pagemap_read(struct file *file, char __user *buf,
-+			    size_t count, loff_t *ppos)
++static ssize_t kpagecount_read(struct file *file, char __user *buf,
++			     size_t count, loff_t *ppos)
 +{
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	struct page **pages, *page;
-+	unsigned long uaddr, uend;
-+	struct mm_struct *mm;
-+	struct pagemapread pm;
-+	int pagecount;
-+	int ret = -ESRCH;
++	u64 __user *out = (u64 __user *)buf;
++	struct page *ppage;
++	unsigned long src = *ppos;
++	unsigned long pfn;
++	ssize_t ret = 0;
++	u64 pcount;
 +
-+	if (!task)
-+		goto out;
++	if (!access_ok(VERIFY_WRITE, buf, count))
++		return -EFAULT;
 +
-+	ret = -EACCES;
-+	if (!ptrace_may_attach(task))
-+		goto out;
++	pfn = src / KPMSIZE;
++	count = min_t(size_t, count, (max_pfn * KPMSIZE) - src);
++	if (src & KPMMASK || count & KPMMASK)
++		return -EIO;
 +
-+	ret = -EINVAL;
-+	/* file position must be aligned */
-+	if (*ppos % PM_ENTRY_BYTES)
-+		goto out;
++	while (count > 0) {
++		ppage = pfn_to_page(pfn++);
++		if (!ppage)
++			pcount = 0;
++		else
++			pcount = atomic_read(&ppage->_count);
 +
-+	ret = 0;
-+	mm = get_task_mm(task);
-+	if (!mm)
-+		goto out;
++		if (put_user(pcount, out++)) {
++			ret = -EFAULT;
++			break;
++		}
 +
-+	ret = -ENOMEM;
-+	uaddr = (unsigned long)buf & PAGE_MASK;
-+	uend = (unsigned long)(buf + count);
-+	pagecount = (PAGE_ALIGN(uend) - uaddr) / PAGE_SIZE;
-+	pages = kmalloc(pagecount * sizeof(struct page *), GFP_KERNEL);
-+	if (!pages)
-+		goto out_task;
-+
-+	down_read(&current->mm->mmap_sem);
-+	ret = get_user_pages(current, current->mm, uaddr, pagecount,
-+			     1, 0, pages, NULL);
-+	up_read(&current->mm->mmap_sem);
-+
-+	if (ret < 0)
-+		goto out_free;
-+
-+	pm.out = buf;
-+	pm.end = buf + count;
-+
-+	if (!ptrace_may_attach(task)) {
-+		ret = -EIO;
-+	} else {
-+		unsigned long src = *ppos;
-+		unsigned long svpfn = src / PM_ENTRY_BYTES;
-+		unsigned long start_vaddr = svpfn << PAGE_SHIFT;
-+		unsigned long end_vaddr = TASK_SIZE_OF(task);
-+
-+		/* watch out for wraparound */
-+		if (svpfn > TASK_SIZE_OF(task) >> PAGE_SHIFT)
-+			start_vaddr = end_vaddr;
-+
-+		/*
-+		 * The odds are that this will stop walking way
-+		 * before end_vaddr, because the length of the
-+		 * user buffer is tracked in "pm", and the walk
-+		 * will stop when we hit the end of the buffer.
-+		 */
-+		ret = walk_page_range(mm, start_vaddr, end_vaddr,
-+					&pagemap_walk, &pm);
-+		if (ret == PM_END_OF_BUFFER)
-+			ret = 0;
-+		/* don't need mmap_sem for these, but this looks cleaner */
-+		*ppos += pm.out - buf;
-+		if (!ret)
-+			ret = pm.out - buf;
++		count -= KPMSIZE;
 +	}
 +
-+	for (; pagecount; pagecount--) {
-+		page = pages[pagecount-1];
-+		if (!PageReserved(page))
-+			SetPageDirty(page);
-+		page_cache_release(page);
-+	}
-+	mmput(mm);
-+out_free:
-+	kfree(pages);
-+out_task:
-+	put_task_struct(task);
-+out:
++	*ppos += (char __user *)out - buf;
++	if (!ret)
++		ret = (char __user *)out - buf;
 +	return ret;
 +}
 +
-+const struct file_operations proc_pagemap_operations = {
-+	.llseek		= mem_lseek, /* borrow this */
-+	.read		= pagemap_read,
++static struct file_operations proc_kpagecount_operations = {
++	.llseek = mem_lseek,
++	.read = kpagecount_read,
 +};
 +
- #ifdef CONFIG_NUMA
- extern int show_numa_map(struct seq_file *m, void *v);
++/* /proc/kpageflags - an array exposing page flags
++ *
++ * Each entry is a u64 representing the corresponding
++ * physical page flags.
++ */
++static ssize_t kpageflags_read(struct file *file, char __user *buf,
++			     size_t count, loff_t *ppos)
++{
++	u64 __user *out = (u64 __user *)buf;
++	struct page *ppage;
++	unsigned long src = *ppos;
++	unsigned long pfn;
++	ssize_t ret = 0;
++	u64 pflags;
++
++	if (!access_ok(VERIFY_WRITE, buf, count))
++		return -EFAULT;
++
++	pfn = src / KPMSIZE;
++	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
++	if (src & KPMMASK || count & KPMMASK)
++		return -EIO;
++
++	while (count > 0) {
++		ppage = pfn_to_page(pfn++);
++		if (!ppage)
++			pflags = 0;
++		else
++			pflags = ppage->flags;
++
++		if (put_user(pflags, out++)) {
++			ret = -EFAULT;
++			break;
++		}
++
++		count -= KPMSIZE;
++	}
++
++	*ppos += (char __user *)out - buf;
++	if (!ret)
++		ret = (char __user *)out - buf;
++	return ret;
++}
++
++static struct file_operations proc_kpageflags_operations = {
++	.llseek = mem_lseek,
++	.read = kpageflags_read,
++};
++
+ struct proc_dir_entry *proc_root_kcore;
  
-@@ -552,4 +751,3 @@ const struct file_operations proc_numa_m
- 	.release	= seq_release_private,
- };
+ void create_seq_entry(char *name, mode_t mode, const struct file_operations *f)
+@@ -735,6 +836,8 @@ void __init proc_misc_init(void)
+ 				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
+ 	}
  #endif
--
++	create_seq_entry("kpagecount", S_IRUSR, &proc_kpagecount_operations);
++	create_seq_entry("kpageflags", S_IRUSR, &proc_kpageflags_operations);
+ #ifdef CONFIG_PROC_VMCORE
+ 	proc_vmcore = create_proc_entry("vmcore", S_IRUSR, NULL);
+ 	if (proc_vmcore)
