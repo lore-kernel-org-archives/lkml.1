@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934004AbXJOStk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXJOSuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934004AbXJOStk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbXJOSpw
+	id S932255AbXJOSuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934959AbXJOSqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:45:52 -0400
-Received: from mga07.intel.com ([143.182.124.22]:25788 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934849AbXJOSpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:45:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
-   d="scan'208";a="299135349"
-Date: Mon, 15 Oct 2007 11:45:09 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071015184509.GA18821@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015183017.GB23130@uranus.ravnborg.org>
+	Mon, 15 Oct 2007 14:46:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39480 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934950AbXJOSqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 14:46:53 -0400
+Message-ID: <4713B58B.9050905@garzik.org>
+Date: Mon, 15 Oct 2007 14:46:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015183017.GB23130@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.11
+To: Greg KH <greg@kroah.com>
+CC: Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com>
+In-Reply-To: <20071015172513.GA5738@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 08:30:17PM +0200, Sam Ravnborg wrote:
-> On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
-> > On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
-> > > The kernel newbies community often gets inquiries from CS students who
-> > > need a project for their studies and would like to do something with
-> > > the Linux kernel, but would also like their code to be useful to the
-> > > community afterwards.
-> > > 
-> > > In order to make it easier for them, I am trying to put together a
-> > > page with projects that:
-> > > - Are self contained enough that the students can implement the
-> > >   project by themselves, since that is often a university requirement.
-> > > - Are self contained enough that Linux could merge the code (maybe
-> > >   with additional changes) after the student has been working on it
-> > >   for a few months.
-> > > - Are large enough to qualify as a student project, luckily there is
-> > >   flexibility here since we get inquiries for anything from 6 week
-> > >   projects to 6 month projects.
-> > > 
-> > > If you have ideas on what projects would be useful, please add them
-> > > to this page (or email me):
-> > > 
-> > > http://kernelnewbies.org/KernelProjects
-> > 
-> > Is there already a make config option that will do a good job at setting
-> > a default .config file based on what is already running on a system?  
-> I have discussed this briefly with Kay Sievers.
-> What udev can provide is the list of modules needed, so what the kernel
-> need to provide is a simple module to CONFIG option(s) converter + a base
-> config to start out with.
-> Nothing particular difficult but needs a few days work to do.
+Greg KH wrote:
+> On Mon, Oct 15, 2007 at 03:36:15AM -0500, Rob Landley wrote:
+>> The point I was trying to make is that it seems to me like it would be 
+>> possible to keep the namespace separate here, and thus reduce the enumeration 
+>> problems to the point where common cases (like my laptop) aren't impacted by 
+>> them during early boot.
 > 
+> Proposals on how to do this would be gladly reviewed.
 
-that would be cool.
+Agreed.
 
---mgross
+
+> But again, please remember that these USB devices are really SCSI
+> devices.  Same for SATA devices.  There is a reason they are using the
+> SCSI layer, and it isn't just because the developers felt like it :)
+
+/somewhat/ true I'm afraid:  libata uses the SCSI layer for ATAPI 
+devices because they are essentially bridges to SCSI devices.  It uses 
+the SCSI layer for ATA devices because the SCSI layer provided a huge 
+amount of infrastructure that would need to have been otherwise 
+duplicated, /then/ massaged into coordinating between <jgarzik's ATA 
+layer> and <SCSI layer> when dealing with ATAPI.
+
+There is also a detail that was of /huge/ value when introducing a new 
+device class:  distro installers automatically work, if you use SCSI. 
+If you use a new block device type, that behaves differently from other 
+types and is on a different major, you have to poke the distros into 
+action or do it yourself.
+
+IOW, it was the high Just Works(tm) value of the SCSI layer when it came 
+to ATA (not ATAPI) devices.
+
+For the future, ATA will eventually be more independent (though the SCSI 
+simulator will be available as an option, for compat), but the value is 
+big enough to put that task on the back-burner.
+
+	Jeff
+
+
+
