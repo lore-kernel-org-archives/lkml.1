@@ -1,61 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbXJOT1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765917AbXJOT2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765505AbXJOT1Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 15:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759200AbXJOT1R
+	id S1765917AbXJOT2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 15:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759821AbXJOT2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 15:27:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50464 "EHLO mx3.mail.elte.hu"
+	Mon, 15 Oct 2007 15:28:31 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:20109 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759224AbXJOT1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 15:27:16 -0400
-Date: Mon, 15 Oct 2007 21:27:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [patch] scsi: fix crash in gdth_timeout()
-Message-ID: <20071015192703.GA7279@elte.hu>
-References: <20071015165534.GA17833@elte.hu> <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org> <4713A9FA.4050209@garzik.org> <4713B4E7.2050001@panasas.com>
+	id S1759837AbXJOT23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 15:28:29 -0400
+Date: Mon, 15 Oct 2007 21:28:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20071015192822.GA2267@kernel.dk>
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org> <20071015114738.6b5a25c7.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4713B4E7.2050001@panasas.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071015114738.6b5a25c7.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Boaz Harrosh <bharrosh@panasas.com> wrote:
-
-> > Honestly, the driver is probably rarely run by people that lack the 
-> > hardware, I bet...
+On Mon, Oct 15 2007, Andrew Morton wrote:
+> On Mon, 15 Oct 2007 10:46:47 -0700
+> Arjan van de Ven <arjan@infradead.org> wrote:
 > 
-> It was all "flight by instruments only". I called for HW testers and 
-> none came forward. All these changes, apart from "successful downgrade 
-> to messy" where also needed in order to push important changes to 
-> scsi.
+> > 
+> > Subject: Give kjournald a IOPRIO_CLASS_RT io priority
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > With latencytop, I noticed that the (in memory) atime updates during a
+> > kernel build had latencies of 600 msec or longer; this is obviously not so
+> > nice behavior. Other EXT3 journal related operations had similar or even
+> > longer latencies.
+> > 
+> > Digging into this a bit more, it appears to be an interaction between EXT3
+> > and CFQ in that CFQ tries to be fair to everyone, including kjournald.
+> > However, in reality, kjournald is "special" in that it does a lot of journal
+> > work and effectively this leads to a twisted kind of "mass priority
+> > inversion" type of behavior.
+> > 
+> > The good news is that CFQ already has the infrastructure to make certain
+> > processes special... JBD just wasn't using that quite yet.
+> > 
+> > The patch below makes kjournald of the IOPRIO_CLASS_RT priority to break
+> > this priority inversion behavior. With this patch, the latencies for atime
+> > updates (and similar operation) go down by a factor of 3x to 4x !
+> > 
 > 
-> But a little bird said that QEMU might simulate this HW. SO I guess it 
-> is QEMU time for me.
+> Seems a pretty fundamental change which could do with some careful
+> benchmarking, methinks.
+> 
+> See, your patch amounts to "do more seeks to improve one test case". 
+> Surely other testcases will worsen.  What are they?
 
-heh. Incidentally i was thinking about using KVM for automated testing. 
-Important pieces of hardware should get an in-KVM simulator/emulator, 
-that way developers who do not own that hardware can do functionality 
-testing too. So basically the highest-quality drivers would have an 
-"inverse driver" in KVM, which simulates the hardware. (that model is 
-evidently useful to the hardware maker even for new hardware: it can 
-then also be used to test the Linux compatibility and Linux performance 
-of future planned releases of the hardware, etc.)
+Yes, completely agree! I think Arjans patch makes a heap of sense, but
+some numbers would be great to see.
 
-	Ingo
+> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > 
+> > diff -purN linux-2.6.23-rc9.org/fs/jbd/journal.c linux-2.6.23-rc9.lt/fs/jbd/journal.c
+> > --- linux-2.6.23-rc9.org/fs/jbd/journal.c	2007-10-02 05:24:52.000000000 +0200
+> > +++ linux-2.6.23-rc9.lt/fs/jbd/journal.c	2007-10-14 00:06:55.000000000 +0200
+> > @@ -35,6 +35,7 @@
+> >  #include <linux/kthread.h>
+> >  #include <linux/poison.h>
+> >  #include <linux/proc_fs.h>
+> > +#include <linux/ioprio.h>
+> >  
+> >  #include <asm/uaccess.h>
+> >  #include <asm/page.h>
+> > @@ -131,6 +132,8 @@ static int kjournald(void *arg)
+> >  	printk(KERN_INFO "kjournald starting.  Commit interval %ld seconds\n",
+> >  			journal->j_commit_interval / HZ);
+> >  
+> > +	current->ioprio =  (IOPRIO_CLASS_RT << IOPRIO_CLASS_SHIFT) | 4;
+> > +
+> 
+> Might be worth a code comment?
+
+It should not be merged as-is, instead I'll provide a function to do
+this. It should also set current->io_context->ioprio_changed. Since no
+IO has been done yet at this point it doesn't matter. But we should cut
+a piece of set_task_ioprio() out and provide that as a kernel helper for
+this sort of thing.
+
+Even just writing it as:
+
+current->ioprio =  (IOPRIO_CLASS_RT << IOPRIO_CLASS_SHIFT) | IOPRIO_NORM;
+
+would be more readable. Or perhaps this would suffice, given the above
+restriction that IO hasn't been done yet:
+
+current->ioprio = IOPRIO_PRIO_VALUE(IOPRIO_CLASS_RT, IOPRIO_NORM);
+
+-- 
+Jens Axboe
+
