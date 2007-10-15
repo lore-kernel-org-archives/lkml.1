@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXJOIdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbXJOIgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbXJOIdJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 04:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXJOIc5
+	id S1757513AbXJOIgx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 04:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbXJOIgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 04:32:57 -0400
-Received: from verein.lst.de ([213.95.11.210]:47885 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754916AbXJOIc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 04:32:56 -0400
-Date: Mon, 15 Oct 2007 10:31:41 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: xfs-masters@oss.sgi.com
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, xfs@oss.sgi.com,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
-       Morten B?geskov <xen-users@morten.bogeskov.dk>
-Subject: Re: [xfs-masters] Re: Interaction between Xen and XFS: stray RW mappings
-Message-ID: <20071015083141.GA20851@lst.de>
-References: <470FA7C3.90404@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <4712BB05.1020701@goop.org> <200710151726.08387.nickpiggin@yahoo.com.au> <4712E1AA.501@goop.org> <20071015041133.GH995458@sgi.com> <4712EA09.6000102@goop.org> <20071015042546.GI995458@sgi.com>
+	Mon, 15 Oct 2007 04:36:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47026
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755075AbXJOIgm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 04:36:42 -0400
+Date: Mon, 15 Oct 2007 01:36:47 -0700 (PDT)
+Message-Id: <20071015.013647.95041541.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: davem@sunset.davemloft.net, jgarzik@pobox.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/net/niu.c: possible array overflows
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071014175024.GH4211@stusta.de>
+References: <20071014175024.GH4211@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015042546.GI995458@sgi.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 02:25:46PM +1000, David Chinner wrote:
-> > Hm, well I saw the problem with a filesystem made with mkfs.xfs with no
-> > options, so there must be at least *some* vmapping going on there.
-> 
-> Sorry - I should have been more precise - vmap should never be used in
-> performance critical paths on default configs.  Log recovery will
-> trigger vmap/vunmap usage, so this is probably what you are seeing.
+From: Adrian Bunk <bunk@kernel.org>
+Date: Sun, 14 Oct 2007 19:50:24 +0200
 
-The iclogs are also vmapped, but they aren't unmapped until unmount so
-this optimizations doesn't matter either.
+> The Coverity checker spotted the following in drivers/net/niu.c:
 
+Thanks for the report Adrian, I'll fix it like this:
+
+commit 503211a947ab13fb44d920f78f1e19057efc277f
+Author: David S. Miller <davem@sunset.davemloft.net>
+Date:   Mon Oct 15 01:36:24 2007 -0700
+
+    [NIU]: Fix write past end of array in niu_pci_probe_sprom().
+    
+    Noticed by Coverity checker and reported by Adrian Bunk.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/niu.c b/drivers/net/niu.c
+index 43bfe7e..54166bd 100644
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -6213,7 +6213,7 @@ static int __devinit niu_pci_probe_sprom(struct niu *np)
+ 	val = nr64(ESPC_MOD_STR_LEN);
+ 	niudbg(PROBE, "SPROM: MOD_STR_LEN[%llu]\n",
+ 	       (unsigned long long) val);
+-	if (val > 8 * 4)
++	if (val >= 8 * 4)
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < val; i += 4) {
+@@ -6229,7 +6229,7 @@ static int __devinit niu_pci_probe_sprom(struct niu *np)
+ 	val = nr64(ESPC_BD_MOD_STR_LEN);
+ 	niudbg(PROBE, "SPROM: BD_MOD_STR_LEN[%llu]\n",
+ 	       (unsigned long long) val);
+-	if (val > 4 * 4)
++	if (val >= 4 * 4)
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < val; i += 4) {
