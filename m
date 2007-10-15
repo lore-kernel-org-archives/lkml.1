@@ -1,132 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934935AbXJOSsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934840AbXJOSs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934935AbXJOSsb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXJOSjL
+	id S934840AbXJOSs4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbXJOSoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:39:11 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56094 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934241AbXJOSjJ (ORCPT
+	Mon, 15 Oct 2007 14:44:14 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:8442 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934794AbXJOSoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:39:09 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710160006.19735.nickpiggin@yahoo.com.au>
-	<200710151105.57442.borntraeger@de.ibm.com>
-	<200710160038.03524.nickpiggin@yahoo.com.au>
-Date: Mon, 15 Oct 2007 12:38:33 -0600
-In-Reply-To: <200710160038.03524.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Tue, 16 Oct 2007 00:38:03 +1000")
-Message-ID: <m1ejfwkyty.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 15 Oct 2007 14:44:13 -0400
+Message-ID: <4713B4E7.2050001@panasas.com>
+Date: Mon, 15 Oct 2007 20:43:51 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: [patch] scsi: fix crash in gdth_timeout()
+References: <20071015165534.GA17833@elte.hu> <alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org> <4713A9FA.4050209@garzik.org>
+In-Reply-To: <4713A9FA.4050209@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Oct 2007 18:43:53.0527 (UTC) FILETIME=[55C1E470:01C80F5B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
-
-> On Monday 15 October 2007 19:05, Christian Borntraeger wrote:
->> Am Montag, 15. Oktober 2007 schrieb Nick Piggin:
->> > On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
->> > > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
->> > > unmaintained, so decided to sent the patch to you :-).
->> > > I have CCed Ted, who did work on the code in the 90s. I found no
->> > > current email address of Chad Page.
->> >
->> > This really needs to be fixed...
+On Mon, Oct 15 2007 at 19:57 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+> Linus Torvalds wrote:
+>> On Mon, 15 Oct 2007, Ingo Molnar wrote:
+>>> A further problem is probably that the GDTH timer is not stopped by a
+>>> failed GDTH probe?
+>> Indeed. Maybe this is a better fix?
 >>
->> I obviously agree ;-)
->> We have seen this problem happen several times.
->>
->> > I can't make up my mind between the approaches to fixing it.
->> >
->> > On one hand, I would actually prefer to really mark the buffers
->> > dirty (as in: Eric's fix for this problem[*]) than this patch,
->> > and this seems a bit like a bandaid...
->>
->> I have never seen these patches, so I cannot comment on them.
->
->> > On the other hand, the wound being covered by the bandaid is
->> > actually the code in the buffer layer that does this latent
->> > "cleaning" of the page because it sadly doesn't really keep
->> > track of the pagecache state. But it *still* feels like we
->> > should be marking the rd page's buffers dirty which should
->> > avoid this problem anyway.
->>
->> Yes, that would solve the problem as well. As long as we fix
->> the problem, I am happy. On the other hand, do you see any
->> obvious problem with this "bandaid"?
->
-> I don't think so -- in fact, it could be the best candidate for
-> a minimal fix for stable kernels (anyone disagree? if not, maybe
-> you could also send this to the stable maintainers?).
+>> That driver is pretty messy, and this should have been found ealier. 
+>> James? Boaz?
+> 
+> FWIW, the gdth driver was "super-messy".  With this latest SCSI pull, 
+> that severity has been successfully downgraded to "messy" :)
+> 
+> IMO some easy-to-fix breakage was inevitable with such a large volume of 
+> fundamental changes.
+> 
+> Honestly, the driver is probably rarely run by people that lack the 
+> hardware, I bet...
+> 
+> 	Jeff
 
-A minor one.  It still leaves us with buffer heads out of sync with
-struct page.
+It was all "flight by instruments only". I called for HW testers and none 
+came forward. All these changes, apart from "successful downgrade to messy"
+where also needed in order to push important changes to scsi.
 
-> But I do want to have this fixed in a "nice" way. eg. I'd like
-> it to mark the buffers dirty because that actually results in
-> more reuse of generic kernel code, and also should make rd
-> behave more naturally (I like using it to test filesystems
-> because it can expose a lot more concurrency than something like
-> loop on tmpfs). It should also be possible to actually have
-> rd's buffer heads get reclaimed as well, preferably while
-> exercising the common buffer paths and without writing much new
-> code.
+But a little bird said that QEMU might simulate this HW. SO I guess it is
+QEMU time for me.
 
-We actually allow that currently for clean pages which is part
-of what makes this tricky.
-
-> All of that is secondary to fixing the data corruption problem
-> of course! But the fact that those alternate patches do exist now
-> means I want to just bring them into the discussion again before
-> merging one or the other.
-
-The core of my original fix was to modify init_page_buffers so that
-when we added buffers to a dirty page the buffers became dirty.
-
-Modifying the generic code is a bit spooky because it requires us
-to audit the kernel to make certain nothing else depends on the
-current behavior in odd ways.  Although since init_page_buffers
-is only called when we are adding buffer heads to an existing
-page I still think that was the proper change.
-
-The historical reason for my patches not getting merged the first
-time is there was some weird issue with reiserfs ramdisks and so
-Andrew disabled the code, and then dropped it when he had discovered
-he had the patch disabled for several releases.  I don't think
-any causal relationship was ever established.  But I didn't
-hear enough about the reiserfs ramdisk issue, to make a guess
-what was going on.
-
-So it looks to me like the important invariant we need to maintain
-is that when a ramdisk page is dirty it always has buffers and those
-buffers are dirty as well.  With a little care we can ensure this
-happens with just modifications to rd.c
-
-Eric
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Boaz
