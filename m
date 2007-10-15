@@ -1,58 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763495AbXJOLiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761250AbXJOLi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763495AbXJOLiK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbXJOLh4
+	id S1761250AbXJOLi1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763553AbXJOLiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:37:56 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:42807 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757383AbXJOLhz (ORCPT
+	Mon, 15 Oct 2007 07:38:11 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50462 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763187AbXJOLiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:37:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=SUYU/4LweOqpyXUNhVHa7JNefwbIw12mRgFuYR2Rm3PP6f0l8kVCSaYllgqlGw2696mCYRZpGFZZNAazKRRuPvq5bAXS5u0E7FySBVfIYYXzX9oFOn4aSoWNcfci8fMrkOSoCLN6a4tA40IC8S9w4MYaIEn0DjrUjA2BFClAKFk=
-Date: Mon, 15 Oct 2007 19:34:45 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: mb@bu3sch.de, st3@riseup.net, Larry.Finger@lwfinger.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: [-mm Patch] drivers/net/wireless/b43/main.c: fix an uninitialized
-	variable
-Message-ID: <20071015113445.GO2444@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20071014175142.GN4211@stusta.de>
+	Mon, 15 Oct 2007 07:38:08 -0400
+Message-ID: <4713510D.2050208@bull.net>
+Date: Mon, 15 Oct 2007 13:37:49 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071014175142.GN4211@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Avi Kivity <avi@qumranet.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time	accounting.
+References: <46E550EF.5080209@bull.net> <20071015093800.GA22818@elte.hu> <47133732.2090809@qumranet.com> <20071015095125.GB28367@elte.hu> <47133ABD.8050608@qumranet.com> <471346B0.8050102@bull.net> <47134BCE.1080306@qumranet.com>
+In-Reply-To: <47134BCE.1080306@qumranet.com>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/10/2007 13:44:31,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/10/2007 13:44:32,
+	Serialize complete at 15/10/2007 13:44:32
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC95DDB272E55C48A04A35A59"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC95DDB272E55C48A04A35A59
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Fix an uninitialized variable in drivers/net/wireless/b43/main.c::b43_start().
+Avi Kivity wrote:
+> Laurent Vivier wrote:
+>> Avi Kivity wrote:
+>> =20
+>>> Ingo Molnar wrote:
+>>>   =20
+>>>> * Avi Kivity <avi@qumranet.com> wrote:
+>>>>
+>>>> =20
+>>>>     =20
+>>>>> This bit can go; for the external module I can add it back in
+>>>>> external-module-compat.h.  No need to pollute mainline with backwar=
+d
+>>>>> compatibility stuff.
+>>>>>            =20
+>>>> hm:
+>>>>
+>>>> static inline void kvm_guest_enter(void)
+>>>> {
+>>>>         current->flags |=3D PF_VCPU;
+>>>> }
+>>>>
+>>>> static inline void kvm_guest_exit(void)
+>>>> {
+>>>> }
+>>>>
+>>>> shouldnt PF_VCPU be cleared in kvm_guest_exit()?
+>>>>        =20
+>>> IIRC the accounting code clears it, but yes, it may not have been cal=
+led
+>>> at all, so clearing it here is needed.
+>>>
+>>>    =20
+>>
+>> No, It must not be cleared here because we can't enter in the
+>> accounting code
+>> between kvm_guest_enter(void) and kvm_guest_exit(void).
+>>
+>>  =20
+>=20
+> Right.
+>=20
+>> This is why the accounting code clears it.
+>>  =20
+>=20
+> But if we didn't get an interrupt in that time?
+>=20
+> We can clear it a bit later, after local_irq_enable() in __vcpu_run(). =
 
-From: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> However we need a nop instruction first because "sti" keeps interrupts
+> disabled for one more instruction.
 
----
- drivers/net/wireless/b43/main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+IMHO, I think it is better to let kvm_guest_exit() empty (you can remove =
+it, if
+you want):
 
-Index: linux-2.6.23-mm1/drivers/net/wireless/b43/main.c
-===================================================================
---- linux-2.6.23-mm1.orig/drivers/net/wireless/b43/main.c
-+++ linux-2.6.23-mm1/drivers/net/wireless/b43/main.c
-@@ -3495,7 +3495,7 @@ static int b43_start(struct ieee80211_hw
- 	struct b43_wl *wl = hw_to_b43_wl(hw);
- 	struct b43_wldev *dev = wl->current_dev;
- 	int did_init = 0;
--	int err;
-+	int err = 0;
- 
- 	mutex_lock(&wl->mutex);
- 
+1st case:
+- unset PF_VCPU in kvm_guest_exit(), all the tick is always for system ti=
+me.
+Guest time is always 0.
+
+1st case and half:
+
+- like 1st case but we move kvm_guest_exit() as you propose and the reaso=
+n of
+the interrupt is the tick interrupt. The tick is for guest time only. I t=
+hink
+the probability is very low.
+
+2nd case:
+- don't unset PF_VCPU in kvm_guest_exit(), all the tick is for guest time=
+=2E
+
+I proposed a patch allowing to be more accurate, but it introduces more
+complexity and system and user time accounting are not very accurate too =
+(the
+tick if for system if it appears whereas we are in system, for user if it=
+
+appears whereas we are in user).
+
+Laurent
+--=20
+---------------- Laurent.Vivier@bull.net  -----------------
+"Given enough eyeballs, all bugs are shallow" E. S. Raymond
+
+
+--------------enigC95DDB272E55C48A04A35A59
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFHE1ER9Kffa9pFVzwRAnuiAKDRndCRODu2xw0j1mSWPSMe05EaQgCfcuKG
+BmIlWDWjdmttp1oSyFPY2TU=
+=BDAq
+-----END PGP SIGNATURE-----
+
+--------------enigC95DDB272E55C48A04A35A59--
