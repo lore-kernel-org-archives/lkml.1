@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764493AbXJOQFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbXJOQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764493AbXJOQFl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761629AbXJOQFX
+	id S1756854AbXJOQIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbXJOQIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:05:23 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10138 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761345AbXJOQFU convert rfc822-to-8bit (ORCPT
+	Mon, 15 Oct 2007 12:08:05 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52023 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757815AbXJOQID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:05:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
-   d="scan'208";a="174307839"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 15 Oct 2007 12:08:03 -0400
+Date: Mon, 15 Oct 2007 10:08:00 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Rob Landley <rob@landley.net>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015160800.GA324@parisc-linux.org>
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] drivers/pci, drivers/dma: kill unused vars
-Date: Mon, 15 Oct 2007 09:05:18 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03393355@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20071013190724.GA20132@havoc.gtf.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/pci, drivers/dma: kill unused vars
-Thread-Index: AcgNzEvHljxyxmu1TKm1oK80yEcdQABeANUQ
-References: <20071013190724.GA20132@havoc.gtf.org>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Jeff Garzik" <jeff@garzik.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
-       "Williams, Dan J" <dan.j.williams@intel.com>
-X-OriginalArrivalTime: 15 Oct 2007 16:05:19.0710 (UTC) FILETIME=[2F149FE0:01C80F45]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710150426.04924.rob@landley.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Jeff Garzik [mailto:jeff@garzik.org] 
->Sent: Saturday, October 13, 2007 12:07 PM
->To: Andrew Morton; Linus Torvalds
->Cc: LKML; Greg KH; Nelson, Shannon; Williams, Dan J
->Subject: [PATCH] drivers/pci, drivers/dma: kill unused vars
->
->
->Kill two never-used (not even in hidden debug macros) variables,
->noticed by the compiler.
->
->Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->---
-> drivers/dma/ioatdma.c                  |    1 -
-> drivers/pci/hotplug/pci_hotplug_core.c |    2 --
-> 2 files changed, 3 deletions(-)
->
->diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
->index 41b18c5..d9db64b 100644
->--- a/drivers/dma/ioatdma.c
->+++ b/drivers/dma/ioatdma.c
->@@ -244,7 +244,6 @@ static void 
->ioat_dma_free_chan_resources(struct dma_chan *chan)
-> 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-> 	struct ioat_device *ioat_device = to_ioat_device(chan->device);
-> 	struct ioat_desc_sw *desc, *_desc;
->-	u16 chanctrl;
-> 	int in_use_descs = 0;
-> 
-> 	ioat_dma_memcpy_cleanup(ioat_chan);
+On Mon, Oct 15, 2007 at 04:26:04AM -0500, Rob Landley wrote:
+> For example, usb devices are never easy to order.  IDE devices (back when they 
+> had their own namespace) were trivial to order back when /dev/hda couldn't 
+> move without use of a screwdriver.
 
-Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Ah, but it could.  If you had more than one IDE controller (which is
+even possible on laptops; the Fujitsu P7120 is one that I'm familiar
+with that has more than one), the initialisation order *of the
+controllers* would change which was hda and which was hde.
 
-FYI - this code gets heavily revised by ioat patches in -mm that Andrew
-is planning on merging soon.
+> Combining USB and IDE into the same /dev/sd? namespace makes enumerating the 
+> IDE devices much harder than in the traditional "/dev/hdb doesn't move 
+> without a screwdriver" model.  The merger creates a new problem for IDE, one 
+> which didn't exist before: the addition or removal of other unrelated types 
+> of devices may change this device's location next boot.  It may be possible 
+> to add additional complication to the system to compensate, but what was the 
+> advantage of merging the namespaces in the first place?
 
-sln
+It's not something anyone particularly set out to do, it's just how
+it worked out.  It was justified by saying "ok, this goes from a 99%
+solution to a 96% solution, but there's 100% solution called uuids".
+I don't particularly agree with this line of argumentation, but it did
+hold sway.
 
->diff --git a/drivers/pci/hotplug/pci_hotplug_core.c 
->b/drivers/pci/hotplug/pci_hotplug_core.c
->index f0eba53..01c351c 100644
->--- a/drivers/pci/hotplug/pci_hotplug_core.c
->+++ b/drivers/pci/hotplug/pci_hotplug_core.c
->@@ -689,8 +689,6 @@ int pci_hp_deregister (struct hotplug_slot *slot)
-> int __must_check pci_hp_change_slot_info(struct hotplug_slot *slot,
-> 					 struct hotplug_slot_info *info)
-> {
->-	int retval;
->-
-> 	if ((slot == NULL) || (info == NULL))
-> 		return -ENODEV;
-> 
->
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
