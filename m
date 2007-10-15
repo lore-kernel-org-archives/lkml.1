@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765833AbXJORjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765978AbXJORkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765833AbXJORjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXJORjF
+	id S1765978AbXJORkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXJORkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:39:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39795 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757715AbXJORjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:39:04 -0400
-Date: Mon, 15 Oct 2007 19:38:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Al Viro <viro@ftp.linux.org.uk>, gregkh@suse.de,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [build bug] drivers/ssb build failure, latest -git
-Message-ID: <20071015173840.GA26109@elte.hu>
-References: <20071014032948.GA25760@elte.hu> <20071014033549.GQ8181@ftp.linux.org.uk> <20071015105344.GA17028@elte.hu> <200710151458.54817.mb@bu3sch.de> <20071015135041.GB30221@elte.hu>
+	Mon, 15 Oct 2007 13:40:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:53605 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757303AbXJORkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 13:40:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d2Ey0Cio6G5MiSO5l1vYhc15r8RR6VS5f5eqZdqLXMLfMhM3YlfJPwh5uav0I6gDN79SBqCz2v9TYTcWuo0ga4/zGuG28VXigtnmAYBpilIudVKSPlouOQ2ymDOkoqzUUdFW7bMgw/8csllmhwZYVrFe3na9W5bR/3eWHDDlnkc=
+Message-ID: <d120d5000710151040n2dbea5cbt515d3df87d5d19ed@mail.gmail.com>
+Date: Mon, 15 Oct 2007 13:40:42 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
+Cc: bryan.wu@analog.com, "Andrey Panin" <pazke@donpac.ru>,
+       "Roel Kluin" <12o3l@tiscali.nl>,
+       "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
+In-Reply-To: <386072610710151024s13e9c16qd7c974cde8000a9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071015135041.GB30221@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1192459625.6215.17.camel@roc-laptop>
+	 <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
+	 <386072610710151024s13e9c16qd7c974cde8000a9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/15/07, Bryan Wu <cooloney.lkml@gmail.com> wrote:
+> On 10/15/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> >
+> > Completion is just not a good abstraction here... Please use work
+> > abstraction and possibly a separate workqueue.
+>
+> Yes, I agree with you now, although I have a little concern about the
+> possibility of big delay introduced by workqueue.
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Having a separate workqueue should isolate the driver from users
+hogging keventd. Otherwise the speed should be pretty much the same as
+with a kthread.
 
-> > > there's a new build failure with latest -git:
-> > > 
-> > >  drivers/built-in.o: In function `ssb_ohci_probe':
-> > >  ohci-hcd.c:(.text+0xbff39): undefined reference to `ssb_device_enable'
-> > >  ohci-hcd.c:(.text+0xbff6f): undefined reference to `ssb_admatch_base'
-> > >  ohci-hcd.c:(.text+0xbff8b): undefined reference to `ssb_admatch_size'
-> > >  ohci-hcd.c:(.text+0xbffe5): undefined reference to `ssb_device_disable'
-> > >  [...]
-> > > 
-> > > config attached.
+>
+> Thanks a lot for you kindly review.
+> I will resend update patch later.
 
-> > I'm not sure why this happens. SSB is Y and ohci-hcd is also Y. So 
-> > why doesn't it find the syms?
-> 
-> hm, it builds fine now. Weird - i'll double-check i got the right 
-> config.
+Thank you for not getting frustrated with all my change requests. Btw,
+blackfin keypad driver is in my tree and should be in mainline once
+Linus does the pull I requested.
 
-find attached another config that reproduces the build failure above.
-
-i think the reason is this:
-
-CONFIG_SSB=m
-CONFIG_USB_OHCI_HCD=y
-CONFIG_USB_OHCI_HCD_SSB=y
-
-	Ingo
+-- 
+Dmitry
