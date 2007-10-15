@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765978AbXJORkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765695AbXJORmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765978AbXJORkz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXJORkq
+	id S1765695AbXJORmZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXJORmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:40:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:53605 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757303AbXJORkp (ORCPT
+	Mon, 15 Oct 2007 13:42:17 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:34533 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbXJORmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:40:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d2Ey0Cio6G5MiSO5l1vYhc15r8RR6VS5f5eqZdqLXMLfMhM3YlfJPwh5uav0I6gDN79SBqCz2v9TYTcWuo0ga4/zGuG28VXigtnmAYBpilIudVKSPlouOQ2ymDOkoqzUUdFW7bMgw/8csllmhwZYVrFe3na9W5bR/3eWHDDlnkc=
-Message-ID: <d120d5000710151040n2dbea5cbt515d3df87d5d19ed@mail.gmail.com>
-Date: Mon, 15 Oct 2007 13:40:42 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Bryan Wu" <cooloney.lkml@gmail.com>
-Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: bryan.wu@analog.com, "Andrey Panin" <pazke@donpac.ru>,
-       "Roel Kluin" <12o3l@tiscali.nl>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
-In-Reply-To: <386072610710151024s13e9c16qd7c974cde8000a9@mail.gmail.com>
+	Mon, 15 Oct 2007 13:42:15 -0400
+Date: Mon, 15 Oct 2007 18:42:07 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@pol.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+cc: Jay Estabrook <Jay.Estabrook@hp.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] tgafb: Remove a redundant non-mono test in mono imageblit
+Message-ID: <Pine.LNX.4.64N.0710151836490.16262@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192459625.6215.17.camel@roc-laptop>
-	 <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
-	 <386072610710151024s13e9c16qd7c974cde8000a9@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15/07, Bryan Wu <cooloney.lkml@gmail.com> wrote:
-> On 10/15/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> >
-> > Completion is just not a good abstraction here... Please use work
-> > abstraction and possibly a separate workqueue.
->
-> Yes, I agree with you now, although I have a little concern about the
-> possibility of big delay introduced by workqueue.
->
+ There is a test in tgafb_mono_imageblit() for a colour image with a 
+fall-back to cfb_imageblit().  The test is not necessary as the only 
+caller, which is tgafb_imageblit(), checks it too and only invokes this 
+function for monochrome images.  It looks like a left-over from before 
+some changes to tgafb_imageblit().
 
-Having a separate workqueue should isolate the driver from users
-hogging keventd. Otherwise the speed should be pretty much the same as
-with a kthread.
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ Checked with checkpatch.pl and at the run time with an 8-bit TC frame
+buffer on a MIPS host.
 
->
-> Thanks a lot for you kindly review.
-> I will resend update patch later.
+ Please apply.
 
-Thank you for not getting frustrated with all my change requests. Btw,
-blackfin keypad driver is in my tree and should be in mainline once
-Linus does the pull I requested.
+  Maciej
 
--- 
-Dmitry
+patch-mips-2.6.23-rc5-20070904-tgafb-mono_imageblit-depth-0
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c	2007-09-04 04:55:46.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c	2007-10-14 20:32:13.000000000 +0000
+@@ -636,15 +636,6 @@ tgafb_mono_imageblit(struct fb_info *inf
+ 
+ 	is8bpp = info->var.bits_per_pixel == 8;
+ 
+-	/* For copies that aren't pixel expansion, there's little we
+-	   can do better than the generic code.  */
+-	/* ??? There is a DMA write mode; I wonder if that could be
+-	   made to pull the data from the image buffer...  */
+-	if (image->depth > 1) {
+-		cfb_imageblit(info, image);
+-		return;
+-	}
+-
+ 	dx = image->dx;
+ 	dy = image->dy;
+ 	width = image->width;
