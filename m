@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933075AbXJOUpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbXJOUpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933075AbXJOUpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbXJOUpL
+	id S933813AbXJOUpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764013AbXJOUpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:45:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46353 "EHLO mx2.redhat.com"
+	Mon, 15 Oct 2007 16:45:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53241 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752473AbXJOUpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:45:09 -0400
-Date: Mon, 15 Oct 2007 16:32:47 -0400
-From: Dave Jones <davej@redhat.com>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, Andi Kleen <andi@firstfloor.org>,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][try 3] architectural pstate driver for powernow-k8
-Message-ID: <20071015203247.GA14279@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Mark Langsdorf <mark.langsdorf@amd.com>,
-	Andy Whitcroft <apw@shadowen.org>, Andi Kleen <andi@firstfloor.org>,
-	cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-References: <200710091446.38432.mark.langsdorf@amd.com> <20071011075958.GK1130@shadowen.org> <20071015154031.GA30754@redhat.com> <200710151123.45582.mark.langsdorf@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200710151123.45582.mark.langsdorf@amd.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1762552AbXJOUpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:45:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64N.0710151624140.16262@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0710151624140.16262@blysk.ds.pg.gda.pl> <Pine.LNX.4.64N.0710121633480.21684@blysk.ds.pg.gda.pl> <21428.1192267071@redhat.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] frv: Remove duplicate output of .exit.data
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Mon, 15 Oct 2007 21:43:04 +0100
+Message-ID: <21474.1192480984@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 11:23:45AM -0500, Mark Langsdorf wrote:
- > On Monday 15 October 2007 10:40, Dave Jones wrote:
- > > On Thu, Oct 11, 2007 at 08:59:58AM +0100, Andy Whitcroft wrote:
- > >  
- > >  > >  	/* get fid did for hardware pstate transition */
- > >  > >  	pstate = index & HW_PSTATE_MASK;
- > >  > > -	if (pstate > MAX_HW_PSTATE)
- > >  > > +	if (pstate > data->max_hw_pstate);
- > >  > >  		return 0;
- > >  > 
- > >  > checkpatch picked up this dodgy if.  I suspect that the ';' is wrong
- > >  > from the context.
- > >  
- > > Indeed.  Mark/Andreas, want to send me a new patch against latest
- > > Linus HEAD ?  I didn't apply the old one yet, as it conflicted with
- > > the changes already queued for merging.
- > 
- > This is against -git7.  I should think that's close enough.
+Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-So close!
+>  Fair enough -- a quick test shows you are right.  Wouldn't it deserve a 
+> comment, though?  I know hardly anybody dares looking into these scripts, 
+> ;-) but those who do, may not be sure this setup is intentional.
 
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c: In function ‘powernowk8_target’:
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1054: error: ‘struct powernow_k8_data’ has no member named ‘currdid’
-make[1]: *** [arch/x86/kernel/cpu/cpufreq/powernow-k8.o] Error 1
-make: *** [arch/x86/kernel/cpu/cpufreq/powernow-k8.o] Error 2
+Probably.
 
-Missed one of the conversions?
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+David
