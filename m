@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbXJOV6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbXJOV7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761471AbXJOV6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbXJOV6f
+	id S1758554AbXJOV7G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXJOV6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:58:35 -0400
-Received: from ik-out-1112.google.com ([66.249.90.182]:38786 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756850AbXJOV6e (ORCPT
+	Mon, 15 Oct 2007 17:58:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51149 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757002AbXJOV6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:58:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j0PaUbJJ8Y7GtmoH4G9JEfgfKENf64upwIPc8EvQaXgxcyncgtQxMiVCL9FIHMKUVzaY8Mpdyd4aeZfwf6eFOe4z6qp1SI7XM0Yl6cDuRPrMFPYGBoZavmoAz8yz+qItNsask8dLwKRXh6ZfUwcQNtOj0FevRA8fWsdHeVbOFP0=
-Message-ID: <9a8748490710151458o73267df1tcfb35fb5ae71d598@mail.gmail.com>
-Date: Mon, 15 Oct 2007 23:58:32 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH 04/12] Clean up duplicate includes in arch/i386/xen/
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Keir Fraser" <keir@xensource.com>, "Stable Kernel" <stable@kernel.org>
-In-Reply-To: <20071015210114.891237072@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Oct 2007 17:58:36 -0400
+Date: Mon, 15 Oct 2007 23:01:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rob Landley <rob@landley.net>
+Cc: Neil Brown <neilb@suse.de>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015230137.3cdbeb71@the-village.bc.nu>
+In-Reply-To: <200710151634.57407.rob@landley.net>
+References: <200710112011.22000.rob@landley.net>
+	<200710150304.00901.rob@landley.net>
+	<18195.19678.500863.613193@notabene.brown>
+	<200710151634.57407.rob@landley.net>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071015204840.074767068@goop.org>
-	 <20071015210114.891237072@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15/10/2007, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> This patch cleans up duplicate includes in
->         arch/i386/xen/
->
+> This is where we disagree.  The existence of devices you cannot stably 
+> enumerate does not eliminate the existence of devices you trivially can.
 
-Just for the record; this patch is
-From: Jesper Juhl <jesper.juhl@gmail.com>
+"trivially" 
 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> ---
->  arch/x86/xen/enlighten.c |    1 -
->  arch/x86/xen/mmu.c       |    2 --
->  2 files changed, 3 deletions(-)
->
-> ===================================================================
-> --- a/arch/x86/xen/enlighten.c
-> +++ b/arch/x86/xen/enlighten.c
-> @@ -25,7 +25,6 @@
->  #include <linux/mm.h>
->  #include <linux/page-flags.h>
->  #include <linux/highmem.h>
-> -#include <linux/smp.h>
->
->  #include <xen/interface/xen.h>
->  #include <xen/interface/physdev.h>
-> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-> index 4ae038a..35691a2 100644
-> ===================================================================
-> --- a/arch/x86/xen/mmu.c
-> +++ b/arch/x86/xen/mmu.c
-> @@ -41,7 +41,6 @@
->  #include <linux/sched.h>
->  #include <linux/highmem.h>
->  #include <linux/bug.h>
-> -#include <linux/sched.h>
->
->  #include <asm/pgtable.h>
->  #include <asm/tlbflush.h>
+You are I assume familiar in full with EDD 3.0, EDD 1.x and the Ralf
+Brown documentation on the BIOS drive mappings and tables for different
+BIOSes ?
 
+If you are then you could add EDD 1.x spport, FADT parsing and update the
+EDD driver to produce links to the drives in BIOS map order. Would be
+quite useful but very few people on the planet actually know all the
+arcana to do this.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Alan
