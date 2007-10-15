@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765004AbXJOQlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762485AbXJOQrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765004AbXJOQlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 12:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbXJOQlG
+	id S1762485AbXJOQrL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 12:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbXJOQq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 12:41:06 -0400
-Received: from smtp20.orange.fr ([80.12.242.26]:9138 "EHLO smtp20.orange.fr"
+	Mon, 15 Oct 2007 12:46:58 -0400
+Received: from il.qumranet.com ([82.166.9.18]:58788 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758256AbXJOQlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 12:41:03 -0400
-X-ME-UUID: 20071015164102595.9144D1C0009E@mwinf2006.orange.fr
-Date: Mon, 15 Oct 2007 18:36:55 +0200
-From: Philippe Elie <phil.el@wanadoo.fr>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071015163655.GB2884@zaniah>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015142352.GA21259@uranus.ravnborg.org> <20071015163154.GA2884@zaniah>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015163154.GA2884@zaniah>
-User-Agent: Mutt/1.4.2.2i
+	id S1755291AbXJOQq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 12:46:57 -0400
+Message-ID: <47139959.7090900@qumranet.com>
+Date: Mon, 15 Oct 2007 18:46:17 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time	accounting.
+References: <46E550EF.5080209@bull.net> <20071015093800.GA22818@elte.hu> <47133732.2090809@qumranet.com> <20071015095125.GB28367@elte.hu> <47133ABD.8050608@qumranet.com> <471346B0.8050102@bull.net> <47134BCE.1080306@qumranet.com> <4713510D.2050208@bull.net> <471357E4.90904@qumranet.com> <47135D1B.1060004@bull.net>
+In-Reply-To: <47135D1B.1060004@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 at 18:31 +0000, Philippe Elie wrote:
+Laurent Vivier wrote:
+> Avi Kivity wrote:
+>   
+>> Laurent Vivier wrote:
+>>
+>>  
+>>
+>>     
+>>>> But if we didn't get an interrupt in that time?
+>>>>
+>>>> We can clear it a bit later, after local_irq_enable() in
+>>>> __vcpu_run(). However we need a nop instruction first because "sti"
+>>>> keeps interrupts
+>>>> disabled for one more instruction.
+>>>>     
+>>>>         
+>>> IMHO, I think it is better to let kvm_guest_exit() empty (you can
+>>> remove it, if
+>>> you want):
+>>>
+>>> 1st case:
+>>> - unset PF_VCPU in kvm_guest_exit(), all the tick is always for system
+>>> time.
+>>> Guest time is always 0.
+>>>
+>>> 1st case and half:
+>>>
+>>> - like 1st case but we move kvm_guest_exit() as you propose and the
+>>> reason of
+>>> the interrupt is the tick interrupt. The tick is for guest time only.
+>>> I think
+>>> the probability is very low.
+>>>   
+>>>       
+>> If the guest is executing for 10% of the time, the probability is
+>> exactly 10%, no?
+>>     
+>
+> I think you know that better than me.
+>
+> But is there homogeneity in probability ?
+>   
 
-> On Mon, 15 Oct 2007 at 16:23 +0000, Sam Ravnborg wrote:
-> 
-> > Hi Rik.
-> > 
-> > On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
-> > > The kernel newbies community often gets inquiries from CS students who
-> > > need a project for their studies and would like to do something with
-> > > the Linux kernel, but would also like their code to be useful to the
-> > > community afterwards.
-> > > 
-> 
-> ... 
-> 
-> > Increase speed for a build with no updates
-> > ==========================================
-> > On a resonably fast machine with a decent config it takes
-> > roughly 10 seconds to do a make where nothing is updated.
-> > Generating one single Makefile is assumed to speed up things
-> > and will in addition allow a simpler syntax as what is used today
-> > for some of the uglier constructs.
-> > 
-> > Contact: Sam Ravnborg <sam@ravnborg.org>
-> > Difficulty: 5
-> > Language: Perl or C
-> 
-> Isn't make -j 2 or more implemented by running multiple make in sub-dirs ?
-> Parallel make is more and more used even on cheap hardware.
+It's exactly the same issue as with systime and usertime.  The interrupt 
+samples the program counter at various points at a fairly low frequency 
+(milliseconds) while syscalls last a few dozens of microseconds.  
+Probability makes it average out correctly in the end.
 
-Errm, I misread what you said, it can be a single Makefile in each sub-dirs
+[Ingo, what about dyntick?  suppose you have just one process that calls 
+read() from /dev/zero repeatedly.  There'd be very few (or no) 
+interrupts -- what happens to accounting accuracy?]
 
-> 
-> -- 
-> Phe
-> 
+> I mean, if the guest has a lot I/O, it is interrupted by them and the
+> probability to be interrupted by a tick is lower than the time passed in the VCPU ?
+>   
+
+Suppose the time to service the I/O is exactly equal to the amount 
+running in guest mode.   Then the probability of the interrupt happening 
+in guest mode is equal to it happening outside guest mode and you'd get 
+50% guest, 50% system/user, which is what you want.
+
+
+>   
+>>> 2nd case:
+>>> - don't unset PF_VCPU in kvm_guest_exit(), all the tick is for guest
+>>> time.
+>>>   
+>>>       
+>> But then even execution in ->handle_exit() is accounted as guest time,
+>> which is wrong.
+>>     
+>
+> System time and User time are wrong too as the tick is accounted to the side
+> where it appears, even if CPU has executed code from the other side in a
+> sub-part of the tick. It's not a good argument.
+>   
+
+It's at least consistent... the same errors for everyone, so it averages 
+out in the end.
+
+-- 
+error compiling committee.c: too many arguments to function
 
