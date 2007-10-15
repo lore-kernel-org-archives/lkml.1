@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbXJOUYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbXJOUZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934065AbXJOUYm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXJOUYa
+	id S934882AbXJOUZF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765632AbXJOUYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:24:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59906 "EHLO ogre.sisk.pl"
+	Mon, 15 Oct 2007 16:24:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45115 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494AbXJOUY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:24:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: mgross@linux.intel.com
-Subject: Re: 2.6.23-mm1
-Date: Mon, 15 Oct 2007 22:40:02 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710122332.41944.rjw@sisk.pl> <20071015160914.GA18550@linux.intel.com>
-In-Reply-To: <20071015160914.GA18550@linux.intel.com>
+	id S1765594AbXJOUYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:24:37 -0400
+From: Neil Brown <neilb@suse.de>
+To: righiandr@users.sourceforge.net
+Date: Tue, 16 Oct 2007 06:24:27 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710152240.03543.rjw@sisk.pl>
+Message-ID: <18195.52347.544844.155538@notabene.brown>
+Cc: LKML <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
+Subject: Re: [NFS] nfsd closes port 2049
+In-Reply-To: message from Andrea Righi on Monday October 15
+References: <47139C02.9020009@cineca.it>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 15 October 2007 18:09, Mark Gross wrote:
-> On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
-> > > 
-> > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
-> > >   to stabilise things for the 2.6.23 merge.
-> > > 
-> > >   But that didn't stop all the subsystem maintainers from going nuts, with
-> > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
-> > >   a bit better.
-> > 
-> > I get many traces similar to the one below from it (w/ hotfixes):
-> > 
-> > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
+On Monday October 15, a.righi@cineca.it wrote:
+> Hi all,
 > 
-> This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
-> processor_idle.c is registering a acpi_processor_latency_notify 
+> I'm trying to debug a weird problem with nfsd on a 2.6.16.27-0.6-smp
+> kernel.
 > 
-> my code changed the notifier call from blocking_notifier_call_chain to
-> srcu_notifier_call_chain, because dynamic creation of notifier chains at
-> runtime where easier with the srcu_notifier_call_chain than the
-> blocking_notifier_call_chain.  
+> 1 server: SuSE SLES 10 x86_64, config attached
+> 256 clients: RHEL4 Update 4 2.6.9-42.ELsmp x86_64
 > 
-> As dynamic creation of PM_QOS parameters are no longer needed I can
-> change the notifiers back to match what was in lanency.c
+> Using nfs v3.
 > 
-> However; looking at the call tree differences between
-> blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
-> difference in irq enabling / disabling.  I'm not confident this will
-> address this yet.
+> The clients have been happily talking to the server for several days
+> without incident.
+> 
+> The weird thing is that at a certain point the socket opened on port
+> 2049 on the NFS server is being closed for unknown reasons (or better
+> for unknown reasons for me!).
 
-Well, you can send me a patch to check. :-)
+This is fixed in any release based on 2.6.16.31 or later.
+The relevant mainline patch is 
+    1a047060a99f274a7c52cfea8159e4142a14b8a7
+as below.
+So update your kernel package.
 
-> I'll change the PM_QOS params patch to use blocking notifiers and test
-> on a 64bit boot and see what happens.  I've been needing to setup my
-> x86_64 dev box for a while now anyway.
+NeilBrown
 
-OK, thanks.
 
-Greetings,
-Rafael
+commit 1a047060a99f274a7c52cfea8159e4142a14b8a7
+Author: NeilBrown <neilb@suse.de>
+Date:   Thu Oct 19 23:29:13 2006 -0700
+
+    [PATCH] knfsd: fix race that can disable NFS server
+    
+    This patch is suitable for just about any 2.6 kernel.  It should go in
+    2.6.19 and 2.6.18.2 and possible even the .17 and .16 stable series.
+    
+    This is a long standing bug that seems to have only recently become
+    apparent, presumably due to increasing use of NFS over TCP - many
+    distros seem to be making it the default.
+    
+    The SK_CONN bit gets set when a listening socket may be ready
+    for an accept, just as SK_DATA is set when data may be available.
+    
+    It is entirely possible for svc_tcp_accept to be called with neither
+    of these set.  It doesn't happen often but there is a small race in
+    svc_sock_enqueue as SK_CONN and SK_DATA are tested outside the
+    spin_lock.  They could be cleared immediately after the test and
+    before the lock is gained.
+    
+    This normally shouldn't be a problem.  The sockets are non-blocking so
+    trying to read() or accept() when ther is nothing to do is not a problem.
+    
+    However: svc_tcp_recvfrom makes the decision "Should I accept() or
+    should I read()" based on whether SK_CONN is set or not.  This usually
+    works but is not safe.  The decision should be based on whether it is
+    a TCP_LISTEN socket or a TCP_CONNECTED socket.
+    
+    Signed-off-by: Neil Brown <neilb@suse.de>
+    Cc: Adrian Bunk <bunk@stusta.de>
+    Cc: <stable@kernel.org>
+    Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index 61e307c..96521f1 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -973,7 +973,7 @@ svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 		return 0;
+ 	}
+ 
+-	if (test_bit(SK_CONN, &svsk->sk_flags)) {
++	if (svsk->sk_sk->sk_state == TCP_LISTEN) {
+ 		svc_tcp_accept(svsk);
+ 		svc_sock_received(svsk);
+ 		return 0;
