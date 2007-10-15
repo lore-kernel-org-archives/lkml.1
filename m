@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbXJOI1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbXJOI3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbXJOI1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 04:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbXJOI1g
+	id S1754694AbXJOI3H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 04:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbXJOI2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 04:27:36 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:32247 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752953AbXJOI1e (ORCPT
+	Mon, 15 Oct 2007 04:28:54 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:2455 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbXJOI2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 04:27:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bQ0agfSMHoSbEK7/+1USgsuS8j0lMx4htZrhrSK0NhYeXBtBz0cU44Q7URJOT2wDjfbloA/jMsoVUse1iIJxPN09/v+Mia3e2rvYqU3ZygjWDmG+ZMj44QnNvXkLt9W5MZPUWZoXi4ik7+5Y/ugDpgzzn9TvkEUkSAi4GCxYmI8=  ;
-X-YMail-OSG: DzVp6lEVM1nbVjHSbKsu9yQtk1zxKDxhejODzjP8BtLLb8srIbM._0UaPZdqwuIlZBORc_8l8Q--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rob Landley <rob@landley.net>
-Subject: OOM killer gripe (was Re: What still uses the block layer?)
-Date: Mon, 15 Oct 2007 23:37:44 +1000
-User-Agent: KMail/1.9.5
-Cc: Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <20071015014503.GF9715@thunk.org> <200710150304.00901.rob@landley.net>
-In-Reply-To: <200710150304.00901.rob@landley.net>
+	Mon, 15 Oct 2007 04:28:52 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
+User-Agent: KMail/1.9.7
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
 MIME-Version: 1.0
+Content-Disposition: inline
+Date: Mon, 15 Oct 2007 10:28:34 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710152337.45252.nickpiggin@yahoo.com.au>
+Message-Id: <200710151028.34407.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 18:04, Rob Landley wrote:
-> On Sunday 14 October 2007 8:45:03 pm Theodore Tso wrote:
+Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit unmaintained,
+so decided to sent the patch to you :-).
+I have CCed Ted, who did work on the code in the 90s. I found no current
+email address of Chad Page.
 
-> > > excuse for conflating different categories of devices in the first
-> > > place.
-> >
-> > See the thinkpad Ultrabay drive example above.
->
-> Last week I drove my laptop so deep into swap (with a "make -j" on qemu)
-> that after half an hour trying to repaint my kmail window, it locked solid.
-> Again.  You'd think the oom killer would come to the rescue, but it didn't.
-> Maybe Ubuntu disabled it.  I have _2_gigs_ of ram in this sucker, on a
-> stock Ubuntu 7.04 install (with the "upgrade all" tab pressed a few times),
-> and yet I managed to make it swap itself to death one more time.
->
-> Virtual memory isn't perfect.  I've _always_ been able to come up with
-> examples where it just doesn't work for me.  This doesn't mean VM
-> overcommit should be abolished, because it's useful more often than not.
+We have seen ramdisk based install systems, where some pages of mapped 
+libraries and programs were suddendly zeroed under memory pressure. This 
+should not happen, as the ramdisk avoids freeing its pages by keeping them 
+dirty all the time.
 
-I hate to go completely offtopic here, but disks are so incredibly
-slow when compared to RAM that there is really nothing the kernel
-can do about this. Presumably the job will finish, given infinite
-time.
+It turns out that there is a case, where the VM makes a ramdisk page clean, 
+without telling the ramdisk driver.
+On memory pressure shrink_zone runs and it starts to run shrink_active_list. 
+There is a check for buffer_heads_over_limit, and if true, pagevec_strip is 
+called. pagevec_strip calls try_to_release_page. If the mapping has no 
+releasepage callback, try_to_free_buffers is called. try_to_free_buffers has 
+now a special logic for some file systems to make a dirty page clean, if all 
+buffers are clean. Thats what happened in our test case.
 
-How much swap do you have configured? You really shouldn't configure
-so much unless you do want the kernel to actually use it all, right?
-Because if we're not really conservative about OOM killing, then the
-user who actually really did want to use all the swap they configured
-gets angry when we kill their jobs without using it all.
+The solution is to provide a noop-releasepage callback for the ramdisk driver.
+This avoids try_to_free_buffers for ramdisk pages. 
 
-Would an oom-kill-someone-now sysrq be of help, I wonder?
+To trigger the problem, you have to make buffer_heads_over_limit true, which
+means:
+- lower max_buffer_heads 
+or
+- have a system with lots of high memory
+
+Andrew, if there are no objections - please apply. The patch applies against
+todays git.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+
+---
+ drivers/block/rd.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+)
+
+Index: linux-2.6/drivers/block/rd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/rd.c
++++ linux-2.6/drivers/block/rd.c
+@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
+ 	return 0;
+ }
+ 
++/*
++ * releasepage is called by pagevec_strip/try_to_release_page if
++ * buffers_heads_over_limit is true. Without a releasepage function
++ * try_to_free_buffers is called instead. That can unset the dirty
++ * bit of our ram disk pages, which will be eventually freed, even
++ * if the page is still in use.
++ */
++static int ramdisk_releasepage(struct page *page, gfp_t dummy)
++{
++	return 0;
++}
++
+ static const struct address_space_operations ramdisk_aops = {
+ 	.readpage	= ramdisk_readpage,
+ 	.prepare_write	= ramdisk_prepare_write,
+@@ -196,6 +208,7 @@ static const struct address_space_operat
+ 	.writepage	= ramdisk_writepage,
+ 	.set_page_dirty	= ramdisk_set_page_dirty,
+ 	.writepages	= ramdisk_writepages,
++	.releasepage	= ramdisk_releasepage,
+ };
+ 
+ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
