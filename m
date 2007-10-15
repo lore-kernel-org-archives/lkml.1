@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbXJOWlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbXJOWlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761951AbXJOWlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXJOWlK
+	id S1755617AbXJOWlo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761143AbXJOWl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:41:10 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55507 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXJOWlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 18:41:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH] rd: Preserve the dirty bit in init_page_buffers()
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710160006.19735.nickpiggin@yahoo.com.au>
-	<200710151105.57442.borntraeger@de.ibm.com>
-	<200710160038.03524.nickpiggin@yahoo.com.au>
-	<m1ejfwkyty.fsf@ebiederm.dsl.xmission.com>
-	<m18x64knqx.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 15 Oct 2007 16:40:42 -0600
-In-Reply-To: <m18x64knqx.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 15 Oct 2007 16:37:58 -0600")
-Message-ID: <m14pgsknmd.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 15 Oct 2007 18:41:29 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58636 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762846AbXJOWl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 18:41:27 -0400
+Message-ID: <4713EC8A.5010607@garzik.org>
+Date: Mon, 15 Oct 2007 18:41:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <4713EC59.4010106@pobox.com>
+In-Reply-To: <4713EC59.4010106@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+>> --- linux.orig/drivers/net/forcedeth.c
+>> +++ linux/drivers/net/forcedeth.c
+>> @@ -2274,7 +2274,7 @@ static int nv_rx_process(struct net_devi
+>>  
+>>      while((np->get_rx.orig != np->put_rx.orig) &&
+>>            !((flags = le32_to_cpu(np->get_rx.orig->flaglen)) & 
+>> NV_RX_AVAIL) &&
+>> -        (rx_processed_cnt++ < limit)) {
+>> +        (++rx_processed_cnt < limit)) {
+>>  
+>>          dprintk(KERN_DEBUG "%s: nv_rx_process: flags 0x%x.\n",
+>>                      dev->name, flags);
+>> @@ -2412,7 +2412,7 @@ static int nv_rx_process_optimized(struc
+>>  
+>>      while((np->get_rx.ex != np->put_rx.ex) &&
+>>            !((flags = le32_to_cpu(np->get_rx.ex->flaglen)) & 
+>> NV_RX2_AVAIL) &&
+>> -          (rx_processed_cnt++ < limit)) {
+>> +          (++rx_processed_cnt < limit)) {
 
-The problem:  When we are trying to free buffers try_to_free_buffers()
-will look at ramdisk pages with clean buffer heads and remove the
-dirty bit from the page.  Resulting in ramdisk pages with data that get
-removed from the page cache.  Ouch!
 
-Buffer heads appear on ramdisk pages when a filesystem calls
-__getblk() which through a series of function calls eventually calls
-init_page_buffers().
+Though it wasn't clear, that's an ACK
 
-So to fix the mismatch between buffer head and page state this patch
-modifies init_page_buffers() to transfer the dirty bit from the page to
-the buffer heads like we currently do for the uptodate bit.
-
-This patch is safe as only __getblk calls init_page_buffers, and
-there are only two implementations of block devices cached in the
-page cache.  The generic implementation in block_dev.c and the
-implementation in rd.c.
-
-The generic implementation of block devices always does everything
-in terms of buffer heads so it always has buffer heads allocated
-before a page is marked dirty so this change does not affect it.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/buffer.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 75b51df..8b87beb 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -972,6 +972,7 @@ init_page_buffers(struct page *page, struct block_device *bdev,
- 	struct buffer_head *head = page_buffers(page);
- 	struct buffer_head *bh = head;
- 	int uptodate = PageUptodate(page);
-+	int dirty = PageDirty(page);
- 
- 	do {
- 		if (!buffer_mapped(bh)) {
-@@ -980,6 +981,8 @@ init_page_buffers(struct page *page, struct block_device *bdev,
- 			bh->b_blocknr = block;
- 			if (uptodate)
- 				set_buffer_uptodate(bh);
-+			if (dirty)
-+				set_buffer_dirty(bh);
- 			set_buffer_mapped(bh);
- 		}
- 		block++;
--- 
-1.5.3.rc6.17.g1911
+I'll push the patch if nobody else beats me to it.
 
