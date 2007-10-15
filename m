@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbXJOJud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXJOJvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbXJOJud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757993AbXJOJu0
+	id S1763011AbXJOJvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757762AbXJOJvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:50:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57786 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758834AbXJOJu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:50:26 -0400
-Date: Mon, 15 Oct 2007 11:50:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND 2][PATCH 4/4] Modify KVM to update guest time
-	accounting.
-Message-ID: <20071015095020.GA28367@elte.hu>
-References: <46E550EF.5080209@bull.net> <20071015093800.GA22818@elte.hu> <47133732.2090809@qumranet.com>
+	Mon, 15 Oct 2007 05:51:13 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41826 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757848AbXJOJvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 05:51:12 -0400
+Date: Mon, 15 Oct 2007 11:51:03 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] PS3 system bus add_uevent_var() fallout
+Message-ID: <Pine.LNX.4.62.0710151150090.28206@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47133732.2090809@qumranet.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1757741-1192441863=:28206"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Avi Kivity <avi@qumranet.com> wrote:
+---584337861-1757741-1192441863=:28206
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> Ingo Molnar wrote:
-> > int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
-> > 
-> >+/*
-> >+ * Compatibility define - PF_VCPU is only available in v2.6.24+ kernels:
-> >+ */
-> >+#ifndef PF_VCPU
-> >+# define PF_VCPU	0
-> >+#endif
-> >+
-> >  
-> 
-> This bit can go; for the external module I can add it back in 
-> external-module-compat.h.  No need to pollute mainline with backward 
-> compatibility stuff.
+PS3 system bus add_uevent_var() fallout: kill unused variables
 
-thx - zapped.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ arch/powerpc/platforms/ps3/system-bus.c |    1 -
+ 1 files changed, 1 deletion(-)
 
-	Ingo
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -440,7 +440,6 @@ static void ps3_system_bus_shutdown(stru
+ static int ps3_system_bus_uevent(struct device *_dev, struct kobj_uevent_env *env)
+ {
+ 	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
+-	int i = 0, length = 0;
+ 
+ 	if (add_uevent_var(env, "MODALIAS=ps3:%d", dev->match_id))
+ 		return -ENOMEM;
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1757741-1192441863=:28206--
