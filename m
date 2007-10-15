@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763687AbXJOA10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764165AbXJOAf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763687AbXJOA10 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 20:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXJOA1R
+	id S1764165AbXJOAf4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 20:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXJOAfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 20:27:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50555 "EHLO mx1.suse.de"
+	Sun, 14 Oct 2007 20:35:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42721 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbXJOA1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 20:27:16 -0400
+	id S1752317AbXJOAfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 20:35:47 -0400
 From: Neil Brown <neilb@suse.de>
-To: David Chinner <dgc@sgi.com>
-Date: Mon, 15 Oct 2007 10:27:08 +1000
+To: Sam Ravnborg <sam@ravnborg.org>
+Date: Mon, 15 Oct 2007 10:35:39 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18194.46044.601552.537774@notabene.brown>
-Cc: Jonathan Corbet <corbet@lwn.net>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
+Message-ID: <18194.46555.18395.586488@notabene.brown>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
 Subject: Re: RFC: reviewer's statement of oversight
-In-Reply-To: message from David Chinner on Wednesday October 10
-References: <18186.50640.970552.719041@notabene.brown>
-	<31862.1191948560@lwn.net>
-	<20071010000614.GA23367404@sgi.com>
+In-Reply-To: message from Sam Ravnborg on Tuesday October 9
+References: <20071008173706.GA12026@uranus.ravnborg.org>
+	<10940.1191883390@lwn.net>
+	<18186.50640.970552.719041@notabene.brown>
+	<20071009174433.GB25750@uranus.ravnborg.org>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
@@ -30,48 +30,75 @@ X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday October 10, dgc@sgi.com wrote:
-> On Tue, Oct 09, 2007 at 10:49:20AM -0600, Jonathan Corbet wrote:
-> > Neil Brown <neilb@suse.de> wrote:
-> > > > + (b) Any problems, concerns, or questions relating to the patch have been
-> > > > +     communicated back to the submitter.  I am satisfied with how the
-> > > > +     submitter has responded to my comments.
-> > > 
-> > > This seems more detailed that necessary.  The process (communicated
-> > > back / responded) is not really relevant.
+On Tuesday October 9, sam@ravnborg.org wrote:
+> Hi Neil.
 > > 
-> > Instead, it seems to me that the process is crucially important.
-> > Reviewed-by shouldn't be a rubber stamp that somebody applies to a
-> > patch; I think it should really imply that issues of interest have been
-> > communicated to the developers.  If we are setting expectations for what
-> > Reviewed-by means, I would prefer to leave an explicit mention of
-> > communication in there. 
+> >    From:        The Author, Primary Author, or Authors of the patch.
+> >                 Authors should also provide a Signed-off-by: tag.
+> > 
+> >                 Purpose: to give credit to authors
+> The SCM should include this info and we should not duplicate this
+> in the changelog's.
+> I know some tools require this format but that's something else.
+
+If the SCM stores some tags in special places, that is fine with me.
+The remove the need for the tag and an understanding of why it exists.
+Can 'git' store a list of Authors?  Do we want to allow a list?
+
 > 
-> I couldn't agree more, Jon.
+> > > +
+> > > +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
+> > > +		patch is, to the best of his or her knowledge, legally able
+> > > +		to be merged into the mainline and distributed under the
+> > > +		terms of the GNU General Public License, version 2.  See
+> > > +		the Developer's Certificate of Origin, found in
+> > > +		Documentation/SubmittingPatches, for the precise meaning of
+> > > +		Signed-off-by.
+> > 
+> >                 Purpose: to allow subsequent review of the originality of 
+> >                 the contribution should copyright questions arise.
 > 
-> If we are to have a meaningful reviewed-by tag, it has to be clearly
-> documented as to what responsibilities it places on the reviewer. If
-> someone doesn't want to perform a well conducted review, then they
-> haven't earned the right to issue a Reviewed-by tag - they can use
-> the Acked-by rubber stamp instead.
+> We often use s-o-b to docuemnt the path a patch took from origin (the
+> top-most s-o-b) to tree apply (lowest s-o-b).
+> This is IIUC part of the intended behaviour of s-o-b but it is not
+> clear from the above text.
 
-Maybe I'm making a mountain out of a molehill but...
+My understanding of Andrew Morton's position on s-o-b is that it is an
+unordered set.  I know this because when I have sent him patches with
+a proper From: line, he has complained and begrudingly took the first
+s-o-b, but said he didn't like to.
+So there seems to be disagreement on this (I think it looks like a
+path to - but apparently not to everyone).
 
-Clearly documented responsibilities?  Yes.
-Prescribed process?  No.
+> 
+> 
+> > > +
+> > > +Acked-by:	The person named (who should be an active developer in the
+> > > +		area addressed by the patch) is aware of the patch and has
+> > > +		no objection to its inclusion.  An Acked-by tag does not
+> > > +		imply any involvement in the development of the patch or
+> > > +		that a detailed review was done.
+> > 
+> >                 Purpose:  to inform upstream aggregators that
+> > 		consensus was achieved for the change.  This is
+> > 		particularly relevant for changes that affect multiple
+> > 		Maintenance Domains.
+> > 
+> consensus seems too strong a wording here. consensus imply more than one
+> that agree on the patch where I often see people give their "Acked-by:" by
+> simple changelog reading.
 
-If someone sends me a patch, and I review it, and I find a couple of
-problems, do I need to negotiate with the submitter before correcting
-them and putting a "Reviewed-by" tag on it (along with my
-Signed-off-by before sending it upstream)?
+I'm failing to follow your logic.
+You seem to be contrasting:
+  "consensus imply more than one that agree"
+     which I agree with:  "From" plus all "Acked-By" will be more than
+     one in all cases that "Acked-By" is used
+with
+  "people give their "Acked-by:" by simple changlog reading"
+     which I also agree with but this just highlights that "Acked-by"
+     is different from "Reviewed-by" 
 
-The above clause (b) seems to say that I do.  Is that something we
-want to mandate?
+Confused.
 
-My take on the responsibilities implied by Reviewed-by: is that the
-code has been inspected, comprehended, considered, and found to be
-both appropriate and without discernible error.  The process by which
-the code got to that state is not relevant to the tag (though it
-probably is relevant to the general health of the community).
-
+Thanks,
 NeilBrown
