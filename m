@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764806AbXJONYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764980AbXJON0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764806AbXJONYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 09:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760852AbXJONY1
+	id S1764980AbXJON0o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 09:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbXJON0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 09:24:27 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:22262 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757815AbXJONYZ (ORCPT
+	Mon, 15 Oct 2007 09:26:34 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42742 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757871AbXJON0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 09:24:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uYpsdSVsI0y1qMJNbNmPDiCnw0jzbZ9qqZKtyqyXDlJs1HXyGGtfUuukn6/FApLA03vkjJuuzWzMmjYYzkbxrd6nJpvLodxEWidMQiJOJBYKjzSehwwYe4C3aB8m4FSKgZhiDPYYAcLivLIwBdIDDgtMzXfFdfZmDCo4i3D7NwE=
-Message-ID: <d120d5000710150624p25a87bb0k19e21b8bec914be2@mail.gmail.com>
-Date: Mon, 15 Oct 2007 09:24:23 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>
-Subject: Re: [patch 1/8] m68k: Atari input drivers cleanup
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       "Michael Schmitz" <schmitz@biophys.uni-duesseldorf.de>
-In-Reply-To: <20071013123412.197946192@mail.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Oct 2007 09:26:33 -0400
+Date: Mon, 15 Oct 2007 14:29:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071015142945.2cb27911@the-village.bc.nu>
+In-Reply-To: <20071015132106.GE21216@thunk.org>
+References: <200710112011.22000.rob@landley.net>
+	<200710141845.44750.rob@landley.net>
+	<20071015014503.GF9715@thunk.org>
+	<200710150304.00901.rob@landley.net>
+	<20071015132106.GE21216@thunk.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071013123123.085686856@mail.of.borg>
-	 <20071013123412.197946192@mail.of.borg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+> You can pull a Model and Serial number via hdparm -i, but it's not as
+> easy to manipulate as a fixed-length MAC address.  That's why people
+> tend to use filesystem UUID's.   
 
-On 10/13/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> m68k: Atari input drivers cleanup:
->  - memleak on failed init/register of input devices fixed
->  - correct keycodes table (Atari keycodes are almost, but not entirely, equal
->    to Linux keycodes).
->
-> Signed-off-by: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+ATA8 at the moment looks set to add a true "MAC" or "WWN" type identifier
+to each device.. Right now model/serial is not always unique.
 
-Looks much better, thank you.
-
->
-> -       input_register_device(atakbd_dev);
-> +       /* error check */
-> +       if (input_register_device(atakbd_dev)) {
-> +               input_free_device(atakbd_dev);
-> +               return -ENOMEM;
-> +       }
->
-
-I'd be more happy if we returned real error reported by
-input_register_device() instead of substituting it with -ENOMEM.
-
--- 
-Dmitry
