@@ -1,110 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXJOPs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbXJOP4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbXJOPs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 11:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXJOPsU
+	id S1757828AbXJOP4L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 11:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXJOPzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 11:48:20 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:11639 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753775AbXJOPsT (ORCPT
+	Mon, 15 Oct 2007 11:55:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51221 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752714AbXJOPzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 11:48:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TW/RU2nsKu1IM3ZRzWOpkTVnVKUOw8nQR8/Ytiwuie1UHgX7YGQeZ+mjTJHXMQCP74+ajXuzs93iC6lkR6ZbmtOdQ4ZL4xUStHeWxcVc0aadTW5XVruKZmEmuG03RnHSr6RpNYlb1wF/8Gt8hWKi9T+mi5f2y/XcC3uoXq3PIvQ=
-Message-ID: <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
-Date: Mon, 15 Oct 2007 11:48:17 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: "Andrey Panin" <pazke@donpac.ru>, "Roel Kluin" <12o3l@tiscali.nl>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
-In-Reply-To: <1192459625.6215.17.camel@roc-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Oct 2007 11:55:54 -0400
+Date: Mon, 15 Oct 2007 08:55:41 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Komuro <komurojun-mbn@nifty.com>
+Cc: shemminger@linux.foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NOT VERY SAFE]     [TCP]: Set initial_ssthresh default to zero
+ in Cubic and BIC.
+Message-ID: <20071015085541.48ec63ae@freepuppy.rosehill>
+In-Reply-To: <20071015215949.50399c00.komurojun-mbn@nifty.com>
+References: <20071006132601.f944f461.komurojun@nifty.com>
+	<20071014073658.d4352b8c.komurojun@nifty.com>
+	<20071014100245.914b784a.komurojun@nifty.com>
+	<20071014132851.8d6a9de3.komurojun@nifty.com>
+	<20071014135356.19754635.komurojun-mbn@nifty.com>
+	<20071015215949.50399c00.komurojun-mbn@nifty.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192459625.6215.17.camel@roc-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
+On Mon, 15 Oct 2007 21:59:49 +0900
+Komuro <komurojun-mbn@nifty.com> wrote:
 
-On 10/15/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> +
-> +static int ad7142_thread(void *nothing)
-> +{
-> +       do {
-> +               wait_for_completion(&ad7142_completion);
-> +               ad7142_decode();
-> +               enable_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX);
-> +       } while (!kthread_should_stop());
-> +
+> Dear shemminger
+> 
+> >In which case it is zero because that is the default value.
+> 
+> The default value of snd_ssthresh is 0x7fffffff, isn't it?
+> 
+> [linux/net/ipv4/tcp_ipv4.c]
+> static int tcp_v4_init_sock(struct sock *sk)
+> ...
+>         tp->snd_ssthresh = 0x7fffffff;  /* Infinity */
+> ...
+> 
+> Best Regards
+> Komuro
+> 
+> 
 
-No, this is not going to work well:
-- you at least need to reinitialize the completion before enabling
-IRQ, otherwise you will spin in a very tight loop
-- if noone would touch the joystick ad7142_clsoe would() block
-infinitely because noone would signal the completion and
-ad7142_thread() would never stop.
-
-Completion is just not a good abstraction here... Please use work
-abstraction and possibly a separate workqueue.
-
-> +
-> +       ad7142_task = kthread_run(ad7142_thread, NULL, "ad7142_task");
-> +       if (IS_ERR(ad7142_task)) {
-> +               printk(KERN_ERR "serio: Failed to start kseriod\n");
-
-kseriod?
-
-> +               return PTR_ERR(ad7142_task);
-> +       }
-> +       return 0;
-> +}
-> +
-> +static void ad7142_close(struct input_dev *dev)
-> +{
-
-Don't you need to write something over i2c to tell the device to shut
-down? As it is now I expect the device to continue raising its IRQ
-until kernel decides that it is unhandled and should be ignored.
-
-> +       free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
-
-Ok, so you freeing IRQ here, but it is allocated in ad7142_probe().
-What happen if you try to open device after it was closed?
-
-> +       kthread_stop(ad7142_task);
-> +}
-> +
-> +static int __init ad7142_init(void)
-> +{
-> +       return i2c_add_driver(&ad7142_driver);
-> +}
-> +
-> +static void __exit ad7142_exit(void)
-> +{
-> +       i2c_del_driver(&ad7142_driver);
-> +       input_unregister_device(ad7142_dev);
-
-input_unregister_device() should be in ad7142_detach_client? I am not
-sure i2c - there seems to be 2 interface styles and you probably need
-to use the new one. I am CC-inj Jean on this.
-
-> +}
-> +
-> +module_init(ad7142_init);
-> +module_exit(ad7142_exit);
-> --
-> 1.5.3.4
->
-
+Yes that value means that TCP stays in slow start until the first loss.
+This makes TCP behave as expected in the RFC's.
 
 -- 
-Dmitry
+Stephen Hemminger <shemminger@linux-foundation.org>
