@@ -1,109 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbXJOBqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbXJOBxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764612AbXJOBqO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 21:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762601AbXJOBpt
+	id S1764525AbXJOBxj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 21:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJOBxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 21:45:49 -0400
-Received: from thunk.org ([69.25.196.29]:34424 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759869AbXJOBpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 21:45:47 -0400
-Date: Sun, 14 Oct 2007 21:45:03 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Rob Landley <rob@landley.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015014503.GF9715@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Rob Landley <rob@landley.net>,
-	James Bottomley <James.Bottomley@steeleye.com>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-	Suparna Bhattacharya <suparna@in.ibm.com>,
-	Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <20071013220539.GD29934@parisc-linux.org> <1192400672.3351.56.camel@localhost.localdomain> <200710141845.44750.rob@landley.net>
-MIME-Version: 1.0
+	Sun, 14 Oct 2007 21:53:31 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33062 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754004AbXJOBxa (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 21:53:30 -0400
+Date: Mon, 15 Oct 2007 11:53:03 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Howells <dhowells@redhat.com>
+Cc: viro@ftp.linux.org.uk, kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/52] CRED: Introduce a COW credentials record
+Message-ID: <20071015015303.GC995458@sgi.com>
+References: <20071012160519.15119.69608.stgit@warthog.procyon.org.uk> <20071012160524.15119.18793.stgit@warthog.procyon.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710141845.44750.rob@landley.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20071012160524.15119.18793.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 14, 2007 at 06:45:44PM -0500, Rob Landley wrote:
-> I admit a certain amount of personal annoyance that once the SCSI
-> layer consumes a category of device (USB, SATA, PATA), they can
-> often _only_ be used by going through the SCSI midlayer.  (This
-> strikes me as analogous to TCP/IP claiming ethernet and PPP devices
-> so thoroughly that you can no longer address them as eth1 or
-> /dev/ttyS0.)
+On Fri, Oct 12, 2007 at 05:05:24PM +0100, David Howells wrote:
+> diff --git a/fs/xfs/xfs_acl.c b/fs/xfs/xfs_acl.c
+> index 4ca4beb..a460508 100644
+> --- a/fs/xfs/xfs_acl.c
+> +++ b/fs/xfs/xfs_acl.c
+> @@ -383,7 +383,7 @@ xfs_acl_allow_set(
+>  	error = bhv_vop_getattr(vp, &va, 0, NULL);
+>  	if (error)
+>  		return error;
+> -	if (va.va_uid != current->fsuid && !capable(CAP_FOWNER))
+> +	if (va.va_uid != current->cred->uid && !capable(CAP_FOWNER))
 
-That's because modern USB, ATAPI (what was once known as IDE), SATA
-really *all* using the SCSI command protocols at the low level, just
-as Ethernet and PPP interfaces really are fundamentally the same
-thing.  You can rail against it, but that's the mark of someone who
-refuses to accept reality.
+current_fsuid() should be used here.
 
-> This has the annoying effect of bundling together different types of
-> devices and making device enumeration unnecessarily difficult: my
-> laptop only has one SATA hard drive and can't gain another without a
-> soldering iron, but that drive could move from /dev/sda to /dev/sdb
-> if I reboot the system with a USB key plugged in.  This seems like a
-> regrettable loss of orthogonality to me.  I remember back when
-> /dev/usb0 and /dev/hda were separate devices that showed up in /dev,
-> but these days "it's SCSI" seems to trump "it's USB", "it's ATA", or
-> "it's SATA".  (Even though none of those are actually SCSI hardware,
-> they just send a similar packet protocol across the wire.)
+>  		return EPERM;
+>  	return error;
+>  }
+> @@ -457,13 +457,13 @@ xfs_acl_access(
+>  		switch (fap->acl_entry[i].ae_tag) {
+>  		case ACL_USER_OBJ:
+>  			seen_userobj = 1;
+> -			if (fuid != current->fsuid)
+> +			if (fuid != current->cred->uid)
+>  				continue;
+>  			matched.ae_tag = ACL_USER_OBJ;
+>  			matched.ae_perm = allows;
+>  			break;
+>  		case ACL_USER:
+> -			if (fap->acl_entry[i].ae_id != current->fsuid)
+> +			if (fap->acl_entry[i].ae_id != current->cred->uid)
 
-You're showing your ignorance here.  In fact in the past few years,
-ATA and SCSI has been converging significantly, with the ATAPI
-specification has essentially incorporating the SCSI protocol by
-reference and by value --- with the point that SAS was developed by
-the SCSI Trade Association, and SAS is effectively a superset of SATA,
-to the point where with care, you can actually mix SAS and SATA drives
-on the same in enclosure (SAS and SATA are physically compatible on
-the connector level).
+and here as well....
 
-More to the point, with SATA, hot plugging has been designed in, so
-probing order is not going to be well defined, just as with USB
-devices.  And there are already relatively common situations where the
-same disk can show up via multiple different interfaces.
+Cheers,
 
-For example, if you have a modern Thinkpad with an secondary SATA hard
-drive in an Ultrabay, and you plug it into the Ultrabay in your T60,
-it will show up as a SATA drive.  However, if you plug it into the
-Advanced dock, it shows up as a USB device.  And with iSCSI not only
-can you encapsulate a SCSI command stream over USB, you can do so over
-IP as well.  In any case, regardless of how the physical SATA drive is
-attached to the system, you want it to show up as the same device and
-be mounted in the same location.
-
-That's why identifying filesystem by UUID's or Labels is so critical.
-This is not a new concept; we've had the capability to do this for
-over a decade, and I always knew it would be necessary for us to do
-this sooner or later --- which is why I added the UUID support to ext2
-back in 1996.
-
-> The fact that udev can theoretically unwind this hairball is not an
-> excuse for conflating different categories of devices in the first
-> place.
-
-See the thinkpad Ultrabay drive example above.  You address hosts by
-IP address; it doesn't matter whether you access them via a PPP
-interface, or a wireless interface, or a ethernet interface.
-Similarly, a disk could in theory be accessible over USB, SATA, or
-iSCSI, and the Thinkpad example is only one such where the same
-filesystem might be accessible over multiple interfaces.  And with
-multipath fiber channel SAN's (and I hate to break it to you, but FC
-also uses SCSI protocols) storage is very much looking more and more
-like networking.
-
-						- Ted
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
