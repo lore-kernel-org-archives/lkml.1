@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762112AbXJOWFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbXJOWF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762112AbXJOWFB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 18:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbXJOWEw
+	id S1758376AbXJOWF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 18:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763022AbXJOWFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 18:04:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52206 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754010AbXJOWEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 18:04:51 -0400
-Date: Tue, 16 Oct 2007 00:03:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       shemminger@linux-foundation.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: WARNING: at net/core/dev.c:2161 net_rx_action()
-Message-ID: <20071015220357.GA7174@elte.hu>
-References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net>
+	Mon, 15 Oct 2007 18:05:00 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:3306 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760077AbXJOWE7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 18:04:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PdHmHbPClqktu78ubn7qi31Q/f7ndG4h9oekA4pbBcu0nKxZ1XTOYECT7uKUlBlBLj+hBWnMneGp0pASqXdwgH+XGZ2+hlsci/DXdpnFEpMJ0mo56iK1tby4w7Bx+KXCu3Lh34KjxYVJT+o04O9xnDT1+E39qU9YdwHlqJcYpW4=
+Message-ID: <8bd0f97a0710151504s4faa480due0d54f30a21a7704@mail.gmail.com>
+Date: Mon, 15 Oct 2007 18:04:57 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <bryan.wu@analog.com>
+Subject: Re: [PATCH 3/3] Blackfin serial driver: this driver enable SPORTs on Blackfin emulate UART
+Cc: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <1192098220-25828-4-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071015.125731.79447899.davem@davemloft.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1192098220-25828-1-git-send-email-bryan.wu@analog.com>
+	 <1192098220-25828-4-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Miller <davem@davemloft.net> wrote:
+On 10/11/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> +config SERIAL_BFIN_SPORT
+> +       tristate "Blackfin SPORT emulate UART (EXPERIMENTAL)"
+> +       depends on BFIN && EXPERIMENTAL
+> +       select SERIAL_CORE
+> +       help
+> +         Enble support SPORT emulate UART on Blackfin series.
+> +
+> +         To compile this driver as a module, choose M here: the
+> +         module will be called bfin_sport_uart.
+> +
+> +choice
+> +       prompt "Baud rate for Blackfin SPORT UART"
+> +       depends on SERIAL_BFIN_SPORT
+> +       default SERIAL_SPORT_BAUD_RATE_57600
+> +       help
+> +         Choose a baud rate for the SPORT UART, other uart settings are
+> +         8 bit, 1 stop bit, no parity, no flow control.
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 15 Oct 2007 13:24:30 +0200
-> 
-> > got this warning with Linus' latest -git tree:
-> > 
-> >   WARNING: at net/core/dev.c:2161 net_rx_action()
-> >    [<80564db4>] net_rx_action+0xce/0x186
-> >    [<8011ba98>] __do_softirq+0x6c/0xcf
-> >    [<8011bb2d>] do_softirq+0x32/0x36
-> >    [<8011bcae>] irq_exit+0x35/0x40
-> >    [<80104fdb>] do_IRQ+0x5c/0x71
-> >    [<801048cd>] do_nmi+0x8f/0x238
-> >    [<801033a3>] common_interrupt+0x23/0x30
-> >    =======================
-> 
-> This is a driver bug, the work "budget" passed into a driver's 
-> ->poll() handler should never be exceeded.  That's what this warning 
-> assertion is checking.
-> 
-> What ethernet card is in your system and what driver is being used to 
-> drive it?
-
-it's forcedeth.
-
-i've checked nv_napi_poll(), and i dont see how it could return larger 
-than 'limit' number of packets.
-
-it could return packets == limit though:
-
-                pkts = nv_rx_process_optimized(dev, budget);
-...
-
-        if (pkts < budget) {
-                /* re-enable receive interrupts */
-                spin_lock_irqsave(&np->lock, flags);
-
-                __netif_rx_complete(dev, napi);
-
-...
-        return pkts;
-
-shouldnt that be "pkts <= budget"? But even that shouldnt cause a larger 
-than limit return. Weird.
-
-there are two networking cards in the system, the other one is a:
-
-  eth1: RealTek RTL8139 at 0xf080e000, 00:c0:df:03:68:5d, IRQ 11
-  eth1:  Identified 8139 chip type 'RTL-8139B'
-
-but this one should be inactive (not plugged into the network). Should i 
-try to get a debug print out of the actual 'weight' and 'work' integers, 
-and of the n->poll function address?
-
-	Ingo
+this looks wrong to me ... why cant the standard infrastructure for
+managing baud rate be used ?
+-mike
