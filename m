@@ -1,97 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbXJOI3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXJOIdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbXJOI3H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 04:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbXJOI2y
+	id S1757291AbXJOIdJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 04:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXJOIc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 04:28:54 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:2455 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753741AbXJOI2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 04:28:52 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-User-Agent: KMail/1.9.7
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-MIME-Version: 1.0
+	Mon, 15 Oct 2007 04:32:57 -0400
+Received: from verein.lst.de ([213.95.11.210]:47885 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754916AbXJOIc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 04:32:56 -0400
+Date: Mon, 15 Oct 2007 10:31:41 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: xfs-masters@oss.sgi.com
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, xfs@oss.sgi.com,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
+       Morten B?geskov <xen-users@morten.bogeskov.dk>
+Subject: Re: [xfs-masters] Re: Interaction between Xen and XFS: stray RW mappings
+Message-ID: <20071015083141.GA20851@lst.de>
+References: <470FA7C3.90404@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <4712BB05.1020701@goop.org> <200710151726.08387.nickpiggin@yahoo.com.au> <4712E1AA.501@goop.org> <20071015041133.GH995458@sgi.com> <4712EA09.6000102@goop.org> <20071015042546.GI995458@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Date: Mon, 15 Oct 2007 10:28:34 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710151028.34407.borntraeger@de.ibm.com>
+In-Reply-To: <20071015042546.GI995458@sgi.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit unmaintained,
-so decided to sent the patch to you :-).
-I have CCed Ted, who did work on the code in the 90s. I found no current
-email address of Chad Page.
+On Mon, Oct 15, 2007 at 02:25:46PM +1000, David Chinner wrote:
+> > Hm, well I saw the problem with a filesystem made with mkfs.xfs with no
+> > options, so there must be at least *some* vmapping going on there.
+> 
+> Sorry - I should have been more precise - vmap should never be used in
+> performance critical paths on default configs.  Log recovery will
+> trigger vmap/vunmap usage, so this is probably what you are seeing.
 
-We have seen ramdisk based install systems, where some pages of mapped 
-libraries and programs were suddendly zeroed under memory pressure. This 
-should not happen, as the ramdisk avoids freeing its pages by keeping them 
-dirty all the time.
+The iclogs are also vmapped, but they aren't unmapped until unmount so
+this optimizations doesn't matter either.
 
-It turns out that there is a case, where the VM makes a ramdisk page clean, 
-without telling the ramdisk driver.
-On memory pressure shrink_zone runs and it starts to run shrink_active_list. 
-There is a check for buffer_heads_over_limit, and if true, pagevec_strip is 
-called. pagevec_strip calls try_to_release_page. If the mapping has no 
-releasepage callback, try_to_free_buffers is called. try_to_free_buffers has 
-now a special logic for some file systems to make a dirty page clean, if all 
-buffers are clean. Thats what happened in our test case.
-
-The solution is to provide a noop-releasepage callback for the ramdisk driver.
-This avoids try_to_free_buffers for ramdisk pages. 
-
-To trigger the problem, you have to make buffer_heads_over_limit true, which
-means:
-- lower max_buffer_heads 
-or
-- have a system with lots of high memory
-
-Andrew, if there are no objections - please apply. The patch applies against
-todays git.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-
----
- drivers/block/rd.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+)
-
-Index: linux-2.6/drivers/block/rd.c
-===================================================================
---- linux-2.6.orig/drivers/block/rd.c
-+++ linux-2.6/drivers/block/rd.c
-@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
- 	return 0;
- }
- 
-+/*
-+ * releasepage is called by pagevec_strip/try_to_release_page if
-+ * buffers_heads_over_limit is true. Without a releasepage function
-+ * try_to_free_buffers is called instead. That can unset the dirty
-+ * bit of our ram disk pages, which will be eventually freed, even
-+ * if the page is still in use.
-+ */
-+static int ramdisk_releasepage(struct page *page, gfp_t dummy)
-+{
-+	return 0;
-+}
-+
- static const struct address_space_operations ramdisk_aops = {
- 	.readpage	= ramdisk_readpage,
- 	.prepare_write	= ramdisk_prepare_write,
-@@ -196,6 +208,7 @@ static const struct address_space_operat
- 	.writepage	= ramdisk_writepage,
- 	.set_page_dirty	= ramdisk_set_page_dirty,
- 	.writepages	= ramdisk_writepages,
-+	.releasepage	= ramdisk_releasepage,
- };
- 
- static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
