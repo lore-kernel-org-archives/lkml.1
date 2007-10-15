@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934298AbXJOUH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934049AbXJOUIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934298AbXJOUH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933491AbXJOUHH
+	id S934049AbXJOUIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbXJOUH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:07:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35897 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933095AbXJOUHF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:07:05 -0400
-Date: Mon, 15 Oct 2007 21:08:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [patch] scsi: fix crash in gdth_timeout()
-Message-ID: <20071015210837.311f058a@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.999.0710151232430.6887@woody.linux-foundation.org>
-References: <20071015165534.GA17833@elte.hu>
-	<alpine.LFD.0.999.0710151006400.6887@woody.linux-foundation.org>
-	<4713A9FA.4050209@garzik.org>
-	<4713B4E7.2050001@panasas.com>
-	<20071015192703.GA7279@elte.hu>
-	<alpine.LFD.0.999.0710151232430.6887@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Oct 2007 16:07:56 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36860 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758094AbXJOUHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:07:54 -0400
+Message-ID: <4713C893.3050200@garzik.org>
+Date: Mon, 15 Oct 2007 16:07:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE updates (part 2)
+References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk> <4713C568.2060708@garzik.org> <20071015195807.GF8759@flint.arm.linux.org.uk>
+In-Reply-To: <20071015195807.GF8759@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 12:38:06 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+Russell King wrote:
+> On Mon, Oct 15, 2007 at 03:54:16PM -0400, Jeff Garzik wrote:
+>> Al Viro wrote:
+>>> Proposed addition to icside part, provided that ARM folks ACK it - gets
+>>> icside to build and AFAICS it's correct:
+>> ACK from me too...  ARM folks?
 > 
-> 
-> On Mon, 15 Oct 2007, Ingo Molnar wrote:
-> > 
-> > heh. Incidentally i was thinking about using KVM for automated testing. 
-> 
-> Using emulators to test device drivers is almost certain to be pointless.
+> Will test tomorrow/Wednesday.
 
-For some things. I do it a bit because you can use it to fake
-failures that are tricky to do in the real world. It won't tell you the
-driver works but its suprisingly good for testing for races (forcing IRQ
-delivery at specific points), buggy hardware you don't posess, and things
-like media failures and timeouts your real hardware refuses to do.
+Thanks.  Sorry about missing your CC on the libata-wide ata_link 
+changes.  We should have poked the maintainers on that, for the drivers 
+we cannot build ourselves.
 
-Alan
+
+
+
