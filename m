@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXJORed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765522AbXJORg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbXJORed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXJOReU
+	id S1765522AbXJORg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbXJORgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:34:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59218 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXJOReS (ORCPT
+	Mon, 15 Oct 2007 13:36:09 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:58760 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbXJORgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:34:18 -0400
-Date: Mon, 15 Oct 2007 10:33:57 -0700
-From: Greg KH <greg@kroah.com>
-To: Rob Landley <rob@landley.net>
-Cc: Julian Calaby <julian.calaby@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015173357.GB5738@kroah.com>
-References: <200710112011.22000.rob@landley.net> <200710150304.00901.rob@landley.net> <646765f40710150206j75af4c4dwac4f4565451b64b1@mail.gmail.com> <200710150508.37332.rob@landley.net>
+	Mon, 15 Oct 2007 13:36:08 -0400
+Date: Mon, 15 Oct 2007 18:36:00 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@pol.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+cc: Jay Estabrook <Jay.Estabrook@hp.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] tgafb: Fix an out-of-range shift in mono imageblit
+Message-ID: <Pine.LNX.4.64N.0710151812540.16262@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710150508.37332.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 05:08:36AM -0500, Rob Landley wrote:
-> On Monday 15 October 2007 4:06:20 am Julian Calaby wrote:
-> > On 10/15/07, Rob Landley <rob@landley.net> wrote:
-> > > I note that the eth0 and eth1 names are dynamically assigned on a first
-> > > come first serve basis (like scsi).  This never causes me a problem
-> > > because the driver loading order is constant, and once you figure out
-> > > that eth0 is gigabit and eth1 is the 80211g it _stays_ that way across
-> > > reboots, reliably. Yeah, it's a heuristic.  Hands up everybody relying on
-> > > such a heuristic in the real world.
-> >
-> > Umm, not quite, from my experiences with pre-production wireless
-> > drivers, (another story, another time) fancy stuff is being done in
-> > udev to make sure that your gigabit card is always assigned to eth0.
-> 
-> I remember building a 2.4 kernel, statically linking in all the drivers, and 
-> getting the ethernet devices showing up in a reliable order for years.  Where 
-> does the need for fancy stuff come in?
+ The pixel mask calculation in tgafb_mono_imageblit() uses a variable 
+left-shift on a 32-bit data type by up to 32.  Shifting by the width of a 
+data type or more produces an unpredictable result according to the C 
+standard.
 
-Because PCI devices reorder their bus numbers all the time.  And we have
-ethernet devices hanging off of USB connections now (yes, even built-in
-to the machine), and we have network connections on other hot-pluggable
-busses (remember, PCI is hot pluggable.)
+ Rather than widening the data type this fix makes sure the count is 
+between 0 and 31.  The reason is not to penalise 32-bit platforms with 
+operation on a "long long" type for a marginal case that is meant not to 
+happen (blitting an image of a zero width).
 
-So, the distros need to name network devices in a persistant way, that
-is why the distros now do this.  If you don't like the distro doing it,
-complain to them, it's not a kernel issue :)
+ The reason it has escaped for so long is the Alpha, being purely 64-bit, 
+:-) does not mask the shift out to 32 bits.  This is a valid 
+implementation -- producing the correct result certainly falls within 
+"unpredictable behaviour".  It does trigger on MIPS though and it is the 
+recent merge of the TC support which only enabled the driver for use on 
+anything other than the Alpha.  For MIPS when the width is 32 the mask 
+ends up being 0 rather than 0xffffffff as it should be and the frame 
+buffer is not updated.
 
-thanks,
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ Checked with checkpatch.pl and at the run time with an 8-bit TC frame 
+buffer on a MIPS host.  It fixes scrolling corruption.
 
-greg k-h
+ Please apply.
+
+  Maciej
+
+patch-mips-2.6.23-rc5-20070904-tgafb-mono_imageblit-width-0
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c	2007-09-04 04:55:46.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c	2007-10-14 20:32:13.000000000 +0000
+@@ -5,7 +5,7 @@
+  *	Copyright (C) 1997 Geert Uytterhoeven
+  *	Copyright (C) 1999,2000 Martin Lucina, Tom Zerucha
+  *	Copyright (C) 2002 Richard Henderson
+- *	Copyright (C) 2006 Maciej W. Rozycki
++ *	Copyright (C) 2006, 2007  Maciej W. Rozycki
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License. See the file COPYING in the main directory of this archive for
+@@ -13,6 +13,7 @@
+  */
+ 
+ #include <linux/bitrev.h>
++#include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/errno.h>
+@@ -654,6 +655,9 @@ tgafb_mono_imageblit(struct fb_info *inf
+ 	line_length = info->fix.line_length;
+ 	rincr = (width + 7) / 8;
+ 
++	/* A shift below cannot cope with.  */
++	if (unlikely(width == 0))
++		return;
+ 	/* Crop the image to the screen.  */
+ 	if (dx > vxres || dy > vyres)
+ 		return;
+@@ -709,9 +713,10 @@ tgafb_mono_imageblit(struct fb_info *inf
+ 		unsigned long bwidth;
+ 
+ 		/* Handle common case of imaging a single character, in
+-		   a font less than 32 pixels wide.  */
++		   a font less than or 32 pixels wide.  */
+ 
+-		pixelmask = (1 << width) - 1;
++		/* Avoid a shift by 32; width > 0 implied.  */
++		pixelmask = (2ul << (width - 1)) - 1;
+ 		pixelmask <<= shift;
+ 		__raw_writel(pixelmask, regs_base + TGA_PIXELMASK_REG);
+ 		wmb();
