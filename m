@@ -1,96 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbXJOOW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbXJOObW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbXJOOW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 10:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXJOOWV
+	id S1759403AbXJOObW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 10:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbXJOObN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 10:22:21 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47060 "EHLO pasmtpB.tele.dk"
+	Mon, 15 Oct 2007 10:31:13 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50248 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754348AbXJOOWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 10:22:20 -0400
-Date: Mon, 15 Oct 2007 16:23:52 +0200
+	id S1753701AbXJOObM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 10:31:12 -0400
+Date: Mon, 15 Oct 2007 16:32:39 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Rik van Riel <riel@surriel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071015142352.GA21259@uranus.ravnborg.org>
-References: <20071014190128.6e3cdb44@bree.surriel.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: reviewer's statement of oversight
+Message-ID: <20071015143239.GA21361@uranus.ravnborg.org>
+References: <20071008173706.GA12026@uranus.ravnborg.org> <10940.1191883390@lwn.net> <18186.50640.970552.719041@notabene.brown> <20071009174433.GB25750@uranus.ravnborg.org> <18194.46555.18395.586488@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071014190128.6e3cdb44@bree.surriel.com>
+In-Reply-To: <18194.46555.18395.586488@notabene.brown>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik.
-
-On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
-> The kernel newbies community often gets inquiries from CS students who
-> need a project for their studies and would like to do something with
-> the Linux kernel, but would also like their code to be useful to the
-> community afterwards.
+On Mon, Oct 15, 2007 at 10:35:39AM +1000, Neil Brown wrote:
+> On Tuesday October 9, sam@ravnborg.org wrote:
+> > Hi Neil.
+> > > 
+> > >    From:        The Author, Primary Author, or Authors of the patch.
+> > >                 Authors should also provide a Signed-off-by: tag.
+> > > 
+> > >                 Purpose: to give credit to authors
+> > The SCM should include this info and we should not duplicate this
+> > in the changelog's.
+> > I know some tools require this format but that's something else.
 > 
-> In order to make it easier for them, I am trying to put together a
-> page with projects that:
-> - Are self contained enough that the students can implement the
->   project by themselves, since that is often a university requirement.
-> - Are self contained enough that Linux could merge the code (maybe
->   with additional changes) after the student has been working on it
->   for a few months.
-> - Are large enough to qualify as a student project, luckily there is
->   flexibility here since we get inquiries for anything from 6 week
->   projects to 6 month projects.
+> If the SCM stores some tags in special places, that is fine with me.
+> The remove the need for the tag and an understanding of why it exists.
+> Can 'git' store a list of Authors?  Do we want to allow a list?
+git stores to my best knowledge only a single author.
+Infrequently we need a list but then people have solved it putting
+relevant people in s-o-b and by give credit in changelog.
+This is IMHO good enugh.
+
 > 
-> If you have ideas on what projects would be useful, please add them
-> to this page (or email me):
+> > 
+> > > > +
+> > > > +Signed-off-by:  A person adding a Signed-off-by tag is attesting that the
+> > > > +		patch is, to the best of his or her knowledge, legally able
+> > > > +		to be merged into the mainline and distributed under the
+> > > > +		terms of the GNU General Public License, version 2.  See
+> > > > +		the Developer's Certificate of Origin, found in
+> > > > +		Documentation/SubmittingPatches, for the precise meaning of
+> > > > +		Signed-off-by.
+> > > 
+> > >                 Purpose: to allow subsequent review of the originality of 
+> > >                 the contribution should copyright questions arise.
+> > 
+> > We often use s-o-b to docuemnt the path a patch took from origin (the
+> > top-most s-o-b) to tree apply (lowest s-o-b).
+> > This is IIUC part of the intended behaviour of s-o-b but it is not
+> > clear from the above text.
 > 
-> http://kernelnewbies.org/KernelProjects
+> My understanding of Andrew Morton's position on s-o-b is that it is an
+> unordered set.  I know this because when I have sent him patches with
+> a proper From: line, he has complained and begrudingly took the first
+> s-o-b, but said he didn't like to.
+> So there seems to be disagreement on this (I think it looks like a
+> path to - but apparently not to everyone).
+With the current definition you need to supply BOTH a from: and a s-o-b.
+I usually request a s-o-b when it is missing no matter what other content 
+is present in the changelog.
 
-In the kernel build area a few possible projects exists.
-
-Increase speed for a build with no updates
-==========================================
-On a resonably fast machine with a decent config it takes
-roughly 10 seconds to do a make where nothing is updated.
-Generating one single Makefile is assumed to speed up things
-and will in addition allow a simpler syntax as what is used today
-for some of the uglier constructs.
-
-Contact: Sam Ravnborg <sam@ravnborg.org>
-Difficulty: 5
-Language: Perl or C
-
-
-Increase speed for a build wich updates a single file
-=====================================================
-We often edit a single file and then do a build.
-And the result is that we spend 80% of the time linking
-the kernel.
-So an obvious improvement for the kernel community would
-be to improve the speed of the linker (and decrease memory footprint).
-
-Contact: ?
-Difficulty: ?
-Language: C
-
-Update menuconfig to a modern ncurses look&feel
-===============================================
-htop, aptitude, tig and other ncurses based programs has
-a more modern and effective look&feel than current menuconfig.
-Rip out all the lxdialog stuff and replace it with a ncurses
-based frontend that looks better and has more functionality.
-
-Contact: Sam Ravnborg <sam@ravnborg.org>
-Difficulty: 5
-Language: C
-
-
-They are independent but challenging and would be very much appreciated
-by the kernel community.
-
-I could come up with more projects but these are the ones that are most
-straightforward to start with.
+> 
+> > 
+> > 
+> > > > +
+> > > > +Acked-by:	The person named (who should be an active developer in the
+> > > > +		area addressed by the patch) is aware of the patch and has
+> > > > +		no objection to its inclusion.  An Acked-by tag does not
+> > > > +		imply any involvement in the development of the patch or
+> > > > +		that a detailed review was done.
+> > > 
+> > >                 Purpose:  to inform upstream aggregators that
+> > > 		consensus was achieved for the change.  This is
+> > > 		particularly relevant for changes that affect multiple
+> > > 		Maintenance Domains.
+> > > 
+> > consensus seems too strong a wording here. consensus imply more than one
+> > that agree on the patch where I often see people give their "Acked-by:" by
+> > simple changelog reading.
+> 
+> I'm failing to follow your logic.
+> You seem to be contrasting:
+>   "consensus imply more than one that agree"
+>      which I agree with:  "From" plus all "Acked-By" will be more than
+>      one in all cases that "Acked-By" is used
+I did not realise that "concensus" in this context refered to both the
+one that give the "Acked-by" and the author.
+Viewing it this way I agree with the intent and the text.
 
 	Sam
