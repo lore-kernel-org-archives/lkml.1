@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXJOR0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbXJORa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697AbXJOR0y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXJOR0k
+	id S1765542AbXJORa4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXJORar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:26:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39401 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756646AbXJOR0j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:26:39 -0400
-Date: Mon, 15 Oct 2007 10:25:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Rob Landley <rob@landley.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071015172513.GA5738@kroah.com>
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710150336.15774.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 15 Oct 2007 13:30:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53727 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbXJORaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 13:30:46 -0400
+Date: Mon, 15 Oct 2007 10:30:33 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
+Cc: "Willy Tarreau" <w@1wt.eu>, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       zaitcev@redhat.com
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+Message-Id: <20071015103033.65b47dea.zaitcev@redhat.com>
+In-Reply-To: <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+References: <1192383445.8372.18.camel@dell1.softservecom.com>
+	<20071014182542.GA2832@1wt.eu>
+	<35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 03:36:15AM -0500, Rob Landley wrote:
-> 
-> The point I was trying to make is that it seems to me like it would be 
-> possible to keep the namespace separate here, and thus reduce the enumeration 
-> problems to the point where common cases (like my laptop) aren't impacted by 
-> them during early boot.
+On Sun, 14 Oct 2007 23:45:36 +0300, "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
 
-Proposals on how to do this would be gladly reviewed.
+> Also IMHO the more drivers are in the tree the more users will use it.
+> Once it will be merged in the mainline then it will be backported to
+> enterprise kernels and would gain wide usage.
 
-But again, please remember that these USB devices are really SCSI
-devices.  Same for SATA devices.  There is a reason they are using the
-SCSI layer, and it isn't just because the developers felt like it :)
+At least in case of RHEL, such backports never were automatic. In any
+case, RHEL 2.1 and 3 do not receive new drivers anymore. We only do
+bugfixes if something comes up. Realistically speaking, 2.4 kernels
+are just too old for anyone to use. So, I think it would be best for
+you to think in terms of Willy's tree only.
 
-> I don't think anybody (outside the embedded space) is actually upset
-> that /dev/hda now goes through the scsi layer:  they're upset Ubuntu
-> 7.04 no longer calls it /dev/hda.
+> +	in_end_size = le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize);
+> +	out_end_size = le16_to_cpu(dev->interrupt_out_endpoint->wMaxPacketSize);
 
-Use mount-by-label instead, it's much saner and handles device name
-movement just fine (as does the UUID method that you seem to hate.)
-Look in /dev/disk/ for a wide range of options that you have in which to
-choose how to pick your block devices.
+Did you verify if this works? We use pre-swapped descriptors in 2.4.
+I suspect you allocate 256 times more memory than necessary.
 
-Oh, and this seems like a very Ubuntu specific rant, might I suggest you
-contact the Ubuntu developers about this?  The kernel doesn't dictate
-that the distro has to use these long identifiers, and there is nothing
-we can do about it.
+> +static void adu_delete(struct adu_device *dev)
+> +	kfree(dev);
 
-good luck,
+> +static int adu_release_internal(struct adu_device *dev)
+> +	if (dev->udev == NULL) {
+> +		adu_delete(dev);
 
-greg k-h
+> +static int adu_open(struct inode *inode, struct file *file)
+> +	retval = adu_release_internal(dev);
+> +	up(&dev->sem);
+
+The above very clearly is a use-after-free, in case the device was
+open across a disconnect. Solution: Use minor_table_mutex to lock
+dev->open_count instead of dev->sem. There's no rule that the lock
+has to live inside the same structure with members it locks.
+
+-- Pete
