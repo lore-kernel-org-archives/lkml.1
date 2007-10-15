@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934777AbXJOUPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934839AbXJOUQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934777AbXJOUPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 16:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933312AbXJOUPk
+	id S934839AbXJOUQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 16:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763961AbXJOUQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 16:15:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37939 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752982AbXJOUPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 16:15:39 -0400
-Date: Mon, 15 Oct 2007 21:19:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] geode lists are subscriber only
-Message-ID: <20071015211941.271cb0ee@the-village.bc.nu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 15 Oct 2007 16:16:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54043 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752853AbXJOUQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 16:16:35 -0400
+Date: Mon, 15 Oct 2007 16:13:15 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, mingo@elte.hu
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20071015161315.4fe18e07@bree.surriel.com>
+In-Reply-To: <20071015114738.6b5a25c7.akpm@linux-foundation.org>
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>
+	<20071015114738.6b5a25c7.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This gave me bounces and moans when chasing CS5536 so document it
+On Mon, 15 Oct 2007 11:47:38 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 15 Oct 2007 10:46:47 -0700
+> Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > 
+> > Subject: Give kjournald a IOPRIO_CLASS_RT io priority
+> > From: Arjan van de Ven <arjan@linux.intel.com>
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+> Seems a pretty fundamental change which could do with some careful
+> benchmarking, methinks.
 
-diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23-mm1/MAINTAINERS linux-2.6.23-mm1/MAINTAINERS
---- linux.vanilla-2.6.23-mm1/MAINTAINERS	2007-10-15 15:03:24.000000000 +0100
-+++ linux-2.6.23-mm1/MAINTAINERS	2007-10-15 15:28:55.000000000 +0100
-@@ -353,13 +353,12 @@
- AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
- P:	Thomas Dahlmann
- M:	thomas.dahlmann@amd.com
--L:	info-linux@geode.amd.com
-+L:	info-linux@geode.amd.com	(subscribers-only)
- S:	Supported
- 
- AMD GEODE PROCESSOR/CHIPSET SUPPORT
- P:	Jordan Crouse
--M:	info-linux@geode.amd.com
--L:	info-linux@geode.amd.com
-+L:	info-linux@geode.amd.com	(subscribers-only)
- W:	http://www.amd.com/us-en/ConnectivitySolutions/TechnicalResources/0,,50_2334_2452_11363,00.html
- S:	Supported
- 
+FWIW, I have marked the kjournald processes on my system
+realtime with "rtprio -c 1 `pidof kjournald`" and the
+usual desktop stalls that plague my system have not yet
+happened this afternoon.
+
+> See, your patch amounts to "do more seeks to improve one test case". 
+> Surely other testcases will worsen.  What are they?
+
+The big problem I have seen here is that processes end up
+waiting on kjournald to do something, and kjournald is
+waiting due to the IO scheduler.
+
+This can cause a lot of low IO (high IO priority) processes
+to indirectly get stuck behind a few high IO (low priority)
+processes.
+
+Since you have been involved a lot with ext3 development,
+which kinds of workloads do you think will show a performance
+degradation with Arjan's patch?   What should I test?
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
