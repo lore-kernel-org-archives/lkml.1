@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbXJOL0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764659AbXJOL1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbXJOL0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 07:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760085AbXJOLZw
+	id S1764659AbXJOL1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 07:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759416AbXJOL1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 07:25:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:61637 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764576AbXJOLZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 07:25:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VUEJzUU54h0VemcFi/tnL3Y0CosI1mIK+AS+xgS+QPQkJ6rtXXDoSmcADP7wzYekXENwgW26V84SRUx7e3RiSm+L9h0ksY2ZW6kI+mGvNS43MD95Tmk7nnBYPICxIMh2Ic1eY1BCMgCr5Odup7VOhPqhGls+mm/rMGe5iTU77Bc=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
-Date: Mon, 15 Oct 2007 12:25:39 +0100
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>, Hannes Reinecke <hare@suse.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200710141558.27156.vda.linux@googlemail.com> <47125633.3030404@googlemail.com>
-In-Reply-To: <47125633.3030404@googlemail.com>
+	Mon, 15 Oct 2007 07:27:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45784 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758870AbXJOL1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 07:27:21 -0400
+Date: Mon, 15 Oct 2007 13:27:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: WARNING: at net/core/dev.c:2161 net_rx_action()
+Message-ID: <20071015112705.GA31150@elte.hu>
+References: <20071015112430.GA30006@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710151225.39624.vda.linux@googlemail.com>
+In-Reply-To: <20071015112430.GA30006@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007 18:47, Gabriel C wrote:
-> > Compile tested and applies cleanly to 2.6.23.
-> > I don't have this hardware anymore and cannot run test these patches.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> got this warning with Linus' latest -git tree:
 > 
-> I can test these patches on an aic7892 controller later on today if you want.
-
-I'd appreciate that.
-
-Do you, by any chance, use aic94xx driver too (drivers/scsi/aic94xx/*)?
-After i'm done with aic7xxx, I may attack this one.
-
-> BTW while you seems to care about this driver could you have a look at :
+>   WARNING: at net/core/dev.c:2161 net_rx_action()
+>    [<80564db4>] net_rx_action+0xce/0x186
+>    [<8011ba98>] __do_softirq+0x6c/0xcf
+>    [<8011bb2d>] do_softirq+0x32/0x36
+>    [<8011bcae>] irq_exit+0x35/0x40
+>    [<80104fdb>] do_IRQ+0x5c/0x71
+>    [<801048cd>] do_nmi+0x8f/0x238
+>    [<801033a3>] common_interrupt+0x23/0x30
+>    =======================
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=3062 ?!?
+> box is operating fine otherwise. config and bootlog attached. This 
+> warning got introduced by:
 
-I am a desktop Linux user, so far I don't use suspend at all. Sorry.
---
-vda
+unfortunately the warning seems spurious - i just rebooted the box into 
+the same kernel and the message did not trigger again.
+
+	Ingo
