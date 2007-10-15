@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXJOHpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXJOHrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbXJOHpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 03:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXJOHpL
+	id S1756747AbXJOHrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 03:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbXJOHrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 03:45:11 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6539 "EHLO kernel.dk"
+	Mon, 15 Oct 2007 03:47:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56236 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754612AbXJOHpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 03:45:10 -0400
-Date: Mon, 15 Oct 2007 09:45:01 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Milan Broz <mbroz@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
-       dm-devel@redhat.com
-Subject: Re: 2.6.23-mm1
-Message-ID: <20071015074500.GE5380@kernel.dk>
-References: <47110500.8050503@garzik.org> <64bb37e0710131105m7c64fca0kb71f3955170e8bec@mail.gmail.com> <20071013111853.7e67c6c3.akpm@linux-foundation.org> <64bb37e0710140454s61325fdfya43179b14ea26dc4@mail.gmail.com> <20071014113914.7654759d.akpm@linux-foundation.org> <64bb37e0710141212k58c5fc66s620d1f28e80bb40@mail.gmail.com> <20071014122613.5bbe4fc3.akpm@linux-foundation.org> <4712922F.6010005@redhat.com> <20071015065022.GC5380@kernel.dk> <18195.5992.545271.871100@notabene.brown>
+	id S1751864AbXJOHrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 03:47:12 -0400
+Date: Mon, 15 Oct 2007 09:47:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Milton Miller <miltonm@bga.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched domain debug sysctl fixes
+Message-ID: <20071015074700.GC32064@elte.hu>
+References: <mm-sched-0@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18195.5992.545271.871100@notabene.brown>
+In-Reply-To: <mm-sched-0@bga.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15 2007, Neil Brown wrote:
-> On Monday October 15, jens.axboe@oracle.com wrote:
-> > On Mon, Oct 15 2007, Milan Broz wrote:
-> > > 
-> > > clone->bi_size is zero here now, so crypt_free_buffer_pages will not
-> > > work correctly (previously there was count of processed bytes).
-> > > 
-> > > But because it seems that bio cannot be processed partially now, we can
-> > > simplify crypt_free_buffer_pages to always remove all allocated pages.
-> > 
-> > Neil, this doesn't look very good. dm-crypt needs to know the clone io
-> > size, so ->bi_size was definitely used properly in this context before.
-> > Now it's gone. Suggestions on how to fix that up?
+
+* Milton Miller <miltonm@bga.com> wrote:
+
+> The following 5 patches provide fixes for the sysctl code added under 
+> CONFIG_DEBUG_SCHED.  After debugging a boot failure dereferencing not 
+> per-cpu data for an impossible cpu, I found the other issues by 
+> inspection.
 > 
-> How about the following - even more code simplification gained by this
-> approach :-)
+> Following these fixes, /proc/sysctl/kernel/sched_debug/ should work 
+> with exclusive cpusets, cpu hotplug, offline and not present cpus, and 
+> will show all 11 files.
 
-Looks good to me.
+thanks, great fixes! They should show up in the next sched-devel git 
+tree.
 
-> I originally had the patch for removing the 'size' argument after a
-> patch (series) that made bi_size unchanged.   It seemed that patch
-> would face a harder path upstream so I re-ordered them and missed this
-> dependency.  Mea Culpa.
-> 
-> > 
-> > I've been less than impressed with the bi_end_io() patchset so far, it's
-> > been full of typos and bad conversions. I'm tempted to revert the whole
-> > thing, clearly it wasn't ready for merge.
-> 
-> I must have missed something ....
-> 
-> I've seen:  A fix for a bi_end_io in jfs that I missed.
->             A correction for that fix ("return 0" was remove instead
->                of just the '0' removed)
->             Some fixed for code that is only in -mm (which I didn't do
->               because I thought you wanted it against a non-mm tree).
-
-XFS update, s390 block driver, gfs2 update, ocfs2 update, powerpc
-axonram block driver.
-
-> I think it was definitely ready for merging in -mm.  Possibly not for
-> mainline just yet.
-
-What's done is done, I just hope we've seen the last of it now.
-
--- 
-Jens Axboe
-
+	Ingo
