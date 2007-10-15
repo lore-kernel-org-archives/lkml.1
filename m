@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759533AbXJOXUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXJOXYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759533AbXJOXUi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 19:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXJOXU1
+	id S1759637AbXJOXYO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 19:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXJOXX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 19:20:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:59028 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbXJOXU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 19:20:26 -0400
-Message-ID: <4713F5B8.9000206@goop.org>
-Date: Mon, 15 Oct 2007 16:20:24 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Dave Hansen <haveblue@us.ibm.com>
-CC: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       "ADAM G. LITKE [imap]" <agl@us.ibm.com>
-Subject: Re: [PATCH 4/11] maps3: introduce a generic page walker
-References: <5.290135367@selenic.com>  <4713EC5B.7050000@goop.org> <1192489513.6118.111.camel@localhost>
-In-Reply-To: <1192489513.6118.111.camel@localhost>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 15 Oct 2007 19:23:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46595 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752868AbXJOXX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 19:23:58 -0400
+Date: Mon, 15 Oct 2007 16:23:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/3] Misc: phantom, synchronize_irq() on suspend
+Message-Id: <20071015162344.dca7023c.akpm@linux-foundation.org>
+In-Reply-To: <3012721321185026886@pripojeni.net>
+References: <3012721321185026886@pripojeni.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> For now, we should probably document that these functions assume that
-> the appropriate locks are held, and that there are no changes being made
-> to the pagetables as we walk.
->
-> However, I can see that people might want to use these in the future for
-> establishing ptes.  Perhaps a special code coming back from the
-> ->pte_hole() function could indicate changes were made to the
-> pagetables.  I guess we could at least retry part of the loop where the
-> hole call was made, like:
->   
+On Mon, 15 Oct 2007 09:32:28 -0700
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Yes.  We already have apply_to_page_range(), which has the side effect
-of creating the page range in order to apply a function to it.  It would
-be nice to be able to replicate its functionality with this page waker
-so we can have just one.
+> phantom, synchronize_irq() on suspend
+> 
+> Wait after disabling device's interrupt until the handler finishes its
+> work if still in progress.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+> commit 7e792ef384190b517f2fb27cd0237fa30dbe0775
+> tree 17b15e5ab7c90eef0e7ae57e532839e81b831d58
+> parent 5c008a5651ee92ebe020dd5108a66a7db74fe41d
+> author Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:52:21 +0200
+> committer Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:52:21 +0200
+> 
+>  drivers/misc/phantom.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/misc/phantom.c b/drivers/misc/phantom.c
+> index 5108b7c..6e61a79 100644
+> --- a/drivers/misc/phantom.c
+> +++ b/drivers/misc/phantom.c
+> @@ -378,6 +378,8 @@ static int phantom_suspend(struct pci_dev *pdev, pm_message_t state)
+>  	iowrite32(0, dev->caddr + PHN_IRQCTL);
+>  	ioread32(dev->caddr + PHN_IRQCTL); /* PCI posting */
+>  
+> +	synchronize_irq(pdev->irq);
+> +
+>  	return 0;
+>  }
+>  
 
-> +int walk_page_range(struct mm_struct *mm,...
-> +{
-> ...
-> +       pgd = pgd_offset(mm, addr);
-> +       do {
-> +               next = pgd_addr_end(addr, end);
-> +               if (pgd_none_or_clear_bad(pgd)) {
-> +                       if (walk->pte_hole)
-> +                               err = walk->pte_hole(addr, next, private);
-> 			if (err == -EAGAIN) { // or whatever we want
-> 				pgd--;
-> 				err = 0;
-> 			}
-> +                       if (err)
-> +                               break;
-> +                       continue;
-> +               }
->
-> That wouldn't allow changes behind the walker, but it should allow them
-> in the range that was walked by the ->pte_hole() function.
->   
+What inspired this change?  Some bug report, or does it just seem the right
+thing to do?
 
-Yep.
+Would it be logical to do this operation from the PCI core somewhere, on
+behalf of all PCI drivers?
 
-    J
