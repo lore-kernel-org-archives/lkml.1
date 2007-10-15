@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbXJOAp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbXJOA4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764225AbXJOAp6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 20:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbXJOAps
+	id S1762601AbXJOA4i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 20:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXJOA43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 20:45:48 -0400
-Received: from web31803.mail.mud.yahoo.com ([68.142.207.66]:34579 "HELO
-	web31803.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751818AbXJOApr (ORCPT
+	Sun, 14 Oct 2007 20:56:29 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40991 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbXJOA43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 20:45:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=TfDhMQx1/tJiem5tYEria9sEmV5g/6ONA+TuSaFT5F814fyVLh0EgPIZRbe6Rf9s7IMC8FzVcvto4nAG28C8GSvoyp460532HNo+/un15SyqtaqHKomXprXeU59sAK2TDcnZBI8WQDu5LqJ2hj4am3uvgMaaje3uEZRU9rndo1o=;
-X-YMail-OSG: OQPAaegVM1kSG40.H.Hk3RaughHXHjPy76_RyAiwsvgcYlpRxxdOuaUEdZI.2SVJ7ZIaPA--
-Date: Sun, 14 Oct 2007 17:45:46 -0700 (PDT)
-From: Luben Tuikov <ltuikov@yahoo.com>
-Reply-To: ltuikov@yahoo.com
-Subject: Re: What still uses the block layer?
-To: James Bottomley <James.Bottomley@SteelEye.com>,
-       Matthew Wilcox <matthew@wil.cx>
-Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-In-Reply-To: <1192400672.3351.56.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <838477.92423.qm@web31803.mail.mud.yahoo.com>
+	Sun, 14 Oct 2007 20:56:29 -0400
+Date: Mon, 15 Oct 2007 01:56:23 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: WTF is HIDIOCGRDESC supposed to do (aside of being a roothole)?
+Message-ID: <20071015005623.GB8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> On Sat, 2007-10-13 at 16:05 -0600, Matthew Wilcox wrote:
-> > On Thu, Oct 11, 2007 at 08:11:21PM -0500, Rob Landley wrote:
-> > > My impression from asking questions on the linux-scsi mailing list is that the 
-> > > scsi upper/middle/lower layers doesn't use the block layer described in 
-> > > Documentation/block/*.
-> > 
-> > Entirely incorrect.
-> 
-> OK, right ... could we please get a sense of decorum back on this list.
-> 
-> Rob, if you didn't ask your alleged questions in such a pejorative
-> manner, we'd get a lot further; and Matthew, if you didn't rise to the
-> bait so spectacularly it wouldn't prolong these threads.
-> 
-> Really, both of you, I have better things to do with my time than
-> mediate behaviours that should have been educated out of you in the
-> kindergarten sand pit.
+This
 
-I really didn't find Rob's email "pejorative" at all.  It seems to me
-he was just asking for clarification, information and trying to
-understand how it all works and ties together.  His email seemed
-genuine enough of a person just asking to understand how it all works.
++                               if (get_user(len, (int __user *)arg))
++                                       return -EFAULT;
++                               if (copy_to_user(*((__u8 **)(user_arg +
++                                                       sizeof(__u32))),
++                                                       dev->hid->rdesc, len))
 
-Matthew's expletive and extremely rude response really shows
-the general attitude of the linux-scsi people.
+is an instant trouble - you dereference userland-supplied address and
+expect it to be OK; then you take the obtained value and use it as
+address to shove the data into.
 
-Heck, I got a similar response just a week ago here on the
-list, trying to convince Garzik and his band, that storage nodes
-SHOULD NOT be SAS WWN generators.  Should I have even tried?  That's
-the question.
-
-Good luck everyone,
-   Luben
-
+Now,
+	a) dereference is Not Safe(tm), even if you have get_user()
+succeeded just before (and it might be completely unrelated to userland
+data at that address).
+	b) copying arbitrary amount of data?  Without any sanity checks on
+len, when we'd just got it from userland?
+	c) just WTF is that thing supposed to do?
