@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935167AbXJOSvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765392AbXJOSvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935167AbXJOSvF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 14:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935104AbXJOSs1
+	id S1765392AbXJOSvp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 14:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759106AbXJOSve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 14:48:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43682 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934895AbXJOSsZ (ORCPT
+	Mon, 15 Oct 2007 14:51:34 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34423 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758781AbXJOSvd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 14:48:25 -0400
-Date: Mon, 15 Oct 2007 11:47:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, mingo@elte.hu
-Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20071015114738.6b5a25c7.akpm@linux-foundation.org>
-In-Reply-To: <20071015104647.14e60bc5@laptopd505.fenrus.org>
-References: <20071015104647.14e60bc5@laptopd505.fenrus.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Oct 2007 14:51:33 -0400
+Date: Mon, 15 Oct 2007 11:51:30 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-kernel@vger.kernel.org, Albert Cahalan <acahalan@gmail.com>
+Subject: Re: How to find slab\'s usage?
+In-Reply-To: <84144f020710130110r6b13389aj43bb7b79ecd5e1b7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0710151150530.25274@schroedinger.engr.sgi.com>
+References: <200710120701.l9C71Jx6038998@www262.sakura.ne.jp> 
+ <84144f020710130043v4f8e4cfbm178c88478d4b053d@mail.gmail.com> 
+ <200710131702.FHD09857.VSQOLFtFOJHMFO@I-love.SAKURA.ne.jp>
+ <84144f020710130110r6b13389aj43bb7b79ecd5e1b7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 10:46:47 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
+On Sat, 13 Oct 2007, Pekka Enberg wrote:
 
+> Hi,
 > 
-> Subject: Give kjournald a IOPRIO_CLASS_RT io priority
-> From: Arjan van de Ven <arjan@linux.intel.com>
+> On 10/12/07, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
+> > > > I saw /proc/meminfo and it seems to me that slab is leaking memory.
+> > > > But /usr/bin/slabtop claims /proc/slabinfo is missing.
 > 
-> With latencytop, I noticed that the (in memory) atime updates during a
-> kernel build had latencies of 600 msec or longer; this is obviously not so
-> nice behavior. Other EXT3 journal related operations had similar or even
-> longer latencies.
+> At some point in time, I wrote:
+> > > Do you have CONFIG_SLUB enabled? Try looking into /sys/slab/.
 > 
-> Digging into this a bit more, it appears to be an interaction between EXT3
-> and CFQ in that CFQ tries to be fair to everyone, including kjournald.
-> However, in reality, kjournald is "special" in that it does a lot of journal
-> work and effectively this leads to a twisted kind of "mass priority
-> inversion" type of behavior.
-> 
-> The good news is that CFQ already has the infrastructure to make certain
-> processes special... JBD just wasn't using that quite yet.
-> 
-> The patch below makes kjournald of the IOPRIO_CLASS_RT priority to break
-> this priority inversion behavior. With this patch, the latencies for atime
-> updates (and similar operation) go down by a factor of 3x to 4x !
-> 
+> On 10/13/07, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
+> > Yes. There is /sys/slab/ .
+> > But are there any tools for browsing like /usr/bin/slabtop ?
+> > Is
+> >   cd /sys/slab/; for i in *; do echo -n $i " "; cat $i/slabs; done
+> > the only way currently available?
 
-Seems a pretty fundamental change which could do with some careful
-benchmarking, methinks.
+There is a tool in Documentation/vm/slabinfo.c. Just compile that.
 
-See, your patch amounts to "do more seeks to improve one test case". 
-Surely other testcases will worsen.  What are they?
+> I don't think slabtop in procps has been updated to support slub. Christoph?
 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> 
-> diff -purN linux-2.6.23-rc9.org/fs/jbd/journal.c linux-2.6.23-rc9.lt/fs/jbd/journal.c
-> --- linux-2.6.23-rc9.org/fs/jbd/journal.c	2007-10-02 05:24:52.000000000 +0200
-> +++ linux-2.6.23-rc9.lt/fs/jbd/journal.c	2007-10-14 00:06:55.000000000 +0200
-> @@ -35,6 +35,7 @@
->  #include <linux/kthread.h>
->  #include <linux/poison.h>
->  #include <linux/proc_fs.h>
-> +#include <linux/ioprio.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/page.h>
-> @@ -131,6 +132,8 @@ static int kjournald(void *arg)
->  	printk(KERN_INFO "kjournald starting.  Commit interval %ld seconds\n",
->  			journal->j_commit_interval / HZ);
->  
-> +	current->ioprio =  (IOPRIO_CLASS_RT << IOPRIO_CLASS_SHIFT) | 4;
-> +
+slabinfo can probably do much of what slabtop does.
 
-Might be worth a code comment?
