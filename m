@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764376AbXJOB3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764355AbXJOBkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764376AbXJOB3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Oct 2007 21:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXJOB3W
+	id S1764355AbXJOBkx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Oct 2007 21:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbXJOBko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Oct 2007 21:29:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:29171 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753502AbXJOB3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Oct 2007 21:29:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fKy9sTzis7CfENX4Jsum0FbGOzxcLPaUFF1EZWbEOXDR8mazfXnQmwEnVk3eUfSRKYQbYhme4gDHpf5YFI2zwPRXpG42vWgdZBd2+Or1puG+zVrI3e9++YyynTUi1pxGLhnbrVT1rIBpyBIKvbYdp7aP/SCffrDz2dSYzHWHlBQ=
-Message-ID: <3d1754a30710141829y24e19e70o500e7bbb6bb56701@mail.gmail.com>
-Date: Mon, 15 Oct 2007 06:59:20 +0530
-From: "vignesh babu" <vigneshbabu@gmail.com>
-To: "Mark Lord" <lkml@rtr.ca>
-Subject: Re: wierd file perms
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <471275AB.7090502@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Oct 2007 21:40:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53434 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755050AbXJOBkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Oct 2007 21:40:42 -0400
+Date: Mon, 15 Oct 2007 02:26:21 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
+       Guido Guenther <agx@sigxcpu.org>, Kevin Corry <kevcorry@us.ibm.com>,
+       stable@kernel.org
+Subject: Re: [2.6.24 PATCH 02/25] dm io:ctl use constant struct size
+Message-ID: <20071015012621.GD10006@agk.fab.redhat.com>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
+	Guido Guenther <agx@sigxcpu.org>, Kevin Corry <kevcorry@us.ibm.com>,
+	stable@kernel.org
+References: <20071012170509.GM24157@agk.fab.redhat.com> <200710130016.29937.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <3d1754a30710131010h5d3cbb28tfeb8b4228a448f2e@mail.gmail.com>
-	 <20071013172848.GE16774@lug-owl.de> <47121943.2030902@rtr.ca>
-	 <Pine.LNX.4.64.0710141602520.22801@fbirervta.pbzchgretzou.qr>
-	 <471275AB.7090502@rtr.ca>
+In-Reply-To: <200710130016.29937.arnd@arndb.de>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ls --version
-ls (GNU coreutils) 5.97
+On Sat, Oct 13, 2007 at 12:16:29AM +0200, Arnd Bergmann wrote:
+> This change seems rather bogus, you're changing the ABI just to work
+> around a bug in the compat_ioctl layer. Why not just do the compat
+> code the right way, like the patch below?
 
-An fsck did it :) and had the source restored by checkout -f
+The underlying ABI is not changing, I hope - the trailing padding in the
+struct should not affect the processing of the data by dm, and I see no
+reason to continue maintaining the fiction that the 32-bit and 64-bit
+ioctls are in some way incompatible with each other when they aren't
+AFAIK.
 
-Think Jan is right, there is a diff between the two...
+And yes, a follow-up patch can clean up our use of the compatibility
+mechanism, going a little bit further than the patch you attached, I
+hope.
 
-On 10/15/07, Mark Lord <lkml@rtr.ca> wrote:
-> Jan Engelhardt wrote:
-> > On Oct 14 2007 09:27, Mark Lord wrote:
-> >> Jan-Benedict Glaw wrote:
-> >>> On Sat, 2007-10-13 22:40:23 +0530, vignesh babu <vigneshbabu@gmail.com>
-> >>> wrote:
-> >>>> I was surprised and did an ls -l on the files and guess what I found:
-> >>>>
-> >>>> total 0
-> >>>> ?--------- ? ? ? ?                ? fcntl.c
-> >>>> ?--------- ? ? ? ?                ? fifo.c
-> >>>> ?--------- ? ? ? ?                ? filesystems.c
-> >>>> ?--------- ? ? ? ?                ? file_table.c
-> >>>> ?--------- ? ? ? ?                ? freevxfs
-> >>>>
-> >>>> So end result is that, Im not able to delete the files or change perms
-> >>>> or ownership even as root.
-> >>> Most probably, your filesystem is broken and needs a fsck.
-> >> No, this is perfectly normal behaviour, for when a directory
-> >> has READ permissions but not EXECUTE permissions.
-> >
-> > Er, close.
-> >
-> >       16:02 ichi:/dev/shm > md a
-> >       16:02 ichi:/dev/shm > touch a/b
-> >       16:02 ichi:/dev/shm > chmod 644 a
-> >       16:02 ichi:/dev/shm > ls -l a
-> >       /bin/ls: cannot access a/b: Permission denied
-> >       total 0
-> >       -????????? ? ? ? ?            ? b
-> >       16:02 ichi:/dev/shm > ls --version
-> >       ls (GNU coreutils) 6.9
-> >
-> >
-> > There is a difference ..  "-?????????" vs "?---------".
->
-> That's just a version difference for GNU ls.
-> Here, with ls (GNU coreutils) 5.97 it gives this:
->
-> ?--------- ? ? ? ?                ? a/b
->
->
->
-
-
+Alasdair
 -- 
-
-----------------------------------------------
-"Why is it that every time I'm with you, makes me believe in magic?"
+agk@redhat.com
