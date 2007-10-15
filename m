@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbXJOVqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbXJOVqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbXJOVqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 17:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXJOVp5
+	id S1760034AbXJOVqo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 17:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXJOVqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 17:45:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37224 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759024AbXJOVpz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 17:45:55 -0400
-Date: Mon, 15 Oct 2007 14:43:49 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, davej@redhat.com
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Message-ID: <20071015144349.2e31f98a@laptopd505.fenrus.org>
-In-Reply-To: <20071015210737.GA15293@khazad-dum.debian.net>
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
-	<20071015210737.GA15293@khazad-dum.debian.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Oct 2007 17:46:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34240 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbXJOVqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 17:46:32 -0400
+Message-ID: <4713DFA8.6020304@garzik.org>
+Date: Mon, 15 Oct 2007 17:46:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Rob Landley <rob@landley.net>
+CC: Neil Brown <neilb@suse.de>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710150304.00901.rob@landley.net> <18195.19678.500863.613193@notabene.brown> <200710151634.57407.rob@landley.net>
+In-Reply-To: <200710151634.57407.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 19:07:37 -0200
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+Rob Landley wrote:
+> I realize that both views are valid.  This is why the US has a house and a 
+> senate, and filters things through both views.  My gripe is that forcing my 
+> laptop to look at my USB devices to find my SATA hard drive is aligned with 
+> only one of those viewpoints, and completely opposed to the other.
+> 
+> An approach that makes things much easier on laptops is seen to hurt big iron, 
+> not because it the approach itself has a direct negative impact on big iron, 
+> but only because then laptops are not saddled with the problems of big iron.
 
-> On Mon, 15 Oct 2007, Jeremy Katz wrote:
-> > There are standard keycodes for brightness and volume; map the
-> > events to emit them so that things work properly
-> 
-> NAK.  It is the completely wrong thing to do for IBM thinkpads which
-> process volume and brightness completely in firmware.
-> 
-> And the input subsystem maintainer has made it extremely clear in
-> various threads that the input devices are *not* to be used as a
-> notification service for on-screen-display or other such stuff.  If
-> you send volume and brightness *key* events to userspace, it is
-> supposed to act on them and raise/lower brightness/volume, which is
-> the wrong thing to do on thinkpads. Never mind that HAL is ignoring
-> the input maintainer's directions and violating this.
-> 
-> We should fix the backlight class to be more useful and support
-> poll() or somesuch, for userspace to track the backlight level in a
-> resource-friendly way for OSD (the only sane thing to do on an IBM
-> thinkpad with such events). And an ALSA mixer to provide a proper
-> path to the thinkpad-acpi volume functionality is also in my schedule
-> for 2.6.25.
-> 
 
-there is a huge problem with this though: Depending on your graphics
-chip, it's the graphics driver, not the bios, that does the backlight
-control......  in fact the trend in hardware (this is what windows
-does) is have the OS take over the control of all of this as soon as
-possible...
+And we are telling you that, in a modern hotplug world -- yes even on a 
+laptop -- you are clinging too much to assumptions that were never 100% 
+true in the first place, and much less so on today's laptops.
 
-Linux should do this with software control as well for that reason; the
-other approach just isn't going to be possible in the long term ;(
+When you can unplug a SATA drive from a laptop, and plug it back in via 
+USB, you can see how unwise it is to hardcode device names into your fstab.
+
+We invented udev, sysfs, mount-by-label, mount-by-uuid, LVM and all 
+sorts of other gadgets to make this problem go away.
+
+If you ignore the solutions that exist to solve these problems, then of 
+course annoyances will persist as the state of hardware marches forward.
+
+	Jeff
+
+
