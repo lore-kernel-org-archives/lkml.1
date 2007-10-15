@@ -1,39 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbXJOJSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXJOJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbXJOJSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 05:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbXJOJSl
+	id S1759850AbXJOJVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 05:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbXJOJVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 05:18:41 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:40987 "EHLO ms.trustica.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753564AbXJOJSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 05:18:40 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 05:18:39 EDT
-Message-ID: <47132EE2.1050208@assembler.cz>
-Date: Mon, 15 Oct 2007 11:12:02 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Icedove 1.5.0.12 (X11/20070731)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: "Mark M. Hoffman" <mhoffman@lightlink.com>, apiszcz@solarrain.com,
-       lm-sensors <lm-sensors@lm-sensors.org>, linux-kernel@vger.kernel.org,
-       Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: Re: [lm-sensors] 2.6.23.1 x86 hardware monitoring bug?
-References: <Pine.LNX.4.64.0710141526590.3935@p34.internal.lan>	<20071015025331.GA3676@jupiter.solarsys.private> <Pine.LNX.4.64.0710150406220.9867@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0710150406220.9867@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Oct 2007 05:21:14 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:60860 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756317AbXJOJVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 05:21:13 -0400
+Date: Mon, 15 Oct 2007 11:24:11 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071015092411.GC1875@ff.dom.local>
+References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local> <20071015080924.GA32562@wotan.suse.de> <20071015090959.GB1875@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015090959.GB1875@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Oct 15, 2007 at 11:09:59AM +0200, Jarek Poplawski wrote:
+...
+> I'm not performance-words at all, so I can't help you, sorry. But, I
 
-Most likely you have distro and custom libsensors installed on the system. (and 
-different PATH for root)
+...performance-wards?!
 
-Please check how many of libsensors libraries is installed.
+Looks like serious: I don't even now who I'm not now!
 
-Thanks,
-
-Rudolf
+Jarek P.
