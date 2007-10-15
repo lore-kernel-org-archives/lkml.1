@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbXJORLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbXJORLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765648AbXJORLg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 13:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765392AbXJORKp
+	id S1765757AbXJORLy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 13:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765507AbXJORKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 13:10:45 -0400
-Received: from mga05.intel.com ([192.55.52.89]:49551 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765317AbXJORKo (ORCPT
+	Mon, 15 Oct 2007 13:10:49 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60218 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765462AbXJORKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 13:10:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,278,1188802800"; 
-   d="scan'208";a="346740363"
-Date: Mon, 15 Oct 2007 10:04:11 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Rik van Riel <riel@surriel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071015170411.GB18550@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071014190128.6e3cdb44@bree.surriel.com>
+	Mon, 15 Oct 2007 13:10:48 -0400
+Message-ID: <47139F15.7050702@s5r6.in-berlin.de>
+Date: Mon, 15 Oct 2007 19:10:45 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071014190128.6e3cdb44@bree.surriel.com>
-User-Agent: Mutt/1.5.11
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net> <20071015160800.GA324@parisc-linux.org>
+In-Reply-To: <20071015160800.GA324@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
-> The kernel newbies community often gets inquiries from CS students who
-> need a project for their studies and would like to do something with
-> the Linux kernel, but would also like their code to be useful to the
-> community afterwards.
+Matthew Wilcox wrote:
+> On Mon, Oct 15, 2007 at 04:26:04AM -0500, Rob Landley wrote:
+>> Combining USB and IDE into the same /dev/sd? namespace makes enumerating the 
+>> IDE devices much harder than in the traditional "/dev/hdb doesn't move 
+>> without a screwdriver" model.  The merger creates a new problem for IDE, one 
+>> which didn't exist before: the addition or removal of other unrelated types 
+>> of devices may change this device's location next boot.  It may be possible 
+>> to add additional complication to the system to compensate, but what was the 
+>> advantage of merging the namespaces in the first place?
 > 
-> In order to make it easier for them, I am trying to put together a
-> page with projects that:
-> - Are self contained enough that the students can implement the
->   project by themselves, since that is often a university requirement.
-> - Are self contained enough that Linux could merge the code (maybe
->   with additional changes) after the student has been working on it
->   for a few months.
-> - Are large enough to qualify as a student project, luckily there is
->   flexibility here since we get inquiries for anything from 6 week
->   projects to 6 month projects.
-> 
-> If you have ideas on what projects would be useful, please add them
-> to this page (or email me):
-> 
-> http://kernelnewbies.org/KernelProjects
+> It's not something anyone particularly set out to do, it's just how
+> it worked out.  It was justified by saying "ok, this goes from a 99%
+> solution to a 96% solution, but there's 100% solution called uuids".
+> I don't particularly agree with this line of argumentation, but it did
+> hold sway.
 
-Is there already a make config option that will do a good job at setting
-a default .config file based on what is already running on a system?  
+Low-level networking drivers suggest a default interface name (per
+interface or as a template like eth%d into which the networking core
+inserts a lowest spare number).  Userspace can rename interfaces, but
+nevertheless it's nice to have different default kernel names for
+ethernet, wlan etc..
 
-I get tiered of trimming down my .config for my laptop build so it takes
-less than 30min to build a kernel.
+Could low-level SCSI drivers provide similar name templates which give a
+hint on the transport involved?  It's a bit more difficult as with
+networking interfaces though because
+  - SCSI devices can have sd, sr, st, osst, ch, sg interfaces,
+  - SCSI device files share a namespace with all other device files.
 
-Bonus credit to additional "expert" options (like those powertop puts
-out) for target uses, laptop, HPC, home file share, embedded targets....
+E.g.
+/dev/sd-ide-b	- second IDE HDD,
+/dev/sd-iscsi-e	- fifth iSCSI direct access device,
+/dev/sr-sata-0	- first SATA CD-ROM,
+/dev/sr-usb-0	- a USB CD-ROM,
+/dev/st-fw-0	- a FireWire tape drive,
+/dev/sda	- a device whose transport driver didn't propose a name
 
-Oh, and lets make the expert configs easily extensible.
-
-
---mgross
-
-
-> 
-> thanks,
-> 
-> Rik
-> -- 
-> "Debugging is twice as hard as writing the code in the first place.
-> Therefore, if you write the code as cleverly as possible, you are,
-> by definition, not smart enough to debug it." - Brian W. Kernighan
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Of course the really interesting names will still be provided by
+udev-generated symlinks.
+-- 
+Stefan Richter
+-=====-=-=== =-=- -====
+http://arcgraph.de/sr/
