@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbXJPHTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXJPHU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932848AbXJPHTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 03:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbXJPHTj
+	id S933151AbXJPHU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 03:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761793AbXJPHUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 03:19:39 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56684 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758038AbXJPHTi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 03:19:38 -0400
-Message-ID: <471465D8.9030100@linux.vnet.ibm.com>
-Date: Tue, 16 Oct 2007 12:48:48 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Tue, 16 Oct 2007 03:20:14 -0400
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:51748 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761717AbXJPHUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 03:20:13 -0400
+Date: Tue, 16 Oct 2007 11:22:21 +0400
+From: "Denis V. Lunev" <den@openvz.org>
+To: akpm@linux-foundation.org
+Cc: den@openvz.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] .gitignore update for x86 arch
+Message-ID: <20071016072221.GA14029@iris.sw.ru>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-mm1 - regression- PowerPC link failure at arch/powerpc/kernel/head_64.o
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+This patch:
+- makes .gitignore files visible to git
+- makes arch/x86/kernel/vsyscall_32.lds and arch/i386/boot invisible
 
-The link failure while compiling the kernel with allyesconfig over the lpar, 
-which was seen in 2.6.23-rc8-mm2 (http://lkml.org/lkml/2007/9/30/2) is still 
-seen in 2.6.23-mm1, the link failure is
+Signed-off-by: Denis V. Lunev <den@openvz.org>
 
-ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-ld: final link failed: Bad value
-make: *** [.tmp_vmlinux1] Error 1
-
-# gcc -v
-Using built-in specs.
-Target: powerpc64-suse-linux
-Configured with: ../configure --enable-threads=posix --prefix=/usr --with-local-prefix=/usr/local --infodir=/usr/share/info --mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib --enable-languages=c,c++,objc,fortran,obj-c++,java,ada --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 --enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib --with-system-zlib --enable-shared --enable-__cxa_atexit --enable-libstdcxx-allocator=new --program-suffix=-4.1 --enable-version-specific-runtime-libs --without-system-libunwind --with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
-Thread model: posix
-gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
-
-ld -v
-GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
-
-
-Anything I can provide to help diagnose this?
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+diff --git a/.gitignore b/.gitignore
+index 27c3e83..22fb8fa 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -26,6 +26,7 @@ vmlinux*
+ !vmlinux.lds.S
+ System.map
+ Module.symvers
++!.gitignore
+ 
+ #
+ # Generated include files
+diff --git a/arch/i386/.gitignore b/arch/i386/.gitignore
+new file mode 100644
+index 0000000..36ef4c3
+--- /dev/null
++++ b/arch/i386/.gitignore
+@@ -0,0 +1 @@
++boot
+diff --git a/arch/x86/kernel/.gitignore b/arch/x86/kernel/.gitignore
+index 40836ad..4ea38a3 100644
+--- a/arch/x86/kernel/.gitignore
++++ b/arch/x86/kernel/.gitignore
+@@ -1 +1,2 @@
+ vsyscall.lds
++vsyscall_32.lds
