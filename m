@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbXJPXWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935458AbXJPXY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760659AbXJPXWI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbXJPXVz
+	id S935458AbXJPXY6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 19:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760562AbXJPXYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:21:55 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56572 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752833AbXJPXVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:21:55 -0400
-Date: Wed, 17 Oct 2007 01:21:53 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
-Message-ID: <20071016232153.GC29378@wotan.suse.de>
-References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz> <20071015143732.01d99af8@laptopd505.fenrus.org> <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz> <20071016002229.GA5851@wotan.suse.de> <Pine.LNX.4.64.0710161221300.1315@artax.karlin.mff.cuni.cz> <20071016222921.GA29378@wotan.suse.de> <Pine.LNX.4.64.0710170049450.19210@artax.karlin.mff.cuni.cz>
-Mime-Version: 1.0
+	Tue, 16 Oct 2007 19:24:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59299 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755668AbXJPXYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 19:24:49 -0400
+Date: Tue, 16 Oct 2007 16:23:50 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: jens.axboe@oracle.com, kay.sievers@vrfy.org, rjw@sisk.pl,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       htejun@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Message-ID: <20071016232350.GB24827@kroah.com>
+References: <20071016204238.GA1093@kroah.com> <20071016205053.GI9942@kernel.dk> <20071016213730.GB21815@kroah.com> <20071016.153248.95506316.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710170049450.19210@artax.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071016.153248.95506316.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 01:05:16AM +0200, Mikulas Patocka wrote:
-> > > I see, AMD says that WC memory loads can be out-of-order.
-> > > 
-> > > There is very little usability to it --- framebuffer and AGP aperture is 
-> > > the only piece of memory that is WC and no kernel structures are placed 
-> > > there, so it is possible to remove that lfence.
-> > 
-> > No. In Linux kernel, rmb() means that all previous loads, including to
-> > any IO regions, will be executed before any subsequent load.
+On Tue, Oct 16, 2007 at 03:32:48PM -0700, David Miller wrote:
+> From: Greg KH <greg@kroah.com>
+> Date: Tue, 16 Oct 2007 14:37:30 -0700
 > 
-> You already must not place any data structures into WC memory --- for 
-> example, spinlocks wouldn't work there.
-
-What do you mean "already"? If we already have drivers loading data from
-WC memory, then rmb() needs to order them, whether or not they actually
-need it. If that were prohibitively costly, then we'd introduce a new
-barrier which does not order WC memory, right?
-
-
-> wmb() also won't work on WC 
-> memory, because it assumes that writes are ordered.
-
-You mean the one defined like this:
-  #define wmb()   asm volatile("sfence" ::: "memory")
-? If it assumed writes are ordered, then it would just be a barrier().
-
-
-> > How can you possibly get rid of lfence from there just because you may
-> > happen to *know* that it isn't used (btw. the IO serialisation isn't for
-> > kernel data structures, it is for actual IO operations, generally).
+> > Kay, are we doing something wrong in userspace when renaming wireless
+> > devices such that we can overlap names?
 > 
-> IO regions are in uncached memory, and x86 already serializes it fine. It 
-> flushes any write buffers on access to uncached memory.
+> It does it for all network devices, I see this ugly message on every
+> single system I have from Fedora foo to RHEL foo to ubuntu foo to
+> debian foo.
 > 
-> (BTW. what is the general portable rule for serializing writel() and 
-> readl()? On x86 they are serialized in hardware, but what on other archs?)
+> udev simply applies the MAC address to device name rules blindly, it
+> doesn't check if the device already has the desired name already
 
-Most tend to order them strongly these days. There are also relaxed
-variants for architectures that can take advantage of them.
+Ugh :(
 
+> It's been like this forever, and since userland has been doing it for
+> so long, you can't warn on this there is too much established
+> practice.  Expecting people to install "fixed" udev is not an
+> acceptable answer, the warning is a regression and therefore you'll
+> have to remove the kernel warning for this case and live with this
+> issue essentially forever.
 
-> > Doing that would lead to an unmaintainable mess. If drivers don't need rmb,
-> > then they don't call it.
-> 
-> If wmb() doesn't currently work on write-combining memory, why should 
-> rmb() work there?
+Nope, I guess we will have to take out the check (or put it under the
+kobject debugging flag), unless Kay has any other ideas...
 
-I don't understand why you say wmb() doesn't work on WC memory. What part
-of which spec are you reading (or, given your mistrust of specs, what CPU
-are you seeing failures with)?
- 
+thanks,
 
-> The purpose of rmb() is to enforce ordering on architectures that don't 
-> force it in hardware --- that is not the case of x86.
-
-Well it clearly is the case because I just pointed you to a document
-that says they can go out of order. If you want to argue that existing
-implementations do not, then by all means go ahead and send a patch to
-Linus and see what he says about it ;)
-
+greg k-h
