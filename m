@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933928AbXJPPk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934028AbXJPPpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933928AbXJPPk0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932704AbXJPPkQ
+	id S934028AbXJPPpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933178AbXJPPpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:40:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39851 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932589AbXJPPkP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:40:15 -0400
-Date: Tue, 16 Oct 2007 16:43:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Konstantin Kalin <konstantin.kalin@gmail.com>,
+	Tue, 16 Oct 2007 11:45:24 -0400
+Received: from 1wt.eu ([62.212.114.60]:3138 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932987AbXJPPpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:45:23 -0400
+Date: Tue, 16 Oct 2007 17:41:38 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Vitaliy Ivanov <vitalivanov@gmail.com>
+Cc: zaitcev@redhat.com, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: NVIDIA Ethernet & invalid MAC
-Message-ID: <20071016164354.6f4e530a@the-village.bc.nu>
-In-Reply-To: <4714D5B8.8020301@redhat.com>
-References: <4714C66D.4010607@gmail.com>
-	<20071016154313.53d19c43@the-village.bc.nu>
-	<4714D5B8.8020301@redhat.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+Message-ID: <20071016154138.GA23326@1wt.eu>
+References: <1192383445.8372.18.camel@dell1.softservecom.com> <20071014182542.GA2832@1wt.eu> <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com> <20071014223921.GA4677@1wt.eu> <1192542889.29039.66.camel@dell1.softservecom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192542889.29039.66.camel@dell1.softservecom.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> See the below for another report of this:
+On Tue, Oct 16, 2007 at 04:54:49PM +0300, Vitaliy Ivanov wrote:
+> Willy,
 > 
-> http://marc.info/?t=119215716900001&r=1&w=2
+> On Mon, 2007-10-15 at 01:39, Willy Tarreau wrote:
 > 
-> And apparently some motherboard vendors have their own allocations for ethernet
-> addresses?
+> > That's what I've seen. I can propose you something (unless someone
+> > else raises his hand saying "no") : you update your patch with a
+> > short description of what the hardware module is supposed to be used
+> > for, and you accept to step up as the maintainer for this backport,
+> > which will imply that you put your name and mail in the MAINTAINERS
+> > file. That way, if you're the only user, nobody will be annoyed, and
+> > if there are other users and some of them have problems, I don't waste
+> > my time on something I don't know at all. If you agree with this deal
+> > (which I think is fair), then I'm willing to merge your patch into
+> > 2.4.36-pre.
+> 
+> It's completely fair. I spent some time on lkml and I liked it.
+> I've a device and I can check/correct any issue we'll have with it(hope there won't be any;)).
+> So it's OK for me to be a maintainer for this driver.
+> 
+> Here is final patch with all issues corrected.
+> 
+> Again, comments are welcomed.
 
-We can teach it two ranges. I doubt anyone will be unlucky enough to have
-the one which could be either Nvidia or Gigabyte and have it matter.
+OK, I have no objection, but please apply the fixes the le16 problem as
+suggested by Pete and Greg first. Also, you will probably receive more
+comments, and/or criticisms from further reviews. This is normal and
+expected. You just have to fix your code so that it can be merged.
 
-The "go complain to the BIOS vendor" comment from Nvidia to me isn't an
-answer. Maybe Nvidia can complain to BIOS vendors but end user complaints
-of that form rarely have any effect.
+> adutux is a simple Linux device driver for ADU boards from Ontrak Control Systems. 
+> The adutux driver exposes standard open/close/read/write API's to the user application.
 
-Alan
+If this is going to be the commit message, please reduce lines to less
+than 70 chars, and also enumerate the supportd devices and the one you
+performed the tests with. It helps a lot when users encounter problems.
+
+Also, if you did not (I forgot to check), please ensure that the adutux
+maintainer in 2.6 is CC'd.
+
+Last but not least, please remove the "KERNELS/" path component from
+your next diff.
+
+Thanks,
+Willy
+
