@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965898AbXJPXZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935821AbXJPX1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965898AbXJPXZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935729AbXJPXZA
+	id S935821AbXJPX1E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 19:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXJPX0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:25:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56760 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935627AbXJPXY7 (ORCPT
+	Tue, 16 Oct 2007 19:26:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60037 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752036AbXJPX0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:24:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>
-Subject: [PATCH] x86 boot: Build a bzImage again
-References: <20071015205018.GA24467@uranus.ravnborg.org>
-Date: Tue, 16 Oct 2007 17:24:04 -0600
-In-Reply-To: <20071015205018.GA24467@uranus.ravnborg.org> (Sam Ravnborg's
-	message of "Mon, 15 Oct 2007 22:50:18 +0200")
-Message-ID: <m14pgqhcdn.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 16 Oct 2007 19:26:53 -0400
+Date: Tue, 16 Oct 2007 16:26:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: linux-kernel@vger.kernel.org, krzysztof.h1@wp.pl, perex@perex.cz
+Subject: Re: suspicious ALSA empty commit
+In-Reply-To: <20071016.155044.82377336.davem@davemloft.net>
+Message-ID: <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
+References: <20071016.155044.82377336.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-With the Makefile changes dealing with EXTRA_AFLAGS and
-EXTRA_CFLAGS when we attempt to build a bzImage
-we get a zImage instead.  Ouch!
 
-Fixup the makefile to use the new ccflags-y and asflags-y
-so that we can build a bzImage again.  Making it possible
-to actually test the recent kernel changes.
+On Tue, 16 Oct 2007, David Miller wrote:
+> 
+> While scanning over today's updates in Linus's tree, I noticed
+> the following commit has no changes, and this does not appear
+> to be intentional.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/x86/boot/Makefile |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Interesting. You're right, I didn't notice.
 
-diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
-index d6ed8e5..0e4912f 100644
---- a/arch/x86/boot/Makefile
-+++ b/arch/x86/boot/Makefile
-@@ -64,10 +64,10 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
- 
- $(obj)/zImage:  IMAGE_OFFSET := 0x1000
--$(obj)/zImage:  EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK)
-+$(obj)/zImage:  asflags-y += $(SVGA_MODE) $(RAMDISK)
- $(obj)/bzImage: IMAGE_OFFSET := 0x100000
--$(obj)/bzImage: EXTRA_CFLAGS := -D__BIG_KERNEL__
--$(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
-+$(obj)/bzImage: ccflags-y += -D__BIG_KERNEL__
-+$(obj)/bzImage: asflags-y += $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
- $(obj)/bzImage: BUILDFLAGS   := -b
- 
- quiet_cmd_image = BUILD   $@
--- 
-1.5.3.rc6.17.g1911
+Git shouldn't even allow such commits to be generated, although you can 
+force it by using the low-level functionality (eg using "git commit-tree" 
+directly for doing things like importing)
 
+			Linus
