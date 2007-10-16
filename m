@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbXJPO4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbXJPPAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934323AbXJPO4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 10:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934285AbXJPOz5
+	id S933819AbXJPPAy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbXJPPAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 10:55:57 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46744 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934042AbXJPOz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 10:55:56 -0400
-Date: Tue, 16 Oct 2007 10:55:54 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>
-cc: bbpetkov@yahoo.de, Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
-In-Reply-To: <a8e1da0710152222t44de6c8at75d3dd874faf58be@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0710161046330.4418-100000@iolanthe.rowland.org>
+	Tue, 16 Oct 2007 11:00:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33852 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755248AbXJPPAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:00:42 -0400
+Message-ID: <4714D20A.3080607@garzik.org>
+Date: Tue, 16 Oct 2007 11:00:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joachim Fenkes <fenkes@de.ibm.com>
+CC: Jan-Bernd Themann <THEMANN@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <pmac@au1.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Q Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
+       Marcus Eder <meder@de.ibm.com>
+Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
+ match eHCA and eHEA drivers
+References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com> <200710162320.00630.fenkes@de.ibm.com>
+In-Reply-To: <200710162320.00630.fenkes@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Dave Young wrote:
+Joachim Fenkes wrote:
+> On Tuesday 09 October 2007 10:21, Jan-Bernd Themann wrote:
+>> Roland Dreier <rdreier@cisco.com> wrote on 03.10.2007 20:05:44:
+>>>  > > Replace struct ibmebus_dev and struct ibmebus_driver with struct 
+> of_device
+>>>  > > and struct of_platform_driver, respectively. Match the external 
+> ibmebus
+>>>  > > interface and drivers using it.
+>>>  > >
+>>>  > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+>>>  >
+>>>  > This is somewhat difficult as this patch touches files that are the
+>>>  > responsibility of three different maintainers. �Is it possible to
+>>>  > split the patch into three, one for each maintainer (possibly by
+>>>  > keeping both old and new interfaces around for a little while)?
+>>>  > 
+>>>  > If not, then you need to get an Acked-by and an agreement that this
+>>>  > change can go via the powerpc.git tree from Roland Dreier and Jeff
+>>>  > Garzik.
+>>>
+>>> I don't see anything objectionable in the infiniband parts of the
+>>> patch -- I don't have any way to test the changes but it all looks
+>>> like a straightforward conversion to a new platform API.  So:
+>>>
+>>> Acked-by: Roland Dreier <rolandd@cisco.com>
+>>>
+>>>  - R.
+>> Looks good from eHEA driver perspective.
+>>
+>> Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
+> 
+> Jeff, do you have any objections against this patch going into the kernel
+> via Paul's powerpc.git tree? It touches only a few lines of ehea which are
+> specific to the bus interface changes.
+> 
+> You can see the full patch here:
+>   http://patchwork.ozlabs.org/linuxppc/patch?id=13750
+> 
+> If you have no objections, please ack the patch so Paul can include it.
 
-> > I finally duplicated this on one of my machines here at boot time, with
-> > USB built into the kernel.  I'll work tomorrow on tracking this down
-> > further...
-> Hi,
-> I add some printk messages, dump_stack and some others, here is the
-> dmesg dump with debug info(lines begin with "hidave"):
+Fine with me...
 
-Okay, good, the extra printk messages show exactly where the problem 
-lies.
+	Jeff
 
-In usb_set_configuration(), each new interfaces is registered and then
-usb_create_sysfs_intf_files() gets called for that interface.  This
-makes sense, because obviously we can't create sysfs files for an
-interface before it is registered.
 
-The problem is that during registration drivers get probed, and drivers 
-sometimes call usb_set_interface() from their probe method.  This 
-routine also calls usb_create_sysfs_intf_files(), and the result is 
-that the sysfs files get created twice:
-
-	First by usb_set_interface, from the driver probe;
-
-	Then by usb_set_configuration, when registration is
-	finished.
-
-I can think of two possible ways around the problem.  One is to add a 
-bit to the usb_interface structure, recording whether the sysfs files 
-have been created.  The other is always to remove the files just before 
-trying to create them.
-
-The first seems more workable, although it is slightly awkward.  Greg, 
-what do you think?
-
-Alan Stern
 
