@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbXJPEqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765001AbXJPEsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763501AbXJPEqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXJPEqZ
+	id S1765001AbXJPEsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbXJPEs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:46:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41422 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbXJPEqY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:46:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: david@lang.hm
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Rob Landley <rob@landley.net>,
-       Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-References: <200710112011.22000.rob@landley.net>
-	<20071015014503.GF9715@thunk.org> <200710150304.00901.rob@landley.net>
-	<200710152337.45252.nickpiggin@yahoo.com.au>
-	<m1tzoriuhq.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0710152105460.1538@asgard.lang.hm>
-Date: Mon, 15 Oct 2007 22:45:01 -0600
-In-Reply-To: <Pine.LNX.4.64.0710152105460.1538@asgard.lang.hm>
-	(david@lang.hm's message of "Mon, 15 Oct 2007 21:10:10 -0700 (PDT)")
-Message-ID: <m1ejfvis6q.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 16 Oct 2007 00:48:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35148 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752294AbXJPEs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 00:48:27 -0400
+Date: Tue, 16 Oct 2007 06:47:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] lockdep: fixup the inode dir annotation
+Message-ID: <20071016044754.GA16762@elte.hu>
+References: <1192469455.27435.87.camel@twins> <alpine.LFD.0.999.0710151813390.6887@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710151813390.6887@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm writes:
 
->
-> on some kernel versions you are correct about needing swap > ram, but on current
-> versions you are not. the swap space gets allocated as needed, and re-used as
-> needed (I don't know the mechanism of this, but I remember the last time this
-> changed from vm=max(ram,swap) to vm=ram+swap)
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I don't think I can recall a linux kernel that required swap > ram.
-However for serious swapping under linux having swap > ram was very
-useful and pretty much a requirement for a workload that involved
-swapping heavily (not thrashing).
+> > please pull the lockdep tree from:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git 
+> >  v2.6.24-lockdep
+> 
+> Hmm. I'm now getting
+> 
+> 	WARNING: at kernel/lockdep.c:700 look_up_lock_class()
 
->> I have not heard of many people swapping and not thrashing lately.
->> I think part of the problem is that we do random access to the swap
->> partition which makes us seek limited.  And since the number of
->> seeks per unit time has been increasing at a linear or slower rate
->> that if we are doing random disk I/O then the amount we can use
->> the disk for is very limited.   I wonder if we could figure out
->> how to push and pull 1M or bigger chunks into and out of swap?
->
-> it has been noted by many people that linux is very slow to pull things back
-> into ram from swap, significantly slower then simple seed limiting would seem to
-> account for.
+it triggered here too - the patch from Peter below was tested overnight 
+and seems to do the trick for me.
 
-Yes.  It may be the large amount of random access (my current guess)
-or it may be something else.
+	Ingo
 
-I'm wonder if I should build an application with a configurable
-data set and working set that can be used for swap testing.  I don't
-think it would be very hard and it might help sort through some of
-the swap performance problems.
+--------------------->
+Subject: lockdep: fixup the inode dir annotation
 
-Eric
+A slight oversight tripped lockdep debugging code, each lockdep
+class should have but a single init site.
 
+Rearange the code to make this true.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/inode.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
+Index: linux/fs/inode.c
+===================================================================
+--- linux.orig/fs/inode.c
++++ linux/fs/inode.c
+@@ -568,16 +568,16 @@ EXPORT_SYMBOL(new_inode);
+ void unlock_new_inode(struct inode *inode)
+ {
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+-	struct file_system_type *type = inode->i_sb->s_type;
+-	/*
+-	 * ensure nobody is actually holding i_mutex
+-	 */
+-	mutex_destroy(&inode->i_mutex);
+-	mutex_init(&inode->i_mutex);
+-	if (inode->i_mode & S_IFDIR)
++	if (inode->i_mode & S_IFDIR) {
++		struct file_system_type *type = inode->i_sb->s_type;
++
++		/*
++		 * ensure nobody is actually holding i_mutex
++		 */
++		mutex_destroy(&inode->i_mutex);
++		mutex_init(&inode->i_mutex);
+ 		lockdep_set_class(&inode->i_mutex, &type->i_mutex_dir_key);
+-	else
+-		lockdep_set_class(&inode->i_mutex, &type->i_mutex_key);
++	}
+ #endif
+ 	/*
+ 	 * This is special!  We do not need the spinlock
