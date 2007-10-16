@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXJPHp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933392AbXJPHq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXJPHp0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 03:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764686AbXJPHpO
+	id S933392AbXJPHq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 03:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764686AbXJPHqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 03:45:14 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48053 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764815AbXJPHpM (ORCPT
+	Tue, 16 Oct 2007 03:46:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48734 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762055AbXJPHqs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 03:45:12 -0400
-Message-ID: <47146BD4.8000608@linux.vnet.ibm.com>
-Date: Tue, 16 Oct 2007 13:14:20 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-mm1 - regression- PowerPC link failure at arch/powerpc/kernel/head_64.o
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <471465D8.9030100@linux.vnet.ibm.com> <20071016002850.4296827e.akpm@linux-foundation.org>
-In-Reply-To: <20071016002850.4296827e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Oct 2007 03:46:48 -0400
+Subject: Re: [git pull] lockdep for v2.6.24
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.0.999.0710151813390.6887@woody.linux-foundation.org>
+References: <1192469455.27435.87.camel@twins>
+	 <alpine.LFD.0.999.0710151813390.6887@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 09:46:44 +0200
+Message-Id: <1192520804.27435.88.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 16 Oct 2007 12:48:48 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Mon, 2007-10-15 at 18:14 -0700, Linus Torvalds wrote:
 > 
->> Hi Andrew,
->>
->> The link failure while compiling the kernel with allyesconfig over the lpar, 
->> which was seen in 2.6.23-rc8-mm2 (http://lkml.org/lkml/2007/9/30/2) is still 
->> seen in 2.6.23-mm1, the link failure is
->>
->> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->> ld: final link failed: Bad value
->> make: *** [.tmp_vmlinux1] Error 1
->>
->> # gcc -v
->> Using built-in specs.
->> Target: powerpc64-suse-linux
->> Configured with: ../configure --enable-threads=posix --prefix=/usr --with-local-prefix=/usr/local --infodir=/usr/share/info --mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib --enable-languages=c,c++,objc,fortran,obj-c++,java,ada --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 --enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib --with-system-zlib --enable-shared --enable-__cxa_atexit --enable-libstdcxx-allocator=new --program-suffix=-4.1 --enable-version-specific-runtime-libs --without-system-libunwind --with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
->> Thread model: posix
->> gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
->>
->> ld -v
->> GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
->>
->>
->> Anything I can provide to help diagnose this?
->>
+> On Mon, 15 Oct 2007, Peter Zijlstra wrote:
+> > 
+> > please pull the lockdep tree from:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git v2.6.24-lockdep
 > 
-> Did we work out which patch is causing this?
-> -
-Hi Andrew,
-No, we did not work out on which patch is causing this ! I will try a bisect to find the patch causing this issue.
+> Hmm. I'm now getting
+> 
+> 	WARNING: at kernel/lockdep.c:700 look_up_lock_class()
+> 	
+> 	Call Trace:
+> 	 [<ffffffff8105562a>] __lock_acquire+0x15f/0xc92
+> 	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+> 	 [<ffffffff8105654a>] lock_acquire+0x5a/0x73
+> 	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+> 	 [<ffffffff81052b59>] debug_mutex_lock_common+0x16/0x23
+> 	 [<ffffffff81347d26>] mutex_lock_nested+0x10c/0x2b0
+> 	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+> 	 [<ffffffff810a7b89>] __link_path_walk+0x924/0xde9
+> 	 [<ffffffff810a80a6>] link_path_walk+0x58/0xe0
+> 	 [<ffffffff81348ef6>] _spin_unlock+0x17/0x20
+> 	 [<ffffffff8109cc31>] get_unused_fd_flags+0x115/0x126
+> 	 [<ffffffff810a8432>] do_path_lookup+0x1ae/0x229
+> 	 [<ffffffff810a8e3d>] __path_lookup_intent_open+0x56/0x96
+> 	 [<ffffffff810a8fe0>] open_namei+0x7d/0x66c
+> 	 [<ffffffff8109ce9f>] do_filp_open+0x1c/0x38
+> 	 [<ffffffff81348ef6>] _spin_unlock+0x17/0x20
+> 	 [<ffffffff8109cc31>] get_unused_fd_flags+0x115/0x126
+> 	 [<ffffffff8109cf01>] do_sys_open+0x46/0xc3
+> 	 [<ffffffff8100bc3e>] system_call+0x7e/0x83
+> 
+> which seems to be new..
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Yeah, Ingo just told me about that too :-(
+
+Seems I dropped a patch in my test runs.. Anyway, pushed a fix into the
+above tree.
+
+
+
