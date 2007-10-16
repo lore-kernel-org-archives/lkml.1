@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935729AbXJPUMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935912AbXJPUNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935729AbXJPUMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbXJPUM2
+	id S935912AbXJPUNA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935613AbXJPUMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:12:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36709 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759529AbXJPUM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:12:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: mgross@linux.intel.com
-Subject: Re: 2.6.23-mm1
-Date: Tue, 16 Oct 2007 22:28:13 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710152240.03543.rjw@sisk.pl> <20071016195834.GA23157@linux.intel.com>
-In-Reply-To: <20071016195834.GA23157@linux.intel.com>
+	Tue, 16 Oct 2007 16:12:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:30428 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935867AbXJPUMo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:12:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F/jlnDE97XscnUwdJIGsH1cVNF8skQeNM13rui+PetcYkdyRJhh4KZyikmrRznj7Ot+bljT2jAjJhN1cTaIsj+8NOaLt7kZA9wze3JoOcP6roOZ93WgPfxxjWNnGv00TUyRTPZvwwLsuKQ6+LgpNpsXGXsmG5Yt0l3jvXQyouZA=
+Message-ID: <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
+Date: Tue, 16 Oct 2007 16:12:41 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Jeremy Katz" <katzj@redhat.com>, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+In-Reply-To: <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710162228.14136.rjw@sisk.pl>
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
+	 <20071015210737.GA15293@khazad-dum.debian.net>
+	 <20071016130053.GA20010@srcf.ucam.org>
+	 <20071016141153.GA3237@khazad-dum.debian.net>
+	 <20071016142121.GA21431@srcf.ucam.org>
+	 <20071016143124.GB3237@khazad-dum.debian.net>
+	 <20071016144016.GA21749@srcf.ucam.org>
+	 <20071016165623.GA13643@khazad-dum.debian.net>
+	 <20071016184606.GB25181@srcf.ucam.org>
+	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 16 October 2007 21:58, Mark Gross wrote:
-> On Mon, Oct 15, 2007 at 10:40:02PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, 15 October 2007 18:09, Mark Gross wrote:
-> > > On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
-> > > > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
-> > > > > 
-> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
-> > > > > 
-> > > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
-> > > > >   to stabilise things for the 2.6.23 merge.
-> > > > > 
-> > > > >   But that didn't stop all the subsystem maintainers from going nuts, with
-> > > > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
-> > > > >   a bit better.
-> > > > 
-> > > > I get many traces similar to the one below from it (w/ hotfixes):
-> > > > 
-> > > > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
-> > > 
-> > > This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
-> > > processor_idle.c is registering a acpi_processor_latency_notify 
-> > > 
-> > > my code changed the notifier call from blocking_notifier_call_chain to
-> > > srcu_notifier_call_chain, because dynamic creation of notifier chains at
-> > > runtime where easier with the srcu_notifier_call_chain than the
-> > > blocking_notifier_call_chain.  
-> > > 
-> > > As dynamic creation of PM_QOS parameters are no longer needed I can
-> > > change the notifiers back to match what was in lanency.c
-> > > 
-> > > However; looking at the call tree differences between
-> > > blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
-> > > difference in irq enabling / disabling.  I'm not confident this will
-> > > address this yet.
-> > 
-> > Well, you can send me a patch to check. :-)
-> 
-> I think I'll have to send you a patch that changes the notifiers but I
-> doubt it will fix it.  
-> 
-> After a bit of messing around I have the 2.6.23-mm1 running on my core-2
-> box  note: Ubuntu's make-kpkg on the mm1 tree resulted in a system that
-> wouldn't boot past the intrd.  Looks like the pivot root failed or
-> something.
-> 
-> Anyway, I'm not reproducing your experience, snd_pcm is loaded.  I don't
-> know none of the WARN's are not hitting on my box.
-> 
-> do you have some configuration information that could help me reproduce
-> the issue?
+On 10/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Tue, 16 Oct 2007, Matthew Garrett wrote:
+> > >
+> > > It still doesn't mean it belongs inside the stream of data for the keyboard,
+> > > maskerading as a key press.
+> >
+> > But it *is* a key press!
+>
+> To get somewhat back on track: volume and brightness (and similar - lid
+> close etc) events clearly are keypresses.
+>
+> However, I would also argue that a keypress that is acted on by the
+> firmware automatically is *different* from a keypress that hasn't been
+> acted on: one is a "key was pressed *and* hardware did something
+> automatically", and the other is just a "key was pressed" event.
+>
+> IOW, I think the thinkpad issue (and others like it) should be fixed by
+> splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and
+> KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the
+> kernel itself, for that matter) can know whether it's a informational
+> message or whether it should be acted upon.
 
-Well, I can send you the .config, but the box is AMD-based (Turion 64 X2),
-with an ATI chipset and an HP BIOS, so it seems to be much different from
-yours.
+I agree that these are 2 different events. My argument is that
+"VOLUME_UP_NOTIFY" event is similar to "BATTERY_OUT_NOTIFY",
+"DOCK_UNDOCK_NOTIFY", etc, etc and should be sent not through input
+layer but through a generic (yet to be designed) notification
+mechanism. Something lighter than input. Something like uevents over
+netlink.
 
-Greetings,
-Rafael
+
+-- 
+Dmitry
