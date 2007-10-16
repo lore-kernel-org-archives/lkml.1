@@ -1,92 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765400AbXJPEtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765047AbXJPEwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765400AbXJPEtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXJPEte
+	id S1765047AbXJPEwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXJPEwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:49:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48789 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754751AbXJPEtd (ORCPT
+	Tue, 16 Oct 2007 00:52:38 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41429 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751668AbXJPEwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:49:33 -0400
-Date: Mon, 15 Oct 2007 21:48:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dave Young <hidave.darkstar@gmail.com>, bbpetkov@yahoo.de,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename
-	'bInterfaceNumber'
-Message-ID: <20071016044844.GA8125@kroah.com>
-References: <a8e1da0710142257g628d3d1bq635a5deefb5fb4cc@mail.gmail.com> <Pine.LNX.4.44L0.0710151435070.3466-100000@iolanthe.rowland.org>
+	Tue, 16 Oct 2007 00:52:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=fJZ0i12eBoX2y9z2gWlkGA04qc5GJfCye1M4X/NHpFmNFgkK6aqADJ5V2haLUSnKEIHoLYXC2Eo0VH5HvRPRUcuizgFML1CqURh8VB4CkqGtPwFSvBEn/xntaD9h+Tp7s9WJv8cD6LKF33XFhtU8e4Lgwwd2XRTfz8LwFw5VANE=  ;
+X-YMail-OSG: Si70q6kVM1mPCaHFnIZm6WlqarwXyqY4Y37I2BRsvRWYauH2
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+Date: Tue, 16 Oct 2007 17:34:15 +1000
+User-Agent: KMail/1.9.5
+Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <200710161659.28826.nickpiggin@yahoo.com.au> <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0710151435070.3466-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200710161734.15880.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 02:38:25PM -0400, Alan Stern wrote:
-> On Mon, 15 Oct 2007, Dave Young wrote:
-> 
-> > On 10/14/07, Borislav Petkov <bbpetkov@yahoo.de> wrote:
-> > > Hi,
-> > >
-> > > i get the following warning on yesterday's git tree (v2.6.23-2840-g752097c):
-> > >
-> > > Oct 14 09:07:15 zmei kernel: [   49.368030] sysfs: duplicate filename 'bInterfaceNumber' can not be created
-> > > Oct 14 09:07:15 zmei kernel: [   49.368086] WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
-> > > Oct 14 09:07:15 zmei kernel: [   49.368134]  [<c010527c>] show_trace_log_lvl+0x1a/0x2f
-> > > Oct 14 09:07:15 zmei kernel: [   49.368220]  [<c0105da0>] show_trace+0x12/0x14
-> > > Oct 14 09:07:15 zmei kernel: [   49.368300]  [<c0105db8>] dump_stack+0x16/0x18
-> > > Oct 14 09:07:15 zmei kernel: [   49.368379]  [<c019f2ee>] sysfs_add_one+0x57/0xbc
-> > > Oct 14 09:07:15 zmei kernel: [   49.368461]  [<c019edeb>] sysfs_add_file+0x49/0x71
-> > > Oct 14 09:07:15 zmei kernel: [   49.368541]  [<c01a05c2>] sysfs_create_group+0x86/0xe8
-> > > Oct 14 09:07:15 zmei kernel: [   49.368621]  [<c024f5da>] usb_create_sysfs_intf_files+0x27/0x9b
-> > > Oct 14 09:07:15 zmei kernel: [   49.368704]  [<c024c28b>] usb_set_configuration+0x454/0x466
-> > > Oct 14 09:07:15 zmei kernel: [   49.368787]  [<c0252b97>] generic_probe+0x53/0x94
-> > > Oct 14 09:07:15 zmei kernel: [   49.368867]  [<c024d4f7>] usb_probe_device+0x35/0x3b
-> > > Oct 14 09:07:15 zmei kernel: [   49.368947]  [<c022a46c>] driver_probe_device+0xcb/0x14f
-> > > Oct 14 09:07:15 zmei kernel: [   49.369039]  [<c022a4f8>] __device_attach+0x8/0xa
-> > > Oct 14 09:07:15 zmei kernel: [   49.369119]  [<c02298d5>] bus_for_each_drv+0x3b/0x63
-> > > Oct 14 09:07:15 zmei kernel: [   49.369199]  [<c022a589>] device_attach+0x70/0x85
-> > > Oct 14 09:07:15 zmei kernel: [   49.369279]  [<c022984c>] bus_attach_device+0x29/0x77
-> > > Oct 14 09:07:15 zmei kernel: [   49.369359]  [<c0228abc>] device_add+0x28c/0x445
-> > > Oct 14 09:07:15 zmei kernel: [   49.369439]  [<c0247c7a>] usb_new_device+0x44/0x82
-> > > Oct 14 09:07:15 zmei kernel: [   49.369519]  [<c02486ec>] hub_thread+0x666/0x9c2
-> > > Oct 14 09:07:15 zmei kernel: [   49.369598]  [<c01370e9>] kthread+0x3b/0x62
-> > > Oct 14 09:07:15 zmei kernel: [   49.369679]  [<c0104eaf>] kernel_thread_helper+0x7/0x10
-> > > Oct 14 09:07:15 zmei kernel: [   49.369759]  =======================
-> > >
-> > > The usb hub in question is named 4-1:1.0 and it has an extension connected to it
-> > > which is used to activate the 2 usb connectors at the side of the pc's monitor.
-> > > Correct me if i'm wrong but from what i've understood so far from reading the code,
-> > > i think, it adds the bInterfaceNumber-file after calling usb_create_sysfs_intf_files(intf).
-> > > However, the currently active usbhost interface alternate setting is the only one active
-> > > so the bInterfaceNumber exists already and therefore the warning, but this is
-> > > just a guess since i'm not that fluent in the usb internals.
-> > Hi,
-> > I have encountered the same problem which was  reported in
-> > http://lkml.org/lkml/2007/9/29/45
-> > 
-> > For the first one "usbcore duplicated sysfs filename" , I have submit
-> > a patch to fix it.
-> > 
-> > For the "bInterfaceNumber" one, I have no idea, the same problem still
-> > exist in the latest 23-mm1 tree.
-> 
-> I have tried several times to duplicate this, most recently under 
-> 2.6.23-mm1.  But nothing goes wrong; the error messages don't appear.
-> 
-> You may have to do your own debugging.  Try adding printk statements to
-> usb_create_sysfs_intf_files() and usb_remove_sysfs_intf_files() so you
-> can tell when they get called.
+On Tuesday 16 October 2007 14:38, Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > On Tuesday 16 October 2007 13:55, Eric W. Biederman wrote:
 
-I finally duplicated this on one of my machines here at boot time, with
-USB built into the kernel.  I'll work tomorrow on tracking this down
-further...
+> > I don't follow your logic. We don't need SWAP > RAM in order to swap
+> > effectively, IMO.
+>
+> The steady state of a system that is heavily and usably swapping but
+> not thrashing is that all of the pages in RAM are in the swap cache,
+> at least that used to be the case.
 
-thanks,
+Yeah, it works better in 2.6 (and, IIRC later 2.4 kernels).
 
-greg k-h
+
+> > I don't know if there is a causal relationship there. I mean, I
+> > think it's been a long time since thrashing was ever a viable mode
+> > of operation, right?
+>
+> Right.  But swapping heavily has been a viable mode of operation
+> and that the vast gap in disk random IO performance seems to have
+> hurt significantly.
+
+Or, just not improved as fast as everything else is improving.
+There isn't too much the kernel can do about that. It just
+relatively changes the point at which you'd consider "swapping
+heavily", right?
+
+
+> It be very clear is used to able to run a problem at little below
+> full speed with the disk pegged with swap traffic, and I did this
+> regularly when I started out with linux.
+
+I can do this now. In make -jhuge tests for example, you can get
+a 4GB, 4 core machine to max out a disk with swapping and still
+have 0 idle time. Of course you can also go past that point and
+your idle time comes up. That's not new though.
+
+
+> > Maybe desktops just have less need for swapping now, so nobody sees
+> > it much until something goes _really_ bad. When I'm using my 256MB
+> > machine, unused stuff goes to swap.
+>
+> There is a bit of truth in the fact that there is less need for
+> swapping now.  At the same time however swapping simply does not
+> work well right now, and I'm not at all certain why.
+>
+> >> the disk for is very limited.   I wonder if we could figure out
+> >> how to push and pull 1M or bigger chunks into and out of swap?
+> >
+> > Pulling in 1MB pages can really easily end up compounding the
+> > thrashing problem unless you're very sure a significant amount
+> > of it will be used.
+>
+> It's a hard call.  The I/O time for 1MB of contiguous disk data
+> is about the I/O time of 512 bytes of contiguous disk data.
+
+And if you're thrashing, then by definition you need to throw
+out 1MB of your working set in order to read it in.
+
+
+> >> I don't know if swap has actually worked since we vmscan stopped
+> >> going over the virtual addresses.
+> >
+> > I do, and it does ;)
+>
+> Really?  Not just the pushing of unused stuff into swap.
+
+We had several bugs and things that caused swapping performance
+regressions vs 2.4 in earlyish 2.6. After those were fixed, we're
+pretty competitive with 2.4 in some basic tests I was using. I
+haven't run them for a fair while, so something might have broken
+since then, I don't know.
