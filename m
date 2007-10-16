@@ -1,95 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764163AbXJPAuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXJPA5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764163AbXJPAuo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXJPAug
+	id S1760299AbXJPA5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbXJPA5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:50:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36798 "EHLO mx1.suse.de"
+	Mon, 15 Oct 2007 20:57:13 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:49297 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbXJPAuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:50:35 -0400
-Date: Tue, 16 Oct 2007 02:50:33 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch 3/3] x86: optimise barriers
-Message-ID: <20071016005033.GB5851@wotan.suse.de>
-References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local> <20071015080924.GA32562@wotan.suse.de> <20071015090959.GB1875@ff.dom.local>
-Mime-Version: 1.0
+	id S1751926AbXJPA5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 20:57:12 -0400
+Date: Mon, 15 Oct 2007 20:57:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sc1200 pci cleanup, resume improvement, bug fix
+Message-ID: <20071016005711.GA14753@havoc.gtf.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071015090959.GB1875@ff.dom.local>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 11:10:00AM +0200, Jarek Poplawski wrote:
-> On Mon, Oct 15, 2007 at 10:09:24AM +0200, Nick Piggin wrote:
-> ...
-> > Has performance really been much problem for you? (even before the
-> > lfence instruction, when you theoretically had to use a locked op)?
-> > I mean, I'd struggle to find a place in the Linux kernel where there
-> > is actually a measurable difference anywhere... and we're pretty
-> > performance critical and I think we have a reasonable amount of lockless
-> > code (I guess we may not have a lot of tight computational loops, though).
-> > I'd be interested to know what, if any, application had found these
-> > barriers to be problematic...
-> 
-> I'm not performance-words at all, so I can't help you, sorry. But, I
-> understand people who care about this, and think there is a popular
-> conviction barriers and locked instructions are costly, so I'm
-> surprised there is any "problem" now with finding these gains...
+This patch accomplishes the following goals:
 
-It's more expensive than nothing, sure. However in real code, algorithmic
-complexity, cache misses and cacheline bouncing tend to be much bigger
-issues.
+* kill the 'pci_enable_device ret val not checked' warning
 
-I can't think of a place in the kernel where smp_rmb matters _that_ much.
-seqlocks maybe (timers, dcache lookup), vmscan... Obviously removing the
-lfence is not going to hurt. Maybe we even gain 0.01% performance in
-someone's workload.
+* eliminate the incorrect mucking with pci_dev::current_state
 
-Also, remember: if loads are already in-order, then lfence is a noop,
-right? (in practice it seems to have to do a _little_ bit of work, but
-it's like a dozen cycles).
+via the following changes:
 
+* [minor bug fix] eliminate pci_set_power_state() call in resume,
+  pci_enable_device() does so for us.
 
-> > The thing is that those documents are not defining what a particular
-> > implementation does, but how the architecture is defined (ie. what
-> > must some arbitrary software/hardware provide and what may it expect).
-> 
-> I'm not sure this is the right way to tell it. If there is no
-> distinction between what is and what could be, how can I believe in
-> similar Alpha or Itanium stuff? IMHO, these manuals sometimes look
-> like they describe some real hardware mechanisms, and sometimes they
-> mention about possible changes and reserved features too. So, when
-> they don't mention you could think it's a present behavior.
+* [bug fix] do not touch dev->current_state, pci_set_power_state()
+  and other PCI layer functions manage this for us.
 
-No. Why are you reading that much into it? I know for a fact that some
-non-x86 architectures actual implementations have stronger ordering than
-their ISA allows. It's nothing to do with you "believing" how the hardware
-works. That's not what the document is describing (directly).
+* [minor bug fix, warning fix] check pci_enable_device() ret val in
+  resume, and do not bring up interfaces if it fails (which it might)
 
+* eliminate lookup_pci_dev(), a needless loop over a global list, by
+  storing our associated hwif in a struct allocated at probe time.
 
-> > It's pretty natural that Intel started out with a weaker guarantee
-> > than their CPUs of the time actually supported, and tightened it up
-> > after (presumably) deciding not to implement such relaxed semantics
-> > for the forseeable future.
-> 
-> As a matter of fact it's not natural for me at all. I expected the
-> other direction, and I still doubt programmers' intentions could be
-> "automatically" predicted good enough, so IMHO, it's not for long.
+* introduce __ide_setup_pci_device() to facilitate making PCI drivers
+  aware of the hwifs created during IDE generic probe.
 
-Really? Consider the consequences if, instead of releasing this latest
-document tightening consistency, Intel found that out of order loads
-were worth 5% more performance and implemented them in their next chip.
-The chip could be completely backwards compatible, but all your old code
-would break, because it was broken to begin with (because it was outside
-the spec).
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+WARNING WARNING WARNING
 
-IMO Intel did exactly the right thing from an engineering perspective,
-and so did Linux to always follow the spec.
+This is a drop-n-run patch, created ultimately because I was annoyed at
+the [quite valid] pci_enable_device() build warning.
+
+If someone likes this, please "take ownership" of the patch.
+
+WARNING WARNING WARNING
+
+ drivers/ide/pci/sc1200.c |   72 ++++++++++++++++++++++++++++++-----------------
+ drivers/ide/setup-pci.c  |   12 +++++++
+ include/linux/ide.h      |    2 +
+ 3 files changed, 59 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/ide/pci/sc1200.c b/drivers/ide/pci/sc1200.c
+index ee0e3f5..fa61550 100644
+--- a/drivers/ide/pci/sc1200.c
++++ b/drivers/ide/pci/sc1200.c
+@@ -41,6 +41,12 @@
+ #define PCI_CLK_66	0x02
+ #define PCI_CLK_33A	0x03
+ 
++#define SC1200_IFS	2
++
++struct sc1200_ifs {
++	ide_hwif_t	*iface[SC1200_IFS];
++};
++
+ static unsigned short sc1200_get_pci_clock (void)
+ {
+ 	unsigned char chip_id, silicon_revision;
+@@ -274,22 +280,6 @@ static void sc1200_set_pio_mode(ide_drive_t *drive, const u8 pio)
+ }
+ 
+ #ifdef CONFIG_PM
+-static ide_hwif_t *lookup_pci_dev (ide_hwif_t *prev, struct pci_dev *dev)
+-{
+-	int	h;
+-
+-	for (h = 0; h < MAX_HWIFS; h++) {
+-		ide_hwif_t *hwif = &ide_hwifs[h];
+-		if (prev) {
+-			if (hwif == prev)
+-				prev = NULL;	// found previous, now look for next match
+-		} else {
+-			if (hwif && hwif->pci_dev == dev)
+-				return hwif;	// found next match
+-		}
+-	}
+-	return NULL;	// not found
+-}
+ 
+ typedef struct sc1200_saved_state_s {
+ 	__u32		regs[4];
+@@ -298,7 +288,9 @@ typedef struct sc1200_saved_state_s {
+ 
+ static int sc1200_suspend (struct pci_dev *dev, pm_message_t state)
+ {
+-	ide_hwif_t		*hwif = NULL;
++	struct sc1200_ifs	*ifs = pci_get_drvdata(dev);
++	ide_hwif_t		*hwif;
++	int			i;
+ 
+ 	printk("SC1200: suspend(%u)\n", state.event);
+ 
+@@ -308,9 +300,14 @@ static int sc1200_suspend (struct pci_dev *dev, pm_message_t state)
+ 		//
+ 		// Loop over all interfaces that are part of this PCI device:
+ 		//
+-		while ((hwif = lookup_pci_dev(hwif, dev)) != NULL) {
++		for (i = 0; i < SC1200_IFS; i++) {
+ 			sc1200_saved_state_t	*ss;
+ 			unsigned int		basereg, r;
++
++			hwif = ifs->iface[i];
++			if (!hwif)
++				continue;
++
+ 			//
+ 			// allocate a permanent save area, if not already allocated
+ 			//
+@@ -337,23 +334,31 @@ static int sc1200_suspend (struct pci_dev *dev, pm_message_t state)
+ 
+ 	pci_disable_device(dev);
+ 	pci_set_power_state(dev, pci_choose_state(dev, state));
+-	dev->current_state = state.event;
+ 	return 0;
+ }
+ 
+ static int sc1200_resume (struct pci_dev *dev)
+ {
+-	ide_hwif_t	*hwif = NULL;
++	struct sc1200_ifs	*ifs = pci_get_drvdata(dev);
++	ide_hwif_t		*hwif;
++	int			rc, i;
++
++	rc = pci_enable_device(dev);
++	if (rc)
++		return rc;
+ 
+-	pci_set_power_state(dev, PCI_D0);	// bring chip back from sleep state
+-	dev->current_state = PM_EVENT_ON;
+-	pci_enable_device(dev);
+ 	//
+ 	// loop over all interfaces that are part of this pci device:
+ 	//
+-	while ((hwif = lookup_pci_dev(hwif, dev)) != NULL) {
++	for (i = 0; i < SC1200_IFS; i++) {
+ 		unsigned int		basereg, r;
+-		sc1200_saved_state_t	*ss = (sc1200_saved_state_t *)hwif->config_data;
++		sc1200_saved_state_t	*ss;
++
++		hwif = ifs->iface[i];
++		if (!hwif)
++			continue;
++
++		ss = (sc1200_saved_state_t *)hwif->config_data;
+ 
+ 		//
+ 		// Restore timing registers:  this may be unnecessary if BIOS also does it
+@@ -411,7 +416,22 @@ static ide_pci_device_t sc1200_chipset __devinitdata = {
+ 
+ static int __devinit sc1200_init_one(struct pci_dev *dev, const struct pci_device_id *id)
+ {
+-	return ide_setup_pci_device(dev, &sc1200_chipset);
++	struct sc1200_ifs *ifs;
++	int rc;
++
++	ifs = kzalloc(sizeof(*ifs), GFP_KERNEL);
++	if (!ifs)
++		return -ENOMEM;
++
++	rc = __ide_setup_pci_device(dev, &sc1200_chipset,
++				    &ifs->iface[0], &ifs->iface[1]);
++	if (rc) {
++		kfree(ifs);
++		return rc;
++	}
++	
++	pci_set_drvdata(dev, ifs);
++	return 0;
+ }
+ 
+ static struct pci_device_id sc1200_pci_tbl[] = {
+diff --git a/drivers/ide/setup-pci.c b/drivers/ide/setup-pci.c
+index 1129f8c..fb6e29c 100644
+--- a/drivers/ide/setup-pci.c
++++ b/drivers/ide/setup-pci.c
+@@ -694,7 +694,8 @@ out:
+ 	return ret;
+ }
+ 
+-int ide_setup_pci_device(struct pci_dev *dev, ide_pci_device_t *d)
++int __ide_setup_pci_device(struct pci_dev *dev, ide_pci_device_t *d,
++			   ide_hwif_t **hwif_out, ide_hwif_t **mate_out)
+ {
+ 	ide_hwif_t *hwif = NULL, *mate = NULL;
+ 	ata_index_t index_list;
+@@ -719,9 +720,18 @@ int ide_setup_pci_device(struct pci_dev *dev, ide_pci_device_t *d)
+ 	if (mate)
+ 		ide_proc_register_port(mate);
+ out:
++	if (hwif_out)
++		*hwif_out = hwif;
++	if (mate_out)
++		*mate_out = mate;
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(__ide_setup_pci_device);
+ 
++int ide_setup_pci_device(struct pci_dev *dev, ide_pci_device_t *d)
++{
++	return __ide_setup_pci_device(dev, d, NULL, NULL);
++}
+ EXPORT_SYMBOL_GPL(ide_setup_pci_device);
+ 
+ int ide_setup_pci_devices(struct pci_dev *dev1, struct pci_dev *dev2,
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 02a27e8..19f6eac 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1283,6 +1283,8 @@ typedef struct ide_pci_device_s {
+ } ide_pci_device_t;
+ 
+ extern int ide_setup_pci_device(struct pci_dev *, ide_pci_device_t *);
++extern int __ide_setup_pci_device(struct pci_dev *dev, ide_pci_device_t *d,
++                           ide_hwif_t **hwif_out, ide_hwif_t **mate_out);
+ extern int ide_setup_pci_devices(struct pci_dev *, struct pci_dev *, ide_pci_device_t *);
+ 
+ void ide_map_sg(ide_drive_t *, struct request *);
