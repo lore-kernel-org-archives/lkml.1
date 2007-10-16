@@ -1,112 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965401AbXJPTWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965482AbXJPTX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965401AbXJPTWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933824AbXJPTV6
+	id S965482AbXJPTX0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933970AbXJPTXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:21:58 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:49666 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760155AbXJPTV5 (ORCPT
+	Tue, 16 Oct 2007 15:23:16 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:33996 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933824AbXJPTXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:21:57 -0400
-X-Greylist: delayed 82577 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 15:21:57 EDT
-Date: Tue, 16 Oct 2007 21:21:48 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.24
-In-Reply-To: <4714762B.5040401@panasas.com>
-Message-ID: <Pine.LNX.4.64.0710162121330.29643@anakin>
-References: <1192421381.3429.6.camel@localhost.localdomain>
- <Pine.LNX.4.64.0710160846030.16889@anakin> <4714762B.5040401@panasas.com>
+	Tue, 16 Oct 2007 15:23:16 -0400
+Message-ID: <47150F98.3040601@mandic.com.br>
+Date: Tue, 16 Oct 2007 17:23:04 -0200
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Jeremy Katz <katzj@redhat.com>, hmh@hmh.eng.br,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       davej@redhat.com
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com> <20071016185351.GC25181@srcf.ucam.org>
+In-Reply-To: <20071016185351.GC25181@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Boaz Harrosh wrote:
-> On Tue, Oct 16 2007 at 8:49 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Mon, 15 Oct 2007, James Bottomley wrote:
-> >> This is the accumulated updates queued for 2.6.24.  It contains the
-> >> usual slew of driver updates, plus some gdth and advansys rewrites.  We
-> >> still have some outstanding bugs in gdth and fc4 for which I'm hoping to
-> >> sweep fixes into the next update.
-> > 
-> >> Boaz Harrosh (12):
-> >>       NCR5380: Use scsi_eh API for REQUEST_SENSE invocation
-> > 
-> > This change broke compilation of the mac_scsi.c driver:
-> > 
-> > | linux/drivers/scsi/NCR5380.c: In function 'NCR5380_information_transfer':
-> > | linux/drivers/scsi/NCR5380.c:2282: error: 'struct NCR5380_hostdata' has no member named 'ses'
-> > | linux/drivers/scsi/NCR5380.c:2283: error: 'struct NCR5380_hostdata' has no member named 'ses'
-> > | linux/drivers/scsi/NCR5380.c:2284: error: 'struct NCR5380_hostdata' has no member named 'ses'
-> > | linux/drivers/scsi/NCR5380.c:2288: error: 'struct NCR5380_hostdata' has no member named 'ses'
-> > 
-> fix below, Sorry.
-> ----
-> >From 1e10cf1a39ff4909696a5c7950367261b38b3345 Mon Sep 17 00:00:00 2001
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Tue, 16 Oct 2007 10:25:01 +0200
-> Subject: [PATCH] scsi_mac.h: Define AUTOSENSE before include of NCR5380.h
+Matthew Garrett wrote:
+> On Mon, Oct 15, 2007 at 04:45:10PM -0400, Jeremy Katz wrote:
+>> There are standard keycodes for brightness and volume; map the events to
+>> emit them so that things work properly
 > 
->   - Previese patch to NCR5380 broke scsi_mac because
->     AUTOSENSE was defined after the inclusion of
->     NCR5380.h. Fix it
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> We've been doing this in Ubuntu for a couple of years now, with no 
+> obvious difficulty.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+One detail: any Kernel don't recognize multimedia keys or couple keys 
+(Fn+Fx) on my Toshiba M45-S355.
+If I use xev, I can't get any output.
 
-> ---
->  drivers/scsi/mac_scsi.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/scsi/mac_scsi.c b/drivers/scsi/mac_scsi.c
-> index cdbcaa5..abe2bda 100644
-> --- a/drivers/scsi/mac_scsi.c
-> +++ b/drivers/scsi/mac_scsi.c
-> @@ -53,6 +53,11 @@
->  #include "scsi.h"
->  #include <scsi/scsi_host.h>
->  #include "mac_scsi.h"
-> +
-> +/* These control the behaviour of the generic 5380 core */
-> +#define AUTOSENSE
-> +#define PSEUDO_DMA
-> +
->  #include "NCR5380.h"
->  
->  #if 0
-> @@ -571,10 +576,6 @@ static int macscsi_pwrite (struct Scsi_Host *instance,
->  }
->  
->  
-> -/* These control the behaviour of the generic 5380 core */
-> -#define AUTOSENSE
-> -#define PSEUDO_DMA
-> -
->  #include "NCR5380.c"
->  
->  static struct scsi_host_template driver_template = {
-> -- 
-> 1.5.3.1
-> 
-> 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Regards,
+Renato
