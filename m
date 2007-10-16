@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936365AbXJPWFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965769AbXJPWF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936365AbXJPWFO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 18:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965515AbXJPWEy
+	id S965769AbXJPWF6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 18:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935800AbXJPWFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 18:04:54 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53768 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935846AbXJPWEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 18:04:52 -0400
-Date: Wed, 17 Oct 2007 00:06:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org
-Subject: Re: kexec: Cannot determine the file type of arch/x86/boot/bzImage
-Message-ID: <20071016220623.GB3035@uranus.ravnborg.org>
-References: <47151631.9000307@m3y3r.de> <20071016130657.8cc17011.randy.dunlap@oracle.com> <47152FE6.3050204@m3y3r.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47152FE6.3050204@m3y3r.de>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 16 Oct 2007 18:05:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:18606 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935912AbXJPWFo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 18:05:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CD3h8HIEJfvyMcNPqBCFtNmCx6uTyKtbYWxQLsLqnBJzbE/p7cp2R8H/X2PCG8Qr0vGuLDzWx9nx1G9QEXcw2YkkMcn5HQ7WjYCj/sfBDbqEP4J8HJ+t/eUtRM3Rc6nrWmiigLsvu1OfNGT5ty0LmLB0v4e+BuSY6kjQ5Ni3+wY=
+Message-ID: <471534CF.6020609@googlemail.com>
+Date: Wed, 17 Oct 2007 00:01:51 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Hannes Reinecke <hare@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+References: <200710141558.27156.vda.linux@googlemail.com> <47125633.3030404@googlemail.com> <200710151225.39624.vda.linux@googlemail.com>
+In-Reply-To: <200710151225.39624.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 11:40:54PM +0200, Thomas Meyer wrote:
-> >> How to solve this error?
+Denys Vlasenko wrote:
+> On Sunday 14 October 2007 18:47, Gabriel C wrote:
+>>> Compile tested and applies cleanly to 2.6.23.
+>>> I don't have this hardware anymore and cannot run test these patches.
+>> I can test these patches on an aic7892 controller later on today if you want.
+> 
+> I'd appreciate that.
+> 
+> Do you, by any chance, use aic94xx driver too (drivers/scsi/aic94xx/*)?
+> After i'm done with aic7xxx, I may attack this one.
 
-Fixed by following patch.
-Sorry for the inconvinience.
+Sorry I don't have any box uses this one , but I'll ask some friends maybe someone has :)
 
-	Sam
+> 
+>> BTW while you seems to care about this driver could you have a look at :
+>>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=3062 ?!?
+> 
+> I am a desktop Linux user, so far I don't use suspend at all. Sorry.
 
->From 7eebb9348655b55553d65fc7cb6cfad292d28dbb Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@neptun.(none)>
-Date: Tue, 16 Oct 2007 23:50:33 +0200
-Subject: [PATCH] x86: fix boot error introduced by kbuild
+Ok , no problem maybe one 'day' the SCSI folks cares ( where the 'day' may be never ),  I dunno :(
+  
+> --
+> vda
+> 
 
-x86 uses target specific assignment of EXTRA_AFLAGS,
-EXTRA_CFLAGS - this caused troubles with
-introducing asflags-y, ccflags-y.
-
-Fixed the target specific assignments in arch/x86/boot/Makefile
-and auditted the rest of the kernel for similar usage.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- arch/x86/boot/Makefile |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
-index d6ed8e5..e8756e5 100644
---- a/arch/x86/boot/Makefile
-+++ b/arch/x86/boot/Makefile
-@@ -64,10 +64,10 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
- 
- $(obj)/zImage:  IMAGE_OFFSET := 0x1000
--$(obj)/zImage:  EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK)
-+$(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
- $(obj)/bzImage: IMAGE_OFFSET := 0x100000
--$(obj)/bzImage: EXTRA_CFLAGS := -D__BIG_KERNEL__
--$(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
-+$(obj)/bzImage: ccflags-y := -D__BIG_KERNEL__
-+$(obj)/bzImage: asflags-y := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
- $(obj)/bzImage: BUILDFLAGS   := -b
- 
- quiet_cmd_image = BUILD   $@
--- 
-1.5.2.4
-
+Gabriel
