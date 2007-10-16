@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXJPNqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933423AbXJPNtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933187AbXJPNqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbXJPNqQ
+	id S933423AbXJPNtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 09:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXJPNtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:46:16 -0400
-Received: from rtr.ca ([76.10.145.34]:1998 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757746AbXJPNqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:46:16 -0400
-Message-ID: <4714C0A6.1030204@rtr.ca>
-Date: Tue, 16 Oct 2007 09:46:14 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: kristen.c.accardi@intel.com, pcihpd-discuss@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: PCIe Hotplug:  NFG unless I boot with card already inserted.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 16 Oct 2007 09:49:01 -0400
+Received: from mail.softservecom.com ([195.160.232.17]:46547 "EHLO
+	mail.softservecom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758233AbXJPNs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 09:48:59 -0400
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+From: Vitaliy Ivanov <vitalivanov@gmail.com>
+Reply-To: vitalivanov@gmail.com
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Willy Tarreau <w@1wt.eu>, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20071015103033.65b47dea.zaitcev@redhat.com>
+References: <1192383445.8372.18.camel@dell1.softservecom.com>
+	 <20071014182542.GA2832@1wt.eu>
+	 <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+	 <20071015103033.65b47dea.zaitcev@redhat.com>
+Content-Type: text/plain
+Message-Id: <1192542533.29039.58.camel@dell1.softservecom.com>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.4.5 (1.4.5-1) 
+Date: Tue, 16 Oct 2007 16:48:54 +0300
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2007 13:48:54.0074 (UTC) FILETIME=[4A7971A0:01C80FFB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a Dell notebook with an PCIe ExpressCard slot.
-I also have a PCIe ExpressCard SATA controller (uses sata_sil24 driver).
+Pete,
 
-I would like to be able to hot plug/unplug the controller card at will.
-But alas, Linux doesn't cope with it *unless* I boot the kernel with
-the card initially inserted.
+On Mon, 2007-10-15 at 20:30, Pete Zaitcev wrote:
 
-1. Booting Linux kernel (latest 2.6.23) without the card inserted
-means that the card will never be detected, regardless of how many
-times subsequently the card is inserted/removed/whatever.
+> > +	in_end_size = le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize);
+> > +	out_end_size = le16_to_cpu(dev->interrupt_out_endpoint->wMaxPacketSize);
+> 
+> Did you verify if this works? We use pre-swapped descriptors in 2.4.
+> I suspect you allocate 256 times more memory than necessary.
 
-2. Booting Linux kernel *with* the card inserted means that it is
-detected and used, and can be unplugged/replugged as I please,
-with intervening suspend/resume (RAM or disk) cycles not interfering.
+Just checked. Seems to be OK. At least printk shows shows it.
 
-3. Booting Linux kernel without the card inserted, and then doing
-a suspend-to-disk poweroff, inserting the card, and powering on again,
-the card's BIOS extension runs as normal.  But on resume from the
-suspend-to-disk, the running kernel again never sees the card,
-even after removing/reinserting/whatever.
+> 
+> > +static void adu_delete(struct adu_device *dev)
+> > +	kfree(dev);
+> 
+> > +static int adu_release_internal(struct adu_device *dev)
+> > +	if (dev->udev == NULL) {
+> > +		adu_delete(dev);
+> 
+> > +static int adu_open(struct inode *inode, struct file *file)
+> > +	retval = adu_release_internal(dev);
+> > +	up(&dev->sem);
+> 
+> The above very clearly is a use-after-free, in case the device was
+> open across a disconnect. Solution: Use minor_table_mutex to lock
+> dev->open_count instead of dev->sem. There's no rule that the lock
+> has to live inside the same structure with members it locks.
 
-4. All of this leads me to believe that the kernel must be doing some
-kind of once-only scan of hardware at boot time, and never repeating
-it afterwards.  Loading/unloading all of the PCI/PCIe hotplug stuff
-has no effect on this, so it must be broken elsewhere.
+Yeah. You are right. Found similar issue in adu_release also. 
+It's a problem with 2.6 kernel driver.
+So, I've got a material to create some fixes in 2.6 driver too.
+I've reworked the code to avoid this issue.
 
-5. It is not likely to be a BIOS thing, because it still fails on
-power-on (with card inserted) after a suspend-to-disk, which appears
-to the BIOS exactly the same as any other power-on.
+Sending final patch as a reply to Willy's mail. Please check it.
 
-6. But it's probably a "kernel relies on BIOS data structure read
-at boot time" issue, based on the observations above.
 
-Suggestions?  Is this a known defect?
-Maybe with a known fix lurking in a git tree somewhere?
+Vitaliy
 
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
-00:01.0 PCI bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express PCI Express Root Port (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 01)
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 01)
-00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 01)
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 01)
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 01)
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 01)
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 01)
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 01)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e1)
-00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 01)
-00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial ATA Storage Controller IDE (rev 01)
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 01)
-01:00.0 VGA compatible controller: ATI Technologies Inc Radeon Mobility X1400
-03:00.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
-03:01.0 FireWire (IEEE 1394): Ricoh Co Ltd Unknown device 0832
-03:01.1 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 19)
-03:01.2 System peripheral: Ricoh Co Ltd Unknown device 0843 (rev 01)
-03:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 0a)
-03:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 05)
-0c:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
-0d:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA Raid II Controller (rev 01)
