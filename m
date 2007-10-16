@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765712AbXJPGSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbXJPGWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765712AbXJPGSX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXJPGSJ
+	id S932357AbXJPGWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXJPGWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:18:09 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:43111 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751803AbXJPGSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:18:08 -0400
-X-Greylist: delayed 62882 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 02:18:08 EDT
-Date: Tue, 16 Oct 2007 08:21:08 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Maciej W\. Rozycki" <macro@linux-mips.org>
-Cc: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071016062108.GB1000@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 16 Oct 2007 02:22:09 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:33183 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759206AbXJPGWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 02:22:07 -0400
+Message-ID: <4714588C.8010407@davidnewall.com>
+Date: Tue, 16 Oct 2007 15:52:04 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+References: <200710112011.22000.rob@landley.net> <200710152337.45252.nickpiggin@yahoo.com.au> <200710150452.30939.rob@landley.net> <200710160108.38222.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710160108.38222.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 06:03:20PM +0100, Maciej W. Rozycki wrote:
-> On Mon, 15 Oct 2007, Jarek Poplawski wrote:
-> 
-> > Could you explain why cancel_work_sync() is better here than
-> > flush_scheduled_work() wrt. rtnl_lock()?
-> 
->  Well, this is actually the bit that made cancel_work_sync() be written in 
-> the first place.  The short story is the netlink lock is most probably 
-> held at this point (depending on the usage of phy_disconnect()) and there 
-> is also an event waiting in the queue that requires the lock, so if 
-> flush_scheduled_work() is called here a deadlock will happen.
-> 
->  Let me find a reference for a longer story...:
-> 
-> http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=Pine.LNX.4.64N.0610031509380.4642%40blysk.ds.pg.gda.pl
-> 
-> and then discussed again:
-> 
-> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0612.0/0593.html
-> 
+Nick Piggin wrote:
+> On Monday 15 October 2007 19:52, Rob Landley wrote:
+>   
+>> On Monday 15 October 2007 8:37:44 am Nick Piggin wrote:
+>>     
+>>> You really shouldn't configure
+>>> so much [swap] unless you do want the kernel to actually use it all, right?
+>>>       
+>> Two words: "Software suspend".  I've actually been thinking of increasing
+>> it on the next install...
+>>     
+>
+> Kernel doesn't know that you want to use it for suspend but not
+> regular swapping, unfortunately.
+>   
 
-Yes, it's all right here. Sorry for bothering - I should've found this
-by myself.
-
-I've still some doubts about this possible enable_irq() after
-free_irq(). If it's the only handler the status would be changed again
-and at least some of this code in check_irq_resend() would be run, but
-I can miss something again or/and this doesn't matter, as well.
-
-Thanks,
-Jarek P.
+Couldn't you mount swap before suspend and unmount it after resume?
