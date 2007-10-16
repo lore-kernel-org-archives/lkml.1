@@ -1,36 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXJPILk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbXJPINV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbXJPILk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 04:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbXJPIL0
+	id S1762204AbXJPINV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 04:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbXJPINJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 04:11:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7270 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbXJPILZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 04:11:25 -0400
-Date: Tue, 16 Oct 2007 10:11:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Add Documentation/block/00-INDEX
-Message-ID: <20071016081107.GE5045@kernel.dk>
-References: <200710150453.15484.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710150453.15484.rob@landley.net>
+	Tue, 16 Oct 2007 04:13:09 -0400
+Received: from wombat.diezmil.com ([209.190.27.106]:41494 "EHLO
+	wombat.diezmil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754104AbXJPINH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 04:13:07 -0400
+X-Greylist: delayed 445 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 04:13:07 EDT
+Date: Tue, 16 Oct 2007 04:13:06 -0400
+Message-ID: <3974996.1192522386093.JavaMail.root@wombat.diezmil.com>
+From: rubenjr_22@yahoo.com.ph
+Reply-To: rubenjr_22@yahoo.com.ph
+To: linux-kernel@vger.kernel.org
+Subject: Re: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+In-Reply-To: <200710160956.58061.borntraeger@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15 2007, Rob Landley wrote:
-> From: Rob Landley <rob@landley.net>
-> 
-> Add Documentation/block/00-INDEX
+hi! i need sex video
 
-Not sure where this is heading, but I guess this one is fine with me.
-Applied.
-
--- 
-Jens Axboe
-
+--
+This message was sent on behalf of rubenjr_22@yahoo.com.ph at openSubscriber.com
+http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/7788114.html
