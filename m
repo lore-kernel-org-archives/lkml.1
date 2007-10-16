@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935801AbXJPULl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935729AbXJPUMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935801AbXJPULl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935613AbXJPULS
+	id S935729AbXJPUMi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbXJPUM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:11:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:18677 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935576AbXJPULQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:11:16 -0400
-Date: Tue, 16 Oct 2007 13:06:57 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org
-Subject: Re: kexec: Cannot determine the file type of arch/x86/boot/bzImage
-Message-Id: <20071016130657.8cc17011.randy.dunlap@oracle.com>
-In-Reply-To: <47151631.9000307@m3y3r.de>
-References: <47151631.9000307@m3y3r.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 16:12:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36709 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759529AbXJPUM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:12:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: mgross@linux.intel.com
+Subject: Re: 2.6.23-mm1
+Date: Tue, 16 Oct 2007 22:28:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710152240.03543.rjw@sisk.pl> <20071016195834.GA23157@linux.intel.com>
+In-Reply-To: <20071016195834.GA23157@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200710162228.14136.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 21:51:13 +0200 Thomas Meyer wrote:
+On Tuesday, 16 October 2007 21:58, Mark Gross wrote:
+> On Mon, Oct 15, 2007 at 10:40:02PM +0200, Rafael J. Wysocki wrote:
+> > On Monday, 15 October 2007 18:09, Mark Gross wrote:
+> > > On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
+> > > > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
+> > > > > 
+> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > > > 
+> > > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> > > > >   to stabilise things for the 2.6.23 merge.
+> > > > > 
+> > > > >   But that didn't stop all the subsystem maintainers from going nuts, with
+> > > > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
+> > > > >   a bit better.
+> > > > 
+> > > > I get many traces similar to the one below from it (w/ hotfixes):
+> > > > 
+> > > > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
+> > > 
+> > > This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
+> > > processor_idle.c is registering a acpi_processor_latency_notify 
+> > > 
+> > > my code changed the notifier call from blocking_notifier_call_chain to
+> > > srcu_notifier_call_chain, because dynamic creation of notifier chains at
+> > > runtime where easier with the srcu_notifier_call_chain than the
+> > > blocking_notifier_call_chain.  
+> > > 
+> > > As dynamic creation of PM_QOS parameters are no longer needed I can
+> > > change the notifiers back to match what was in lanency.c
+> > > 
+> > > However; looking at the call tree differences between
+> > > blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
+> > > difference in irq enabling / disabling.  I'm not confident this will
+> > > address this yet.
+> > 
+> > Well, you can send me a patch to check. :-)
+> 
+> I think I'll have to send you a patch that changes the notifiers but I
+> doubt it will fix it.  
+> 
+> After a bit of messing around I have the 2.6.23-mm1 running on my core-2
+> box  note: Ubuntu's make-kpkg on the mm1 tree resulted in a system that
+> wouldn't boot past the intrd.  Looks like the pivot root failed or
+> something.
+> 
+> Anyway, I'm not reproducing your experience, snd_pcm is loaded.  I don't
+> know none of the WARN's are not hitting on my box.
+> 
+> do you have some configuration information that could help me reproduce
+> the issue?
 
-[adding kexec mailing list]
+Well, I can send you the .config, but the box is AMD-based (Turion 64 X2),
+with an ATI chipset and an HP BIOS, so it seems to be much different from
+yours.
 
-
-> Hi.
-> 
-> Look at this:
-> 
-> $ file arch/x86/boot/bzImage (tree 821f3eff7cdb9d6c7076effabd46c96c322daed1)
-> arch/x86/boot/bzImage: Linux kernel x86 boot executable zImage, version
-> 2.6.23 (thomas@hotzenplotz) #39, RO-rootFS, root_dev 0x803, swap_dev
-> 0x1, Prompt for Videomode
-> 
-> $ file /boot/bzImage-2.6.23
-> /boot/bzImage-2.6.23: Linux kernel x86 boot executable RO-rootFS,
-> root_dev 0x803, swap_dev 0x1, Normal VGA
-> 
-> and this:
-> 
-> # kexec -l arch/x86/boot/bzImage
-> Cannot determine the file type of arch/x86/boot/bzImage
-> 
-> How to solve this error?
-> 
-> mfg
-> thomas
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-
----
-~Randy
+Greetings,
+Rafael
