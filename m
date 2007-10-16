@@ -1,237 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765456AbXJPKGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbXJPKIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765456AbXJPKGR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXJPKGE
+	id S1764235AbXJPKIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbXJPKIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:06:04 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54176 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758319AbXJPKGB (ORCPT
+	Tue, 16 Oct 2007 06:08:09 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:11379 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757403AbXJPKIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:06:01 -0400
-Date: Tue, 16 Oct 2007 19:06:31 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUGFIX][PATCH][ for -mm] bugfix for memory cgroup controller
- [3/5] add helper function for assigning cgroup to page
-Message-Id: <20071016190631.d3803697.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071012163725.59825017.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071012163412.2f1ca1ea.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071012163725.59825017.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 06:08:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=gNcAu7HebceuB0PN0OIYTWpPWo4bhNxG4NGTZBl1YdxDHHpka2lsFKfdv9yHso8z7
+	6h5Oc7gai22G0tpx8lBuQ==
+Message-ID: <47148D7F.4040600@google.com>
+Date: Tue, 16 Oct 2007 03:07:59 -0700
+From: Paul Menage <menage@google.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: rientjes@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
+       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
+Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
+References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com>	<4713DA85.3020208@google.com>	<20071015171636.6213bf43.pj@sgi.com>	<471403BF.4090203@google.com> <20071015193439.fe67bc4d.pj@sgi.com>
+In-Reply-To: <20071015193439.fe67bc4d.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Oct 2007 16:37:25 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> This patch adds following functions.
->    - clear_page_cgroup(page, pc)
->    - page_cgroup_assign_new_page_group(page, pc)
+Paul Jackson wrote:
 > 
-> Mainly for cleanup.
-> 
-> A manner "check page->cgroup again after lock_page_cgroup()" is
-> implemented in straight way.
-> 
-> Chnagelog v2 -> v3:
->   * adjusted to 2.6.23-mm1
-> Changelog v1 -> v2:
->   * added necessary comments.
+> Any chance you could provide a patch that works against cgroups?
 > 
 
-Sorry, I found BUG in this patch.
- mem_cgroup_charge_common() has unnecessary page_cgroup_unlock().
 
-replacement is here. tested under x86_64/fake numa + CONFIG_PREEPMT=y/n.
--Kame
-==
-This patch adds following functions.
-   - clear_page_cgroup(page, pc)
-   - page_cgroup_assign_new_page_group(page, pc)
+Fix cpusets update_cpumask
 
-Mainly for cleanup.
+Cause writes to cpuset "cpus" file to update cpus_allowed for member
+tasks:
 
-A manner "check page->cgroup again after lock_page_cgroup()" is
-implemented in straight way.
+- collect batches of tasks under tasklist_lock and then call
+set_cpus_allowed() on them outside the lock (since this can sleep).
 
-Changelog v3 -> v4:
- * fixes wrong unlock_page_cgroup()
-Chnagelog v2 -> v3:
-  * adjusted to 2.6.23-mm1
-Changelog v1 -> v2:
-  * added necessary comments.
+- add a simple generic priority heap type to allow efficient
+collection of batches of tasks to be processed without
+duplicating or missing any tasks in subsequent batches.
 
-Note:
-  - a comment in mem_cgroup_uncharge() will be removed by force-empty patch
+- make "cpus" file update a no-op if the mask hasn't changed
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+- fix race between update_cpumask() and sched_setaffinity() by making
+sched_setaffinity() post-check that it's not running on any cpus
+outside cpuset_cpus_allowed().
 
 
 
- mm/memcontrol.c |  105 ++++++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 76 insertions(+), 29 deletions(-)
-
-Index: devel-2.6.23-mm1/mm/memcontrol.c
+ include/linux/prio_heap.h |   56 +++++++++++++++++++++++++
+ kernel/cpuset.c           |  103 ++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sched.c            |   13 +++++
+ lib/Makefile              |    2
+ include/linux/prio_heap.h |   58 +++++++++++++++++++++++++
+ kernel/cpuset.c           |  105 ++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sched.c            |   13 +++++
+ lib/Makefile              |    2 
+ lib/prio_heap.c           |   70 ++++++++++++++++++++++++++++++
+ 5 files changed, 243 insertions(+), 5 deletions(-)
+Index: container-2.6.23-mm1/include/linux/prio_heap.h
 ===================================================================
---- devel-2.6.23-mm1.orig/mm/memcontrol.c
-+++ devel-2.6.23-mm1/mm/memcontrol.c
-@@ -162,6 +162,48 @@ static void __always_inline unlock_page_
- 	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+--- /dev/null
++++ container-2.6.23-mm1/include/linux/prio_heap.h
+@@ -0,0 +1,58 @@
++#ifndef _LINUX_PRIO_HEAP_H
++#define _LINUX_PRIO_HEAP_H
++
++/*
++ * Simple insertion-only static-sized priority heap containing
++ * pointers, based on CLR, chapter 7
++ */
++
++#include <linux/gfp.h>
++
++/**
++ * struct ptr_heap - simple static-sized priority heap
++ * @ptrs - pointer to data area
++ * @max - max number of elements that can be stored in @ptrs
++ * @size - current number of valid elements in @ptrs (in the range 0..@size-1
++ * @gt: comparison operator, which should implement "greater than"
++ */
++struct ptr_heap {
++	void **ptrs;
++	int max;
++	int size;
++	int (*gt)(void *, void *);
++};
++
++/**
++ * heap_init - initialize an empty heap with a given memory size
++ * @heap: the heap structure to be initialized
++ * @size: amount of memory to use in bytes
++ * @gfp_mask: mask to pass to kmalloc()
++ * @gt: comparison operator, which should implement "greater than"
++ */
++extern int heap_init(struct ptr_heap *heap, size_t size, gfp_t gfp_mask,
++		     int (*gt)(void *, void *));
++
++/**
++ * heap_free - release a heap's storage
++ * @heap: the heap structure whose data should be released
++ */
++void heap_free(struct ptr_heap *heap);
++
++/**
++ * heap_insert - insert a value into the heap and return any overflowed value
++ * @heap: the heap to be operated on
++ * @p: the pointer to be inserted
++ *
++ * Attempts to insert the given value into the priority heap. If the
++ * heap is full prior to the insertion, then the resulting heap will
++ * consist of the smallest @max elements of the original heap and the
++ * new element; the greatest element will be removed from the heap and
++ * returned. Note that the returned element will be the new element
++ * (i.e. no change to the heap) if the new element is greater than all
++ * elements currently in the heap.
++ */
++extern void *heap_insert(struct ptr_heap *heap, void *p);
++
++
++
++#endif /* _LINUX_PRIO_HEAP_H */
+Index: container-2.6.23-mm1/kernel/cpuset.c
+===================================================================
+--- container-2.6.23-mm1.orig/kernel/cpuset.c
++++ container-2.6.23-mm1/kernel/cpuset.c
+@@ -38,6 +38,7 @@
+ #include <linux/mount.h>
+ #include <linux/namei.h>
+ #include <linux/pagemap.h>
++#include <linux/prio_heap.h>
+ #include <linux/proc_fs.h>
+ #include <linux/rcupdate.h>
+ #include <linux/sched.h>
+@@ -684,6 +685,36 @@ done:
+ 	/* Don't kfree(doms) -- partition_sched_domains() does that. */
  }
  
-+/*
-+ * Tie new page_cgroup to struct page under lock_page_cgroup()
-+ * This can fail if the page has been tied to a page_cgroup.
-+ * If success, returns 0.
-+ */
-+static inline int
-+page_cgroup_assign_new_page_cgroup(struct page *page, struct page_cgroup *pc)
++static int inline started_after_time(struct task_struct *t1,
++				     struct timespec *time,
++				     struct task_struct *t2)
 +{
-+	int ret = 0;
-+
-+	lock_page_cgroup(page);
-+	if (!page_get_page_cgroup(page))
-+		page_assign_page_cgroup(page, pc);
-+	else /* A page is tied to other pc. */
-+		ret = 1;
-+	unlock_page_cgroup(page);
-+	return ret;
-+}
-+
-+/*
-+ * Clear page->page_cgroup member under lock_page_cgroup().
-+ * If given "pc" value is different from one page->page_cgroup,
-+ * page->cgroup is not cleared.
-+ * Returns a value of page->page_cgroup at lock taken.
-+ * A can can detect failure of clearing by following
-+ *  clear_page_cgroup(page, pc) == pc
-+ */
-+
-+static inline struct page_cgroup *
-+clear_page_cgroup(struct page *page, struct page_cgroup *pc)
-+{
-+	struct page_cgroup *ret;
-+	/* lock and clear */
-+	lock_page_cgroup(page);
-+	ret = page_get_page_cgroup(page);
-+	if (likely(ret == pc))
-+		page_assign_page_cgroup(page, NULL);
-+	unlock_page_cgroup(page);
-+	return ret;
-+}
-+
-+
- static void __mem_cgroup_move_lists(struct page_cgroup *pc, bool active)
- {
- 	if (active)
-@@ -270,7 +312,7 @@ int mem_cgroup_charge(struct page *page,
- 				gfp_t gfp_mask)
- {
- 	struct mem_cgroup *mem;
--	struct page_cgroup *pc, *race_pc;
-+	struct page_cgroup *pc;
- 	unsigned long flags;
- 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
- 
-@@ -293,8 +335,10 @@ retry:
- 			unlock_page_cgroup(page);
- 			cpu_relax();
- 			goto retry;
--		} else
-+		} else {
-+			unlock_page_cgroup(page);
- 			goto done;
-+		}
- 	}
- 
- 	unlock_page_cgroup(page);
-@@ -364,31 +408,26 @@ noreclaim:
- 		goto free_pc;
- 	}
- 
--	lock_page_cgroup(page);
--	/*
--	 * Check if somebody else beat us to allocating the page_cgroup
--	 */
--	race_pc = page_get_page_cgroup(page);
--	if (race_pc) {
--		kfree(pc);
--		pc = race_pc;
--		atomic_inc(&pc->ref_cnt);
--		res_counter_uncharge(&mem->res, PAGE_SIZE);
--		css_put(&mem->css);
--		goto done;
--	}
--
- 	atomic_set(&pc->ref_cnt, 1);
- 	pc->mem_cgroup = mem;
- 	pc->page = page;
--	page_assign_page_cgroup(page, pc);
-+	if (page_cgroup_assign_new_page_cgroup(page, pc)) {
++	int start_diff = timespec_compare(&t1->start_time, time);
++	if (start_diff > 0) {
++		return 1;
++	} else if (start_diff < 0) {
++		return 0;
++	} else {
 +		/*
-+		 * an another charge is added to this page already.
-+		 * we do take lock_page_cgroup(page) again and read
-+		 * page->cgroup, increment refcnt.... just retry is OK.
++		 * Arbitrarily, if two processes started at the same
++		 * time, we'll say that the lower pointer value
++		 * started first. Note that t2 may have exited by now
++		 * so this may not be a valid pointer any longer, but
++		 * that's fine - it still serves to distinguish
++		 * between two tasks started (effectively)
++		 * simultaneously.
 +		 */
-+		res_counter_uncharge(&mem->res, PAGE_SIZE);
-+		css_put(&mem->css);
-+		kfree(pc);
-+		goto retry;
++		return t1 > t2;
 +	}
++}
++
++static int inline started_after(void *p1, void *p2)
++{
++	struct task_struct *t1 = p1;
++	struct task_struct *t2 = p2;
++	return started_after_time(t1, &t2->start_time, t2);
++}
++
+ /*
+  * Call with manage_mutex held.  May take callback_mutex during call.
+  */
+@@ -691,8 +722,15 @@ done:
+ static int update_cpumask(struct cpuset *cs, char *buf)
+ {
+ 	struct cpuset trialcs;
+-	int retval;
+-	int cpus_changed, is_load_balanced;
++	int retval, i;
++	int is_load_balanced;
++	struct cgroup_iter it;
++	struct cgroup *cgrp = cs->css.cgroup;
++	struct task_struct *p, *dropped;
++	/* Never dereference latest_task, since it's not refcounted */
++	struct task_struct *latest_task = NULL;
++	struct ptr_heap heap;
++	struct timespec latest_time = { 0, 0 };
  
- 	spin_lock_irqsave(&mem->lru_lock, flags);
- 	list_add(&pc->lru, &mem->active_list);
- 	spin_unlock_irqrestore(&mem->lru_lock, flags);
+ 	/* top_cpuset.cpus_allowed tracks cpu_online_map; it's read-only */
+ 	if (cs == &top_cpuset)
+@@ -719,14 +757,73 @@ static int update_cpumask(struct cpuset 
+ 	if (retval < 0)
+ 		return retval;
  
- done:
--	unlock_page_cgroup(page);
- 	return 0;
- free_pc:
- 	kfree(pc);
-@@ -432,17 +471,25 @@ void mem_cgroup_uncharge(struct page_cgr
+-	cpus_changed = !cpus_equal(cs->cpus_allowed, trialcs.cpus_allowed);
++	/* Nothing to do if the cpus didn't change */
++	if (cpus_equal(cs->cpus_allowed, trialcs.cpus_allowed))
++		return 0;
++	retval = heap_init(&heap, PAGE_SIZE, GFP_KERNEL, &started_after);
++	if (retval)
++		return retval;
++
+ 	is_load_balanced = is_sched_load_balance(&trialcs);
  
- 	if (atomic_dec_and_test(&pc->ref_cnt)) {
- 		page = pc->page;
--		lock_page_cgroup(page);
--		mem = pc->mem_cgroup;
--		css_put(&mem->css);
--		page_assign_page_cgroup(page, NULL);
--		unlock_page_cgroup(page);
--		res_counter_uncharge(&mem->res, PAGE_SIZE);
--
-- 		spin_lock_irqsave(&mem->lru_lock, flags);
-- 		list_del_init(&pc->lru);
-- 		spin_unlock_irqrestore(&mem->lru_lock, flags);
--		kfree(pc);
+ 	mutex_lock(&callback_mutex);
+ 	cs->cpus_allowed = trialcs.cpus_allowed;
+ 	mutex_unlock(&callback_mutex);
+ 
+-	if (cpus_changed && is_load_balanced)
++ again:
++	/*
++	 * Scan tasks in the cpuset, and update the cpumasks of any
++	 * that need an update. Since we can't call set_cpus_allowed()
++	 * while holding tasklist_lock, gather tasks to be processed
++	 * in a heap structure. If the statically-sized heap fills up,
++	 * overflow tasks that started later, and in future iterations
++	 * only consider tasks that started after the latest task in
++	 * the previous pass. This guarantees forward progress and
++	 * that we don't miss any tasks
++	 */
++	heap.size = 0;
++	cgroup_iter_start(cgrp, &it);
++	while ((p = cgroup_iter_next(cgrp, &it))) {
++		/* Only affect tasks that don't have the right cpus_allowed */
++		if (cpus_equal(p->cpus_allowed, cs->cpus_allowed))
++			continue;
 +		/*
-+		 * get page->cgroup and clear it under lock.
++		 * Only process tasks that started after the last task
++		 * we processed
 +		 */
-+		if (clear_page_cgroup(page, pc) == pc) {
-+			mem = pc->mem_cgroup;
-+			css_put(&mem->css);
-+			res_counter_uncharge(&mem->res, PAGE_SIZE);
-+			spin_lock_irqsave(&mem->lru_lock, flags);
-+			list_del_init(&pc->lru);
-+			spin_unlock_irqrestore(&mem->lru_lock, flags);
-+			kfree(pc);
-+		} else {
-+			/*
-+			 * Note:This will be removed when force-empty patch is
-+			 * applied. just show warning here.
-+			 */
-+			printk(KERN_ERR "Race in mem_cgroup_uncharge() ?");
-+			dump_stack();
++		if (!started_after_time(p, &latest_time, latest_task))
++			continue;
++		dropped = heap_insert(&heap, p);
++		if (dropped == NULL) {
++			get_task_struct(p);
++		} else if (dropped != p) {
++			get_task_struct(p);
++			put_task_struct(dropped);
 +		}
- 	}
- }
++	}
++	cgroup_iter_end(cgrp, &it);
++	if (heap.size) {
++		for (i = 0; i < heap.size; i++) {
++			struct task_struct *p = heap.ptrs[i];
++			if (i == 0) {
++				latest_time = p->start_time;
++				latest_task = p;
++			}
++			set_cpus_allowed(p, cs->cpus_allowed);
++			put_task_struct(p);
++		}
++		/*
++		 * If we had to process any tasks at all, scan again
++		 * in case some of them were in the middle of forking
++		 * children that didn't notice the new cpumask
++		 * restriction.  Not the most efficient way to do it,
++		 * but it avoids having to take callback_mutex in the
++		 * fork path
++		 */
++		goto again;
++	}
++	heap_free(&heap);
++	if (is_load_balanced)
+ 		rebuild_sched_domains();
  
-
+ 	return 0;
+Index: container-2.6.23-mm1/kernel/sched.c
+===================================================================
+--- container-2.6.23-mm1.orig/kernel/sched.c
++++ container-2.6.23-mm1/kernel/sched.c
+@@ -4366,8 +4366,21 @@ long sched_setaffinity(pid_t pid, cpumas
+ 
+ 	cpus_allowed = cpuset_cpus_allowed(p);
+ 	cpus_and(new_mask, new_mask, cpus_allowed);
++ again:
+ 	retval = set_cpus_allowed(p, new_mask);
+ 
++	if (!retval) {
++		cpus_allowed = cpuset_cpus_allowed(p);
++		if (!cpus_subset(new_mask, cpus_allowed)) {
++			/*
++			 * We must have raced with a concurrent cpuset
++			 * update. Just reset the cpus_allowed to the
++			 * cpuset's cpus_allowed
++			 */
++			new_mask = cpus_allowed;
++			goto again;
++		}
++	}
+ out_unlock:
+ 	put_task_struct(p);
+ 	mutex_unlock(&sched_hotcpu_mutex);
+Index: container-2.6.23-mm1/lib/prio_heap.c
+===================================================================
+--- /dev/null
++++ container-2.6.23-mm1/lib/prio_heap.c
+@@ -0,0 +1,70 @@
++/*
++ * Simple insertion-only static-sized priority heap containing
++ * pointers, based on CLR, chapter 7
++ */
++
++#include <linux/slab.h>
++#include <linux/prio_heap.h>
++
++int heap_init(struct ptr_heap *heap, size_t size, gfp_t gfp_mask,
++	      int (*gt)(void *, void *))
++{
++	heap->ptrs = kmalloc(size, gfp_mask);
++	if (!heap->ptrs)
++		return -ENOMEM;
++	heap->size = 0;
++	heap->max = size / sizeof(void *);
++	heap->gt = gt;
++	return 0;
++}
++
++void heap_free(struct ptr_heap *heap)
++{
++	kfree(heap->ptrs);
++}
++
++void *heap_insert(struct ptr_heap *heap, void *p)
++{
++	void *res;
++	void **ptrs = heap->ptrs;
++	int pos;
++
++	if (heap->size < heap->max) {
++		/* Heap insertion */
++		int pos = heap->size++;
++		while (pos > 0 && heap->gt(p, ptrs[(pos-1)/2])) {
++			ptrs[pos] = ptrs[(pos-1)/2];
++			pos = (pos-1)/2;
++		}
++		ptrs[pos] = p;
++		return NULL;
++	}
++
++	/* The heap is full, so something will have to be dropped */
++
++	/* If the new pointer is greater than the current max, drop it */
++	if (heap->gt(p, ptrs[0]))
++		return p;
++
++	/* Replace the current max and heapify */
++	res = ptrs[0];
++	ptrs[0] = p;
++	pos = 0;
++
++	while (1) {
++		int left = 2 * pos + 1;
++		int right = 2 * pos + 2;
++		int largest = pos;
++		if (left < heap->size && heap->gt(ptrs[left], p))
++			largest = left;
++		if (right < heap->size && heap->gt(ptrs[right], ptrs[largest]))
++			largest = right;
++		if (largest == pos)
++			break;
++		/* Push p down the heap one level and bump one up */
++		ptrs[pos] = ptrs[largest];
++		ptrs[largest] = p;
++		pos = largest;
++	}
++	return res;
++}
+Index: container-2.6.23-mm1/lib/Makefile
+===================================================================
+--- container-2.6.23-mm1.orig/lib/Makefile
++++ container-2.6.23-mm1/lib/Makefile
+@@ -6,7 +6,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+ 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+-	 proportions.o
++	 proportions.o prio_heap.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+ lib-$(CONFIG_SMP) += cpumask.o
