@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965720AbXJPXPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXJPXSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965720AbXJPXPC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbXJPXOy
+	id S965576AbXJPXSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 19:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbXJPXSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:14:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60312 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755601AbXJPXOx (ORCPT
+	Tue, 16 Oct 2007 19:18:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:50812 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbXJPXSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:14:53 -0400
-Date: Tue, 16 Oct 2007 16:14:45 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: menage@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
-       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
-Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
-Message-Id: <20071016161445.2f866d42.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.9999.0710161121450.32268@chino.kir.corp.google.com>
-References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com>
-	<alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com>
-	<20071015230729.53fcbaf7.pj@sgi.com>
-	<alpine.DEB.0.9999.0710152311180.22383@chino.kir.corp.google.com>
-	<20071016021626.15b94649.pj@sgi.com>
-	<alpine.DEB.0.9999.0710161121450.32268@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 19:18:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=pjakwfnQ8uA8ZnyswtTjxm69y/hXkcIWl1qJ4mAwqKI2cBWkq9Ta4eepDvEDyoErYaQBVOl/gXa0yB17V2/snzplfwR/NUcA2z9aERkc2FKWNqJjGhdF1sf7dmNU/owy7PEvCsuczHkfnNz0nxpOEcRIrvQhMK7GwCG2Rx4ywlU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git patch] libata build fix
+Date: Wed, 17 Oct 2007 01:23:43 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <20071015221329.GA8778@havoc.gtf.org>
+In-Reply-To: <20071015221329.GA8778@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200710170123.43244.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> Not necessarily because migration only occurs to any online cpu in the 
-> mask, it won't attempt to migrate it to some cpu that has been downed.
-> ...
+On Tuesday 16 October 2007, Jeff Garzik wrote:
 
-... one of David or I is insane ... I can't tell which one yet,
-perhaps both of us ;).
+> Jeff Garzik (1):
+>       [libata] pata_cs5536: new API build fix
 
-I'm going to reply to David without all the CC list above.
+We probably need also this one for pata_cs5536:
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+[PATCH] pata_cs5536: MWDMA fix
+
+* Fix out-of-bound array access for MWDMA modes.
+
+* Bump driver version.
+
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ata/pata_cs5536.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: b/drivers/ata/pata_cs5536.c
+===================================================================
+--- a/drivers/ata/pata_cs5536.c
++++ b/drivers/ata/pata_cs5536.c
+@@ -40,7 +40,7 @@
+ #include <asm/msr.h>
+ 
+ #define DRV_NAME	"pata_cs5536"
+-#define DRV_VERSION	"0.0.5"
++#define DRV_VERSION	"0.0.6"
+ 
+ enum {
+ 	CFG			= 0,
+@@ -214,7 +214,7 @@ static void cs5536_set_dmamode(struct at
+ 		cs5536_read(pdev, DTC, &dtc);
+ 
+ 		dtc &= ~(IDE_DRV_MASK << dshift);
+-		dtc |= mwdma_timings[mode] << dshift;
++		dtc |= mwdma_timings[mode - XFER_MW_DMA_0] << dshift;
+ 
+ 		cs5536_write(pdev, DTC, dtc);
+ 	}
