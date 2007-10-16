@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbXJPObr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbXJPOeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932894AbXJPObr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 10:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXJPObg
+	id S933830AbXJPOeh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 10:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932704AbXJPOea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 10:31:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33990 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932401AbXJPObe (ORCPT
+	Tue, 16 Oct 2007 10:34:30 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:25993 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932694AbXJPOe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 10:31:34 -0400
-X-Sasl-enc: 4yFwX8AC2azbtcz4d9BlQapAbmA6yj8Rdrp55hquj2fX 1192545089
-Date: Tue, 16 Oct 2007 12:31:24 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, davej@redhat.com,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Message-ID: <20071016143124.GB3237@khazad-dum.debian.net>
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com> <20071015210737.GA15293@khazad-dum.debian.net> <20071016130053.GA20010@srcf.ucam.org> <20071016141153.GA3237@khazad-dum.debian.net> <20071016142121.GA21431@srcf.ucam.org>
+	Tue, 16 Oct 2007 10:34:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MiXAVkVsKfJlpirOEljvTGpfiDdIXjk+vjkXoFQmggPQVvzq/cDB9AAzv+L2Zhaf/dysMnMPFC3QYfaCtA6Aax2nP/cTDxmCO9Z2ocmEBd70UpSD83NDaCUkQvRvxaacOLTgIPXaFSXvW0F+CpCtmnFEYpsiS5pDTtLvS2w9KTg=
+Message-ID: <d120d5000710160734occe82cke989baf3d1f97130@mail.gmail.com>
+Date: Tue, 16 Oct 2007 10:34:26 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Kristoffer Ericson" <kristoffer.ericson@gmail.com>
+Subject: Re: Power button policy and mechanism
+Cc: linux-input <linux-input@atrey.karlin.mff.cuni.cz>,
+       linux-main <linux-kernel@vger.kernel.org>,
+       "Richard Purdie" <rpurdie@rpsys.net>
+In-Reply-To: <20071016134050.f7106efe.Kristoffer.Ericson@Gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071016142121.GA21431@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20071016134050.f7106efe.Kristoffer.Ericson@Gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Matthew Garrett wrote:
-> On Tue, Oct 16, 2007 at 12:11:53PM -0200, Henrique de Moraes Holschuh wrote:
-> > On Tue, 16 Oct 2007, Matthew Garrett wrote:
-> > > are sent via the keyboard controller, such as the wireless and touchpad 
-> > > disable keys on my HP. There are Dells that do the same for brightness 
-> > 
-> > It is not clear to me if they are notifications or not.  Does the firmware
-> > act on the keys by itself? If it does, then they are notifications.  If it
-> > does not, then they are regular hot keys and there is no controversy whether
-> > they belong on the input layer or not (they do).
-> 
-> Yes, the firmware acts upon it.
+Hi Kristoffer,
 
-So, I'd have to say it doesn't belong on the input layer AFAIK.
+On 10/16/07, Kristoffer Ericson <kristoffer.ericson@gmail.com> wrote:
+> Greetings Dmitry,
+>
+> Is the suggested approach on handling powerbutton (in keyboard driver) to simply push out the event and let userland handle it?
 
-As I said, I am not against using the input layer for this, but currently
-AFAIK it is not to be used for it.
+Yes.
 
-> > 2. I am against sending notification events through input **that look
-> > exactly the same as regular events**.  That is not a wise design choice IMO,
-> > it is a very dirty hack.
-> 
-> Userspace is going to have to deal with this case anyway. Some vendors 
-> simply don't let us distinguish.
+> The reason Im asking this is because as you might know Im maintainer for two mini-laptop style pda's (HP7xx & HP6xx)
+> and it would simplify my life alot if I didn't need to depend on userland applications to be able to suspend/resume.
+>
+> For instance HP6XX receives an interrupt call whenever the powerbutton is pressed. Now I could just push out the event and let another program handle it but considering it would take a minimum amount of lines to let it simply suspend/resume I feel its a waste.
+>
+> Previously the hp6xx has been allowed to do this "policy" way but that was when LinuxSH stod as a side branch to main tree. Now
+> when everything gets merged into mainline I need to decide how to do this.
+>
+> This is mainly an embedded issue, but I feel it's quite important. It should apply to other devices also like for example Zaurus branches (those with keyboard and designated power button).
+>
+> So in short:
+> 1. Does mainline policy allow static power button events inside kernel (power button == suspend/resume)?
+>        Why/Why Not?
 
-But many do, and the less mud in the water, the better.
+Could it be that you may want to prevent suspend from happening? Or
+delay it until system completes some important operation? Do something
+else, like cleanly disconnect your network connections? With actual
+handling done in userspace it's all possible. With suspend done
+directly in kernel it is much harder and couples input subsystem with
+power management too tightly.
 
-> > 3. We have a backlight class, a LED class, a rf-kill class and ALSA mixers.
-> > Is there a real reason to pester Dmitry about the issue, if we can use these
-> > alternate paths (that are indeed more generic and more suited for the job)?
-> 
-> It's not always going to be possible to tie notifications into a class 
-> device - in the Dell case, for instance, interacting with the backlight 
-> requires you to use a 200Kb library so has to be done in userspace.
+However if you are dead-set on doin it in kernel you coudl register an
+input_handler in your platform PM code and it will attach to your
+keyboard. Look for power.c module in older kernels for example.
 
-Perhaps.  But for that Dell case, there is already a proper notification
-system in place as well: ACPI backlight events.  You might have to get
-userspace to tell the ACPI video driver that it will handle the events
-(something X.org already needs, anyway), but that's about it.
+> 2. Seeing as my knowledge about this area isn't the best I would appreciate all opinions on the subject from the gurus.
+>
+
+Richard Purdie I think might have some pointers.
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Dmitry
