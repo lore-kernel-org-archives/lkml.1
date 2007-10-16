@@ -1,172 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbXJPPtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934222AbXJPPwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934157AbXJPPtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933405AbXJPPtZ
+	id S934222AbXJPPwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933466AbXJPPwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:49:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:26593 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933442AbXJPPtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:49:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=FFp/WYtfvlPo5NGAXnLOK6aPkEymsoXhU/F3sgLofqpTSPmFovQ0izq7/QL0Hdj4fp8MSYWx8RY7ngNSy/ncC123WIgIzPHejBansAYUhiiIoE4dUpKS2XGydf2V/pze4SLm2NtiFi0jLE1Rtb+ChZ4B6h1aFr+NIC+eXAoX/CE=
-Message-ID: <4714DDA8.8030204@gmail.com>
-Date: Tue, 16 Oct 2007 23:50:00 +0800
-From: Yi Yang <yang.y.yi@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070809)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-CC: mj@atrey.karlin.mff.cuni.cz, pavel@atrey.karlin.mff.cuni.cz,
-       crutcher+kernel@datastacks.com
-Subject: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef key
-Content-Type: text/plain; charset=GB2312
+	Tue, 16 Oct 2007 11:52:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55317 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933385AbXJPPwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:52:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
+   d="scan'208";a="299652379"
+Date: Tue, 16 Oct 2007 08:46:34 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: pcihpd-discuss@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIe Hotplug:  NFG unless I boot with card already inserted.
+Message-Id: <20071016084634.8a0d695a.kristen.c.accardi@intel.com>
+In-Reply-To: <4714D700.7060008@rtr.ca>
+References: <4714C0A6.1030204@rtr.ca>
+	<4714D700.7060008@rtr.ca>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For SysRq, we just can get hot key list from Documentation/sysrq.txt
-, but in the most of cases, the user can't access it by hand on
-using SysRq to debug, so it is better for SysRq to provide an online
-help for the users.
+On Tue, 16 Oct 2007 11:21:36 -0400
+Mark Lord <lkml@rtr.ca> wrote:
 
-SysRq has already provided a similiar help before this patch, but it
-is not so definite that the user doesn't know what happened and how
-to do on pressing an undefined hot key.
+> Mark Lord wrote:
+> > I have a Dell notebook with an PCIe ExpressCard slot.
+> > I also have a PCIe ExpressCard SATA controller (uses sata_sil24 driver).
+> > 
+> > I would like to be able to hot plug/unplug the controller card at will.
+> > But alas, Linux doesn't cope with it *unless* I boot the kernel with
+> > the card initially inserted.
+> > 
+> > 1. Booting Linux kernel (latest 2.6.23) without the card inserted
+> > means that the card will never be detected, regardless of how many
+> > times subsequently the card is inserted/removed/whatever.
+> > 
+> > 2. Booting Linux kernel *with* the card inserted means that it is
+> > detected and used, and can be unplugged/replugged as I please,
+> > with intervening suspend/resume (RAM or disk) cycles not interfering.
+> > 
+> > 3. Booting Linux kernel without the card inserted, and then doing
+> > a suspend-to-disk poweroff, inserting the card, and powering on again,
+> > the card's BIOS extension runs as normal.  But on resume from the
+> > suspend-to-disk, the running kernel again never sees the card,
+> > even after removing/reinserting/whatever.
+> > 
+> > 4. All of this leads me to believe that the kernel must be doing some
+> > kind of once-only scan of hardware at boot time, and never repeating
+> > it afterwards.  Loading/unloading all of the PCI/PCIe hotplug stuff
+> > has no effect on this, so it must be broken elsewhere.
+> > 
+> > 5. It is not likely to be a BIOS thing, because it still fails on
+> > power-on (with card inserted) after a suspend-to-disk, which appears
+> > to the BIOS exactly the same as any other power-on.
+> > 
+> > 6. But it's probably a "kernel relies on BIOS data structure read
+> > at boot time" issue, based on the observations above.
+> 
+> Actually, I must now take back some of that.
+> 
+> Most of these tests were done a month or two ago.
+> With 2.6.23.1 running, I just now redid all of the tests.
+> 
+> Now it seems that pciehp fails to notice a newly inserted card
+> only after a suspend/resume cycle with the slot empty.
+> 
+> I can now get it to work again by just doing:
+> 	1. remove the card, so the slot is empty.
+> 	2. rmmod pciehp; modprobe pciehp
+> 	3. insert the card again -- it works!
+> 
+> So we just need to fix an issue or two with suspend/resume (RAM) in pciehp.
+> 
+> Cheers
+> 
 
-In addition, that funtion has a big loop with another big loop
-embedded which is very inefficient, it is intended to skip some hot
-key help info for such a function as "Changing Loglevel", just print
-a help info for this, that is very unnecessary. In fact, the key '0'
- - '8' have different results the user should know.
+Hi Mark,
+So, just to make sure I understand, your reproducer for the failing case is:
+1.  Boot laptop with no card.
+2.  Load pciehp
+3.  Suspend laptop (slot is still empty)
+4.  Resume laptop (slot is still empty)
+5.  insert card - card is not detected.
 
-This patch add this online help function, it'll print thw whole hot
-key list and corresponding function descriptions, it can print the new
-defined hot key without any changed needed.
+Can you tell me which Dell laptop you have, and also send me the dmesg
+output of the failing case after loading pciehp with pciehp_debug=1.
 
-The output is the below on pressing an undefined hot key:
-
-SysRq : <6>this hot key isn't defined.
-
-SysRq Help Information:
-
-  Hot Key      Function Description
-===========    ====================
-ALT+SysRq+0    Changing Loglevel to this value
-ALT+SysRq+1    Changing Loglevel to this value
-ALT+SysRq+2    Changing Loglevel to this value
-ALT+SysRq+3    Changing Loglevel to this value
-ALT+SysRq+4    Changing Loglevel to this value
-ALT+SysRq+5    Changing Loglevel to this value
-ALT+SysRq+6    Changing Loglevel to this value
-ALT+SysRq+7    Changing Loglevel to this value
-ALT+SysRq+8    Changing Loglevel to this value
-ALT+SysRq+9    Changing Loglevel to this value
-ALT+SysRq+a    Not defined
-ALT+SysRq+b    Resetting
-ALT+SysRq+c    Trigger a crashdump
-ALT+SysRq+d    Not defined
-ALT+SysRq+e    Terminate All Tasks
-ALT+SysRq+f    Manual OOM execution
-ALT+SysRq+g    Not defined
-ALT+SysRq+h    Not defined
-ALT+SysRq+i    Kill All Tasks
-ALT+SysRq+j    Not defined
-ALT+SysRq+k    SAK
-ALT+SysRq+l    Not defined
-ALT+SysRq+m    Show Memory
-ALT+SysRq+n    Nice All RT Tasks
-ALT+SysRq+o    Power Off
-ALT+SysRq+p    Show Regs
-ALT+SysRq+q    Show Pending Timers
-ALT+SysRq+r    Keyboard mode set to XLATE
-ALT+SysRq+s    Emergency Sync
-ALT+SysRq+t    Show State
-ALT+SysRq+u    Emergency Remount R/O
-ALT+SysRq+v    Not defined
-ALT+SysRq+w    Show Blocked State
-ALT+SysRq+x    Not defined
-ALT+SysRq+y    Not defined
-ALT+SysRq+z    Not defined
-
-Signed-off-by: Yi Yang <yang.y.yi@gmail.com>
----
- sysrq.c |   38 ++++++++++++++++++++++++++------------
- 1 file changed, 26 insertions(+), 12 deletions(-)
-
---- a/drivers/char/sysrq.c	2007-10-16 18:32:58.000000000 +0800
-+++ b/drivers/char/sysrq.c	2007-10-16 23:21:59.000000000 +0800
-@@ -45,6 +45,16 @@ int __read_mostly __sysrq_enabled = 1;
- 
- static int __read_mostly sysrq_always_enabled;
- 
-+/*
-+ * Hot key table SysRq supports
-+ */
-+static char __read_mostly sysrq_hot_key_table[36] = {
-+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-+	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-+	'u', 'v', 'w', 'x', 'y', 'z'
-+};
-+
- int sysrq_on(void)
- {
- 	return __sysrq_enabled || sysrq_always_enabled;
-@@ -81,7 +91,7 @@ static void sysrq_handle_loglevel(int ke
- static struct sysrq_key_op sysrq_loglevel_op = {
- 	.handler	= sysrq_handle_loglevel,
- 	.help_msg	= "loglevel0-8",
--	.action_msg	= "Changing Loglevel",
-+	.action_msg	= "Changing Loglevel to this value",
- 	.enable_mask	= SYSRQ_ENABLE_LOG,
- };
- 
-@@ -410,7 +420,7 @@ void __handle_sysrq(int key, struct tty_
- 	spin_lock_irqsave(&sysrq_key_table_lock, flags);
- 	orig_log_level = console_loglevel;
- 	console_loglevel = 7;
--	printk(KERN_INFO "SysRq : ");
-+	printk(KERN_INFO "\nSysRq : ");
- 
-         op_p = __sysrq_get_key_op(key);
-         if (op_p) {
-@@ -426,18 +436,22 @@ void __handle_sysrq(int key, struct tty_
- 			printk("This sysrq operation is disabled.\n");
- 		}
- 	} else {
--		printk("HELP : ");
--		/* Only print the help msg once per handler */
-+		/*
-+		 * Print SysRq hot key list
-+		 */
-+		printk(KERN_INFO "this hot key isn't defined.\n");
-+		printk(KERN_INFO "\nSysRq Help Information:\n");
-+		printk(KERN_INFO "\n  Hot Key      Function Description\n");
-+		printk(KERN_INFO "===========    ====================\n");
- 		for (i = 0; i < ARRAY_SIZE(sysrq_key_table); i++) {
- 			if (sysrq_key_table[i]) {
--				int j;
--
--				for (j = 0; sysrq_key_table[i] !=
--						sysrq_key_table[j]; j++)
--					;
--				if (j != i)
--					continue;
--				printk("%s ", sysrq_key_table[i]->help_msg);
-+				printk(KERN_INFO "ALT+SysRq+%c    %s\n",
-+					sysrq_hot_key_table[i],
-+					sysrq_key_table[i]->action_msg);
-+			} else {
-+				printk(KERN_INFO "ALT+SysRq+%c    %s\n",
-+					sysrq_hot_key_table[i],
-+					"Not defined");
- 			}
- 		}
- 		printk("\n");
-
-
-
+Thanks,
+Kristen
