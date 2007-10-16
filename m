@@ -1,60 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXJPF0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932769AbXJPF0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbXJPF0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 01:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXJPF0E
+	id S932769AbXJPF0p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 01:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762054AbXJPF0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 01:26:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:63321 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932330AbXJPF0C (ORCPT
+	Tue, 16 Oct 2007 01:26:30 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:49147 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754355AbXJPF03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 01:26:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=cICXvzuU5TEYsRqFZ/BGLFgFf3VHEL5uBQi0n9cQRneAOEJaOe6COrqidZMKJOvA8
-	WhvULp7msVBGPZfaE25ug==
-Date: Mon, 15 Oct 2007 22:25:07 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: [PATCH 11/11] maps3: make page monitoring /proc file optional
-In-Reply-To: <12.290135367@selenic.com>
-Message-ID: <alpine.DEB.0.9999.0710152223400.13454@chino.kir.corp.google.com>
-References: <12.290135367@selenic.com>
+	Tue, 16 Oct 2007 01:26:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EwsxjdvElkJjl4GHtc009nR6VLY+wS283cv4BOK6apfJkY6ekEgw5xEk45N2AnnJt4/pDpO78kd8iFZRiO/engSSJqCMqYrBrLHnsHSuyZ9lAPRtHCxj5xLI5bGMP9QSrA8jSB8Hj9KPNrPXTrS/OmX88s4toAQ8D2eMUiWcenQ=  ;
+X-YMail-OSG: YFbeUhsVM1nMF.gQ_PPxsRfH5U38VvIi27m_MZFJU4L_zqUx10.2uB2huOFaAw8Q3XlYEhpGLg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
+Date: Tue, 16 Oct 2007 18:08:06 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <200710151028.34407.borntraeger@de.ibm.com> <200710161645.58686.nickpiggin@yahoo.com.au> <m1abqjirmd.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1abqjirmd.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710161808.06405.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Matt Mackall wrote:
+On Tuesday 16 October 2007 14:57, Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> >> make_page_uptodate() is most hideous part I have run into.
+> >> It has to know details about other layers to now what not
+> >> to stomp.  I think my incorrect simplification of this is what messed
+> >> things up, last round.
+> >
+> > Not really, it's just named funny. That's just a minor utility
+> > function that more or less does what it says it should do.
+> >
+> > The main problem is really that it's implementing a block device
+> > who's data comes from its own buffercache :P. I think.
+>
+> Well to put it another way, mark_page_uptodate() is the only
+> place where we really need to know about the upper layers.
+> Given that you can kill ramdisks by coding it as:
+>
+> static void make_page_uptodate(struct page *page)
+> {
+> 	clear_highpage(page);
+> 	flush_dcache_page(page);
+> 	SetPageUptodate(page);
+> }
+>
+> Something is seriously non-intuitive about that function if
+> you understand the usual rules for how to use the page cache.
 
-> Index: l/init/Kconfig
-> ===================================================================
-> --- l.orig/init/Kconfig	2007-10-14 13:35:07.000000000 -0500
-> +++ l/init/Kconfig	2007-10-15 17:18:16.000000000 -0500
-> @@ -571,6 +571,15 @@ config SLOB
->  
->  endchoice
->  
-> +config PROC_PAGE_MONITOR
-> + 	default y
-> +	bool "Enable /proc page monitoring" if EMBEDDED && PROC_FS && MMU
-> + 	help
-> +	  Various /proc files exist to monitor process memory utilization:
-> +	  /proc/pid/smaps, /proc/pid/clear_refs, /proc/pid/pagemap,
-> +	  /proc/kpagecount, and /proc/kpageflags. Disabling these
-> +          interfaces will reduce the size of the kernel by approximately 4kb.
-> +
->  endmenu		# General setup
->  
->  config RT_MUTEXES
+You're overwriting some buffers that were uptodate and dirty.
+That would be expected to cause problems.
 
-It's probably better not to include the text size savings since it will 
-most likely be outdated at some time in the future.
+
+> The problem is that we support a case in the buffer cache
+> where pages are partially uptodate and only the buffer_heads
+> remember which parts are valid.  Assuming we are using them
+> correctly.
+>
+> Having to walk through all of the buffer heads in make_page_uptodate
+> seems to me to be a nasty layering violation in rd.c
+
+Sure, but it's not just about the buffers. It's the pagecache
+in general. It is supposed to be invisible to the device driver
+and sitting above it, and yet it is taking the buffercache and
+using it to pull its data out of.
+
+
+> > I think it's worthwhile, given that we'd have a "real" looking
+> > block device and minus these bugs.
+>
+> For testing purposes I think I can agree with that.
+
+What non-testing uses does it have?
+
+
+> >> Having a separate store would
+> >> solve some of the problems, and probably remove the need
+> >> for carefully specifying the ramdisk block size.  We would
+> >> still need the magic restictions on page allocations though
+> >> and it we would use them more often as the initial write to the
+> >> ramdisk would not populate the pages we need.
+> >
+> > What magic restrictions on page allocations? Actually we have
+> > fewer restrictions on page allocations because we can use
+> > highmem!
+>
+> With the proposed rewrite yes.
+>
+> > And the lowmem buffercache pages that we currently pin
+> > (unsuccessfully, in the case of this bug) are now completely
+> > reclaimable. And all your buffer heads are now reclaimable.
+>
+> Hmm.  Good point.  So in net it should save memory even if
+> it consumes a little more in the worst case.
+
+Highmem systems would definitely like it. For others, yes, all
+the duplicated pages should be able to get reclaimed if memory
+gets tight, along with the buffer heads, so yeah footprint may
+be a tad smaller.
+
+
+> > If you mean GFP_NOIO... I don't see any problem. Block device
+> > drivers have to allocate memory with GFP_NOIO; this may have
+> > been considered magic or deep badness back when the code was
+> > written, but it's pretty simple and accepted now.
+>
+> Well I always figured it was a bit rude allocating large amounts
+> of memory GFP_NOIO but whatever.
+
+You'd rather not, of course, but with dirty data limits now,
+it doesn't matter much. (and I doubt anybody outside testing
+is going to be hammering like crazy on rd).
+
+Note that the buffercache based ramdisk driver is going to
+also be allocating with GFP_NOFS if you're talking about a
+filesystem writing to its metadata. In most systems, GFP_NOFS
+isn't much different to GFP_NOIO.
+
+We could introduce a mode which allocates pages up front
+quite easily if it were a problem (which I doubt it ever would
+be).
+
