@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765204AbXJPJkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765907AbXJPJlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765204AbXJPJkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 05:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXJPJjx
+	id S1765907AbXJPJlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 05:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbXJPJkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 05:39:53 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:43414 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758132AbXJPJjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 05:39:52 -0400
-Date: Tue, 16 Oct 2007 11:42:52 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>,
-       "Siddha\, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Rationalize sys_sched_rr_get_interval()
-Message-ID: <20071016094252.GD1000@ff.dom.local>
+	Tue, 16 Oct 2007 05:40:52 -0400
+Received: from gw-lon-cluster.cmcnet.net ([195.20.122.6]:34569 "EHLO
+	emearelay1.cmcmarkets.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757403AbXJPJkw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 05:40:52 -0400
+Subject: [PATCH] sysfs: trivial: fix sysfs_create_file kerneldoc spelling
+	mistake
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Greg KH <greg@kroah.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 16 Oct 2007 10:37:04 +0100
+Message-Id: <1192527424.11948.9.camel@feisty>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471410EF.90808@bigpond.net.au>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+X-MIMETrack: Itemize by SMTP Server on smtp3/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 10/16/2007 10:40:46 AM,
+	Serialize by Router on emearelay1/UK/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 16/10/2007 10:40:52 AM,
+	Serialize complete at 16/10/2007 10:40:52 AM
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16-10-2007 03:16, Peter Williams wrote:
-...
-> 
-> I'd suggest that we modify sched_rr_get_interval() to return -EINVAL 
-> (with *interval set to zero) if the target task is not SCHED_RR.  That 
-> way we can save a lot of unnecessary code.  I'll work on a patch.
-...
+Spelling error in sysfs_create_file kerneldoc.
 
-I like this idea! But, since this a system call maybe at least
-something like RFC would be nicer...
+Signed-off-by: Chris Malley <mail@chrismalley.co.uk>
+---
+ fs/sysfs/file.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->>
->> Sorry for too harsh words.
-> 
-> I didn't consider them harsh.
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 3e1cc06..ac75554 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -422,7 +422,7 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
+ /**
+  *	sysfs_create_file - create an attribute file for an object.
+  *	@kobj:	object we're creating for. 
+- *	@attr:	atrribute descriptor.
++ *	@attr:	attribute descriptor.
+  */
+ 
+ int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
 
-So, I can't be mistaken for a rapper yet? I'll work on it...
 
-Cheers,
-Jarek P.
-
-PS: Peter, for some unknown reason I don't receive your messages.
-If you get back some errors from my side I'd be interested to see
-it (alternative: jarkao2 at gmail.com).
