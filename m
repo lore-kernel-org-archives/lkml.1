@@ -1,1257 +1,1341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932092AbXJPFWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbXJPFZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932092AbXJPFWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 01:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759349AbXJPFWJ
+	id S932151AbXJPFZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 01:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbXJPFZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 01:22:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:17448 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759040AbXJPFWD (ORCPT
+	Tue, 16 Oct 2007 01:25:48 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34443 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754355AbXJPFZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 01:22:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hlGGweLhwRdIrguVgP/brSMwykkiRZClmy+aE21X7zLUFogSJfHhw8WhULbq8+tIAtZqIQUSvgpdXHIW4caMroh6L3uFCvkWFw4Xt9fMefo/njcIpQfSYbXlNYb1HkzmEXnwO7/prQfrJFLdVrKWQzzlsJHE1g1ms2PZZHrnBNw=
-Message-ID: <a8e1da0710152222t44de6c8at75d3dd874faf58be@mail.gmail.com>
-Date: Tue, 16 Oct 2007 13:22:01 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
-Cc: "Alan Stern" <stern@rowland.harvard.edu>, bbpetkov@yahoo.de,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20071016044844.GA8125@kroah.com>
+	Tue, 16 Oct 2007 01:25:45 -0400
+Message-ID: <47144B4F.3050108@linux.vnet.ibm.com>
+Date: Tue, 16 Oct 2007 10:55:35 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0710142257g628d3d1bq635a5deefb5fb4cc@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0710151435070.3466-100000@iolanthe.rowland.org>
-	 <20071016044844.GA8125@kroah.com>
+To: LKML <linux-kernel@vger.kernel.org>
+CC: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [BUG] 2.6.23-git8 kernel oops at __rb_rotate_left+0x7/0x70
+Content-Type: multipart/mixed;
+ boundary="------------020607060804000608000802"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 10/16/07, Greg KH <greg@kroah.com> wrote:
-> On Mon, Oct 15, 2007 at 02:38:25PM -0400, Alan Stern wrote:
-> > On Mon, 15 Oct 2007, Dave Young wrote:
-> >
-> > > On 10/14/07, Borislav Petkov <bbpetkov@yahoo.de> wrote:
-> > > > Hi,
-> > > >
-> > > > i get the following warning on yesterday's git tree (v2.6.23-2840-g752097c):
-> > > >
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368030] sysfs: duplicate filename 'bInterfaceNumber' can not be created
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368086] WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368134]  [<c010527c>] show_trace_log_lvl+0x1a/0x2f
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368220]  [<c0105da0>] show_trace+0x12/0x14
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368300]  [<c0105db8>] dump_stack+0x16/0x18
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368379]  [<c019f2ee>] sysfs_add_one+0x57/0xbc
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368461]  [<c019edeb>] sysfs_add_file+0x49/0x71
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368541]  [<c01a05c2>] sysfs_create_group+0x86/0xe8
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368621]  [<c024f5da>] usb_create_sysfs_intf_files+0x27/0x9b
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368704]  [<c024c28b>] usb_set_configuration+0x454/0x466
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368787]  [<c0252b97>] generic_probe+0x53/0x94
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368867]  [<c024d4f7>] usb_probe_device+0x35/0x3b
-> > > > Oct 14 09:07:15 zmei kernel: [   49.368947]  [<c022a46c>] driver_probe_device+0xcb/0x14f
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369039]  [<c022a4f8>] __device_attach+0x8/0xa
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369119]  [<c02298d5>] bus_for_each_drv+0x3b/0x63
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369199]  [<c022a589>] device_attach+0x70/0x85
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369279]  [<c022984c>] bus_attach_device+0x29/0x77
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369359]  [<c0228abc>] device_add+0x28c/0x445
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369439]  [<c0247c7a>] usb_new_device+0x44/0x82
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369519]  [<c02486ec>] hub_thread+0x666/0x9c2
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369598]  [<c01370e9>] kthread+0x3b/0x62
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369679]  [<c0104eaf>] kernel_thread_helper+0x7/0x10
-> > > > Oct 14 09:07:15 zmei kernel: [   49.369759]  =======================
-> > > >
-> > > > The usb hub in question is named 4-1:1.0 and it has an extension connected to it
-> > > > which is used to activate the 2 usb connectors at the side of the pc's monitor.
-> > > > Correct me if i'm wrong but from what i've understood so far from reading the code,
-> > > > i think, it adds the bInterfaceNumber-file after calling usb_create_sysfs_intf_files(intf).
-> > > > However, the currently active usbhost interface alternate setting is the only one active
-> > > > so the bInterfaceNumber exists already and therefore the warning, but this is
-> > > > just a guess since i'm not that fluent in the usb internals.
-> > > Hi,
-> > > I have encountered the same problem which was  reported in
-> > > http://lkml.org/lkml/2007/9/29/45
-> > >
-> > > For the first one "usbcore duplicated sysfs filename" , I have submit
-> > > a patch to fix it.
-> > >
-> > > For the "bInterfaceNumber" one, I have no idea, the same problem still
-> > > exist in the latest 23-mm1 tree.
-> >
-> > I have tried several times to duplicate this, most recently under
-> > 2.6.23-mm1.  But nothing goes wrong; the error messages don't appear.
-> >
-> > You may have to do your own debugging.  Try adding printk statements to
-> > usb_create_sysfs_intf_files() and usb_remove_sysfs_intf_files() so you
-> > can tell when they get called.
->
-> I finally duplicated this on one of my machines here at boot time, with
-> USB built into the kernel.  I'll work tomorrow on tracking this down
-> further...
+This is a multi-part message in MIME format.
+--------------020607060804000608000802
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
 Hi,
-I add some printk messages, dump_stack and some others, here is the
-dmesg dump with debug info(lines begin with "hidave"):
 
-Linux version 2.6.23-mm1 (dave@darkstar) (gcc version 3.4.6) #4 SMP
-PREEMPT Tue Oct 16 11:14:10 CST 2007
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000003fe88c00 (usable)
- BIOS-e820: 000000003fe88c00 - 000000003fe8ac00 (ACPI NVS)
- BIOS-e820: 000000003fe8ac00 - 000000003fe8cc00 (ACPI data)
- BIOS-e820: 000000003fe8cc00 - 0000000040000000 (reserved)
- BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fed00400 (reserved)
- BIOS-e820: 00000000fed20000 - 00000000feda0000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
- BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
-126MB HIGHMEM available.
-896MB LOWMEM available.
-found SMP MP-table at 000fe710
-Entering add_active_range(0, 0, 261768) 0 entries of 256 used
-sizeof(struct page) = 32
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->   229376
-  HighMem    229376 ->   261768
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   261768
-On node 0 totalpages: 261768
-Node 0 memmap at 0xc1000000 size 8388608 first pfn 0xc1000000
-  DMA zone: 32 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 4064 pages, LIFO batch:0
-  Normal zone: 1760 pages used for memmap
-  Normal zone: 223520 pages, LIFO batch:31
-  HighMem zone: 253 pages used for memmap
-  HighMem zone: 32139 pages, LIFO batch:7
-  Movable zone: 0 pages used for memmap
-DMI 2.3 present.
-ACPI: RSDP 000FEB00, 0024 (r2 DELL  )
-ACPI: XSDT 000FD267, 005C (r1 DELL    DM051          7 ASL        61)
-ACPI: FACP 000FD35F, 00F4 (r3 DELL    DM051          7 ASL        61)
-ACPI: DSDT FFFC755F, 2D0E (r1   DELL    dt_ex     1000 INTL 20050309)
-ACPI: FACS 3FE88C00, 0040
-ACPI: SSDT FFFCA38E, 00AC (r1   DELL    st_ex     1000 INTL 20050309)
-ACPI: APIC 000FD453, 0072 (r1 DELL    DM051          7 ASL        61)
-ACPI: BOOT 000FD4C5, 0028 (r1 DELL    DM051          7 ASL        61)
-ACPI: ASF! 000FD4ED, 0067 (r16 DELL    DM051          7 ASL        61)
-ACPI: MCFG 000FD554, 003E (r1 DELL    DM051          7 ASL        61)
-ACPI: HPET 000FD592, 0038 (r1 DELL    DM051          7 ASL        61)
-ACPI: PM-Timer IO Port: 0x808
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-Processor #0 15:4 APIC version 20
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-Processor #1 15:4 APIC version 20
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x05] disabled)
-ACPI: LAPIC (acpi_id[0x04] lapic_id[0x07] disabled)
-ACPI: LAPIC_NMI (acpi_id[0xff] high level lint[0x1])
-ACPI: IOAPIC (id[0x08] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 8, version 32, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-ACPI: HPET id: 0x8086a201 base: 0xfed00000
-Using ACPI (MADT) for SMP configuration information
-Allocating PCI resources starting at 50000000 (gap: 40000000:b0000000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 259723
-Kernel command line: BOOT_IMAGE=test ro root=805
-mapped APIC to ffffb000 (fee00000)
-mapped IOAPIC to ffffa000 (fec00000)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-Detected 2793.166 MHz processor.
-Console: colour VGA+ 80x25
-console [tty0] enabled
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 1032480k/1047072k available (3129k kernel code, 13984k
-reserved, 1108k data, 252k init, 129568k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfff4d000 - 0xfffff000   ( 712 kB)
-    pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-    vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-      .init : 0xc052a000 - 0xc0569000   ( 252 kB)
-      .data : 0xc040e517 - 0xc0523560   (1108 kB)
-      .text : 0xc0100000 - 0xc040e517   (3129 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-SLUB: Genslabs=11, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
-hpet clockevent registered
-Calibrating delay using timer specific routine.. 5592.00 BogoMIPS (lpj=9316807)
-Security Framework initialized
-Mount-cache hash table entries: 512
-CPU: After generic identify, caps: bfebfbff 20100000 00000000 00000000
-0000641d 00000000 00000001 00000000
-monitor/mwait feature present.
-using mwait in idle threads.
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU: After all inits, caps: bfebfbff 20100000 00000000 0000b180
-0000641d 00000000 00000001 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-CPU0: Intel P4/Xeon Extended MCE MSRs (24) available
-Compat vDSO mapped to ffffe000.
-Checking 'hlt' instruction... OK.
-SMP alternatives: switching to UP code
-ACPI: Core revision 20070126
-CPU0: Intel(R) Pentium(R) D CPU 2.80GHz stepping 07
-SMP alternatives: switching to SMP code
-Booting processor 1/1 eip 3000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 5588.88 BogoMIPS (lpj=9310208)
-CPU: After generic identify, caps: bfebfbff 20100000 00000000 00000000
-0000641d 00000000 00000001 00000000
-monitor/mwait feature present.
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU: After all inits, caps: bfebfbff 20100000 00000000 0000b180
-0000641d 00000000 00000001 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#1.
-CPU1: Intel P4/Xeon Extended MCE MSRs (24) available
-CPU1: Intel(R) Pentium(R) D CPU 2.80GHz stepping 07
-Total of 2 processors activated (11180.88 BogoMIPS).
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
-net_namespace: 64 bytes
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xfb93e, last bus=3
-PCI: Using configuration type 1
-Setting up standard PCI resources
-ACPI: EC: Look up EC in DSDT
-ACPI: System BIOS is requesting _OSI(Linux)
-ACPI: If "acpi_osi=Linux" works better,
-Please send dmidecode to linux-acpi@vger.kernel.org
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S3 S5)
-ACPI: Using IOAPIC for interrupt routing
-PCI: Found Intel Corporation 945G/GZ/P/PL Express Memory Controller
-Hub without MMCONFIG support.
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI quirk: region 0800-087f claimed by ICH6 ACPI/GPIO/TCO
-PCI quirk: region 0880-08bf claimed by ICH6 GPIO
-PCI: Transparent bridge - 0000:00:1e.0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI4._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI2._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11 12 15)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *9 10 11 12 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 *5 6 7 9 10 11 12 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 11 12 15) *0, disabled.
-ACPI: PCI Interrupt Link [LNKE] (IRQs *3 4 5 6 7 9 10 11 12 15)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 9 *10 11 12 15)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 *9 10 11 12 15)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 *4 5 6 7 9 10 11 12 15)
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 8 devices
-ACPI: ACPI bus type pnp unregistered
-SCSI subsystem initialized
-libata version 3.00 loaded.
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-ACPI: RTC can wake from S4
-Time: tsc clocksource has been installed.
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-system 00:01: ioport range 0x800-0x85f has been reserved
-system 00:01: ioport range 0xc00-0xc7f has been reserved
-system 00:01: ioport range 0x860-0x8ff could not be reserved
-system 00:06: iomem range 0x0-0x9ffff could not be reserved
-system 00:06: iomem range 0x100000-0xffffff could not be reserved
-system 00:06: iomem range 0x1000000-0x3fe88bff could not be reserved
-system 00:06: iomem range 0xf0000-0xfffff could not be reserved
-system 00:07: ioport range 0x100-0x1fe could not be reserved
-system 00:07: ioport range 0x200-0x277 has been reserved
-system 00:07: ioport range 0x280-0x2e7 has been reserved
-system 00:07: ioport range 0x2e8-0x2ef has been reserved
-system 00:07: ioport range 0x2f0-0x2f7 has been reserved
-system 00:07: ioport range 0x2f8-0x2ff has been reserved
-system 00:07: ioport range 0x300-0x377 could not be reserved
-system 00:07: ioport range 0x380-0x3bb has been reserved
-system 00:07: iomem range 0xf0000000-0xf3ffffff could not be reserved
-system 00:07: iomem range 0xfeda0000-0xfedacfff has been reserved
-PCI: Bridge: 0000:00:01.0
-  IO window: d000-dfff
-  MEM window: efd00000-efefffff
-  PREFETCH window: e0000000-e7ffffff
-PCI: Bridge: 0000:00:1c.0
-  IO window: disabled.
-  MEM window: efc00000-efcfffff
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:1e.0
-  IO window: c000-cfff
-  MEM window: efb00000-efbfffff
-  PREFETCH window: disabled.
-ACPI: PCI Interrupt 0000:00:01.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:1c.0 to 64
-PCI: Setting latency timer of device 0000:00:1e.0 to 64
-NET: Registered protocol family 2
-IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-TCP established hash table entries: 131072 (order: 9, 2097152 bytes)
-TCP bind hash table entries: 65536 (order: 7, 786432 bytes)
-TCP: Hash tables configured (established 131072 bind 65536)
-TCP reno registered
-Simple Boot Flag at 0x7a set to 0x1
-apm: BIOS version 1.2 Flags 0x03 (Driver version 1.16ac)
-apm: disabled - APM is not SMP safe.
-highmem bounce pool size: 64 pages
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-NTFS driver 2.1.28 [Flags: R/W].
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-pci 0000:00:1d.0: uhci_check_and_reset_hc: cmd = 0x0081
-pci 0000:00:1d.0: Performing full reset
-pci 0000:00:1d.1: uhci_check_and_reset_hc: cmd = 0x0081
-pci 0000:00:1d.1: Performing full reset
-pci 0000:00:1d.2: uhci_check_and_reset_hc: cmd = 0x0081
-pci 0000:00:1d.2: Performing full reset
-pci 0000:00:1d.3: uhci_check_and_reset_hc: cmd = 0x0081
-pci 0000:00:1d.3: Performing full reset
-Boot video device is 0000:01:00.0
-PCI: Firmware left 0000:03:08.0 e100 interrupts enabled, disabling
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:01.0:pcie00]
-PCI: Setting latency timer of device 0000:00:1c.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:1c.0:pcie00]
-Allocate Port Service[0000:00:1c.0:pcie02]
-Real Time Clock Driver v1.12ac
-intel_rng: Firmware space is locked read-only. If you can't or
-intel_rng: don't want to disable this in firmware setup, and if
-intel_rng: you are certain that your system has a functional
-intel_rng: RNG, try using the 'no_fwh_detect' option.
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-Floppy drive(s): fd0 is 1.44M
-floppy0: no floppy controllers found
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: module loaded
-console [netcon0] enabled
-netconsole: network logging started
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-ICH7: IDE controller (0x8086:0x27df rev 0x01) at  PCI slot 0000:00:1f.1
-ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 16 (level, low) -> IRQ 16
-ICH7: not 100% native mode: will probe irqs later
-    ide0: BM-DMA at 0xffa0-0xffa7, BIOS settings: hda:DMA, hdb:pio
-ICH7: IDE port disabled
-Probing IDE interface ide0...
-hda: TSSTcorp CD-RW/DVD-ROM TS-H492C, ATAPI CD/DVD-ROM drive
-hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hda: selected mode 0x42
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-Probing IDE interface ide1...
-hda: ATAPI 48X DVD-ROM CD-R/RW drive, 1536kB Cache, UDMA(33)
-Uniform CD-ROM driver Revision: 3.20
-ide-floppy driver 0.99.newide
-ata_piix 0000:00:1f.2: version 2.12
-ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
-ACPI: PCI Interrupt 0000:00:1f.2[C] -> GSI 20 (level, low) -> IRQ 17
-PCI: Setting latency timer of device 0000:00:1f.2 to 64
-scsi0 : ata_piix
-scsi1 : ata_piix
-ata1: SATA max UDMA/133 cmd 0xfe00 ctl 0xfe10 bmdma 0xfea0 irq 17
-ata2: SATA max UDMA/133 cmd 0xfe20 ctl 0xfe30 bmdma 0xfea8 irq 17
-ata1.00: ATA-7: SAMSUNG HD160JJ/P, ZM100-34, max UDMA7
-ata1.00: 312500000 sectors, multi 8: LBA48 NCQ (depth 0/32)
-ata1.00: configured for UDMA/133
-scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD160JJ/ ZM10 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 312500000 512-byte hardware sectors (160000 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-sd 0:0:0:0: [sda] 312500000 512-byte hardware sectors (160000 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
-sd 0:0:0:0: [sda] Attached SCSI disk
-ehci_hcd: block sizes: qh 128 qtd 96 itd 192 sitd 96
-ACPI: PCI Interrupt 0000:00:1d.7[A] -> GSI 21 (level, low) -> IRQ 18
-PCI: Setting latency timer of device 0000:00:1d.7 to 64
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-drivers/usb/core/inode.c: creating file 'devices'
-drivers/usb/core/inode.c: creating file '001'
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:1d.7: reset hcs_params 0x104208 dbg=1 cc=4 pcc=2
-ordered !ppc ports=8
-ehci_hcd 0000:00:1d.7: reset hcc_params 6871 thresh 7 uframes 1024 64 bit addr
-ehci_hcd 0000:00:1d.7: reset command 000002 (park)=0 ithresh=0
-period=1024 Reset HALT
-ehci_hcd 0000:00:1d.7: debug port 1
-PCI: cache line size of 128 is not supported by device 0000:00:1d.7
-ehci_hcd 0000:00:1d.7: supports USB remote wakeup
-ehci_hcd 0000:00:1d.7: irq 18, io mem 0xffa80800
-ehci_hcd 0000:00:1d.7: reset command 080002 (park)=0 ithresh=8
-period=1024 Reset HALT
-ehci_hcd 0000:00:1d.7: init command 010001 (park)=0 ithresh=1 period=1024 RUN
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: default language 0x0409
-usb usb1: uevent
-usb usb1: usb_probe_device
-usb usb1: configuration #1 chosen from 1 choice
-usb usb1: adding 1-0:1.0 (config #1, interface 0)
-usb 1-0:1.0: uevent
-usb 1-0:1.0: uevent
-hub 1-0:1.0: usb_probe_interface
-hub 1-0:1.0: usb_probe_interface - got id
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 8 ports detected
-hub 1-0:1.0: standalone hub
-hub 1-0:1.0: no power switching (usb 1.0)
-hub 1-0:1.0: individual port over-current protection
-hub 1-0:1.0: Single TT
-hub 1-0:1.0: TT requires at most 8 FS bit times (666 ns)
-hub 1-0:1.0: power on to power good time: 20ms
-hub 1-0:1.0: local power source is good
-hub 1-0:1.0: trying to enable port power on non-switchable hub
-hub 1-0:1.0: state 7 ports 8 chg 0000 evt 0000
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 1-0:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033ee4f>] usb_get_device_descriptor+0x7f/0xa0
- [<c033c04f>] register_root_hub+0xcf/0x160
- [<c033d03c>] usb_add_hcd+0x16c/0x420
- [<c03480f3>] usb_hcd_pci_probe+0x233/0x3a0
- [<c01c5414>] sysfs_create_link+0xa4/0x170
- [<c025ca2a>] pci_call_probe+0xa/0x10
- [<c025ca7e>] __pci_device_probe+0x4e/0x60
- [<c025cab6>] pci_device_probe+0x26/0x60
- [<c02b8454>] really_probe+0xa4/0x160
- [<c025ca08>] pci_match_device+0xa8/0xc0
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c025ce0c>] __pci_register_driver+0x5c/0x90
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c0549a8d>] ehci_hcd_init+0x4d/0x60
- [<c052a856>] do_initcalls+0x46/0x1e0
- [<c01bdb12>] create_proc_entry+0x52/0x90
- [<c0158d4c>] register_irq_proc+0x9c/0xc0
- [<c01bda94>] proc_mkdir_mode+0x34/0x50
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052aa92>] kernel_init+0x62/0xb0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '001'
-ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001803 POWER sig=j CSC CONNECT
-hub 1-0:1.0: port 1, status 0501, change 0001, 480 Mb/s
-usb usb1: new device found, idVendor=0000, idProduct=0000
-usb usb1: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: EHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.23-mm1 ehci_hcd
-usb usb1: SerialNumber: 0000:00:1d.7
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-ohci_hcd: block sizes: ed 64 td 64
-USB Universal Host Controller Interface driver v3.0
-ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 21 (level, low) -> IRQ 18
-PCI: Setting latency timer of device 0000:00:1d.0 to 64
-uhci_hcd 0000:00:1d.0: UHCI Host Controller
-drivers/usb/core/inode.c: creating file '002'
-uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
-uhci_hcd 0000:00:1d.0: detected 2 ports
-uhci_hcd 0000:00:1d.0: uhci_check_and_reset_hc: cmd = 0x0000
-uhci_hcd 0000:00:1d.0: Performing full reset
-uhci_hcd 0000:00:1d.0: irq 18, io base 0x0000ff80
-usb usb2: default language 0x0409
-usb usb2: uevent
-usb usb2: usb_probe_device
-usb usb2: configuration #1 chosen from 1 choice
-usb usb2: adding 2-0:1.0 (config #1, interface 0)
-usb 2-0:1.0: uevent
-usb 2-0:1.0: uevent
-hub 2-0:1.0: usb_probe_interface
-hub 2-0:1.0: usb_probe_interface - got id
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 2 ports detected
-hub 2-0:1.0: standalone hub
-hub 2-0:1.0: no power switching (usb 1.0)
-hub 2-0:1.0: individual port over-current protection
-hub 2-0:1.0: power on to power good time: 2ms
-hub 2-0:1.0: local power source is good
-hub 2-0:1.0: trying to enable port power on non-switchable hub
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 2-0:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033ee4f>] usb_get_device_descriptor+0x7f/0xa0
- [<c033c04f>] register_root_hub+0xcf/0x160
- [<c035d580>] uhci_start+0x1d0/0x330
- [<c033d03c>] usb_add_hcd+0x16c/0x420
- [<c03480f3>] usb_hcd_pci_probe+0x233/0x3a0
- [<c01c5414>] sysfs_create_link+0xa4/0x170
- [<c025ca2a>] pci_call_probe+0xa/0x10
- [<c025ca7e>] __pci_device_probe+0x4e/0x60
- [<c025cab6>] pci_device_probe+0x26/0x60
- [<c02b8454>] really_probe+0xa4/0x160
- [<c025ca08>] pci_match_device+0xa8/0xc0
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c025ce0c>] __pci_register_driver+0x5c/0x90
- [<c0549bba>] uhci_hcd_init+0xaa/0xe0
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052a856>] do_initcalls+0x46/0x1e0
- [<c01bdb12>] create_proc_entry+0x52/0x90
- [<c0158d4c>] register_irq_proc+0x9c/0xc0
- [<c01bda94>] proc_mkdir_mode+0x34/0x50
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052aa92>] kernel_init+0x62/0xb0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '001'
-usb usb2: new device found, idVendor=0000, idProduct=0000
-usb usb2: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: UHCI Host Controller
-usb usb2: Manufacturer: Linux 2.6.23-mm1 uhci_hcd
-usb usb2: SerialNumber: 0000:00:1d.0
-ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 22 (level, low) -> IRQ 19
-PCI: Setting latency timer of device 0000:00:1d.1 to 64
-uhci_hcd 0000:00:1d.1: UHCI Host Controller
-drivers/usb/core/inode.c: creating file '003'
-uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
-uhci_hcd 0000:00:1d.1: detected 2 ports
-uhci_hcd 0000:00:1d.1: uhci_check_and_reset_hc: cmd = 0x0000
-uhci_hcd 0000:00:1d.1: Performing full reset
-uhci_hcd 0000:00:1d.1: irq 19, io base 0x0000ff60
-usb usb3: default language 0x0409
-usb usb3: uevent
-usb usb3: usb_probe_device
-usb usb3: configuration #1 chosen from 1 choice
-usb usb3: adding 3-0:1.0 (config #1, interface 0)
-usb 3-0:1.0: uevent
-usb 3-0:1.0: uevent
-hub 3-0:1.0: usb_probe_interface
-hub 3-0:1.0: usb_probe_interface - got id
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 2 ports detected
-hub 3-0:1.0: standalone hub
-hub 3-0:1.0: no power switching (usb 1.0)
-hub 3-0:1.0: individual port over-current protection
-hub 3-0:1.0: power on to power good time: 2ms
-hub 3-0:1.0: local power source is good
-hub 3-0:1.0: trying to enable port power on non-switchable hub
-hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x501
-ehci_hcd 0000:00:1d.7: port 1 high speed
-ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 3-0:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033ee4f>] usb_get_device_descriptor+0x7f/0xa0
- [<c033c04f>] register_root_hub+0xcf/0x160
- [<c035d580>] uhci_start+0x1d0/0x330
- [<c033d03c>] usb_add_hcd+0x16c/0x420
- [<c03480f3>] usb_hcd_pci_probe+0x233/0x3a0
- [<c01c5414>] sysfs_create_link+0xa4/0x170
- [<c025ca2a>] pci_call_probe+0xa/0x10
- [<c025ca7e>] __pci_device_probe+0x4e/0x60
- [<c025cab6>] pci_device_probe+0x26/0x60
- [<c02b8454>] really_probe+0xa4/0x160
- [<c025ca08>] pci_match_device+0xa8/0xc0
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c025ce0c>] __pci_register_driver+0x5c/0x90
- [<c0549bba>] uhci_hcd_init+0xaa/0xe0
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052a856>] do_initcalls+0x46/0x1e0
- [<c01bdb12>] create_proc_entry+0x52/0x90
- [<c0158d4c>] register_irq_proc+0x9c/0xc0
- [<c01bda94>] proc_mkdir_mode+0x34/0x50
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052aa92>] kernel_init+0x62/0xb0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '001'
-usb usb3: new device found, idVendor=0000, idProduct=0000
-usb usb3: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb3: Product: UHCI Host Controller
-usb usb3: Manufacturer: Linux 2.6.23-mm1 uhci_hcd
-usb usb3: SerialNumber: 0000:00:1d.1
-ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 20
-PCI: Setting latency timer of device 0000:00:1d.2 to 64
-uhci_hcd 0000:00:1d.2: UHCI Host Controller
-drivers/usb/core/inode.c: creating file '004'
-uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
-uhci_hcd 0000:00:1d.2: detected 2 ports
-uhci_hcd 0000:00:1d.2: uhci_check_and_reset_hc: cmd = 0x0000
-uhci_hcd 0000:00:1d.2: Performing full reset
-uhci_hcd 0000:00:1d.2: irq 20, io base 0x0000ff40
-usb usb4: default language 0x0409
-usb usb4: uevent
-usb usb4: usb_probe_device
-usb usb4: configuration #1 chosen from 1 choice
-usb usb4: adding 4-0:1.0 (config #1, interface 0)
-usb 4-0:1.0: uevent
-usb 4-0:1.0: uevent
-hub 4-0:1.0: usb_probe_interface
-hub 4-0:1.0: usb_probe_interface - got id
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 2 ports detected
-hub 4-0:1.0: standalone hub
-hub 4-0:1.0: no power switching (usb 1.0)
-hub 4-0:1.0: individual port over-current protection
-hub 4-0:1.0: power on to power good time: 2ms
-hub 4-0:1.0: local power source is good
-hub 4-0:1.0: trying to enable port power on non-switchable hub
-usb 1-1: new high speed USB device using ehci_hcd and address 2
-ehci_hcd 0000:00:1d.7: port 1 high speed
-ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 4-0:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033ee4f>] usb_get_device_descriptor+0x7f/0xa0
- [<c033c04f>] register_root_hub+0xcf/0x160
- [<c035d580>] uhci_start+0x1d0/0x330
- [<c033d03c>] usb_add_hcd+0x16c/0x420
- [<c03480f3>] usb_hcd_pci_probe+0x233/0x3a0
- [<c01c5414>] sysfs_create_link+0xa4/0x170
- [<c025ca2a>] pci_call_probe+0xa/0x10
- [<c025ca7e>] __pci_device_probe+0x4e/0x60
- [<c025cab6>] pci_device_probe+0x26/0x60
- [<c02b8454>] really_probe+0xa4/0x160
- [<c025ca08>] pci_match_device+0xa8/0xc0
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c025ce0c>] __pci_register_driver+0x5c/0x90
- [<c0549bba>] uhci_hcd_init+0xaa/0xe0
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052a856>] do_initcalls+0x46/0x1e0
- [<c01bdb12>] create_proc_entry+0x52/0x90
- [<c0158d4c>] register_irq_proc+0x9c/0xc0
- [<c01bda94>] proc_mkdir_mode+0x34/0x50
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052aa92>] kernel_init+0x62/0xb0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '001'
-usb usb4: new device found, idVendor=0000, idProduct=0000
-usb usb4: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb4: Product: UHCI Host Controller
-usb usb4: Manufacturer: Linux 2.6.23-mm1 uhci_hcd
-usb usb4: SerialNumber: 0000:00:1d.2
-ACPI: PCI Interrupt 0000:00:1d.3[D] -> GSI 23 (level, low) -> IRQ 21
-PCI: Setting latency timer of device 0000:00:1d.3 to 64
-uhci_hcd 0000:00:1d.3: UHCI Host Controller
-drivers/usb/core/inode.c: creating file '005'
-uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
-uhci_hcd 0000:00:1d.3: detected 2 ports
-uhci_hcd 0000:00:1d.3: uhci_check_and_reset_hc: cmd = 0x0000
-uhci_hcd 0000:00:1d.3: Performing full reset
-uhci_hcd 0000:00:1d.3: irq 21, io base 0x0000ff20
-usb usb5: default language 0x0409
-usb usb5: uevent
-usb usb5: usb_probe_device
-usb usb5: configuration #1 chosen from 1 choice
-usb usb5: adding 5-0:1.0 (config #1, interface 0)
-usb 5-0:1.0: uevent
-usb 5-0:1.0: uevent
-hub 5-0:1.0: usb_probe_interface
-hub 5-0:1.0: usb_probe_interface - got id
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: 2 ports detected
-hub 5-0:1.0: standalone hub
-hub 5-0:1.0: no power switching (usb 1.0)
-hub 5-0:1.0: individual port over-current protection
-hub 5-0:1.0: power on to power good time: 2ms
-hub 5-0:1.0: local power source is good
-hub 5-0:1.0: trying to enable port power on non-switchable hub
-usb 1-1: uevent
-usb 1-1: usb_probe_device
-usb 1-1: configuration #1 chosen from 1 choice
-usb 1-1: adding 1-1:1.0 (config #1, interface 0)
-usb 1-1:1.0: uevent
-usb 1-1:1.0: uevent
-hub 1-1:1.0: usb_probe_interface
-hub 1-1:1.0: usb_probe_interface - got id
-hub 1-1:1.0: USB hub found
-hub 1-1:1.0: 4 ports detected
-hub 1-1:1.0: standalone hub
-hub 1-1:1.0: individual port power switching
-hub 1-1:1.0: individual port over-current protection
-hidave: #################################
-hidave: called from usb_set_interface
-hidave: about to adding 1-1:1.0 (interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033f499>] usb_set_interface+0x1e9/0x250
- [<c0337e03>] hub_configure+0x8c3/0x9b0
- [<c033807e>] hub_probe+0xbe/0x190
- [<c024e85f>] kobject_get+0xf/0x20
- [<c0338106>] hub_probe+0x146/0x190
- [<c03402c4>] usb_probe_interface+0x114/0x1b0
- [<c02b8454>] really_probe+0xa4/0x160
- [<c0340749>] usb_match_id+0x19/0x50
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c033fcc5>] usb_set_configuration+0x425/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-hub 1-1:1.0: TT per port
-hub 1-1:1.0: TT requires at most 8 FS bit times (666 ns)
-hub 1-1:1.0: power on to power good time: 100ms
-hub 1-1:1.0: local power source is good
-hub 1-1:1.0: enabling power on all ports
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 5-0:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033ee4f>] usb_get_device_descriptor+0x7f/0xa0
- [<c033c04f>] register_root_hub+0xcf/0x160
- [<c035d580>] uhci_start+0x1d0/0x330
- [<c033d03c>] usb_add_hcd+0x16c/0x420
- [<c03480f3>] usb_hcd_pci_probe+0x233/0x3a0
- [<c01c5414>] sysfs_create_link+0xa4/0x170
- [<c025ca2a>] pci_call_probe+0xa/0x10
- [<c025ca7e>] __pci_device_probe+0x4e/0x60
- [<c025cab6>] pci_device_probe+0x26/0x60
- [<c02b8454>] really_probe+0xa4/0x160
- [<c025ca08>] pci_match_device+0xa8/0xc0
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c025ce0c>] __pci_register_driver+0x5c/0x90
- [<c0549bba>] uhci_hcd_init+0xaa/0xe0
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052a856>] do_initcalls+0x46/0x1e0
- [<c01bdb12>] create_proc_entry+0x52/0x90
- [<c0158d4c>] register_irq_proc+0x9c/0xc0
- [<c01bda94>] proc_mkdir_mode+0x34/0x50
- [<c052aa30>] kernel_init+0x0/0xb0
- [<c052aa92>] kernel_init+0x62/0xb0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '001'
-usb usb5: new device found, idVendor=0000, idProduct=0000
-usb usb5: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb5: Product: UHCI Host Controller
-usb usb5: Manufacturer: Linux 2.6.23-mm1 uhci_hcd
-usb usb5: SerialNumber: 0000:00:1d.3
-usb 1-1: link qh256-0001/c24d0100 start 255 [1/0 us]
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 1-1:1.0 (config #1, interface 0)
-sysfs: duplicate filename 'bInterfaceNumber' can not be created
-WARNING: at fs/sysfs/dir.c:416 sysfs_add_one()
- [<c01c4750>] sysfs_add_one+0xa0/0xe0
- [<c01c3d6e>] sysfs_add_file+0x4e/0xb0
- [<c01c5d31>] create_files+0x31/0x60
- [<c01c5d94>] sysfs_create_group+0x34/0xf0
- [<c040b3e6>] klist_node_init+0x46/0x60
- [<c040b373>] add_tail+0x13/0x40
- [<c0343fff>] usb_create_sysfs_intf_files+0x2f/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '002'
-usb 1-1: new device found, idVendor=0424, idProduct=2504
-usb 1-1: new device strings: Mfr=0, Product=0, SerialNumber=0
-ehci_hcd 0000:00:1d.7: GetStatus port 5 status 001403 POWER sig=k CSC CONNECT
-hub 1-0:1.0: port 5, status 0501, change 0001, 480 Mb/s
-hub 1-0:1.0: debounce: port 5: total 100ms stable 100ms status 0x501
-ehci_hcd 0000:00:1d.7: port 5 low speed --> companion
-ehci_hcd 0000:00:1d.7: GetStatus port 5 status 003002 POWER OWNER sig=se0 CSC
-ehci_hcd 0000:00:1d.7: GetStatus port 6 status 001403 POWER sig=k CSC CONNECT
-hub 1-0:1.0: port 6, status 0501, change 0001, 480 Mb/s
-hub 1-0:1.0: debounce: port 6: total 100ms stable 100ms status 0x501
-ehci_hcd 0000:00:1d.7: port 6 low speed --> companion
-ehci_hcd 0000:00:1d.7: GetStatus port 6 status 003002 POWER OWNER sig=se0 CSC
-ehci_hcd 0000:00:1d.7: GetStatus port 7 status 001803 POWER sig=j CSC CONNECT
-hub 1-0:1.0: port 7, status 0501, change 0001, 480 Mb/s
-hub 1-0:1.0: debounce: port 7: total 100ms stable 100ms status 0x501
-ehci_hcd 0000:00:1d.7: port 7 full speed --> companion
-ehci_hcd 0000:00:1d.7: GetStatus port 7 status 003801 POWER OWNER sig=j CONNECT
-hub 1-0:1.0: port 7 not reset yet, waiting 50ms
-ehci_hcd 0000:00:1d.7: GetStatus port 7 status 003002 POWER OWNER sig=se0 CSC
-hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0002
-uhci_hcd 0000:00:1d.0: port 1 portsc 0082,00
-hub 2-0:1.0: port 1, status 0100, change 0001, 12 Mb/s
-hub 2-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x100
-hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
-hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0006
-uhci_hcd 0000:00:1d.2: port 1 portsc 01ab,00
-hub 4-0:1.0: port 1, status 0301, change 0003, 1.5 Mb/s
-hub 4-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x301
-usb usb3: suspend_rh (auto-stop)
-usb 4-1: new low speed USB device using uhci_hcd and address 2
-usb 4-1: skipped 1 descriptor after interface
-usb 4-1: default language 0x0409
-usb 4-1: uevent
-usb 4-1: usb_probe_device
-usb 4-1: configuration #1 chosen from 1 choice
-usb 4-1: adding 4-1:1.0 (config #1, interface 0)
-usb 4-1:1.0: uevent
-usb 4-1:1.0: uevent
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 4-1:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '002'
-usb 4-1: new device found, idVendor=0461, idProduct=4d15
-usb 4-1: new device strings: Mfr=0, Product=2, SerialNumber=0
-usb 4-1: Product: USB Optical Mouse
-uhci_hcd 0000:00:1d.2: port 2 portsc 01ab,00
-hub 4-0:1.0: port 2, status 0301, change 0003, 1.5 Mb/s
-hub 4-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x301
-usb 4-2: new low speed USB device using uhci_hcd and address 3
-usb 4-2: skipped 1 descriptor after interface
-usb 4-2: default language 0x0409
-usb 4-2: uevent
-usb 4-2: usb_probe_device
-usb 4-2: configuration #1 chosen from 1 choice
-usb 4-2: adding 4-2:1.0 (config #1, interface 0)
-usb 4-2:1.0: uevent
-usb 4-2:1.0: uevent
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 4-2:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '003'
-usb 4-2: new device found, idVendor=413c, idProduct=2003
-usb 4-2: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 4-2: Product: Dell USB Keyboard
-usb 4-2: Manufacturer: Dell
-hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0002
-uhci_hcd 0000:00:1d.3: port 1 portsc 009b,00
-hub 5-0:1.0: port 1, status 0101, change 0003, 12 Mb/s
-hub 5-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x101
-usb usb2: suspend_rh (auto-stop)
-usb 5-1: new full speed USB device using uhci_hcd and address 2
-usb 5-1: default language 0x0409
-usb 5-1: uevent
-usb 5-1: usb_probe_device
-usb 5-1: configuration #1 chosen from 1 choice
-usb 5-1: adding 5-1:1.0 (config #1, interface 0)
-usb 5-1:1.0: uevent
-usb 5-1:1.0: uevent
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 5-1:1.0 (config #1, interface 0)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-usb 5-1: adding 5-1:1.1 (config #1, interface 1)
-usb 5-1:1.1: uevent
-usb 5-1:1.1: uevent
-hidave: #################################
-hidave: called from usb_set_configuration
-hidave: about to adding 5-1:1.1 (config #1, interface 1)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033fd12>] usb_set_configuration+0x472/0x580
- [<c0347d06>] generic_probe+0x76/0xb0
- [<c0340178>] usb_probe_device+0x78/0x90
- [<c02b8454>] really_probe+0xa4/0x160
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b75ea>] bus_for_each_drv+0x3a/0x60
- [<c02b85dc>] device_attach+0x4c/0x80
- [<c02b8580>] __device_attach+0x0/0x10
- [<c02b78b5>] bus_attach_device+0x75/0xb0
- [<c02b5d66>] device_add+0x136/0x350
- [<c0338700>] usb_new_device+0x50/0x160
- [<c033a244>] hub_port_connect_change+0x224/0x490
- [<c033a783>] hub_events+0x2d3/0x620
- [<c033aaf1>] hub_thread+0x21/0x190
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c01404f0>] autoremove_wake_function+0x0/0x50
- [<c012586d>] complete+0x3d/0x60
- [<c033aad0>] hub_thread+0x0/0x190
- [<c013fef9>] kthread+0x59/0xa0
- [<c013fea0>] kthread+0x0/0xa0
- [<c0104f83>] kernel_thread_helper+0x7/0x14
- =======================
-drivers/usb/core/inode.c: creating file '002'
-usb 5-1: new device found, idVendor=0c10, idProduct=0000
-usb 5-1: new device strings: Mfr=1, Product=2, SerialNumber=3
-usb 5-1: Product: SiW
-usb 5-1: Manufacturer: SiW
-usb 5-1: SerialNumber: AD5A00000000
-hub 1-1:1.0: state 7 ports 4 chg 0000 evt 0000
-hub 1-0:1.0: state 7 ports 8 chg 0000 evt fe80
-hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
-usbcore: registered new interface driver libusual
-PNP: No PS/2 controller found. Probing ports directly.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-I2O subsystem v1.325
-i2o: max drivers = 8
-I2O Configuration OSM v1.323
-I2O Bus Adapter OSM v1.317
-I2O Block Device OSM v1.325
-I2O SCSI Peripheral OSM v1.316
-I2O ProcFS OSM v1.316
-cpuidle: using governor ladder
-cpuidle: using governor menu
-usbcore: registered new interface driver hiddev
-usbhid 4-1:1.0: usb_probe_interface
-usbhid 4-1:1.0: usb_probe_interface - got id
-input: USB Optical Mouse as /class/input/input0
-input: USB HID v1.11 Mouse [USB Optical Mouse] on usb-0000:00:1d.2-1
-usbhid 4-2:1.0: usb_probe_interface
-usbhid 4-2:1.0: usb_probe_interface - got id
-input: Dell Dell USB Keyboard as /class/input/input1
-uhci_hcd 0000:00:1d.2: reserve dev 3 ep81-INT, period 16, phase 8, 118 us
-input: USB HID v1.10 Keyboard [Dell Dell USB Keyboard] on usb-0000:00:1d.2-2
-usbcore: registered new interface driver usbhid
-drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-TCP cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Starting balanced_irq
-Using IPI No-Shortcut mode
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-VFS: Mounted root (ext3 filesystem) readonly.
-Freeing unused kernel memory: 252k freed
-hub 2-0:1.0: hub_suspend
-usb usb2: bus auto-suspend
-usb usb2: suspend_rh
-hub 3-0:1.0: hub_suspend
-usb usb3: bus auto-suspend
-usb usb3: suspend_rh
-EXT3 FS on sda5, internal journal
-hub 1-1:1.0: hub_suspend
-usb 1-1: unlink qh256-0001/c24d0100 start 255 [1/0 us]
-usb 1-1: usb auto-suspend
-usb usb1: uevent
-usb 1-0:1.0: uevent
-usb 1-0:1.0: uevent
-usb usb2: uevent
-usb 2-0:1.0: uevent
-usb 2-0:1.0: uevent
-usb usb3: uevent
-usb 3-0:1.0: uevent
-usb 3-0:1.0: uevent
-usb usb4: uevent
-usb 4-0:1.0: uevent
-usb 4-0:1.0: uevent
-usb usb5: uevent
-usb 5-0:1.0: uevent
-usb 5-0:1.0: uevent
-usb 1-1: uevent
-usb 1-1:1.0: uevent
-usb 1-1:1.0: uevent
-usb 4-1: uevent
-usb 4-1:1.0: uevent
-usb 4-1:1.0: uevent
-usb 4-2: uevent
-usb 4-2:1.0: uevent
-usb 4-2:1.0: uevent
-usb 5-1: uevent
-usb 5-1:1.0: uevent
-usb 5-1:1.0: uevent
-usb 5-1:1.1: uevent
-usb 5-1:1.1: uevent
-hub 1-0:1.0: hub_suspend
-usb usb1: bus auto-suspend
-ehci_hcd 0000:00:1d.7: suspend root hub
-input: PC Speaker as /class/input/input2
-Linux agpgart interface v0.102
-ACPI: PCI Interrupt 0000:00:1f.3[B] -> GSI 17 (level, low) -> IRQ 22
-ACPI Exception (processor_core-0813): AE_NOT_FOUND, Processor Device
-is not present [20070126]
-ACPI Exception (processor_core-0813): AE_NOT_FOUND, Processor Device
-is not present [20070126]
-agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
-on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
-input: Power Button (FF) as /class/input/input3
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /class/input/input4
-ACPI: Power Button (CM) [VBTN]
-rtc_cmos: probe of 00:05 failed with error -16
-ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:1b.0 to 64
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-Bluetooth: Core ver 2.11
-NET: Registered protocol family 31
-Bluetooth: HCI device and connection manager initialized
-Bluetooth: HCI socket layer initialized
-Bluetooth: HCI USB driver ver 2.9
-hci_usb 5-1:1.0: usb_probe_interface
-hci_usb 5-1:1.0: usb_probe_interface - got id
-hidave: #################################
-hidave: called from usb_set_interface
-hidave: about to adding 5-1:1.1 (interface 1)
- [<c0344006>] usb_create_sysfs_intf_files+0x36/0xc0
- [<c033f499>] usb_set_interface+0x1e9/0x250
- [<f88a154a>] hci_usb_probe+0x55a/0x5d0 [hci_usb]
- [<c0193406>] ifind+0x46/0xa0
- [<c03402c4>] usb_probe_interface+0x114/0x1b0
- [<c02b8454>] really_probe+0xa4/0x160
- [<c0340749>] usb_match_id+0x19/0x50
- [<c02b8562>] driver_probe_device+0x42/0x60
- [<c02b8690>] __driver_attach+0x80/0x90
- [<c02b74fa>] bus_for_each_dev+0x3a/0x60
- [<c02b86b6>] driver_attach+0x16/0x20
- [<c02b8610>] __driver_attach+0x0/0x90
- [<c02b7c5a>] bus_add_driver+0x7a/0x160
- [<c0340adc>] usb_register_driver+0x7c/0xf0
- [<f882f02d>] hci_usb_init+0x2d/0x5c [hci_usb]
- [<c0152033>] sys_init_module+0xd3/0x160
- [<c01043ca>] syscall_call+0x7/0xb
- =======================
-usbcore: registered new interface driver hci_usb
-e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-ACPI: PCI Interrupt 0000:03:08.0[A] -> GSI 20 (level, low) -> IRQ 17
-e100: eth0: e100_probe: addr 0xefbff000, irq 17, MAC addr 00:13:72:e7:4d:66
-usb 2-0:1.0: uevent
-usb 2-0:1.0: uevent
-usb 3-0:1.0: uevent
-usb 3-0:1.0: uevent
-usb 4-0:1.0: uevent
-usb 4-0:1.0: uevent
-usb 4-1:1.0: uevent
-usb 4-1:1.0: uevent
-usb 4-2:1.0: uevent
-usb 4-2:1.0: uevent
-usb 5-0:1.0: uevent
-usb 5-0:1.0: uevent
-usb 1-0:1.0: uevent
-usb 1-0:1.0: uevent
-usb 1-1:1.0: uevent
-usb 1-1:1.0: uevent
+While running kernbench with the 2.6.23-git8 following oops is produced
 
->
-> thanks,
->
-> greg k-h
->
+Unable to handle kernel NULL pointer dereference at 0000000000000010 RIP: 
+ [<ffffffff8033f347>] __rb_rotate_left+0x7/0x70
+PGD 31f7ad067 PUD 31f14d067 PMD 0 
+Oops: 0000 [1] SMP 
+CPU 8 
+Modules linked in: loop dm_mod md_mod sg
+Pid: 6923, comm: slpd Not tainted 2.6.23-git8-autokern1 #1
+RIP: 0010:[<ffffffff8033f347>]  [<ffffffff8033f347>] __rb_rotate_left+0x7/0x70
+RSP: 0018:ffff81031d083e90  EFLAGS: 00010086
+RAX: ffff8106147550d0 RBX: ffff81033007b650 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffff810330080808 RDI: ffff8106147550d0
+RBP: ffff8106147550d0 R08: ffff81033007b650 R09: ffff81033007b650
+R10: ffff8103300807e0 R11: 0000000000000000 R12: ffff8106147550d0
+R13: ffff810330080808 R14: ffff810330080780 R15: 0000000000000008
+FS:  00002ab70eae80a0(0000) GS:ffff8106146b5440(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000010 CR3: 000000031d08f000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process slpd (pid: 6923, threadinfo ffff81031d082000, task ffff81031f31f100)
+Stack:  ffffffff8033f4aa ffff8106147550c0 ffff81031d083ed0 ffff8103300807e0
+ ffff81031f31f300 ffffffff8022bc59 0000000000000008 0000000000000384
+ ffff81031d083f70 ffffffff804b6dec ffff81031d61b0c0 0000000000001000
+Call Trace:
+ [<ffffffff8033f4aa>] rb_insert_color+0x8a/0xf0
+ [<ffffffff8022bc59>] put_prev_task_fair+0x49/0x60
+ [<ffffffff804b6dec>] schedule+0xec/0x1d1
+ [<ffffffff80284685>] vfs_read+0xc5/0x160
+ [<ffffffff80284b63>] sys_read+0x53/0x90
+ [<ffffffff8020bb78>] sysret_careful+0xd/0x10
+
+
+Code: 48 8b 51 10 49 83 e0 fc 48 85 d2 48 89 57 08 74 0c 48 8b 02 
+RIP  [<ffffffff8033f347>] __rb_rotate_left+0x7/0x70
+ RSP <ffff81031d083e90>
+CR2: 0000000000000010
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
+
+--------------020607060804000608000802
+Content-Type: text/plain;
+ name="config-autobench-2.6.23-git8-autokern1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="config-autobench-2.6.23-git8-autokern1"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.23-git8-autokern1
+# Mon Oct 15 19:35:23 2007
+#
+CONFIG_X86_64=y
+CONFIG_64BIT=y
+CONFIG_X86=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_ZONE_DMA32=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_SEMAPHORE_SLEEPERS=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_X86_CMPXCHG=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_DMI=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_AUDIT is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=20
+# CONFIG_CPUSETS is not set
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_FAIR_USER_SCHED=y
+CONFIG_SYSFS_DEPRECATED=y
+# CONFIG_RELAY is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_MODULE_FORCE_UNLOAD is not set
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_KMOD=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_BLK_DEV_BSG is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_AS=y
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="anticipatory"
+
+#
+# Processor type and features
+#
+# CONFIG_TICK_ONESHOT is not set
+# CONFIG_NO_HZ is not set
+# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_X86_PC=y
+# CONFIG_X86_VSMP is not set
+CONFIG_MK8=y
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_GENERIC_CPU is not set
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_L1_CACHE_SHIFT=6
+CONFIG_X86_INTERNODE_CACHE_BYTES=64
+CONFIG_X86_TSC=y
+CONFIG_X86_GOOD_APIC=y
+# CONFIG_MICROCODE is not set
+# CONFIG_X86_MSR is not set
+# CONFIG_X86_CPUID is not set
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_LOCAL_APIC=y
+# CONFIG_MTRR is not set
+CONFIG_SMP=y
+# CONFIG_SCHED_SMT is not set
+CONFIG_SCHED_MC=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_PREEMPT_BKL=y
+CONFIG_NUMA=y
+# CONFIG_K8_NUMA is not set
+CONFIG_NODES_SHIFT=6
+CONFIG_X86_64_ACPI_NUMA=y
+CONFIG_NUMA_EMU=y
+CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
+CONFIG_ARCH_DISCONTIGMEM_DEFAULT=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM_MANUAL=y
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_NEED_MULTIPLE_NODES=y
+# CONFIG_SPARSEMEM_STATIC is not set
+# CONFIG_MEMORY_HOTPLUG is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MIGRATION=y
+CONFIG_RESOURCES_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+CONFIG_OUT_OF_LINE_PFN_TO_PAGE=y
+CONFIG_NR_CPUS=64
+CONFIG_PHYSICAL_ALIGN=0x200000
+CONFIG_HOTPLUG_CPU=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_HPET_TIMER=y
+CONFIG_IOMMU=y
+# CONFIG_CALGARY_IOMMU is not set
+CONFIG_SWIOTLB=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
+# CONFIG_KEXEC is not set
+# CONFIG_CRASH_DUMP is not set
+# CONFIG_RELOCATABLE is not set
+CONFIG_PHYSICAL_START=0x200000
+CONFIG_SECCOMP=y
+# CONFIG_CC_STACKPROTECTOR is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+CONFIG_K8_NB=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_ISA_DMA_API=y
+CONFIG_GENERIC_PENDING_IRQ=y
+
+#
+# Power management options
+#
+CONFIG_PM=y
+CONFIG_PM_LEGACY=y
+# CONFIG_PM_DEBUG is not set
+CONFIG_PM_SLEEP_SMP=y
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND_SMP_POSSIBLE=y
+CONFIG_SUSPEND=y
+CONFIG_HIBERNATION_SMP_POSSIBLE=y
+# CONFIG_HIBERNATION is not set
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_ACPI_AC=y
+CONFIG_ACPI_BATTERY=y
+CONFIG_ACPI_BUTTON=m
+CONFIG_ACPI_FAN=m
+# CONFIG_ACPI_DOCK is not set
+CONFIG_ACPI_PROCESSOR=m
+CONFIG_ACPI_HOTPLUG_CPU=y
+CONFIG_ACPI_THERMAL=m
+CONFIG_ACPI_NUMA=y
+# CONFIG_ACPI_ASUS is not set
+# CONFIG_ACPI_TOSHIBA is not set
+CONFIG_ACPI_BLACKLIST_YEAR=0
+# CONFIG_ACPI_DEBUG is not set
+CONFIG_ACPI_EC=y
+CONFIG_ACPI_POWER=y
+CONFIG_ACPI_SYSTEM=y
+CONFIG_X86_PM_TIMER=y
+CONFIG_ACPI_CONTAINER=m
+# CONFIG_ACPI_SBS is not set
+
+#
+# CPU Frequency scaling
+#
+# CONFIG_CPU_FREQ is not set
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+CONFIG_PCI_DIRECT=y
+# CONFIG_PCI_MMCONFIG is not set
+CONFIG_PCI_DOMAINS=y
+# CONFIG_PCIEPORTBUS is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+# CONFIG_PCI_MSI is not set
+# CONFIG_PCI_DEBUG is not set
+CONFIG_HT_IRQ=y
+
+#
+# PCCARD (PCMCIA/CardBus) support
+#
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=m
+# CONFIG_IA32_EMULATION is not set
+# CONFIG_COMPAT_FOR_U64_ALIGNMENT is not set
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+# CONFIG_XFRM_USER is not set
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+# CONFIG_IP_PNP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+CONFIG_ARPD=y
+CONFIG_SYN_COOKIES=y
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_XFRM_MODE_BEET=y
+# CONFIG_INET_LRO is not set
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=y
+CONFIG_TCP_CONG_CUBIC=m
+CONFIG_TCP_CONG_WESTWOOD=y
+CONFIG_TCP_CONG_HTCP=y
+# CONFIG_TCP_CONG_HSTCP is not set
+# CONFIG_TCP_CONG_HYBLA is not set
+# CONFIG_TCP_CONG_VEGAS is not set
+# CONFIG_TCP_CONG_SCALABLE is not set
+# CONFIG_TCP_CONG_LP is not set
+# CONFIG_TCP_CONG_VENO is not set
+# CONFIG_TCP_CONG_YEAH is not set
+# CONFIG_TCP_CONG_ILLINOIS is not set
+CONFIG_DEFAULT_BIC=y
+# CONFIG_DEFAULT_CUBIC is not set
+# CONFIG_DEFAULT_HTCP is not set
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+# CONFIG_DEFAULT_RENO is not set
+CONFIG_DEFAULT_TCP_CONG="bic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+CONFIG_CONNECTOR=y
+CONFIG_PROC_EVENTS=y
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=y
+# CONFIG_PNP_DEBUG is not set
+
+#
+# Protocols
+#
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+# CONFIG_BLK_DEV_SX8 is not set
+CONFIG_BLK_DEV_RAM=m
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_MISC_DEVICES=y
+# CONFIG_IBM_ASM is not set
+# CONFIG_PHANTOM is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_SGI_IOC4 is not set
+# CONFIG_TIFM_CORE is not set
+# CONFIG_SONY_LAPTOP is not set
+# CONFIG_THINKPAD_ACPI is not set
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDE=y
+
+#
+# Please see Documentation/ide.txt for help/info on IDE drives
+#
+# CONFIG_BLK_DEV_IDE_SATA is not set
+# CONFIG_BLK_DEV_HD_IDE is not set
+CONFIG_BLK_DEV_IDEDISK=y
+# CONFIG_IDEDISK_MULTI_MODE is not set
+CONFIG_BLK_DEV_IDECD=y
+# CONFIG_BLK_DEV_IDETAPE is not set
+CONFIG_BLK_DEV_IDEFLOPPY=y
+CONFIG_BLK_DEV_IDESCSI=m
+# CONFIG_BLK_DEV_IDEACPI is not set
+# CONFIG_IDE_TASK_IOCTL is not set
+CONFIG_IDE_PROC_FS=y
+
+#
+# IDE chipset support/bugfixes
+#
+CONFIG_IDE_GENERIC=y
+# CONFIG_BLK_DEV_PLATFORM is not set
+# CONFIG_BLK_DEV_CMD640 is not set
+# CONFIG_BLK_DEV_IDEPNP is not set
+
+#
+# PCI IDE chipsets support
+#
+CONFIG_BLK_DEV_IDEPCI=y
+# CONFIG_IDEPCI_SHARE_IRQ is not set
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+# CONFIG_BLK_DEV_OFFBOARD is not set
+CONFIG_BLK_DEV_GENERIC=y
+# CONFIG_BLK_DEV_OPTI621 is not set
+# CONFIG_BLK_DEV_RZ1000 is not set
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
+# CONFIG_IDEDMA_ONLYDISK is not set
+# CONFIG_BLK_DEV_AEC62XX is not set
+# CONFIG_BLK_DEV_ALI15X3 is not set
+# CONFIG_BLK_DEV_AMD74XX is not set
+# CONFIG_BLK_DEV_ATIIXP is not set
+CONFIG_BLK_DEV_CMD64X=y
+# CONFIG_BLK_DEV_TRIFLEX is not set
+# CONFIG_BLK_DEV_CY82C693 is not set
+# CONFIG_BLK_DEV_CS5520 is not set
+# CONFIG_BLK_DEV_CS5530 is not set
+# CONFIG_BLK_DEV_HPT34X is not set
+# CONFIG_BLK_DEV_HPT366 is not set
+# CONFIG_BLK_DEV_JMICRON is not set
+# CONFIG_BLK_DEV_SC1200 is not set
+CONFIG_BLK_DEV_PIIX=y
+# CONFIG_BLK_DEV_IT8213 is not set
+# CONFIG_BLK_DEV_IT821X is not set
+# CONFIG_BLK_DEV_NS87415 is not set
+# CONFIG_BLK_DEV_PDC202XX_OLD is not set
+# CONFIG_BLK_DEV_PDC202XX_NEW is not set
+CONFIG_BLK_DEV_SVWKS=y
+# CONFIG_BLK_DEV_SIIMAGE is not set
+# CONFIG_BLK_DEV_SIS5513 is not set
+# CONFIG_BLK_DEV_SLC90E66 is not set
+# CONFIG_BLK_DEV_TRM290 is not set
+# CONFIG_BLK_DEV_VIA82CXXX is not set
+# CONFIG_BLK_DEV_TC86C001 is not set
+# CONFIG_IDE_ARM is not set
+CONFIG_BLK_DEV_IDEDMA=y
+# CONFIG_BLK_DEV_HD is not set
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=y
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_ST=m
+# CONFIG_CHR_DEV_OSST is not set
+CONFIG_BLK_DEV_SR=m
+# CONFIG_BLK_DEV_SR_VENDOR is not set
+CONFIG_CHR_DEV_SG=m
+# CONFIG_CHR_DEV_SCH is not set
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+# CONFIG_SCSI_MULTI_LUN is not set
+# CONFIG_SCSI_CONSTANTS is not set
+# CONFIG_SCSI_LOGGING is not set
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+CONFIG_SCSI_ISCSI_ATTRS=y
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_ISCSI_TCP=y
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+CONFIG_SCSI_AACRAID=y
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+# CONFIG_SCSI_AIC79XX is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_ADVANSYS is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_BUSLOGIC is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_EATA is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_GDTH is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+CONFIG_SCSI_QLOGIC_1280=y
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SRP is not set
+# CONFIG_ATA is not set
+CONFIG_MD=y
+CONFIG_BLK_DEV_MD=m
+CONFIG_MD_LINEAR=m
+CONFIG_MD_RAID0=m
+CONFIG_MD_RAID1=m
+# CONFIG_MD_RAID10 is not set
+# CONFIG_MD_RAID456 is not set
+CONFIG_MD_MULTIPATH=m
+# CONFIG_MD_FAULTY is not set
+CONFIG_BLK_DEV_DM=m
+# CONFIG_DM_DEBUG is not set
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_MIRROR=m
+CONFIG_DM_ZERO=m
+# CONFIG_DM_MULTIPATH is not set
+# CONFIG_DM_DELAY is not set
+CONFIG_FUSION=y
+CONFIG_FUSION_SPI=y
+CONFIG_FUSION_FC=y
+# CONFIG_FUSION_SAS is not set
+CONFIG_FUSION_MAX_SGE=128
+CONFIG_FUSION_CTL=y
+# CONFIG_FUSION_LOGGING is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+CONFIG_DUMMY=m
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_NET_SB1000 is not set
+# CONFIG_IP1000 is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=m
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+CONFIG_NET_TULIP=y
+# CONFIG_DE2104X is not set
+CONFIG_TULIP=m
+# CONFIG_TULIP_MWI is not set
+# CONFIG_TULIP_MMIO is not set
+# CONFIG_TULIP_NAPI is not set
+# CONFIG_DE4X5 is not set
+# CONFIG_WINBOND_840 is not set
+# CONFIG_DM9102 is not set
+# CONFIG_ULI526X is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+CONFIG_NET_PCI=y
+# CONFIG_PCNET32 is not set
+# CONFIG_AMD8111_ETH is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+# CONFIG_B44 is not set
+# CONFIG_FORCEDETH is not set
+CONFIG_EEPRO100=m
+CONFIG_E100=m
+# CONFIG_FEALNX is not set
+# CONFIG_NATSEMI is not set
+# CONFIG_NE2K_PCI is not set
+# CONFIG_8139CP is not set
+# CONFIG_8139TOO is not set
+# CONFIG_SIS900 is not set
+# CONFIG_EPIC100 is not set
+# CONFIG_SUNDANCE is not set
+# CONFIG_VIA_RHINE is not set
+# CONFIG_SC92031 is not set
+CONFIG_NETDEV_1000=y
+# CONFIG_ACENIC is not set
+# CONFIG_DL2K is not set
+CONFIG_E1000=y
+# CONFIG_E1000_NAPI is not set
+# CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
+# CONFIG_E1000E is not set
+# CONFIG_NS83820 is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_R8169 is not set
+# CONFIG_SIS190 is not set
+# CONFIG_SKGE is not set
+# CONFIG_SKY2 is not set
+# CONFIG_SK98LIN is not set
+# CONFIG_VIA_VELOCITY is not set
+CONFIG_TIGON3=y
+# CONFIG_BNX2 is not set
+# CONFIG_QLA3XXX is not set
+# CONFIG_ATL1 is not set
+CONFIG_NETDEV_10000=y
+# CONFIG_CHELSIO_T1 is not set
+# CONFIG_CHELSIO_T3 is not set
+# CONFIG_IXGBE is not set
+# CONFIG_IXGB is not set
+# CONFIG_S2IO is not set
+# CONFIG_MYRI10GE is not set
+# CONFIG_NETXEN_NIC is not set
+# CONFIG_NIU is not set
+# CONFIG_MLX4_CORE is not set
+# CONFIG_TEHUTI is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+CONFIG_NETCONSOLE=y
+# CONFIG_NETCONSOLE_DYNAMIC is not set
+CONFIG_NETPOLL=y
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=y
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_TSDEV is not set
+# CONFIG_INPUT_EVDEV is not set
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+# CONFIG_SERIO_SERPORT is not set
+# CONFIG_SERIO_CT82C710 is not set
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+# CONFIG_SERIO_RAW is not set
+CONFIG_GAMEPORT=m
+# CONFIG_GAMEPORT_NS558 is not set
+# CONFIG_GAMEPORT_L4 is not set
+# CONFIG_GAMEPORT_EMU10K1 is not set
+# CONFIG_GAMEPORT_FM801 is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+CONFIG_SERIAL_NONSTANDARD=y
+# CONFIG_COMPUTONE is not set
+# CONFIG_ROCKETPORT is not set
+# CONFIG_CYCLADES is not set
+# CONFIG_DIGIEPCA is not set
+# CONFIG_MOXA_INTELLIO is not set
+# CONFIG_MOXA_SMARTIO is not set
+# CONFIG_MOXA_SMARTIO_NEW is not set
+# CONFIG_ISI is not set
+# CONFIG_SYNCLINK is not set
+# CONFIG_SYNCLINKMP is not set
+# CONFIG_SYNCLINK_GT is not set
+# CONFIG_N_HDLC is not set
+# CONFIG_SPECIALIX is not set
+# CONFIG_SX is not set
+# CONFIG_RIO is not set
+# CONFIG_STALDRV is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+# CONFIG_SERIAL_8250_EXTENDED is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_WATCHDOG is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_NVRAM is not set
+# CONFIG_RTC is not set
+# CONFIG_GEN_RTC is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+# CONFIG_AGP_INTEL is not set
+# CONFIG_AGP_SIS is not set
+# CONFIG_AGP_VIA is not set
+# CONFIG_DRM is not set
+# CONFIG_MWAVE is not set
+# CONFIG_PC8736x_GPIO is not set
+CONFIG_RAW_DRIVER=m
+CONFIG_MAX_RAW_DEVS=256
+CONFIG_HPET=y
+# CONFIG_HPET_RTC_IRQ is not set
+CONFIG_HPET_MMAP=y
+# CONFIG_HANGCHECK_TIMER is not set
+# CONFIG_TCG_TPM is not set
+# CONFIG_TELCLOCK is not set
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+CONFIG_HWMON=y
+# CONFIG_HWMON_VID is not set
+# CONFIG_SENSORS_ABITUGURU is not set
+# CONFIG_SENSORS_ABITUGURU3 is not set
+# CONFIG_SENSORS_K8TEMP is not set
+# CONFIG_SENSORS_F71805F is not set
+# CONFIG_SENSORS_F71882FG is not set
+# CONFIG_SENSORS_CORETEMP is not set
+# CONFIG_SENSORS_IT87 is not set
+# CONFIG_SENSORS_PC87360 is not set
+# CONFIG_SENSORS_PC87427 is not set
+# CONFIG_SENSORS_SIS5595 is not set
+# CONFIG_SENSORS_SMSC47M1 is not set
+# CONFIG_SENSORS_SMSC47B397 is not set
+# CONFIG_SENSORS_VIA686A is not set
+# CONFIG_SENSORS_VT1211 is not set
+# CONFIG_SENSORS_VT8231 is not set
+# CONFIG_SENSORS_W83627HF is not set
+# CONFIG_SENSORS_W83627EHF is not set
+# CONFIG_SENSORS_HDAPS is not set
+# CONFIG_SENSORS_APPLESMC is not set
+# CONFIG_HWMON_DEBUG_CHIP is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+CONFIG_DAB=y
+
+#
+# Graphics support
+#
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+# CONFIG_FB is not set
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+# CONFIG_VGACON_SOFT_SCROLLBACK is not set
+# CONFIG_VIDEO_SELECT is not set
+CONFIG_DUMMY_CONSOLE=y
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=y
+# CONFIG_HID_DEBUG is not set
+# CONFIG_HIDRAW is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+# CONFIG_USB is not set
+
+#
+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+#
+
+#
+# USB Gadget Support
+#
+# CONFIG_USB_GADGET is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+CONFIG_RTC_LIB=y
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+# CONFIG_RTC_DEBUG is not set
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+# CONFIG_RTC_DRV_TEST is not set
+
+#
+# SPI RTC drivers
+#
+
+#
+# Platform RTC drivers
+#
+# CONFIG_RTC_DRV_CMOS is not set
+# CONFIG_RTC_DRV_DS1553 is not set
+# CONFIG_RTC_DRV_STK17TA8 is not set
+# CONFIG_RTC_DRV_DS1742 is not set
+# CONFIG_RTC_DRV_M48T86 is not set
+# CONFIG_RTC_DRV_M48T59 is not set
+# CONFIG_RTC_DRV_V3020 is not set
+
+#
+# on-CPU RTC drivers
+#
+
+#
+# DMA Engine support
+#
+# CONFIG_DMA_ENGINE is not set
+
+#
+# DMA Clients
+#
+
+#
+# DMA Devices
+#
+CONFIG_VIRTUALIZATION=y
+# CONFIG_KVM is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+# CONFIG_DELL_RBU is not set
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT2_FS_SECURITY=y
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+# CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_REISERFS_PROC_INFO is not set
+# CONFIG_REISERFS_FS_XATTR is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+CONFIG_AUTOFS_FS=y
+CONFIG_AUTOFS4_FS=y
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=y
+# CONFIG_MSDOS_FS is not set
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+# CONFIG_TMPFS_POSIX_ACL is not set
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+CONFIG_RAMFS=y
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+CONFIG_CRAMFS=y
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+
+#
+# Network File Systems
+#
+# CONFIG_NFS_FS is not set
+# CONFIG_NFSD is not set
+CONFIG_SMB_FS=m
+CONFIG_SMB_NLS_DEFAULT=y
+CONFIG_SMB_NLS_REMOTE="cp437"
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+# CONFIG_MAC_PARTITION is not set
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_BSD_DISKLABEL is not set
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_LDM_PARTITION is not set
+CONFIG_SGI_PARTITION=y
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_KARMA_PARTITION is not set
+CONFIG_EFI_PARTITION=y
+# CONFIG_SYSV68_PARTITION is not set
+
+#
+# Native Language Support
+#
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_CODEPAGE_737=m
+CONFIG_NLS_CODEPAGE_775=m
+CONFIG_NLS_CODEPAGE_850=m
+CONFIG_NLS_CODEPAGE_852=m
+CONFIG_NLS_CODEPAGE_855=m
+CONFIG_NLS_CODEPAGE_857=m
+CONFIG_NLS_CODEPAGE_860=m
+CONFIG_NLS_CODEPAGE_861=m
+CONFIG_NLS_CODEPAGE_862=m
+CONFIG_NLS_CODEPAGE_863=m
+CONFIG_NLS_CODEPAGE_864=m
+CONFIG_NLS_CODEPAGE_865=m
+CONFIG_NLS_CODEPAGE_866=m
+CONFIG_NLS_CODEPAGE_869=m
+CONFIG_NLS_CODEPAGE_936=m
+CONFIG_NLS_CODEPAGE_950=m
+CONFIG_NLS_CODEPAGE_932=m
+CONFIG_NLS_CODEPAGE_949=m
+CONFIG_NLS_CODEPAGE_874=m
+CONFIG_NLS_ISO8859_8=m
+CONFIG_NLS_CODEPAGE_1250=m
+CONFIG_NLS_CODEPAGE_1251=m
+# CONFIG_NLS_ASCII is not set
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_ISO8859_2=m
+CONFIG_NLS_ISO8859_3=m
+CONFIG_NLS_ISO8859_4=m
+CONFIG_NLS_ISO8859_5=m
+CONFIG_NLS_ISO8859_6=m
+CONFIG_NLS_ISO8859_7=m
+CONFIG_NLS_ISO8859_9=m
+CONFIG_NLS_ISO8859_13=m
+CONFIG_NLS_ISO8859_14=m
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_KOI8_R=m
+CONFIG_NLS_KOI8_U=m
+CONFIG_NLS_UTF8=m
+
+#
+# Distributed Lock Manager
+#
+# CONFIG_DLM is not set
+
+#
+# Instrumentation Support
+#
+# CONFIG_PROFILING is not set
+# CONFIG_KPROBES is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+# CONFIG_DEBUG_FS is not set
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+# CONFIG_DEBUG_SLAB is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+CONFIG_DEBUG_MUTEXES=y
+# CONFIG_DEBUG_LOCK_ALLOC is not set
+# CONFIG_PROVE_LOCKING is not set
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_FRAME_POINTER is not set
+CONFIG_FORCED_INLINING=y
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_IOMMU_DEBUG is not set
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=m
+CONFIG_CRYPTO_MANAGER=m
+# CONFIG_CRYPTO_HMAC is not set
+# CONFIG_CRYPTO_XCBC is not set
+# CONFIG_CRYPTO_NULL is not set
+# CONFIG_CRYPTO_MD4 is not set
+CONFIG_CRYPTO_MD5=y
+# CONFIG_CRYPTO_SHA1 is not set
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_WP512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+# CONFIG_CRYPTO_GF128MUL is not set
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_CBC=m
+CONFIG_CRYPTO_PCBC=m
+# CONFIG_CRYPTO_LRW is not set
+# CONFIG_CRYPTO_XTS is not set
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_DES=m
+# CONFIG_CRYPTO_FCRYPT is not set
+# CONFIG_CRYPTO_BLOWFISH is not set
+# CONFIG_CRYPTO_TWOFISH is not set
+# CONFIG_CRYPTO_TWOFISH_X86_64 is not set
+# CONFIG_CRYPTO_SERPENT is not set
+# CONFIG_CRYPTO_AES is not set
+# CONFIG_CRYPTO_AES_X86_64 is not set
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+# CONFIG_CRYPTO_TEA is not set
+# CONFIG_CRYPTO_ARC4 is not set
+# CONFIG_CRYPTO_KHAZAD is not set
+# CONFIG_CRYPTO_ANUBIS is not set
+# CONFIG_CRYPTO_SEED is not set
+# CONFIG_CRYPTO_DEFLATE is not set
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+CONFIG_CRYPTO_CRC32C=y
+# CONFIG_CRYPTO_CAMELLIA is not set
+# CONFIG_CRYPTO_TEST is not set
+# CONFIG_CRYPTO_AUTHENC is not set
+CONFIG_CRYPTO_HW=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+CONFIG_LIBCRC32C=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+
+--------------020607060804000608000802--
