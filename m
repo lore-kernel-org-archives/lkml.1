@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966012AbXJPV3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966046AbXJPVdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966012AbXJPV3Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbXJPV3L
+	id S966046AbXJPVdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965601AbXJPVdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:29:11 -0400
-Received: from thunk.org ([69.25.196.29]:39298 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbXJPV3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:29:09 -0400
-Date: Tue, 16 Oct 2007 17:28:53 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch][rfc] rewrite ramdisk
-Message-ID: <20071016212853.GB1314@closure.lan>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <200710151028.34407.borntraeger@de.ibm.com> <m1abqjirmd.fsf@ebiederm.dsl.xmission.com> <200710161808.06405.nickpiggin@yahoo.com.au> <200710161747.12968.nickpiggin@yahoo.com.au>
+	Tue, 16 Oct 2007 17:33:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:23592 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934094AbXJPVdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:33:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CoKeUTp+zLnKb7pkVAMlo93Y+Uv2qW10Sw2pt8d/qYX93Af4WyMv8l1pTgL0QVViLGn/jzDfwCzxt0CjZA9oedMKtoCvWA1CVIJJz99wqdHl4ea18E0VlqkIWk1HH8rSPkttg48JtFgzPyYRZp7CzvckLhcUNjEKiHpSHLTNYWs=
+Message-ID: <29495f1d0710161433h6e4e90a6r32c89c2a89af2f90@mail.gmail.com>
+Date: Tue, 16 Oct 2007 14:33:38 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: atm: panic when loading clip 2nd time
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, chas@cmf.nrl.navy.mil
+In-Reply-To: <47152758.5000900@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200710161747.12968.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <47152758.5000900@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 05:47:12PM +1000, Nick Piggin wrote:
-> +	/*
-> +	 * ram device BLKFLSBUF has special semantics, we want to actually
-> +	 * release and destroy the ramdisk data.
-> +	 */
+On 10/16/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 2.6.23-git7, using SLAB (not SLUB) [config attached]:
+>
+> # modprobe clip
+> # rmmod clip
+> # modprobe clip
+>
+> results in panic:
+>
+> kmem_cache_create: duplicate cache clip_arp_cache
+>
+> Call Trace:
+>  [<ffffffff8028c682>] kmem_cache_create+0x3bf/0x3fd
+>  [<ffffffff8046ba1d>] neigh_table_init_no_netlink+0x6c/0x242
+>  [<ffffffff8800a010>] :clip:atm_clip_init+0x10/0x8a
+>  [<ffffffff80258ba4>] sys_init_module+0x146c/0x15cd
+>  [<ffffffff8046be0a>] neigh_lookup+0x0/0xd5
+>  [<ffffffff8020ef44>] syscall_trace_enter+0x95/0x99
+>  [<ffffffff8020beec>] tracesys+0xdc/0xe1
+>
+> Kernel panic - not syncing: kmem_cache_create(): failed to create slab `clip_arp_cache'
 
-We won't be able to fix completely this for a while time, but the fact
-that BLKFLSBUF has special semantics has always been a major wart.
-Could we perhaps create a new ioctl, say RAMDISKDESTORY, and add a
-deperecation printk for BLKFLSBUF when passed to the ramdisk?  I doubt
-there are many tools that actually take advantage of this wierd aspect
-of ramdisks, so hopefully it's something we could remove in a 18
-months or so...
+>From a quick read through the code, looks like
+net/core/neighbour.c:neigh_table_clear() needs a kmem_cache_destroy()?
 
-							- Ted
+I only see three callers of neight_table_clear() and they all seem to
+be in exit routines, so that should be safe?
+
+-Nish
