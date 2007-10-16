@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935617AbXJPULS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935801AbXJPULl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935617AbXJPULS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760613AbXJPULD
+	id S935801AbXJPULl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935613AbXJPULS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:11:03 -0400
-Received: from mga10.intel.com ([192.55.52.92]:9932 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759551AbXJPULB (ORCPT
+	Tue, 16 Oct 2007 16:11:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:18677 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935576AbXJPULQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:11:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
-   d="scan'208";a="347913679"
-Date: Tue, 16 Oct 2007 13:10:22 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071016201022.GC23157@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015191732.GA1841@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071015191732.GA1841@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.11
+	Tue, 16 Oct 2007 16:11:16 -0400
+Date: Tue, 16 Oct 2007 13:06:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org
+Subject: Re: kexec: Cannot determine the file type of arch/x86/boot/bzImage
+Message-Id: <20071016130657.8cc17011.randy.dunlap@oracle.com>
+In-Reply-To: <47151631.9000307@m3y3r.de>
+References: <47151631.9000307@m3y3r.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 11:17:32PM +0400, Alexey Dobriyan wrote:
-> On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
-> > On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
-> > > http://kernelnewbies.org/KernelProjects
-> > 
-> > Is there already a make config option that will do a good job at setting
-> > a default .config file based on what is already running on a system?  
-> > 
-> > I get tiered of trimming down my .config for my laptop build so it takes
-> > less than 30min to build a kernel.
+On Tue, 16 Oct 2007 21:51:13 +0200 Thomas Meyer wrote:
+
+[adding kexec mailing list]
+
+
+> Hi.
 > 
-> Ehh? You do it once, then leave it aside or in /proc/config.gz, on new
-> kernel copy it back, "make oldconfig", answer several questions and here
-> we go.
-
-yeah I know that.  Its a lot more than a few questions, and as we are
-talking about a linear search for a fully tweaked .config where each
-pass takes 30 min to know if things work this isn't how I want to spend
-my time.
-
---mgross
-
+> Look at this:
 > 
-> > Bonus credit to additional "expert" options (like those powertop puts
-> > out) for target uses, laptop, HPC, home file share, embedded targets....
-> > 
-> > Oh, and lets make the expert configs easily extensible.
+> $ file arch/x86/boot/bzImage (tree 821f3eff7cdb9d6c7076effabd46c96c322daed1)
+> arch/x86/boot/bzImage: Linux kernel x86 boot executable zImage, version
+> 2.6.23 (thomas@hotzenplotz) #39, RO-rootFS, root_dev 0x803, swap_dev
+> 0x1, Prompt for Videomode
+> 
+> $ file /boot/bzImage-2.6.23
+> /boot/bzImage-2.6.23: Linux kernel x86 boot executable RO-rootFS,
+> root_dev 0x803, swap_dev 0x1, Normal VGA
+> 
+> and this:
+> 
+> # kexec -l arch/x86/boot/bzImage
+> Cannot determine the file type of arch/x86/boot/bzImage
+> 
+> How to solve this error?
+> 
+> mfg
+> thomas
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+
+---
+~Randy
