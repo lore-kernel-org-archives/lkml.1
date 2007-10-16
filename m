@@ -1,107 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966288AbXJPVq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966369AbXJPVrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966288AbXJPVq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965688AbXJPVqq
+	id S966369AbXJPVrg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966003AbXJPVrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:46:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40605 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965590AbXJPVqp (ORCPT
+	Tue, 16 Oct 2007 17:47:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45894 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965741AbXJPVrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:46:45 -0400
-Date: Tue, 16 Oct 2007 14:37:30 -0700
-From: Greg KH <greg@kroah.com>
-To: Jens Axboe <jens.axboe@oracle.com>, Kay Sievers <kay.sievers@vrfy.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Message-ID: <20071016213730.GB21815@kroah.com>
-References: <200710132126.33085.rjw@sisk.pl> <20071016045025.GC8125@kroah.com> <200710162204.51961.rjw@sisk.pl> <20071016204238.GA1093@kroah.com> <20071016205053.GI9942@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071016205053.GI9942@kernel.dk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 16 Oct 2007 17:47:08 -0400
+Date: Tue, 16 Oct 2007 22:49:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: david@lang.hm
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+Message-ID: <20071016224925.07d28c48@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net>
+	<200710141836.55211.rob@landley.net>
+	<4712FE33.3000400@s5r6.in-berlin.de>
+	<200710150426.04924.rob@landley.net>
+	<20071015160800.GA324@parisc-linux.org>
+	<47139F15.7050702@s5r6.in-berlin.de>
+	<Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm>
+	<20071016111911.30a18e12@the-village.bc.nu>
+	<Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm>
+	<20071016195432.GA31306@parisc-linux.org>
+	<Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 10:50:54PM +0200, Jens Axboe wrote:
-> On Tue, Oct 16 2007, Greg KH wrote:
-> > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
-> > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
-> > > > > appear for vanilla 2.6.23):
-> > > > > 
-> > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
-> > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
-> > > > > 
-> > > > > Call Trace:
-> > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
-> > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
-> > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
-> > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
-> > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
-> > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
-> > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
-> > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
-> > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
-> > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
-> > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
-> > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
-> > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
-> > > > > 
-> > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
-> > > > > sysfs: duplicate filename 'eth1' can not be created
-> > > > > 
-> > > > > Everything seems to work, but this just looks fishy.
-> > > > 
-> > > > This is a userspace program renaming your network device to a name that
-> > > > is already in use.  What distro and release is this?
-> > > 
-> > > openSUSE 10.2, with some updates (not the most recent, though).
-> > 
-> > Can you try 10.3?  I think we fixed this issue there.
-> 
-> Ehm nope:
-> 
-> Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
-> can not be created
-> Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
-> eth1
-> Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
-> sysfs_add_one()
-> Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
-> Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
-> Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
-> Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
-> Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
-> Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
-> Oct 16 19:36:27 carl kernel:  [<c01a1938>]
-> inotify_d_instantiate+0x18/0x80
-> Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
-> Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
-> Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
-> Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
-> Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
-> Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
-> Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
-> Oct 16 19:36:27 carl kernel:  =======================
-> Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
-> sysfs_create_symlink failed (-17)
+> but in any case, historicly IDE (PATA) and SATA drives have been handled 
+> differently, IDE drives have had fixed device names based on how they are 
+> connected, SATA devices have had 'order found' device names from the SCSI 
 
-Ugh, not good, I'll poke Kay...
+Nope.
 
-{poke}
+Historically it depended whether you had a PATA controller with SATA
+bridge, a SATA controller with SATA drives, a PATA controller with PATA
+drives or a SATA controller with PATA bridge.
 
-Kay, are we doing something wrong in userspace when renaming wireless
-devices such that we can overlap names?
+Often the bridges are on the card or mainboard. So some VIA systems would
+historically use /dev/hda for the first SATA device.
 
-thanks,
+Even more fun is stuff like Jmicron where the BIOS settings determined
+whether PATA or SATA was /dev/hda
 
-greg k-h
+Alan
