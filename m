@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965709AbXJPUwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936104AbXJPUyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965709AbXJPUwh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXJPUvs
+	id S936104AbXJPUyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934624AbXJPUya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:51:48 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40267
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965544AbXJPUvq (ORCPT
+	Tue, 16 Oct 2007 16:54:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:47478 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759551AbXJPUy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:51:46 -0400
-Date: Tue, 16 Oct 2007 13:55:07 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-In-Reply-To: <20071016195432.GA31306@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
-References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net>
- <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net>
- <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de>
- <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu>
- <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm> <20071016195432.GA31306@parisc-linux.org>
+	Tue, 16 Oct 2007 16:54:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=IMMWld5OmYdBy3ZnKjQLqFFBmuxv4nJZt1iQ1bm8EGtdP1zHfXMyW5XgdP8KG0V+T8X3ZZrHAD7iI7uwbeLLU3zTb+xl9XabVvVzWLgw1yTxwu4ahOSeM+a8aqexUaOqkbaYMw9i/nRWnnQxrge6P9m0GDfKUGNSVOe+SPF2nhQ=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: In response to kernel compression e-mail a few months ago.
+Date: Tue, 16 Oct 2007 21:54:21 +0100
+User-Agent: KMail/1.9.1
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       apiszcz@solarrain.com
+References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan> <200710161419.07975.vda.linux@googlemail.com> <jebqazjidr.fsf@sykes.suse.de>
+In-Reply-To: <jebqazjidr.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710162154.21390.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Matthew Wilcox wrote:
+On Tuesday 16 October 2007 14:31, Andreas Schwab wrote:
+> Denys Vlasenko <vda.linux@googlemail.com> writes:
+> 
+> > I'm with Al on this. 50 Mb for decompression?
+> > Embedded and small device folks will not love this, I'm sure.
+> 
+> How often do you unpack the kernel sources on an embedded device? :)
 
-> On Tue, Oct 16, 2007 at 12:54:58PM -0700, david@lang.hm wrote:
->> On Tue, 16 Oct 2007, Alan Cox wrote:
->>> I wouldn't try dividing those by pata v sata. You'll cause all sorts of
->>> problems in the process because of PATA-SATA and SATA-PATA bridges.
->>
->> if you use a PATA-SATA bridge (IDE drive SATA controller), it would look
->> to the system like a SATA drive and be addressed and enumerated as SATA.
->
-> But you don't know where the bridge is.  It might be on the drive's
-> board, it might be an explicit enclosure, or it might be on the
-> motherboard.  Each of those scenarios is going to have a different user
-> expectation.
-
-the only one of these that I would find unexpected would be the one on the 
-motherboard.
-
-why is this any different from the external enclosures? they have always 
-appeared as the type of device that connects them to the motherboard, (and 
-even with SCSI, there are some controllers that don't generate sdX 
-devices)
-
-the driver for the controller is what has historicly determined what the 
-device appears as to the system. an example of this is the 3ware driver 
-that is a SCSI drive but the drives attached to the card are IDE drives. 
-another example is the I2O drivers (which give you access to the Raid 
-array and to the individual drives, in different namespaces). while I may 
-disagree with some of the selections that have been made (the 3ware has 
-always seemed odd to me for example) it's pretty simple to figure out.
-
-but in any case, historicly IDE (PATA) and SATA drives have been handled 
-differently, IDE drives have had fixed device names based on how they are 
-connected, SATA devices have had 'order found' device names from the SCSI 
-heritige. mixing the two types into one namespace requires changing one or 
-the other. while I would love to see SATA gain hardware path dependant 
-names I'm not holding my breath, but I hate to loose the predictable 
-nameing (even if the names change) for the IDE drives.
-
-David Lang
-
+Oops. I goofed up, I somehow thought we were talking about kernel _images_
+being compressed. :(
+--
+vda
