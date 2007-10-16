@@ -1,180 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbXJPAOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763651AbXJPAPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761780AbXJPAOR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbXJPAOG
+	id S1763651AbXJPAPm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXJPAPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:14:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56925 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbXJPAOF (ORCPT
+	Mon, 15 Oct 2007 20:15:33 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40508 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbXJPAPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:14:05 -0400
-Date: Mon, 15 Oct 2007 17:04:03 -0700
-From: Greg KH <greg@kroah.com>
-To: mahalcro@us.ibm.com, mcthomps@us.ibm.com, tyhicks@ou.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ecryptfs: clean up attribute mess
-Message-ID: <20071016000403.GA7654@kroah.com>
+	Mon, 15 Oct 2007 20:15:33 -0400
+Message-ID: <471401AF.4090802@zytor.com>
+Date: Mon, 15 Oct 2007 17:11:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+CC: Arjan van de Ven <arjan@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
+References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz> <20071015143732.01d99af8@laptopd505.fenrus.org> <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz>
+In-Reply-To: <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It isn't that hard to add simple kset attributes, so don't go through
-all the gyrations of creating your own object type and show and store
-functions.  Just use the functions that are already present.  This makes
-things much simpler.
+Mikulas Patocka wrote:
+> 
+> I know about unordered stores (movnti & similar) --- they basically use 
+> write-combining method on memory that is normally write-back --- and they 
+> need sfence. But which one instruction does unordered load and needs 
+> lefence?
+> 
 
-Note, the version_str string violates the "one value per file" rule for
-sysfs.  I suggest changing this now (individual files per type supported
-is one suggested way.)
+PREFETCHNTA.
 
-
-Cc: Michael A. Halcrow <mahalcro@us.ibm.com>
-Cc: Michael C. Thompson <mcthomps@us.ibm.com>
-Cc: Tyler Hicks <tyhicks@ou.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ecryptfs/main.c |   88 ++++++++++++-----------------------------------------
- 1 file changed, 20 insertions(+), 68 deletions(-)
-
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -689,58 +689,14 @@ static int ecryptfs_init_kmem_caches(voi
- 	return 0;
- }
- 
--struct ecryptfs_obj {
--	char *name;
--	struct list_head slot_list;
--	struct kobject kobj;
--};
--
--struct ecryptfs_attribute {
--	struct attribute attr;
--	ssize_t(*show) (struct ecryptfs_obj *, char *);
--	ssize_t(*store) (struct ecryptfs_obj *, const char *, size_t);
--};
--
--static ssize_t
--ecryptfs_attr_store(struct kobject *kobj,
--		    struct attribute *attr, const char *buf, size_t len)
--{
--	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
--						kobj);
--	struct ecryptfs_attribute *attribute =
--		container_of(attr, struct ecryptfs_attribute, attr);
--
--	return (attribute->store ? attribute->store(obj, buf, len) : 0);
--}
-+static decl_subsys(ecryptfs, NULL, NULL);
- 
--static ssize_t
--ecryptfs_attr_show(struct kobject *kobj, struct attribute *attr, char *buf)
--{
--	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
--						kobj);
--	struct ecryptfs_attribute *attribute =
--		container_of(attr, struct ecryptfs_attribute, attr);
--
--	return (attribute->show ? attribute->show(obj, buf) : 0);
--}
--
--static struct sysfs_ops ecryptfs_sysfs_ops = {
--	.show = ecryptfs_attr_show,
--	.store = ecryptfs_attr_store
--};
--
--static struct kobj_type ecryptfs_ktype = {
--	.sysfs_ops = &ecryptfs_sysfs_ops
--};
--
--static decl_subsys(ecryptfs, &ecryptfs_ktype, NULL);
--
--static ssize_t version_show(struct ecryptfs_obj *obj, char *buff)
-+static ssize_t version_show(struct kset *kset, char *buff)
- {
- 	return snprintf(buff, PAGE_SIZE, "%d\n", ECRYPTFS_VERSIONING_MASK);
- }
- 
--static struct ecryptfs_attribute sysfs_attr_version = __ATTR_RO(version);
-+static struct subsys_attribute version_attr = __ATTR_RO(version);
- 
- static struct ecryptfs_version_str_map_elem {
- 	u32 flag;
-@@ -753,7 +709,7 @@ static struct ecryptfs_version_str_map_e
- 	{ECRYPTFS_VERSIONING_XATTR, "metadata in extended attribute"}
- };
- 
--static ssize_t version_str_show(struct ecryptfs_obj *obj, char *buff)
-+static ssize_t version_str_show(struct kset *kset, char *buff)
- {
- 	int i;
- 	int remaining = PAGE_SIZE;
-@@ -780,34 +736,33 @@ out:
- 	return total_written;
- }
- 
--static struct ecryptfs_attribute sysfs_attr_version_str = __ATTR_RO(version_str);
-+static struct subsys_attribute version_attr_str = __ATTR_RO(version_str);
-+
-+static struct attribute *attributes[] = {
-+	&version_attr.attr,
-+	&version_attr_str.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group attr_group = {
-+	.attrs = attributes,
-+};
- 
- static int do_sysfs_registration(void)
- {
- 	int rc;
- 
--	if ((rc = subsystem_register(&ecryptfs_subsys))) {
--		printk(KERN_ERR
--		       "Unable to register ecryptfs sysfs subsystem\n");
--		goto out;
--	}
--	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
--			       &sysfs_attr_version.attr);
-+	rc = subsystem_register(&ecryptfs_subsys);
- 	if (rc) {
- 		printk(KERN_ERR
--		       "Unable to create ecryptfs version attribute\n");
--		subsystem_unregister(&ecryptfs_subsys);
-+		       "Unable to register ecryptfs sysfs subsystem\n");
- 		goto out;
- 	}
--	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
--			       &sysfs_attr_version_str.attr);
-+	rc = sysfs_create_group(&ecryptfs_subsys.kobj, &attr_group);
- 	if (rc) {
- 		printk(KERN_ERR
--		       "Unable to create ecryptfs version_str attribute\n");
--		sysfs_remove_file(&ecryptfs_subsys.kobj,
--				  &sysfs_attr_version.attr);
-+		       "Unable to create ecryptfs version attributes\n");
- 		subsystem_unregister(&ecryptfs_subsys);
--		goto out;
- 	}
- out:
- 	return rc;
-@@ -815,10 +770,7 @@ out:
- 
- static void do_sysfs_unregistration(void)
- {
--	sysfs_remove_file(&ecryptfs_subsys.kobj,
--			  &sysfs_attr_version.attr);
--	sysfs_remove_file(&ecryptfs_subsys.kobj,
--			  &sysfs_attr_version_str.attr);
-+	sysfs_remove_group(&ecryptfs_subsys.kobj, &attr_group);
- 	subsystem_unregister(&ecryptfs_subsys);
- }
- 
-
+	-hpa
