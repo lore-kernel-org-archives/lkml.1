@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933333AbXJPHUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbXJPH3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933333AbXJPHUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 03:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933034AbXJPHUY
+	id S932401AbXJPH3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 03:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbXJPH3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 03:20:24 -0400
-Received: from mail2.racsa.co.cr ([196.40.31.26]:43292 "EHLO
-	barracuda1.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933000AbXJPHUV (ORCPT
+	Tue, 16 Oct 2007 03:29:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60244 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755510AbXJPH3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 03:20:21 -0400
-X-ASG-Debug-ID: 1192518453-7118005d0000-xx1T2L
-X-Barracuda-URL: http://172.16.1.10:8000/cgi-bin/mark.cgi
-Date: Tue, 16 Oct 2007 01:07:31 -0600 (CST)
-From: Joseph Parmelee <jparmele@wildbear.com>
-X-X-Sender: jparmele@bruno
-To: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: Old version of lilo fails to boot 2.6.23
-Subject: Old version of lilo fails to boot 2.6.23
-Message-id: <Pine.LNX.4.64.0710151600090.15578@bruno>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Barracuda-Connect: UNKNOWN[172.16.7.11]
-X-Barracuda-Start-Time: 1192518453
-X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at racsa.co.cr
+	Tue, 16 Oct 2007 03:29:37 -0400
+Date: Tue, 16 Oct 2007 00:28:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.23-mm1 - regression- PowerPC link failure at
+ arch/powerpc/kernel/head_64.o
+Message-Id: <20071016002850.4296827e.akpm@linux-foundation.org>
+In-Reply-To: <471465D8.9030100@linux.vnet.ibm.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<471465D8.9030100@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Oct 2007 12:48:48 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Greetings:
+> Hi Andrew,
+> 
+> The link failure while compiling the kernel with allyesconfig over the lpar, 
+> which was seen in 2.6.23-rc8-mm2 (http://lkml.org/lkml/2007/9/30/2) is still 
+> seen in 2.6.23-mm1, the link failure is
+> 
+> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: final link failed: Bad value
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> # gcc -v
+> Using built-in specs.
+> Target: powerpc64-suse-linux
+> Configured with: ../configure --enable-threads=posix --prefix=/usr --with-local-prefix=/usr/local --infodir=/usr/share/info --mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib --enable-languages=c,c++,objc,fortran,obj-c++,java,ada --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 --enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib --with-system-zlib --enable-shared --enable-__cxa_atexit --enable-libstdcxx-allocator=new --program-suffix=-4.1 --enable-version-specific-runtime-libs --without-system-libunwind --with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
+> Thread model: posix
+> gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
+> 
+> ld -v
+> GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
+> 
+> 
+> Anything I can provide to help diagnose this?
+> 
 
-I upgraded to version 2.6.23 and had a fun time figuring out the source of
-this boot failure message on my x86 system:
-
-   This kernel requires an i<random integer>86 CPU, but only detected an
-   i<smaller random integer>86 CPU.
-
-It turns out that my version of lilo (lilo -V gives version 21) doesn't set
-up the stack and data segment registers in a compatible manner before
-entering the new 16-bit real mode kernel loader code.  This problem is new
-to the 2.6.23 series.
-
-Parts of the 16-bit real mode loader code are now being compiled as C code
-with gcc in 32 bit mode passing the .code16gcc directive to the assembler to
-correct the stack frames to 16 bit.  This kludge won't work unless all the
-16-bit segment registers are set to the same value.  Gcc only manipulates
-the offset of the address and doesn't know anything about segment registers
-or segment override prefixes.  My lilo was setting SS=0x8000, DS=0x9000, and
-SP=0xB000 before entering the kernel loader.  This makes stack automatics
-unreachable from the data segment without segment override prefixes.
-
-I was tempted to patch the kernel code, but instead decided to try
-"upgrading" lilo to grub-0.97 and found that grub works just fine.  This
-also has the significant advantage that we won't need those nasty as86 and
-ld86 things any more since lilo was the last package on our systems that
-used them.
-
-However, it would probably be a good idea to modify the kernel loader to
-lock out interrupts and explicitly set up the stack in its assembly startup
-code to insure that the stack is located correctly above the code in the
-same segment, rather than relying on the boot loader to do the right thing. 
-The existing setup code already insures that the other segment registers are
-equal but omits the stack segment register.  Also, because lilo (and
-others?) loads the data/code segment at 0X90000, the stack pointer would
-have to be set no higher than 0XA000 to avoid potential overwrites of the
-EBDA.  But I believe from my look at the code that the data/code sits below
-0X8000 in the segment, so this should be fine.
-
-If others think this is a good thing, I will test and submit a patch.
-
-Please CC me directly as I am no longer subscribed to the list.
-
-
-Best regards,
-
-Joseph
+Did we work out which patch is causing this?
