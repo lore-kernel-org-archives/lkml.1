@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765494AbXJPE4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXJPE5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765494AbXJPE4O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbXJPEz7
+	id S1765630AbXJPE5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXJPE45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:55:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48650 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbXJPEz6 (ORCPT
+	Tue, 16 Oct 2007 00:56:57 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45793
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755177AbXJPE4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:55:58 -0400
-Date: Mon, 15 Oct 2007 21:50:25 -0700
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Message-ID: <20071016045025.GC8125@kroah.com>
-References: <200710132126.33085.rjw@sisk.pl>
+	Tue, 16 Oct 2007 00:56:54 -0400
+Date: Mon, 15 Oct 2007 22:00:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Greg KH <greg@kroah.com>
+cc: Matthew Wilcox <matthew@wil.cx>, Rob Landley <rob@landley.net>,
+       Julian Calaby <julian.calaby@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Jens Axboe <axboe@suse.de>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+In-Reply-To: <20071016042104.GA7854@kroah.com>
+Message-ID: <Pine.LNX.4.64.0710152153180.1538@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net> <200710150304.00901.rob@landley.net>
+ <646765f40710150206j75af4c4dwac4f4565451b64b1@mail.gmail.com>
+ <200710150508.37332.rob@landley.net> <20071015173357.GB5738@kroah.com>
+ <Pine.LNX.4.64.0710151952250.3949@asgard.lang.hm> <20071016040401.GA15744@parisc-linux.org>
+ <20071016042104.GA7854@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710132126.33085.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> There are many traces like this in my dmesg from 2.6.23-git3 (they don't
-> appear for vanilla 2.6.23):
-> 
-> <4>sysfs: duplicate filename 'ethxx1' can not be created
-> WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
-> 
-> Call Trace:
->  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
->  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
->  [<ffffffff803756da>] device_rename+0x17a/0x1db
->  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
->  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
->  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
->  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
->  [<ffffffff8024b977>] up_read+0x9/0xb
->  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
->  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
->  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
->  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
->  [<ffffffff8020bd4e>] system_call+0x7e/0x83
-> 
-> net ethxx1: device_rename: sysfs_create_symlink failed (-17)
-> sysfs: duplicate filename 'eth1' can not be created
-> 
-> Everything seems to work, but this just looks fishy.
+On Mon, 15 Oct 2007, Greg KH wrote:
 
-This is a userspace program renaming your network device to a name that
-is already in use.  What distro and release is this?
+> On Mon, Oct 15, 2007 at 10:04:01PM -0600, Matthew Wilcox wrote:
+>> On Mon, Oct 15, 2007 at 07:54:22PM -0700, david@lang.hm wrote:
+>>> do PCI devices reorder their bus numbers spontaniously, or only if you
+>>> change the hardware?
+>>
+>> The only system I've had that reordered PCI bus numbers was when I had a
+>> partitionable system and changed the partitioning.  Not quite "change
+>> the hardware", but neither was it "spontaneous".  It was certainly
+>> unexpected (for me).
+>>
+>> Greg probably has quite different examples.
+>
+> Changing the hardware (adding a new PCI device or removing one) are the
+> most common times this happens.  But I have seen reports of this
+> happening when you upgrade/downgrade BIOS versions, and, in some
+> oops-we-messed-up cases, when we changed things in the kernel.
 
-thanks,
+BIOS upgrades qualify as changing hardware (or close to it)
 
-greg k-h
+oops-we-messed-up cases of kernel changes don't justify 'best effort' 
+nameing, it's a regression that needs to be fixed.
+
+now the other example given of docking a laptop is closer to reasonable 
+(and is definantly a reason to have 'best effort' nameing as an option), 
+but that's still a relativly special case, and it _is_ definantly 
+changeing the hardware
+
+David Lang
