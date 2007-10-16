@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbXJPEEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXJPEGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbXJPEEh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXJPEEY
+	id S1755501AbXJPEGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbXJPEGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:04:24 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37348 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753996AbXJPEEV (ORCPT
+	Tue, 16 Oct 2007 00:06:20 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59562
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbXJPEGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:04:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4/FQEZg1fuu+pinuqKIALOzo0Q2jHvs/E59HqmwEa3LNrOjgL6RHM4aq/LX0ScQ3qG7QxyiU9AYZb97NnOobc4O9SPviBu9hLCEiJPRaVRjLdX1aZZvwbLs+Ml9KX9b3nzFIzohH9xw3Ukfzw7xiymoLuJNs9aQtN2nFJLXRHW8=  ;
-X-YMail-OSG: wLkRg.8VM1kPr4ULlS6ItMs9Gjk2gOWPm1P__AglUs06ThXc8eqmrtppvkdo8H_zhBodcbRX7g--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+	Tue, 16 Oct 2007 00:06:19 -0400
+Date: Mon, 15 Oct 2007 21:10:10 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-Date: Tue, 16 Oct 2007 16:45:58 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710160123.32434.nickpiggin@yahoo.com.au> <m1zlyjiwdc.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1zlyjiwdc.fsf@ebiederm.dsl.xmission.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Rob Landley <rob@landley.net>,
+       Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+In-Reply-To: <m1tzoriuhq.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0710152105460.1538@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net> <20071015014503.GF9715@thunk.org>
+ <200710150304.00901.rob@landley.net> <200710152337.45252.nickpiggin@yahoo.com.au>
+ <m1tzoriuhq.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710161645.58686.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 13:14, Eric W. Biederman wrote:
+On Mon, 15 Oct 2007, Eric W. Biederman wrote:
+
 > Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > On Monday 15 October 2007 19:16, Andrew Morton wrote:
-> >> On Tue, 16 Oct 2007 00:06:19 +1000 Nick Piggin <nickpiggin@yahoo.com.au>
-> >
-> > wrote:
-> >> > On Monday 15 October 2007 18:28, Christian Borntraeger wrote:
-> >> > > Andrew, this is a resend of a bugfix patch. Ramdisk seems a bit
-> >> > > unmaintained, so decided to sent the patch to you :-).
-> >> > > I have CCed Ted, who did work on the code in the 90s. I found no
-> >> > > current email address of Chad Page.
-> >> >
-> >> > This really needs to be fixed...
-> >>
-> >> rd.c is fairly mind-boggling vfs abuse.
-> >
-> > Why do you say that? I guess it is _different_, by necessity(?)
-> > Is there anything that is really bad?
 >
-> make_page_uptodate() is most hideous part I have run into.
-> It has to know details about other layers to now what not
-> to stomp.  I think my incorrect simplification of this is what messed
-> things up, last round.
-
-Not really, it's just named funny. That's just a minor utility
-function that more or less does what it says it should do.
-
-The main problem is really that it's implementing a block device
-who's data comes from its own buffercache :P. I think.
-
-
-> > I guess it's not nice
-> > for operating on the pagecache from its request_fn, but the
-> > alternative is to duplicate pages for backing store and buffer
-> > cache (actually that might not be a bad alternative really).
+>> How much swap do you have configured? You really shouldn't configure
+>> so much unless you do want the kernel to actually use it all, right?
 >
-> Cool. Triple buffering :)  Although I guess that would only
-> apply to metadata these days.
+> No.
+>
+> There are three basic swapping scenarios.
+> - Pushing unused data out of ram
+> - Swapping
+> - Thrashing
+>
+> To effectively swap you need SWAP > RAM because after a little while of
+> swapping all of your pages in RAM should be assigned a location in the
+> page cache.
 
-Double buffering. You no longer serve data out of your buffer
-cache. All filesystem data was already double buffered anyway,
-so we'd be just losing out on one layer of savings for metadata.
-I think it's worthwhile, given that we'd have a "real" looking
-block device and minus these bugs.
+on some kernel versions you are correct about needing swap > ram, but on 
+current versions you are not. the swap space gets allocated as needed, and 
+re-used as needed (I don't know the mechanism of this, but I remember the 
+last time this changed from vm=max(ram,swap) to vm=ram+swap)
 
+> I have not heard of many people swapping and not thrashing lately.
+> I think part of the problem is that we do random access to the swap
+> partition which makes us seek limited.  And since the number of
+> seeks per unit time has been increasing at a linear or slower rate
+> that if we are doing random disk I/O then the amount we can use
+> the disk for is very limited.   I wonder if we could figure out
+> how to push and pull 1M or bigger chunks into and out of swap?
 
-> Having a separate store would 
-> solve some of the problems, and probably remove the need
-> for carefully specifying the ramdisk block size.  We would
-> still need the magic restictions on page allocations though
-> and it we would use them more often as the initial write to the
-> ramdisk would not populate the pages we need.
+it has been noted by many people that linux is very slow to pull things 
+back into ram from swap, significantly slower then simple seed limiting 
+would seem to account for.
 
-What magic restrictions on page allocations? Actually we have
-fewer restrictions on page allocations because we can use
-highmem! And the lowmem buffercache pages that we currently pin
-(unsuccessfully, in the case of this bug) are now completely
-reclaimable. And all your buffer heads are now reclaimable.
-
-If you mean GFP_NOIO... I don't see any problem. Block device
-drivers have to allocate memory with GFP_NOIO; this may have
-been considered magic or deep badness back when the code was
-written, but it's pretty simple and accepted now.
-
-
-> A very ugly bit seems to be the fact that we assume we can
-> dereference bh->b_data without any special magic which
-> means the ramdisk must live in low memory on 32bit machines.
-
-Yeah but that's not rd.c. You need to rewrite the buffer layer
-to fix that (see fsblock ;)).
+Davdi Lang
