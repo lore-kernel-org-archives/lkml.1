@@ -1,257 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933438AbXJPKem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXJPKfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933438AbXJPKem (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765586AbXJPKe1
+	id S933006AbXJPKfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932381AbXJPKfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:34:27 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36138 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760083AbXJPKeZ (ORCPT
+	Tue, 16 Oct 2007 06:35:07 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:56638 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932359AbXJPKfE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:34:25 -0400
-Date: Tue, 16 Oct 2007 16:04:17 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
-Subject: [RFC PATCH 1/4] Refcount Based Cpu-Hotplug Implementation
-Message-ID: <20071016103417.GA16570@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071016103308.GA9907@in.ibm.com>
+	Tue, 16 Oct 2007 06:35:04 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+Date: Tue, 16 Oct 2007 12:34:35 +0200
+User-Agent: KMail/1.9.7
+Cc: Chuck Ebbert <cebbert@redhat.com>, Frans Pop <elendil@planet.nl>,
+       Greg KH <greg@kroah.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <200710122231.50739.elendil@planet.nl> <200710161029.27132.borntraeger@de.ibm.com> <471484B3.9010903@linux.vnet.ibm.com>
+In-Reply-To: <471484B3.9010903@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20071016103308.GA9907@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200710161234.35529.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements a Refcount + Waitqueue based model for
-cpu-hotplug. 
+Am Dienstag, 16. Oktober 2007 schrieb Balbir Singh:
+> I am trying to think out loud as to what the root cause of the problem
+> might be. In one of the discussion threads, I saw utime going backwards,
+> which seemed very odd, I suspect that those are rounding errors.
+> 
+> I don't understand your explanation below
+> 
+> Initially utime = 9, stime = 0, sum_exec_runtime = S1
+> 
+> Later
+> 
+> utime = 9, stime = 1, sum_exec_runtime = S2
+> 
+> We can be sure that S >= (utime + stime)
 
-A thread which wants to prevent cpu-hotplug, will now bump up a 
-global refcount and the thread which wants to perform a cpu-hotplug
-operation will block till the global refcount goes to zero.
+I think here is the problem. How can we be sure? We cant. utime and stime
+are sampled, so they can be largely off in any direction,if the program
+sleeps often and manages to synchronize itself to the timer tick. Lets say
+a program only does a simple system call and then sleeps. So sum_exec_runtime
+is increased by lets say 1000 cycles on a 1Ghz box which means 1000ns. If now 
+the timer tick happens exactly at this moment, stime is increased by 1 tick
+= 1000000ns. 
 
-The readers, if any, during an ongoing cpu-hotplug operation are blocked
-until the cpu-hotplug operation is over.
+Maybe there is some magic in the code which I did not see, but obviously
+the problem exists and looking at Frans data (stime+utime) are not decreasing,
+but stime isnt and utime is. If you look at Frans data you see:
+Oct 16 11:54:48 8 10
+Oct 16 11:54:49 6 12  <-- utime
+Oct 16 11:54:50 6 12
+Oct 16 11:54:51 6 12
+Oct 16 11:54:52 8 10  <-- stime
+Oct 16 11:54:53 8 10
+Oct 16 11:54:54 8 10
+Oct 16 11:54:55 8 12
+Oct 16 11:54:56 8 12
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
- include/linux/cpu.h |    2 +
- init/main.c         |    1 
- kernel/cpu.c        |   91 ++++++++++++++++++++++++++++++++++++----------------
- 3 files changed, 67 insertions(+), 27 deletions(-)
+(stime+utime) is constant. That means that S2-S1 is obviously smaller than
+one tick (See the calculation in task_stime). I am quite sure it is caused
+by changes in the sampled values p->utime and p->stime.
 
-Index: linux-2.6.23/init/main.c
-===================================================================
---- linux-2.6.23.orig/init/main.c
-+++ linux-2.6.23/init/main.c
-@@ -614,6 +614,7 @@ asmlinkage void __init start_kernel(void
- 	vfs_caches_init_early();
- 	cpuset_init_early();
- 	mem_init();
-+	cpu_hotplug_init();
- 	kmem_cache_init();
- 	setup_per_cpu_pageset();
- 	numa_policy_init();
-Index: linux-2.6.23/include/linux/cpu.h
-===================================================================
---- linux-2.6.23.orig/include/linux/cpu.h
-+++ linux-2.6.23/include/linux/cpu.h
-@@ -97,6 +97,7 @@ static inline void cpuhotplug_mutex_unlo
- 	mutex_unlock(cpu_hp_mutex);
- }
- 
-+extern void cpu_hotplug_init(void);
- extern void lock_cpu_hotplug(void);
- extern void unlock_cpu_hotplug(void);
- #define hotcpu_notifier(fn, pri) {				\
-@@ -116,6 +117,7 @@ static inline void cpuhotplug_mutex_lock
- static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
- { }
- 
-+#define cpu_hotplug_init()     do { } while (0)
- #define lock_cpu_hotplug()	do { } while (0)
- #define unlock_cpu_hotplug()	do { } while (0)
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
-Index: linux-2.6.23/kernel/cpu.c
-===================================================================
---- linux-2.6.23.orig/kernel/cpu.c
-+++ linux-2.6.23/kernel/cpu.c
-@@ -17,7 +17,6 @@
- 
- /* This protects CPUs going up and down... */
- static DEFINE_MUTEX(cpu_add_remove_lock);
--static DEFINE_MUTEX(cpu_bitmask_lock);
- 
- static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
- 
-@@ -26,45 +25,83 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(c
-  */
- static int cpu_hotplug_disabled;
- 
-+static struct {
-+	struct task_struct *active_writer;
-+	struct mutex lock; /* Synchronizes accesses to refcount, */
-+	/*
-+	 * Also blocks the new readers during
-+	 * an ongoing cpu hotplug operation.
-+	 */
-+	int refcount;
-+	struct completion readers_done;
-+} cpu_hotplug;
-+
-+#define writer_exists() (cpu_hotplug.active_writer != NULL)
-+
- #ifdef CONFIG_HOTPLUG_CPU
- 
--/* Crappy recursive lock-takers in cpufreq! Complain loudly about idiots */
--static struct task_struct *recursive;
--static int recursive_depth;
-+void __init cpu_hotplug_init(void)
-+{
-+	cpu_hotplug.active_writer = NULL;
-+	mutex_init(&cpu_hotplug.lock);
-+	cpu_hotplug.refcount = 0;
-+	init_completion(&cpu_hotplug.readers_done);
-+}
- 
- void lock_cpu_hotplug(void)
- {
--	struct task_struct *tsk = current;
--
--	if (tsk == recursive) {
--		static int warnings = 10;
--		if (warnings) {
--			printk(KERN_ERR "Lukewarm IQ detected in hotplug locking\n");
--			WARN_ON(1);
--			warnings--;
--		}
--		recursive_depth++;
-+	might_sleep();
-+	if (cpu_hotplug.active_writer == current)
- 		return;
--	}
--	mutex_lock(&cpu_bitmask_lock);
--	recursive = tsk;
-+	mutex_lock(&cpu_hotplug.lock);
-+	cpu_hotplug.refcount++;
-+	mutex_unlock(&cpu_hotplug.lock);
-+
- }
- EXPORT_SYMBOL_GPL(lock_cpu_hotplug);
- 
- void unlock_cpu_hotplug(void)
- {
--	WARN_ON(recursive != current);
--	if (recursive_depth) {
--		recursive_depth--;
-+	if (cpu_hotplug.active_writer == current)
- 		return;
--	}
--	recursive = NULL;
--	mutex_unlock(&cpu_bitmask_lock);
-+	mutex_lock(&cpu_hotplug.lock);
-+	cpu_hotplug.refcount--;
-+
-+	if (unlikely(writer_exists()) && !cpu_hotplug.refcount)
-+		complete(&cpu_hotplug.readers_done);
-+
-+	mutex_unlock(&cpu_hotplug.lock);
-+
- }
- EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
- 
- #endif	/* CONFIG_HOTPLUG_CPU */
- 
-+/*
-+ * This ensures that the hotplug operation can begin only when the
-+ * refcount goes to zero.
-+ *
-+ * Note that during a cpu-hotplug operation, the new readers, if any,
-+ * will be blocked by the cpu_hotplug.lock
-+ */
-+static void cpu_hotplug_begin(void)
-+{
-+	mutex_lock(&cpu_hotplug.lock);
-+	cpu_hotplug.active_writer = current;
-+	while (cpu_hotplug.refcount) {
-+		mutex_unlock(&cpu_hotplug.lock);
-+		wait_for_completion(&cpu_hotplug.readers_done);
-+		mutex_lock(&cpu_hotplug.lock);
-+	}
-+
-+}
-+
-+static void cpu_hotplug_done(void)
-+{
-+	cpu_hotplug.active_writer = NULL;
-+	mutex_unlock(&cpu_hotplug.lock);
-+}
-+
- /* Need to know about CPUs going up/down? */
- int __cpuinit register_cpu_notifier(struct notifier_block *nb)
- {
-@@ -147,6 +184,7 @@ static int _cpu_down(unsigned int cpu, i
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
-+	cpu_hotplug_begin();
- 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_ACQUIRE, hcpu);
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
-@@ -166,9 +204,7 @@ static int _cpu_down(unsigned int cpu, i
- 	cpu_clear(cpu, tmp);
- 	set_cpus_allowed(current, tmp);
- 
--	mutex_lock(&cpu_bitmask_lock);
- 	p = __stop_machine_run(take_cpu_down, &tcd_param, cpu);
--	mutex_unlock(&cpu_bitmask_lock);
- 
- 	if (IS_ERR(p) || cpu_online(cpu)) {
- 		/* CPU didn't die: tell everyone.  Can't complain. */
-@@ -203,6 +239,7 @@ out_allowed:
- 	set_cpus_allowed(current, old_allowed);
- out_release:
- 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_RELEASE, hcpu);
-+	cpu_hotplug_done();
- 	return err;
- }
- 
-@@ -231,6 +268,7 @@ static int __cpuinit _cpu_up(unsigned in
- 	if (cpu_online(cpu) || !cpu_present(cpu))
- 		return -EINVAL;
- 
-+	cpu_hotplug_begin();
- 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_ACQUIRE, hcpu);
- 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
- 							-1, &nr_calls);
-@@ -243,9 +281,7 @@ static int __cpuinit _cpu_up(unsigned in
- 	}
- 
- 	/* Arch-specific enabling code. */
--	mutex_lock(&cpu_bitmask_lock);
- 	ret = __cpu_up(cpu);
--	mutex_unlock(&cpu_bitmask_lock);
- 	if (ret != 0)
- 		goto out_notify;
- 	BUG_ON(!cpu_online(cpu));
-@@ -258,6 +294,7 @@ out_notify:
- 		__raw_notifier_call_chain(&cpu_chain,
- 				CPU_UP_CANCELED | mod, hcpu, nr_calls, NULL);
- 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_RELEASE, hcpu);
-+	cpu_hotplug_done();
- 
- 	return ret;
- }
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+> 
+> If S2 = S1 + delta, then as per our calculation
+> 
+> Initially
+> 
+> utime_proc = (utime * (S1))/(utime + stime)
+>            = nsec_to_clock_t(9 * S1 / 9)
+> 
+> later
+> 
+> utime_proc = nsec_to_clock_t(9 * S2/10)
+> 
+> Given that S >= (utime + stime), we should be fine.
+
+
+
