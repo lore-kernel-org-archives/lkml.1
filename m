@@ -1,121 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933694AbXJPPLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXJPPMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933694AbXJPPLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932923AbXJPPLf
+	id S934034AbXJPPMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932923AbXJPPMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:11:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44157 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932739AbXJPPLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:11:34 -0400
-Message-ID: <4714D497.7010004@redhat.com>
-Date: Tue, 16 Oct 2007 11:11:19 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 16 Oct 2007 11:12:15 -0400
+Received: from rhineheart.priorweb.be ([213.193.229.215]:42005 "HELO
+	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932412AbXJPPMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:12:15 -0400
+Date: Tue, 16 Oct 2007 17:12:07 +0200
+From: Kristof Provost <Kristof@provost-engineering.be>
+To: Jan-Simon M?ller <dl9pf@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       NeilBrown <neilb@suse.de>
+Subject: Re: [BUG] memory leak in dm
+Message-ID: <20071016151207.GA4452@luggage>
+References: <20071016113800.GA4631@luggage> <20071016114458.GD5263@kernel.dk> <200710161523.47111.dl9pf@gmx.de>
 MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] i386: fix TSC clock source calibration error
-References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
-In-Reply-To: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Content-Disposition: inline
+In-Reply-To: <200710161523.47111.dl9pf@gmx.de>
+X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Scanned: 2.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/2007 10:50 AM, Dave Johnson wrote:
-> From: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
-> I ran into this problem on a system that was unable to obtain NTP sync
-> because the clock was running very slow (over 10000ppm slow). ntpd had
-> declared all of its peers 'reject' with 'peer_dist' reason.
-> 
-> On investigation, the tsc_khz variable was significantly incorrect
-> causing xtime to run slow.  After a reboot tsc_khz was correct so I
-> did a reboot test to see how often the problem occurred:
-> 
-> Test was done on a 2000 Mhz Xeon system.  Of 689 reboots, 8 of them
-> had unacceptable tsc_khz values (>500ppm):
-> 
->  range of tsc_khz  # of boots  % of boots
-> -----------------  ----------  ----------
->         < 1999750           0      0.000%
-> 1999750 - 1999800          21      3.048%
-> 1999800 - 1999850         166     24.128%
-> 1999850 - 1999900         241     35.029%
-> 1999900 - 1999950         211     30.669%
-> 1999950 - 2000000          42      6.105%
-> 2000000 - 2000000           0      0.000%
-> 2000050 - 2000100           0      0.000%
->                    [...]
-> 2000100 - 2015000           1      0.145%  << BAD
-> 2015000 - 2030000           6      0.872%  << BAD
-> 2030000 - 2045000           1      0.145%  << BAD
-> 2045000 <                   0      0.000%
-> 
-> The worst boot was 2032.577 Mhz, over 1.5% off!
-> 
-> It appears that on rare occasions, mach_countup() is taking longer to
-> complete than necessary.
-> 
-> I suspect that this is caused by the CPU taking a periodic SMI
-> interrupt right at the end of the 30ms calibration loop.  This would
-> cause the loop to delay while the SMI BIOS hander runs. The resulting
-> TSC value is beyond what it actually should be resulting in a higher
-> tsc_khz.
-> 
-> The below patch makes native_calculate_cpu_khz() take the best
-> (shortest duration, lowest khz) run of it's 3 calibration loops.  If a
-> SMI goes off causing a bad result (long duration, higher khz) it will
-> be discarded.
-> 
-> With the patch applied, 300 boots of the same system produce good
-> results:
-> 
->  range of tsc_khz  # of boots  % of boots
-> -----------------  ----------  ----------
->         < 1999750           0      0.000%
-> 1999750 - 1999800          30     10.000%
-> 1999800 - 1999850         166     55.333%
-> 1999850 - 1999900          89     29.667%
-> 1999900 - 1999950          15      5.000%
-> 1999950 <                   0      0.000%
-> 
-> Problem was found and tested against 2.6.18.  Patch is against 2.6.22.
-> 
-> Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
-> ===== arch/i386/kernel/tsc.c 1.27 vs edited =====
-> --- 1.27/arch/i386/kernel/tsc.c	2007-05-02 13:27:18 -04:00
-> +++ edited/arch/i386/kernel/tsc.c	2007-10-15 16:31:04 -04:00
-> @@ -122,7 +122,7 @@
->  {
->  	unsigned long long start, end;
->  	unsigned long count;
-> -	u64 delta64;
-> +	u64 delta64 = (u64)ULLONG_MAX;
->  	int i;
->  	unsigned long flags;
->  
-> @@ -134,6 +134,7 @@
->  		rdtscll(start);
->  		mach_countup(&count);
->  		rdtscll(end);
-> +		delta64 = min(delta64, (end - start));
->  	}
->  	/*
->  	 * Error: ECTCNEVERSET
-> @@ -143,8 +144,6 @@
->  	 */
->  	if (count <= 1)
->  		goto err;
-> -
-> -	delta64 = end - start;
->  
->  	/* cpu freq too fast: */
->  	if (delta64 > (1ULL<<32))
-> 
 
-(added cc:)
+--Qxx1br4bt0+wmkIi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On 2007-10-16 15:23:46 (+0200), Jan-Simon M?ller <dl9pf@gmx.de> wrote:
+> Am Dienstag 16 Oktober 2007 13:44:58 schrieb Jens Axboe:
+> > Please try with this patch from Neil.
+> Tried the patch. Now its usable - as far as i can say. Compiled a fresh k=
+ernel=20
+> to "stress" the system (make -j3).
+> Without the patch the system had freezed after some minutes during compil=
+e.
+Same here. As far as I can tell it's fixed.
+
+Thanks,
+Kristof=20
+
+--Qxx1br4bt0+wmkIi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHFNTGUEZ9DhGwDugRAkx/AJ4wwCDTQo8KxSFWXONeH6KhZAm8HQCcCbRC
+f2EcUOEWbTscqzMfcX4V/P8=
+=SkcJ
+-----END PGP SIGNATURE-----
+
+--Qxx1br4bt0+wmkIi--
