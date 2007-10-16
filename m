@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765068AbXJPLmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbXJPLml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765068AbXJPLmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 07:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXJPLmO
+	id S1760155AbXJPLml (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 07:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXJPLm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 07:42:14 -0400
-Received: from mx1.minet.net ([157.159.40.25]:56584 "EHLO mx1.minet.net"
+	Tue, 16 Oct 2007 07:42:26 -0400
+Received: from mx1.minet.net ([157.159.40.25]:56598 "EHLO mx1.minet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbXJPLmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 07:42:13 -0400
+	id S1765643AbXJPLmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 07:42:24 -0400
 From: Florian Fainelli <florian.fainelli@telecomint.eu>
-Date: Tue, 16 Oct 2007 13:41:18 +0200
-Subject: [PATCH 1/4] [x86] Add generic GPIO support to x86
+Date: Tue, 16 Oct 2007 13:41:24 +0200
+Subject: [PATCH 2/4] pci.h : Add PCI identifiers for the RDC devices
 MIME-Version: 1.0
-X-Length: 2550
+X-Length: 1520
 To: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Message-Id: <200710161341.18609.florian.fainelli@telecomint.eu>
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_eNKFHh68opwyC+p"
+  boundary="Boundary-00=_kNKFHp4OQPKMSkt"
+Message-Id: <200710161341.24598.florian.fainelli@telecomint.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---Boundary-00=_eNKFHh68opwyC+p
+--Boundary-00=_kNKFHp4OQPKMSkt
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-This patch adds the generic GPIO support to the x86
-architecture. We do the same as for MIPS, we let
-the machine override the gpio callbacks and provide
-defaults one in mach-generic.
+This patch defines the PCI identifiers found in
+the RDC R-321x System-on-Chip.
 
 Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
 ---
- arch/i386/Kconfig                   |    4 ++++
- include/asm-x86/gpio.h              |    6 ++++++
- include/asm-x86/mach-generic/gpio.h |   15 +++++++++++++++
- 3 files changed, 25 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-x86/gpio.h
- create mode 100644 include/asm-x86/mach-generic/gpio.h
+ include/linux/pci_ids.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
---Boundary-00=_eNKFHh68opwyC+p
+--Boundary-00=_kNKFHp4OQPKMSkt
 Content-Type: text/plain;
   charset="utf-8";
-  name="2d924ff3d201471e5dea150c6ddc9bd80a1ba75b.diff"
+  name="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="2d924ff3d201471e5dea150c6ddc9bd80a1ba75b.diff"
+	filename="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
 
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index bf9aafa..501fd6d 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -79,6 +79,10 @@ config GENERIC_BUG
- 	default y
- 	depends on BUG
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 2aaf1c1..c5a0f5b 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2097,6 +2097,13 @@
+ #define PCI_DEVICE_ID_HERC_WIN		0x5732
+ #define PCI_DEVICE_ID_HERC_UNI		0x5832
  
-+config GENERIC_GPIO
-+	bool
-+	default n
++#define PCI_VENDOR_ID_RDC		0x17f3
++#define PCI_DEVICE_ID_RDC_R6020		0x6020
++#define PCI_DEVICE_ID_RDC_R6030		0x6030
++#define PCI_DEVICE_ID_RDC_R6040		0x6040
++#define PCI_DEVICE_ID_RDC_R6060		0x6060
++#define PCI_DEVICE_ID_RDC_R6061		0x6061
 +
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-diff --git a/include/asm-x86/gpio.h b/include/asm-x86/gpio.h
-new file mode 100644
-index 0000000..ff87fca
---- /dev/null
-+++ b/include/asm-x86/gpio.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_I386_GPIO_H
-+#define _ASM_I386_GPIO_H
-+
-+#include <gpio.h>
-+
-+#endif /* _ASM_I386_GPIO_H */
-diff --git a/include/asm-x86/mach-generic/gpio.h b/include/asm-x86/mach-generic/gpio.h
-new file mode 100644
-index 0000000..5305dcb
---- /dev/null
-+++ b/include/asm-x86/mach-generic/gpio.h
-@@ -0,0 +1,15 @@
-+#ifndef __ASM_MACH_GENERIC_GPIO_H
-+#define __ASM_MACH_GENERIC_GPIO_H
-+
-+int gpio_request(unsigned gpio, const char *label);
-+void gpio_free(unsigned gpio);
-+int gpio_direction_input(unsigned gpio);
-+int gpio_direction_output(unsigned gpio, int value);
-+int gpio_get_value(unsigned gpio);
-+void gpio_set_value(unsigned gpio, int value);
-+int gpio_to_irq(unsigned gpio);
-+int irq_to_gpio(unsigned irq);
-+
-+#include <asm-generic/gpio.h>           /* cansleep wrappers */
-+
-+#endif /* __ASM_MACH_GENERIC_GPIO_H */
+ #define PCI_VENDOR_ID_SITECOM		0x182d
+ #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
+ 
 
---Boundary-00=_eNKFHh68opwyC+p--
+--Boundary-00=_kNKFHp4OQPKMSkt--
 
 
 
