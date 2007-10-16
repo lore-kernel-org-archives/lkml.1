@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966369AbXJPVrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966425AbXJPVuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966369AbXJPVrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966003AbXJPVrK
+	id S966425AbXJPVuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966330AbXJPVuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:47:10 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45894 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965741AbXJPVrI (ORCPT
+	Tue, 16 Oct 2007 17:50:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20682 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966329AbXJPVuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:47:08 -0400
-Date: Tue, 16 Oct 2007 22:49:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: david@lang.hm
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071016224925.07d28c48@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
-References: <200710112011.22000.rob@landley.net>
-	<200710141836.55211.rob@landley.net>
-	<4712FE33.3000400@s5r6.in-berlin.de>
-	<200710150426.04924.rob@landley.net>
-	<20071015160800.GA324@parisc-linux.org>
-	<47139F15.7050702@s5r6.in-berlin.de>
-	<Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm>
-	<20071016111911.30a18e12@the-village.bc.nu>
-	<Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm>
-	<20071016195432.GA31306@parisc-linux.org>
-	<Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 16 Oct 2007 17:50:07 -0400
+Date: Tue, 16 Oct 2007 14:45:44 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: sam@ravnborg.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org, torvalds <torvalds@linux-foundation.org>
+Subject: Re: kexec: Cannot determine the file type of arch/x86/boot/bzImage
+Message-Id: <20071016144544.bad9ff3c.randy.dunlap@oracle.com>
+In-Reply-To: <47152FE6.3050204@m3y3r.de>
+References: <47151631.9000307@m3y3r.de>
+	<20071016130657.8cc17011.randy.dunlap@oracle.com>
+	<47152FE6.3050204@m3y3r.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> but in any case, historicly IDE (PATA) and SATA drives have been handled 
-> differently, IDE drives have had fixed device names based on how they are 
-> connected, SATA devices have had 'order found' device names from the SCSI 
+On Tue, 16 Oct 2007 23:40:54 +0200 Thomas Meyer wrote:
 
-Nope.
+> Randy Dunlap schrieb:
+> > On Tue, 16 Oct 2007 21:51:13 +0200 Thomas Meyer wrote:
+> >
+> > [adding kexec mailing list]
+> >
+> >   
+> >> Look at this:
+> >>
+> >> $ file arch/x86/boot/bzImage (tree 821f3eff7cdb9d6c7076effabd46c96c322daed1)
+> >> arch/x86/boot/bzImage: Linux kernel x86 boot executable zImage, version
+> >> 2.6.23 (thomas@hotzenplotz) #39, RO-rootFS, root_dev 0x803, swap_dev
+> >> 0x1, Prompt for Videomode
+> >>
+> >> $ file /boot/bzImage-2.6.23
+> >> /boot/bzImage-2.6.23: Linux kernel x86 boot executable RO-rootFS,
+> >> root_dev 0x803, swap_dev 0x1, Normal VGA
+> >>
+> >> and this:
+> >>
+> >> # kexec -l arch/x86/boot/bzImage
+> >> Cannot determine the file type of arch/x86/boot/bzImage
+> >>
+> >> How to solve this error?
+> >>     
+> $ git bisect good
+> f77bf01425b11947eeb3b5b54685212c302741b8 is first bad commit
+> commit f77bf01425b11947eeb3b5b54685212c302741b8
+> Author: Sam Ravnborg <sam@neptun.(none)>
+> Date:   Mon Oct 15 22:25:06 2007 +0200
+> 
+>     kbuild: introduce ccflags-y, asflags-y and ldflags-y
+> 
+>     Introduce ccflags-y, asflags-y and ldflags-y so we soon can
+>     deprecate use of EXTRA_CFLAGS, EXTRA_AFLAGS and EXTRA_LDFLAGS.
+>     This patch does not touch any in-tree users - thats next round.
+>     Lets get this committed first and then fix the users of the
+>     soon to be deprecated variants next.
+> 
+>     The rationale behind this change is to introduce support for
+>     makefile fragments like:
+> 
+>     ccflags-$(CONFIG_WHATEVER_DEBUG) := -DDEBUG
+> 
+>     As a replacement for the uglier:
+>     ifeq ($(CONFIG_WHATEVER_DEBUG),y)
+>             EXTRA_CFLAGS := -DDEBUG
+>     endif
+> 
+>     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> :040000 040000 03915c7c738eefa31f2327521130df23b7dfe95e
+> e2a1677df3709813ff793fdfa77d80fff9b838a7 M      Documentation
+> :040000 040000 ff4ad149975df39509a18782341f1f8f6a32f07a
+> 663bce3c08a0f2e107cecb0b29edc4fe9d5735a0 M      scripts
 
-Historically it depended whether you had a PATA controller with SATA
-bridge, a SATA controller with SATA drives, a PATA controller with PATA
-drives or a SATA controller with PATA bridge.
 
-Often the bridges are on the card or mainboard. So some VIA systems would
-historically use /dev/hda for the first SATA device.
+This makes 2 big problems with this patch in the last 1 hour.
 
-Even more fun is stuff like Jmicron where the BIOS settings determined
-whether PATA or SATA was /dev/hda
+Probably time to revert it...
 
-Alan
+---
+~Randy
