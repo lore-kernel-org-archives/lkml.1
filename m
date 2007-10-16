@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935856AbXJPT60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965335AbXJPT7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935856AbXJPT60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935757AbXJPT5j
+	id S965335AbXJPT7a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760524AbXJPT7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:57:39 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10334 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935751AbXJPT5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:57:38 -0400
+	Tue, 16 Oct 2007 15:59:18 -0400
+Received: from mga05.intel.com ([192.55.52.89]:35043 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934911AbXJPT7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 15:59:16 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
-   d="scan'208";a="175608300"
-Date: Tue, 16 Oct 2007 12:51:17 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: pcihpd-discuss@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIe Hotplug:  NFG unless I boot with card already inserted.
-Message-Id: <20071016125117.d7116ec2.kristen.c.accardi@intel.com>
-In-Reply-To: <47151191.40406@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-	<47150982.6050102@rtr.ca>
-	<471509FE.7080505@rtr.ca>
-	<47151191.40406@rtr.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="347900043"
+Date: Tue, 16 Oct 2007 12:58:34 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: 2.6.23-mm1
+Message-ID: <20071016195834.GA23157@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710122332.41944.rjw@sisk.pl> <20071015160914.GA18550@linux.intel.com> <200710152240.03543.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710152240.03543.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 15:31:29 -0400
-Mark Lord <lkml@rtr.ca> wrote:
-
-> Mark Lord wrote:
-> > Mark Lord wrote:
-> >> Kristen Carlson Accardi wrote:
-> >>> On Tue, 16 Oct 2007 14:39:33 -0400
-> >>> Mark Lord <lkml@rtr.ca> wrote:
-> >>>
-> >>>> I also checked my modprobe.d/ options, and I am using pciehp_force=1.
-> >>>> Without that flag, none of this ever works.
-> >>>
-> >>> OK - I suspected something like this.  Most Dell computers don't support
-> >>> ExpressCard hotplug using Native PCIe -- in fact, I've not seen a single
-> >>> one, they explicitly disable it because they have not validated it or
-> >>> they have and something didn't work right.  I'll take a look at what 
-> >>> you've
-> >>> got, but be aware that you are forcing pciehp to load and operate on 
-> >>> a system
-> >>> where they've certainly either not tested it, or tested it and something
-> >>> bad happened.
-> >>
-> >> Perhaps.  But this one works perfectly, except for two driver bugs:
-> >>
-> >> 1. Driver does not notice already-inserted cards after modprobe.
-> >> 2. Driver fails to function after suspend/resume until reloaded.
-> >>
-> >> Both of those are fixable in the kernel.
+On Mon, Oct 15, 2007 at 10:40:02PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 15 October 2007 18:09, Mark Gross wrote:
+> > On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
+> > > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
+> > > > 
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > > 
+> > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
+> > > >   to stabilise things for the 2.6.23 merge.
+> > > > 
+> > > >   But that didn't stop all the subsystem maintainers from going nuts, with
+> > > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
+> > > >   a bit better.
+> > > 
+> > > I get many traces similar to the one below from it (w/ hotfixes):
+> > > 
+> > > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
 > > 
-> > Ahh.. point 2 in particular suffers from "suspend/resume" not implemented.
-> > Or rather, implemented as a pair of "do nothing" functions.
+> > This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
+> > processor_idle.c is registering a acpi_processor_latency_notify 
+> > 
+> > my code changed the notifier call from blocking_notifier_call_chain to
+> > srcu_notifier_call_chain, because dynamic creation of notifier chains at
+> > runtime where easier with the srcu_notifier_call_chain than the
+> > blocking_notifier_call_chain.  
+> > 
+> > As dynamic creation of PM_QOS parameters are no longer needed I can
+> > change the notifiers back to match what was in lanency.c
+> > 
+> > However; looking at the call tree differences between
+> > blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
+> > difference in irq enabling / disabling.  I'm not confident this will
+> > address this yet.
 > 
-> This patch below seems to fix point 1 on my system,
-> causing pciehp to become aware of already-inserted cards on module load.
+> Well, you can send me a patch to check. :-)
+
+I think I'll have to send you a patch that changes the notifiers but I
+doubt it will fix it.  
+
+After a bit of messing around I have the 2.6.23-mm1 running on my core-2
+box  note: Ubuntu's make-kpkg on the mm1 tree resulted in a system that
+wouldn't boot past the intrd.  Looks like the pivot root failed or
+something.
+
+Anyway, I'm not reproducing your experience, snd_pcm is loaded.  I don't
+know none of the WARN's are not hitting on my box.
+
+do you have some configuration information that could help me reproduce
+the issue?
+
 > 
-> It's not perfect, but I believe it does show the kind of functionality
-> that's missing from the driver.
+> > I'll change the PM_QOS params patch to use blocking notifiers and test
+> > on a 64bit boot and see what happens.  I've been needing to setup my
+> > x86_64 dev box for a while now anyway.
+> 
+> OK, thanks.
 
-No - it's not broken.  Powering off the slot if it is not occupied is the
-right thing to do - the controller when it is working properly will detect
-the presence of a new adapter and interrupt.  
+well its booting but I'm not reproducing the trace messages.
 
-I'll try to duplicate your problem on a piece of hardware that has proper
-firmware support and validated hardware and then we'll go from there.
+I'll do the patch for you to test.
 
-We could very well have software problems, especially with ExpressCard
-since most pciehp use is for servers, but we should make sure we aren't
-writing workarounds for broken hardware first.
+--mgross
