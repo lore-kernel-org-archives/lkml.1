@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965545AbXJPUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965504AbXJPUTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965545AbXJPUQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965487AbXJPUPz
+	id S965504AbXJPUTP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXJPUS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:15:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42089 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965482AbXJPUPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:15:54 -0400
-Message-ID: <47151BF3.4080208@garzik.org>
-Date: Tue, 16 Oct 2007 16:15:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 16 Oct 2007 16:18:57 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40325 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbXJPUS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:18:56 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47151C8B.5050704@s5r6.in-berlin.de>
+Date: Tue, 16 Oct 2007 22:18:19 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: remove blk_queue_max_phys_segments in libata
-References: <200710161809.l9GI9YTS008023@hera.kernel.org>
-In-Reply-To: <200710161809.l9GI9YTS008023@hera.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Matthew Wilcox <matthew@wil.cx>
+CC: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net> <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de> <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu> <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm> <20071016195432.GA31306@parisc-linux.org>
+In-Reply-To: <20071016195432.GA31306@parisc-linux.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8889e3c129780cdbe15fed3c366ba3aa3026684d
-> Commit:     8889e3c129780cdbe15fed3c366ba3aa3026684d
-> Parent:     fd820f405574a30aacf9a859886e173d641f080b
-> Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> AuthorDate: Tue Sep 18 12:16:45 2007 +0200
-> Committer:  Jens Axboe <jens.axboe@oracle.com>
-> CommitDate: Tue Oct 16 11:24:44 2007 +0200
+Matthew Wilcox wrote:
+> On Tue, Oct 16, 2007 at 12:54:58PM -0700, david@lang.hm wrote:
+>> On Tue, 16 Oct 2007, Alan Cox wrote:
+>>> I wouldn't try dividing those by pata v sata. You'll cause all sorts of
+>>> problems in the process because of PATA-SATA and SATA-PATA bridges.
+>> if you use a PATA-SATA bridge (IDE drive SATA controller), it would look 
+>> to the system like a SATA drive and be addressed and enumerated as SATA.
 > 
->     remove blk_queue_max_phys_segments in libata
->     
->     LIBATA_MAX_PRD is the maximum number of DMA scatter/gather elements
->     permitted by the HBA's DMA engine. It's properly set to
->     q->max_hw_segments via the sg_tablesize parameter.
->     
->     libata shouldn't call blk_queue_max_phys_segments. Now LIBATA_MAX_PRD
->     is equal to SCSI_MAX_PHYS_SEGMENTS by default (both is 128), so
->     everything is fine. But if they are changed, some code (like the scsi
->     mid layer, sg chaining, etc) might not work properly.
->     
->     (Addition from Jens) The basic issue is that the physical segment
->     setting is purely a driver issue. And since SCSI is managing the sglist,
->     libata has no business changing the setting. All libata should care
->     about is the hw segment setting.
->     
->     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  drivers/ata/libata-scsi.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> index d63c81e..ba62d53 100644
-> --- a/drivers/ata/libata-scsi.c
-> +++ b/drivers/ata/libata-scsi.c
-> @@ -801,8 +801,6 @@ int ata_scsi_slave_config(struct scsi_device *sdev)
->  
->  	ata_scsi_sdev_config(sdev);
->  
-> -	blk_queue_max_phys_segments(sdev->request_queue, LIBATA_MAX_PRD);
-> -
->  	sdev->manage_start_stop = 1;
+> But you don't know where the bridge is.  It might be on the drive's
+> board, it might be an explicit enclosure, or it might be on the
+> motherboard.  Each of those scenarios is going to have a different user
+> expectation.
 
-As I noted when this first patch was posted...   this line of code 
-existed because the difference between hw-segments and phys-segments was 
-incredibly difficult to discern.  The names say basically the same thing 
-to me, and I could find no documentation explaining the difference?
+If the bridge is on the drive's board or in an enclosure, the user's
+expectations are fully met.
 
-Does such documentation exist?  If not, can you please explain the 
-difference?
+If the bridge is on the motherboard, then the user may be surprised
+unless he knows the motherboard well enough.
 
-Finally, some notification and coordination would have been helpful. 
-Commit 6c08772e49622e90d39903e7ff0be1a0f463ac86 appears to have been 
-missed, at the very least... or is it actually correct?
+But this is _far_ less of an issue than
+  - the hda<->sda confusion,
+  - the confusion caused by all kernel default names put into a single
+    namespace.
 
-Inquiring minds want to know, since I wasn't CC'd or kept in the loop :)
-
-	Jeff
-
-
+I don't have a personal interest in PATA/SATA distinction though.  I
+suppose once PATA went into the SCSI namespace and then this namespace
+is divided again, it's not a big issue anymore whether PATA and SATA
+share an ATA namespace or are distinct, except perhaps for people with
+IDE drive and eSATA slots.
+-- 
+Stefan Richter
+-=====-=-=== =-=- =----
+http://arcgraph.de/sr/
