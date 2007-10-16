@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXJPRT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbXJPRVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbXJPRT6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760757AbXJPRTq
+	id S933983AbXJPRVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXJPRVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:19:46 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:50082 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760582AbXJPRTn (ORCPT
+	Tue, 16 Oct 2007 13:21:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41830 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbXJPRVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:19:43 -0400
-Date: Tue, 16 Oct 2007 18:19:32 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-In-Reply-To: <20071016062108.GB1000@ff.dom.local>
-Message-ID: <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl>
-References: <20071015125301.GC3015@ff.dom.local>
- <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local>
+	Tue, 16 Oct 2007 13:21:33 -0400
+Date: Tue, 16 Oct 2007 19:21:24 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Yi Yang <yang.y.yi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mj@atrey.karlin.mff.cuni.cz,
+       crutcher+kernel@datastacks.com
+Subject: Re: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef
+	key
+Message-ID: <20071016172124.GA19882@elf.ucw.cz>
+References: <4714DDA8.8030204@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4714DDA8.8030204@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Jarek Poplawski wrote:
+Hi!
 
-> Yes, it's all right here. Sorry for bothering - I should've found this
-> by myself.
+> For SysRq, we just can get hot key list from Documentation/sysrq.txt
+> , but in the most of cases, the user can't access it by hand on
+> using SysRq to debug, so it is better for SysRq to provide an online
+> help for the users.
+> 
+> SysRq has already provided a similiar help before this patch, but it
+> is not so definite that the user doesn't know what happened and how
+> to do on pressing an undefined hot key.
+> 
+> In addition, that funtion has a big loop with another big loop
+> embedded which is very inefficient, it is intended to skip some hot
+> key help info for such a function as "Changing Loglevel", just print
+> a help info for this, that is very unnecessary. In fact, the key '0'
+>  - '8' have different results the user should know.
+> 
+> This patch add this online help function, it'll print thw whole hot
+> key list and corresponding function descriptions, it can print the new
+> defined hot key without any changed needed.
+> 
+> The output is the below on pressing an undefined hot key:
+> 
+> SysRq : <6>this hot key isn't defined.
+> 
+> SysRq Help Information:
+> 
+>   Hot Key      Function Description
+> ===========    ====================
+> ALT+SysRq+0    Changing Loglevel to this value
+> ALT+SysRq+1    Changing Loglevel to this value
+> ALT+SysRq+2    Changing Loglevel to this value
+> ALT+SysRq+3    Changing Loglevel to this value
+> ALT+SysRq+4    Changing Loglevel to this value
+> ALT+SysRq+5    Changing Loglevel to this value
+> ALT+SysRq+6    Changing Loglevel to this value
+> ALT+SysRq+7    Changing Loglevel to this value
+> ALT+SysRq+8    Changing Loglevel to this value
+> ALT+SysRq+9    Changing Loglevel to this value
+> ALT+SysRq+a    Not defined
+> ALT+SysRq+b    Resetting
+> ALT+SysRq+c    Trigger a crashdump
+> ALT+SysRq+d    Not defined
+> ALT+SysRq+e    Terminate All Tasks
+> ALT+SysRq+f    Manual OOM execution
+> ALT+SysRq+g    Not defined
+> ALT+SysRq+h    Not defined
+> ALT+SysRq+i    Kill All Tasks
+> ALT+SysRq+j    Not defined
+> ALT+SysRq+k    SAK
+> ALT+SysRq+l    Not defined
+> ALT+SysRq+m    Show Memory
+> ALT+SysRq+n    Nice All RT Tasks
+> ALT+SysRq+o    Power Off
+> ALT+SysRq+p    Show Regs
+> ALT+SysRq+q    Show Pending Timers
+> ALT+SysRq+r    Keyboard mode set to XLATE
+> ALT+SysRq+s    Emergency Sync
+> ALT+SysRq+t    Show State
+> ALT+SysRq+u    Emergency Remount R/O
+> ALT+SysRq+v    Not defined
+> ALT+SysRq+w    Show Blocked State
+> ALT+SysRq+x    Not defined
+> ALT+SysRq+y    Not defined
+> ALT+SysRq+z    Not defined
 
- Ah, no problem -- even with the right keys you may sometimes get lost in 
-the results.
+This will scroll out of users view on small terminals.
 
-> I've still some doubts about this possible enable_irq() after
-> free_irq(). If it's the only handler the status would be changed again
-> and at least some of this code in check_irq_resend() would be run, but
-> I can miss something again or/and this doesn't matter, as well.
+Plus it is untrue. On sparc, it is stop+x, not sysrq+x.
 
- Well, enable_irq() and disable_irq() themselves are nesting, so they are 
-not a problem.  OTOH, free_irq() does not seem to maintain the depth count 
-correctly, which looks like a bug to me and which could trigger regardless 
-of whether flush_scheduled_work() or cancel_work_sync() was called.
+> +/*
+> + * Hot key table SysRq supports
+> + */
+> +static char __read_mostly sysrq_hot_key_table[36] = {
+> +	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+> +	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+> +	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+> +	'u', 'v', 'w', 'x', 'y', 'z'
+> +};
 
- The reason is CONFIG_DEBUG_SHIRQ which makes a simulated interrupt event 
-be sent at the end of free_irq().  It looks like a problem that is 
-complementary to one I signalled here:
-
-http://lkml.org/lkml/2007/9/12/82
-
-with respect to request_irq(), where, similarly, such an interrupt event 
-is sent at the beginning.  It looks like nobody was concerned back then, 
-but perhaps it is time to do a better investigation now and propose a 
-solution.
-
- I'll think about it and thanks for your inquisitiveness that has led to 
-these conclusions.
-
-  Maciej
+Plus this is practically guaranteed to get out of sync with
+reality. If you did this to make sysrq printing faster... then that is
+very bad optimization.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
