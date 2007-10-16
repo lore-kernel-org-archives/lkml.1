@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXJPNT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933396AbXJPNXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933128AbXJPNT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbXJPNTT
+	id S933396AbXJPNXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 09:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757896AbXJPNXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:19:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:62938 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932140AbXJPNTS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:19:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=uiN8mqFsF/h7jhBp9XzTB+7QnLUCeVDYfHyS0vADT88hw73JkZbPS6L+oRs8tHNAYoeN7Wxv+cOLcWHbds0CdRAiuC49xb2byCqTrVfTe7+6bY+1Jb7mP0Vy2SlaAamrixDILcb7fmTiys1rrBT0YSSUFem95IERNsBm/Qoxjzs=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: In response to kernel compression e-mail a few months ago.
-Date: Tue, 16 Oct 2007 14:19:07 +0100
-User-Agent: KMail/1.9.1
-Cc: Al Viro <viro@ftp.linux.org.uk>, Jan Engelhardt <jengelh@computergmbh.de>,
-       linux-kernel@vger.kernel.org, apiszcz@solarrain.com
-References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan> <20071014205008.GZ8181@ftp.linux.org.uk> <Pine.LNX.4.64.0710141650500.12466@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0710141650500.12466@p34.internal.lan>
+	Tue, 16 Oct 2007 09:23:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35884 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755248AbXJPNXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 09:23:46 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX18nULsSvyInoOjHsJ9nhTDAtD41fDgweWIG4v5gX2
+	2MQw5VG2Kf8frp
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [BUG] memory leak in dm
+Date: Tue, 16 Oct 2007 15:23:46 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Kristof Provost <Kristof@provost-engineering.be>,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>
+References: <20071016113800.GA4631@luggage> <20071016114458.GD5263@kernel.dk>
+In-Reply-To: <20071016114458.GD5263@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710161419.07975.vda.linux@googlemail.com>
+Message-Id: <200710161523.47111.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 October 2007 21:58, Justin Piszcz wrote:
-> 
-> On Sun, 14 Oct 2007, Al Viro wrote:
-> 
-> > On Sun, Oct 14, 2007 at 09:46:15PM +0200, Jan Engelhardt wrote:
-> >> (Obviously we shall pick .7z)
-> >
-> > The hell it is.  Take a look at memory footprint of those suckers...
-> 
-> For compression with -mx=9 it does use 500-900 MiB of RAM, that is true.
-> For decompression, 50-70 MiB.
+Am Dienstag 16 Oktober 2007 13:44:58 schrieb Jens Axboe:
+> Please try with this patch from Neil.
+Tried the patch. Now its usable - as far as i can say. Compiled a fresh kernel 
+to "stress" the system (make -j3).
+Without the patch the system had freezed after some minutes during compile.
 
-I'm with Al on this. 50 Mb for decompression?
-Embedded and small device folks will not love this, I'm sure.
-*Maybe* we can use lzma. Seems to use 8Mb on decompression:
+::::::::::::::
+../free_before
+::::::::::::::
+             total       used       free     shared    buffers     cached
+Mem:       2053260     691856    1361404          0       5884     324868
+-/+ buffers/cache:     361104    1692156
+Swap:      2104472          0    2104472
 
-  PID   VSZ*VSZRW   RSS (SHR) DIRTY (SHR) STACK COMMAND
-30474 10708  8604  8760   392  8360     0     8 lzmacat pld-th-x86_64.tar.lzma
+::::::::::::::
+../free_after
+::::::::::::::
+             total       used       free     shared    buffers     cached
+Mem:       2053260    2006588      46672          0         32    1492360
+-/+ buffers/cache:     514196    1539064
+Swap:      2104472         96    2104376
 
-(pld-th-x86_64.tar.lzma is a random 40Mb .lzma file I found on the net)
 
-Sizes in Kb again:
-
-32392 linux-2.6.16.17.tar.7z
-33520 linux-2.6.16.17.tar.lzma
-
-P.S. sorting files by extension in tarball generally helps, but in case
-of Linux kernel, they are all C code anyway, so no measurable gain there.
---
-vda
+Greets
+Jan-Simon
