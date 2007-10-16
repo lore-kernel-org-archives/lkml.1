@@ -1,47 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935410AbXJPTUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965401AbXJPTWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935410AbXJPTUf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934505AbXJPTU0
+	id S965401AbXJPTWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933824AbXJPTV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:20:26 -0400
-Received: from cavan.codon.org.uk ([78.32.9.130]:46943 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934599AbXJPTUZ (ORCPT
+	Tue, 16 Oct 2007 15:21:58 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:49666 "EHLO
+	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760155AbXJPTV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:20:25 -0400
-Date: Tue, 16 Oct 2007 20:20:10 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Message-ID: <20071016192010.GA26692@srcf.ucam.org>
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com> <20071015210737.GA15293@khazad-dum.debian.net> <20071016130053.GA20010@srcf.ucam.org> <20071016141153.GA3237@khazad-dum.debian.net> <20071016142121.GA21431@srcf.ucam.org> <20071016143124.GB3237@khazad-dum.debian.net> <20071016144016.GA21749@srcf.ucam.org> <20071016165623.GA13643@khazad-dum.debian.net> <20071016184606.GB25181@srcf.ucam.org> <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
+	Tue, 16 Oct 2007 15:21:57 -0400
+X-Greylist: delayed 82577 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 15:21:57 EDT
+Date: Tue, 16 Oct 2007 21:21:48 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.24
+In-Reply-To: <4714762B.5040401@panasas.com>
+Message-ID: <Pine.LNX.4.64.0710162121330.29643@anakin>
+References: <1192421381.3429.6.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0710160846030.16889@anakin> <4714762B.5040401@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 12:14:32PM -0700, Linus Torvalds wrote:
+On Tue, 16 Oct 2007, Boaz Harrosh wrote:
+> On Tue, Oct 16 2007 at 8:49 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Mon, 15 Oct 2007, James Bottomley wrote:
+> >> This is the accumulated updates queued for 2.6.24.  It contains the
+> >> usual slew of driver updates, plus some gdth and advansys rewrites.  We
+> >> still have some outstanding bugs in gdth and fc4 for which I'm hoping to
+> >> sweep fixes into the next update.
+> > 
+> >> Boaz Harrosh (12):
+> >>       NCR5380: Use scsi_eh API for REQUEST_SENSE invocation
+> > 
+> > This change broke compilation of the mac_scsi.c driver:
+> > 
+> > | linux/drivers/scsi/NCR5380.c: In function 'NCR5380_information_transfer':
+> > | linux/drivers/scsi/NCR5380.c:2282: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> > | linux/drivers/scsi/NCR5380.c:2283: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> > | linux/drivers/scsi/NCR5380.c:2284: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> > | linux/drivers/scsi/NCR5380.c:2288: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> > 
+> fix below, Sorry.
+> ----
+> >From 1e10cf1a39ff4909696a5c7950367261b38b3345 Mon Sep 17 00:00:00 2001
+> From: Boaz Harrosh <bharrosh@panasas.com>
+> Date: Tue, 16 Oct 2007 10:25:01 +0200
+> Subject: [PATCH] scsi_mac.h: Define AUTOSENSE before include of NCR5380.h
+> 
+>   - Previese patch to NCR5380 broke scsi_mac because
+>     AUTOSENSE was defined after the inclusion of
+>     NCR5380.h. Fix it
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 
-> IOW, I think the thinkpad issue (and others like it) should be fixed by 
-> splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and 
-> KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the 
-> kernel itself, for that matter) can know whether it's a informational 
-> message or whether it should be acted upon.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-In principle I agree, but userspace already handles it. While it's 
-certainly more correct, I'm not sure it provides any other real 
-advantage.
+> ---
+>  drivers/scsi/mac_scsi.c |    9 +++++----
+>  1 files changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/scsi/mac_scsi.c b/drivers/scsi/mac_scsi.c
+> index cdbcaa5..abe2bda 100644
+> --- a/drivers/scsi/mac_scsi.c
+> +++ b/drivers/scsi/mac_scsi.c
+> @@ -53,6 +53,11 @@
+>  #include "scsi.h"
+>  #include <scsi/scsi_host.h>
+>  #include "mac_scsi.h"
+> +
+> +/* These control the behaviour of the generic 5380 core */
+> +#define AUTOSENSE
+> +#define PSEUDO_DMA
+> +
+>  #include "NCR5380.h"
+>  
+>  #if 0
+> @@ -571,10 +576,6 @@ static int macscsi_pwrite (struct Scsi_Host *instance,
+>  }
+>  
+>  
+> -/* These control the behaviour of the generic 5380 core */
+> -#define AUTOSENSE
+> -#define PSEUDO_DMA
+> -
+>  #include "NCR5380.c"
+>  
+>  static struct scsi_host_template driver_template = {
+> -- 
+> 1.5.3.1
+> 
+> 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
