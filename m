@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXJPV00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966012AbXJPV3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965585AbXJPV00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbXJPV0E
+	id S966012AbXJPV3Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbXJPV3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:26:04 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44740
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755140AbXJPV0B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:26:01 -0400
-Date: Tue, 16 Oct 2007 14:30:21 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rik van Riel <riel@surriel.com>
-cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Mark Gross <mgross@linux.intel.com>,
-       Giacomo Catenazzi <cate@debian.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-In-Reply-To: <20071016162310.1891914f@bree.surriel.com>
-Message-ID: <Pine.LNX.4.64.0710161410270.6995@asgard.lang.hm>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com>
- <20071015183017.GB23130@uranus.ravnborg.org> <4713C582.4000504@debian.org>
- <20071016200623.GB23157@linux.intel.com> <Pine.LNX.4.64.0710162207540.4548@fbirervta.pbzchgretzou.qr>
- <20071016162310.1891914f@bree.surriel.com>
+	Tue, 16 Oct 2007 17:29:11 -0400
+Received: from thunk.org ([69.25.196.29]:39298 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755140AbXJPV3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:29:09 -0400
+Date: Tue, 16 Oct 2007 17:28:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch][rfc] rewrite ramdisk
+Message-ID: <20071016212853.GB1314@closure.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <200710151028.34407.borntraeger@de.ibm.com> <m1abqjirmd.fsf@ebiederm.dsl.xmission.com> <200710161808.06405.nickpiggin@yahoo.com.au> <200710161747.12968.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710161747.12968.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Rik van Riel wrote:
+On Tue, Oct 16, 2007 at 05:47:12PM +1000, Nick Piggin wrote:
+> +	/*
+> +	 * ram device BLKFLSBUF has special semantics, we want to actually
+> +	 * release and destroy the ramdisk data.
+> +	 */
 
-> On Tue, 16 Oct 2007 22:09:04 +0200 (CEST)
-> Jan Engelhardt <jengelh@computergmbh.de> wrote:
->> On Oct 16 2007 13:06, Mark Gross wrote:
->>>
->>> base function:
->>> Starting from a stock distro (FC, Ubuntu, OpenSuSE...) and put down a
->>> kernel.org tree and automatically create a .config with all the
->>> drivers needed for the platform I'm building on.
->>
->> Too easy. Since opensuse's udev loads most of the modules for your
->> hardware, all that would be needed is to transform the lsmod list of
->> modules plus the static options in /proc/config.gz (stuff like
->> psmouse) back into kconfig options ;-)
->
-> Well, at that point it does not know whether or not you
-> occasionally plug in an ipod or a digital camera.
+We won't be able to fix completely this for a while time, but the fact
+that BLKFLSBUF has special semantics has always been a major wart.
+Could we perhaps create a new ioctl, say RAMDISKDESTORY, and add a
+deperecation printk for BLKFLSBUF when passed to the ramdisk?  I doubt
+there are many tools that actually take advantage of this wierd aspect
+of ramdisks, so hopefully it's something we could remove in a 18
+months or so...
 
-you can ask the user to plugin all the different devices that they want to 
-use when doing the config scan
-
-bonus points if you have both the ability to go from nothing to a config 
-_and_ take an existing config and add any additional drivers needed for 
-the current hardware
-
-David Lang
-
-> Going back from the lsmod output to all the right CONFIG
-> options is also not as trivial as it sounds, due to all
-> the dependencies there are.
->
-> This project sounds like it could be a great undergraduate
-> project, maybe built on top of Ketchup to automatically
-> fetch, configure, compile and install a working kernel :)
->
-> Are there any volunteers to write down the project
-> description on the kernelnewbies.org wiki?
->
->
+							- Ted
