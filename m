@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933637AbXJPR5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbXJPR7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933637AbXJPR5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbXJPR5j
+	id S934580AbXJPR7K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759718AbXJPR65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:57:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34780 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759297AbXJPR5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:57:38 -0400
-Date: Tue, 16 Oct 2007 10:56:03 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Vitaliy Ivanov <vitalivanov@gmail.com>, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       zaitcev@redhat.com
-Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
-Message-Id: <20071016105603.5cd42ff6.zaitcev@redhat.com>
-In-Reply-To: <20071016154138.GA23326@1wt.eu>
-References: <1192383445.8372.18.camel@dell1.softservecom.com>
-	<20071014182542.GA2832@1wt.eu>
-	<35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
-	<20071014223921.GA4677@1wt.eu>
-	<1192542889.29039.66.camel@dell1.softservecom.com>
-	<20071016154138.GA23326@1wt.eu>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 13:58:57 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35940 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbXJPR64 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 13:58:56 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 16 Oct 2007 19:58:46 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-ohci: optimize initialization of ar context
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
+In-Reply-To: <tkrat.c21e564719351bc6@s5r6.in-berlin.de>
+Message-ID: <tkrat.ee2f970ab4b4ccbd@s5r6.in-berlin.de>
+References: <tkrat.2493a847503e3d62@s5r6.in-berlin.de>
+ <4714F652.1060007@s5r6.in-berlin.de>
+ <tkrat.c21e564719351bc6@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 17:41:38 +0200, Willy Tarreau <w@1wt.eu> wrote:
+Sync only the parts for CPU which are actually accessed by the CPU.
+Replace a memset by direct assignment.
 
-> OK, I have no objection, but please apply the fixes the le16 problem as
-> suggested by Pete and Greg first. Also, you will probably receive more
-> comments, and/or criticisms from further reviews. This is normal and
-> expected. You just have to fix your code so that it can be merged.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |   22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-I do not object to the driver (with byte order fixed), although it seems
-written oddly... E.g. lots of trivial comments, the open count locked
-by wrong lock. But I do not want to hold the 2.4 version hostage to
-errors of the mainline. We should've caught them when we merged adutux
-into Greg's tree. I have to admit I'm skipping reviewing a lot of 2.6.
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -258,19 +258,21 @@ static int ar_context_add_page(struct ar
+ 		free_page((unsigned long) ab);
+ 		return -ENOMEM;
+ 	}
+-	dma_sync_single_for_cpu(dev, ab_bus, PAGE_SIZE, DMA_BIDIRECTIONAL);
++	dma_sync_single_for_cpu(dev, ab_bus, sizeof(ab->descriptor),
++				DMA_BIDIRECTIONAL);
+ 
+-	memset(&ab->descriptor, 0, sizeof(ab->descriptor));
+-	ab->descriptor.control        = cpu_to_le16(DESCRIPTOR_INPUT_MORE |
+-						    DESCRIPTOR_STATUS |
+-						    DESCRIPTOR_BRANCH_ALWAYS);
+ 	offset = offsetof(struct ar_buffer, data);
+-	ab->descriptor.req_count      = cpu_to_le16(PAGE_SIZE - offset);
+-	ab->descriptor.data_address   = cpu_to_le32(ab_bus + offset);
+-	ab->descriptor.res_count      = cpu_to_le16(PAGE_SIZE - offset);
+-	ab->descriptor.branch_address = 0;
++	ab->descriptor.req_count       = cpu_to_le16(PAGE_SIZE - offset);
++	ab->descriptor.control         = cpu_to_le16(DESCRIPTOR_INPUT_MORE |
++						     DESCRIPTOR_STATUS |
++						     DESCRIPTOR_BRANCH_ALWAYS);
++	ab->descriptor.data_address    = cpu_to_le32(ab_bus + offset);
++	ab->descriptor.branch_address  = 0;
++	ab->descriptor.res_count       = cpu_to_le16(PAGE_SIZE - offset);
++	ab->descriptor.transfer_status = 0;
+ 
+-	dma_sync_single_for_device(dev, ab_bus, PAGE_SIZE, DMA_BIDIRECTIONAL);
++	dma_sync_single_for_device(dev, ab_bus, sizeof(ab->descriptor),
++				   DMA_BIDIRECTIONAL);
+ 
+ 	ctx->last_buffer->descriptor.branch_address = cpu_to_le32(ab_bus | 1);
+ 	ctx->last_buffer->next = ab;
 
--- Pete
+-- 
+Stefan Richter
+-=====-=-=== =-=- =----
+http://arcgraph.de/sr/
+
