@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbXJPGWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbXJPGYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357AbXJPGWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXJPGWJ
+	id S932764AbXJPGYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760337AbXJPGYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:22:09 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:33183 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759206AbXJPGWH (ORCPT
+	Tue, 16 Oct 2007 02:24:47 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:56806 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760074AbXJPGYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:22:07 -0400
-Message-ID: <4714588C.8010407@davidnewall.com>
-Date: Tue, 16 Oct 2007 15:52:04 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Tue, 16 Oct 2007 02:24:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=K42c/UreqJar/qD5Q5Yraut4KdX6jAKytYvbvPc8ojwitevtBGzm3YHNcbID3XJ2f
+	mlmRMCdlG94XwzSSz4dCw==
+Date: Mon, 15 Oct 2007 23:21:08 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: menage@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
+       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
+Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
+In-Reply-To: <20071015230729.53fcbaf7.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710152311180.22383@chino.kir.corp.google.com>
+References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com> <alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com> <20071015230729.53fcbaf7.pj@sgi.com>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-References: <200710112011.22000.rob@landley.net> <200710152337.45252.nickpiggin@yahoo.com.au> <200710150452.30939.rob@landley.net> <200710160108.38222.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710160108.38222.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Monday 15 October 2007 19:52, Rob Landley wrote:
->   
->> On Monday 15 October 2007 8:37:44 am Nick Piggin wrote:
->>     
->>> You really shouldn't configure
->>> so much [swap] unless you do want the kernel to actually use it all, right?
->>>       
->> Two words: "Software suspend".  I've actually been thinking of increasing
->> it on the next install...
->>     
->
-> Kernel doesn't know that you want to use it for suspend but not
-> regular swapping, unfortunately.
->   
+On Mon, 15 Oct 2007, Paul Jackson wrote:
 
-Couldn't you mount swap before suspend and unmount it after resume?
+> My solution may be worse than that.  Because set_cpus_allowed() will
+> fail if asked to set a non-overlapping cpumask, my solution could never
+> terminate.  If asked to set a cpusets cpus to something that went off
+> line right then, this I'd guess this code could keep looping forever,
+> looking for cpumasks that didn't match, and then not noticing that it
+> was failing to set them so as they would match.
+> 
+
+Why can't you just add a helper function to sched.c:
+
+	void set_hotcpus_allowed(struct task_struct *task,
+				 cpumask_t cpumask)
+	{
+		mutex_lock(&sched_hotcpu_mutex);
+		set_cpus_allowed(task, cpumask);
+		mutex_unlock(&sched_hotcpu_mutex);
+	}
+
+And then change each task's cpus_allowed via that function instead of 
+set_cpus_allowed() directly?
+
+You don't need to worry about making the task->cpuset->cpus_allowed 
+assignment a critical section because common_cpu_mem_hotplug_unplug() will 
+remove any hot-unplugged cpus from each cpuset's cpus_allowed in the 
+hierarchy.
+
+Your loop will still need to be reworked so that cgroup_iter_{start,end}() 
+are not reinvoked unnecessarily and you rely only on cgroup_iter_next() 
+returning NULL to determine when you've gone through the entire list.  
+There's no need to go back and check the cpus_allowed of tasks you've 
+already called set_cpus_allowed() on either directly or indirectly via my 
+helper function above.
+
+		David
