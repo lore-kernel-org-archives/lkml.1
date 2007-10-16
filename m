@@ -1,58 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbXJPH3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbXJPHdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932401AbXJPH3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 03:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbXJPH3i
+	id S932925AbXJPHdn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 03:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbXJPHdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 03:29:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60244 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755510AbXJPH3h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 03:29:37 -0400
-Date: Tue, 16 Oct 2007 00:28:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-mm1 - regression- PowerPC link failure at
- arch/powerpc/kernel/head_64.o
-Message-Id: <20071016002850.4296827e.akpm@linux-foundation.org>
-In-Reply-To: <471465D8.9030100@linux.vnet.ibm.com>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<471465D8.9030100@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 03:33:35 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:59634 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755389AbXJPHdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 03:33:35 -0400
+Date: Tue, 16 Oct 2007 09:33:24 +0200 (MEST)
+Message-Id: <200710160733.l9G7XOwM005146@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: torvalds@linux-foundation.org
+Subject: [PATCH TRIVIAL 2.6.23-git9] CREDITS: correct Mikael Pettersson's URL
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 12:48:48 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+New URL due to local reorganization.
 
-> Hi Andrew,
-> 
-> The link failure while compiling the kernel with allyesconfig over the lpar, 
-> which was seen in 2.6.23-rc8-mm2 (http://lkml.org/lkml/2007/9/30/2) is still 
-> seen in 2.6.23-mm1, the link failure is
-> 
-> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: final link failed: Bad value
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> # gcc -v
-> Using built-in specs.
-> Target: powerpc64-suse-linux
-> Configured with: ../configure --enable-threads=posix --prefix=/usr --with-local-prefix=/usr/local --infodir=/usr/share/info --mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib --enable-languages=c,c++,objc,fortran,obj-c++,java,ada --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 --enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib --with-system-zlib --enable-shared --enable-__cxa_atexit --enable-libstdcxx-allocator=new --program-suffix=-4.1 --enable-version-specific-runtime-libs --without-system-libunwind --with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
-> Thread model: posix
-> gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
-> 
-> ld -v
-> GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
-> 
-> 
-> Anything I can provide to help diagnose this?
-> 
-
-Did we work out which patch is causing this?
+--- linux-2.6.23-git9/CREDITS.~1~	2007-10-16 09:26:14.000000000 +0200
++++ linux-2.6.23-git9/CREDITS	2007-10-16 09:26:54.000000000 +0200
+@@ -2702,7 +2702,7 @@ S: Canada K2P 0X8
+ 
+ N: Mikael Pettersson
+ E: mikpe@it.uu.se
+-W: http://www.csd.uu.se/~mikpe/
++W: http://user.it.uu.se/~mikpe/linux/
+ D: Miscellaneous fixes
+ 
+ N: Reed H. Petty
