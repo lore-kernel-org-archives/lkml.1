@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935525AbXJPTuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935598AbXJPTvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935525AbXJPTuW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765267AbXJPTuK
+	id S935598AbXJPTvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934219AbXJPTuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:50:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39409 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763932AbXJPTuI (ORCPT
+	Tue, 16 Oct 2007 15:50:51 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:51696 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765267AbXJPTuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:50:08 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <471515D8.8040703@s5r6.in-berlin.de>
-Date: Tue, 16 Oct 2007 21:49:44 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Tue, 16 Oct 2007 15:50:50 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: ioctl32: Unknown cmd
+Date: Tue, 16 Oct 2007 21:50:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>
+References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: linux1394-devel@lists.sourceforge.net
-CC: linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-Subject: Re: [PATCH corrected] firewire: fw-ohci: fix DMA mapping for ar context
-References: <tkrat.2493a847503e3d62@s5r6.in-berlin.de> <4714F652.1060007@s5r6.in-berlin.de> <tkrat.c21e564719351bc6@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.c21e564719351bc6@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710162150.37636.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/53SIBupoKb9jIenuz9PIsZMDC6bhkodEp1+g
+ dtws4i1XgmtAVi2aGflOLsaQfKmTNDOyFSW4GOGJZogBVCabJ8
+ CdACv3ZFMAn2wSqd4mXMQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> The CPU must not touch the buffer after it was DMA-mapped.
+On Tuesday 16 October 2007, Geert Uytterhoeven wrote:
+> The recent (post 2.6.23) changes to compat_ioctl made the reporting of
+> unsupported ioctls more verbose. E.g. on the PS3 I get:
 > 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->  drivers/firewire/fw-ohci.c |    1 +
->  1 file changed, 1 insertion(+)
+> | ioctl32(cdrom_id:608): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-11-0
+> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
+> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
 > 
-> Index: linux/drivers/firewire/fw-ohci.c
-> ===================================================================
-> --- linux.orig/drivers/firewire/fw-ohci.c
-> +++ linux/drivers/firewire/fw-ohci.c
-> @@ -258,6 +258,7 @@ static int ar_context_add_page(struct ar
->  		free_page((unsigned long) ab);
->  		return -ENOMEM;
->  	}
-> +	dma_sync_single_for_cpu(dev, ab_bus, PAGE_SIZE, DMA_BIDIRECTIONAL);
->  
->  	memset(&ab->descriptor, 0, sizeof(ab->descriptor));
->  	ab->descriptor.control        = cpu_to_le16(DESCRIPTOR_INPUT_MORE |
+> The first one is triggered by the detection of the CD/DVD/BD-ROM driver,
+> The others are triggered by me running hdparm.
+> 
+> Was this intentional?
 > 
 
-This is still not complete:
+No, it was certainly not intentional, and I can't figure out why it happens.
+The ioctl numbers from your example are HDIO_DRIVE_CMD and CDROM_GET_CAPABILITY,
+both of which should be handled through compat_blkdev_driver_ioctl by calling
+the native ioctl method of the driver, and return -ENOTTY otherwise.
 
-in ar_context_add_page():
-	ctx->last_buffer->descriptor.branch_address = ...;
+The one point where it is expected to have changed now is when you try
+to do these ioctls on something that is not a block device. Are you sure that
+the files you tried them on were created correctly?
 
-in ar_context_tasklet():
-	dma_unmap_single(ohci->card.device,
-		le32_to_cpu(ab->descriptor.data_address) - offset,
-		PAGE_SIZE, DMA_BIDIRECTIONAL);
-
-They both access DMA-mapped areas.
--- 
-Stefan Richter
--=====-=-=== =-=- =----
-http://arcgraph.de/sr/
+	Arnd <><
