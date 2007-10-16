@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXJPOUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbXJPOVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbXJPOUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 10:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbXJPOUi
+	id S933594AbXJPOVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 10:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXJPOVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 10:20:38 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:28268 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755248AbXJPOUh convert rfc822-to-8bit (ORCPT
+	Tue, 16 Oct 2007 10:21:35 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:51715 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757265AbXJPOVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 10:20:37 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver, match eHCA and eHEA drivers
-Date: Tue, 16 Oct 2007 23:20:00 +0200
-User-Agent: KMail/1.9.1
-Cc: Jan-Bernd Themann <THEMANN@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <pmac@au1.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Thomas Q Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
-       Marcus Eder <meder@de.ibm.com>
-References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
-In-Reply-To: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
+	Tue, 16 Oct 2007 10:21:34 -0400
+Date: Tue, 16 Oct 2007 15:21:21 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, davej@redhat.com,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Message-ID: <20071016142121.GA21431@srcf.ucam.org>
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com> <20071015210737.GA15293@khazad-dum.debian.net> <20071016130053.GA20010@srcf.ucam.org> <20071016141153.GA3237@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710162320.00630.fenkes@de.ibm.com>
+In-Reply-To: <20071016141153.GA3237@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 October 2007 10:21, Jan-Bernd Themann wrote:
-> Roland Dreier <rdreier@cisco.com> wrote on 03.10.2007 20:05:44:
-> >  > > Replace struct ibmebus_dev and struct ibmebus_driver with struct 
-of_device
-> >  > > and struct of_platform_driver, respectively. Match the external 
-ibmebus
-> >  > > interface and drivers using it.
-> >  > >
-> >  > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-> >  >
-> >  > This is somewhat difficult as this patch touches files that are the
-> >  > responsibility of three different maintainers.  Is it possible to
-> >  > split the patch into three, one for each maintainer (possibly by
-> >  > keeping both old and new interfaces around for a little while)?
-> >  > 
-> >  > If not, then you need to get an Acked-by and an agreement that this
-> >  > change can go via the powerpc.git tree from Roland Dreier and Jeff
-> >  > Garzik.
-> >
-> > I don't see anything objectionable in the infiniband parts of the
-> > patch -- I don't have any way to test the changes but it all looks
-> > like a straightforward conversion to a new platform API.  So:
-> >
-> > Acked-by: Roland Dreier <rolandd@cisco.com>
-> >
-> >  - R.
->
-> Looks good from eHEA driver perspective.
->
-> Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
+On Tue, Oct 16, 2007 at 12:11:53PM -0200, Henrique de Moraes Holschuh wrote:
+> On Tue, 16 Oct 2007, Matthew Garrett wrote:
+> > are sent via the keyboard controller, such as the wireless and touchpad 
+> > disable keys on my HP. There are Dells that do the same for brightness 
+> 
+> It is not clear to me if they are notifications or not.  Does the firmware
+> act on the keys by itself? If it does, then they are notifications.  If it
+> does not, then they are regular hot keys and there is no controversy whether
+> they belong on the input layer or not (they do).
 
-Jeff, do you have any objections against this patch going into the kernel
-via Paul's powerpc.git tree? It touches only a few lines of ehea which are
-specific to the bus interface changes.
+Yes, the firmware acts upon it.
 
-You can see the full patch here:
-  http://patchwork.ozlabs.org/linuxppc/patch?id=13750
+> 2. I am against sending notification events through input **that look
+> exactly the same as regular events**.  That is not a wise design choice IMO,
+> it is a very dirty hack.
 
-If you have no objections, please ack the patch so Paul can include it.
+Userspace is going to have to deal with this case anyway. Some vendors 
+simply don't let us distinguish.
 
-Thanks and regards,
-  Joachim
+> 3. We have a backlight class, a LED class, a rf-kill class and ALSA mixers.
+> Is there a real reason to pester Dmitry about the issue, if we can use these
+> alternate paths (that are indeed more generic and more suited for the job)?
 
+It's not always going to be possible to tie notifications into a class 
+device - in the Dell case, for instance, interacting with the backlight 
+requires you to use a 200Kb library so has to be done in userspace.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
