@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXJPIHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbXJPIIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbXJPIHM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 04:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbXJPIGw
+	id S1762014AbXJPIIm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 04:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbXJPII0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 04:06:52 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:47212 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750761AbXJPIGu (ORCPT
+	Tue, 16 Oct 2007 04:08:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:47309 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754355AbXJPIIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 04:06:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GeRZnsSjx8YrFmZfIginIYnhH2h3OF692Dgrc+BJb3Nu+OACZYNHP+oDF7gFu18Bpa10fwi9DoCOIg7LA6dRJNuLR53BZASt1nIfaVvS6nm2AWMrQPALeNafPOKtzgnzCJEzqDAPODrjEQY4Slrb3eKjKyrH7uvyjWSttdjwW60=  ;
-X-YMail-OSG: 3EUsmW0VM1kzv8eaGGIA4mgooWOLmYFHloKYw7cAb0hTQLPa50MGZqdeGU5A25bWa3_ctIXk_w--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] rd: Preserve the dirty bit in init_page_buffers()
-Date: Tue, 16 Oct 2007 18:12:01 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <m18x64knqx.fsf@ebiederm.dsl.xmission.com> <m14pgsknmd.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pgsknmd.fsf_-_@ebiederm.dsl.xmission.com>
+	Tue, 16 Oct 2007 04:08:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZSKKckYV2vbLp4yVeMnEfTgPbQ531NeL/eueDKgsjLiXI1vdCMj7qGi8/l/YquW+dWpEXf6yOnX8h9O3V25UB4lVDliMZfdo+cuNqPre+EN/yuKVHT52F8euoJlOOgSwug1K8XTf2d2EBTxuDI1aoHjEVmt7YnXTNkeptbEyfXY=
+Message-ID: <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>
+Date: Tue, 16 Oct 2007 16:08:22 +0800
+From: "peer chen" <peerchen@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       "Kuan Luo" <kluo@nvidia.com>
+In-Reply-To: <470FE47B.5060505@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710161812.01970.nickpiggin@yahoo.com.au>
+References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 08:40, Eric W. Biederman wrote:
-> The problem:  When we are trying to free buffers try_to_free_buffers()
-> will look at ramdisk pages with clean buffer heads and remove the
-> dirty bit from the page.  Resulting in ramdisk pages with data that get
-> removed from the page cache.  Ouch!
->
-> Buffer heads appear on ramdisk pages when a filesystem calls
-> __getblk() which through a series of function calls eventually calls
-> init_page_buffers().
->
-> So to fix the mismatch between buffer head and page state this patch
-> modifies init_page_buffers() to transfer the dirty bit from the page to
-> the buffer heads like we currently do for the uptodate bit.
->
-> This patch is safe as only __getblk calls init_page_buffers, and
-> there are only two implementations of block devices cached in the
-> page cache.  The generic implementation in block_dev.c and the
-> implementation in rd.c.
->
-> The generic implementation of block devices always does everything
-> in terms of buffer heads so it always has buffer heads allocated
-> before a page is marked dirty so this change does not affect it.
+I hope one of the following patches can be merged to 2.6.24.
+==========================
+http://lkml.org/lkml/2007/10/8/93
+http://lkml.org/lkml/2007/9/25/20
 
-This is probably a good idea. Was this causing the reiserfs problems?
-If so, I think we should be concentrating on what the real problem
-is with reiserfs... (or at least why this so obviously correct
-looking patch is wrong).
+Yes, I agree to set the 'swncq' as default for 2.6.24, after all, for
+our server customers, stability is far more important than the new
+feature no matter the problem is caused by drive or controller.
 
-Acked-by: Nick Piggin <npiggin@suse.de>
 
+2007/10/13, Jeff Garzik <jeff@garzik.org>:
+> Peer Chen wrote:
+> > Add the ahci controller legacy mode support to sata_nv.
+> > Move the DIDs of legacy mode from ahci.c to sata_nv.c
+> >
+> > The patch base on kernel 2.6.23-rc8
+> >
+> > Signed-off-by: Peer Chen <peerchen@gmail.com>
 >
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  fs/buffer.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+> Would you mind checking libata-dev.git#upstream, and make sure it has
+> all the NV patches?
 >
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 75b51df..8b87beb 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -972,6 +972,7 @@ init_page_buffers(struct page *page, struct
-> block_device *bdev, struct buffer_head *head = page_buffers(page);
->  	struct buffer_head *bh = head;
->  	int uptodate = PageUptodate(page);
-> +	int dirty = PageDirty(page);
+> I'm thinking I should go ahead and push the 'nv-swncq' branch, which
+> contains the sata_nv updates for swncq.  They have been in -mm for a
+> while.  I am leaning towards leaving the default to 'off' for 2.6.24 though.
 >
->  	do {
->  		if (!buffer_mapped(bh)) {
-> @@ -980,6 +981,8 @@ init_page_buffers(struct page *page, struct
-> block_device *bdev, bh->b_blocknr = block;
->  			if (uptodate)
->  				set_buffer_uptodate(bh);
-> +			if (dirty)
-> +				set_buffer_dirty(bh);
->  			set_buffer_mapped(bh);
->  		}
->  		block++;
+> Comments welcome...
+>
+>        Jeff
+>
+>
+>
+>
