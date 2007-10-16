@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935241AbXJPTgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935000AbXJPTp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935241AbXJPTgO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759007AbXJPTf7
+	id S935000AbXJPTp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbXJPTpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:35:59 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:55803 "EHLO fieldses.org"
+	Tue, 16 Oct 2007 15:45:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36776 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758067AbXJPTf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:35:58 -0400
-Date: Tue, 16 Oct 2007 15:35:57 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
-Subject: [PATCH] dcache: don't expose uninitialized memory in
-	/proc/<pid>/fd/<fd>
-Message-ID: <20071016193557.GB8650@fieldses.org>
-References: <20071016193230.GA8650@fieldses.org>
+	id S1760659AbXJPTpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 15:45:07 -0400
+Message-ID: <471514B7.9080002@pobox.com>
+Date: Tue, 16 Oct 2007 15:44:55 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071016193230.GA8650@fieldses.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Manfred Spraul <manfred@colorfullife.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MSI interrupts and disable_irq
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>	 <4710901F.8010206@colorfullife.com> <4713E713.9060702@pobox.com>	 <86802c440710161023p3fbd6832gdb6d10a1b5e9d932@mail.gmail.com>	 <4714F736.5000302@pobox.com> <86802c440710161059x17fdb4f2sb1b9582d64a883f9@mail.gmail.com>
+In-Reply-To: <86802c440710161059x17fdb4f2sb1b9582d64a883f9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+Yinghai Lu wrote:
+> On 10/16/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+>> Yinghai Lu wrote:
+>>> On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+>>>> Manfred Spraul wrote:
+>>>>> Jeff Garzik wrote:
+>>>>>> I think the scenario you outline is an illustration of the approach's
+>>>>>> fragility:  disable_irq() is a heavy hammer that originated with INTx,
+>>>>>> and it relies on a chip-specific disable method (kernel/irq/manage.c)
+>>>>>> that practically guarantees behavior will vary across MSI/INTx/etc.
+>>>>>>
+>>>>> I checked the code: IRQ_DISABLE is implemented in software, i.e.
+>>>>> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
+>>>>> handler] if IRQ_DISABLE is not set.
+>>>>> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
+>>>>>
+>>>>> Perhaps something corrupts dev->irq? The irq is requested with
+>>>>>    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
+>>>>> and disabled with
+>>>>>    disable_irq_lockdep(dev->irq);
+>>>>>
+>>>>> Someone around with a MSI capable board? The forcedeth driver does
+>>>>>    dev->irq = pci_dev->irq
+>>>>> in nv_probe(), especially before pci_enable_msi().
+>>>>> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
+>>>>> wrong interrupt....
+>>>> Remember, fundamentally MSI-X is a one-to-many relationship, when you
+>>>> consider a single PCI device might have multiple vectors.
+>>> msi-x is using other entry
+>>>
+>>>                if (np->msi_flags & NV_MSI_X_ENABLED)
+>>>
+>>> enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+>> Correct, but the overall point was that MSI-X conceptually conflicts
+>> with the existing "lockless" disable_irq() schedule, which was written
+>> when there was a one-one relationship between irq, PCI device, and work
+>> to be done.
+> 
+> Can I use your new driver with RHEL 5 or RHEL 5.1?
 
-Well, it's not especially important that target->d_iname get the
-contents of dentry->d_iname, but it's important that it get initialized
-with *something*, otherwise we're just exposing some random piece of
-memory to anyone who reads the link at /proc/<pid>/fd/<fd> for the
-deleted file, when it's still held open by someone.
+Not without modification, since it depends on the napi_struct work 
+currently in torvalds/linux-2.6.git.
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
----
- fs/dcache.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+But I am currently rewriting the fe-lock yet again, and most of those 
+changes can be applied to pre-napi_struct forcedeth.
 
-(Am I missing something?  I've also run a test program that copies a
-short (<36 character) name ontop of a long (>=36 character) name and see
-that the first time I run it, without this patch, I get unpredicatable
-results out of /proc/<pid>/fd/<fd>.)
+	Jeff
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 5663a31..24252fc 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1483,6 +1483,8 @@ static void switch_names(struct dentry *dentry, struct dentry *target)
- 			 * dentry:internal, target:external.  Steal target's
- 			 * storage and make target internal.
- 			 */
-+			memcpy(target->d_iname, dentry->d_name.name,
-+					dentry->d_name.len + 1);
- 			dentry->d_name.name = target->d_name.name;
- 			target->d_name.name = target->d_iname;
- 		}
--- 
-1.5.3.4.208.gc990
+
 
