@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935565AbXJPVyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966136AbXJPV4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935565AbXJPVyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933891AbXJPVx5
+	id S966136AbXJPV4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935092AbXJPVz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:53:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60330 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933875AbXJPVx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:53:56 -0400
-Date: Tue, 16 Oct 2007 14:41:43 -0700
-From: Greg KH <greg@kroah.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [Pcihpd-discuss] PCIe Hotplug: NFG unless I boot with card
-	already inserted.
-Message-ID: <20071016214143.GC21815@kroah.com>
-References: <4714C0A6.1030204@rtr.ca> <4714D700.7060008@rtr.ca> <20071016084634.8a0d695a.kristen.c.accardi@intel.com> <47150565.5090102@rtr.ca> <20071016114328.a96e8bcb.kristen.c.accardi@intel.com> <47150982.6050102@rtr.ca> <471509FE.7080505@rtr.ca> <47151191.40406@rtr.ca> <20071016130757.ed2f2ce4.kristen.c.accardi@intel.com> <4715217D.2000803@rtr.ca>
+	Tue, 16 Oct 2007 17:55:58 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:51481 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761718AbXJPVz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:55:56 -0400
+Date: Tue, 16 Oct 2007 17:55:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH/RFA] sch_generic: fix carrier-on bug?
+Message-ID: <20071016215555.GA4732@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4715217D.2000803@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 04:39:25PM -0400, Mark Lord wrote:
-> Kristen Carlson Accardi wrote:
-> >...
-> > I tried to reproduce this on a Lenovo T61, which does have proper firmware
-> > support for _OSC, and also has been validated, and the driver which is 
-> > in 2.6.23-git8 seems to work fine, even across suspend resume.  I suspect
-> > that your system just doesn't support pcie hotplug properly.
-> 
-> No, the hardware seems to work perfectly.
-> 
-> We just have a software issue.  We *know* it's only software
-> because rmmod+modprobe fixes things, without any hardware intervention.
-> 
-> I believe the code is leaning too heavily on the BIOS for stuff,
-> and like lots of other parts of the kernel we'll need an alternate
-> strategy for when things aren't "perfect".
-> 
-> > You might try getting a BIOS update from Dell.
-> 
-> The machine already has the latest BIOS, thanks.
+While looking at a net driver with the following construct,
 
-Dell laptops are known to have broken BIOS acpi code in regards to pci
-express hotplug issues.  Seriously, we rely on acpi here for a lot of
-this, and unless it is properly set up, it will not work.
+	if (!netif_carrier_ok(dev))
+		netif_carrier_on(dev);
 
-And this is broken because Windows can't even handle this kind of thing,
-so it isn't tested :(
+it stuck me that the netif_carrier_ok() check was redundant, since
+netif_carrier_on() checks bit __LINK_STATE_NOCARRIER anyway.  This is
+the same reason why netif_queue_stopped() need not be called prior to
+netif_wake_queue().
 
-So a short note to Dell might be helpful, although in the end, I think
-this looks like a kernel issue as you have proven with your patch.
+This is true, but there is however an unwanted side effect from assuming
+that netif_carrier_on() can be called multiple times:  it touches the
+watchdog, regardless of pre-existing carrier state.
 
-thanks,
+The fix:  move watchdog-up inside the bit-cleared code path.
 
-greg k-h
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+
+This looks like an obvious bug fix to me, but I found it by reading code
+rather than hitting it in the field.  Review appreciated.
+
+
+ net/sched/sch_generic.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index 95ae119..e01d576 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -249,10 +249,11 @@ static void dev_watchdog_down(struct net_device *dev)
+  */
+ void netif_carrier_on(struct net_device *dev)
+ {
+-	if (test_and_clear_bit(__LINK_STATE_NOCARRIER, &dev->state))
++	if (test_and_clear_bit(__LINK_STATE_NOCARRIER, &dev->state)) {
+ 		linkwatch_fire_event(dev);
+-	if (netif_running(dev))
+-		__netdev_watchdog_up(dev);
++		if (netif_running(dev))
++			__netdev_watchdog_up(dev);
++	}
+ }
+ 
+ /**
