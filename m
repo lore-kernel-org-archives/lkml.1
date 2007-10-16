@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXJPQxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbXJPQxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933128AbXJPQxQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 12:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933467AbXJPQwz
+	id S934140AbXJPQxj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 12:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760789AbXJPQx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 12:52:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:50747 "EHLO
+	Tue, 16 Oct 2007 12:53:27 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:50703 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932802AbXJPQwx (ORCPT
+	with ESMTP id S1760950AbXJPQxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 12:52:53 -0400
+	Tue, 16 Oct 2007 12:53:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=OJSO5SYqWmPXxSjrO0TXEsVq9hqR8vs5oTuDYsXPx5E/qtUnJvGh/nMUw+IdaVWEkXWuSMJIdMczHxheXr/+S+HuvZbn2qyEAekVfE8v6cDYeK+Tu04NwXkv00ohYtJ7USLVow+evNSrjJQpIT3hsL6k15tdn6CM9yMjrZc7Cqw=
-Message-ID: <4714EC6A.20604@gmail.com>
-Date: Tue, 16 Oct 2007 20:52:58 +0400
-From: Konstantin Kalin <konstantin.kalin@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HjVGSwhP1b04RdKfFPvWMyyf1jZoz+QjtYbBf/waBbQIpndrVOfF61CV3qKnHUTsJ3O49B0H1csJzMDybTicZOHfaYxJ2lI7mft39eHLM7hlP5kMjJ6I23GvzobNbeqSML1psROTVYMIKXu0I6PJWPKeXRZyNx/MkXw+1aOs2QI=
+Message-ID: <d120d5000710160953w43e946f8ofd5bdbe152ea038e@mail.gmail.com>
+Date: Tue, 16 Oct 2007 12:53:22 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
+Cc: bryan.wu@analog.com, "Andrey Panin" <pazke@donpac.ru>,
+       "Roel Kluin" <12o3l@tiscali.nl>,
+       "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
+In-Reply-To: <386072610710152251k66529210x9311d2f2b202ad2b@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: NVIDIA Ethernet & invalid MAC
-References: <4714C66D.4010607@gmail.com>	<20071016154313.53d19c43@the-village.bc.nu>	<4714D5B8.8020301@redhat.com> <20071016164354.6f4e530a@the-village.bc.nu> <4714E02D.7040804@garzik.org> <4714E842.8020105@gmail.com> <4714E9D5.7040303@garzik.org>
-In-Reply-To: <4714E9D5.7040303@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192459625.6215.17.camel@roc-laptop>
+	 <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
+	 <386072610710151024s13e9c16qd7c974cde8000a9@mail.gmail.com>
+	 <d120d5000710151040n2dbea5cbt515d3df87d5d19ed@mail.gmail.com>
+	 <386072610710152251k66529210x9311d2f2b202ad2b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I'm understanding it...and there needs three bytes. But looks like 
-there is no other way to fix it taking into account other complaints.
-Anyhow I couldn't find difference in this motherboard today  :(
+On 10/16/07, Bryan Wu <cooloney.lkml@gmail.com> wrote:
+> On 10/16/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > On 10/15/07, Bryan Wu <cooloney.lkml@gmail.com> wrote:
+> > > On 10/15/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > >
+> > > > Completion is just not a good abstraction here... Please use work
+> > > > abstraction and possibly a separate workqueue.
+> > >
+> > > Yes, I agree with you now, although I have a little concern about the
+> > > possibility of big delay introduced by workqueue.
+> > >
+> >
+> > Having a separate workqueue should isolate the driver from users
+> > hogging keventd. Otherwise the speed should be pretty much the same as
+> > with a kthread.
+> >
+>
+> Does this driver need the create a new kthread instead of keventd?
+> I think keventd might be sufficient for this driver.
+>
 
-Thank you,
-Kostya.
- 
-Jeff Garzik wrote:
-> Konstantin Kalin wrote:
->> I'm sorry, but I think that Alan proposed in the first email is more 
->> than a hack. It would solve the issue for different versions and the 
->> check is trivial. Or am I mistaken?
->
-> It assumes a constant MAC address vendor ID.
->
->     Jeff
->
->
->
+No it does not have to start a new workqueue. I'd start with keventd
+and only implement a separate workqueue later if I saw the driver
+being starved by other keventd users.
 
+-- 
+Dmitry
