@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760401AbXJPQUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbXJPQW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760401AbXJPQUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 12:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJPQUI
+	id S1761663AbXJPQW6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 12:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbXJPQWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 12:20:08 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:34460 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753227AbXJPQUH (ORCPT
+	Tue, 16 Oct 2007 12:22:47 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:43754
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750754AbXJPQWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 12:20:07 -0400
-Date: Wed, 17 Oct 2007 01:20:03 +0900 (JST)
-Message-Id: <20071017.012003.99753572.yoshfuji@linux-ipv6.org>
-To: jeff@garzik.org
-Cc: alan@lxorguk.ukuu.org.uk, cebbert@redhat.com, konstantin.kalin@gmail.com,
-       linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: NVIDIA Ethernet & invalid MAC
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <4714E02D.7040804@garzik.org>
-References: <4714D5B8.8020301@redhat.com>
-	<20071016164354.6f4e530a@the-village.bc.nu>
-	<4714E02D.7040804@garzik.org>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 16 Oct 2007 12:22:46 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/4] RT: RT-Overload/Sched v3
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gregory Haskins <ghaskins@novell.com>
+Date: Tue, 16 Oct 2007 12:08:52 -0400
+Message-ID: <20071016160226.5202.53965.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <4714E02D.7040804@garzik.org> (at Tue, 16 Oct 2007 12:00:45 -0400), Jeff Garzik <jeff@garzik.org> says:
+v3 contains the following changes since v2:
 
-> Alan Cox wrote:
-> >> See the below for another report of this:
-> >>
-> >> http://marc.info/?t=119215716900001&r=1&w=2
-> >>
-> >> And apparently some motherboard vendors have their own allocations for ethernet
-> >> addresses?
-> > 
-> > We can teach it two ranges. I doubt anyone will be unlucky enough to have
-> > the one which could be either Nvidia or Gigabyte and have it matter.
-> > 
-> > The "go complain to the BIOS vendor" comment from Nvidia to me isn't an
-> > answer. Maybe Nvidia can complain to BIOS vendors but end user complaints
-> > of that form rarely have any effect.
-> 
-> That wasn't the point of the response at all.  The datum is that set of 
-> users where DEV_HAS_CORRECT_MACADDR is accurately set or clear is vast 
-> majority of cases.
-> 
-> For the rest, we'll want to look at adjusting DEV_HAS_CORRECT_MACADDR 
-> based on DMI strings or a hueristic like you suggested.
+This is still based on 23-rt1 + Steve's last public patch (I think Steve has a
+newer version available, but we have not rebased yet).
 
-I think we could have kernel parameter as well.
+1) No longer includes the per-cpu-rtoverload patch, since Steve has already
+   ACKed it
+2) Dropped the affinity patch because it was buggy.  Will revisit later
+3) Dropped the pull-patch, since it was RFC only anyway.  Will revisit later
+4) Addressed review comments/feedback (added patch descriptions across the
+   board, moved semi-colon in while loop, removed superfluous
+   smp_processor_id() etc.
+5) Got rid of the second TASK_PREEMPTS_CURR() check, since my anaylsys
+   determined it was not needed.
 
---yoshfuji
+With this patch series applied, my RT test now passes and we get an average of
+23us wake-up latency under load. You can find the test here: 
+
+ ftp://ftp.novell.com/dev/ghaskins/preempt.cc
+
+Note: Do not use the "affinity" option, as the validator has a bug related to
+it and may yield a false negative.
+
+Regards,
+-Greg
+
