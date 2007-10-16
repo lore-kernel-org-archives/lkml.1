@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965504AbXJPUTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935512AbXJPUUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965504AbXJPUTP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXJPUS5
+	id S935512AbXJPUUD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXJPUTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:18:57 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40325 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbXJPUS4 (ORCPT
+	Tue, 16 Oct 2007 16:19:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:41546 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbXJPUTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:18:56 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47151C8B.5050704@s5r6.in-berlin.de>
-Date: Tue, 16 Oct 2007 22:18:19 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Tue, 16 Oct 2007 16:19:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YcxixEY88VWReMmVI4B8ToMN4E+ueujzz+8Ure4ADBTPjDUyiP1hcmdfSFznW4Ldm4DDQPZojdcpJrrD2dA+Y0Nxwds7VntfCXnAiI3M4QwXixFY8L8bePZ14XsxGExTZXqJwIq0UnQ5/TFzHX3ISR2EHOSniEWJUVWnMGxUR7g=
+Message-ID: <d120d5000710161319w7b98bcc0i7e60b58e16d2c86d@mail.gmail.com>
+Date: Tue, 16 Oct 2007 16:19:48 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jeremy Katz" <katzj@redhat.com>
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, davej@redhat.com
+In-Reply-To: <1192565511.22919.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net> <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de> <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu> <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm> <20071016195432.GA31306@parisc-linux.org>
-In-Reply-To: <20071016195432.GA31306@parisc-linux.org>
-X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
+	 <20071016141153.GA3237@khazad-dum.debian.net>
+	 <20071016142121.GA21431@srcf.ucam.org>
+	 <20071016143124.GB3237@khazad-dum.debian.net>
+	 <20071016144016.GA21749@srcf.ucam.org>
+	 <20071016165623.GA13643@khazad-dum.debian.net>
+	 <20071016184606.GB25181@srcf.ucam.org>
+	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
+	 <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
+	 <1192565511.22919.1.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Oct 16, 2007 at 12:54:58PM -0700, david@lang.hm wrote:
->> On Tue, 16 Oct 2007, Alan Cox wrote:
->>> I wouldn't try dividing those by pata v sata. You'll cause all sorts of
->>> problems in the process because of PATA-SATA and SATA-PATA bridges.
->> if you use a PATA-SATA bridge (IDE drive SATA controller), it would look 
->> to the system like a SATA drive and be addressed and enumerated as SATA.
-> 
-> But you don't know where the bridge is.  It might be on the drive's
-> board, it might be an explicit enclosure, or it might be on the
-> motherboard.  Each of those scenarios is going to have a different user
-> expectation.
+On 10/16/07, Jeremy Katz <katzj@redhat.com> wrote:
+> On Tue, 2007-10-16 at 16:12 -0400, Dmitry Torokhov wrote:
+> > On 10/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > On Tue, 16 Oct 2007, Matthew Garrett wrote:
+> > > > >
+> > > > > It still doesn't mean it belongs inside the stream of data for the keyboard,
+> > > > > maskerading as a key press.
+> > > >
+> > > > But it *is* a key press!
+> > >
+> > > To get somewhat back on track: volume and brightness (and similar - lid
+> > > close etc) events clearly are keypresses.
+> > >
+> > > However, I would also argue that a keypress that is acted on by the
+> > > firmware automatically is *different* from a keypress that hasn't been
+> > > acted on: one is a "key was pressed *and* hardware did something
+> > > automatically", and the other is just a "key was pressed" event.
+> > >
+> > > IOW, I think the thinkpad issue (and others like it) should be fixed by
+> > > splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and
+> > > KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the
+> > > kernel itself, for that matter) can know whether it's a informational
+> > > message or whether it should be acted upon.
+> >
+> > I agree that these are 2 different events. My argument is that
+> > "VOLUME_UP_NOTIFY" event is similar to "BATTERY_OUT_NOTIFY",
+> > "DOCK_UNDOCK_NOTIFY", etc, etc and should be sent not through input
+> > layer but through a generic (yet to be designed) notification
+> > mechanism. Something lighter than input. Something like uevents over
+> > netlink.
+>
+> Except that I'm _always_ going to have to be able to take these events
+> as input events (because of the hardware that sends them that way), so
+> why not just have everything be an input event?
 
-If the bridge is on the drive's board or in an enclosure, the user's
-expectations are fully met.
+Not all hardware, just some.
 
-If the bridge is on the motherboard, then the user may be surprised
-unless he knows the motherboard well enough.
+>
+> The alternative is building up something new from the ground-up and then
+> having to do translation from input to the new event type (either in the
+> kernel or in userspace) which ends up meaning more work for little, if
+> any, gain
+>
 
-But this is _far_ less of an issue than
-  - the hda<->sda confusion,
-  - the confusion caused by all kernel default names put into a single
-    namespace.
+No, I dont think you need to translate. You ahev 2 types of events -
+ones require you to take action, others don't. Ones requests (reqular
+keypresses), others just notifications.
 
-I don't have a personal interest in PATA/SATA distinction though.  I
-suppose once PATA went into the SCSI namespace and then this namespace
-is divided again, it's not a big issue anymore whether PATA and SATA
-share an ATA namespace or are distinct, except perhaps for people with
-IDE drive and eSATA slots.
+Right now we have instance where sending events through input device
+is simp-ly convenient because driver already has it. But in other
+scenarios, when there is no input device in sight, input layer is not
+the best transport. Input devices are quite havy (several kilobytes)
+you may not want to add them everywhere.
+
 -- 
-Stefan Richter
--=====-=-=== =-=- =----
-http://arcgraph.de/sr/
+Dmitry
