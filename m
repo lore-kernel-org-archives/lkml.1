@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934645AbXJPQBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934433AbXJPQCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934645AbXJPQBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 12:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934531AbXJPQAy
+	id S934433AbXJPQCE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 12:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933317AbXJPQBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 12:00:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35777 "EHLO mail.dvmed.net"
+	Tue, 16 Oct 2007 12:01:49 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40058 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934535AbXJPQAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 12:00:52 -0400
-Message-ID: <4714E02D.7040804@garzik.org>
-Date: Tue, 16 Oct 2007 12:00:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S933125AbXJPQBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 12:01:48 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Yi Yang <yang.y.yi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mj@atrey.karlin.mff.cuni.cz,
+       pavel@atrey.karlin.mff.cuni.cz, crutcher+kernel@datastacks.com
+Subject: Re: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef key
+References: <4714DDA8.8030204@gmail.com>
+X-Yow: BARRY..  That was the most HEART-WARMING rendition of
+ ``I DID IT MY WAY'' I've ever heard!!
+Date: Tue, 16 Oct 2007 18:01:45 +0200
+In-Reply-To: <4714DDA8.8030204@gmail.com> (Yi Yang's message of "Tue\, 16 Oct
+	2007 23\:50\:00 +0800")
+Message-ID: <jewstnhwuu.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       Konstantin Kalin <konstantin.kalin@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: NVIDIA Ethernet & invalid MAC
-References: <4714C66D.4010607@gmail.com>	<20071016154313.53d19c43@the-village.bc.nu>	<4714D5B8.8020301@redhat.com> <20071016164354.6f4e530a@the-village.bc.nu>
-In-Reply-To: <20071016164354.6f4e530a@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -3.7 (---)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-3.7 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> See the below for another report of this:
->>
->> http://marc.info/?t=119215716900001&r=1&w=2
->>
->> And apparently some motherboard vendors have their own allocations for ethernet
->> addresses?
-> 
-> We can teach it two ranges. I doubt anyone will be unlucky enough to have
-> the one which could be either Nvidia or Gigabyte and have it matter.
-> 
-> The "go complain to the BIOS vendor" comment from Nvidia to me isn't an
-> answer. Maybe Nvidia can complain to BIOS vendors but end user complaints
-> of that form rarely have any effect.
+Yi Yang <yang.y.yi@gmail.com> writes:
 
-That wasn't the point of the response at all.  The datum is that set of 
-users where DEV_HAS_CORRECT_MACADDR is accurately set or clear is vast 
-majority of cases.
+> For SysRq, we just can get hot key list from Documentation/sysrq.txt
+> , but in the most of cases, the user can't access it by hand on
+> using SysRq to debug, so it is better for SysRq to provide an online
+> help for the users.
+>
+> SysRq has already provided a similiar help before this patch, but it
+> is not so definite that the user doesn't know what happened and how
+> to do on pressing an undefined hot key.
+>
+> In addition, that funtion has a big loop with another big loop
+> embedded which is very inefficient, it is intended to skip some hot
+> key help info for such a function as "Changing Loglevel", just print
+> a help info for this, that is very unnecessary. In fact, the key '0'
+>  - '8' have different results the user should know.
+>
+> This patch add this online help function, it'll print thw whole hot
+> key list and corresponding function descriptions, it can print the new
+> defined hot key without any changed needed.
+>
+> The output is the below on pressing an undefined hot key:
+>
+> SysRq : <6>this hot key isn't defined.
+          ^^^
 
-For the rest, we'll want to look at adjusting DEV_HAS_CORRECT_MACADDR 
-based on DMI strings or a hueristic like you suggested.
+This is misplaced.
 
-	Jeff
+> @@ -410,7 +420,7 @@ void __handle_sysrq(int key, struct tty_
+>  	spin_lock_irqsave(&sysrq_key_table_lock, flags);
+>  	orig_log_level = console_loglevel;
+>  	console_loglevel = 7;
+> -	printk(KERN_INFO "SysRq : ");
+> +	printk(KERN_INFO "\nSysRq : ");
 
+It does not make any sense to put the printk level just before the
+newline, since the newline resets it to the default level.
 
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
