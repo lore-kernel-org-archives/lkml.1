@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbXJPSdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935360AbXJPSfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935387AbXJPSdN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933939AbXJPSc5
+	id S935360AbXJPSfz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759700AbXJPSfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:32:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56071 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750791AbXJPScz (ORCPT
+	Tue, 16 Oct 2007 14:35:46 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:45695 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759551AbXJPSfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:32:55 -0400
-Date: Tue, 16 Oct 2007 11:30:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Antonino Daplas <adaplas@gmail.com>
-Subject: Re: reduce frequency of cursor blinking
-Message-ID: <20071016113037.2fa3cd6f@laptopd505.fenrus.org>
-In-Reply-To: <20071016181911.GA24428@redhat.com>
-References: <20071016181911.GA24428@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 14:35:46 -0400
+From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Organization: Mandriva
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Asus Eeepc missing in alsa models list?
+Date: Tue, 16 Oct 2007 16:35:34 -0200
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Disposition: inline
+Cc: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       alsa-devel@alsa-project.org
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200710161635.35861.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 14:19:11 -0400
-Dave Jones <davej@redhat.com> wrote:
+Looking at the change 291702f017efdfe556cb87b8530eb7d1ff08cbae, may be the 
+addition of the Asus Eeepc model was missed? The following patch fixes it if 
+it was not intended originally:
 
-> Depending on CONFIG_HZ, we blink the cursor at 20,50,60 or 200Hz.
-
-eh no, that's 5 times per second ...
-
-> -	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
-
+diff --git a/Documentation/sound/alsa/ALSA-Configuration.txt 
+b/Documentation/sound/alsa/ALSA-Configuration.txt
+index 4b48c2e..e2a1985 100644
+--- a/Documentation/sound/alsa/ALSA-Configuration.txt
++++ b/Documentation/sound/alsa/ALSA-Configuration.txt
+@@ -843,6 +843,7 @@ Prior to version 0.9.0rc4 options had a 'snd_' prefix. 
+This was removed.
+ 	  3stack-6ch-dig 3-stack (6-channel) with SPDIF
+ 	  6stack-dig	 6-stack with SPDIF
+ 	  lenovo-101e	 Lenovo laptop
++	  eeepc-p701	 ASUS Eeepc
+ 	  auto		auto-config reading BIOS (default)
+ 
+ 	ALC882/885
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 53b0428..2ceaf4c 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -12058,6 +12058,7 @@ static const char *alc662_models[ALC662_MODEL_LAST] = 
+{
+ 	[ALC662_3ST_6ch]	= "3stack-6ch",
+ 	[ALC662_5ST_DIG]	= "6stack-dig",
+ 	[ALC662_LENOVO_101E]	= "lenovo-101e",
++	[ALC662_ASUS_EEEPC_P701]	= "eeepc-p701",
+ 	[ALC662_AUTO]		= "auto",
+ };
+ 
+-- 
+[]'s
+Herton
