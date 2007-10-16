@@ -1,69 +1,664 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbXJPLml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932577AbXJPLnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbXJPLml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 07:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXJPLm0
+	id S932577AbXJPLnG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 07:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765677AbXJPLmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 07:42:26 -0400
-Received: from mx1.minet.net ([157.159.40.25]:56598 "EHLO mx1.minet.net"
+	Tue, 16 Oct 2007 07:42:39 -0400
+Received: from mx1.minet.net ([157.159.40.25]:56607 "EHLO mx1.minet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765643AbXJPLmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 07:42:24 -0400
+	id S932739AbXJPLmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 07:42:36 -0400
 From: Florian Fainelli <florian.fainelli@telecomint.eu>
-Date: Tue, 16 Oct 2007 13:41:24 +0200
-Subject: [PATCH 2/4] pci.h : Add PCI identifiers for the RDC devices
+Date: Tue, 16 Oct 2007 13:41:31 +0200
+Subject: [PATCH 3/4] [x86] : Add support for the RDC R-321x SoC
 MIME-Version: 1.0
-X-Length: 1520
+X-Length: 17799
 To: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_kNKFHp4OQPKMSkt"
-Message-Id: <200710161341.24598.florian.fainelli@telecomint.eu>
+  boundary="Boundary-00=_sNKFHvLCEqIHVhu"
+Message-Id: <200710161341.32077.florian.fainelli@telecomint.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---Boundary-00=_kNKFHp4OQPKMSkt
+--Boundary-00=_sNKFHvLCEqIHVhu
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-This patch defines the PCI identifiers found in
-the RDC R-321x System-on-Chip.
+This patch adds support for the RDC R-321x system-on-chip,
+also known as R-861x-(G). It uses the generic GPIO API and
+has support for the on-chip hardware watchdog.
 
 Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
 ---
- include/linux/pci_ids.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/i386/Kconfig                           |   13 ++-
+ arch/i386/Makefile                          |    5 +
+ arch/x86/mach-rdc321x/Makefile              |    5 +
+ arch/x86/mach-rdc321x/gpio.c                |   91 +++++++++
+ arch/x86/mach-rdc321x/platform.c            |   68 +++++++
+ arch/x86/mach-rdc321x/wdt.c                 |  275 
++++++++++++++++++++++++++++
+ include/asm-x86/mach-rdc321x/gpio.h         |   56 ++++++
+ include/asm-x86/mach-rdc321x/rdc321x_defs.h |    6 +
+ include/asm-x86/timex.h                     |    2 +
+ 9 files changed, 520 insertions(+), 1 deletions(-)
+ create mode 100644 arch/x86/mach-rdc321x/Makefile
+ create mode 100644 arch/x86/mach-rdc321x/gpio.c
+ create mode 100644 arch/x86/mach-rdc321x/platform.c
+ create mode 100644 arch/x86/mach-rdc321x/wdt.c
+ create mode 100644 include/asm-x86/mach-rdc321x/gpio.h
+ create mode 100644 include/asm-x86/mach-rdc321x/rdc321x_defs.h
 
---Boundary-00=_kNKFHp4OQPKMSkt
+--Boundary-00=_sNKFHvLCEqIHVhu
 Content-Type: text/plain;
   charset="utf-8";
-  name="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
+  name="7f8a8974b41bd143bedb99406a213d7df43045c4.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
+	filename="7f8a8974b41bd143bedb99406a213d7df43045c4.diff"
 
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 2aaf1c1..c5a0f5b 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2097,6 +2097,13 @@
- #define PCI_DEVICE_ID_HERC_WIN		0x5732
- #define PCI_DEVICE_ID_HERC_UNI		0x5832
+diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
+index 501fd6d..95a75c9 100644
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -170,6 +170,17 @@ config X86_NUMAQ
+ 	  You will need a new lynxer.elf file to flash your firmware with - send
+ 	  email to <Martin.Bligh@us.ibm.com>.
  
-+#define PCI_VENDOR_ID_RDC		0x17f3
-+#define PCI_DEVICE_ID_RDC_R6020		0x6020
-+#define PCI_DEVICE_ID_RDC_R6030		0x6030
-+#define PCI_DEVICE_ID_RDC_R6040		0x6040
-+#define PCI_DEVICE_ID_RDC_R6060		0x6060
-+#define PCI_DEVICE_ID_RDC_R6061		0x6061
++config X86_RDC321X
++	bool "RDC R-321x SoC"
++	select M486
++	select X86_REBOOTFIXUPS
++	select GENERIC_GPIO
++	select LEDS_GPIO
++	help
++	  This option is needed for RDC R-321x system-on-chip, also known
++	  as R-8610-(G).
++	  If you don't have one of these chips, you should say N here.
 +
- #define PCI_VENDOR_ID_SITECOM		0x182d
- #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
+ config X86_SUMMIT
+ 	bool "Summit/EXA (IBM x440)"
+ 	depends on SMP
+@@ -463,7 +474,7 @@ config X86_REBOOTFIXUPS
+ 	  system.
  
+ 	  Currently, the only fixup is for the Geode machines using
+-	  CS5530A and CS5536 chipsets.
++	  CS5530A and CS5536 chipsets and the RDC R-321x SoC.
+ 
+ 	  Say Y if you want to enable the fixup. Currently, it's safe to
+ 	  enable this option even if you don't need it.
+diff --git a/arch/i386/Makefile b/arch/i386/Makefile
+index 5e50dbf..ce4db23 100644
+--- a/arch/i386/Makefile
++++ b/arch/i386/Makefile
+@@ -82,6 +82,11 @@ mcore-$(CONFIG_X86_NUMAQ)	:= arch/x86/mach-default
+ mflags-$(CONFIG_X86_BIGSMP)	:= -Iinclude/asm-x86/mach-bigsmp
+ mcore-$(CONFIG_X86_BIGSMP)	:= arch/x86/mach-default
+ 
++# RDC R-321x subarch support
++mflags-$(CONFIG_X86_RDC321X)	:= -Iinclude/asm-x86/mach-rdc321x
++mcore-$(CONFIG_X86_RDC321X)	:= arch/x86/mach-default
++core-$(CONFIG_X86_RDC321X)	+= arch/x86/mach-rdc321x/
++
+ #Summit subarch support
+ mflags-$(CONFIG_X86_SUMMIT) := -Iinclude/asm-x86/mach-summit
+ mcore-$(CONFIG_X86_SUMMIT)  := arch/x86/mach-default
+diff --git a/arch/x86/mach-rdc321x/Makefile b/arch/x86/mach-rdc321x/Makefile
+new file mode 100644
+index 0000000..1faac81
+--- /dev/null
++++ b/arch/x86/mach-rdc321x/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for the RDC321x specific parts of the kernel
++#
++obj-$(CONFIG_X86_RDC321X)        := gpio.o platform.o wdt.o
++
+diff --git a/arch/x86/mach-rdc321x/gpio.c b/arch/x86/mach-rdc321x/gpio.c
+new file mode 100644
+index 0000000..0312691
+--- /dev/null
++++ b/arch/x86/mach-rdc321x/gpio.c
+@@ -0,0 +1,91 @@
++/*
++ *  Copyright (C) 2007, OpenWrt.org, Florian Fainelli <florian@openwrt.org>
++ *  	RDC321x architecture specific GPIO support
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ */
++
++#include <linux/autoconf.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/delay.h>
++
++#include <asm/mach-rdc321x/rdc321x_defs.h>
++
++static inline int rdc_gpio_is_valid(unsigned gpio)
++{
++	return (gpio <= RDC_MAX_GPIO);
++}
++
++static unsigned int rdc_gpio_read(unsigned gpio)
++{
++	unsigned int val;
++
++	val = 0x80000000 | (7 << 11) | ((gpio&0x20?0x84:0x48));
++	outl(val, RDC3210_CFGREG_ADDR);
++	udelay(10);
++	val = inl(RDC3210_CFGREG_DATA);
++	val |= (0x1 << (gpio & 0x1F));
++	outl(val, RDC3210_CFGREG_DATA);
++	udelay(10);
++	val = 0x80000000 | (7 << 11) | ((gpio&0x20?0x88:0x4C));
++	outl(val, RDC3210_CFGREG_ADDR);
++	udelay(10);
++	val = inl(RDC3210_CFGREG_DATA);
++
++	return val;
++}
++
++static void rdc_gpio_write(unsigned int val)
++{
++	if (val) {
++		outl(val, RDC3210_CFGREG_DATA);
++		udelay(10);
++	}
++}
++
++int rdc_gpio_get_value(unsigned gpio)
++{
++	if (rdc_gpio_is_valid(gpio))
++		return (int)rdc_gpio_read(gpio);
++	else
++		return -EINVAL;
++}
++EXPORT_SYMBOL(rdc_gpio_get_value);
++
++void rdc_gpio_set_value(unsigned gpio, int value)
++{
++	unsigned int val;
++
++	if (!rdc_gpio_is_valid(gpio))
++		return;
++
++	val = rdc_gpio_read(gpio);
++
++	if (value)
++		val &= ~(0x1 << (gpio & 0x1F));
++	else
++		val |= (0x1 << (gpio & 0x1F));
++
++	rdc_gpio_write(val);
++}
++EXPORT_SYMBOL(rdc_gpio_set_value);
++
++int rdc_gpio_direction_input(unsigned gpio)
++{
++	return 0;
++}
++EXPORT_SYMBOL(rdc_gpio_direction_input);
++
++int rdc_gpio_direction_output(unsigned gpio, int value)
++{
++	return 0;
++}
++EXPORT_SYMBOL(rdc_gpio_direction_output);
++
++
+diff --git a/arch/x86/mach-rdc321x/platform.c b/arch/x86/mach-rdc321x/platform.c
+new file mode 100644
+index 0000000..dda6024
+--- /dev/null
++++ b/arch/x86/mach-rdc321x/platform.c
+@@ -0,0 +1,68 @@
++/*
++ *  Generic RDC321x platform devices
++ *
++ *  Copyright (C) 2007 Florian Fainelli <florian@openwrt.org>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version 2
++ *  of the License, or (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the
++ *  Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
++ *  Boston, MA  02110-1301, USA.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/device.h>
++#include <linux/platform_device.h>
++#include <linux/version.h>
++#include <linux/leds.h>
++
++#include <asm/gpio.h>
++
++/* LEDS */
++static struct gpio_led default_leds[] = {
++	{ .name = "rdc:dmz", .gpio = 1, },
++};
++
++static struct gpio_led_platform_data rdc321x_led_data = {
++	.num_leds = ARRAY_SIZE(default_leds),
++	.leds = default_leds,
++};
++
++static struct platform_device rdc321x_leds = {
++	.name = "leds-gpio",
++	.id = -1,
++	.dev = {
++		.platform_data = &rdc321x_led_data,
++	}
++};
++
++/* Watchdog */
++static struct platform_device rdc321x_wdt = {
++	.name = "rdc321x-wdt",
++	.id = -1,
++	.num_resources = 0,
++};
++
++static struct platform_device *rdc321x_devs[] = {
++	&rdc321x_leds,
++	&rdc321x_wdt
++};
++
++static int __init rdc_board_setup(void)
++{
++	return platform_add_devices(rdc321x_devs, ARRAY_SIZE(rdc321x_devs));
++}
++
++arch_initcall(rdc_board_setup);
+diff --git a/arch/x86/mach-rdc321x/wdt.c b/arch/x86/mach-rdc321x/wdt.c
+new file mode 100644
+index 0000000..ec5625a
+--- /dev/null
++++ b/arch/x86/mach-rdc321x/wdt.c
+@@ -0,0 +1,275 @@
++/*
++ * RDC321x watchdog driver
++ *
++ * Copyright (C) 2007 Florian Fainelli <florian@openwrt.org>
++ *
++ * This driver is highly inspired from the cpu5_wdt driver
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/timer.h>
++#include <linux/completion.h>
++#include <linux/jiffies.h>
++#include <linux/platform_device.h>
++#include <linux/watchdog.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++
++#include <asm/mach-rdc321x/rdc321x_defs.h>
++
++#define RDC_WDT_MASK	0x80000000 /* Mask */
++#define RDC_WDT_EN	0x00800000 /* Enable bit */
++#define RDC_WDT_WTI	0x00200000 /* Generate CPU reset/NMI/WDT on timeout */
++#define RDC_WDT_RST	0x00100000 /* Reset bit */
++#define RDC_WDT_WIF	0x00040000 /* WDT IRQ Flag */
++#define RDC_WDT_IRT	0x00000100 /* IRQ Routing table */
++#define RDC_WDT_CNT	0x00000001 /* WDT count */
++
++#define RDC_CLS_TMR	0x80003844 /* Clear timer */
++
++#define RDC_WDT_INTERVAL	(HZ/10+1)
++
++int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++
++static int ticks = 1000;
++
++/* some device data */
++
++static struct {
++	struct completion stop;
++	volatile int running;
++	struct timer_list timer;
++	volatile int queue;
++	int default_ticks;
++	unsigned long inuse;
++} rdc321x_wdt_device;
++
++/* generic helper functions */
++
++static void rdc321x_wdt_trigger(unsigned long unused)
++{
++	if (rdc321x_wdt_device.running)
++		ticks--;
++
++	/* keep watchdog alive */
++	outl(RDC_WDT_EN|inl(RDC3210_CFGREG_DATA), RDC3210_CFGREG_DATA);
++
++	/* requeue?? */
++	if (rdc321x_wdt_device.queue && ticks)
++		mod_timer(&rdc321x_wdt_device.timer,
++				jiffies + RDC_WDT_INTERVAL);
++	else {
++		/* ticks doesn't matter anyway */
++		complete(&rdc321x_wdt_device.stop);
++	}
++
++}
++
++static void rdc321x_wdt_reset(void)
++{
++	ticks = rdc321x_wdt_device.default_ticks;
++}
++
++static void rdc321x_wdt_start(void)
++{
++	if (!rdc321x_wdt_device.queue) {
++		rdc321x_wdt_device.queue = 1;
++
++		/* Clear the timer */
++		outl(RDC_CLS_TMR, RDC3210_CFGREG_ADDR);
++
++		/* Enable watchdog and set the timeout to 81.92 us */
++		outl(RDC_WDT_EN|RDC_WDT_CNT, RDC3210_CFGREG_DATA);
++
++		mod_timer(&rdc321x_wdt_device.timer,
++				jiffies + RDC_WDT_INTERVAL);
++	}
++
++	/* if process dies, counter is not decremented */
++	rdc321x_wdt_device.running++;
++}
++
++static int rdc321x_wdt_stop(void)
++{
++	if (rdc321x_wdt_device.running)
++		rdc321x_wdt_device.running = 0;
++
++	ticks = rdc321x_wdt_device.default_ticks;
++
++	return -EIO;
++}
++
++/* filesystem operations */
++
++static int rdc321x_wdt_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(0, &rdc321x_wdt_device.inuse))
++		return -EBUSY;
++
++	return nonseekable_open(inode, file);
++}
++
++static int rdc321x_wdt_release(struct inode *inode, struct file *file)
++{
++	clear_bit(0, &rdc321x_wdt_device.inuse);
++	return 0;
++}
++
++static int rdc321x_wdt_ioctl(struct inode *inode, struct file *file,
++				unsigned int cmd, unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	unsigned int value;
++	static struct watchdog_info ident = {
++		.options = WDIOF_CARDRESET,
++		.identity = "RDC321x WDT",
++	};
++
++	switch (cmd) {
++	case WDIOC_KEEPALIVE:
++		rdc321x_wdt_reset();
++		break;
++	case WDIOC_GETSTATUS:
++		/* Read the value from the DATA register */
++		value = inl(RDC3210_CFGREG_DATA);
++		if (copy_to_user(argp, &value, sizeof(int)))
++			return -EFAULT;
++		break;
++	case WDIOC_GETSUPPORT:
++		if (copy_to_user(argp, &ident, sizeof(ident)))
++			return -EFAULT;
++		break;
++	case WDIOC_SETOPTIONS:
++		if (copy_from_user(&value, argp, sizeof(int)))
++			return -EFAULT;
++		switch (value) {
++		case WDIOS_ENABLECARD:
++			rdc321x_wdt_start();
++			break;
++		case WDIOS_DISABLECARD:
++			return rdc321x_wdt_stop();
++		default:
++			return -EINVAL;
++		}
++		break;
++	default:
++		return -ENOTTY;
++	}
++	return 0;
++}
++
++static ssize_t rdc321x_wdt_write(struct file *file, const char __user *buf,
++				size_t count, loff_t *ppos)
++{
++	if (!count)
++		return -EIO;
++
++	rdc321x_wdt_reset();
++
++	return count;
++}
++
++static const struct file_operations rdc321x_wdt_fops = {
++	.owner		= THIS_MODULE,
++	.llseek		= no_llseek,
++	.ioctl		= rdc321x_wdt_ioctl,
++	.open		= rdc321x_wdt_open,
++	.write		= rdc321x_wdt_write,
++	.release	= rdc321x_wdt_release,
++};
++
++static struct miscdevice rdc321x_wdt_misc = {
++	.minor	= WATCHDOG_MINOR,
++	.name	= "watchdog",
++	.fops	= &rdc321x_wdt_fops,
++};
++
++static int __devinit rdc321x_wdt_probe(struct platform_device *pdev)
++{
++	int err;
++
++	err = misc_register(&rdc321x_wdt_misc);
++	if (err < 0) {
++		printk(KERN_ERR PFX "watchdog misc_register failed\n");
++		return err;
++	}
++
++	/* Reset the watchdog */
++	outl(RDC_WDT_RST, RDC3210_CFGREG_DATA);
++
++	init_completion(&rdc321x_wdt_device.stop);
++	rdc321x_wdt_device.queue = 0;
++
++	clear_bit(0, &rdc321x_wdt_device.inuse);
++
++	setup_timer(&rdc321x_wdt_device.timer, rdc321x_wdt_trigger, 0);
++
++	rdc321x_wdt_device.default_ticks = ticks;
++
++	printk(KERN_INFO PFX "watchdog init success\n");
++
++	return 0;
++}
++
++static int rdc321x_wdt_remove(struct platform_device *pdev)
++{
++	if (rdc321x_wdt_device.queue) {
++		rdc321x_wdt_device.queue = 0;
++		wait_for_completion(&rdc321x_wdt_device.stop);
++	}
++
++	misc_deregister(&rdc321x_wdt_misc);
++
++	return 0;
++}
++
++static struct platform_driver rdc321x_wdt_driver = {
++	.probe = rdc321x_wdt_probe,
++	.remove = rdc321x_wdt_remove,
++	.driver = {
++		.owner = THIS_MODULE,
++		.name = "rdc321x-wdt",
++	},
++};
++
++static int __init rdc321x_wdt_init(void)
++{
++	return platform_driver_register(&rdc321x_wdt_driver);
++}
++
++static void __exit rdc321x_wdt_exit(void)
++{
++	platform_driver_unregister(&rdc321x_wdt_driver);
++}
++
++module_init(rdc321x_wdt_init);
++module_exit(rdc321x_wdt_exit);
++
++MODULE_AUTHOR("Florian Fainelli <florian@openwrt.org>");
++MODULE_DESCRIPTION("RDC321x watchdog driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+diff --git a/include/asm-x86/mach-rdc321x/gpio.h b/include/asm-x86/mach-rdc321x/gpio.h
+new file mode 100644
+index 0000000..db31b92
+--- /dev/null
++++ b/include/asm-x86/mach-rdc321x/gpio.h
+@@ -0,0 +1,56 @@
++#ifndef _RDC321X_GPIO_H
++#define _RDC321X_GPIO_H
++
++extern int rdc_gpio_get_value(unsigned gpio);
++extern void rdc_gpio_set_value(unsigned gpio, int value);
++extern int rdc_gpio_direction_input(unsigned gpio);
++extern int rdc_gpio_direction_output(unsigned gpio, int value);
++
++
++/* Wrappers for the arch-neutral GPIO API */
++
++static inline int gpio_request(unsigned gpio, const char *label)
++{
++	/* Not yet implemented */
++	return 0;
++}
++
++static inline void gpio_free(unsigned gpio)
++{
++	/* Not yet implemented */
++}
++
++static inline int gpio_direction_input(unsigned gpio)
++{
++	return rdc_gpio_direction_input(gpio);
++}
++
++static inline int gpio_direction_output(unsigned gpio, int value)
++{
++	return rdc_gpio_direction_output(gpio, value);
++}
++
++static inline int gpio_get_value(unsigned gpio)
++{
++	return rdc_gpio_get_value(gpio);
++}
++
++static inline void gpio_set_value(unsigned gpio, int value)
++{
++	rdc_gpio_set_value(gpio, value);
++}
++
++static inline int gpio_to_irq(unsigned gpio)
++{
++	return gpio;
++}
++
++static inline int irq_to_gpio(unsigned irq)
++{
++	return irq;
++}
++
++/* For cansleep */
++#include <asm-generic/gpio.h>
++
++#endif /* _RDC321X_GPIO_H_ */
+diff --git a/include/asm-x86/mach-rdc321x/rdc321x_defs.h b/include/asm-x86/mach-rdc321x/rdc321x_defs.h
+new file mode 100644
+index 0000000..838ba8f
+--- /dev/null
++++ b/include/asm-x86/mach-rdc321x/rdc321x_defs.h
+@@ -0,0 +1,6 @@
++#define PFX	"rdc321x: "
++
++/* General purpose configuration and data registers */
++#define RDC3210_CFGREG_ADDR     0x0CF8
++#define RDC3210_CFGREG_DATA     0x0CFC
++#define RDC_MAX_GPIO		0x3A
+diff --git a/include/asm-x86/timex.h b/include/asm-x86/timex.h
+index 39a21ab..27cfd6c 100644
+--- a/include/asm-x86/timex.h
++++ b/include/asm-x86/timex.h
+@@ -7,6 +7,8 @@
+ 
+ #ifdef CONFIG_X86_ELAN
+ #  define PIT_TICK_RATE 1189200 /* AMD Elan has different frequency! */
++#elif defined(CONFIG_X86_RDC321X)
++#  define PIT_TICK_RATE 1041667 /* Underlying HZ for R8610 */
+ #else
+ #  define PIT_TICK_RATE 1193182 /* Underlying HZ */
+ #endif
 
---Boundary-00=_kNKFHp4OQPKMSkt--
+--Boundary-00=_sNKFHvLCEqIHVhu--
 
 
 
