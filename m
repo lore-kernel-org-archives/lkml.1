@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbXJPCew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbXJPCha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbXJPCew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 22:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbXJPCeo
+	id S932326AbXJPCha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 22:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbXJPChT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 22:34:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58872 "EHLO
+	Mon, 15 Oct 2007 22:37:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59038 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757627AbXJPCen (ORCPT
+	with ESMTP id S1757559AbXJPChQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 22:34:43 -0400
-Date: Mon, 15 Oct 2007 19:34:39 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Paul Menage <menage@google.com>
-Cc: rientjes@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
-       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
-Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
-Message-Id: <20071015193439.fe67bc4d.pj@sgi.com>
-In-Reply-To: <471403BF.4090203@google.com>
-References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com>
-	<4713DA85.3020208@google.com>
-	<20071015171636.6213bf43.pj@sgi.com>
-	<471403BF.4090203@google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Mon, 15 Oct 2007 22:37:16 -0400
+Date: Tue, 16 Oct 2007 12:36:27 +1000
+From: David Chinner <dgc@sgi.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: David Chinner <dgc@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nathan Scott <nscott@aconex.com>, Andrea Arcangeli <andrea@suse.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: More Large blocksize benchmarks
+Message-ID: <20071016023627.GQ995458@sgi.com>
+References: <20071016002231.GA21378@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071016002231.GA21378@think.oraclecorp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> currently against an older kernel 
+On Mon, Oct 15, 2007 at 08:22:31PM -0400, Chris Mason wrote:
+> Hello everyone,
+> 
+> I'm stealing the cc list and reviving and old thread because I've
+> finally got some numbers to go along with the Btrfs variable blocksize
+> feature.  The basic idea is to create a read/write interface to
+> map a range of bytes on the address space, and use it in Btrfs for all
+> metadata operations (file operations have always been extent based).
+> 
+> So, instead of casting buffer_head->b_data to some structure, I read and
+> write at offsets in a struct extent_buffer.  The extent buffer is very
+> small and backed by an address space, and I get large block sizes the
+> same way file_write gets to write to 16k at a time, by finding the
+> appropriate page in the addess space.  This is an over simplification
+> since I try to cache these mapping decisions to avoid using too much
+> CPU, but hopefully you get the idea.
+> 
+> The advantage to this approach is the changes are all inside Btrfs.  No
+> extra kernel patches were required.
+> 
+> Dave reported that XFS saw much higher write throughput with large
+> blocksizes, but so far I'm seeing the most benefits during reads.
 
-ah .. which older kernel?
+Apples to oranges, Chris ;)
 
-I tried it against the broken out 2.6.23-rc8-mm2 patch set,
-inserting it before the task-containersv11-* patches, but
-that blew up on me - three rejected hunks.
+btrfs linearises writes due to it's COW behaviour and this is trades
+off read speed. i.e. we take more seeks to read data so we can keep
+the write speed high. By using large blocks, you're reducing the
+number of seeks needed to find anything, and hence the read speed
+will increase. Write speed will be pretty much unchanged because
+btrfs does linear writes no matter the block size.
 
-Any chance of getting this against a current cgroup (aka
-container) kernel?
+XFS doesn't linearise writes and optimises it's layout for a large
+number of disks and a low number of seeks on reads - the opposite
+of btrfs. Hence large block sizes reduce the number of writes XFS
+needs to write a given set of data+metadata and hence write speed
+increases much more than the read speed (until you get to large tree
+traversals).
 
-Could you use the diff --show-c-function option when composing
-patches - they're easier to read that way - thanks.
+The basic conclusion is that different filesystems will benefit in
+different ways with large block sizes....
 
-+	if (!retval) {
-+		cpus_allowed = cpuset_cpus_allowed(p);
-+		if (!cpus_subset(new_mask, cpus_allowed)) {
-+			/*
-+			 * We must have raced with a concurrent cpuset
-+			 * update. Just reset the cpus_allowed to the
-+			 * cpuset's cpus_allowed
-+			 */
-+			new_mask = cpus_allowed;
+Cheers,
 
-This narrows the race, perhaps sufficiently, but I don't see that it
-guarantees closure.  Memory accesses to two different locations are not
-guaranteed to be ordered across nodes, as best I recall.  The second
-line above, that rereads the cpuset cpus_allowed, could get an old
-value, in essence.
-
-	cpuset update task		sched_setaffinity task
-	------------------		----------------------
-
-	A. write cpuset	[Q]		V. read cpuset [Q]
-	B. read task [P]		W. check ok
-	C. write task [P]		X. write task [P]
-					Y. reread cpuset [Q]
-					Z. check ok again
-
-Two memory locations:
-	[P] the cpus_allowed mask in the task_struct of the
-		task doing the sched_setaffinity call.
-	[Q] the cpus_allowed mask in the cpuset of the cpuset
-		to which the sched_setaffinity task is attached.
-
-Even though, from the perspective of location [P], both B. and C.
-happened before X., still from the perspective of location [Q] the
-rereading in Y. could return the value the cpuset cpus_allowed had
-before the write in A.  This could result in a task running with
-a cpus_allowed that was totally outside its cpusets cpus_allowed.
-
-I will grant that this is a narrow window.  I won't loose much sleep
-over it.
-
->  - uses a priority heap to pick the processes to act on, based on start time
-
-This adds a fair bit of code and complexity, relative to my patch.
-This I do loose more sleep over.  There has to be a compelling
-reason for doing this.
-
-The point that David raises, regarding the interaction of this with
-hotplug, seems to be a compelling reason for doing -something-
-different than my patch proposal.
-
-I don't know yet if it compels us to this much code, however.
-
-Any chance you could provide a patch that works against cgroups?
-
+Dave.
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
