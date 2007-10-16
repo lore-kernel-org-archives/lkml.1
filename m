@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXJPKj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXJPKjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXJPKj1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758319AbXJPKjT
+	id S933803AbXJPKjy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758319AbXJPKjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:39:19 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:39320 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757795AbXJPKjS (ORCPT
+	Tue, 16 Oct 2007 06:39:43 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:12372 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757783AbXJPKjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:39:18 -0400
-Message-ID: <471494A1.8030504@linux.vnet.ibm.com>
-Date: Tue, 16 Oct 2007 16:08:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-References: <200710122231.50739.elendil@planet.nl> <200710161029.27132.borntraeger@de.ibm.com> <471484B3.9010903@linux.vnet.ibm.com> <200710161211.40285.elendil@planet.nl>
-In-Reply-To: <200710161211.40285.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 06:39:40 -0400
+Date: Tue, 16 Oct 2007 06:35:13 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH v3] hwmon: Add power meter spec  to Documentation/hwmon/sysfs-interface
+Message-ID: <20071016103513.GB3731@jupiter.solarsys.private>
+References: <20071009203923.GJ16752@tree.beaverton.ibm.com> <20071015171029.39ab3fe6@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015171029.39ab3fe6@hyperion.delvare>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> On Tuesday 16 October 2007, Balbir Singh wrote:
->> I am trying to think out loud as to what the root cause of the problem
->> might be. In one of the discussion threads, I saw utime going backwards,
->> which seemed very odd, I suspect that those are rounding errors.
-> 
-> I only remembered stime going backwards, but looking back at the mails
-> you are right, there has been one case of utime going backwards too.
-> stime going backwards happens _much_ more frequently.
-> 
->> I have tried and not had any success reproducing the problem, could you
->> please help me with some pointers/steps to reproduce the problem?
-> 
-> I can reproduce the problem reliably for two KDE programs I have running
-> permanently on my system: kontact and amarok. Both of these wake up
-> regularly and use some (not very much) processor capacity before going to
-> sleep again. Any process that has that that characteristic should do.
-> 
-> /me thinks a bit and tries something
-> 
-> lol - I have just managed to reproduce this with 'top' itself :-P
-> 
+Hi:
 
-Thanks, I know why I am not seeing the problem. My box has
-CONFIG_VIRT_CPU_ACCOUNTING set. I'll find another box and try.
+> On Tue, 9 Oct 2007 13:39:24 -0700, Darrick J. Wong wrote:
+> > Update the hwmon sysfs interface documentation to include a specification
+> > for power meters.
+> > 
+> > Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> > ---
+> > 
+> >  Documentation/hwmon/sysfs-interface |   31 +++++++++++++++++++++++++++++++
+> >  1 files changed, 31 insertions(+), 0 deletions(-)
 
+* Jean Delvare <khali@linux-fr.org> [2007-10-15 17:10:29 +0200]:
+> Looks good, thanks for your patience :)
+> 
+> Acked-by: Jean Delvare <khali@linux-fr.org>
 
+Applied to hwmon-2.6.git/testing, thanks.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Mark M. Hoffman
+mhoffman@lightlink.com
+
