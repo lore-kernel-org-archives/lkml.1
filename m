@@ -1,65 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXJPE5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765715AbXJPE6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765630AbXJPE5P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXJPE45
+	id S1765715AbXJPE6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbXJPE6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:56:57 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45793
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755177AbXJPE4y (ORCPT
+	Tue, 16 Oct 2007 00:58:21 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56685 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756351AbXJPE6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:56:54 -0400
-Date: Mon, 15 Oct 2007 22:00:40 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Greg KH <greg@kroah.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Rob Landley <rob@landley.net>,
-       Julian Calaby <julian.calaby@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Jens Axboe <axboe@suse.de>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-In-Reply-To: <20071016042104.GA7854@kroah.com>
-Message-ID: <Pine.LNX.4.64.0710152153180.1538@asgard.lang.hm>
-References: <200710112011.22000.rob@landley.net> <200710150304.00901.rob@landley.net>
- <646765f40710150206j75af4c4dwac4f4565451b64b1@mail.gmail.com>
- <200710150508.37332.rob@landley.net> <20071015173357.GB5738@kroah.com>
- <Pine.LNX.4.64.0710151952250.3949@asgard.lang.hm> <20071016040401.GA15744@parisc-linux.org>
- <20071016042104.GA7854@kroah.com>
+	Tue, 16 Oct 2007 00:58:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<200710160123.32434.nickpiggin@yahoo.com.au>
+	<m1zlyjiwdc.fsf@ebiederm.dsl.xmission.com>
+	<200710161645.58686.nickpiggin@yahoo.com.au>
+Date: Mon, 15 Oct 2007 22:57:14 -0600
+In-Reply-To: <200710161645.58686.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Tue, 16 Oct 2007 16:45:58 +1000")
+Message-ID: <m1abqjirmd.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Greg KH wrote:
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-> On Mon, Oct 15, 2007 at 10:04:01PM -0600, Matthew Wilcox wrote:
->> On Mon, Oct 15, 2007 at 07:54:22PM -0700, david@lang.hm wrote:
->>> do PCI devices reorder their bus numbers spontaniously, or only if you
->>> change the hardware?
 >>
->> The only system I've had that reordered PCI bus numbers was when I had a
->> partitionable system and changed the partitioning.  Not quite "change
->> the hardware", but neither was it "spontaneous".  It was certainly
->> unexpected (for me).
->>
->> Greg probably has quite different examples.
+>> make_page_uptodate() is most hideous part I have run into.
+>> It has to know details about other layers to now what not
+>> to stomp.  I think my incorrect simplification of this is what messed
+>> things up, last round.
 >
-> Changing the hardware (adding a new PCI device or removing one) are the
-> most common times this happens.  But I have seen reports of this
-> happening when you upgrade/downgrade BIOS versions, and, in some
-> oops-we-messed-up cases, when we changed things in the kernel.
+> Not really, it's just named funny. That's just a minor utility
+> function that more or less does what it says it should do.
+>
+> The main problem is really that it's implementing a block device
+> who's data comes from its own buffercache :P. I think.
 
-BIOS upgrades qualify as changing hardware (or close to it)
+Well to put it another way, mark_page_uptodate() is the only
+place where we really need to know about the upper layers.
+Given that you can kill ramdisks by coding it as:
 
-oops-we-messed-up cases of kernel changes don't justify 'best effort' 
-nameing, it's a regression that needs to be fixed.
+static void make_page_uptodate(struct page *page)
+{
+	clear_highpage(page);
+	flush_dcache_page(page);
+	SetPageUptodate(page);
+}
 
-now the other example given of docking a laptop is closer to reasonable 
-(and is definantly a reason to have 'best effort' nameing as an option), 
-but that's still a relativly special case, and it _is_ definantly 
-changeing the hardware
+Something is seriously non-intuitive about that function if
+you understand the usual rules for how to use the page cache.
 
-David Lang
+The problem is that we support a case in the buffer cache
+where pages are partially uptodate and only the buffer_heads
+remember which parts are valid.  Assuming we are using them
+correctly.
+
+Having to walk through all of the buffer heads in make_page_uptodate
+seems to me to be a nasty layering violation in rd.c
+
+>> > I guess it's not nice
+>> > for operating on the pagecache from its request_fn, but the
+>> > alternative is to duplicate pages for backing store and buffer
+>> > cache (actually that might not be a bad alternative really).
+>>
+>> Cool. Triple buffering :)  Although I guess that would only
+>> apply to metadata these days.
+>
+> Double buffering. You no longer serve data out of your buffer
+> cache.  All filesystem data was already double buffered anyway,
+> so we'd be just losing out on one layer of savings for metadata.
+
+Yep we are in agreement there.
+
+> I think it's worthwhile, given that we'd have a "real" looking
+> block device and minus these bugs.
+
+For testing purposes I think I can agree with that.
+
+>> Having a separate store would 
+>> solve some of the problems, and probably remove the need
+>> for carefully specifying the ramdisk block size.  We would
+>> still need the magic restictions on page allocations though
+>> and it we would use them more often as the initial write to the
+>> ramdisk would not populate the pages we need.
+>
+> What magic restrictions on page allocations? Actually we have
+> fewer restrictions on page allocations because we can use
+> highmem! 
+
+With the proposed rewrite yes.
+
+> And the lowmem buffercache pages that we currently pin
+> (unsuccessfully, in the case of this bug) are now completely
+> reclaimable. And all your buffer heads are now reclaimable.
+
+Hmm.  Good point.  So in net it should save memory even if
+it consumes a little more in the worst case.
+
+
+> If you mean GFP_NOIO... I don't see any problem. Block device
+> drivers have to allocate memory with GFP_NOIO; this may have
+> been considered magic or deep badness back when the code was
+> written, but it's pretty simple and accepted now.
+
+Well I always figured it was a bit rude allocating large amounts
+of memory GFP_NOIO but whatever.
+
+>> A very ugly bit seems to be the fact that we assume we can
+>> dereference bh->b_data without any special magic which
+>> means the ramdisk must live in low memory on 32bit machines.
+>
+> Yeah but that's not rd.c. You need to rewrite the buffer layer
+> to fix that (see fsblock ;)).
+
+I'm not certain which way we should go.  Take fsblock and run it
+in parallel until everything is converted or use fsblock as a
+prototype and once we have figured out which way we should go
+convert struct buffer_head into struct fsblock one patch at a time.
+
+I'm inclined to think we should evolve the buffer_head.
+
+Eric
+
+
+
+
+
