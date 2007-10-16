@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965737AbXJPUv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965709AbXJPUwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965737AbXJPUv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965363AbXJPUvB
+	id S965709AbXJPUwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXJPUvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:51:01 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25991 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965546AbXJPUu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:50:59 -0400
-Date: Tue, 16 Oct 2007 22:50:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Message-ID: <20071016205053.GI9942@kernel.dk>
-References: <200710132126.33085.rjw@sisk.pl> <20071016045025.GC8125@kroah.com> <200710162204.51961.rjw@sisk.pl> <20071016204238.GA1093@kroah.com>
+	Tue, 16 Oct 2007 16:51:48 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40267
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965544AbXJPUvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:51:46 -0400
+Date: Tue, 16 Oct 2007 13:55:07 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Rob Landley <rob@landley.net>, David Newall <david@davidnewall.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+In-Reply-To: <20071016195432.GA31306@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net>
+ <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net>
+ <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de>
+ <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu>
+ <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm> <20071016195432.GA31306@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071016204238.GA1093@kroah.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16 2007, Greg KH wrote:
-> On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
-> > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
-> > > > appear for vanilla 2.6.23):
-> > > > 
-> > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
-> > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
-> > > > 
-> > > > Call Trace:
-> > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
-> > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
-> > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
-> > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
-> > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
-> > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
-> > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
-> > > >  [<ffffffff8024b977>] up_read+0x9/0xb
-> > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
-> > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
-> > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
-> > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
-> > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
-> > > > 
-> > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
-> > > > sysfs: duplicate filename 'eth1' can not be created
-> > > > 
-> > > > Everything seems to work, but this just looks fishy.
-> > > 
-> > > This is a userspace program renaming your network device to a name that
-> > > is already in use.  What distro and release is this?
-> > 
-> > openSUSE 10.2, with some updates (not the most recent, though).
-> 
-> Can you try 10.3?  I think we fixed this issue there.
+On Tue, 16 Oct 2007, Matthew Wilcox wrote:
 
-Ehm nope:
+> On Tue, Oct 16, 2007 at 12:54:58PM -0700, david@lang.hm wrote:
+>> On Tue, 16 Oct 2007, Alan Cox wrote:
+>>> I wouldn't try dividing those by pata v sata. You'll cause all sorts of
+>>> problems in the process because of PATA-SATA and SATA-PATA bridges.
+>>
+>> if you use a PATA-SATA bridge (IDE drive SATA controller), it would look
+>> to the system like a SATA drive and be addressed and enumerated as SATA.
+>
+> But you don't know where the bridge is.  It might be on the drive's
+> board, it might be an explicit enclosure, or it might be on the
+> motherboard.  Each of those scenarios is going to have a different user
+> expectation.
 
-Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
-can not be created
-Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
-eth1
-Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
-sysfs_add_one()
-Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
-Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
-Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
-Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
-Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
-Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
-Oct 16 19:36:27 carl kernel:  [<c01a1938>]
-inotify_d_instantiate+0x18/0x80
-Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
-Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
-Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
-Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
-Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
-Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
-Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
-Oct 16 19:36:27 carl kernel:  =======================
-Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
-sysfs_create_symlink failed (-17)
+the only one of these that I would find unexpected would be the one on the 
+motherboard.
 
--- 
-Jens Axboe
+why is this any different from the external enclosures? they have always 
+appeared as the type of device that connects them to the motherboard, (and 
+even with SCSI, there are some controllers that don't generate sdX 
+devices)
+
+the driver for the controller is what has historicly determined what the 
+device appears as to the system. an example of this is the 3ware driver 
+that is a SCSI drive but the drives attached to the card are IDE drives. 
+another example is the I2O drivers (which give you access to the Raid 
+array and to the individual drives, in different namespaces). while I may 
+disagree with some of the selections that have been made (the 3ware has 
+always seemed odd to me for example) it's pretty simple to figure out.
+
+but in any case, historicly IDE (PATA) and SATA drives have been handled 
+differently, IDE drives have had fixed device names based on how they are 
+connected, SATA devices have had 'order found' device names from the SCSI 
+heritige. mixing the two types into one namespace requires changing one or 
+the other. while I would love to see SATA gain hardware path dependant 
+names I'm not holding my breath, but I hate to loose the predictable 
+nameing (even if the names change) for the IDE drives.
+
+David Lang
 
