@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935070AbXJPSv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935356AbXJPSyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935070AbXJPSv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbXJPSvp
+	id S935356AbXJPSyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932445AbXJPSyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:51:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:46473 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758130AbXJPSvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:51:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
-   d="scan'208";a="299734230"
-Date: Tue, 16 Oct 2007 11:43:28 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: pcihpd-discuss@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIe Hotplug:  NFG unless I boot with card already inserted.
-Message-Id: <20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-In-Reply-To: <47150565.5090102@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 14:54:07 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:36207 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765731AbXJPSyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 14:54:04 -0400
+Date: Tue, 16 Oct 2007 19:53:51 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jeremy Katz <katzj@redhat.com>
+Cc: hmh@hmh.eng.br, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, davej@redhat.com
+Message-ID: <20071016185351.GC25181@srcf.ucam.org>
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192481110-9299-1-git-send-email-katzj@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 14:39:33 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+On Mon, Oct 15, 2007 at 04:45:10PM -0400, Jeremy Katz wrote:
+> There are standard keycodes for brightness and volume; map the events to
+> emit them so that things work properly
 
-> I also checked my modprobe.d/ options, and I am using pciehp_force=1.
-> Without that flag, none of this ever works.
+We've been doing this in Ubuntu for a couple of years now, with no 
+obvious difficulty.
 
-OK - I suspected something like this.  Most Dell computers don't support
-ExpressCard hotplug using Native PCIe -- in fact, I've not seen a single
-one, they explicitly disable it because they have not validated it or
-they have and something didn't work right.  I'll take a look at what you've
-got, but be aware that you are forcing pciehp to load and operate on a system
-where they've certainly either not tested it, or tested it and something
-bad happened.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
