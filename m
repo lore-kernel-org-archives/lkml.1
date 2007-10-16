@@ -1,211 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbXJPDky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765068AbXJPDlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764706AbXJPDky (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 23:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760610AbXJPDkj
+	id S1765068AbXJPDlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 23:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764790AbXJPDk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 23:40:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52857 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759238AbXJPDkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 23:40:36 -0400
+	Mon, 15 Oct 2007 23:40:57 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:37235 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764738AbXJPDkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 23:40:55 -0400
+X-Greylist: delayed 1521 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Oct 2007 23:40:55 EDT
+Message-ID: <jwvwstnsqds.fsf-monnier+inbox@gnu.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Killing a network connection
+References: <jwvodf01b5i.fsf-monnier+gmane.linux.kernel@gnu.org>
+	<p73przg10yp.fsf@bingen.suse.de>
+From: Stefan Monnier <monnier@iro.umontreal.ca>
+Date: Mon, 15 Oct 2007 23:15:32 -0400
+In-Reply-To: <p73przg10yp.fsf@bingen.suse.de> (Andi Kleen's message of "Tue\, 16 Oct 2007 00\:12\:46 +0200")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH] ia64 vDSO: linker script indentation
-X-Zippy-Says: I HAVE a towel.
-Message-Id: <20071016034029.1C3E44D0389@magilla.localdomain>
-Date: Mon, 15 Oct 2007 20:40:29 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> The main use for me is to deal with dangling connections due to taking
+>> network interfaces up&down with different IP addresses (typically the wlan0
+>> interface where the IP is different because I've modes from an AP to
+>> another).  Of course, maybe there's another way to solve this particular
+>> problem, in case I'd like to hear about it as well.
 
-This cleans up the formatting in the vDSO linker script, mostly just the
-use of whitespace.  It's intended to approximate the kernel standard
-conventions for indenting C, treating elements of the linker script about
-like initialized variable definitions.
+> Long ago I did a 2.4 patch that solved exactly this problem. It introduced
+> a new ifconfig flag "dynamic" and when a dynamic address went down
+> all TCP connections originating from it were killed. It's still available
+> in older SUSE releases. I might post a forward port later.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
-CC: Sam Ravnborg <sam@ravnborg.org>
----
- arch/ia64/kernel/gate.lds.S |  135 +++++++++++++++++++++++--------------------
- 1 files changed, 72 insertions(+), 63 deletions(-)
+Actually, I'm pretty happy sometimes with the current behavior: if the
+interface goes down and back up with the same AP within a short enough time,
+it typically gets the same IP and the router's NAT table still has the TCP
+connection live and things "just work".
 
-diff --git a/arch/ia64/kernel/gate.lds.S b/arch/ia64/kernel/gate.lds.S
-index 6d19833..44817d9 100644
---- a/arch/ia64/kernel/gate.lds.S
-+++ b/arch/ia64/kernel/gate.lds.S
-@@ -1,7 +1,8 @@
- /*
-- * Linker script for gate DSO.  The gate pages are an ELF shared object prelinked to its
-- * virtual address, with only one read-only segment and one execute-only segment (both fit
-- * in one page).  This script controls its layout.
-+ * Linker script for gate DSO.  The gate pages are an ELF shared object
-+ * prelinked to its virtual address, with only one read-only segment and
-+ * one execute-only segment (both fit in one page).  This script controls
-+ * its layout.
-  */
- 
- 
-@@ -9,72 +10,80 @@
- 
- SECTIONS
- {
--  . = GATE_ADDR + SIZEOF_HEADERS;
--
--  .hash				: { *(.hash) }				:readable
--  .gnu.hash			: { *(.gnu.hash) }
--  .dynsym			: { *(.dynsym) }
--  .dynstr			: { *(.dynstr) }
--  .gnu.version			: { *(.gnu.version) }
--  .gnu.version_d		: { *(.gnu.version_d) }
--  .gnu.version_r		: { *(.gnu.version_r) }
--  .dynamic			: { *(.dynamic) }			:readable :dynamic
--
--  /*
--   * This linker script is used both with -r and with -shared.  For the layouts to match,
--   * we need to skip more than enough space for the dynamic symbol table et al.  If this
--   * amount is insufficient, ld -shared will barf.  Just increase it here.
--   */
--  . = GATE_ADDR + 0x500;
--
--  .data.patch			: {
--				    __start_gate_mckinley_e9_patchlist = .;
--				    *(.data.patch.mckinley_e9)
--				    __end_gate_mckinley_e9_patchlist = .;
--
--				    __start_gate_vtop_patchlist = .;
--				    *(.data.patch.vtop)
--				    __end_gate_vtop_patchlist = .;
--
--				    __start_gate_fsyscall_patchlist = .;
--				    *(.data.patch.fsyscall_table)
--				    __end_gate_fsyscall_patchlist = .;
--
--				    __start_gate_brl_fsys_bubble_down_patchlist = .;
--				    *(.data.patch.brl_fsys_bubble_down)
--				    __end_gate_brl_fsys_bubble_down_patchlist = .;
--  }									:readable
--  .IA_64.unwind_info		: { *(.IA_64.unwind_info*) }
--  .IA_64.unwind			: { *(.IA_64.unwind*) }			:readable :unwind
-+	. = GATE_ADDR + SIZEOF_HEADERS;
-+
-+	.hash			: { *(.hash) }		:readable
-+	.gnu.hash		: { *(.gnu.hash) }
-+	.dynsym			: { *(.dynsym) }
-+	.dynstr			: { *(.dynstr) }
-+	.gnu.version		: { *(.gnu.version) }
-+	.gnu.version_d		: { *(.gnu.version_d) }
-+	.gnu.version_r		: { *(.gnu.version_r) }
-+
-+	.dynamic		: { *(.dynamic) }	:readable	:dynamic
-+
-+	/*
-+	 * This linker script is used both with -r and with -shared.  For
-+	 * the layouts to match, we need to skip more than enough space for
-+	 * the dynamic symbol table et al.  If this amount is insufficient,
-+	 * ld -shared will barf.  Just increase it here.
-+	 */
-+	. = GATE_ADDR + 0x500;
-+
-+	.data.patch		: {
-+		__start_gate_mckinley_e9_patchlist = .;
-+		*(.data.patch.mckinley_e9)
-+		__end_gate_mckinley_e9_patchlist = .;
-+
-+		__start_gate_vtop_patchlist = .;
-+		*(.data.patch.vtop)
-+		__end_gate_vtop_patchlist = .;
-+
-+		__start_gate_fsyscall_patchlist = .;
-+		*(.data.patch.fsyscall_table)
-+		__end_gate_fsyscall_patchlist = .;
-+
-+		__start_gate_brl_fsys_bubble_down_patchlist = .;
-+		*(.data.patch.brl_fsys_bubble_down)
-+		__end_gate_brl_fsys_bubble_down_patchlist = .;
-+	}						:readable
-+
-+	.IA_64.unwind_info	: { *(.IA_64.unwind_info*) }
-+	.IA_64.unwind		: { *(.IA_64.unwind*) }	:readable	:unwind
- #ifdef HAVE_BUGGY_SEGREL
--  .text (GATE_ADDR + PAGE_SIZE)	: { *(.text) *(.text.*) }		:readable
-+	.text (GATE_ADDR + PAGE_SIZE) : { *(.text) *(.text.*) }	:readable
- #else
--  . = ALIGN (PERCPU_PAGE_SIZE) + (. & (PERCPU_PAGE_SIZE - 1));
--  .text				: { *(.text) *(.text.*) }		:epc
-+	. = ALIGN(PERCPU_PAGE_SIZE) + (. & (PERCPU_PAGE_SIZE - 1));
-+	.text			: { *(.text) *(.text.*) }	:epc
- #endif
- 
--  /DISCARD/			: {
--  	*(.got.plt) *(.got)
--	*(.data .data.* .gnu.linkonce.d.*)
--	*(.dynbss)
--	*(.bss .bss.* .gnu.linkonce.b.*)
--	*(__ex_table)
--	*(__mca_table)
--  }
-+	/DISCARD/		: {
-+		*(.got.plt) *(.got)
-+		*(.data .data.* .gnu.linkonce.d.*)
-+		*(.dynbss)
-+		*(.bss .bss.* .gnu.linkonce.b.*)
-+		*(__ex_table)
-+		*(__mca_table)
-+	}
- }
- 
- /*
-+ * ld does not recognize this name token; use the constant.
-+ */
-+#define	PT_IA_64_UNWIND	0x70000001
-+
-+/*
-  * We must supply the ELF program headers explicitly to get just one
-  * PT_LOAD segment, and set the flags explicitly to make segments read-only.
-  */
- PHDRS
- {
--  readable  PT_LOAD	FILEHDR	PHDRS	FLAGS(4);	/* PF_R */
-+	readable	PT_LOAD	FILEHDR	PHDRS	FLAGS(4);	/* PF_R */
- #ifndef HAVE_BUGGY_SEGREL
--  epc	    PT_LOAD	FILEHDR PHDRS	FLAGS(1);	/* PF_X */
-+	epc		PT_LOAD	FILEHDR PHDRS	FLAGS(1);	/* PF_X */
- #endif
--  dynamic   PT_DYNAMIC			FLAGS(4);	/* PF_R */
--  unwind    0x70000001; /* PT_IA_64_UNWIND, but ld doesn't match the name */
-+	dynamic		PT_DYNAMIC		FLAGS(4);	/* PF_R */
-+	unwind		PT_IA_64_UNWIND;
- }
- 
- /*
-@@ -82,14 +91,14 @@ PHDRS
-  */
- VERSION
- {
--  LINUX_2.5 {
--    global:
--	__kernel_syscall_via_break;
--	__kernel_syscall_via_epc;
--	__kernel_sigtramp;
--
--    local: *;
--  };
-+	LINUX_2.5 {
-+	global:
-+		__kernel_syscall_via_break;
-+		__kernel_syscall_via_epc;
-+		__kernel_sigtramp;
-+
-+	local: *;
-+	};
- }
- 
- /* The ELF entry point can be used to set the AT_SYSINFO value.  */
+So I'd want to kill the connections not when the interface goes down, but in
+comes back up with a different IP.
+
+
+        Stefan
