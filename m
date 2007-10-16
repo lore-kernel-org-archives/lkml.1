@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935417AbXJPTLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965405AbXJPTNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935417AbXJPTLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934343AbXJPTLY
+	id S965405AbXJPTNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765940AbXJPTNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:11:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41068 "EHLO mx1.redhat.com"
+	Tue, 16 Oct 2007 15:13:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:46680 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934265AbXJPTLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:11:23 -0400
-Date: Tue, 16 Oct 2007 14:35:10 -0400
-From: Dave Jones <davej@redhat.com>
-To: Arnaud Fontaine <arnaud@andesi.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: error: Eeek! page_mapcount(page) went negative! (-1) with
-	different process and kernels
-Message-ID: <20071016183510.GB25480@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Arnaud Fontaine <arnaud@andesi.org>, linux-kernel@vger.kernel.org
-References: <sa564176ksz.fsf@Toushirou.duckcorp.org>
+	id S1763651AbXJPTNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 15:13:36 -0400
+Message-ID: <47150D5E.6090504@goop.org>
+Date: Tue, 16 Oct 2007 12:13:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <sa564176ksz.fsf@Toushirou.duckcorp.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] paravirt_ops and xen updates for 2.6.24
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 07:17:32PM +0200, Arnaud Fontaine wrote:
- > Hello,
- > 
- > We have often the following error from the kernel:
- > 
+Hi Linus,
 
- >  sshd[1551] trap invalid opcode rip:2aeacc0677a0 rsp:7fffe0c7e688 error:0
- >  Eeek! page_mapcount(page) went negative! (-1)
- >    page pfn = 7f7a8
- >    page->flags = 400000000001002c
- >    page->count = 1
- >    page->mapping = ffff810056170550
- >    vma->vm_ops = 0xffffffff80667ba0
- >    vma->vm_ops->nopage = _stext+0x7fdf7000/0x20
- >    vma->vm_ops->fault = filemap_fault+0x0/0x450
- >    vma->vm_file->f_op->mmap = generic_file_mmap+0x0/0x50
- > ....
- > 
- > We have tested with different  kernel (2.6.23.1 and 2.6.22) and the same
- > error happens  with different process.  Any idea for knowing  what could
- > cause this error?
+Please pull:
 
-Many of these that I've seen have turned out to be a hardware problem.
-Try running memtest86+ on that machine for a while.
-It doesn't catch all problems, but it will highlight more common memory faults.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen-upstream
 
-	Dave
+This contains updates for arch/x86 paravirt_ops and Xen.
 
--- 
-http://www.codemonkey.org.uk
+A quick overview of the patchset:
+
+paravirt_ops:
+	Remove the monolithic paravirt_ops structure, and replace it with
+	smaller structures of related functions.  Also, clean up the handling
+	of lazy mode to make it easier to implement.
+
+x86/mm/init.c: remove a chunk of dead code
+
+Xen:
+	- remove duplicate includes
+	- yield if the target vcpu of an IPI is not currently running
+	- add post-batch callbacks for multicalls [*]
+	- deal with unpinning pagetables when another vcpu still
+	  has a cr3 reference [*]
+	- deal with split ptelocks by pinning each pte page
+	  separately under lock
+	- determine the kernel/hypervisor address split dynamically
+	- use the right arg structure for register_vcpu_info [*]
+	- add extra debugging output for failed multicalls
+
+XFS:
+	- eagerly unmap vmapped areas to avoid confict with Xen [*]
+
+[*] bugfix needed for 2.6.23.  I've also cc:d them to stable@kernel.org
+
+Diffstat:
+ arch/x86/kernel/alternative.c         |    4 
+ arch/x86/kernel/asm-offsets_32.c      |   14 
+ arch/x86/kernel/entry_32.S            |    2 
+ arch/x86/kernel/paravirt_32.c         |  234 ++++++++-----
+ arch/x86/kernel/vmi_32.c              |  211 ++++++------
+ arch/x86/mm/init_32.c                 |   22 -
+ arch/x86/xen/enlighten.c              |  295 +++++++++-------
+ arch/x86/xen/mmu.c                    |  149 ++++++--
+ arch/x86/xen/multicalls.c             |   52 ++
+ arch/x86/xen/multicalls.h             |    5 
+ arch/x86/xen/smp.c                    |   14 
+ arch/x86/xen/time.c                   |    6 
+ arch/x86/xen/xen-ops.h                |   10 
+ drivers/char/hvc_lguest.c             |    2 
+ drivers/lguest/core.c                 |    6 
+ drivers/lguest/lguest.c               |  154 ++++----
+ drivers/lguest/lguest_bus.c           |    2 
+ fs/xfs/linux-2.6/xfs_buf.c            |   13 
+ include/asm-x86/paravirt.h            |  507 ++++++++++++++++-------------
+ include/asm-x86/pgtable-3level-defs.h |    2 
+ include/xen/interface/vcpu.h          |    5 
+ mm/Kconfig                            |    1 
+ 22 files changed, 1027 insertions(+), 683 deletions(-)
+
+Thanks,
+	J
+
