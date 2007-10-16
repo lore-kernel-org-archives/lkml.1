@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934028AbXJPPCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934260AbXJPPCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934028AbXJPPCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXJPPCE
+	id S934260AbXJPPCh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934069AbXJPPCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:02:04 -0400
-Received: from [12.38.223.190] ([12.38.223.190]:1076 "EHLO
-	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759311AbXJPPCD (ORCPT
+	Tue, 16 Oct 2007 11:02:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56861 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934044AbXJPPCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:02:03 -0400
-X-Greylist: delayed 678 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 11:02:03 EDT
+	Tue, 16 Oct 2007 11:02:23 -0400
+Date: Tue, 16 Oct 2007 08:02:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: pj@sgi.com
+cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/1] x86: Convert cpuinfo_x86 array to a per_cpu array
+ v3
+In-Reply-To: <20071016011827.91350174.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0710160755200.25014@schroedinger.engr.sgi.com>
+References: <20070924210853.256462000@sgi.com> <20071016011827.91350174.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
-Date: Tue, 16 Oct 2007 10:50:10 -0400
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] i386: fix TSC clock source calibration error
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Johnson <djohnson@sw.starentnetworks.com>
+On Tue, 16 Oct 2007, Andrew Morton wrote:
 
-I ran into this problem on a system that was unable to obtain NTP sync
-because the clock was running very slow (over 10000ppm slow). ntpd had
-declared all of its peers 'reject' with 'peer_dist' reason.
+> On Mon, 24 Sep 2007 14:08:53 -0700 travis@sgi.com wrote:
 
-On investigation, the tsc_khz variable was significantly incorrect
-causing xtime to run slow.  After a reboot tsc_khz was correct so I
-did a reboot test to see how often the problem occurred:
+> > cpu_sibling_map and cpu_core_map have been taken care of in
+> > a prior patch.  This patch deals with the cpu_data array of
+> > cpuinfo_x86 structs.  The model that was used in sparc64
+> > architecture was adopted for x86.
+> 
+> This has mysteriously started to oops on me, only on x86_64.
+> 
+> http://userweb.kernel.org/~akpm/config-x.txt
+> http://userweb.kernel.org/~akpm/dsc00001.jpg
+> 
+> which is a bit strange since this patch doesn't touch sched.c.  Maybe
+> there's something somewhere else in the -mm lineup which when combined with
+> this prevents it from oopsing, dunno.  I'll hold it back for now and will
+> see what happens.
 
-Test was done on a 2000 Mhz Xeon system.  Of 689 reboots, 8 of them
-had unacceptable tsc_khz values (>500ppm):
+The config that you are using has
 
- range of tsc_khz  # of boots  % of boots
------------------  ----------  ----------
-        < 1999750           0      0.000%
-1999750 - 1999800          21      3.048%
-1999800 - 1999850         166     24.128%
-1999850 - 1999900         241     35.029%
-1999900 - 1999950         211     30.669%
-1999950 - 2000000          42      6.105%
-2000000 - 2000000           0      0.000%
-2000050 - 2000100           0      0.000%
-                   [...]
-2000100 - 2015000           1      0.145%  << BAD
-2015000 - 2030000           6      0.872%  << BAD
-2030000 - 2045000           1      0.145%  << BAD
-2045000 <                   0      0.000%
+	CONFIG_SCHED_MC
 
-The worst boot was 2032.577 Mhz, over 1.5% off!
+and 
 
-It appears that on rare occasions, mach_countup() is taking longer to
-complete than necessary.
+	CONFIG_SCHED_MT
 
-I suspect that this is caused by the CPU taking a periodic SMI
-interrupt right at the end of the 30ms calibration loop.  This would
-cause the loop to delay while the SMI BIOS hander runs. The resulting
-TSC value is beyond what it actually should be resulting in a higher
-tsc_khz.
+set.
 
-The below patch makes native_calculate_cpu_khz() take the best
-(shortest duration, lowest khz) run of it's 3 calibration loops.  If a
-SMI goes off causing a bad result (long duration, higher khz) it will
-be discarded.
+So we use cpu_corecroup_map() from arch/x86_64/kernel/smpboot.c in
+cpu_to_phys_group that has these nice convoluted ifdefs:
 
-With the patch applied, 300 boots of the same system produce good
-results:
+static int cpu_to_phys_group(int cpu, const cpumask_t *cpu_map,
+                             struct sched_group **sg)
+{
+        int group;
+#ifdef CONFIG_SCHED_MC
+        cpumask_t mask = cpu_coregroup_map(cpu);
+        cpus_and(mask, mask, *cpu_map);
+        group = first_cpu(mask);
+#elif defined(CONFIG_SCHED_SMT)
+        cpumask_t mask = per_cpu(cpu_sibling_map, cpu);
+        cpus_and(mask, mask, *cpu_map);
+        group = first_cpu(mask);
+#else
+        group = cpu;
+#endif
+        if (sg)
+                *sg = &per_cpu(sched_group_phys, group);
+        return group;
+}
 
- range of tsc_khz  # of boots  % of boots
------------------  ----------  ----------
-        < 1999750           0      0.000%
-1999750 - 1999800          30     10.000%
-1999800 - 1999850         166     55.333%
-1999850 - 1999900          89     29.667%
-1999900 - 1999950          15      5.000%
-1999950 <                   0      0.000%
+and I guess that some sched domain patches resulted in an empty
+nodemask so that we end up with an invalid group number for the sched 
+group?
 
-Problem was found and tested against 2.6.18.  Patch is against 2.6.22.
 
-Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-
-===== arch/i386/kernel/tsc.c 1.27 vs edited =====
---- 1.27/arch/i386/kernel/tsc.c	2007-05-02 13:27:18 -04:00
-+++ edited/arch/i386/kernel/tsc.c	2007-10-15 16:31:04 -04:00
-@@ -122,7 +122,7 @@
- {
- 	unsigned long long start, end;
- 	unsigned long count;
--	u64 delta64;
-+	u64 delta64 = (u64)ULLONG_MAX;
- 	int i;
- 	unsigned long flags;
- 
-@@ -134,6 +134,7 @@
- 		rdtscll(start);
- 		mach_countup(&count);
- 		rdtscll(end);
-+		delta64 = min(delta64, (end - start));
- 	}
- 	/*
- 	 * Error: ECTCNEVERSET
-@@ -143,8 +144,6 @@
- 	 */
- 	if (count <= 1)
- 		goto err;
--
--	delta64 = end - start;
- 
- 	/* cpu freq too fast: */
- 	if (delta64 > (1ULL<<32))
+/* maps the cpu to the sched domain representing multi-core */
+cpumask_t cpu_coregroup_map(int cpu)
+{
+        struct cpuinfo_x86 *c = &cpu_data(cpu);
+        /*
+         * For perf, we return last level cache shared map.
+         * And for power savings, we return cpu_core_map
+         */
+        if (sched_mc_power_savings || sched_smt_power_savings)
+                return per_cpu(cpu_core_map, cpu);
+        else
+                return c->llc_shared_map;
+}
 
