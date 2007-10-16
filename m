@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764094AbXJPBIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbXJPBPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764094AbXJPBIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 21:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbXJPBIE
+	id S1760671AbXJPBPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 21:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbXJPBPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 21:08:04 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:50905 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbXJPBIC (ORCPT
+	Mon, 15 Oct 2007 21:15:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44953 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752973AbXJPBPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 21:08:02 -0400
-Subject: Re: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags
-	interfaces
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <20071016005832.GD19691@waste.org>
-References: <11.290135367@selenic.com> <1192488513.6118.98.camel@localhost>
-	 <20071015231106.GX19691@waste.org> <1192491297.6118.129.camel@localhost>
-	 <20071016003538.GC19691@waste.org> <1192495750.6118.152.camel@localhost>
-	 <20071016005832.GD19691@waste.org>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 18:07:59 -0700
-Message-Id: <1192496879.6118.157.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Oct 2007 21:15:11 -0400
+Date: Mon, 15 Oct 2007 18:14:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] lockdep for v2.6.24
+In-Reply-To: <1192469455.27435.87.camel@twins>
+Message-ID: <alpine.LFD.0.999.0710151813390.6887@woody.linux-foundation.org>
+References: <1192469455.27435.87.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 19:58 -0500, Matt Mackall wrote:
+
+
+On Mon, 15 Oct 2007, Peter Zijlstra wrote:
 > 
-> > For the bits that we want to export, we could also add the unoptimized
-> > access functions for any that don't already have them:
-> > 
-> > #define __ClearPageReserved(page)       __clear_bit(PG_reserved, &(page)->flags)
+> please pull the lockdep tree from:
 > 
-> Confused. Why are we interested in clear? 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git v2.6.24-lockdep
 
-We're not.  I just grabbed a random line to show the non-atomic
-accessors.  Any actual one we'd need to add would be:
+Hmm. I'm now getting
 
-#define __PageBuddy(page)         __test_bit(PG_buddy, &(page)->flags)
+	WARNING: at kernel/lockdep.c:700 look_up_lock_class()
+	
+	Call Trace:
+	 [<ffffffff8105562a>] __lock_acquire+0x15f/0xc92
+	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+	 [<ffffffff8105654a>] lock_acquire+0x5a/0x73
+	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+	 [<ffffffff81052b59>] debug_mutex_lock_common+0x16/0x23
+	 [<ffffffff81347d26>] mutex_lock_nested+0x10c/0x2b0
+	 [<ffffffff810a5804>] do_lookup+0x83/0x1b0
+	 [<ffffffff810a7b89>] __link_path_walk+0x924/0xde9
+	 [<ffffffff810a80a6>] link_path_walk+0x58/0xe0
+	 [<ffffffff81348ef6>] _spin_unlock+0x17/0x20
+	 [<ffffffff8109cc31>] get_unused_fd_flags+0x115/0x126
+	 [<ffffffff810a8432>] do_path_lookup+0x1ae/0x229
+	 [<ffffffff810a8e3d>] __path_lookup_intent_open+0x56/0x96
+	 [<ffffffff810a8fe0>] open_namei+0x7d/0x66c
+	 [<ffffffff8109ce9f>] do_filp_open+0x1c/0x38
+	 [<ffffffff81348ef6>] _spin_unlock+0x17/0x20
+	 [<ffffffff8109cc31>] get_unused_fd_flags+0x115/0x126
+	 [<ffffffff8109cf01>] do_sys_open+0x46/0xc3
+	 [<ffffffff8100bc3e>] system_call+0x7e/0x83
 
-It looks like we don't have any of these non-atomic ones for plain
-__PageFoo().  So, we'd have to add them for each one that we wanted.
-Still not much work, and still satisfies the "grep test". :)
+which seems to be new..
 
--- Dave
-
+		Linus
