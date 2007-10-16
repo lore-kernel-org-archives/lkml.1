@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765134AbXJPRik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934623AbXJPRjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765134AbXJPRik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760018AbXJPRic
+	id S934623AbXJPRjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760104AbXJPRjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:38:32 -0400
-Received: from sitemail2.everyone.net ([216.200.145.36]:40490 "EHLO
-	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758693AbXJPRic (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:38:32 -0400
-X-Eon-Dm: dm43
-X-Eon-Sig: AQF97PZHFPG9jsNCjwIAAAAB,92059aaa6a54af123230e864da55015a
-Message-ID: <4714F1BA.8020600@smsglobal.net>
-Date: Wed, 17 Oct 2007 01:15:38 +0800
-From: "Rogelio M. Serrano Jr." <rogelio@smsglobal.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 16 Oct 2007 13:39:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38668 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759111AbXJPRjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 13:39:11 -0400
+Message-ID: <4714F736.5000302@pobox.com>
+Date: Tue, 16 Oct 2007 13:39:02 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: eevdf
-X-Enigmail-Version: 0.95.3
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0BCDC68EB3B581089C0B79AF"
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Manfred Spraul <manfred@colorfullife.com>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MSI interrupts and disable_irq
+References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com> <4710901F.8010206@colorfullife.com> <4713E713.9060702@pobox.com> <86802c440710161023p3fbd6832gdb6d10a1b5e9d932@mail.gmail.com>
+In-Reply-To: <86802c440710161023p3fbd6832gdb6d10a1b5e9d932@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0BCDC68EB3B581089C0B79AF
-Content-Type: multipart/mixed;
- boundary="------------090309050600030003030607"
+Yinghai Lu wrote:
+> On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+>> Manfred Spraul wrote:
+>>> Jeff Garzik wrote:
+>>>> I think the scenario you outline is an illustration of the approach's
+>>>> fragility:  disable_irq() is a heavy hammer that originated with INTx,
+>>>> and it relies on a chip-specific disable method (kernel/irq/manage.c)
+>>>> that practically guarantees behavior will vary across MSI/INTx/etc.
+>>>>
+>>> I checked the code: IRQ_DISABLE is implemented in software, i.e.
+>>> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
+>>> handler] if IRQ_DISABLE is not set.
+>>> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
+>>>
+>>> Perhaps something corrupts dev->irq? The irq is requested with
+>>>    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
+>>> and disabled with
+>>>    disable_irq_lockdep(dev->irq);
+>>>
+>>> Someone around with a MSI capable board? The forcedeth driver does
+>>>    dev->irq = pci_dev->irq
+>>> in nv_probe(), especially before pci_enable_msi().
+>>> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
+>>> wrong interrupt....
+>> Remember, fundamentally MSI-X is a one-to-many relationship, when you
+>> consider a single PCI device might have multiple vectors.
+> 
+> msi-x is using other entry
+> 
+>                if (np->msi_flags & NV_MSI_X_ENABLED)
+> 
+> enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
 
-This is a multi-part message in MIME format.
---------------090309050600030003030607
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Correct, but the overall point was that MSI-X conceptually conflicts 
+with the existing "lockless" disable_irq() schedule, which was written 
+when there was a one-one relationship between irq, PCI device, and work 
+to be done.
+
+	Jeff
 
 
-i wrote a simple simulator for eevdf. im not sure if i got it right thoug=
-h.
 
-how does eevdf track the runtime usage of a process?
-
-is it supposed to be like this?
-
-int
-tick()
-{
-    v_time +=3D 1.0/sum_weights;
-    current->runtime +=3D 1.0/current->weight;=20
-    //sched();
-    time++;
-    return 0;
-}
-
-i can forward the source to anyone who is willing to take a look.
-
-Thanks.
-
---------------090309050600030003030607
-Content-Type: text/x-vcard; charset=utf-8;
- name="rogelio.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="rogelio.vcf"
-
-YmVnaW46dmNhcmQNCmZuOlJvZ2VsaW8gTS4gU2VycmFubyBKcg0KbjpNLiBTZXJyYW5vIEpy
-O1JvZ2VsaW8NCm9yZzpTTVNHIENvbW11bmljYXRpb25zIFBoaWxpcHBpbmVzO1RlY2huaWNh
-bCBEZXBhcnRtZW50DQphZHI6Ozs7Ozs7UmVwdWJsaWMgb2YgdGhlIFBoaWxpcHBpbmVzDQpl
-bWFpbDtpbnRlcm5ldDpyb2dlbGlvQHNtc2dsb2JhbC5uZXQNCnRpdGxlOlByb2dyYW1tZXIN
-CnRlbDt3b3JrOis2MzI3NTM0MTQ1DQp0ZWw7aG9tZTorNjMyOTUyNzAyNg0KdGVsO2NlbGw6
-KzYzOTIwOTIwMjI2Nw0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6
-dmNhcmQNCg0K
---------------090309050600030003030607--
-
---------------enig0BCDC68EB3B581089C0B79AF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHFPG6yihxuQOYt8wRAsgeAJ9p+QpXGV6hv5dbbR1Ol67EkCcVsQCglTxx
-Zafn5H7D8D8nibDnjVyOWNU=
-=nEgK
------END PGP SIGNATURE-----
-
---------------enig0BCDC68EB3B581089C0B79AF--
