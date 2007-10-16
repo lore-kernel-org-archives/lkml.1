@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935657AbXJPXzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966110AbXJQAAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935657AbXJPXzz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934029AbXJPXzp
+	id S966110AbXJQAAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 20:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965515AbXJQAAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:55:45 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53509 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933779AbXJPXzn (ORCPT
+	Tue, 16 Oct 2007 20:00:08 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56981
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965459AbXJQAAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:55:43 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: sukadev@us.ibm.com
-Cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>, stern@rowland.harvard.edu,
-       cornelia.huck@de.ibm.com
-Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
-References: <11902755392688-git-send-email-htejun@gmail.com>
-	<20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com>
-	<m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com>
-	<20071005062302.GB16914@kroah.com>
-	<m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com>
-	<20071009225139.GF21228@kroah.com>
-	<m14pgzun27.fsf@ebiederm.dsl.xmission.com>
-	<20071016221816.GA14787@us.ibm.com>
-Date: Tue, 16 Oct 2007 17:54:06 -0600
-In-Reply-To: <20071016221816.GA14787@us.ibm.com> (sukadev@us.ibm.com's message
-	of "Tue, 16 Oct 2007 15:18:16 -0700")
-Message-ID: <m1r6jufwf5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 16 Oct 2007 20:00:05 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+Date: Tue, 16 Oct 2007 18:59:54 -0500
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <200710160138.57893.rob@landley.net> <20071016112859.1b0fba0e@the-village.bc.nu>
+In-Reply-To: <20071016112859.1b0fba0e@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710161859.55325.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com writes:
-
-> | No. The "other" device namespace I would construct on machine B to
-> | look just like the device namespace that existed on machine A.
-> | Making /sys/devices/block/sda would still be 8:0.
-> | 
-> | So to be very clear on machine B when talking about disk-1 I would have.
-> | initial device namespace:
-> |   /sys/devices/block/sdb
-> |   /sys/devices/block/sdb/dev 8:16
-> | 
-> | "other" device namespace:
-> |   /sys/devices/block/sda
-> |   /sys/devices/block/sda/dev 8:0
-> | 
-> | Similarly on machine B when talking about disk-2 I would have.
-> | initial device namespace:
-> |   /sys/devices/block/sda
-> |   /sys/devices/block/sda/dev 8:0
-> | 
-> | "other" device namespace:
-> |   /sys/devices/block/sdb
-> |   /sys/devices/block/sdb/dev 8:16
-> | 
-> | So between the two devices namespaces on machine B the two disks
-> | would exchange their user visible identities.
+On Tuesday 16 October 2007 5:28:59 am Alan Cox wrote:
+> > I'm sure somebody will eventually write an OLS paper or something on the
+> > advisability of making swapping decisions with 4k granularity when disks
+> > really want bigger I/O transactions.
 >
-> So an application that would migrate from machine A to B has to
-> use virtual names (like "disk-1" and "disk-2") to access the disk
-> right ? 
+> Funnily enough someone thought of that many years ago. They even added
+> and documented it, then they made it adjustable.
+>
+> See the vm section of Documentation/filesystems/proc.txt
 
-No.  It is worse you need to access a filesystem and probably
-a block device that is available on both machine A and machine B.
-With care we can introduce appropriate namespaces and namespace semantics
-so we can make the names be what we need.
+I presume you refer to:
 
-For a classic tricky case think what it would require to migrate
-a git archive with checked out files and not need to say
-"git-update-index --refresh" before you work with the files.
+  page-cluster
+  ------------
 
-I used names like disk-1 and disk-2 instead of UUIDs because it
-was easier for me to type and think about.  You do need some
-kind of absolute disk or filesystem identity you can refer back to.
+  page-cluster controls the number of pages which are written to swap in
+  a single attempt.  The swap I/O size.
 
-Eric
+  It is a logarithmic value - setting it to zero means "1 page", setting
+  it to 1 means "2 pages", setting it to 2 means "4 pages", etc.
+
+  The default value is three (eight pages at a time).  There may be some
+  small benefits in tuning this to a different value if your workload is
+  swap-intensive.
+
+I didn't know that controlled whether the pages were contiguous (or written to 
+contiguous locations in swap).  I thought it was just how many the VM tried 
+to free at a time.
+
+Still, worth a tweak.  Thanks.
+
+> Alan
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
