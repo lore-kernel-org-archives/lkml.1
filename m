@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935446AbXJPS60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbXJPS7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935446AbXJPS60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765378AbXJPS6Q
+	id S965248AbXJPS7k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933912AbXJPS7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:58:16 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37358 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbXJPS6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:58:15 -0400
-Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       akpm@linux-foundation.org, ak@suse.de
-In-Reply-To: <20071016184440.GA19844@suse.de>
-References: <20071016162857.635479952@strauss.suse.de>
-	 <20071016162858.545617122@strauss.suse.de>
-	 <1192558097.17464.15.camel@localhost>  <20071016184440.GA19844@suse.de>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 11:58:13 -0700
-Message-Id: <1192561093.17464.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 16 Oct 2007 14:59:13 -0400
+Received: from rtr.ca ([76.10.145.34]:3883 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933827AbXJPS7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 14:59:11 -0400
+Message-ID: <471509FE.7080505@rtr.ca>
+Date: Tue, 16 Oct 2007 14:59:10 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: pcihpd-discuss@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIe Hotplug:  NFG unless I boot with card already inserted.
+References: <4714C0A6.1030204@rtr.ca>	<4714D700.7060008@rtr.ca>	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>	<47150565.5090102@rtr.ca> <20071016114328.a96e8bcb.kristen.c.accardi@intel.com> <47150982.6050102@rtr.ca>
+In-Reply-To: <47150982.6050102@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-16 at 20:44 +0200, Bernhard Walle wrote:
-> * Dave Hansen <haveblue@us.ibm.com> [2007-10-16 20:08]:
-> > On Tue, 2007-10-16 at 18:28 +0200, Bernhard Walle wrote:
-> > > 
-> > > @@ -736,7 +736,7 @@ static int __init smp_scan_config (unsig
-> > >                         smp_found_config = 1;
-> > >                         printk(KERN_INFO "found SMP MP-table at %08lx\n",
-> > >                                                 virt_to_phys(mpf));
-> > > -                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE);
-> > > +                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE, 0);
-> > >                         if (mpf->mpf_physptr) {
-> > >                                 /* 
-> > 
-> > Could you give all of these 0's a name?  I really hate seeing random
-> > magic numbers in these things.  0 completely kills the ability of
-> > someone to read the code and figure out what it is trying to do without
-> > going and looking at reserve_bootmem().
+Mark Lord wrote:
+> Kristen Carlson Accardi wrote:
+>> On Tue, 16 Oct 2007 14:39:33 -0400
+>> Mark Lord <lkml@rtr.ca> wrote:
+>>
+>>> I also checked my modprobe.d/ options, and I am using pciehp_force=1.
+>>> Without that flag, none of this ever works.
+>>
+>> OK - I suspected something like this.  Most Dell computers don't support
+>> ExpressCard hotplug using Native PCIe -- in fact, I've not seen a single
+>> one, they explicitly disable it because they have not validated it or
+>> they have and something didn't work right.  I'll take a look at what 
+>> you've
+>> got, but be aware that you are forcing pciehp to load and operate on a 
+>> system
+>> where they've certainly either not tested it, or tested it and something
+>> bad happened.
 > 
-> Of course I can replace that zeroes with something like BOOTMEM_DEFAULT.
-
-Cool.
-
-> > Or, alternatively, do something like this:
-> > 
-> > -extern void reserve_bootmem(unsigned long addr, unsigned long size);
+> Perhaps.  But this one works perfectly, except for two driver bugs:
 > 
-> Andi was against more bootmem functions. ;)
+> 1. Driver does not notice already-inserted cards after modprobe.
+> 2. Driver fails to function after suspend/resume until reloaded.
+> 
+> Both of those are fixable in the kernel.
 
-Yeah, I can't really blame him.
+Ahh.. point 2 in particular suffers from "suspend/resume" not implemented.
+Or rather, implemented as a pair of "do nothing" functions.
 
--- Dave
-
+Cheers
