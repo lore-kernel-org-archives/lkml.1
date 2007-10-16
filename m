@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964895AbXJPSDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbXJPSEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964895AbXJPSDG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934915AbXJPSC3
+	id S934089AbXJPSEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964910AbXJPSDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:02:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:41544 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934947AbXJPSBj (ORCPT
+	Tue, 16 Oct 2007 14:03:47 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48078 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934866AbXJPSDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:01:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z6glXuqFm30RQ6+ZWgolZ8b1ojfN9tzIuhtiwSamN3KSEXm9ab1fsxY8cG+icwN5pe39+h5VOvvpX2dq1Zjthl4GWXH9pVC7OXnGmtHor1wlRMNf+K/jvLSctv3SnBX8Eni/ZgnlGjnITH/5iqhOcAr5jKiHeRhfKQ+05AD3UlM=
-Message-ID: <86802c440710161101o34a1b982w95c7473f0ec744ed@mail.gmail.com>
-Date: Tue, 16 Oct 2007 11:01:35 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: MSI interrupts and disable_irq
-Cc: "Manfred Spraul" <manfred@colorfullife.com>,
-       "Ayaz Abdulla" <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <4714F736.5000302@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>
-	 <4710901F.8010206@colorfullife.com> <4713E713.9060702@pobox.com>
-	 <86802c440710161023p3fbd6832gdb6d10a1b5e9d932@mail.gmail.com>
-	 <4714F736.5000302@pobox.com>
+	Tue, 16 Oct 2007 14:03:42 -0400
+Date: Tue, 16 Oct 2007 14:02:38 -0400
+Message-Id: <200710161802.l9GI2ca6012758@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, "Hugh Dickins" <hugh@veritas.com>,
+       "Ryan Finnie" <ryan@finnie.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-reply-to: Your message of "Mon, 15 Oct 2007 14:47:52 +0300."
+             <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Yinghai Lu wrote:
-> > On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> >> Manfred Spraul wrote:
-> >>> Jeff Garzik wrote:
-> >>>> I think the scenario you outline is an illustration of the approach's
-> >>>> fragility:  disable_irq() is a heavy hammer that originated with INTx,
-> >>>> and it relies on a chip-specific disable method (kernel/irq/manage.c)
-> >>>> that practically guarantees behavior will vary across MSI/INTx/etc.
-> >>>>
-> >>> I checked the code: IRQ_DISABLE is implemented in software, i.e.
-> >>> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
-> >>> handler] if IRQ_DISABLE is not set.
-> >>> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
-> >>>
-> >>> Perhaps something corrupts dev->irq? The irq is requested with
-> >>>    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
-> >>> and disabled with
-> >>>    disable_irq_lockdep(dev->irq);
-> >>>
-> >>> Someone around with a MSI capable board? The forcedeth driver does
-> >>>    dev->irq = pci_dev->irq
-> >>> in nv_probe(), especially before pci_enable_msi().
-> >>> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
-> >>> wrong interrupt....
-> >> Remember, fundamentally MSI-X is a one-to-many relationship, when you
-> >> consider a single PCI device might have multiple vectors.
+In message <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>, "Pekka Enberg" writes:
+> Hi,
+> 
+> On 10/15/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> > Pekka, with a small change to your patch (to handle time-based cache
+> > coherency), your patch worked well and passed all my tests.  Thanks.
 > >
-> > msi-x is using other entry
-> >
-> >                if (np->msi_flags & NV_MSI_X_ENABLED)
-> >
-> > enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->
-> Correct, but the overall point was that MSI-X conceptually conflicts
-> with the existing "lockless" disable_irq() schedule, which was written
-> when there was a one-one relationship between irq, PCI device, and work
-> to be done.
+> > So now I wonder if we still need the patch to prevent AOP_WRITEPAGE_ACTIVATE
+> > from being returned to userland.  I guess we still need it, b/c even with
+> > your patch, generic_writepages() can return AOP_WRITEPAGE_ACTIVATE back to
+> > the VFS and we need to ensure that doesn't "leak" outside the kernel.
+> 
+> I wonder whether _not setting_ BDI_CAP_NO_WRITEBACK implies that
+> ->writepage() will never return AOP_WRITEPAGE_ACTIVATE for
+> !wbc->for_reclaim case which would explain why we haven't hit this bug
+> before. Hugh, Andrew?
+> 
+> And btw, I think we need to fix ecryptfs too.
 
-at this point, nic in mcp55 is using msi or INTx.
+Yes, ecryptfs needs this fix too (and probably a couple of other mmap fixes
+I've made to unionfs recently -- Mike Halcrow already knows :-)
 
-YH
+Of course, running ecryptfs on top of tmpfs is somewhat odd and uncommon;
+but with unionfs, users use tmpfs as the copyup branch very often.
+
+>                                            Pekka
+
+Erez.
