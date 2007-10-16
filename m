@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbXJPGAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbXJPGHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbXJPGAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763980AbXJPF75
+	id S932329AbXJPGHp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXJPGHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 01:59:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45510 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763796AbXJPF74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 01:59:56 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-netdev@vger.kernel.org, davem@redhat.com, jgarzik@redhat.com
-Subject: Re: [PATCH] ipv4: kernel panic when only one unsecured port available
-References: <m3fy0k9yod.fsf@bandura.englab.brq.redhat.com>
-	<20071015124919.30ed8f06.akpm@linux-foundation.org>
-	<20071015.130614.129757419.davem@davemloft.net>
-	<20071015140025.84e73297.akpm@linux-foundation.org>
-From: Anton Arapov <aarapov@redhat.com>
-X-URL: http://people.redhat.com/aarapov
-Date: Tue, 16 Oct 2007 07:59:46 +0200
-In-Reply-To: <20071015140025.84e73297.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 15 Oct 2007 14\:00\:25 -0700")
-Message-ID: <m3wstnioq5.fsf@bandura.englab.brq.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 16 Oct 2007 02:07:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38733 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758523AbXJPGHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 02:07:36 -0400
+Date: Mon, 15 Oct 2007 23:07:29 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: menage@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
+       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
+Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
+Message-Id: <20071015230729.53fcbaf7.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com>
+References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com>
+	<alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+> > +			if (cpus_equal(*cpus, t->cpus_allowed))
+> > +				continue;
+> > ...
+> > +		for (q = tasks; q < p; q++) {
+> > +			set_cpus_allowed(*q, *cpus);
+> > +			put_task_struct(*q);
+> > +		}
+> > +	}
+> > +}
+> 
+> Yet by not doing any locking here to prevent a cpu from being 
+> hot-unplugged, you can race and allow the hot-unplug event to happen 
+> before calling set_cpus_allowed().  That makes this entire function a 
+> no-op with set_cpus_allowed() returning -EINVAL for every call, which 
+> isn't caught, and no error is reported to userspace.
+> 
+> Now all the tasks in the cpuset have an inconsistent state with respect to 
+> their p->cpuset->cpus_allowed, because that was already updated in 
+> update_cpumask().
 
-Andrew Morton <akpm@linux-foundation.org> writes:
-> <looks>
->
-> OK, in ipv4_local_port_range() we have=20
->
->                 if (range[1] <=3D range[0])
->                         ret =3D -EINVAL;
->
-[...skipped...]
+My solution may be worse than that.  Because set_cpus_allowed() will
+fail if asked to set a non-overlapping cpumask, my solution could never
+terminate.  If asked to set a cpusets cpus to something that went off
+line right then, this I'd guess this code could keep looping forever,
+looking for cpumasks that didn't match, and then not noticing that it
+was failing to set them so as they would match.
 
-> : ip_local_port_range
-> : -------------------
-> :
-> : Range of  ports  used  by  TCP  and UDP to choose the local port. Conta=
-ins two
-> : numbers, the  first  number  is the lowest port, the second number the =
-highest
-> : local port.  Default  is  1024-4999.  Should  be  changed  to  32768-61=
-000 for
-> : high-usage systems.
->
-> ie: inclusive.
->
-> Documentation/networking/ip-sysctl.txt says
->
-> : ip_local_port_range - 2 INTEGERS
-> : 	Defines the local port range that is used by TCP and UDP to
-> : 	choose the local port. The first number is the first, the=20
-> : 	second the last local port number. Default value depends on
-> : 	amount of memory available on the system:
-> : 	> 128Mb 32768-61000
-> : 	< 128Mb 1024-4999 or even less.
-> : 	This number defines number of active connections, which this
-> : 	system can issue simultaneously to systems not supporting
-> : 	TCP extensions (timestamps). With tcp_tw_recycle enabled
-> : 	(i.e. by default) range 1024-4999 is enough to issue up to
-> : 	2000 connections per second to systems supporting timestamps.
->
-> also inclusive.
+... it needs work ... or the alternative solution from Paul M.
 
-  I'm also agree, that we should have an ability to use the same
-minimum/maximum port number for the cases when we want to use only
-one port.
-
-=2D-=20
-Anton Arapov, <aarapov@redhat.com>
-GPG Key ID: 0x6FA8C812
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFHFFNVVub9yW+oyBIRAmUaAJsGVCdVL2VE3DIp3F4ph30tqAKsPwCg0p9s
-1MEQPBK7tGc1W0OXDsGLmi0=
-=qMqh
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
