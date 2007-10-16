@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965091AbXJPSIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965273AbXJPSMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965091AbXJPSIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765197AbXJPSIV
+	id S965273AbXJPSMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964807AbXJPSMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:08:21 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:47713 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764540AbXJPSIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:08:19 -0400
-Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       akpm@linux-foundation.org, ak@suse.de
-In-Reply-To: <20071016162858.545617122@strauss.suse.de>
-References: <20071016162857.635479952@strauss.suse.de>
-	 <20071016162858.545617122@strauss.suse.de>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 11:08:16 -0700
-Message-Id: <1192558097.17464.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 14:12:24 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:46094 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934844AbXJPSMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 14:12:22 -0400
+Date: Tue, 16 Oct 2007 19:12:11 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] tty_ioctl: Fix the baud_table check in encode_baud_rate
+Message-ID: <Pine.LNX.4.64N.0710161857280.22596@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-16 at 18:28 +0200, Bernhard Walle wrote:
-> 
-> @@ -736,7 +736,7 @@ static int __init smp_scan_config (unsig
->                         smp_found_config = 1;
->                         printk(KERN_INFO "found SMP MP-table at %08lx\n",
->                                                 virt_to_phys(mpf));
-> -                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE);
-> +                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE, 0);
->                         if (mpf->mpf_physptr) {
->                                 /* 
+ The tty_termios_encode_baud_rate() function as defined by tty_ioctl.c has 
+a problem with the baud_table within.  The comparison operators are 
+reversed and as a result this table's entries never match and BOTHER is 
+always used.
 
-Could you give all of these 0's a name?  I really hate seeing random
-magic numbers in these things.  0 completely kills the ability of
-someone to read the code and figure out what it is trying to do without
-going and looking at reserve_bootmem().
+ Additionally this function's prototype is not exported unlike the 
+function itself.
 
-Or, alternatively, do something like this:
+ This fix addresses both issues.
 
--extern void reserve_bootmem(unsigned long addr, unsigned long size);
-+/*
-+ * If flags is 0, then the return value is always 0 (success). If
-+ * flags contains BOOTMEM_EXCLUSIVE, then -EBUSY is returned if the
-+ * memory already was reserved.
-+ */
-+extern int reserve_bootmem(unsigned long addr, unsigned long size, int flag);
-+int reserve_bootmem(unsigned long addr, unsigned long size)
-+{
-+	/* the 0 is because we don't
-+	return reserve_bootmem_exclusive(addr, size, 0);
-+}
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ It has been tested with checkpatch.pl and at the run time, with a serial 
+driver (dz) for which I have a change to be submitted soon that will make 
+it use the function.  The hardware being handled only supports some 
+discrete baud rates (a choice of 15 fixed settings plus an external rate 
+input), which is why it wants to adjust termios settings according to the 
+rate setting actually chosen.
 
-Where all of the existing callers stay the same.  But, the ones wanting
-exclusive access actually call the _exclusive() variant.  
+ Please apply,
 
--- Dave
+  Maciej
 
+patch-mips-2.6.23-rc5-20070904-termios-baud-rate-0
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/char/tty_ioctl.c linux-mips-2.6.23-rc5-20070904/drivers/char/tty_ioctl.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/char/tty_ioctl.c	2007-09-04 04:55:31.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/char/tty_ioctl.c	2007-10-13 23:07:27.000000000 +0000
+@@ -227,7 +227,8 @@ EXPORT_SYMBOL(tty_termios_input_baud_rat
+  *	when calling this function from the driver termios handler.
+  */
+ 
+-void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud, speed_t obaud)
++void tty_termios_encode_baud_rate(struct ktermios *termios,
++				  speed_t ibaud, speed_t obaud)
+ {
+ 	int i = 0;
+ 	int ifound = -1, ofound = -1;
+@@ -251,12 +252,15 @@ void tty_termios_encode_baud_rate(struct
+ 	termios->c_cflag &= ~CBAUD;
+ 
+ 	do {
+-		if (obaud - oclose >= baud_table[i] && obaud + oclose <= baud_table[i]) {
++		if (obaud - oclose <= baud_table[i] &&
++		    obaud + oclose >= baud_table[i]) {
+ 			termios->c_cflag |= baud_bits[i];
+ 			ofound = i;
+ 		}
+-		if (ibaud - iclose >= baud_table[i] && ibaud + iclose <= baud_table[i]) {
+-			/* For the case input == output don't set IBAUD bits if the user didn't do so */
++		if (ibaud - iclose <= baud_table[i] &&
++		    ibaud + iclose >= baud_table[i]) {
++			/* For the case input == output don't set IBAUD bits
++			   if the user didn't do so */
+ 			if (ofound != i || ibinput)
+ 				termios->c_cflag |= (baud_bits[i] << IBSHIFT);
+ 			ifound = i;
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/include/linux/tty.h linux-mips-2.6.23-rc5-20070904/include/linux/tty.h
+--- linux-mips-2.6.23-rc5-20070904.macro/include/linux/tty.h	2007-09-04 04:56:20.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/include/linux/tty.h	2007-10-13 22:06:06.000000000 +0000
+@@ -322,6 +322,8 @@ extern void tty_flip_buffer_push(struct 
+ extern speed_t tty_get_baud_rate(struct tty_struct *tty);
+ extern speed_t tty_termios_baud_rate(struct ktermios *termios);
+ extern speed_t tty_termios_input_baud_rate(struct ktermios *termios);
++extern void tty_termios_encode_baud_rate(struct ktermios *termios,
++					 speed_t ibaud, speed_t obaud);
+ 
+ extern struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
+ extern void tty_ldisc_deref(struct tty_ldisc *);
