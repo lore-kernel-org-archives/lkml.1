@@ -1,66 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966003AbXJPVTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935722AbXJPVVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966003AbXJPVTt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965630AbXJPVTc
+	id S935722AbXJPVVO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933284AbXJPVU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:19:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:20595 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965645AbXJPVTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:19:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=emG7aP7fZCHTa6PljOh8pmNOsv+S554w3hwwaX5Gpwh77B9AzuBcm0SEENhhIQBf3Htnj2xnWUeRcJPQu9Ohuh0QU0IhPk2chHXilicSpJ+xXkVS39u509So78+oLnZY0qJBGPACGK+9IqbhFXTt373bAxKBqyJdFdWHgZAwds4=
-Message-ID: <4af2d03a0710161419n3727dbfev10b1319599d30b49@mail.gmail.com>
-Date: Tue, 16 Oct 2007 23:19:28 +0200
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Wagner Ferenc" <wferi@niif.hu>
-Subject: Re: RocketPort Linux driver errors on module reload
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87myujsdpr.fsf@szonett.ki.iif.hu>
+	Tue, 16 Oct 2007 17:20:56 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51878 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932728AbXJPVUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:20:55 -0400
+Message-ID: <47152B32.9020905@pobox.com>
+Date: Tue, 16 Oct 2007 17:20:50 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <bububu786234897832@pripojeni.net> <87k5pozgb5.fsf@tac.ki.iif.hu>
-	 <4713BAD0.9020606@gmail.com> <87myujsdpr.fsf@szonett.ki.iif.hu>
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu>
+In-Reply-To: <20071015223009.GA27425@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------030809030204030805080102"
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Wagner Ferenc <wferi@niif.hu> wrote:
-> Jiri Slaby <jirislaby@gmail.com> writes:
->
-> > Anyway the driver faces another problem with pci refcounting (it
-> > doesn't increment the counter) and the device might be removed from
-> > it any time the pci bus code decides.
->
-> That doesn't sound too good...  Do you mean the module could stop
-> working any time, even if its devices are being used continuously?
+This is a multi-part message in MIME format.
+--------------030809030204030805080102
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hmm, nobody holds the reference according to the current
-implementation, so the pci layer doesn't know that anybody is working
-with it.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>>> but this one should be inactive (not plugged into the network). 
+>>> Should i try to get a debug print out of the actual 'weight' and 
+>>> 'work' integers, and of the n->poll function address?
+>> ok, i've added such a patch.
+>>
+>> looking at the dev.c code - can napi_struct->weight be zero 
+>> legitimately? If yes then the 0 gets passed to the driver and the 
+>> driver would return 1 - violating the assertion.
+> 
+> update:
+> 
+> [  186.635916] WARNING: at net/core/dev.c:2166 net_rx_action()
+> [  186.641351]  [<c060d9f5>] net_rx_action+0x145/0x1b0
+> [  186.646191]  [<c011d752>] __do_softirq+0x42/0x90
+> [  186.650784]  [<c011d7c6>] do_softirq+0x26/0x30
+> [  186.655202]  [<c011db48>] local_bh_enable+0x48/0xa0
+> [  186.660055]  [<c06023e0>] lock_sock_nested+0xa0/0xc0
+> [  186.664995]  [<c065da16>] tcp_recvmsg+0x16/0xbc0
+> [  186.669588]  [<c013e94b>] __generic_file_aio_write_nolock+0x27b/0x520
+> [  186.676001]  [<c0601d75>] sock_common_recvmsg+0x45/0x70
+> [  186.681202]  [<c05ff5df>] sock_aio_read+0x11f/0x140
+> [  186.686054]  [<c015c086>] do_sync_read+0xc6/0x110
+> [  186.690735]  [<c012b9b0>] autoremove_wake_function+0x0/0x40
+> [  186.696280]  [<c060dcfc>] net_tx_action+0x3c/0xe0
+> [  186.700961]  [<c015c9c2>] vfs_read+0x132/0x140
+> [  186.705378]  [<c015cd41>] sys_read+0x41/0x70
+> [  186.709625]  [<c0102b66>] sysenter_past_esp+0x5f/0x89
+> [  186.714651]  =======================
+> [  186.718210] work: 65, weight: 64
+> [  186.721414] ->poll: (nv_napi_poll+0x0/0x760)
+> 
+> so nv_napi_poll() returned with 65. How is that possible? Ah ...:
+> 
+>               (rx_processed_cnt++ < limit)) {
+> 
+> that should be:
+> 
+>               (++rx_processed_cnt < limit)) {
+> 
+> right? Find the fix below.
+> 
+> 	Ingo
+> 
+> -------------------->
+> Subject: forcedeth: fix the NAPI poll function
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> fix the forcedeth NAPI poll function to not emit this warning:
+> 
+> [  186.635916] WARNING: at net/core/dev.c:2166 net_rx_action()
+> [  186.641351]  [<c060d9f5>] net_rx_action+0x145/0x1b0
+> [  186.646191]  [<c011d752>] __do_softirq+0x42/0x90
+> [  186.650784]  [<c011d7c6>] do_softirq+0x26/0x30
+> [  186.655202]  [<c011db48>] local_bh_enable+0x48/0xa0
+> [  186.660055]  [<c06023e0>] lock_sock_nested+0xa0/0xc0
+> [  186.664995]  [<c065da16>] tcp_recvmsg+0x16/0xbc0
+> [  186.669588]  [<c013e94b>] __generic_file_aio_write_nolock+0x27b/0x520
+> [  186.676001]  [<c0601d75>] sock_common_recvmsg+0x45/0x70
+> [  186.681202]  [<c05ff5df>] sock_aio_read+0x11f/0x140
+> [  186.686054]  [<c015c086>] do_sync_read+0xc6/0x110
+> [  186.690735]  [<c012b9b0>] autoremove_wake_function+0x0/0x40
+> [  186.696280]  [<c060dcfc>] net_tx_action+0x3c/0xe0
+> [  186.700961]  [<c015c9c2>] vfs_read+0x132/0x140
+> [  186.705378]  [<c015cd41>] sys_read+0x41/0x70
+> [  186.709625]  [<c0102b66>] sysenter_past_esp+0x5f/0x89
+> [  186.714651]  =======================
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/net/forcedeth.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/drivers/net/forcedeth.c
+> ===================================================================
+> --- linux.orig/drivers/net/forcedeth.c
+> +++ linux/drivers/net/forcedeth.c
+> @@ -2274,7 +2274,7 @@ static int nv_rx_process(struct net_devi
+>  
+>  	while((np->get_rx.orig != np->put_rx.orig) &&
+>  	      !((flags = le32_to_cpu(np->get_rx.orig->flaglen)) & NV_RX_AVAIL) &&
+> -		(rx_processed_cnt++ < limit)) {
+> +		(++rx_processed_cnt < limit)) {
+>  
+>  		dprintk(KERN_DEBUG "%s: nv_rx_process: flags 0x%x.\n",
+>  					dev->name, flags);
+> @@ -2412,7 +2412,7 @@ static int nv_rx_process_optimized(struc
+>  
+>  	while((np->get_rx.ex != np->put_rx.ex) &&
+>  	      !((flags = le32_to_cpu(np->get_rx.ex->flaglen)) & NV_RX2_AVAIL) &&
+> -	      (rx_processed_cnt++ < limit)) {
+> +	      (++rx_processed_cnt < limit)) {
 
-> > Are you willing to test to-pci-probing patches (i.e. patches which
-> > converts the driver to the model introduced in linux 2.4)?
->
-> Well yes.  We've got a copule of such cards, which raises some
-> interest in a proper driver.  Just send the patches with some
-> instructions along, or point me to a git branch if you prefer.
+Would the attached patch be ok with people?
 
-Maybe the git with stand-alone module would be better...
+It's basically the same thing, except that it aligns a bit more closely 
+with forcedeth rework stuff I'm doing.
 
-> > If not, I'll only increment the counter on modprobe and decrement it
-> > on rmmod, since it would be a safe (in the meaning of not changing
-> > that much code) way of fixing the problem.
->
-> And what are the drawbacks of this simple solution?
+I'll send upstream today unless people scream...
 
-Nothing, but it's not the proper way -- just a safe fallback. But you
-can still say no :).
+	Jeff
 
-regards,
---js
+
+
+--------------030809030204030805080102
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index dae30b7..2e70815 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -2268,13 +2268,13 @@ static int nv_rx_process(struct net_device *dev, int limit)
+ {
+ 	struct fe_priv *np = netdev_priv(dev);
+ 	u32 flags;
+-	u32 rx_processed_cnt = 0;
++	int rx_work = 0;
+ 	struct sk_buff *skb;
+ 	int len;
+ 
+ 	while((np->get_rx.orig != np->put_rx.orig) &&
+ 	      !((flags = le32_to_cpu(np->get_rx.orig->flaglen)) & NV_RX_AVAIL) &&
+-		(rx_processed_cnt++ < limit)) {
++		(rx_work < limit)) {
+ 
+ 		dprintk(KERN_DEBUG "%s: nv_rx_process: flags 0x%x.\n",
+ 					dev->name, flags);
+@@ -2396,9 +2396,11 @@ next_pkt:
+ 			np->get_rx.orig = np->first_rx.orig;
+ 		if (unlikely(np->get_rx_ctx++ == np->last_rx_ctx))
+ 			np->get_rx_ctx = np->first_rx_ctx;
++
++		rx_work++;
+ 	}
+ 
+-	return rx_processed_cnt;
++	return rx_work;
+ }
+ 
+ static int nv_rx_process_optimized(struct net_device *dev, int limit)
+
+--------------030809030204030805080102--
