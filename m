@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765349AbXJPJf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbXJPJgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765349AbXJPJf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 05:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbXJPJft
+	id S1759225AbXJPJgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 05:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765677AbXJPJgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 05:35:49 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48013 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757428AbXJPJfs (ORCPT
+	Tue, 16 Oct 2007 05:36:08 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:25291 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765603AbXJPJgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 05:35:48 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH] rd: Preserve the dirty bit in init_page_buffers()
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m18x64knqx.fsf@ebiederm.dsl.xmission.com>
-	<m14pgsknmd.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710161812.01970.nickpiggin@yahoo.com.au>
-Date: Tue, 16 Oct 2007 03:35:08 -0600
-In-Reply-To: <200710161812.01970.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Tue, 16 Oct 2007 18:12:01 +1000")
-Message-ID: <m1przfh06r.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 16 Oct 2007 05:36:05 -0400
+Message-ID: <471485FD.2060906@panasas.com>
+Date: Tue, 16 Oct 2007 11:35:57 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.23-git8 missing include file - [Resending the patch]
+References: <471450DD.1060907@linux.vnet.ibm.com> <471459D1.5090203@linux.vnet.ibm.com>
+In-Reply-To: <471459D1.5090203@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2007 09:35:58.0845 (UTC) FILETIME=[F55542D0:01C80FD7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+On Tue, Oct 16 2007 at 8:27 +0200, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Kamalesh Babulal wrote:
+>> Hi,
+>>
+>> The build fails with following error
+>>
+>>   CC      drivers/usb/storage/scsiglue.o
+>>   CC      drivers/usb/storage/protocol.o
+>>   CC      drivers/usb/storage/transport.o
+>> In file included from drivers/usb/storage/transport.c:53:
+>> include/scsi/scsi_eh.h:79: error: field 'sense_sgl' has incomplete type
+>> make[3]: *** [drivers/usb/storage/transport.o] Error 1
+>> make[2]: *** [drivers/usb/storage] Error 2
+>> make[1]: *** [drivers/usb] Error 2
+>> make: *** [drivers] Error 2
+>  
+> <snip>
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> --
+> --- linux-2.6.23/include/scsi/scsi_cmnd.h       2007-10-16 09:58:30.000000000 +0530
+> +++ linux-2.6.23/include/scsi/~scsi_cmnd.h      2007-10-16 10:20:32.000000000 +0530
+> @@ -5,6 +5,7 @@
+>  #include <linux/list.h>
+>  #include <linux/types.h>
+>  #include <linux/timer.h>
+> +#include <linux/scatterlist.h>
+>  
+>  struct request;
+>  struct scatterlist;
+> 
+This was already fixed here:
+http://www.spinics.net/lists/linux-scsi/msg20177.html
 
-> On Tuesday 16 October 2007 08:40, Eric W. Biederman wrote:
->> The problem:  When we are trying to free buffers try_to_free_buffers()
->> will look at ramdisk pages with clean buffer heads and remove the
->> dirty bit from the page.  Resulting in ramdisk pages with data that get
->> removed from the page cache.  Ouch!
->>
->> Buffer heads appear on ramdisk pages when a filesystem calls
->> __getblk() which through a series of function calls eventually calls
->> init_page_buffers().
->>
->> So to fix the mismatch between buffer head and page state this patch
->> modifies init_page_buffers() to transfer the dirty bit from the page to
->> the buffer heads like we currently do for the uptodate bit.
->>
->> This patch is safe as only __getblk calls init_page_buffers, and
->> there are only two implementations of block devices cached in the
->> page cache.  The generic implementation in block_dev.c and the
->> implementation in rd.c.
->>
->> The generic implementation of block devices always does everything
->> in terms of buffer heads so it always has buffer heads allocated
->> before a page is marked dirty so this change does not affect it.
->
-> This is probably a good idea. Was this causing the reiserfs problems?
-> If so, I think we should be concentrating on what the real problem
-> is with reiserfs... (or at least why this so obviously correct
-> looking patch is wrong).
+Thanks
 
-I think it was my cleanup patch that was sitting on top of this,
-That caused the problems.
-
-Eric
