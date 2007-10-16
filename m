@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765747AbXJPNCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbXJPNCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765747AbXJPNCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXJPNCE
+	id S932588AbXJPNCp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 09:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXJPNCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:02:04 -0400
-Received: from serenity.mcc.ac.uk ([130.88.200.93]:52662 "EHLO
-	serenity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755248AbXJPNCD (ORCPT
+	Tue, 16 Oct 2007 09:02:35 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:60447 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759437AbXJPNCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:02:03 -0400
-Message-ID: <4714B655.5060107@gentoo.org>
-Date: Tue, 16 Oct 2007 14:02:13 +0100
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070908)
+	Tue, 16 Oct 2007 09:02:34 -0400
+Date: Tue, 16 Oct 2007 14:02:31 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: linux-mips@linux-mips.org
+Subject: Build breakage if !SYSFS
+Message-ID: <20071016130231.GA10778@linux-mips.org>
 MIME-Version: 1.0
-To: Marc Pignat <marc.pignat@hevs.ch>
-CC: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
-       kune@deine-taler.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] zd1211rw, fix oops when ejecting install media
-References: <200710150851.52995.marc.pignat@hevs.ch> <4713498E.8040305@gentoo.org> <200710160833.10515.marc.pignat@hevs.ch>
-In-Reply-To: <200710160833.10515.marc.pignat@hevs.ch>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Pignat wrote:
-> Hi all!
-> 
-> On Monday 15 October 2007, Daniel Drake wrote:
-> ...
->> Acked-by: Daniel Drake <dsd@gentoo.org>
-> 
-> Is there any hope to apply this to 2.6.23.2, as this is a regression fix?
+Changeset 5cb350baf580017da38199625b7365b1763d7180 causes build breakage
+if sysfs support is disabled:
 
-Yes, already planned, it just has to go upstream first.
+kernel/built-in.o: In function `uids_kobject_init':
+(.init.text+0x1488): undefined reference to `kernel_subsys'
+kernel/built-in.o: In function `uids_kobject_init':
+(.init.text+0x1490): undefined reference to `kernel_subsys'
+kernel/built-in.o: In function `uids_kobject_init':
+(.init.text+0x1480): undefined reference to `kernel_subsys'
+kernel/built-in.o: In function `uids_kobject_init':
+(.init.text+0x1494): undefined reference to `kernel_subsys'
 
-Thanks,
-Daniel
+This breaks for example mipssim_defconfig.
 
+  Ralf
