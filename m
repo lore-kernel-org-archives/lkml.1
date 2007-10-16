@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763925AbXJPAWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXJPAZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763925AbXJPAWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbXJPAWb
+	id S1762831AbXJPAZK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbXJPAY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:22:31 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40233 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756547AbXJPAWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:22:31 -0400
-Date: Tue, 16 Oct 2007 02:22:29 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
-Message-ID: <20071016002229.GA5851@wotan.suse.de>
-References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz> <20071015143732.01d99af8@laptopd505.fenrus.org> <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz>
-Mime-Version: 1.0
+	Mon, 15 Oct 2007 20:24:57 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30826 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbXJPAY4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 20:24:56 -0400
+Date: Mon, 15 Oct 2007 20:22:31 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: David Chinner <dgc@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nathan Scott <nscott@aconex.com>, Andrea Arcangeli <andrea@suse.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: More Large blocksize benchmarks
+Message-ID: <20071016002231.GA21378@think.oraclecorp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 12:08:01AM +0200, Mikulas Patocka wrote:
-> > On Mon, 15 Oct 2007 22:47:42 +0200 (CEST)
-> > Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
-> > 
-> > > > According to latest memory ordering specification documents from
-> > > > Intel and AMD, both manufacturers are committed to in-order loads
-> > > > from cacheable memory for the x86 architecture. Hence, smp_rmb()
-> > > > may be a simple barrier.
-> > > >
-> > > > http://developer.intel.com/products/processor/manuals/318147.pdf 
-> > > > http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24593.pdf
-> > > 
-> > > Hi
-> > > 
-> > > I'm just wondering about one thing --- what is LFENCE instruction
-> > > good for?
-> > > 
-> > > SFENCE is for enforcing ordering in write-combining buffers (it
-> > > doesn't have sense in write-back cache mode).
-> > > MFENCE is for preventing of moving stores past loads.
-> > > 
-> > > But what is LFENCE for? I read the above documents and they already
-> > > say that CPUs have ordered loads.
-> > > 
-> > 
-> > The cpus also have an explicit set of instructions that deliberately do 
-> > unordered stores/loads, and s/lfence etc are mostly designed for those.
-> 
-> I know about unordered stores (movnti & similar) --- they basically use 
-> write-combining method on memory that is normally write-back --- and they 
-> need sfence. But which one instruction does unordered load and needs 
-> lefence?
+Hello everyone,
 
-Also, for non-wb memory. I don't think the Intel document referenced
-says anything about this, but the AMD document says that loads can pass
-loads (page 8, rule b).
+I'm stealing the cc list and reviving and old thread because I've
+finally got some numbers to go along with the Btrfs variable blocksize
+feature.  The basic idea is to create a read/write interface to
+map a range of bytes on the address space, and use it in Btrfs for all
+metadata operations (file operations have always been extent based).
 
-This is why our rmb() is still an lfence.
+So, instead of casting buffer_head->b_data to some structure, I read and
+write at offsets in a struct extent_buffer.  The extent buffer is very
+small and backed by an address space, and I get large block sizes the
+same way file_write gets to write to 16k at a time, by finding the
+appropriate page in the addess space.  This is an over simplification
+since I try to cache these mapping decisions to avoid using too much
+CPU, but hopefully you get the idea.
+
+The advantage to this approach is the changes are all inside Btrfs.  No
+extra kernel patches were required.
+
+Dave reported that XFS saw much higher write throughput with large
+blocksizes, but so far I'm seeing the most benefits during reads.
+
+The next step is a bunch more benchmarks.  I've done the first round
+and posted it here:
+
+http://oss.oracle.com/~mason/blocksizes/
+
+The Btrfs code makes it relatively easy to experiment, and so this may
+be a good step toward figuring out if some automagic solution is worth
+it in general.  I can even use different sizes for nodes and leaves,
+although I haven't done much testing at all there yet.
+
+-chris
 
