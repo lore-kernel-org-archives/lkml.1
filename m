@@ -1,134 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbXJPGjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932863AbXJPGk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbXJPGjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760178AbXJPGjH
+	id S932863AbXJPGk6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761446AbXJPGkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:39:07 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48942
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbXJPGjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:39:04 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Date: Tue, 16 Oct 2007 01:38:57 -0500
-User-Agent: KMail/1.9.6
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710161659.28826.nickpiggin@yahoo.com.au> <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
+	Tue, 16 Oct 2007 02:40:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40727 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754435AbXJPGku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 02:40:50 -0400
+Date: Tue, 16 Oct 2007 08:40:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+Message-ID: <20071016064026.GA9578@elte.hu>
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <4713EC59.4010106@pobox.com> <20071016054236.GA27906@elte.hu> <47145075.1080003@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710160138.57893.rob@landley.net>
+In-Reply-To: <47145075.1080003@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 11:38:33 pm Eric W. Biederman wrote:
-> > I don't follow your logic. We don't need SWAP > RAM in order to swap
-> > effectively, IMO.
->
-> The steady state of a system that is heavily and usably swapping but
-> not thrashing is that all of the pages in RAM are in the swap cache,
-> at least that used to be the case.
 
-Mind if I throw in some vague and questionable numbers? :)
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-I vaguely recall that my old 486 laptop with 16 megabyes of ram (circa 1998) 
-used to be able to do 3 point something megabytes per second to/from disk, 
-according to hdparm -t.  (That was with DMA enabled.)
-
-This means that my old laptop, using sequential writes and not being bogged 
-down by excessive seeking, could write its entire memory contents to disk and 
-read it back in again in about 10 seconds total (5 write, 5 read).
-
-My current laptop has 2 gigabytes of ram, and hdparm -t /dev/sda says:
-  /dev/sda:
-   Timing buffered disk reads:  116 MB in  3.01 seconds =  38.54 MB/sec
-
-So that's a little over a factor of 10 speed improvement.  (Although I note 
-that I got 30 megabytes/second off of an ATA/100 adapter in 2002, so it's 
-barely any faster than it was 5 years ago.)
-
-This means I can expect my current laptop to write out its memory in 50 
-seconds (2000/40), and another 50 seconds to read it back in.
-
-So 10 seconds to cycle through memory 10 years ago, vs a little under 2 
-minutes today, on systems at roughly the same price point.  And that's 
-limited by what the hardware is doing, assuming a _perfect_ linear read/write 
-pattern with no seeks.
-
-Oh, and my old 486 had its RAM maxed out.  This one can hold twice as much.  
-And heavy seeking sucks more than it used to relative to sequential reads by 
-something like a proportional amount (hence the rise of I/O elevators as a 
-mitigation strategy), although I haven't got numbers for that handy.
-
-> > I don't know if there is a causal relationship there. I mean, I
-> > think it's been a long time since thrashing was ever a viable mode
-> > of operation, right?
->
-> Right.  But swapping heavily has been a viable mode of operation
-> and that the vast gap in disk random IO performance seems to have
-> hurt significantly.
->
-> It be very clear is used to able to run a problem at little below
-> full speed with the disk pegged with swap traffic, and I did this
-> regularly when I started out with linux.
-
-The problem is the gap is getting bigger.  The 486-75 laptop mentioned above 
-had a 25 mhz 32 bit front side bus.  A quick google suggests my core 2 duo 
-has a 667 mhz FSB and I'm guessing a 128 bit data path (two 64-bit channels).
-
-I could boot up memtest86 and get actual benchmarks, but total handwaving for 
-a moment, 25*32=800 and 667*128=85376, and the second divided by the first is 
-over 100 times as big.  That concurs with the 16mhz->1733 mhz processor speed 
-increase.
-
-Factor of 10 disk speed increase, factor of 100 memory speed increase.  Disks 
-speeds aren't keeping up with processor and memory increases.  Disk _sizes_ 
-are, but speeds aren't.
-
-> > Maybe desktops just have less need for swapping now, so nobody sees
-> > it much until something goes _really_ bad. When I'm using my 256MB
-> > machine, unused stuff goes to swap.
->
-> There is a bit of truth in the fact that there is less need for
-> swapping now.  At the same time however swapping simply does not
-> work well right now, and I'm not at all certain why.
-
-Do the numbers above help?  It'll only get worse, unless some random new 
-technology (maybe http://en.wikipedia.org/wiki/MRAM or something) swoops in 
-to change everything, again.
-
-> >> the disk for is very limited.   I wonder if we could figure out
-> >> how to push and pull 1M or bigger chunks into and out of swap?
+> >>The compiler certainly doesn't care, and IMO it prevents bugs.
 > >
-> > Pulling in 1MB pages can really easily end up compounding the
-> > thrashing problem unless you're very sure a significant amount
-> > of it will be used.
->
-> It's a hard call.  The I/O time for 1MB of contiguous disk data
-> is about the I/O time of 512 bytes of contiguous disk data.
+> >agreed. Do you have an uptodate patch/git-URI for the forcedeth 
+> >rewrite you did? I can throw it into the testbed.
+> 
+> Branch 'fe-lock' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+> 
+> It works here locally, but at this very minute I am rewriting those 
+> changesets yet again :)
 
-Hence "the seek sucking even more now" part. :(
+FYI, looks good so far, ontop of Linus' latest -git tree.
 
-I'm sure somebody will eventually write an OLS paper or something on the 
-advisability of making swapping decisions with 4k granularity when disks 
-really want bigger I/O transactions.  Maybe they already have, somewhere 
-between:
-http://kernel.org/doc/ols/2007/ols2007v1-pages-53-64.pdf
-and
-http://kernel.org/doc/ols/2007/ols2007v1-pages-277-284.pdf
+btw., one thing i always found weird about forcedeth is that it 
+generates an extra ~100 irqs per second even when there's no network 
+traffic:
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+ 11:      89752    XT-PIC-XT        eth0
+ 11:      89854    XT-PIC-XT        eth0
+ 11:      89955    XT-PIC-XT        eth0
+ 11:      90056    XT-PIC-XT        eth0
+ 11:      90157    XT-PIC-XT        eth0
+
+(irq count snapshot every second). Just in case it's easy to fix ...
+
+	Ingo
