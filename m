@@ -1,138 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932769AbXJPF0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765787AbXJPFba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932769AbXJPF0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 01:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762054AbXJPF0a
+	id S1765787AbXJPFba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 01:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbXJPFbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 01:26:30 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:49147 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754355AbXJPF03 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 01:26:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EwsxjdvElkJjl4GHtc009nR6VLY+wS283cv4BOK6apfJkY6ekEgw5xEk45N2AnnJt4/pDpO78kd8iFZRiO/engSSJqCMqYrBrLHnsHSuyZ9lAPRtHCxj5xLI5bGMP9QSrA8jSB8Hj9KPNrPXTrS/OmX88s4toAQ8D2eMUiWcenQ=  ;
-X-YMail-OSG: YFbeUhsVM1nMF.gQ_PPxsRfH5U38VvIi27m_MZFJU4L_zqUx10.2uB2huOFaAw8Q3XlYEhpGLg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH resend] ramdisk: fix zeroed ramdisk pages on memory pressure
-Date: Tue, 16 Oct 2007 18:08:06 +1000
-User-Agent: KMail/1.9.5
+	Tue, 16 Oct 2007 01:31:23 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56036 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757001AbXJPFbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 01:31:22 -0400
+Date: Mon, 15 Oct 2007 22:26:54 -0700
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710161645.58686.nickpiggin@yahoo.com.au> <m1abqjirmd.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1abqjirmd.fsf@ebiederm.dsl.xmission.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: usb
+Message-ID: <20071016052654.GA8730@suse.de>
+References: <86802c440710151037y75e6e8eex3e17da8763d68643@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710161808.06405.nickpiggin@yahoo.com.au>
+In-Reply-To: <86802c440710151037y75e6e8eex3e17da8763d68643@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 14:57, Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> >> make_page_uptodate() is most hideous part I have run into.
-> >> It has to know details about other layers to now what not
-> >> to stomp.  I think my incorrect simplification of this is what messed
-> >> things up, last round.
-> >
-> > Not really, it's just named funny. That's just a minor utility
-> > function that more or less does what it says it should do.
-> >
-> > The main problem is really that it's implementing a block device
-> > who's data comes from its own buffercache :P. I think.
->
-> Well to put it another way, mark_page_uptodate() is the only
-> place where we really need to know about the upper layers.
-> Given that you can kill ramdisks by coding it as:
->
-> static void make_page_uptodate(struct page *page)
-> {
-> 	clear_highpage(page);
-> 	flush_dcache_page(page);
-> 	SetPageUptodate(page);
-> }
->
-> Something is seriously non-intuitive about that function if
-> you understand the usual rules for how to use the page cache.
+On Mon, Oct 15, 2007 at 10:37:04AM -0700, Yinghai Lu wrote:
+> Greg,
+> 
+> from linus's git this morning..
+> 
+> ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUB2] -> GSI 21 (level,
+> low) -> IRQ 21
+> ehci_hcd 0000:00:02.1: EHCI Host Controller
+> ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
+> ehci_hcd 0000:00:02.1: debug port 1
+> ehci_hcd 0000:00:02.1: irq 21, io mem 0xdefbec00
+> ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+> usb usb1: configuration #1 chosen from 1 choice
+> hub 1-0:1.0: USB hub found
+> hub 1-0:1.0: 10 ports detected
+> ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUB0] -> GSI 22 (level,
+> low) -> IRQ 22
+> ohci_hcd 0000:00:02.0: OHCI Host Controller
+> ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
+> ohci_hcd 0000:00:02.0: irq 22, io mem 0xdefbf000
+> usb 1-1: new high speed USB device using ehci_hcd and address 2
+> usb usb2: configuration #1 chosen from 1 choice
+> hub 2-0:1.0: USB hub found
+> hub 2-0:1.0: 10 ports detected
+> USB Universal Host Controller Interface driver v3.0
+> Initializing USB Mass Storage driver...
+> usb 1-1: configuration #1 chosen from 1 choice
+> usb 1-6: new high speed USB device using ehci_hcd and address 5
+> usb 1-6: configuration #1 chosen from 1 choice
+> hub 1-6:1.0: USB hub found
+> hub 1-6:1.0: 4 ports detected
+> sysfs: duplicate filename 'bInterfaceNumber' can not be created
+> WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
+> 
+> Call Trace:
+>  [<ffffffff802bf326>] sysfs_add_one+0x54/0xbd
+>  [<ffffffff802bee22>] sysfs_add_file+0x50/0x81
+>  [<ffffffff802c07ec>] sysfs_create_group+0x9a/0xf2
+>  [<ffffffff80616cb6>] usb_create_sysfs_intf_files+0x32/0xc7
+>  [<ffffffff80613762>] usb_set_configuration+0x49d/0x4c0
+>  [<ffffffff8061a672>] generic_probe+0x53/0x95
+>  [<ffffffff804a57d3>] driver_probe_device+0xd3/0x150
+>  [<ffffffff804a5850>] __device_attach+0x0/0x5
+>  [<ffffffff804a4aec>] bus_for_each_drv+0x40/0x71
+>  [<ffffffff804a58db>] device_attach+0x63/0x7a
+>  [<ffffffff804a4a5e>] bus_attach_device+0x2a/0x78
+>  [<ffffffff804a3a20>] device_add+0x308/0x51e
+>  [<ffffffff8060ef04>] usb_new_device+0x47/0x80
+>  [<ffffffff8060facd>] hub_thread+0x75a/0xb4a
+>  [<ffffffff80245787>] autoremove_wake_function+0x0/0x2e
+>  [<ffffffff8060f373>] hub_thread+0x0/0xb4a
+>  [<ffffffff8024565d>] kthread+0x47/0x76
+>  [<ffffffff8020ca58>] child_rip+0xa/0x12
+>  [<ffffffff80245616>] kthread+0x0/0x76
+>  [<ffffffff8020ca4e>] child_rip+0x0/0x12
+> 
+> usb 2-3: new full speed USB device using ohci_hcd and address 2
+> usb 2-3: configuration #1 chosen from 1 choice
+> hub 2-3:1.0: USB hub found
+> hub 2-3:1.0: 4 ports detected
+> usb 2-5: new low speed USB device using ohci_hcd and address 3
+> usb 2-5: configuration #1 chosen from 1 choice
+> scsi15 : SCSI emulation for USB Mass Storage devices
+> usb 2-3.1: new low speed USB device using ohci_hcd and address 4
+> usb 2-3.1: configuration #1 chosen from 1 choice
+> usb 2-3.4: new low speed USB device using ohci_hcd and address 5
+> usb 2-3.4: configuration #1 chosen from 1 choice
 
-You're overwriting some buffers that were uptodate and dirty.
-That would be expected to cause problems.
+Yes, I can duplicate this here now too.  Will work on this tomorrow to
+track down...
 
+thanks,
 
-> The problem is that we support a case in the buffer cache
-> where pages are partially uptodate and only the buffer_heads
-> remember which parts are valid.  Assuming we are using them
-> correctly.
->
-> Having to walk through all of the buffer heads in make_page_uptodate
-> seems to me to be a nasty layering violation in rd.c
-
-Sure, but it's not just about the buffers. It's the pagecache
-in general. It is supposed to be invisible to the device driver
-and sitting above it, and yet it is taking the buffercache and
-using it to pull its data out of.
-
-
-> > I think it's worthwhile, given that we'd have a "real" looking
-> > block device and minus these bugs.
->
-> For testing purposes I think I can agree with that.
-
-What non-testing uses does it have?
-
-
-> >> Having a separate store would
-> >> solve some of the problems, and probably remove the need
-> >> for carefully specifying the ramdisk block size.  We would
-> >> still need the magic restictions on page allocations though
-> >> and it we would use them more often as the initial write to the
-> >> ramdisk would not populate the pages we need.
-> >
-> > What magic restrictions on page allocations? Actually we have
-> > fewer restrictions on page allocations because we can use
-> > highmem!
->
-> With the proposed rewrite yes.
->
-> > And the lowmem buffercache pages that we currently pin
-> > (unsuccessfully, in the case of this bug) are now completely
-> > reclaimable. And all your buffer heads are now reclaimable.
->
-> Hmm.  Good point.  So in net it should save memory even if
-> it consumes a little more in the worst case.
-
-Highmem systems would definitely like it. For others, yes, all
-the duplicated pages should be able to get reclaimed if memory
-gets tight, along with the buffer heads, so yeah footprint may
-be a tad smaller.
-
-
-> > If you mean GFP_NOIO... I don't see any problem. Block device
-> > drivers have to allocate memory with GFP_NOIO; this may have
-> > been considered magic or deep badness back when the code was
-> > written, but it's pretty simple and accepted now.
->
-> Well I always figured it was a bit rude allocating large amounts
-> of memory GFP_NOIO but whatever.
-
-You'd rather not, of course, but with dirty data limits now,
-it doesn't matter much. (and I doubt anybody outside testing
-is going to be hammering like crazy on rd).
-
-Note that the buffercache based ramdisk driver is going to
-also be allocating with GFP_NOFS if you're talking about a
-filesystem writing to its metadata. In most systems, GFP_NOFS
-isn't much different to GFP_NOIO.
-
-We could introduce a mode which allocates pages up front
-quite easily if it were a problem (which I doubt it ever would
-be).
-
+greg k-h
