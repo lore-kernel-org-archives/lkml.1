@@ -1,262 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935964AbXJPUUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXJPUVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935964AbXJPUUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbXJPUU3
+	id S965082AbXJPUVE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935801AbXJPUUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:20:29 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46257 "EHLO e2.ny.us.ibm.com"
+	Tue, 16 Oct 2007 16:20:35 -0400
+Received: from khc.piap.pl ([195.187.100.11]:43539 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760130AbXJPUU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:20:27 -0400
-Date: Tue, 16 Oct 2007 15:20:25 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] /proc Security Hooks
-Message-ID: <20071016202025.GD4115@sergelap.austin.ibm.com>
-References: <20071016193850.GA5418@roonstrasse.net>
+	id S935563AbXJPUUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:20:34 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-user@lists.sourceforge.net
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: VIA VT6307 OHCI version?
+References: <m3sl4ciz1h.fsf@maximus.localdomain>
+	<4714EF01.2060609@s5r6.in-berlin.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 16 Oct 2007 22:20:27 +0200
+In-Reply-To: <4714EF01.2060609@s5r6.in-berlin.de> (Stefan Richter's message of "Tue, 16 Oct 2007 19:04:01 +0200")
+Message-ID: <m3d4vebylw.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071016193850.GA5418@roonstrasse.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Max Kellermann (mk@cm4all.com):
-> Add two LSM hooks for limiting access to the proc file system.
-> 
-> security_proc_task() defines the visibility of tasks in /proc.
-> 
-> security_proc_generic() lets the LSM define who will see "generic"
-> proc entries (see fs/proc/generic.c).
-> 
-> This patch attempts to unify duplicated code found in modules like
-> Linux VServer.
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-Are you aware of the pid namespace patches currently in -mm?
-If your use for the task hiding hooks is to emulate virtual
-servers as with vserver/openvz, the pid namespaces should fill
-your need.
+> AFAIK all 6306 are OHCI 1.0.  I presume that currently produced 6307 are
+> OHCI 1.1 and maybe only first revisions of it were 1.0 --- but that's
+> just my speculation.  I would be surprised though if it was merely a
+> matter of EEPROM contents.
 
--serge
+Both VT6306 and VT6307 datasheets claim selectable OHCI 1.0/1.1.
+I guess they did that for compatibility or something like that.
 
-> Signed-off-by: Max Kellermann <mk@cm4all.com>
-> 
-> ---
->  fs/proc/base.c           |    9 +++++++++
->  fs/proc/generic.c        |   15 +++++++++++++++
->  include/linux/security.h |   46 ++++++++++++++++++++++++++++++++++++++++++++++
->  security/Kconfig         |    8 ++++++++
->  security/dummy.c         |   16 ++++++++++++++++
->  5 files changed, 94 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index 19489b0..a6ebe2d 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2317,6 +2317,10 @@ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir)
->  	     put_task_struct(task), task = next_tgid(tgid + 1)) {
->  		tgid = task->pid;
->  		filp->f_pos = tgid + TGID_OFFSET;
-> +#ifdef CONFIG_SECURITY_PROC
-> +		if (security_proc_task(task) != 0)
-> +			continue;
-> +#endif
->  		if (proc_pid_fill_cache(filp, dirent, filldir, task, tgid) < 0) {
->  			put_task_struct(task);
->  			goto out;
-> @@ -2453,6 +2457,11 @@ static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry
->  		goto out;
->  	if (leader->tgid != task->tgid)
->  		goto out_drop_task;
-> +#ifdef CONFIG_SECURITY_PROC
-> +	result = ERR_PTR(security_proc_task(task));
-> +	if (IS_ERR(result))
-> +		goto out_drop_task;
-> +#endif
-> 
->  	result = proc_task_instantiate(dir, dentry, task, NULL);
->  out_drop_task:
-> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-> index b5e7155..7b17ec3 100644
-> --- a/fs/proc/generic.c
-> +++ b/fs/proc/generic.c
-> @@ -21,6 +21,9 @@
->  #include <linux/bitops.h>
->  #include <linux/spinlock.h>
->  #include <linux/completion.h>
-> +#ifdef CONFIG_SECURITY_PROC
-> +#include <linux/security.h>
-> +#endif
->  #include <asm/uaccess.h>
-> 
->  #include "internal.h"
-> @@ -400,6 +403,11 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
->  				unsigned int ino = de->low_ino;
-> 
->  				de_get(de);
-> +#ifdef CONFIG_SECURITY_PROC
-> +				error = security_proc_generic(de);
-> +				if (error != 0)
-> +					break;
-> +#endif
->  				spin_unlock(&proc_subdir_lock);
->  				error = -EINVAL;
->  				inode = proc_get_inode(dir->i_sb, ino, de);
-> @@ -483,6 +491,10 @@ int proc_readdir(struct file * filp,
-> 
->  				/* filldir passes info to user space */
->  				de_get(de);
-> +#ifdef CONFIG_SECURITY_PROC
-> +				if (security_proc_generic(de) != 0)
-> +					goto skip;
-> +#endif
->  				spin_unlock(&proc_subdir_lock);
->  				if (filldir(dirent, de->name, de->namelen, filp->f_pos,
->  					    de->low_ino, de->mode >> 12) < 0) {
-> @@ -490,6 +502,9 @@ int proc_readdir(struct file * filp,
->  					goto out;
->  				}
->  				spin_lock(&proc_subdir_lock);
-> +#ifdef CONFIG_SECURITY_PROC
-> +			skip:
-> +#endif
->  				filp->f_pos++;
->  				next = de->next;
->  				de_put(de);
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 1a15526..3fbeacf 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -68,6 +68,10 @@ struct xfrm_policy;
->  struct xfrm_state;
->  struct xfrm_user_sec_ctx;
-> 
-> +#ifdef CONFIG_SECURITY_PROC
-> +struct proc_dir_entry;
-> +#endif
-> +
->  extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
->  extern int cap_netlink_recv(struct sk_buff *skb, int cap);
-> 
-> @@ -915,6 +919,17 @@ struct request_sock;
->   *	Return 1 if permission granted, 0 if permission denied and -ve it the
->   *      normal permissions model should be effected.
->   *
-> + * Security hooks affecting proc visibility
-> + *
-> + * @proc_task:
-> + *      Determines whether a task is visible.
-> + *      @task the requested task
-> + *	Return 0 if task is visible, -ENOENT if not, or -errno on other errors
-> + * @proc_generic:
-> + *      Determines whether a generic proc entry is visible
-> + *      @de the requested proc_dir_entry structure
-> + *	Return 0 if entry is visible, -ENOENT if not, or -errno on other errors
-> + *
->   * Security hooks affecting all System V IPC operations.
->   *
->   * @ipc_permission:
-> @@ -1399,6 +1414,11 @@ struct security_operations {
-> 
->  #endif	/* CONFIG_KEYS */
-> 
-> + #ifdef CONFIG_SECURITY_PROC
-> +	int (*proc_task)(struct task_struct *task);
-> +	int (*proc_generic)(struct proc_dir_entry *de);
-> + #endif
-> +
->  };
-> 
->  /* global variables */
-> @@ -3314,5 +3334,31 @@ static inline int security_key_permission(key_ref_t key_ref,
->  #endif
->  #endif /* CONFIG_KEYS */
-> 
-> +#ifdef CONFIG_SECURITY_PROC
-> +#ifdef CONFIG_SECURITY
-> +static inline int security_proc_task(struct task_struct *task)
-> +{
-> +	return security_ops->proc_task(task);
-> +}
-> +
-> +static inline int security_proc_generic(struct proc_dir_entry *de)
-> +{
-> +	return security_ops->proc_generic(de);
-> +}
-> +
-> +#else
-> +
-> +static inline int security_proc_task(struct task_struct *task)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline int security_proc_generic(struct proc_dir_entry *de)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +#endif
-> +
->  #endif /* ! __LINUX_SECURITY_H */
-> 
-> diff --git a/security/Kconfig b/security/Kconfig
-> index 460e5c9..bd6ad4b 100644
-> --- a/security/Kconfig
-> +++ b/security/Kconfig
-> @@ -73,6 +73,14 @@ config SECURITY_NETWORK_XFRM
->  	  IPSec.
->  	  If you are unsure how to answer this question, answer N.
-> 
-> +config SECURITY_PROC
-> +	bool "/proc Security Hooks"
-> +	depends on PROC_FS && SECURITY
-> +	help
-> +	  This enables the /proc security hooks.
-> +	  These allow an LSM to hide nodes in the proc filesystem.
-> +	  If you are unsure how to answer this question, answer N.
-> +
->  config SECURITY_CAPABILITIES
->  	tristate "Default Linux Capabilities"
->  	depends on SECURITY
-> diff --git a/security/dummy.c b/security/dummy.c
-> index 853ec22..3ec57be 100644
-> --- a/security/dummy.c
-> +++ b/security/dummy.c
-> @@ -949,6 +949,18 @@ static inline int dummy_key_permission(key_ref_t key_ref,
->  }
->  #endif /* CONFIG_KEYS */
-> 
-> +#ifdef CONFIG_SECURITY_PROC
-> +static int dummy_proc_task(struct task_struct *task)
-> +{
-> +	return 0;
-> +}
-> +
-> +static int dummy_proc_generic(struct proc_dir_entry *de)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
->  struct security_operations dummy_security_ops;
-> 
->  #define set_to_dummy_if_null(ops, function)				\
-> @@ -1131,6 +1143,10 @@ void security_fixup_ops (struct security_operations *ops)
->  	set_to_dummy_if_null(ops, key_free);
->  	set_to_dummy_if_null(ops, key_permission);
->  #endif	/* CONFIG_KEYS */
-> +#ifdef CONFIG_SECURITY_PROC
-> +	set_to_dummy_if_null(ops, proc_task);
-> +	set_to_dummy_if_null(ops, proc_generic);
-> +#endif
-> 
->  }
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The 6307 chip allows for either I^2C (24c01 etc) or 93c64 EEPROM (there
+is a pin to select), while 6306 works with 93c64 only (4-wire: chip
+select, clock, data-in, data-out).
+
+I examined 3 machines with VT6307 using a simple home-made signal
+analyzer:
+a) using 93C46 EEPROM and OHCI 1.0
+b) using 24C01A EEPROM and OHCI 1.0
+c) using 24C01A EEPROM and OHCI 1.1
+
+All 3 chips have PCI vendorID 1106 and deviceID 3044, revision is 0x80.
+
+The VT6307 chip reads the EEPROM (after reset) in the following order:
+
+ADDR	ADDR	a)	b)	c)
+4-wire	I^2C
+ A	14	subsystem vendor ID
+ B	16	subsystem device ID
+
+10	20	103C	103C	103C	values same on all machines
+ C	18	DF03	DF03	DF03
+ D	1A	8040	8040	8040
+ E	1C	2000	2000	2000
+ F	1E	7300	7300	7300
+
+11	22	0000	0000	0008
+12	24	0000	0000	0000
+ 0	 0	4000	0000	1000	config_rom: offset 0E
+ 1	 2	0063	DC10	00DC	(GUID)		   0C
+ 2	 4	0100	FD00	0101			   12
+ 3	 6	D0D4	8F75	F2D4			   10
+
+ 4	 8	0404	0404	0404	values same on all machines
+ 5	 A	5532	5532	5532	
+ 6	 C	00F8	00F8	00F8	
+ 7	 E	02A2	02A2	02A2	
+ 8	10	00A1	00A1	00A1	
+ 9	12	6340	6340	6340	
+
+The only difference (not counting GUID) is at address 0x11 (0x22
+for I2C).
+I haven't yet checked if it changes OHCI version - I of course
+could program the EEPROM externally but I think I'd better find
+how to do that from PCI side.
+-- 
+Krzysztof Halasa
