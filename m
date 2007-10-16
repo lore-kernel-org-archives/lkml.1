@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933070AbXJPGIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765712AbXJPGSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933070AbXJPGIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXJPGIJ
+	id S1765712AbXJPGSX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXJPGSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:08:09 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:34044 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932644AbXJPGIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:08:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QnXfuLP9cSmcpEKSPXnScN4Qi0lFrEJ9ozjkBoNRfNeux/fEuWd5Ex6/uOMYVnF8YLR5zyMyeokmIE9cVqd3Wj2h5ukxO1+CsnYXtB8JtujahlKBONwgSFk78+I6ePlCH9LdseRzXbnhTXWwuY5HxLAhD0PnQHNpyacUYWhmkOI=
-Message-ID: <386072610710152308o3d4a04bfgfcecafc9c345286b@mail.gmail.com>
-Date: Tue, 16 Oct 2007 14:08:04 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, bryan.wu@analog.com,
-       "Andrey Panin" <pazke@donpac.ru>, "Roel Kluin" <12o3l@tiscali.nl>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
-In-Reply-To: <20071015182743.GA2529@Ahmed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 02:18:09 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:43111 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751803AbXJPGSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 02:18:08 -0400
+X-Greylist: delayed 62882 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 02:18:08 EDT
+Date: Tue, 16 Oct 2007 08:21:08 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: "Maciej W\. Rozycki" <macro@linux-mips.org>
+Cc: Andy Fleming <afleming@freescale.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
+Message-ID: <20071016062108.GB1000@ff.dom.local>
+References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1192459625.6215.17.camel@roc-laptop>
-	 <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
-	 <20071015182743.GA2529@Ahmed>
+In-Reply-To: <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
-> On Mon, Oct 15, 2007 at 11:48:17AM -0400, Dmitry Torokhov wrote:
-> > Hi Bryan,
-> >
-> > On 10/15/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > > +
-> > > +static int ad7142_thread(void *nothing)
-> > > +{
-> > > +       do {
-> > > +               wait_for_completion(&ad7142_completion);
-> > > +               ad7142_decode();
-> > > +               enable_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX);
-> > > +       } while (!kthread_should_stop());
-> > > +
-> >
-> > No, this is not going to work well:
-> > - you at least need to reinitialize the completion before enabling
-> > IRQ, otherwise you will spin in a very tight loop
-> > - if noone would touch the joystick ad7142_clsoe would() block
-> > infinitely because noone would signal the completion and
-> > ad7142_thread() would never stop.
-> >
-> > Completion is just not a good abstraction here... Please use work
-> > abstraction and possibly a separate workqueue.
-> >
->
-> Bryan, I'm very interested in the technical advantage of using a completion
-> here.
->
-You are welcome, I'd like to discuss these things here.
+On Mon, Oct 15, 2007 at 06:03:20PM +0100, Maciej W. Rozycki wrote:
+> On Mon, 15 Oct 2007, Jarek Poplawski wrote:
+> 
+> > Could you explain why cancel_work_sync() is better here than
+> > flush_scheduled_work() wrt. rtnl_lock()?
+> 
+>  Well, this is actually the bit that made cancel_work_sync() be written in 
+> the first place.  The short story is the netlink lock is most probably 
+> held at this point (depending on the usage of phy_disconnect()) and there 
+> is also an event waiting in the queue that requires the lock, so if 
+> flush_scheduled_work() is called here a deadlock will happen.
+> 
+>  Let me find a reference for a longer story...:
+> 
+> http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=Pine.LNX.4.64N.0610031509380.4642%40blysk.ds.pg.gda.pl
+> 
+> and then discussed again:
+> 
+> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0612.0/0593.html
+> 
 
-> In my _not-experienced_ opinion, I remember completions was created mainly for
-> "create_task, wait till task got finished, go on" case. Why using it in a
-> different context while workqueues was created for a similar situation to
-> ad7142 one (non-irq context bottom-half) ?
+Yes, it's all right here. Sorry for bothering - I should've found this
+by myself.
 
-I like completion because it is simple to use and understand. Your
-understanding is right. But there is no limit for using different
-context with completion. completion is a wrapper of waitqueue+done
-flag. For some drivers, in process context call
-wait_for_completetion(), then schedule out and in irq handler call
-complete(). This is very simple and helpful for driver design (For
-example, you call dma function to transfer data, then you schedule out
-and then DMA IRQ handler will call complete() to wakeup you).
+I've still some doubts about this possible enable_irq() after
+free_irq(). If it's the only handler the status would be changed again
+and at least some of this code in check_irq_resend() would be run, but
+I can miss something again or/and this doesn't matter, as well.
 
-But in this driver, a) can not call ad7142_decode() in IRQ handler,
-because it will sleep in IRQ context by calling some i2c API, b) in
-original design, creating a new kthread and using some waitqueue API
-is the same way as using workqueue, c) cannot use completion as Dmitry
-said.
-
-I am going to use workqueue here.
-
-Any idea?
-
-Thanks
--Bryan Wu
+Thanks,
+Jarek P.
