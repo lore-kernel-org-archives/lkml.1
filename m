@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933193AbXJPNbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbXJPNgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933193AbXJPNbj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932408AbXJPNbb
+	id S933460AbXJPNgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 09:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932575AbXJPNgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:31:31 -0400
-Received: from ns.suse.de ([195.135.220.2]:58788 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932431AbXJPNba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:31:30 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       apiszcz@solarrain.com
-Subject: Re: In response to kernel compression e-mail a few months ago.
-References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan>
-	<20071014205008.GZ8181@ftp.linux.org.uk>
-	<Pine.LNX.4.64.0710141650500.12466@p34.internal.lan>
-	<200710161419.07975.vda.linux@googlemail.com>
-X-Yow: Mr and Mrs PED, can I borrow 26.7% of the RAYON TEXTILE production
- of the INDONESIAN archipelago?
-Date: Tue, 16 Oct 2007 15:31:28 +0200
-In-Reply-To: <200710161419.07975.vda.linux@googlemail.com> (Denys Vlasenko's
-	message of "Tue\, 16 Oct 2007 14\:19\:07 +0100")
-Message-ID: <jebqazjidr.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Tue, 16 Oct 2007 09:36:23 -0400
+Received: from web8408.mail.in.yahoo.com ([202.43.219.156]:28262 "HELO
+	web8408.mail.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932359AbXJPNgX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 09:36:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.in;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=W5LZ0qUTvjlay2asfiWZTidrn4J266Mjir6ws3WH60QXjLbPy4wV3ZI4gJ6wlGMCd8uf0OQiXXGJy+quyAlmTeGr6Jzn41Kt5e0pdI/1Z37wImdgRr9U2nlbG13+u4kOLqzduMGgeaSj6BlGEkOhkPbBhoozcgIJAcCgMj5x6zo=;
+X-YMail-OSG: JLyqRa8VM1ny1uQaCt_bYaOwiFIctXMZVti6uG4JnpXZ8NYIXW2by8XVC.gI9yvxmg--
+Date: Tue, 16 Oct 2007 14:36:19 +0100 (BST)
+From: veerasena reddy <veerasena_b@yahoo.co.in>
+Subject: how to use TLB to prevent Linux accessing a particular memory region 
+To: "linux-kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <431051.14949.qm@web8408.mail.in.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys Vlasenko <vda.linux@googlemail.com> writes:
+Hi,
 
-> I'm with Al on this. 50 Mb for decompression?
-> Embedded and small device folks will not love this, I'm sure.
+I have a board, which has two processors ( one is MIPS
+on which Linux-2.6.18 kernel runs and another is DSP
+based processor) and 32MB DDR.
 
-How often do you unpack the kernel sources on an embedded device? :)
+Out of 32MB of DDR 8MB is reserved for use by DSP
+processor. But the MIPS processor downloads firmware
+into this reserved memory for the DSP.
 
-Andreas.
+Now, is it possible to use the TLB to prevent Linux
+from accessing the reserved memory after the firmware
+has been downloaded?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Also we'd need to remove those TLB entries if the
+firmware would ever need to be reloaded to the DSP'
+memory region.
+
+What are the APIs to be used to achieve the above?
+
+
+Thanks in advance.
+
+Regards,
+Veerasena.
+
+
+      5, 50, 500, 5000 - Store N number of mails in your inbox. Go to http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html
