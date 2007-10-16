@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935801AbXJPUCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965440AbXJPUHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935801AbXJPUCX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765421AbXJPUCO
+	id S965440AbXJPUHS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbXJPUHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:02:14 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53225 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765438AbXJPUCN (ORCPT
+	Tue, 16 Oct 2007 16:07:04 -0400
+Received: from mga05.intel.com ([192.55.52.89]:21077 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934216AbXJPUHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:02:13 -0400
-X-Sasl-enc: O66dqMHvO4Y7GZ/H8cQ+LFhWLkyH8F1SnYB/6U1RfJyc 1192564931
-Date: Tue, 16 Oct 2007 18:02:07 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Message-ID: <20071016200207.GA23246@khazad-dum.debian.net>
-References: <20071015210737.GA15293@khazad-dum.debian.net> <20071016130053.GA20010@srcf.ucam.org> <20071016141153.GA3237@khazad-dum.debian.net> <20071016142121.GA21431@srcf.ucam.org> <20071016143124.GB3237@khazad-dum.debian.net> <20071016144016.GA21749@srcf.ucam.org> <20071016165623.GA13643@khazad-dum.debian.net> <20071016184606.GB25181@srcf.ucam.org> <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org> <20071016192010.GA26692@srcf.ucam.org>
+	Tue, 16 Oct 2007 16:07:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
+   d="scan'208";a="347904061"
+Date: Tue, 16 Oct 2007 13:06:23 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Giacomo Catenazzi <cate@debian.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Rik van Riel <riel@surriel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071016200623.GB23157@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com> <20071015183017.GB23130@uranus.ravnborg.org> <4713C582.4000504@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071016192010.GA26692@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <4713C582.4000504@debian.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Matthew Garrett wrote:
-> On Tue, Oct 16, 2007 at 12:14:32PM -0700, Linus Torvalds wrote:
-> > IOW, I think the thinkpad issue (and others like it) should be fixed by 
-> > splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and 
-> > KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the 
-> > kernel itself, for that matter) can know whether it's a informational 
-> > message or whether it should be acted upon.
+On Mon, Oct 15, 2007 at 09:54:42PM +0200, Giacomo Catenazzi wrote:
+> Sam Ravnborg wrote:
+> > On Mon, Oct 15, 2007 at 10:04:11AM -0700, Mark Gross wrote:
+> >> On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
+> >>> The kernel newbies community often gets inquiries from CS students who
+> >>> need a project for their studies and would like to do something with
+> >>> the Linux kernel, but would also like their code to be useful to the
+> >>> community afterwards.
+> >>>
+> >>> In order to make it easier for them, I am trying to put together a
+> >>> page with projects that:
+> >>> - Are self contained enough that the students can implement the
+> >>>   project by themselves, since that is often a university requirement.
+> >>> - Are self contained enough that Linux could merge the code (maybe
+> >>>   with additional changes) after the student has been working on it
+> >>>   for a few months.
+> >>> - Are large enough to qualify as a student project, luckily there is
+> >>>   flexibility here since we get inquiries for anything from 6 week
+> >>>   projects to 6 month projects.
+> >>>
+> >>> If you have ideas on what projects would be useful, please add them
+> >>> to this page (or email me):
+> >>>
+> >>> http://kernelnewbies.org/KernelProjects
+> >> Is there already a make config option that will do a good job at setting
+> >> a default .config file based on what is already running on a system?  
+> > I have discussed this briefly with Kay Sievers.
+> > What udev can provide is the list of modules needed, so what the kernel
+> > need to provide is a simple module to CONFIG option(s) converter + a base
+> > config to start out with.
+> > Nothing particular difficult but needs a few days work to do.
 > 
-> In principle I agree, but userspace already handles it. While it's 
-> certainly more correct, I'm not sure it provides any other real 
-> advantage.
+> could you explain better what you need?  I think I've already such
+> tools ;-)
+>
 
-Let's put it in another way:
+base function:
+Starting from a stock distro (FC, Ubuntu, OpenSuSE...) and put down a
+kernel.org tree and automatically create a .config with all the drivers
+needed for the platform I'm building on.
 
-I'd go with Linus suggestion, as it is not icky (although it is a lot more
-limited in scope than adding a flag to EV_* that could be use for any event,
-etc).
+expert configs for different applications:
+laptop battery, vitalization, HPC, tiny, multi-media, testing
 
-I am not going with the current icky hackery that makes every consumer of
-EV_* need to know when they are real events, or "notification" events using
-outside information.  It is not "userspace already handles it", even.  it is
-"HAL already handles it", BTW.
-
-And unless Dmitry agrees with Linus' suggestion (maybe as a temporary
-stopgap while something better gets written?), we are not going anywhere,
-anyway.  
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--mgross
