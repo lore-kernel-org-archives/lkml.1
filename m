@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936104AbXJPUyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXJPU41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936104AbXJPUyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934624AbXJPUya
+	id S965695AbXJPU41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934231AbXJPU4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:54:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:47478 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759551AbXJPUy3 (ORCPT
+	Tue, 16 Oct 2007 16:56:17 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:47943 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760881AbXJPU4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:54:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IMMWld5OmYdBy3ZnKjQLqFFBmuxv4nJZt1iQ1bm8EGtdP1zHfXMyW5XgdP8KG0V+T8X3ZZrHAD7iI7uwbeLLU3zTb+xl9XabVvVzWLgw1yTxwu4ahOSeM+a8aqexUaOqkbaYMw9i/nRWnnQxrge6P9m0GDfKUGNSVOe+SPF2nhQ=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: In response to kernel compression e-mail a few months ago.
-Date: Tue, 16 Oct 2007 21:54:21 +0100
-User-Agent: KMail/1.9.1
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       apiszcz@solarrain.com
-References: <Pine.LNX.4.64.0710141533080.3935@p34.internal.lan> <200710161419.07975.vda.linux@googlemail.com> <jebqazjidr.fsf@sykes.suse.de>
-In-Reply-To: <jebqazjidr.fsf@sykes.suse.de>
+	Tue, 16 Oct 2007 16:56:16 -0400
+Date: Tue, 16 Oct 2007 21:55:53 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Message-ID: <20071016205553.GA28531@srcf.ucam.org>
+References: <20071016130053.GA20010@srcf.ucam.org> <20071016141153.GA3237@khazad-dum.debian.net> <20071016142121.GA21431@srcf.ucam.org> <20071016143124.GB3237@khazad-dum.debian.net> <20071016144016.GA21749@srcf.ucam.org> <20071016165623.GA13643@khazad-dum.debian.net> <20071016184606.GB25181@srcf.ucam.org> <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org> <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com> <471523B6.7030506@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710162154.21390.vda.linux@googlemail.com>
+In-Reply-To: <471523B6.7030506@intel.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 14:31, Andreas Schwab wrote:
-> Denys Vlasenko <vda.linux@googlemail.com> writes:
-> 
-> > I'm with Al on this. 50 Mb for decompression?
-> > Embedded and small device folks will not love this, I'm sure.
-> 
-> How often do you unpack the kernel sources on an embedded device? :)
+On Tue, Oct 16, 2007 at 01:48:54PM -0700, Kok, Auke wrote:
 
-Oops. I goofed up, I somehow thought we were talking about kernel _images_
-being compressed. :(
---
-vda
+> real life example: hook up one of those fancy usb keyboards with volume buttons to
+> your thinkpad. The volume keys on the thinkpad do adjust the volume, the ones on
+> the USB keyboard do not - software needs to be able to distinguish between them,
+> and sane defaults for these events need to not overlap.
+
+That's not a problem - they'll be coming from different input devices.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
