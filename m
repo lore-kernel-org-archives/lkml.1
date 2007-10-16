@@ -1,142 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765600AbXJPIz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766014AbXJPI5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765600AbXJPIz4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 04:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757439AbXJPIzs
+	id S1766014AbXJPI5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 04:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759324AbXJPI5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 04:55:48 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:20755 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756384AbXJPIzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 04:55:47 -0400
-Date: Tue, 16 Oct 2007 12:54:29 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: linux-kernel@vger.kernel.org
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, akpm@osdl.org
-Subject: Possible circular locking: ->mmap_sem vs jbd_handle
-Message-ID: <20071016085429.GA6352@localhost.sw.ru>
+	Tue, 16 Oct 2007 04:57:06 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:36610 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759109AbXJPI5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 04:57:04 -0400
+Date: Tue, 16 Oct 2007 11:00:05 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071016090005.GC1000@ff.dom.local>
+References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local> <20071015080924.GA32562@wotan.suse.de> <20071015090959.GB1875@ff.dom.local> <20071016005033.GB5851@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071016005033.GB5851@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Got this during LTP's diotest1. Reproducable.
+On Tue, Oct 16, 2007 at 02:50:33AM +0200, Nick Piggin wrote:
+> On Mon, Oct 15, 2007 at 11:10:00AM +0200, Jarek Poplawski wrote:
+...
+> > I'm not performance-words at all, so I can't help you, sorry. But, I
+> > understand people who care about this, and think there is a popular
+> > conviction barriers and locked instructions are costly, so I'm
+> > surprised there is any "problem" now with finding these gains...
+> 
+> It's more expensive than nothing, sure. However in real code, algorithmic
+> complexity, cache misses and cacheline bouncing tend to be much bigger
+> issues.
+> 
+> I can't think of a place in the kernel where smp_rmb matters _that_ much.
+> seqlocks maybe (timers, dcache lookup), vmscan... Obviously removing the
+> lfence is not going to hurt. Maybe we even gain 0.01% performance in
+> someone's workload.
+> 
+> Also, remember: if loads are already in-order, then lfence is a noop,
+> right? (in practice it seems to have to do a _little_ bit of work, but
+> it's like a dozen cycles).
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.23-65a6ec0d72a07f16719e9b7a96e1c4bae044b591 #2
--------------------------------------------------------
-diotest1/13563 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<c107a7b7>] dio_get_page+0x4b/0x16b
+You are right: considering current CPUs there could be no performance
+problem at all. Removing LOCKs for older ones should probably matter
+more, but as a matter of fact, now I wouldn't bet even on this - it
+could be mostly noop as well.
 
-but task is already holding lock:
- (jbd_handle){--..}, at: [<c1099b05>] journal_start+0xf3/0x120
+> > As a matter of fact it's not natural for me at all. I expected the
+> > other direction, and I still doubt programmers' intentions could be
+> > "automatically" predicted good enough, so IMHO, it's not for long.
+> 
+> Really? Consider the consequences if, instead of releasing this latest
+> document tightening consistency, Intel found that out of order loads
+> were worth 5% more performance and implemented them in their next chip.
+> The chip could be completely backwards compatible, but all your old code
+> would break, because it was broken to begin with (because it was outside
+> the spec).
 
-which lock already depends on the new lock.
+I've different opinion on this: I expect any spec to describe current
+implementation. Before issuing new models any changes of
+implementation should be made public with proper margin of time. Then
+system could be optimally adjusted to a real hardware, instead of
+planned only, but possibly never realized (plus doing such not used
+things with old means is usually more costly: lock vs. lfence). There
+is still problem of specs' completness: there are probably often some
+things unspecified which could brake on a new model, so never 100%
+guarantee anyway.
 
+> IMO Intel did exactly the right thing from an engineering perspective,
+> and so did Linux to always follow the spec.
 
-the existing dependency chain (in reverse order) is:
+But, if you follow the spec - you don't follow the spec! Why do you
+ignore so much this part of Intel's spec:
 
--> #1 (jbd_handle){--..}:
-       [<c1033b14>] __lock_acquire+0x9b0/0xb7b
-       [<c1099b05>] journal_start+0xf3/0x120
-       [<c10581a2>] kmem_cache_alloc+0x67/0x9b
-       [<c10340a9>] lock_acquire+0x5f/0x77
-       [<c1099b05>] journal_start+0xf3/0x120
-       [<c1099b28>] journal_start+0x116/0x120
-       [<c1099b05>] journal_start+0xf3/0x120
-       [<c1090d6a>] ext3_dirty_inode+0x24/0x6d
-       [<c10581a2>] kmem_cache_alloc+0x67/0x9b
-       [<c10729b3>] __mark_inode_dirty+0x24/0x145
-       [<c101d2c2>] current_fs_time+0x13/0x15
-       [<c103e0bf>] generic_file_mmap+0x2a/0x3e
-       [<c104da6e>] mmap_region+0x200/0x3ee
-       [<c104df32>] do_mmap_pgoff+0x209/0x252
-       [<c1006a0f>] sys_mmap2+0x9d/0xb7
-       [<c10027de>] syscall_call+0x7/0xb
-       [<ffffffff>] 0xffffffff
+ "This document contains information which Intel may change at any
+  time without notice. Do not finalize a design with this information."
 
--> #0 (&mm->mmap_sem){----}:
-       [<c1031966>] print_circular_bug_entry+0x40/0x46
-       [<c1033a04>] __lock_acquire+0x8a0/0xb7b
-       [<c1033137>] check_noncircular+0x57/0x84
-       [<c1056ecc>] check_bytes_and_report+0x26/0xb2
-       [<c1032e6f>] debug_check_no_locks_freed+0x134/0x13e
-       [<c10340a9>] lock_acquire+0x5f/0x77
-       [<c107a7b7>] dio_get_page+0x4b/0x16b
-       [<c102c2d8>] down_read+0x38/0x49
-       [<c107a7b7>] dio_get_page+0x4b/0x16b
-       [<c107a7b7>] dio_get_page+0x4b/0x16b
-       [<c10c0c1c>] __spin_lock_init+0x29/0x49
-       [<c107b2a3>] __blockdev_direct_IO+0x495/0xad4
-       [<c1032b41>] mark_held_locks+0x39/0x53
-       [<c1196f3d>] __mutex_unlock_slowpath+0x105/0x127
-       [<c1032d18>] trace_hardirqs_on+0x11a/0x13d
-       [<c1099b05>] journal_start+0xf3/0x120
-       [<c1099b28>] journal_start+0x116/0x120
-       [<c1090b81>] ext3_direct_IO+0xfa/0x18a
-       [<c108f296>] ext3_get_block+0x0/0xbe
-       [<c103f0fd>] generic_file_direct_IO+0xe5/0x116
-       [<c103f18a>] generic_file_direct_write+0x5c/0x138
-       [<c101d2c2>] current_fs_time+0x13/0x15
-       [<c103fbbe>] __generic_file_aio_write_nolock+0x378/0x4dc
-       [<c1032d18>] trace_hardirqs_on+0x11a/0x13d
-       [<c103fd67>] generic_file_aio_write+0x45/0xb8
-       [<c103fd7c>] generic_file_aio_write+0x5a/0xb8
-       [<c108cd94>] ext3_file_write+0x24/0x8f
-       [<c105af91>] do_sync_write+0xc7/0x10a
-       [<c1029231>] autoremove_wake_function+0x0/0x35
-       [<c102c39b>] up_read+0x14/0x29
-       [<c104d7c2>] do_brk+0x1ad/0x259
-       [<c105aeca>] do_sync_write+0x0/0x10a
-       [<c105b660>] vfs_write+0x74/0x95
-       [<c105baf1>] sys_write+0x41/0x67
-       [<c1002756>] sysenter_past_esp+0x5f/0xa5
-       [<ffffffff>] 0xffffffff
+Maybe it's a real Intel intention and not for lawyers only? (Btw, it
+seems we have an example.)
 
-other info that might help us debug this:
-
-2 locks held by diotest1/13563:
- #0:  (&type->i_mutex_key#3){--..}, at: [<c103fd67>] generic_file_aio_write+0x45/0xb8
- #1:  (jbd_handle){--..}, at: [<c1099b05>] journal_start+0xf3/0x120
-
-stack backtrace:
- [<c1032269>] print_circular_bug_tail+0x5f/0x67
- [<c1033a04>] __lock_acquire+0x8a0/0xb7b
- [<c1033137>] check_noncircular+0x57/0x84
- [<c1056ecc>] check_bytes_and_report+0x26/0xb2
- [<c1032e6f>] debug_check_no_locks_freed+0x134/0x13e
- [<c10340a9>] lock_acquire+0x5f/0x77
- [<c107a7b7>] dio_get_page+0x4b/0x16b
- [<c102c2d8>] down_read+0x38/0x49
- [<c107a7b7>] dio_get_page+0x4b/0x16b
- [<c107a7b7>] dio_get_page+0x4b/0x16b
- [<c10c0c1c>] __spin_lock_init+0x29/0x49
- [<c107b2a3>] __blockdev_direct_IO+0x495/0xad4
- [<c1032b41>] mark_held_locks+0x39/0x53
- [<c1196f3d>] __mutex_unlock_slowpath+0x105/0x127
- [<c1032d18>] trace_hardirqs_on+0x11a/0x13d
- [<c1099b05>] journal_start+0xf3/0x120
- [<c1099b28>] journal_start+0x116/0x120
- [<c1090b81>] ext3_direct_IO+0xfa/0x18a
- [<c108f296>] ext3_get_block+0x0/0xbe
- [<c103f0fd>] generic_file_direct_IO+0xe5/0x116
- [<c103f18a>] generic_file_direct_write+0x5c/0x138
- [<c101d2c2>] current_fs_time+0x13/0x15
- [<c103fbbe>] __generic_file_aio_write_nolock+0x378/0x4dc
- [<c1032d18>] trace_hardirqs_on+0x11a/0x13d
- [<c103fd67>] generic_file_aio_write+0x45/0xb8
- [<c103fd7c>] generic_file_aio_write+0x5a/0xb8
- [<c108cd94>] ext3_file_write+0x24/0x8f
- [<c105af91>] do_sync_write+0xc7/0x10a
- [<c1029231>] autoremove_wake_function+0x0/0x35
- [<c102c39b>] up_read+0x14/0x29
- [<c104d7c2>] do_brk+0x1ad/0x259
- [<c105aeca>] do_sync_write+0x0/0x10a
- [<c105b660>] vfs_write+0x74/0x95
- [<c105baf1>] sys_write+0x41/0x67
- [<c1002756>] sysenter_past_esp+0x5f/0xa5
- =======================
-
+Regards,
+Jarek P.
