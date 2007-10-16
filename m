@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934058AbXJPRTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXJPRT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934058AbXJPRTI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933466AbXJPRSu
+	id S933970AbXJPRT6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760757AbXJPRTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:18:50 -0400
-Received: from 193.4.221.87.dynamic.jazztel.es ([87.221.4.193]:59844 "EHLO
-	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760018AbXJPRSt (ORCPT
+	Tue, 16 Oct 2007 13:19:46 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:50082 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760582AbXJPRTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:18:49 -0400
-Date: Tue, 16 Oct 2007 19:18:52 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] Videopix Frame Grabber: Convert device_lock_sem to mutex
-Message-ID: <20071016171851.GB31288@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	davem@davemloft.net, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
+	Tue, 16 Oct 2007 13:19:43 -0400
+Date: Tue, 16 Oct 2007 18:19:32 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jarek Poplawski <jarkao2@o2.pl>
+cc: Andy Fleming <afleming@freescale.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
+In-Reply-To: <20071016062108.GB1000@ff.dom.local>
+Message-ID: <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl>
+References: <20071015125301.GC3015@ff.dom.local>
+ <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Videopix Frame Grabber: Convert the semaphore device_lock_sem to the
-mutex API
+On Tue, 16 Oct 2007, Jarek Poplawski wrote:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> Yes, it's all right here. Sorry for bothering - I should've found this
+> by myself.
 
---
+ Ah, no problem -- even with the right keys you may sometimes get lost in 
+the results.
 
-diff --git a/drivers/sbus/char/vfc.h b/drivers/sbus/char/vfc.h
-index 63941a2..f1aa138 100644
---- a/drivers/sbus/char/vfc.h
-+++ b/drivers/sbus/char/vfc.h
-@@ -126,7 +126,7 @@ struct vfc_dev {
- 	volatile struct vfc_regs __iomem *regs;
- 	struct vfc_regs *phys_regs;
- 	unsigned int control_reg;
--	struct semaphore device_lock_sem;
-+	struct mutex device_lock_mtx;
- 	int instance;
- 	int busy;
- 	unsigned long which_io;
-diff --git a/drivers/sbus/char/vfc_dev.c b/drivers/sbus/char/vfc_dev.c
-index 9269f7f..e7a1642 100644
---- a/drivers/sbus/char/vfc_dev.c
-+++ b/drivers/sbus/char/vfc_dev.c
-@@ -22,6 +22,7 @@
- #include <linux/fs.h>
- #include <linux/delay.h>
- #include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/mm.h>
- 
- #include <asm/openprom.h>
-@@ -54,12 +55,12 @@ static unsigned char saa9051_init_array[VFC_SAA9051_NR] = {
- 
- void vfc_lock_device(struct vfc_dev *dev)
- {
--	down(&dev->device_lock_sem);
-+	mutex_lock(&dev->device_lock_mtx);
- }
- 
- void vfc_unlock_device(struct vfc_dev *dev)
- {
--	up(&dev->device_lock_sem);
-+	mutex_unlock(&dev->device_lock_mtx);
- }
+> I've still some doubts about this possible enable_irq() after
+> free_irq(). If it's the only handler the status would be changed again
+> and at least some of this code in check_irq_resend() would be run, but
+> I can miss something again or/and this doesn't matter, as well.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+ Well, enable_irq() and disable_irq() themselves are nesting, so they are 
+not a problem.  OTOH, free_irq() does not seem to maintain the depth count 
+correctly, which looks like a bug to me and which could trigger regardless 
+of whether flush_scheduled_work() or cancel_work_sync() was called.
 
-             If liberty means anything at all, it means the
-           right to tell people what they do not want to hear
-                            (George Orwell)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+ The reason is CONFIG_DEBUG_SHIRQ which makes a simulated interrupt event 
+be sent at the end of free_irq().  It looks like a problem that is 
+complementary to one I signalled here:
+
+http://lkml.org/lkml/2007/9/12/82
+
+with respect to request_irq(), where, similarly, such an interrupt event 
+is sent at the beginning.  It looks like nobody was concerned back then, 
+but perhaps it is time to do a better investigation now and propose a 
+solution.
+
+ I'll think about it and thanks for your inquisitiveness that has led to 
+these conclusions.
+
+  Maciej
