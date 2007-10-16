@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXJPUVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935788AbXJPUXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965082AbXJPUVE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935801AbXJPUUf
+	id S935788AbXJPUXf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760411AbXJPUXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:20:35 -0400
-Received: from khc.piap.pl ([195.187.100.11]:43539 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935563AbXJPUUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:20:34 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-user@lists.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: VIA VT6307 OHCI version?
-References: <m3sl4ciz1h.fsf@maximus.localdomain>
-	<4714EF01.2060609@s5r6.in-berlin.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 16 Oct 2007 22:20:27 +0200
-In-Reply-To: <4714EF01.2060609@s5r6.in-berlin.de> (Stefan Richter's message of "Tue, 16 Oct 2007 19:04:01 +0200")
-Message-ID: <m3d4vebylw.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 16 Oct 2007 16:23:25 -0400
+Received: from 74-92-59-67-NewEngland.hfc.comcastbusiness.net ([74.92.59.67]:44784
+	"EHLO shelob.surriel.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752305AbXJPUXY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:23:24 -0400
+Date: Tue, 16 Oct 2007 16:23:10 -0400
+From: Rik van Riel <riel@surriel.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Mark Gross <mgross@linux.intel.com>, Giacomo Catenazzi <cate@debian.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071016162310.1891914f@bree.surriel.com>
+In-Reply-To: <Pine.LNX.4.64.0710162207540.4548@fbirervta.pbzchgretzou.qr>
+References: <20071014190128.6e3cdb44@bree.surriel.com>
+	<20071015170411.GB18550@linux.intel.com>
+	<20071015183017.GB23130@uranus.ravnborg.org>
+	<4713C582.4000504@debian.org>
+	<20071016200623.GB23157@linux.intel.com>
+	<Pine.LNX.4.64.0710162207540.4548@fbirervta.pbzchgretzou.qr>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+On Tue, 16 Oct 2007 22:09:04 +0200 (CEST)
+Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> On Oct 16 2007 13:06, Mark Gross wrote:
+> >
+> >base function:
+> >Starting from a stock distro (FC, Ubuntu, OpenSuSE...) and put down a
+> >kernel.org tree and automatically create a .config with all the
+> >drivers needed for the platform I'm building on.
+> 
+> Too easy. Since opensuse's udev loads most of the modules for your
+> hardware, all that would be needed is to transform the lsmod list of
+> modules plus the static options in /proc/config.gz (stuff like
+> psmouse) back into kconfig options ;-)
 
-> AFAIK all 6306 are OHCI 1.0.  I presume that currently produced 6307 are
-> OHCI 1.1 and maybe only first revisions of it were 1.0 --- but that's
-> just my speculation.  I would be surprised though if it was merely a
-> matter of EEPROM contents.
+Well, at that point it does not know whether or not you
+occasionally plug in an ipod or a digital camera.
 
-Both VT6306 and VT6307 datasheets claim selectable OHCI 1.0/1.1.
-I guess they did that for compatibility or something like that.
+Going back from the lsmod output to all the right CONFIG
+options is also not as trivial as it sounds, due to all
+the dependencies there are.
 
-The 6307 chip allows for either I^2C (24c01 etc) or 93c64 EEPROM (there
-is a pin to select), while 6306 works with 93c64 only (4-wire: chip
-select, clock, data-in, data-out).
+This project sounds like it could be a great undergraduate
+project, maybe built on top of Ketchup to automatically
+fetch, configure, compile and install a working kernel :)
 
-I examined 3 machines with VT6307 using a simple home-made signal
-analyzer:
-a) using 93C46 EEPROM and OHCI 1.0
-b) using 24C01A EEPROM and OHCI 1.0
-c) using 24C01A EEPROM and OHCI 1.1
+Are there any volunteers to write down the project
+description on the kernelnewbies.org wiki?
 
-All 3 chips have PCI vendorID 1106 and deviceID 3044, revision is 0x80.
-
-The VT6307 chip reads the EEPROM (after reset) in the following order:
-
-ADDR	ADDR	a)	b)	c)
-4-wire	I^2C
- A	14	subsystem vendor ID
- B	16	subsystem device ID
-
-10	20	103C	103C	103C	values same on all machines
- C	18	DF03	DF03	DF03
- D	1A	8040	8040	8040
- E	1C	2000	2000	2000
- F	1E	7300	7300	7300
-
-11	22	0000	0000	0008
-12	24	0000	0000	0000
- 0	 0	4000	0000	1000	config_rom: offset 0E
- 1	 2	0063	DC10	00DC	(GUID)		   0C
- 2	 4	0100	FD00	0101			   12
- 3	 6	D0D4	8F75	F2D4			   10
-
- 4	 8	0404	0404	0404	values same on all machines
- 5	 A	5532	5532	5532	
- 6	 C	00F8	00F8	00F8	
- 7	 E	02A2	02A2	02A2	
- 8	10	00A1	00A1	00A1	
- 9	12	6340	6340	6340	
-
-The only difference (not counting GUID) is at address 0x11 (0x22
-for I2C).
-I haven't yet checked if it changes OHCI version - I of course
-could program the EEPROM externally but I think I'd better find
-how to do that from PCI side.
 -- 
-Krzysztof Halasa
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
