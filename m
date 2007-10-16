@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965751AbXJPVOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965870AbXJPVRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965751AbXJPVOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965257AbXJPVOY
+	id S965870AbXJPVRz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965436AbXJPVRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:14:24 -0400
-Received: from mga11.intel.com ([192.55.52.93]:10707 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965261AbXJPVOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:14:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
-   d="scan'208";a="347963011"
-Date: Tue, 16 Oct 2007 14:01:16 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: pcihpd-discuss@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIe Hotplug:  NFG unless I boot with card already inserted.
-Message-Id: <20071016140116.cb30483c.kristen.c.accardi@intel.com>
-In-Reply-To: <4715217D.2000803@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-	<47150982.6050102@rtr.ca>
-	<471509FE.7080505@rtr.ca>
-	<47151191.40406@rtr.ca>
-	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>
-	<4715217D.2000803@rtr.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 17:17:45 -0400
+Received: from smtp-out-43.synserver.de ([217.119.50.43]:1042 "HELO
+	smtp-out-43.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965408AbXJPVRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:17:45 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 17:17:44 EDT
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+Date: Tue, 16 Oct 2007 23:11:01 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL (updated)] kbuild updates
+Message-ID: <20071016211101.GA4093@gentoox2.trippelsdorf.de>
+References: <20071015205018.GA24467@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015205018.GA24467@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 16:39:25 -0400
-Mark Lord <lkml@rtr.ca> wrote:
-
-> Kristen Carlson Accardi wrote:
-> >...
-> > I tried to reproduce this on a Lenovo T61, which does have proper firmware
-> > support for _OSC, and also has been validated, and the driver which is 
-> > in 2.6.23-git8 seems to work fine, even across suspend resume.  I suspect
-> > that your system just doesn't support pcie hotplug properly.
+On Mon, Oct 15, 2007 at 10:50:18PM +0200, Sam Ravnborg wrote:
 > 
-> No, the hardware seems to work perfectly.
+> The kbuild patches has been rebased on top of -linus after
+> the x86 merge.
+> The patch that caused ARCH to be unset has been withdrawn for
+> now. It had additional issues and I need to do additional changes
+> to get it included - in other words it will await next merge window.
 > 
-> We just have a software issue.  We *know* it's only software
-> because rmmod+modprobe fixes things, without any hardware intervention.
-
-This reinitializes the controller, which is probably why things work
-better for you (which does of course touch hardware...).
-
+> The following patches does almost clear my patch queue. I have some
+> fixes pending but need some more time to check them out.
+> On top of this I have a few reports from -mm that needs attention too.
+> So in other words I expect a smaller set of patches for -rc1 or -rc2
+> as my time permits.
 > 
-> I believe the code is leaning too heavily on the BIOS for stuff,
-> and like lots of other parts of the kernel we'll need an alternate
-> strategy for when things aren't "perfect".
+> In addition to latest pull request this one includes:
+> - rename of
+> 	CFLAGS => KBUILD_CFLAGS
+> 	AFLAGS => KBUILD_AFLAGS
+> 	CPPFLAGS => KBUILD_CPPFLAGS
+>     rationale behind this was two-fold:
+>     1) Do not let the CFLAGS environment variable impact all builds
+>     2) Allow one to specify addition gcc options on the commandline
+>        as make CLFAGS=-Os ...
+> - introducing ccflags-y, asflags-y and ldflags-y as the future
+>   replacement of the EXTRA_* variants.
+> 
+> 
+> The majority (line wise) is update of generated files.
+> The rest is almost all one-liners so nothing controversial.
+> The file with most lines changed is makefiles.txt!
+> 
 
-the pitfall for forcing pciehp when the BIOS hasn't provided OSC is that
-you don't know for sure that you really have gained control of hot plug
-operation properly.  You can obviously try it, using the provide forcing
-option as you have done, but the behavior is not predictable.
+Bisecting shows that:
+
+commit f77bf01425b11947eeb3b5b54685212c302741b8
+	Author: Sam Ravnborg <sam@neptun.(none)>
+ 	Date:   Mon Oct 15 22:25:06 2007 +0200
+
+    kbuild: introduce ccflags-y, asflags-y and ldflags-y
+
+breaks booting with grub here. Grub stops with error 28: 
+Selected item cannot fit into memory.
+
+Reverting the commit fixes the problem.
+-- 
+Markus
