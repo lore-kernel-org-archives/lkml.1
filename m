@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765134AbXJPAcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763016AbXJPAca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765134AbXJPAcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbXJPAcA
+	id S1763016AbXJPAca (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762122AbXJPAcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:32:00 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33343
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbXJPAb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:31:59 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-Date: Mon, 15 Oct 2007 19:31:54 -0500
-User-Agent: KMail/1.9.6
-Cc: Sam Ravnborg <sam@ravnborg.org>, Finn Thain <fthain@telegraphics.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-References: <200710101722.21126.rob@landley.net> <20071012102124.GA18959@uranus.ravnborg.org> <Pine.LNX.4.64.0710152217150.16889@anakin>
-In-Reply-To: <Pine.LNX.4.64.0710152217150.16889@anakin>
+	Mon, 15 Oct 2007 20:32:05 -0400
+Received: from waste.org ([66.93.16.53]:59611 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755433AbXJPAcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 20:32:02 -0400
+Date: Mon, 15 Oct 2007 19:20:47 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       David Rientjes <rientjes@google.com>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: [PATCH 11/11] maps3: make page monitoring /proc file optional
+Message-ID: <20071016002047.GB19691@waste.org>
+References: <12.290135367@selenic.com> <1192488599.6118.100.camel@localhost> <4713EEE5.8060706@goop.org> <200710161003.39992.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710151931.54289.rob@landley.net>
+In-Reply-To: <200710161003.39992.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 October 2007 3:25:35 pm Geert Uytterhoeven wrote:
-> 64-bit parisc tests if /usr/bin/hppa64-linux-gnu- exists.
-> If yes, it sets CROSS_COMPILE to hppa64-linux-gnu-.
-> If no, it sets CROSS_COMPILE to hppa64-linux-
->
-> 32-bit parisc unconditionally sets CROSS_COMPILE to hppa-linux-.
->
-> This still breaks Rob's setup if his compiler is called differently.
+On Tue, Oct 16, 2007 at 10:03:39AM +1000, Rusty Russell wrote:
+> On Tuesday 16 October 2007 08:51:17 Jeremy Fitzhardinge wrote:
+> > Dave Hansen wrote:
+> > > On Mon, 2007-10-15 at 17:26 -0500, Matt Mackall wrote:
+> > >> +config PROC_PAGE_MONITOR
+> > >> +       default y
+> > >> +       bool "Enable /proc page monitoring" if EMBEDDED && PROC_FS &&
+> > >> MMU +       help
+> > >> +         Various /proc files exist to monitor process memory
+> > >> utilization: +         /proc/pid/smaps, /proc/pid/clear_refs,
+> > >> /proc/pid/pagemap, +         /proc/kpagecount, and /proc/kpageflags.
+> > >> Disabling these +          interfaces will reduce the size of the kernel
+> > >> by approximately 4kb.
+> > >
+> > > How about pulling the EMBEDDED off there?  I certainly want it for
+> > > non-embedded reasons. ;)
+> >
+> > That means it will only bother asking you if you've set EMBEDDED;
+> > otherwise its always on.
+> 
+> But it's at the least confusing.  Surely this option should depend on MMU and 
+> PROC_FS, and the prompt depend on EMBEDDED?
+> 
+> That might be implied by the Kconfig layout, but AFAICT this patch removed the 
+> explicit MMU dependency.
+> 
+> Rusty.
 
-Another thing to take into account is that kconfig was recently changed to 
-save ARCH and CROSS_COMPILE in the .config file:
+Wasn't this your patch? You're right, it ought to say "depends PROC_FS
+&& MMU". Will fix.
 
-http://lwn.net/Articles/253889/
-
-Presumably that means you'd only have to specify your arch and cross compiler 
-during config, and then if you re-used that config it would re-use those 
-settings.  But the existing makefile discards anything that isn't explicitly 
-overridden on the make command line at each stage of the build.
-
-It seems to me any fix should only reset CROSS_COMPILE if there isn't already 
-a value for it.  (Otherwise there's a potentially subtle bug where a year 
-from now you might have "m68k-linux-gnu-gcc" and "m68k-linux-gnu-pcc" and 
-want to compare the results of building with the different compilers.)
-
-I still lean towards considering any attempt to cross compile without setting 
-CROSS_COMPILE an error, and not guessing at what the user meant.  But perhaps 
-that's just personal preference...
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Mathematics is the supreme nostalgia of our time.
