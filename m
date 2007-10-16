@@ -1,84 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbXJPPAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934028AbXJPPCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933819AbXJPPAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbXJPPAn
+	id S934028AbXJPPCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXJPPCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:00:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33852 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbXJPPAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:00:42 -0400
-Message-ID: <4714D20A.3080607@garzik.org>
-Date: Tue, 16 Oct 2007 11:00:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 16 Oct 2007 11:02:04 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:1076 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759311AbXJPPCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:02:03 -0400
+X-Greylist: delayed 678 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 11:02:03 EDT
 MIME-Version: 1.0
-To: Joachim Fenkes <fenkes@de.ibm.com>
-CC: Jan-Bernd Themann <THEMANN@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <pmac@au1.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Thomas Q Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
-       Marcus Eder <meder@de.ibm.com>
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
- match eHCA and eHEA drivers
-References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com> <200710162320.00630.fenkes@de.ibm.com>
-In-Reply-To: <200710162320.00630.fenkes@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
+Date: Tue, 16 Oct 2007 10:50:10 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] i386: fix TSC clock source calibration error
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joachim Fenkes wrote:
-> On Tuesday 09 October 2007 10:21, Jan-Bernd Themann wrote:
->> Roland Dreier <rdreier@cisco.com> wrote on 03.10.2007 20:05:44:
->>>  > > Replace struct ibmebus_dev and struct ibmebus_driver with struct 
-> of_device
->>>  > > and struct of_platform_driver, respectively. Match the external 
-> ibmebus
->>>  > > interface and drivers using it.
->>>  > >
->>>  > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
->>>  >
->>>  > This is somewhat difficult as this patch touches files that are the
->>>  > responsibility of three different maintainers. �Is it possible to
->>>  > split the patch into three, one for each maintainer (possibly by
->>>  > keeping both old and new interfaces around for a little while)?
->>>  > 
->>>  > If not, then you need to get an Acked-by and an agreement that this
->>>  > change can go via the powerpc.git tree from Roland Dreier and Jeff
->>>  > Garzik.
->>>
->>> I don't see anything objectionable in the infiniband parts of the
->>> patch -- I don't have any way to test the changes but it all looks
->>> like a straightforward conversion to a new platform API.  So:
->>>
->>> Acked-by: Roland Dreier <rolandd@cisco.com>
->>>
->>>  - R.
->> Looks good from eHEA driver perspective.
->>
->> Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> Jeff, do you have any objections against this patch going into the kernel
-> via Paul's powerpc.git tree? It touches only a few lines of ehea which are
-> specific to the bus interface changes.
-> 
-> You can see the full patch here:
->   http://patchwork.ozlabs.org/linuxppc/patch?id=13750
-> 
-> If you have no objections, please ack the patch so Paul can include it.
+From: Dave Johnson <djohnson@sw.starentnetworks.com>
 
-Fine with me...
+I ran into this problem on a system that was unable to obtain NTP sync
+because the clock was running very slow (over 10000ppm slow). ntpd had
+declared all of its peers 'reject' with 'peer_dist' reason.
 
-	Jeff
+On investigation, the tsc_khz variable was significantly incorrect
+causing xtime to run slow.  After a reboot tsc_khz was correct so I
+did a reboot test to see how often the problem occurred:
 
+Test was done on a 2000 Mhz Xeon system.  Of 689 reboots, 8 of them
+had unacceptable tsc_khz values (>500ppm):
 
+ range of tsc_khz  # of boots  % of boots
+-----------------  ----------  ----------
+        < 1999750           0      0.000%
+1999750 - 1999800          21      3.048%
+1999800 - 1999850         166     24.128%
+1999850 - 1999900         241     35.029%
+1999900 - 1999950         211     30.669%
+1999950 - 2000000          42      6.105%
+2000000 - 2000000           0      0.000%
+2000050 - 2000100           0      0.000%
+                   [...]
+2000100 - 2015000           1      0.145%  << BAD
+2015000 - 2030000           6      0.872%  << BAD
+2030000 - 2045000           1      0.145%  << BAD
+2045000 <                   0      0.000%
+
+The worst boot was 2032.577 Mhz, over 1.5% off!
+
+It appears that on rare occasions, mach_countup() is taking longer to
+complete than necessary.
+
+I suspect that this is caused by the CPU taking a periodic SMI
+interrupt right at the end of the 30ms calibration loop.  This would
+cause the loop to delay while the SMI BIOS hander runs. The resulting
+TSC value is beyond what it actually should be resulting in a higher
+tsc_khz.
+
+The below patch makes native_calculate_cpu_khz() take the best
+(shortest duration, lowest khz) run of it's 3 calibration loops.  If a
+SMI goes off causing a bad result (long duration, higher khz) it will
+be discarded.
+
+With the patch applied, 300 boots of the same system produce good
+results:
+
+ range of tsc_khz  # of boots  % of boots
+-----------------  ----------  ----------
+        < 1999750           0      0.000%
+1999750 - 1999800          30     10.000%
+1999800 - 1999850         166     55.333%
+1999850 - 1999900          89     29.667%
+1999900 - 1999950          15      5.000%
+1999950 <                   0      0.000%
+
+Problem was found and tested against 2.6.18.  Patch is against 2.6.22.
+
+Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+
+===== arch/i386/kernel/tsc.c 1.27 vs edited =====
+--- 1.27/arch/i386/kernel/tsc.c	2007-05-02 13:27:18 -04:00
++++ edited/arch/i386/kernel/tsc.c	2007-10-15 16:31:04 -04:00
+@@ -122,7 +122,7 @@
+ {
+ 	unsigned long long start, end;
+ 	unsigned long count;
+-	u64 delta64;
++	u64 delta64 = (u64)ULLONG_MAX;
+ 	int i;
+ 	unsigned long flags;
+ 
+@@ -134,6 +134,7 @@
+ 		rdtscll(start);
+ 		mach_countup(&count);
+ 		rdtscll(end);
++		delta64 = min(delta64, (end - start));
+ 	}
+ 	/*
+ 	 * Error: ECTCNEVERSET
+@@ -143,8 +144,6 @@
+ 	 */
+ 	if (count <= 1)
+ 		goto err;
+-
+-	delta64 = end - start;
+ 
+ 	/* cpu freq too fast: */
+ 	if (delta64 > (1ULL<<32))
 
