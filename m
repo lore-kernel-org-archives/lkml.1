@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbXJPIWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbXJPI3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932581AbXJPIWA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 04:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXJPIVo
+	id S1762246AbXJPI3I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 04:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbXJPI2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 04:21:44 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:41748 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756107AbXJPIVn (ORCPT
+	Tue, 16 Oct 2007 04:28:51 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:11573 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755505AbXJPI2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 04:21:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=Kt12zWz49ONQsTV97avQScuLf327+o7YUbgOrPbotJSeZBaKcE55g1gb7oNJVRsBuCqBzDu/O5n2XpjKl5cQmQEDNKkapiNd+aAYQ+cm41u+R96on1oazL0flu0Vc6i3iqIWvwvvtdWpw+KNGtHmHBWJsnQyYDUK1FfIIvdffyI=  ;
-X-YMail-OSG: wE2gtpMVM1nMFcIF_1SPq34Frq7K2alagBpNlIfAyUli10V8Nia0_X3DXwMbxQocazn_B_C42Q--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [patch][rfc] rewrite ramdisk
-Date: Tue, 16 Oct 2007 18:26:55 +1000
-User-Agent: KMail/1.9.5
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710161807.41157.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710161015310.10197@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710161015310.10197@fbirervta.pbzchgretzou.qr>
+	Tue, 16 Oct 2007 04:28:48 -0400
+Message-ID: <4714762B.5040401@panasas.com>
+Date: Tue, 16 Oct 2007 10:28:27 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710161826.55834.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.24
+References: <1192421381.3429.6.camel@localhost.localdomain> <Pine.LNX.4.64.0710160846030.16889@anakin>
+In-Reply-To: <Pine.LNX.4.64.0710160846030.16889@anakin>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2007 08:28:29.0412 (UTC) FILETIME=[87AED240:01C80FCE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 18:17, Jan Engelhardt wrote:
-> On Oct 16 2007 18:07, Nick Piggin wrote:
-> >Changed. But it will hopefully just completely replace rd.c,
-> >so I will probably just rename it to rd.c at some point (and
-> >change .config options to stay compatible). Unless someone
-> >sees a problem with that?
->
-> I do not see a problem with keeping brd either.
+On Tue, Oct 16 2007 at 8:49 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, 15 Oct 2007, James Bottomley wrote:
+>> This is the accumulated updates queued for 2.6.24.  It contains the
+>> usual slew of driver updates, plus some gdth and advansys rewrites.  We
+>> still have some outstanding bugs in gdth and fc4 for which I'm hoping to
+>> sweep fixes into the next update.
+> 
+>> Boaz Harrosh (12):
+>>       NCR5380: Use scsi_eh API for REQUEST_SENSE invocation
+> 
+> This change broke compilation of the mac_scsi.c driver:
+> 
+> | linux/drivers/scsi/NCR5380.c: In function 'NCR5380_information_transfer':
+> | linux/drivers/scsi/NCR5380.c:2282: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> | linux/drivers/scsi/NCR5380.c:2283: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> | linux/drivers/scsi/NCR5380.c:2284: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> | linux/drivers/scsi/NCR5380.c:2288: error: 'struct NCR5380_hostdata' has no member named 'ses'
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
 
-Just doesn't seem to be any point in making it a new and different
-module, assuming it can support exactly the same semantics. I'm
-only doing so in these first diffs so that they are easier to read
-and also easier to do a side by side comparison / builds with the
-old rd.c
+fix below, Sorry.
+----
+>From 1e10cf1a39ff4909696a5c7950367261b38b3345 Mon Sep 17 00:00:00 2001
+From: Boaz Harrosh <bharrosh@panasas.com>
+Date: Tue, 16 Oct 2007 10:25:01 +0200
+Subject: [PATCH] scsi_mac.h: Define AUTOSENSE before include of NCR5380.h
 
+  - Previese patch to NCR5380 broke scsi_mac because
+    AUTOSENSE was defined after the inclusion of
+    NCR5380.h. Fix it
 
-> >> It also does not seem needed, since it did not exist before.
-> >> It should go, you can set the variable with brd.rd_nr=XXX (same
-> >> goes for ramdisk_size).
-> >
-> >But only if it's a module?
->
-> Attributes always work. Try vt.default_red=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-> and you will see.
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/mac_scsi.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Ah, nice. (I don't use them much!). Still, backward compat I
-think is needed if we are to replace rd.c.
+diff --git a/drivers/scsi/mac_scsi.c b/drivers/scsi/mac_scsi.c
+index cdbcaa5..abe2bda 100644
+--- a/drivers/scsi/mac_scsi.c
++++ b/drivers/scsi/mac_scsi.c
+@@ -53,6 +53,11 @@
+ #include "scsi.h"
+ #include <scsi/scsi_host.h>
+ #include "mac_scsi.h"
++
++/* These control the behaviour of the generic 5380 core */
++#define AUTOSENSE
++#define PSEUDO_DMA
++
+ #include "NCR5380.h"
+ 
+ #if 0
+@@ -571,10 +576,6 @@ static int macscsi_pwrite (struct Scsi_Host *instance,
+ }
+ 
+ 
+-/* These control the behaviour of the generic 5380 core */
+-#define AUTOSENSE
+-#define PSEUDO_DMA
+-
+ #include "NCR5380.c"
+ 
+ static struct scsi_host_template driver_template = {
+-- 
+1.5.3.1
+
