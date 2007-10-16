@@ -1,99 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935512AbXJPUUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935964AbXJPUUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935512AbXJPUUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXJPUTw
+	id S935964AbXJPUUn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbXJPUU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:19:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:41546 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbXJPUTv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:19:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YcxixEY88VWReMmVI4B8ToMN4E+ueujzz+8Ure4ADBTPjDUyiP1hcmdfSFznW4Ldm4DDQPZojdcpJrrD2dA+Y0Nxwds7VntfCXnAiI3M4QwXixFY8L8bePZ14XsxGExTZXqJwIq0UnQ5/TFzHX3ISR2EHOSniEWJUVWnMGxUR7g=
-Message-ID: <d120d5000710161319w7b98bcc0i7e60b58e16d2c86d@mail.gmail.com>
-Date: Tue, 16 Oct 2007 16:19:48 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jeremy Katz" <katzj@redhat.com>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, davej@redhat.com
-In-Reply-To: <1192565511.22919.1.camel@localhost.localdomain>
+	Tue, 16 Oct 2007 16:20:29 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46257 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760130AbXJPUU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:20:27 -0400
+Date: Tue, 16 Oct 2007 15:20:25 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] /proc Security Hooks
+Message-ID: <20071016202025.GD4115@sergelap.austin.ibm.com>
+References: <20071016193850.GA5418@roonstrasse.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
-	 <20071016141153.GA3237@khazad-dum.debian.net>
-	 <20071016142121.GA21431@srcf.ucam.org>
-	 <20071016143124.GB3237@khazad-dum.debian.net>
-	 <20071016144016.GA21749@srcf.ucam.org>
-	 <20071016165623.GA13643@khazad-dum.debian.net>
-	 <20071016184606.GB25181@srcf.ucam.org>
-	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
-	 <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
-	 <1192565511.22919.1.camel@localhost.localdomain>
+In-Reply-To: <20071016193850.GA5418@roonstrasse.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Jeremy Katz <katzj@redhat.com> wrote:
-> On Tue, 2007-10-16 at 16:12 -0400, Dmitry Torokhov wrote:
-> > On 10/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > On Tue, 16 Oct 2007, Matthew Garrett wrote:
-> > > > >
-> > > > > It still doesn't mean it belongs inside the stream of data for the keyboard,
-> > > > > maskerading as a key press.
-> > > >
-> > > > But it *is* a key press!
-> > >
-> > > To get somewhat back on track: volume and brightness (and similar - lid
-> > > close etc) events clearly are keypresses.
-> > >
-> > > However, I would also argue that a keypress that is acted on by the
-> > > firmware automatically is *different* from a keypress that hasn't been
-> > > acted on: one is a "key was pressed *and* hardware did something
-> > > automatically", and the other is just a "key was pressed" event.
-> > >
-> > > IOW, I think the thinkpad issue (and others like it) should be fixed by
-> > > splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and
-> > > KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the
-> > > kernel itself, for that matter) can know whether it's a informational
-> > > message or whether it should be acted upon.
-> >
-> > I agree that these are 2 different events. My argument is that
-> > "VOLUME_UP_NOTIFY" event is similar to "BATTERY_OUT_NOTIFY",
-> > "DOCK_UNDOCK_NOTIFY", etc, etc and should be sent not through input
-> > layer but through a generic (yet to be designed) notification
-> > mechanism. Something lighter than input. Something like uevents over
-> > netlink.
->
-> Except that I'm _always_ going to have to be able to take these events
-> as input events (because of the hardware that sends them that way), so
-> why not just have everything be an input event?
+Quoting Max Kellermann (mk@cm4all.com):
+> Add two LSM hooks for limiting access to the proc file system.
+> 
+> security_proc_task() defines the visibility of tasks in /proc.
+> 
+> security_proc_generic() lets the LSM define who will see "generic"
+> proc entries (see fs/proc/generic.c).
+> 
+> This patch attempts to unify duplicated code found in modules like
+> Linux VServer.
 
-Not all hardware, just some.
+Are you aware of the pid namespace patches currently in -mm?
+If your use for the task hiding hooks is to emulate virtual
+servers as with vserver/openvz, the pid namespaces should fill
+your need.
 
->
-> The alternative is building up something new from the ground-up and then
-> having to do translation from input to the new event type (either in the
-> kernel or in userspace) which ends up meaning more work for little, if
-> any, gain
->
+-serge
 
-No, I dont think you need to translate. You ahev 2 types of events -
-ones require you to take action, others don't. Ones requests (reqular
-keypresses), others just notifications.
-
-Right now we have instance where sending events through input device
-is simp-ly convenient because driver already has it. But in other
-scenarios, when there is no input device in sight, input layer is not
-the best transport. Input devices are quite havy (several kilobytes)
-you may not want to add them everywhere.
-
--- 
-Dmitry
+> Signed-off-by: Max Kellermann <mk@cm4all.com>
+> 
+> ---
+>  fs/proc/base.c           |    9 +++++++++
+>  fs/proc/generic.c        |   15 +++++++++++++++
+>  include/linux/security.h |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  security/Kconfig         |    8 ++++++++
+>  security/dummy.c         |   16 ++++++++++++++++
+>  5 files changed, 94 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 19489b0..a6ebe2d 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2317,6 +2317,10 @@ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir)
+>  	     put_task_struct(task), task = next_tgid(tgid + 1)) {
+>  		tgid = task->pid;
+>  		filp->f_pos = tgid + TGID_OFFSET;
+> +#ifdef CONFIG_SECURITY_PROC
+> +		if (security_proc_task(task) != 0)
+> +			continue;
+> +#endif
+>  		if (proc_pid_fill_cache(filp, dirent, filldir, task, tgid) < 0) {
+>  			put_task_struct(task);
+>  			goto out;
+> @@ -2453,6 +2457,11 @@ static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry
+>  		goto out;
+>  	if (leader->tgid != task->tgid)
+>  		goto out_drop_task;
+> +#ifdef CONFIG_SECURITY_PROC
+> +	result = ERR_PTR(security_proc_task(task));
+> +	if (IS_ERR(result))
+> +		goto out_drop_task;
+> +#endif
+> 
+>  	result = proc_task_instantiate(dir, dentry, task, NULL);
+>  out_drop_task:
+> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+> index b5e7155..7b17ec3 100644
+> --- a/fs/proc/generic.c
+> +++ b/fs/proc/generic.c
+> @@ -21,6 +21,9 @@
+>  #include <linux/bitops.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/completion.h>
+> +#ifdef CONFIG_SECURITY_PROC
+> +#include <linux/security.h>
+> +#endif
+>  #include <asm/uaccess.h>
+> 
+>  #include "internal.h"
+> @@ -400,6 +403,11 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+>  				unsigned int ino = de->low_ino;
+> 
+>  				de_get(de);
+> +#ifdef CONFIG_SECURITY_PROC
+> +				error = security_proc_generic(de);
+> +				if (error != 0)
+> +					break;
+> +#endif
+>  				spin_unlock(&proc_subdir_lock);
+>  				error = -EINVAL;
+>  				inode = proc_get_inode(dir->i_sb, ino, de);
+> @@ -483,6 +491,10 @@ int proc_readdir(struct file * filp,
+> 
+>  				/* filldir passes info to user space */
+>  				de_get(de);
+> +#ifdef CONFIG_SECURITY_PROC
+> +				if (security_proc_generic(de) != 0)
+> +					goto skip;
+> +#endif
+>  				spin_unlock(&proc_subdir_lock);
+>  				if (filldir(dirent, de->name, de->namelen, filp->f_pos,
+>  					    de->low_ino, de->mode >> 12) < 0) {
+> @@ -490,6 +502,9 @@ int proc_readdir(struct file * filp,
+>  					goto out;
+>  				}
+>  				spin_lock(&proc_subdir_lock);
+> +#ifdef CONFIG_SECURITY_PROC
+> +			skip:
+> +#endif
+>  				filp->f_pos++;
+>  				next = de->next;
+>  				de_put(de);
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index 1a15526..3fbeacf 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -68,6 +68,10 @@ struct xfrm_policy;
+>  struct xfrm_state;
+>  struct xfrm_user_sec_ctx;
+> 
+> +#ifdef CONFIG_SECURITY_PROC
+> +struct proc_dir_entry;
+> +#endif
+> +
+>  extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
+>  extern int cap_netlink_recv(struct sk_buff *skb, int cap);
+> 
+> @@ -915,6 +919,17 @@ struct request_sock;
+>   *	Return 1 if permission granted, 0 if permission denied and -ve it the
+>   *      normal permissions model should be effected.
+>   *
+> + * Security hooks affecting proc visibility
+> + *
+> + * @proc_task:
+> + *      Determines whether a task is visible.
+> + *      @task the requested task
+> + *	Return 0 if task is visible, -ENOENT if not, or -errno on other errors
+> + * @proc_generic:
+> + *      Determines whether a generic proc entry is visible
+> + *      @de the requested proc_dir_entry structure
+> + *	Return 0 if entry is visible, -ENOENT if not, or -errno on other errors
+> + *
+>   * Security hooks affecting all System V IPC operations.
+>   *
+>   * @ipc_permission:
+> @@ -1399,6 +1414,11 @@ struct security_operations {
+> 
+>  #endif	/* CONFIG_KEYS */
+> 
+> + #ifdef CONFIG_SECURITY_PROC
+> +	int (*proc_task)(struct task_struct *task);
+> +	int (*proc_generic)(struct proc_dir_entry *de);
+> + #endif
+> +
+>  };
+> 
+>  /* global variables */
+> @@ -3314,5 +3334,31 @@ static inline int security_key_permission(key_ref_t key_ref,
+>  #endif
+>  #endif /* CONFIG_KEYS */
+> 
+> +#ifdef CONFIG_SECURITY_PROC
+> +#ifdef CONFIG_SECURITY
+> +static inline int security_proc_task(struct task_struct *task)
+> +{
+> +	return security_ops->proc_task(task);
+> +}
+> +
+> +static inline int security_proc_generic(struct proc_dir_entry *de)
+> +{
+> +	return security_ops->proc_generic(de);
+> +}
+> +
+> +#else
+> +
+> +static inline int security_proc_task(struct task_struct *task)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline int security_proc_generic(struct proc_dir_entry *de)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +#endif
+> +
+>  #endif /* ! __LINUX_SECURITY_H */
+> 
+> diff --git a/security/Kconfig b/security/Kconfig
+> index 460e5c9..bd6ad4b 100644
+> --- a/security/Kconfig
+> +++ b/security/Kconfig
+> @@ -73,6 +73,14 @@ config SECURITY_NETWORK_XFRM
+>  	  IPSec.
+>  	  If you are unsure how to answer this question, answer N.
+> 
+> +config SECURITY_PROC
+> +	bool "/proc Security Hooks"
+> +	depends on PROC_FS && SECURITY
+> +	help
+> +	  This enables the /proc security hooks.
+> +	  These allow an LSM to hide nodes in the proc filesystem.
+> +	  If you are unsure how to answer this question, answer N.
+> +
+>  config SECURITY_CAPABILITIES
+>  	tristate "Default Linux Capabilities"
+>  	depends on SECURITY
+> diff --git a/security/dummy.c b/security/dummy.c
+> index 853ec22..3ec57be 100644
+> --- a/security/dummy.c
+> +++ b/security/dummy.c
+> @@ -949,6 +949,18 @@ static inline int dummy_key_permission(key_ref_t key_ref,
+>  }
+>  #endif /* CONFIG_KEYS */
+> 
+> +#ifdef CONFIG_SECURITY_PROC
+> +static int dummy_proc_task(struct task_struct *task)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int dummy_proc_generic(struct proc_dir_entry *de)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  struct security_operations dummy_security_ops;
+> 
+>  #define set_to_dummy_if_null(ops, function)				\
+> @@ -1131,6 +1143,10 @@ void security_fixup_ops (struct security_operations *ops)
+>  	set_to_dummy_if_null(ops, key_free);
+>  	set_to_dummy_if_null(ops, key_permission);
+>  #endif	/* CONFIG_KEYS */
+> +#ifdef CONFIG_SECURITY_PROC
+> +	set_to_dummy_if_null(ops, proc_task);
+> +	set_to_dummy_if_null(ops, proc_generic);
+> +#endif
+> 
+>  }
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
