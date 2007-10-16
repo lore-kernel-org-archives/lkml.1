@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936034AbXJPVZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXJPV00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936034AbXJPVZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933703AbXJPVZ0
+	id S965585AbXJPV00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbXJPV0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:25:26 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:56152 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933688AbXJPVZY (ORCPT
+	Tue, 16 Oct 2007 17:26:04 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44740
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755140AbXJPV0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:25:24 -0400
-Date: Tue, 16 Oct 2007 23:25:23 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Arjan van de Ven <arjan@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LFENCE instruction
-In-Reply-To: <4714DBD7.7080706@zytor.com>
-Message-ID: <Pine.LNX.4.64.0710162313240.5747@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz>
- <20071015143732.01d99af8@laptopd505.fenrus.org>
- <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz> <471401AF.4090802@zytor.com>
- <Pine.LNX.4.64.0710161205160.1315@artax.karlin.mff.cuni.cz> <4714DBD7.7080706@zytor.com>
-X-Personality-Disorder: Schizoid
+	Tue, 16 Oct 2007 17:26:01 -0400
+Date: Tue, 16 Oct 2007 14:30:21 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Rik van Riel <riel@surriel.com>
+cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Mark Gross <mgross@linux.intel.com>,
+       Giacomo Catenazzi <cate@debian.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+In-Reply-To: <20071016162310.1891914f@bree.surriel.com>
+Message-ID: <Pine.LNX.4.64.0710161410270.6995@asgard.lang.hm>
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com>
+ <20071015183017.GB23130@uranus.ravnborg.org> <4713C582.4000504@debian.org>
+ <20071016200623.GB23157@linux.intel.com> <Pine.LNX.4.64.0710162207540.4548@fbirervta.pbzchgretzou.qr>
+ <20071016162310.1891914f@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, H. Peter Anvin wrote:
+On Tue, 16 Oct 2007, Rik van Riel wrote:
 
-> Mikulas Patocka wrote:
-> > 
-> > PREFETCH* doesn't change program semantics. The processor is allowed to
-> > ignore prefetch instruction if it doesn't have resources needed for
-> > prefetch. It not ordered wrt. fences.
-> > 
-> > PREFETCHNTA was implemented as prefetch into L1 cache and omitting L2 cache
-> > on Pentium 3 and M --- and it is implemented as prefetch into L2 cache on
-> > other --- do it doesn't really use any special buffers.
-> > 
-> 
-> It's semantics allows it to, though.  It's not clear to me whether it is
-> actually necessary on existing chips.
-> 
-> It does, I believe, way-restricted prefetch on existing silicon.
+> On Tue, 16 Oct 2007 22:09:04 +0200 (CEST)
+> Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>> On Oct 16 2007 13:06, Mark Gross wrote:
+>>>
+>>> base function:
+>>> Starting from a stock distro (FC, Ubuntu, OpenSuSE...) and put down a
+>>> kernel.org tree and automatically create a .config with all the
+>>> drivers needed for the platform I'm building on.
+>>
+>> Too easy. Since opensuse's udev loads most of the modules for your
+>> hardware, all that would be needed is to transform the lsmod list of
+>> modules plus the static options in /proc/config.gz (stuff like
+>> psmouse) back into kconfig options ;-)
+>
+> Well, at that point it does not know whether or not you
+> occasionally plug in an ipod or a digital camera.
 
-It is allowed to use special buffers for prefetch, but --- because 
-prefetch doesn't change program semantics, these special buffers must be 
-kept consistent just like caches --- they must be snooped for bus 
-transactions and they must be checked each time something writes to cache.
+you can ask the user to plugin all the different devices that they want to 
+use when doing the config scan
 
-So I doubt anyone will ever implement it this way --- it's too much 
-silicon for too little effect.
+bonus points if you have both the ability to go from nothing to a config 
+_and_ take an existing config and add any additional drivers needed for 
+the current hardware
 
-Mikulas
+David Lang
 
-> 	-hpa
+> Going back from the lsmod output to all the right CONFIG
+> options is also not as trivial as it sounds, due to all
+> the dependencies there are.
+>
+> This project sounds like it could be a great undergraduate
+> project, maybe built on top of Ketchup to automatically
+> fetch, configure, compile and install a working kernel :)
+>
+> Are there any volunteers to write down the project
+> description on the kernelnewbies.org wiki?
+>
+>
