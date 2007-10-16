@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765047AbXJPEwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765494AbXJPE4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765047AbXJPEwr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 00:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXJPEwi
+	id S1765494AbXJPE4O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 00:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbXJPEz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 00:52:38 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41429 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751668AbXJPEwh (ORCPT
+	Tue, 16 Oct 2007 00:55:59 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48650 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbXJPEz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 00:52:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fJZ0i12eBoX2y9z2gWlkGA04qc5GJfCye1M4X/NHpFmNFgkK6aqADJ5V2haLUSnKEIHoLYXC2Eo0VH5HvRPRUcuizgFML1CqURh8VB4CkqGtPwFSvBEn/xntaD9h+Tp7s9WJv8cD6LKF33XFhtU8e4Lgwwd2XRTfz8LwFw5VANE=  ;
-X-YMail-OSG: Si70q6kVM1mPCaHFnIZm6WlqarwXyqY4Y37I2BRsvRWYauH2
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Date: Tue, 16 Oct 2007 17:34:15 +1000
-User-Agent: KMail/1.9.5
-Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710161659.28826.nickpiggin@yahoo.com.au> <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lka3ishi.fsf@ebiederm.dsl.xmission.com>
+	Tue, 16 Oct 2007 00:55:58 -0400
+Date: Mon, 15 Oct 2007 21:50:25 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Message-ID: <20071016045025.GC8125@kroah.com>
+References: <200710132126.33085.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710161734.15880.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710132126.33085.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 14:38, Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > On Tuesday 16 October 2007 13:55, Eric W. Biederman wrote:
+On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> appear for vanilla 2.6.23):
+> 
+> <4>sysfs: duplicate filename 'ethxx1' can not be created
+> WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> 
+> Call Trace:
+>  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+>  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+>  [<ffffffff803756da>] device_rename+0x17a/0x1db
+>  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+>  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+>  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+>  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+>  [<ffffffff8024b977>] up_read+0x9/0xb
+>  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+>  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+>  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+>  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+>  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> 
+> net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> sysfs: duplicate filename 'eth1' can not be created
+> 
+> Everything seems to work, but this just looks fishy.
 
-> > I don't follow your logic. We don't need SWAP > RAM in order to swap
-> > effectively, IMO.
->
-> The steady state of a system that is heavily and usably swapping but
-> not thrashing is that all of the pages in RAM are in the swap cache,
-> at least that used to be the case.
+This is a userspace program renaming your network device to a name that
+is already in use.  What distro and release is this?
 
-Yeah, it works better in 2.6 (and, IIRC later 2.4 kernels).
+thanks,
 
-
-> > I don't know if there is a causal relationship there. I mean, I
-> > think it's been a long time since thrashing was ever a viable mode
-> > of operation, right?
->
-> Right.  But swapping heavily has been a viable mode of operation
-> and that the vast gap in disk random IO performance seems to have
-> hurt significantly.
-
-Or, just not improved as fast as everything else is improving.
-There isn't too much the kernel can do about that. It just
-relatively changes the point at which you'd consider "swapping
-heavily", right?
-
-
-> It be very clear is used to able to run a problem at little below
-> full speed with the disk pegged with swap traffic, and I did this
-> regularly when I started out with linux.
-
-I can do this now. In make -jhuge tests for example, you can get
-a 4GB, 4 core machine to max out a disk with swapping and still
-have 0 idle time. Of course you can also go past that point and
-your idle time comes up. That's not new though.
-
-
-> > Maybe desktops just have less need for swapping now, so nobody sees
-> > it much until something goes _really_ bad. When I'm using my 256MB
-> > machine, unused stuff goes to swap.
->
-> There is a bit of truth in the fact that there is less need for
-> swapping now.  At the same time however swapping simply does not
-> work well right now, and I'm not at all certain why.
->
-> >> the disk for is very limited.   I wonder if we could figure out
-> >> how to push and pull 1M or bigger chunks into and out of swap?
-> >
-> > Pulling in 1MB pages can really easily end up compounding the
-> > thrashing problem unless you're very sure a significant amount
-> > of it will be used.
->
-> It's a hard call.  The I/O time for 1MB of contiguous disk data
-> is about the I/O time of 512 bytes of contiguous disk data.
-
-And if you're thrashing, then by definition you need to throw
-out 1MB of your working set in order to read it in.
-
-
-> >> I don't know if swap has actually worked since we vmscan stopped
-> >> going over the virtual addresses.
-> >
-> > I do, and it does ;)
->
-> Really?  Not just the pushing of unused stuff into swap.
-
-We had several bugs and things that caused swapping performance
-regressions vs 2.4 in earlyish 2.6. After those were fixed, we're
-pretty competitive with 2.4 in some basic tests I was using. I
-haven't run them for a fair while, so something might have broken
-since then, I don't know.
+greg k-h
