@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbXJPAre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXJPAtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932145AbXJPAre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXJPAr0
+	id S1761581AbXJPAtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXJPAtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:47:26 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40169
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546AbXJPArZ (ORCPT
+	Mon, 15 Oct 2007 20:49:15 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34319 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbXJPAtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:47:25 -0400
-Date: Mon, 15 Oct 2007 17:51:36 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Zan Lynx <zlynx@acm.org>
-cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org,
-       dm-devel <dm-devel@redhat.com>
-Subject: Re: WANTED: kernel projects for CS students
-In-Reply-To: <1192468232.8642.39.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0710151740000.3949@asgard.lang.hm>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <1192468232.8642.39.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 15 Oct 2007 20:49:14 -0400
+Subject: Re: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags
+	interfaces
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+In-Reply-To: <20071016003538.GC19691@waste.org>
+References: <11.290135367@selenic.com> <1192488513.6118.98.camel@localhost>
+	 <20071015231106.GX19691@waste.org> <1192491297.6118.129.camel@localhost>
+	 <20071016003538.GC19691@waste.org>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 17:49:10 -0700
+Message-Id: <1192495750.6118.152.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Zan Lynx wrote:
+On Mon, 2007-10-15 at 19:35 -0500, Matt Mackall wrote:
+> Perhaps we need something like:
+> 
+> flags = page->flags;
+> userflags = 
+>           FLAG_BIT(USER_REFERENCED, flags & PG_referenced) |
+>           ...
+> 
+> etc. for the flags we want to export. This will let us change to
+> 
+>          FLAG_BIT(USER_SLAB, PageSlab(page)) |
+> 
+> if we make a virtual slab bit.
 
-> On Sun, 2007-10-14 at 19:01 -0400, Rik van Riel wrote:
->> The kernel newbies community often gets inquiries from CS students who
->> need a project for their studies and would like to do something with
->> the Linux kernel, but would also like their code to be useful to the
->> community afterwards.
->>
->> In order to make it easier for them, I am trying to put together a
->> page with projects that:
->> - Are self contained enough that the students can implement the
->>   project by themselves, since that is often a university requirement.
->> - Are self contained enough that Linux could merge the code (maybe
->>   with additional changes) after the student has been working on it
->>   for a few months.
->> - Are large enough to qualify as a student project, luckily there is
->>   flexibility here since we get inquiries for anything from 6 week
->>   projects to 6 month projects.
->>
->> If you have ideas on what projects would be useful, please add them
->> to this page (or email me):
->>
->> http://kernelnewbies.org/KernelProjects
->
-> How about this in the Device Mapper raid-1/mirror code?
-> 	/* FIXME: add read balancing */
->
-> That comment has been in there for many releases.  I've wanted read
-> balancing for several servers and had all sorts of ideas about it, like
-> adding functions to the underlying device queues to return a "queuing
-> cost" to determine which is the best queue to add the read request.  I
-> think that could work better for queues like CFQ than the MD
-> closest-head.
->
-> An implementation would also need to be benchmarked against the MD
-> raid-1.
->
-> Along with the time to submit it to LKML, get it reviewed and polish it
-> up, it might make a good student project.
+Yeah, that looks like a pretty sane scheme.  Do we want to be any more
+abstract about it?  Perhaps instead of USER_SLAB, it should be
+USER_KERNEL_INTERNAL, or USER_KERNEL_USE.  The slab itself is going away
+as we speak. :)
 
-another couple of raid enhancements would be:
+> And it shows up in grep.
+> 
+> Unfortunately, i386 test_bit is an asm inline and not a macro so we
+> can't hope for the compiler to fold up a bunch of identity bit
+> mappings for us. 
 
-1. teach the system that a raid456 stripe is handled most efficiantly if 
-treated as a single block of data
+We could also Yeah, that looks like a pretty sane scheme.  Do we want to
+be any more abstract about it?  Perhaps instead of USER_SLAB, it should
+be USER_KERNEL_INTERNAL, or USER_KERNEL_USE.  The slab itself is going
+away as we speak.
 
-by this I mean that if you read one block from the stripe the system reads 
-the entire stripe, so it should take this into account when doing 
-read-ahead and not always throw away most of the data it read becouse it's 
-outside the current readahead window (if nothing else, look at putting it 
-on the tail of the LRU list instead of just forgetting it)
+For the bits that we want to export, we could also add the unoptimized
+access functions for any that don't already have them:
 
-if you write one block of the stripe the system must read the stripe, then 
-update two blocks of the stripe (the data block and the parity block), but 
-if you are going to write the entire stripe out you can ignore whatever's 
-there and just calculate the parity block from the data you are writing. 
-this should make writing to a raid456 stripe as fast as writing to a raid0 
-stripe (well, almost, you have one more block to write).
+#define __ClearPageReserved(page)       __clear_bit(PG_reserved, &(page)->flags)
 
+Anybody changing bit behavior will certainly go check all of the
+callers, such as ClearPageReserved() *and* __ClearPageReserved().
 
-2. not directly a kernel project, create userspace tools that make 
-managing raid and partitioning on linux as easy as the zfs tools
+-- Dave
 
-
-3. there is currently the ability to grow a raid56 array by adding a disk, 
-but there is not the ability to take a raid5 array, add a disk and make 
-the result a raid6 array.
-
-David Lang
