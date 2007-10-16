@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935598AbXJPTvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935566AbXJPTvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935598AbXJPTvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934219AbXJPTuv
+	id S935566AbXJPTvb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932486AbXJPTvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:50:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:51696 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765267AbXJPTuu (ORCPT
+	Tue, 16 Oct 2007 15:51:16 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45923
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934219AbXJPTvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:50:50 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: ioctl32: Unknown cmd
-Date: Tue, 16 Oct 2007 21:50:35 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>
-References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Tue, 16 Oct 2007 15:51:14 -0400
+Date: Tue, 16 Oct 2007 12:54:58 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Matthew Wilcox <matthew@wil.cx>, Rob Landley <rob@landley.net>,
+       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+In-Reply-To: <20071016111911.30a18e12@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net> <200710141836.55211.rob@landley.net>
+ <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net>
+ <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de>
+ <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710162150.37636.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/53SIBupoKb9jIenuz9PIsZMDC6bhkodEp1+g
- dtws4i1XgmtAVi2aGflOLsaQfKmTNDOyFSW4GOGJZogBVCabJ8
- CdACv3ZFMAn2wSqd4mXMQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007, Geert Uytterhoeven wrote:
-> The recent (post 2.6.23) changes to compat_ioctl made the reporting of
-> unsupported ioctls more verbose. E.g. on the PS3 I get:
-> 
-> | ioctl32(cdrom_id:608): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-11-0
-> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
-> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
-> 
-> The first one is triggered by the detection of the CD/DVD/BD-ROM driver,
-> The others are triggered by me running hdparm.
-> 
-> Was this intentional?
-> 
+On Tue, 16 Oct 2007, Alan Cox wrote:
 
-No, it was certainly not intentional, and I can't figure out why it happens.
-The ioctl numbers from your example are HDIO_DRIVE_CMD and CDROM_GET_CAPABILITY,
-both of which should be handled through compat_blkdev_driver_ioctl by calling
-the native ioctl method of the driver, and return -ENOTTY otherwise.
+>>> /dev/sd-ide-b	- second IDE HDD,
+>>> /dev/sr-sata-0	- first SATA CD-ROM,
+>
+> I wouldn't try dividing those by pata v sata. You'll cause all sorts of
+> problems in the process because of PATA-SATA and SATA-PATA bridges.
 
-The one point where it is expected to have changed now is when you try
-to do these ioctls on something that is not a block device. Are you sure that
-the files you tried them on were created correctly?
+if you use a PATA-SATA bridge (IDE drive SATA controller), it would look 
+to the system like a SATA drive and be addressed and enumerated as SATA.
 
-	Arnd <><
+if you use a SATA-PATA bridge (SATA drive, PATA controller), it would look 
+to the system like a PATA drive and be addressed and enumerated as PATA. 
+prior to libata the device would be /dev/hdX, with X depending on how it's 
+cabled and if it's set to master or slave, it wouldn't matter if that 
+device then converts to other things, the system would still know it as an 
+IDE drive.
+
+this works exactly the same way that external encosures that hold SATA or 
+IDE drives, but have SCSI interfaces to the system have always worked so 
+it's what sysadmins will expect.
+
+David Lang
