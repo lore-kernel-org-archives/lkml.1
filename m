@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765907AbXJPJlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765490AbXJPJq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765907AbXJPJlA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 05:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbXJPJkw
+	id S1765490AbXJPJq5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 05:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbXJPJqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 05:40:52 -0400
-Received: from gw-lon-cluster.cmcnet.net ([195.20.122.6]:34569 "EHLO
-	emearelay1.cmcmarkets.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757403AbXJPJkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 05:40:52 -0400
-Subject: [PATCH] sysfs: trivial: fix sysfs_create_file kerneldoc spelling
-	mistake
-From: Chris Malley <mail@chrismalley.co.uk>
-To: Greg KH <greg@kroah.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 16 Oct 2007 10:37:04 +0100
-Message-Id: <1192527424.11948.9.camel@feisty>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-MIMETrack: Itemize by SMTP Server on smtp3/CMC(Release 7.0.2FP1|January 10, 2007) at
- 10/16/2007 10:40:46 AM,
-	Serialize by Router on emearelay1/UK/CMC(Release 7.0.2FP1|January 10, 2007) at
- 16/10/2007 10:40:52 AM,
-	Serialize complete at 16/10/2007 10:40:52 AM
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+	Tue, 16 Oct 2007 05:46:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41908 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753917AbXJPJqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 05:46:48 -0400
+Date: Tue, 16 Oct 2007 11:46:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.23-git8 kernel oops at __rb_rotate_left+0x7/0x70
+Message-ID: <20071016094631.GA10649@elte.hu>
+References: <47144B4F.3050108@linux.vnet.ibm.com> <20071016091012.GB24341@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071016091012.GB24341@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling error in sysfs_create_file kerneldoc.
 
-Signed-off-by: Chris Malley <mail@chrismalley.co.uk>
----
- fs/sysfs/file.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 3e1cc06..ac75554 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -422,7 +422,7 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
- /**
-  *	sysfs_create_file - create an attribute file for an object.
-  *	@kobj:	object we're creating for. 
-- *	@attr:	atrribute descriptor.
-+ *	@attr:	attribute descriptor.
-  */
- 
- int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
+> 
+> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+> > While running kernbench with the 2.6.23-git8 following oops is 
+> > produced
+> > 
+> > Unable to handle kernel NULL pointer dereference at 0000000000000010 RIP: 
+> >  [<ffffffff8033f347>] __rb_rotate_left+0x7/0x70
+> 
+> that looks nasty ...
+> 
+> and -git8 should have the v2.6.23 scheduler code in essence.
 
+ah, this is likely with the recent scheduler commits included as well, 
+right?
 
+if it's reproducable, could you try with group scheduling disabled, i.e. 
+with:
+
+  # CONFIG_FAIR_GROUP_SCHED is not set
+
+as that would be the main suspect for such type of a crash.
+
+	Ingo
