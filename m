@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbXJPN7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXJPOJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933663AbXJPN7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbXJPN7h
+	id S933290AbXJPOJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 10:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbXJPOJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:59:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44556 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758204AbXJPN7g (ORCPT
+	Tue, 16 Oct 2007 10:09:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:29264 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758554AbXJPOJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:59:36 -0400
-Subject: Re: 2.6.23-git8: Lock dependency engine debugging failure
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Hubbard <david.c.hubbard@gmail.com>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4dfa50520710152028i4a976200s88fbbb7f1cc2da9@mail.gmail.com>
-References: <4dfa50520710152028i4a976200s88fbbb7f1cc2da9@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 15:59:33 +0200
-Message-Id: <1192543173.27435.96.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 16 Oct 2007 10:09:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=SKxwqudbquIizGcSlt4T9xkbYx6MH6Hbm0xwUbVH0T8s1fTVj/jelhsStUsJMbjKyONmn7wL/PzGBVz4ZNHbnL+QnNrrvJUapiffvzY9+FxR2bxrGlbtglr2KdrlbXRwjsI9tnB6rU7hh9K9cF4Uxj40xmNiUuv8p6BqZLh6v6o=
+Message-ID: <4714C66D.4010607@gmail.com>
+Date: Tue, 16 Oct 2007 18:10:53 +0400
+From: Konstantin Kalin <konstantin.kalin@gmail.com>
+User-Agent: Thunderbird 1.5.0.5 (Windows/20060719)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: NVIDIA Ethernet & invalid MAC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 20:28 -0700, David Hubbard wrote:
-> I am not subscribed to LKML, so please CC me in replies. I am
-> reporting a regression when CONFIG_DEBUG_LOCKDEP is enabled in
-> 2.6.23-git8. The error occurs immediately before loading init.
-> Complete dmesg and kernel config are attached.
-> 
-> [   28.528074] VFS: Mounted root (ext3 filesystem) readonly.
-> [   28.528090] Freeing unused kernel memory: 212k freed
-> [   28.537431] Write protecting the kernel read-only data: 1036k
-> [   28.622874] WARNING: at kernel/lockdep.c:2658 check_flags()
+Hello,
 
-Could you try if the below patch works for you?
+Recently we've got some computers with new motherboard having NVidia 
+chipset. The motherboard has nforce12 & nforce13 Ethernet cards. I've 
+noticed that MAC address is setup random each boot. I debugged the 
+driver and found that these cards have right-byte order of MAC address 
+but the driver is expecting incorrect byte-order for these models. I 
+made hardcode the driver and MAC address became valid. Also I tried  to 
+understand that difference in this revision of the chipset. But I 
+couldn't find anything interesting. I'm ready continue the investigation 
+to do correct changes in the driver but I need an advice.
 
---
-Subject: lockdep: fix fault vs irq tracing
+P.S. It's simple to add DEV_HAS_CORRECT_MACADDR to pci_device_tlb for 
+these types of Ethernet. But I think it's not right decision because it 
+would break older revisions of these models.
 
-Ensure we fixup the IRQ state before we hit any locking code.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/fault_32.c |   10 ++++++++++
- arch/x86/mm/fault_64.c |   10 ++++++++++
- 2 files changed, 20 insertions(+)
-
-Index: linux-2.6/arch/x86/mm/fault_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/fault_32.c
-+++ linux-2.6/arch/x86/mm/fault_32.c
-@@ -308,6 +308,16 @@ fastcall void __kprobes do_page_fault(st
- 	int write, si_code;
- 	int fault;
- 
-+#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
-+	/*
-+	 * We can fault from pretty much anywhere, fix up the IRQ state.
-+	 */
-+	if (raw_irqs_disabled())
-+		trace_hardirqs_off();
-+	else
-+		trace_hardirqs_on();
-+#endif
-+
- 	/* get the address */
-         address = read_cr2();
- 
-Index: linux-2.6/arch/x86/mm/fault_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/fault_64.c
-+++ linux-2.6/arch/x86/mm/fault_64.c
-@@ -311,6 +311,16 @@ asmlinkage void __kprobes do_page_fault(
- 	unsigned long flags;
- 	siginfo_t info;
- 
-+#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
-+	/*
-+	 * We can fault from pretty much anywhere, fix up the IRQ state.
-+	 */
-+	if (raw_irqs_disabled())
-+		trace_hardirqs_off();
-+	else
-+		trace_hardirqs_on();
-+#endif
-+
- 	tsk = current;
- 	mm = tsk->mm;
- 	prefetchw(&mm->mmap_sem);
-
-
+[root@tfm ~]# lspci -vvv
+.....
+00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a1)
+        Subsystem: ASUSTeK Computer Inc. Unknown device 816a
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0 (250ns min, 5000ns max)
+        Interrupt: pin A routed to IRQ 201
+        Region 0: Memory at fe02b000 (32-bit, non-prefetchable) [size=4K]
+        Region 1: I/O ports at c800 [size=8]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
+PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable+ DSel=0 DScale=0 PME-
+........
