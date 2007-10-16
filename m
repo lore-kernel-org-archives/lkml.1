@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXJPU6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965962AbXJPU6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965620AbXJPU6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbXJPU5v
+	id S965962AbXJPU6l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965905AbXJPU60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:57:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47459 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965115AbXJPU5k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:57:40 -0400
-Date: Tue, 16 Oct 2007 13:46:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [BUG] 2.6.23-rc9 kernel panic - simple_map_write+0x4e/0x75
-Message-Id: <20071016134620.7b3ce56f.akpm@linux-foundation.org>
-In-Reply-To: <4710686C.8060603@linux.vnet.ibm.com>
-References: <4710686C.8060603@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 16:58:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36913 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965540AbXJPU6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:58:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Date: Tue, 16 Oct 2007 23:13:19 +0200
+User-Agent: KMail/1.9.5
+Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200710132126.33085.rjw@sisk.pl> <20071016204238.GA1093@kroah.com> <20071016205053.GI9942@kernel.dk>
+In-Reply-To: <20071016205053.GI9942@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710162313.20373.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 12:10:44 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-
-> Kernel panic's with following oops message with 2.6.23-rc9 kernel 
+On Tuesday, 16 October 2007 22:50, Jens Axboe wrote:
+> On Tue, Oct 16 2007, Greg KH wrote:
+> > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
+> > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> > > > > appear for vanilla 2.6.23):
+> > > > > 
+> > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
+> > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> > > > > 
+> > > > > Call Trace:
+> > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+> > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+> > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
+> > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+> > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+> > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+> > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+> > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
+> > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+> > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+> > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+> > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+> > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> > > > > 
+> > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> > > > > sysfs: duplicate filename 'eth1' can not be created
+> > > > > 
+> > > > > Everything seems to work, but this just looks fishy.
+> > > > 
+> > > > This is a userspace program renaming your network device to a name that
+> > > > is already in use.  What distro and release is this?
+> > > 
+> > > openSUSE 10.2, with some updates (not the most recent, though).
+> > 
+> > Can you try 10.3?  I think we fixed this issue there.
 > 
-> [  320.747257] ks0108: ERROR: parport didn't register new device
-> [  320.771314] cfag12864b: ERROR: ks0108 is not initialized
-> [  320.794308] cfag12864bfb: ERROR: cfag12864b is not initialized
-> [  320.820729] BUG: unable to handle kernel paging request at virtual address
-> bf000000
-> [  320.857712]  printing eip:
-> [  320.872556] *pde = 00000000
-> [  320.887577] Oops: 0002 [#1]
-> [  320.902383] SMP 
-> [  320.914174] Modules linked in:
-> [  320.929333] CPU:    0
-> [  320.929334] EIP:    0060:[<c0d7e4e2>]    Not tainted VLI
-> [  320.929335] EFLAGS: 00010286   (2.6.23-rc9-1 #1)
-> [  320.982753] EIP is at simple_map_write+0x4e/0x75
-> [  321.001956] eax: f0f0f0f0   ebx: c1de3f00   ecx: c1de3f00   edx: c1de3f00
-> [  321.027701] esi: c3ca8d6c   edi: bf000000   ebp: c3ca8d98   esp: c3ca8d6c
-> [  321.053322] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-> [  321.075981] Process swapper (pid: 1, ti=c3ca8000 task=f7f44000 task.ti=c3ca8000)
-> [  321.103031] Stack: f0f0f0f0 00000000 00000000 00000000 00000000 00000000
-> 00000000 00000000 
-> [  321.139446]        c3ca8e20 00000001 c3ca8e40 c3ca8e6c c0d692e6 f0f0f0f0
-> 00000000 00000000 
-> [  321.176495]        00000000 00000000 00000000 00000000 00000000 00000000
-> 00000000 000050e6 
-> [  321.214141] Call Trace:
-> [  321.233922]  [<c0107dff>] show_trace_log_lvl+0x19/0x2e
-> [  321.255433]  [<c0107ec1>] show_stack_log_lvl+0x99/0xa1
-> [  321.276706]  [<c01080c4>] show_registers+0x1b8/0x290
-> [  321.297254]  [<c01082f9>] die+0x118/0x1fd
-> [  321.314920]  [<c145014a>] do_page_fault+0x51c/0x5f3
-> [  321.335291]  [<c144e6da>] error_code+0x72/0x78
-> [  321.354413]  [<c0d692e6>] cfi_probe_chip+0x148/0x9e1
-> [  321.375202]  [<c0d7bb3e>] genprobe_new_chip+0x82/0x98
-> [  321.396298]  [<c0d7b8dd>] genprobe_ident_chips+0x26/0x205
-> [  321.418493]  [<c0d7b830>] mtd_do_chip_probe+0x10/0x97
-> [  321.439654]  [<c0d6a29e>] cfi_probe+0xd/0xf
-> [  321.458157]  [<c0d68d57>] do_map_probe+0x40/0x53
-> [  321.477931]  [<c200d748>] init_pnc2000+0x3b/0x6d
-> [  321.497559]  [<c1fa382c>] do_initcalls+0x7a/0x1c2
-> [  321.517377]  [<c1fa3990>] do_basic_setup+0x1c/0x1e
-> [  321.537327]  [<c1fa3a2c>] kernel_init+0x69/0xaa
-> [  321.556311]  [<c0107c2b>] kernel_thread_helper+0x7/0x10
-> [  321.577207]  =======================
-> [  321.592882] Code: 83 f8 01 75 0a 03 7b 10 8b 45 d4 88 07 eb 35 83 f8 02 75 0c
-> 0f b7 45 d4 03 7b 10 66 89 07 eb 24 83 f8 04 75 0a 03 7b 10 8b 45 d4 <89> 07 eb
-> 15 7e 13 03 7b 10 89 c1 c1 e9 02 f3 a5 89 c1 83 e1 03 
-> [  321.668990] EIP: [<c0d7e4e2>] simple_map_write+0x4e/0x75 SS:ESP 0068:c3ca8d6c
-> [  321.695750] Kernel panic - not syncing: Attempted to kill init!
+> Ehm nope:
+> 
+> Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
+> can not be created
+> Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
+> eth1
+> Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
+> sysfs_add_one()
+> Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
+> Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
+> Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
+> Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
+> Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
+> Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
+> Oct 16 19:36:27 carl kernel:  [<c01a1938>]
+> inotify_d_instantiate+0x18/0x80
+> Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
+> Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
+> Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
+> Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
+> Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
+> Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
+> Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
+> Oct 16 19:36:27 carl kernel:  =======================
+> Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
+> sysfs_create_symlink failed (-17)
 
-Would I be correct in assuming that the machine has no mtd devices, but
-you happened to link that driver into your vmlinux?
+Plus it doesn't happen on 2.6.23 on my system, so I count it as a regression.
 
+Greetings,
+Rafael
