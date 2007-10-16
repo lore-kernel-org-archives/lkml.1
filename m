@@ -1,113 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXJPXmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965727AbXJPXs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965533AbXJPXmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760403AbXJPXm3
+	id S965727AbXJPXs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 19:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934180AbXJPXst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:42:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38043 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756261AbXJPXm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:42:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Date: Wed, 17 Oct 2007 01:58:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200710132126.33085.rjw@sisk.pl> <200710162313.20373.rjw@sisk.pl> <20071016213626.GA21815@kroah.com>
-In-Reply-To: <20071016213626.GA21815@kroah.com>
+	Tue, 16 Oct 2007 19:48:49 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50394 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933779AbXJPXss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 19:48:48 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch][rfc] rewrite ramdisk
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<200710161747.12968.nickpiggin@yahoo.com.au>
+	<20071016212853.GB1314@closure.lan>
+	<200710170808.30944.nickpiggin@yahoo.com.au>
+Date: Tue, 16 Oct 2007 17:48:01 -0600
+In-Reply-To: <200710170808.30944.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Wed, 17 Oct 2007 08:08:30 +1000")
+Message-ID: <m1ve96fwpa.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710170158.10234.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 16 October 2007 23:36, Greg KH wrote:
-> On Tue, Oct 16, 2007 at 11:13:19PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 16 October 2007 22:50, Jens Axboe wrote:
-> > > On Tue, Oct 16 2007, Greg KH wrote:
-> > > > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
-> > > > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
-> > > > > > > Hi,
-> > > > > > > 
-> > > > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
-> > > > > > > appear for vanilla 2.6.23):
-> > > > > > > 
-> > > > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
-> > > > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
-> > > > > > > 
-> > > > > > > Call Trace:
-> > > > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
-> > > > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
-> > > > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
-> > > > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
-> > > > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
-> > > > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
-> > > > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
-> > > > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
-> > > > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
-> > > > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
-> > > > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
-> > > > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
-> > > > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
-> > > > > > > 
-> > > > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
-> > > > > > > sysfs: duplicate filename 'eth1' can not be created
-> > > > > > > 
-> > > > > > > Everything seems to work, but this just looks fishy.
-> > > > > > 
-> > > > > > This is a userspace program renaming your network device to a name that
-> > > > > > is already in use.  What distro and release is this?
-> > > > > 
-> > > > > openSUSE 10.2, with some updates (not the most recent, though).
-> > > > 
-> > > > Can you try 10.3?  I think we fixed this issue there.
-> > > 
-> > > Ehm nope:
-> > > 
-> > > Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
-> > > can not be created
-> > > Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
-> > > eth1
-> > > Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
-> > > sysfs_add_one()
-> > > Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
-> > > Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
-> > > Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
-> > > Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
-> > > Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
-> > > Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
-> > > Oct 16 19:36:27 carl kernel:  [<c01a1938>]
-> > > inotify_d_instantiate+0x18/0x80
-> > > Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
-> > > Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
-> > > Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
-> > > Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
-> > > Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
-> > > Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
-> > > Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
-> > > Oct 16 19:36:27 carl kernel:  =======================
-> > > Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
-> > > sysfs_create_symlink failed (-17)
-> > 
-> > Plus it doesn't happen on 2.6.23 on my system, so I count it as a regression.
-> 
-> It's a new warning I've added to the kernel to catch stupid userspace
-> and kernel code that is quietly failing when they are doing things
-> incorrectly with kobjects and sysfs.
-> 
-> So it's not really a "regression" in that we never notified anyone of
-> this kind of thing before, think of it as a new feature :)
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-Well, it seems to be a little bit over the top, then. ;-)
+> On Wednesday 17 October 2007 07:28, Theodore Tso wrote:
+>> On Tue, Oct 16, 2007 at 05:47:12PM +1000, Nick Piggin wrote:
+>> > +	/*
+>> > +	 * ram device BLKFLSBUF has special semantics, we want to actually
+>> > +	 * release and destroy the ramdisk data.
+>> > +	 */
+>>
+>> We won't be able to fix completely this for a while time, but the fact
+>> that BLKFLSBUF has special semantics has always been a major wart.
+>> Could we perhaps create a new ioctl, say RAMDISKDESTORY, and add a
+>> deperecation printk for BLKFLSBUF when passed to the ramdisk?  I doubt
+>> there are many tools that actually take advantage of this wierd aspect
+>> of ramdisks, so hopefully it's something we could remove in a 18
+>> months or so...
+>
+> It would be nice to be able to do that, I agree. The new ramdisk
+> code will be able to flush the buffer cache and destroy its data
+> separately, so it can actually be implemented.
 
-Greetings,
-Rafael
+So the practical problem are peoples legacy boot setups but those
+are quickly going away.
+
+The sane thing is probably something that can be taken as a low
+level format command for the block device.
+
+Say: dd if=/dev/zero of=/dev/ramX
+
+I know rewriting the drive with all zeroes can cause a modern
+disk to redo it's low level format.  And that is something
+we can definitely implement without any backwards compatibility
+problems.
+
+Hmm. Do we have anything special for punching holes in files?
+That would be another sane route to take to remove the special
+case for clearing the memory.
+
+Eric
+
