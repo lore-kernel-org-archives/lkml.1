@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXJPPMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933761AbXJPPQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934034AbXJPPMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932923AbXJPPMP
+	id S933761AbXJPPQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759120AbXJPPQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:12:15 -0400
-Received: from rhineheart.priorweb.be ([213.193.229.215]:42005 "HELO
-	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932412AbXJPPMP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:12:15 -0400
-Date: Tue, 16 Oct 2007 17:12:07 +0200
-From: Kristof Provost <Kristof@provost-engineering.be>
-To: Jan-Simon M?ller <dl9pf@gmx.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>
-Subject: Re: [BUG] memory leak in dm
-Message-ID: <20071016151207.GA4452@luggage>
-References: <20071016113800.GA4631@luggage> <20071016114458.GD5263@kernel.dk> <200710161523.47111.dl9pf@gmx.de>
+	Tue, 16 Oct 2007 11:16:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52894 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758845AbXJPPQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:16:15 -0400
+Message-ID: <4714D5B8.8020301@redhat.com>
+Date: Tue, 16 Oct 2007 11:16:08 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
-Content-Disposition: inline
-In-Reply-To: <200710161523.47111.dl9pf@gmx.de>
-X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Scanned: 2.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Konstantin Kalin <konstantin.kalin@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: NVIDIA Ethernet & invalid MAC
+References: <4714C66D.4010607@gmail.com> <20071016154313.53d19c43@the-village.bc.nu>
+In-Reply-To: <20071016154313.53d19c43@the-village.bc.nu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/16/2007 10:43 AM, Alan Cox wrote:
+> On Tue, 16 Oct 2007 18:10:53 +0400
+> Konstantin Kalin <konstantin.kalin@gmail.com> wrote:
+> 
+>> Hello,
+>>
+>> Recently we've got some computers with new motherboard having NVidia 
+>> chipset. The motherboard has nforce12 & nforce13 Ethernet cards. I've 
+>> noticed that MAC address is setup random each boot. I debugged the 
+>> driver and found that these cards have right-byte order of MAC address 
+>> but the driver is expecting incorrect byte-order for these models.
+> 
+> The only obvious thing I can think of to try would be to read the MAC
+> address both ways around.
+> 
+> The first 3 bytes of the resulting MAC should always be the Nvidia
+> allocation as I understand it and if so you can then decide which way
+> around is correct. 
+> 
+> ie if it starts 00:04:0B then you know which way around it goes. (there
+> is one address that is the same either way around but clearly that one
+> doesn't matter).
+> 
+> So perhaps do that and for the afflicted parts add an EITHER_WAY_AROUND
+> flag ?
+> 
 
---Qxx1br4bt0+wmkIi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+See the below for another report of this:
 
-On 2007-10-16 15:23:46 (+0200), Jan-Simon M?ller <dl9pf@gmx.de> wrote:
-> Am Dienstag 16 Oktober 2007 13:44:58 schrieb Jens Axboe:
-> > Please try with this patch from Neil.
-> Tried the patch. Now its usable - as far as i can say. Compiled a fresh k=
-ernel=20
-> to "stress" the system (make -j3).
-> Without the patch the system had freezed after some minutes during compil=
-e.
-Same here. As far as I can tell it's fixed.
+http://marc.info/?t=119215716900001&r=1&w=2
 
-Thanks,
-Kristof=20
+And apparently some motherboard vendors have their own allocations for ethernet
+addresses?
 
---Qxx1br4bt0+wmkIi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHFNTGUEZ9DhGwDugRAkx/AJ4wwCDTQo8KxSFWXONeH6KhZAm8HQCcCbRC
-f2EcUOEWbTscqzMfcX4V/P8=
-=SkcJ
------END PGP SIGNATURE-----
-
---Qxx1br4bt0+wmkIi--
