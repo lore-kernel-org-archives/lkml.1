@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935559AbXJPUrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935929AbXJPUtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935559AbXJPUrJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 16:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbXJPUqz
+	id S935929AbXJPUtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 16:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760787AbXJPUtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 16:46:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56979 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759387AbXJPUqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 16:46:54 -0400
-Date: Tue, 16 Oct 2007 13:42:38 -0700
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Message-ID: <20071016204238.GA1093@kroah.com>
-References: <200710132126.33085.rjw@sisk.pl> <20071016045025.GC8125@kroah.com> <200710162204.51961.rjw@sisk.pl>
+	Tue, 16 Oct 2007 16:49:10 -0400
+Received: from mga11.intel.com ([192.55.52.93]:32392 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759566AbXJPUtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 16:49:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,284,1188802800"; 
+   d="scan'208";a="347941919"
+Message-ID: <471523B6.7030506@intel.com>
+Date: Tue, 16 Oct 2007 13:48:54 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710162204.51961.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+References: <1192481110-9299-1-git-send-email-katzj@redhat.com>	 <20071015210737.GA15293@khazad-dum.debian.net>	 <20071016130053.GA20010@srcf.ucam.org>	 <20071016141153.GA3237@khazad-dum.debian.net>	 <20071016142121.GA21431@srcf.ucam.org>	 <20071016143124.GB3237@khazad-dum.debian.net>	 <20071016144016.GA21749@srcf.ucam.org>	 <20071016165623.GA13643@khazad-dum.debian.net>	 <20071016184606.GB25181@srcf.ucam.org>	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org> <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
+In-Reply-To: <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2007 20:49:07.0070 (UTC) FILETIME=[FE9751E0:01C81035]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 16 October 2007 06:50, Greg KH wrote:
-> > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
-> > > appear for vanilla 2.6.23):
-> > > 
-> > > <4>sysfs: duplicate filename 'ethxx1' can not be created
-> > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
-> > > 
-> > > Call Trace:
-> > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
-> > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
-> > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
-> > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
-> > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
-> > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
-> > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
-> > >  [<ffffffff8024b977>] up_read+0x9/0xb
-> > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
-> > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
-> > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
-> > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
-> > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
-> > > 
-> > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
-> > > sysfs: duplicate filename 'eth1' can not be created
-> > > 
-> > > Everything seems to work, but this just looks fishy.
-> > 
-> > This is a userspace program renaming your network device to a name that
-> > is already in use.  What distro and release is this?
+Dmitry Torokhov wrote:
+> On 10/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>
+>> On Tue, 16 Oct 2007, Matthew Garrett wrote:
+>>>> It still doesn't mean it belongs inside the stream of data for the keyboard,
+>>>> maskerading as a key press.
+>>> But it *is* a key press!
+>> To get somewhat back on track: volume and brightness (and similar - lid
+>> close etc) events clearly are keypresses.
+>>
+>> However, I would also argue that a keypress that is acted on by the
+>> firmware automatically is *different* from a keypress that hasn't been
+>> acted on: one is a "key was pressed *and* hardware did something
+>> automatically", and the other is just a "key was pressed" event.
+>>
+>> IOW, I think the thinkpad issue (and others like it) should be fixed by
+>> splitting up the KEY_VOLUMEUP "key" into separate KEY_VOLUMEUP and
+>> KEY_VOLUMEUP_NOTIFY key events, so that downstream user mode (and the
+>> kernel itself, for that matter) can know whether it's a informational
+>> message or whether it should be acted upon.
 > 
-> openSUSE 10.2, with some updates (not the most recent, though).
+> I agree that these are 2 different events. My argument is that
+> "VOLUME_UP_NOTIFY" event is similar to "BATTERY_OUT_NOTIFY",
+> "DOCK_UNDOCK_NOTIFY", etc, etc and should be sent not through input
+> layer but through a generic (yet to be designed) notification
+> mechanism. Something lighter than input. Something like uevents over
+> netlink.
 
-Can you try 10.3?  I think we fixed this issue there.
+absolutely
 
-thanks,
+real life example: hook up one of those fancy usb keyboards with volume buttons to
+your thinkpad. The volume keys on the thinkpad do adjust the volume, the ones on
+the USB keyboard do not - software needs to be able to distinguish between them,
+and sane defaults for these events need to not overlap.
 
-greg k-h
+Cheers,
+
+Auke
