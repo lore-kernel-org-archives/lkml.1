@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbXJPSFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965091AbXJPSIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750962AbXJPSFq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbXJPSEt
+	id S965091AbXJPSIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765197AbXJPSIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:04:49 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51718 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754484AbXJPSEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:04:45 -0400
-Date: Tue, 16 Oct 2007 14:04:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-cc: Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>,
-       <bbpetkov@yahoo.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
-In-Reply-To: <20071016163348.GB24082@one-eyed-alien.net>
-Message-ID: <Pine.LNX.4.44L0.0710161355150.9662-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Oct 2007 14:08:21 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47713 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764540AbXJPSIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 14:08:19 -0400
+Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       akpm@linux-foundation.org, ak@suse.de
+In-Reply-To: <20071016162858.545617122@strauss.suse.de>
+References: <20071016162857.635479952@strauss.suse.de>
+	 <20071016162858.545617122@strauss.suse.de>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 11:08:16 -0700
+Message-Id: <1192558097.17464.15.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Matthew Dharm wrote:
-
-> I haven't looked at this code at all, but neither approach feels right to
-> me.
+On Tue, 2007-10-16 at 18:28 +0200, Bernhard Walle wrote:
 > 
-> How does this work at all?  Even if you load a driver later, wouldn't it
-> call usb_set_interface(), which would call usb_create_sysfs_intf_files()
-> and hit the same issue?
+> @@ -736,7 +736,7 @@ static int __init smp_scan_config (unsig
+>                         smp_found_config = 1;
+>                         printk(KERN_INFO "found SMP MP-table at %08lx\n",
+>                                                 virt_to_phys(mpf));
+> -                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE);
+> +                       reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE, 0);
+>                         if (mpf->mpf_physptr) {
+>                                 /* 
 
-usb_set_interface() is smart enough to remove the old interface files
-before creating new ones, since it expects them to exist already.  
-Hence there's no problem in that scenario.
+Could you give all of these 0's a name?  I really hate seeing random
+magic numbers in these things.  0 completely kills the ability of
+someone to read the code and figure out what it is trying to do without
+going and looking at reserve_bootmem().
 
-But usb_set_configuration doesn't expect there to be any pre-existing
-interface files, because there isn't even an interface until the
-registration is performed.
+Or, alternatively, do something like this:
 
-> Heck, why do both call usb_create_sysfs_intf_file()?  I would guess if
-> you're *changing* the active configuration you would need to do that, but
-> why in usb_set_interface() at all?
+-extern void reserve_bootmem(unsigned long addr, unsigned long size);
++/*
++ * If flags is 0, then the return value is always 0 (success). If
++ * flags contains BOOTMEM_EXCLUSIVE, then -EBUSY is returned if the
++ * memory already was reserved.
++ */
++extern int reserve_bootmem(unsigned long addr, unsigned long size, int flag);
++int reserve_bootmem(unsigned long addr, unsigned long size)
++{
++	/* the 0 is because we don't
++	return reserve_bootmem_exclusive(addr, size, 0);
++}
 
-For a couple of reasons.  The "interface" attribute file contains the
-iInterface string descriptor, and that file is present only if such a
-descriptor exists.  Since different altsettings might not agree on
-whether or not iInterface exists, the attribute has to be created anew
-for each altsetting.  (Yes, we could let the file always be present and
-just be blank if there is no descriptor.)
+Where all of the existing callers stay the same.  But, the ones wanting
+exclusive access actually call the _exclusive() variant.  
 
-The most important reason has to do with the endpoint pseudo-devices.  
-Different altsettings can have different endpoints, so those have to be
-removed and re-created whenever the altsetting changes.
-
-Alan Stern
+-- Dave
 
