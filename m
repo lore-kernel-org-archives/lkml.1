@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbXJPOzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbXJPO4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934274AbXJPOzx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 10:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934202AbXJPOzg
+	id S934323AbXJPO4b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 10:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934285AbXJPOz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 10:55:36 -0400
-Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:54341 "EHLO
-	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934196AbXJPOzf convert rfc822-to-8bit (ORCPT
+	Tue, 16 Oct 2007 10:55:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46744 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934042AbXJPOz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 10:55:35 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 16 Oct 2007 10:55:56 -0400
+Date: Tue, 16 Oct 2007 10:55:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>
+cc: bbpetkov@yahoo.de, Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
+In-Reply-To: <a8e1da0710152222t44de6c8at75d3dd874faf58be@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0710161046330.4418-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] drivers/block/cpqarray,cciss: kill unused var
-Date: Tue, 16 Oct 2007 14:55:11 -0000
-Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C0229390C@G3W0639.americas.hpqcorp.net>
-In-Reply-To: <20071013190348.GA19992@havoc.gtf.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/block/cpqarray,cciss: kill unused var
-Thread-Index: AcgNy8u6qgvBbWODTWW2UowhqslaswCOKiGw
-References: <20071013190348.GA19992@havoc.gtf.org>
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: "Jeff Garzik" <jeff@garzik.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, <jens.axboe@oracle.com>,
-       "ISS StorageDev" <iss_storagedev@hp.com>
-X-OriginalArrivalTime: 16 Oct 2007 14:55:13.0942 (UTC) FILETIME=[8EA91B60:01C81004]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Tue, 16 Oct 2007, Dave Young wrote:
 
-> -----Original Message-----
-> From: Jeff Garzik [mailto:jeff@garzik.org] 
-> Sent: Saturday, October 13, 2007 2:04 PM
-> To: Andrew Morton; Linus Torvalds
-> Cc: LKML; jens.axboe@oracle.com; ISS StorageDev
-> Subject: [PATCH] drivers/block/cpqarray,cciss: kill unused var
-> 
-> The recent bio work and subsequent fixups created unused variables.
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> > I finally duplicated this on one of my machines here at boot time, with
+> > USB built into the kernel.  I'll work tomorrow on tracking this down
+> > further...
+> Hi,
+> I add some printk messages, dump_stack and some others, here is the
+> dmesg dump with debug info(lines begin with "hidave"):
 
-Acked-by: Mike Miller <mike.miller@hp.com>
+Okay, good, the extra printk messages show exactly where the problem 
+lies.
 
-> ---
->  drivers/block/cciss.c    |    1 -
->  drivers/block/cpqarray.c |    3 +--
->  2 files changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
-> index 28d1457..27401d6 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -1191,7 +1191,6 @@ static inline void 
-> complete_buffers(struct bio *bio, int status)  {
->  	while (bio) {
->  		struct bio *xbh = bio->bi_next;
-> -		int nr_sectors = bio_sectors(bio);
->  
->  		bio->bi_next = NULL;
->  		bio_endio(bio, status ? 0 : -EIO);
-> diff --git a/drivers/block/cpqarray.c 
-> b/drivers/block/cpqarray.c index 3853c9a..568603d 100644
-> --- a/drivers/block/cpqarray.c
-> +++ b/drivers/block/cpqarray.c
-> @@ -981,9 +981,8 @@ static void start_io(ctlr_info_t *h)  
-> static inline void complete_buffers(struct bio *bio, int ok)  {
->  	struct bio *xbh;
-> -	while(bio) {
-> -		int nr_sectors = bio_sectors(bio);
->  
-> +	while (bio) {
->  		xbh = bio->bi_next;
->  		bio->bi_next = NULL;
->  		
-> 
+In usb_set_configuration(), each new interfaces is registered and then
+usb_create_sysfs_intf_files() gets called for that interface.  This
+makes sense, because obviously we can't create sysfs files for an
+interface before it is registered.
+
+The problem is that during registration drivers get probed, and drivers 
+sometimes call usb_set_interface() from their probe method.  This 
+routine also calls usb_create_sysfs_intf_files(), and the result is 
+that the sysfs files get created twice:
+
+	First by usb_set_interface, from the driver probe;
+
+	Then by usb_set_configuration, when registration is
+	finished.
+
+I can think of two possible ways around the problem.  One is to add a 
+bit to the usb_interface structure, recording whether the sysfs files 
+have been created.  The other is always to remove the files just before 
+trying to create them.
+
+The first seems more workable, although it is slightly awkward.  Greg, 
+what do you think?
+
+Alan Stern
+
