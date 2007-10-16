@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXJPAtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764163AbXJPAuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbXJPAtW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXJPAtP
+	id S1764163AbXJPAuo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXJPAug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:49:15 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34319 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbXJPAtO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:49:14 -0400
-Subject: Re: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags
-	interfaces
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <20071016003538.GC19691@waste.org>
-References: <11.290135367@selenic.com> <1192488513.6118.98.camel@localhost>
-	 <20071015231106.GX19691@waste.org> <1192491297.6118.129.camel@localhost>
-	 <20071016003538.GC19691@waste.org>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 17:49:10 -0700
-Message-Id: <1192495750.6118.152.camel@localhost>
+	Mon, 15 Oct 2007 20:50:36 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36798 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926AbXJPAuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 20:50:35 -0400
+Date: Tue, 16 Oct 2007 02:50:33 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [rfc][patch 3/3] x86: optimise barriers
+Message-ID: <20071016005033.GB5851@wotan.suse.de>
+References: <20071012082534.GB1962@ff.dom.local> <alpine.LFD.0.999.0710120802160.6887@woody.linux-foundation.org> <20071015074405.GA1875@ff.dom.local> <20071015080924.GA32562@wotan.suse.de> <20071015090959.GB1875@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071015090959.GB1875@ff.dom.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-15 at 19:35 -0500, Matt Mackall wrote:
-> Perhaps we need something like:
+On Mon, Oct 15, 2007 at 11:10:00AM +0200, Jarek Poplawski wrote:
+> On Mon, Oct 15, 2007 at 10:09:24AM +0200, Nick Piggin wrote:
+> ...
+> > Has performance really been much problem for you? (even before the
+> > lfence instruction, when you theoretically had to use a locked op)?
+> > I mean, I'd struggle to find a place in the Linux kernel where there
+> > is actually a measurable difference anywhere... and we're pretty
+> > performance critical and I think we have a reasonable amount of lockless
+> > code (I guess we may not have a lot of tight computational loops, though).
+> > I'd be interested to know what, if any, application had found these
+> > barriers to be problematic...
 > 
-> flags = page->flags;
-> userflags = 
->           FLAG_BIT(USER_REFERENCED, flags & PG_referenced) |
->           ...
+> I'm not performance-words at all, so I can't help you, sorry. But, I
+> understand people who care about this, and think there is a popular
+> conviction barriers and locked instructions are costly, so I'm
+> surprised there is any "problem" now with finding these gains...
+
+It's more expensive than nothing, sure. However in real code, algorithmic
+complexity, cache misses and cacheline bouncing tend to be much bigger
+issues.
+
+I can't think of a place in the kernel where smp_rmb matters _that_ much.
+seqlocks maybe (timers, dcache lookup), vmscan... Obviously removing the
+lfence is not going to hurt. Maybe we even gain 0.01% performance in
+someone's workload.
+
+Also, remember: if loads are already in-order, then lfence is a noop,
+right? (in practice it seems to have to do a _little_ bit of work, but
+it's like a dozen cycles).
+
+
+> > The thing is that those documents are not defining what a particular
+> > implementation does, but how the architecture is defined (ie. what
+> > must some arbitrary software/hardware provide and what may it expect).
 > 
-> etc. for the flags we want to export. This will let us change to
+> I'm not sure this is the right way to tell it. If there is no
+> distinction between what is and what could be, how can I believe in
+> similar Alpha or Itanium stuff? IMHO, these manuals sometimes look
+> like they describe some real hardware mechanisms, and sometimes they
+> mention about possible changes and reserved features too. So, when
+> they don't mention you could think it's a present behavior.
+
+No. Why are you reading that much into it? I know for a fact that some
+non-x86 architectures actual implementations have stronger ordering than
+their ISA allows. It's nothing to do with you "believing" how the hardware
+works. That's not what the document is describing (directly).
+
+
+> > It's pretty natural that Intel started out with a weaker guarantee
+> > than their CPUs of the time actually supported, and tightened it up
+> > after (presumably) deciding not to implement such relaxed semantics
+> > for the forseeable future.
 > 
->          FLAG_BIT(USER_SLAB, PageSlab(page)) |
-> 
-> if we make a virtual slab bit.
+> As a matter of fact it's not natural for me at all. I expected the
+> other direction, and I still doubt programmers' intentions could be
+> "automatically" predicted good enough, so IMHO, it's not for long.
 
-Yeah, that looks like a pretty sane scheme.  Do we want to be any more
-abstract about it?  Perhaps instead of USER_SLAB, it should be
-USER_KERNEL_INTERNAL, or USER_KERNEL_USE.  The slab itself is going away
-as we speak. :)
+Really? Consider the consequences if, instead of releasing this latest
+document tightening consistency, Intel found that out of order loads
+were worth 5% more performance and implemented them in their next chip.
+The chip could be completely backwards compatible, but all your old code
+would break, because it was broken to begin with (because it was outside
+the spec).
 
-> And it shows up in grep.
-> 
-> Unfortunately, i386 test_bit is an asm inline and not a macro so we
-> can't hope for the compiler to fold up a bunch of identity bit
-> mappings for us. 
-
-We could also Yeah, that looks like a pretty sane scheme.  Do we want to
-be any more abstract about it?  Perhaps instead of USER_SLAB, it should
-be USER_KERNEL_INTERNAL, or USER_KERNEL_USE.  The slab itself is going
-away as we speak.
-
-For the bits that we want to export, we could also add the unoptimized
-access functions for any that don't already have them:
-
-#define __ClearPageReserved(page)       __clear_bit(PG_reserved, &(page)->flags)
-
-Anybody changing bit behavior will certainly go check all of the
-callers, such as ClearPageReserved() *and* __ClearPageReserved().
-
--- Dave
-
+IMO Intel did exactly the right thing from an engineering perspective,
+and so did Linux to always follow the spec.
