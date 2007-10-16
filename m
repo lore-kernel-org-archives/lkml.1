@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935694AbXJPXd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXJPXmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935694AbXJPXd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 19:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbXJPXdq
+	id S965533AbXJPXmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 19:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760403AbXJPXm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 19:33:46 -0400
-Received: from mga07.intel.com ([143.182.124.22]:42919 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757188AbXJPXdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 19:33:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,285,1188802800"; 
-   d="scan'208";a="299860666"
-Date: Tue, 16 Oct 2007 16:31:26 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: 2.6.23-mm1
-Message-ID: <20071016233126.GA23784@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710152240.03543.rjw@sisk.pl> <20071016195834.GA23157@linux.intel.com> <200710162228.14136.rjw@sisk.pl>
+	Tue, 16 Oct 2007 19:42:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38043 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756261AbXJPXm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 19:42:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Date: Wed, 17 Oct 2007 01:58:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200710132126.33085.rjw@sisk.pl> <200710162313.20373.rjw@sisk.pl> <20071016213626.GA21815@kroah.com>
+In-Reply-To: <20071016213626.GA21815@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200710162228.14136.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+Message-Id: <200710170158.10234.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 10:28:13PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 16 October 2007 21:58, Mark Gross wrote:
-> > On Mon, Oct 15, 2007 at 10:40:02PM +0200, Rafael J. Wysocki wrote:
-> > > On Monday, 15 October 2007 18:09, Mark Gross wrote:
-> > > > On Fri, Oct 12, 2007 at 11:32:40PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Friday, 12 October 2007 06:31, Andrew Morton wrote:
+On Tuesday, 16 October 2007 23:36, Greg KH wrote:
+> On Tue, Oct 16, 2007 at 11:13:19PM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, 16 October 2007 22:50, Jens Axboe wrote:
+> > > On Tue, Oct 16 2007, Greg KH wrote:
+> > > > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
+> > > > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> > > > > > > Hi,
+> > > > > > > 
+> > > > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> > > > > > > appear for vanilla 2.6.23):
+> > > > > > > 
+> > > > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
+> > > > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> > > > > > > 
+> > > > > > > Call Trace:
+> > > > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+> > > > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+> > > > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
+> > > > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+> > > > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+> > > > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+> > > > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+> > > > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
+> > > > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+> > > > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+> > > > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+> > > > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+> > > > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> > > > > > > 
+> > > > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> > > > > > > sysfs: duplicate filename 'eth1' can not be created
+> > > > > > > 
+> > > > > > > Everything seems to work, but this just looks fishy.
 > > > > > > 
-> > > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
-> > > > > > 
-> > > > > > - I've been largely avoiding applying anything since rc8-mm2 in an attempt
-> > > > > >   to stabilise things for the 2.6.23 merge.
-> > > > > > 
-> > > > > >   But that didn't stop all the subsystem maintainers from going nuts, with
-> > > > > >   the usual accuracy.  We're up to a 37MB diff now, but it seems to be working
-> > > > > >   a bit better.
+> > > > > > This is a userspace program renaming your network device to a name that
+> > > > > > is already in use.  What distro and release is this?
 > > > > > 
-> > > > > I get many traces similar to the one below from it (w/ hotfixes):
-> > > > > 
-> > > > > WARNING: at /home/rafael/src/mm/linux-2.6.23-mm1/arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
+> > > > > openSUSE 10.2, with some updates (not the most recent, though).
 > > > > 
-> > > > This is from : WARN_ON(irqs_disabled()) in the cmp_call_function_mask
-> > > > processor_idle.c is registering a acpi_processor_latency_notify 
-> > > > 
-> > > > my code changed the notifier call from blocking_notifier_call_chain to
-> > > > srcu_notifier_call_chain, because dynamic creation of notifier chains at
-> > > > runtime where easier with the srcu_notifier_call_chain than the
-> > > > blocking_notifier_call_chain.  
-> > > > 
-> > > > As dynamic creation of PM_QOS parameters are no longer needed I can
-> > > > change the notifiers back to match what was in lanency.c
-> > > > 
-> > > > However; looking at the call tree differences between
-> > > > blockin_notifier_call_chain and srcu_notifier_call_chain I cannot see a
-> > > > difference in irq enabling / disabling.  I'm not confident this will
-> > > > address this yet.
+> > > > Can you try 10.3?  I think we fixed this issue there.
 > > > 
-> > > Well, you can send me a patch to check. :-)
+> > > Ehm nope:
+> > > 
+> > > Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
+> > > can not be created
+> > > Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
+> > > eth1
+> > > Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
+> > > sysfs_add_one()
+> > > Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
+> > > Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
+> > > Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
+> > > Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
+> > > Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
+> > > Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
+> > > Oct 16 19:36:27 carl kernel:  [<c01a1938>]
+> > > inotify_d_instantiate+0x18/0x80
+> > > Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
+> > > Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
+> > > Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
+> > > Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
+> > > Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
+> > > Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
+> > > Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
+> > > Oct 16 19:36:27 carl kernel:  =======================
+> > > Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
+> > > sysfs_create_symlink failed (-17)
 > > 
-> > I think I'll have to send you a patch that changes the notifiers but I
-> > doubt it will fix it.  
-> > 
-> > After a bit of messing around I have the 2.6.23-mm1 running on my core-2
-> > box  note: Ubuntu's make-kpkg on the mm1 tree resulted in a system that
-> > wouldn't boot past the intrd.  Looks like the pivot root failed or
-> > something.
-> > 
-> > Anyway, I'm not reproducing your experience, snd_pcm is loaded.  I don't
-> > know none of the WARN's are not hitting on my box.
-> > 
-> > do you have some configuration information that could help me reproduce
-> > the issue?
+> > Plus it doesn't happen on 2.6.23 on my system, so I count it as a regression.
 > 
-> Well, I can send you the .config, but the box is AMD-based (Turion 64 X2),
-> with an ATI chipset and an HP BIOS, so it seems to be much different from
-> yours.
+> It's a new warning I've added to the kernel to catch stupid userspace
+> and kernel code that is quietly failing when they are doing things
+> incorrectly with kobjects and sysfs.
+> 
+> So it's not really a "regression" in that we never notified anyone of
+> this kind of thing before, think of it as a new feature :)
 
-it may be worth a shot anyway.  
+Well, it seems to be a little bit over the top, then. ;-)
 
-BTW while changing my code to use the blocking notifiers I found that
-there is a initialization race between cpu-idle and pm_qos I have to
-fix.
-
-I need to re factor my start up code to handle cpuidle registering
-itself in as a notifier at core_initcall time.
-
-I'll have a patch ready tomorrow.
-
-thanks,
-
---mgross
+Greetings,
+Rafael
