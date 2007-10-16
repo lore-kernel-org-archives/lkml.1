@@ -1,88 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbXJPCha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbXJPCrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbXJPCha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 22:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbXJPChT
+	id S1761098AbXJPCrx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 22:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbXJPCrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 22:37:19 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59038 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757559AbXJPChQ (ORCPT
+	Mon, 15 Oct 2007 22:47:42 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44613
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756847AbXJPCrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 22:37:16 -0400
-Date: Tue, 16 Oct 2007 12:36:27 +1000
-From: David Chinner <dgc@sgi.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: David Chinner <dgc@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nathan Scott <nscott@aconex.com>, Andrea Arcangeli <andrea@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: More Large blocksize benchmarks
-Message-ID: <20071016023627.GQ995458@sgi.com>
-References: <20071016002231.GA21378@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071016002231.GA21378@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 15 Oct 2007 22:47:41 -0400
+Date: Mon, 15 Oct 2007 19:51:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Theodore Tso <tytso@mit.edu>
+cc: Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+In-Reply-To: <20071015132106.GE21216@thunk.org>
+Message-ID: <Pine.LNX.4.64.0710151919310.3949@asgard.lang.hm>
+References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net>
+ <20071015014503.GF9715@thunk.org> <200710150304.00901.rob@landley.net>
+ <20071015132106.GE21216@thunk.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 08:22:31PM -0400, Chris Mason wrote:
-> Hello everyone,
-> 
-> I'm stealing the cc list and reviving and old thread because I've
-> finally got some numbers to go along with the Btrfs variable blocksize
-> feature.  The basic idea is to create a read/write interface to
-> map a range of bytes on the address space, and use it in Btrfs for all
-> metadata operations (file operations have always been extent based).
-> 
-> So, instead of casting buffer_head->b_data to some structure, I read and
-> write at offsets in a struct extent_buffer.  The extent buffer is very
-> small and backed by an address space, and I get large block sizes the
-> same way file_write gets to write to 16k at a time, by finding the
-> appropriate page in the addess space.  This is an over simplification
-> since I try to cache these mapping decisions to avoid using too much
-> CPU, but hopefully you get the idea.
-> 
-> The advantage to this approach is the changes are all inside Btrfs.  No
-> extra kernel patches were required.
-> 
-> Dave reported that XFS saw much higher write throughput with large
-> blocksizes, but so far I'm seeing the most benefits during reads.
+On Mon, 15 Oct 2007, Theodore Tso wrote:
 
-Apples to oranges, Chris ;)
+> On Mon, Oct 15, 2007 at 03:04:00AM -0500, Rob Landley wrote:
+>
+>>> just
+>>> as Ethernet and PPP interfaces really are fundamentally the same
+>>> thing.
+>>
+>> They're the same thing?
+>>
+>> Do you mean that on a system with both, going:
+>>   ifconfig eth1 66.92.53.140
+>>   ifconfig ppp 192.168.0.42
+>>
+>> Would be functionally equivalent to:
+>>   ifconfig eth1 192.168.0.42
+>>   ifconfig ppp 66.92.53.140
+>
+> No, of course not.  But we don't have separate IP stacks for ethernet
+> and ppp devices.  And how we connect to a host via ssh makes no
+> difference whether we accessed it via Ethernet or PPP.  And I would
+> argue that how we address a filesystem should also make no difference
+> depending on the path to hard drive.
 
-btrfs linearises writes due to it's COW behaviour and this is trades
-off read speed. i.e. we take more seeks to read data so we can keep
-the write speed high. By using large blocks, you're reducing the
-number of seeks needed to find anything, and hence the read speed
-will increase. Write speed will be pretty much unchanged because
-btrfs does linear writes no matter the block size.
+I think a close analogy would be that after a partition is mounted you 
+don't need to know the path to the hard drive, and that is already true 
+today. when you mount a drive (or assign and IP address to a network 
+interface) the path to the device not only matters, it's critical.
 
-XFS doesn't linearise writes and optimises it's layout for a large
-number of disks and a low number of seeks on reads - the opposite
-of btrfs. Hence large block sizes reduce the number of writes XFS
-needs to write a given set of data+metadata and hence write speed
-increases much more than the read speed (until you get to large tree
-traversals).
+>> By the way, ethernet cards contain a unique MAC address.  Hard
+>> drives do not seem to, or if they do it's not being consistently
+>> exposed in a way I can find.
+>
+> You can pull a Model and Serial number via hdparm -i, but it's not as
+> easy to manipulate as a fixed-length MAC address.  That's why people
+> tend to use filesystem UUID's.
+>
+>>> More to the point, with SATA, hot plugging has been designed in, so
+>>> probing order is not going to be well defined,
+>>
+>> The spec may define the capability to hotplug, but your average
+>> laptop doesn't not offer the capability to hotplug anything into its
+>> SATA controllers.  The hard drive is screwed in (due to the
+>> portability part of laptopness), all the controllers wired onto the
+>> motherboard are accounted for, none are exposed externally.  What
+>> _is_ exposed externally is USB, and if you want to add an extra hard
+>> drive you can buy a cheap USB one at Fry's.
+>
+> That may be true for laptops today, but Linux doesn't run just on
+> servers.  You can easily get home servers with hot-swap SATA bays.  My
+> home fileserver, which is a white box I purchased on my own nickel,
+> NOT IBM big iron, has 3TB of raw storage for less than $10,000 a year
+> ago.  Today, that amount of home storage with hot-swap SATA drives and
+> a battery-backed hardware RAID controller could probably be purchased
+> for about half that price.
 
-The basic conclusion is that different filesystems will benefit in
-different ways with large block sizes....
+I also have a 3TB raid I built at home, it uses 3ware cards and a dozen 
+300G IDE drives. since the 3ware driver is classified as SCSI if a drive 
+fails all the other drives get renumbered on the next boot and it's 
+painful to figure out which drive has a problem. I have to reboot and go 
+into the 3ware BIOS to figure out which drive isn't reporting. This system 
+also has an adaptec raid card in it and an adaptec regular SCSI card. The 
+fact that these three cards take different drivers, and so the order of 
+detection changes the drive numbering is a real pain when I'm installing a 
+new distro onto it. once I get it installed I compile my own monolithic 
+kernel and this problem stops becouse the kernel linking order determins 
+the detection order.
 
-Cheers,
+this replaced a 1.2TB raid that I just about filled up, and then stared 
+having drive failures due to age on. It used 8 160G IDE drives, and when I 
+had problems with a drive it was easy to see that /dev/hdk was missing 
+from the set, and I was still able to have a removable drive bay for 
+/dev/hdc that I could hook my tivo drive into (on a reboot for safety) and 
+not have things go haywire if I left the bay empty (or switched off) when 
+I booted.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+this may not be hundreds of drives, but it should be enough to show that I 
+have experianced the pain that some people claim is the reason all of this 
+must be dynamic with a userspace helper to sort it all out. My take is 
+that adding the userspace helper and not enumerating things that are easy 
+to enumerate is making things worse, not better.
+
+> And even for laptops, if you need the performance, you can get Cardbus
+> cards that will allow you to connect eSATA drives to your laptop at
+> Fry's.
+>
+> So even if you ignore "big data center" interconnects like FC, this
+> problem exists even for commodity grade SATA devices.
+
+but these are seperate SATA buses, while you could run into ordering 
+issues if you hook multiple devices to one bus, you should be able to have 
+no ordering issues if you don't have more then one device of a type on any 
+one bus (you could have a SATA hard drive on the internal PCI controller, 
+and another one of the Cardbus controller, but if you always order 
+directly connected devices before cardbus connected devices they will 
+always show up in the same order)
+
+>> It's necessary for IBM big iron to do this.  It's generally not
+>> necessary for laptops or embedded systems to do this if they
+>> distinguish between _types_ of devices, which is something they
+>> until recently did for the types of devices I was interested in, and
+>> something they _stopped_ doing when everything got merged into the
+>> scsi layer, and I consider this a regression.
+>
+> As another example, it's easy to see a home media server running Linux
+> which doesn't have any expansion bays for additional hard drive --- so
+> the only way a user could expand their storage is by using one or more
+> permanently connected USB disks.  So we do need to solve the general
+> device enumeration problem in the general case; it's not just the case
+> of IBM "big iron" as you seem to think.
+
+there are two seperate problems here.
+
+1. how to enumerate devices that have a repeatable, stable address.
+
+2. how to enumerate devices that do not.
+
+nobody is saying that there are no cases of #2 and that there is no need 
+to address that problem, what I, and I think others are saying is that the 
+solutions to #2 are not perfect, and while they are a reasonable fit for 
+that case, they are in many ways inferior to simple enumeration for 
+devices in catagory #1
+
+>> No, distinguishing between types of devices is not a perfect
+>> solution to device enumeration, but it was sufficient for all my use
+>> cases for many years, and would still be if the kernel still did it,
+>> and I'm not alone here.
+>
+> News flash!  The kernel wasn't built just for you, and over time, more
+> and more people will have multiple disk drives of the same type, so we
+> will need to solve the device naming problem sooner or later.  Why not
+> solve it sooner, especially given that a number of companies (not just
+> IBM) are funding the organization that is paying *your* salary are
+> interested in solving the general case?
+
+the kernel wasn't just built for people who have dozens or hundreds of 
+devices on busses that make enumeration impossible either, why should 
+their requirements be the only ones considered?
+
+(by the way, I think the crack about who is paying Rob's salary is a 
+little below the belt)
+
+> Furthermore, I've already pointed a number of situations where the
+> home user might have multiple USB devices on their system today, and
+> that is probably going to go up over time, not down.  Have you seen
+> how cheap 500GB USB disks are at Costco?  And for a typical
+> unsophisticated user, plugging in another 500G USB disk when they need
+> more storage is a lot easier than cracking open the computer case and
+> futzing with screws and disk cables and power connectors.
+
+so let USB devices use 'best guess' nameing and let other devices use 
+names based on their fixed addresses/hardware paths.
+
+you could use the suggestion made by Stefan Richter in Message-ID: 
+<47139F15.7050702@s5r6.in-berlin.de> that lets the driver suggest a name 
+if the system hasn't choosen to override it. Since distros look for 
+/dev/sd* it should even be able to work without breaking new installs (the 
+transition would break existing installs, so it would need to be optional)
+
+David Lang
+
