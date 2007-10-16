@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbXJPIun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765962AbXJPIxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbXJPIun (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 04:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759753AbXJPIuI
+	id S1765962AbXJPIxY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 04:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759324AbXJPIxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 04:50:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22279 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759553AbXJPIuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 04:50:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,282,1188802800"; 
-   d="scan'208";a="347489746"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Date: Tue, 16 Oct 2007 01:49:54 -0700
-User-Agent: KMail/1.9.7
-Cc: Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, davej@redhat.com
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com> <200710152038.10980.jesse.barnes@intel.com> <20071016083611.GB15293@khazad-dum.debian.net>
-In-Reply-To: <20071016083611.GB15293@khazad-dum.debian.net>
+	Tue, 16 Oct 2007 04:53:16 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43250 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757439AbXJPIxP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 04:53:15 -0400
+Date: Tue, 16 Oct 2007 10:53:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [patch][rfc] rewrite ramdisk
+In-Reply-To: <200710161826.55834.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0710161052380.10197@fbirervta.pbzchgretzou.qr>
+References: <200710151028.34407.borntraeger@de.ibm.com>
+ <200710161807.41157.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0710161015310.10197@fbirervta.pbzchgretzou.qr>
+ <200710161826.55834.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710160149.56649.jesse.barnes@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, October 16, 2007 1:36 am Henrique de Moraes Holschuh wrote:
-> > No, on Lenovo (and in general actually) the firmware should *not*
-> > touch the backlight.  Otherwise if another driver touches it the
-> > driver and
+
+On Oct 16 2007 18:26, Nick Piggin wrote:
+>> >> It also does not seem needed, since it did not exist before.
+>> >> It should go, you can set the variable with brd.rd_nr=XXX (same
+>> >> goes for ramdisk_size).
+>> >
+>> >But only if it's a module?
+>>
+>> Attributes always work. Try vt.default_red=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+>> and you will see.
 >
-> This is not an option on IBM ThinkPads, unless you patch the DSDT on
-> non-ancient ACPI-based models, and unless you patch the BIOS (and
-> maybe even the EC control program) itself on the really ancient
-> models.  It is that simple.
+>Ah, nice. (I don't use them much!). Still, backward compat I
+>think is needed if we are to replace rd.c.
 >
-
-Yeah, unfortunately, "should not" doesn't mean "does not" in this case.  
-In cases where we can't control the firmware, we have to use it to 
-control the backlight exclusively, or we'll definitely get into 
-trouble.
-
-> You want ACPI video to just pass the messages to userspace when X.org
-> is driving the backlight?  Fine with me.  That *still* doesn't make
-> it right to get these messages as hot key presses over the input
-> layer through the thinkpad-acpi driver.  So the NAK stands.  Any
-> changes should be done to the ACPI video driver in this case.
-
-So is this really the direction that input is going?  Last time I talked 
-with Dmitry, he seemed ok with adding input events for ACPI and other 
-firmware hotkeys...
-
-> Good luck, and please interface it properly to the backlight class
-> while at it.  There's no reason to make the waters mudier :-)
-
-Yeah, the backlight class needs some changes:  the backlight dirs should 
-somehow identify the display they control and only *one* backlight 
-driver should be registered for a given display.  Unfortunately we 
-don't have enough info in the kernel to identify displays, so those 
-changes may have to wait until the DRM grows such knowledge.
-
-Jesse
+Like I said, I did not see rd_nr in Documentation/kernel-parameters.txt
+so I thought there was no compat.
