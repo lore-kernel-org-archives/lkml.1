@@ -1,183 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935722AbXJPVVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934983AbXJPVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935722AbXJPVVO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933284AbXJPVU4
+	id S934983AbXJPVYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbXJPVYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:20:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51878 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932728AbXJPVUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:20:55 -0400
-Message-ID: <47152B32.9020905@pobox.com>
-Date: Tue, 16 Oct 2007 17:20:50 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, shemminger@linux-foundation.org
-Subject: Re: [patch] forcedeth: fix the NAPI poll function
-References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu>
-In-Reply-To: <20071015223009.GA27425@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------030809030204030805080102"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Tue, 16 Oct 2007 17:24:25 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62019 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbXJPVYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 17:24:24 -0400
+Date: Tue, 16 Oct 2007 14:23:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL (updated)] kbuild updates
+Message-Id: <20071016142336.f9129f40.randy.dunlap@oracle.com>
+In-Reply-To: <20071016211101.GA4093@gentoox2.trippelsdorf.de>
+References: <20071015205018.GA24467@uranus.ravnborg.org>
+	<20071016211101.GA4093@gentoox2.trippelsdorf.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030809030204030805080102
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 16 Oct 2007 23:11:01 +0200 Markus Trippelsdorf wrote:
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> On Mon, Oct 15, 2007 at 10:50:18PM +0200, Sam Ravnborg wrote:
+> > 
+> > The kbuild patches has been rebased on top of -linus after
+> > the x86 merge.
+> > The patch that caused ARCH to be unset has been withdrawn for
+> > now. It had additional issues and I need to do additional changes
+> > to get it included - in other words it will await next merge window.
+> > 
+> > The following patches does almost clear my patch queue. I have some
+> > fixes pending but need some more time to check them out.
+> > On top of this I have a few reports from -mm that needs attention too.
+> > So in other words I expect a smaller set of patches for -rc1 or -rc2
+> > as my time permits.
+> > 
+> > In addition to latest pull request this one includes:
+> > - rename of
+> > 	CFLAGS => KBUILD_CFLAGS
+> > 	AFLAGS => KBUILD_AFLAGS
+> > 	CPPFLAGS => KBUILD_CPPFLAGS
+> >     rationale behind this was two-fold:
+> >     1) Do not let the CFLAGS environment variable impact all builds
+> >     2) Allow one to specify addition gcc options on the commandline
+> >        as make CLFAGS=-Os ...
+> > - introducing ccflags-y, asflags-y and ldflags-y as the future
+> >   replacement of the EXTRA_* variants.
+> > 
+> > 
+> > The majority (line wise) is update of generated files.
+> > The rest is almost all one-liners so nothing controversial.
+> > The file with most lines changed is makefiles.txt!
+> > 
 > 
->>> but this one should be inactive (not plugged into the network). 
->>> Should i try to get a debug print out of the actual 'weight' and 
->>> 'work' integers, and of the n->poll function address?
->> ok, i've added such a patch.
->>
->> looking at the dev.c code - can napi_struct->weight be zero 
->> legitimately? If yes then the 0 gets passed to the driver and the 
->> driver would return 1 - violating the assertion.
+> Bisecting shows that:
 > 
-> update:
+> commit f77bf01425b11947eeb3b5b54685212c302741b8
+> 	Author: Sam Ravnborg <sam@neptun.(none)>
+>  	Date:   Mon Oct 15 22:25:06 2007 +0200
 > 
-> [  186.635916] WARNING: at net/core/dev.c:2166 net_rx_action()
-> [  186.641351]  [<c060d9f5>] net_rx_action+0x145/0x1b0
-> [  186.646191]  [<c011d752>] __do_softirq+0x42/0x90
-> [  186.650784]  [<c011d7c6>] do_softirq+0x26/0x30
-> [  186.655202]  [<c011db48>] local_bh_enable+0x48/0xa0
-> [  186.660055]  [<c06023e0>] lock_sock_nested+0xa0/0xc0
-> [  186.664995]  [<c065da16>] tcp_recvmsg+0x16/0xbc0
-> [  186.669588]  [<c013e94b>] __generic_file_aio_write_nolock+0x27b/0x520
-> [  186.676001]  [<c0601d75>] sock_common_recvmsg+0x45/0x70
-> [  186.681202]  [<c05ff5df>] sock_aio_read+0x11f/0x140
-> [  186.686054]  [<c015c086>] do_sync_read+0xc6/0x110
-> [  186.690735]  [<c012b9b0>] autoremove_wake_function+0x0/0x40
-> [  186.696280]  [<c060dcfc>] net_tx_action+0x3c/0xe0
-> [  186.700961]  [<c015c9c2>] vfs_read+0x132/0x140
-> [  186.705378]  [<c015cd41>] sys_read+0x41/0x70
-> [  186.709625]  [<c0102b66>] sysenter_past_esp+0x5f/0x89
-> [  186.714651]  =======================
-> [  186.718210] work: 65, weight: 64
-> [  186.721414] ->poll: (nv_napi_poll+0x0/0x760)
+>     kbuild: introduce ccflags-y, asflags-y and ldflags-y
 > 
-> so nv_napi_poll() returned with 65. How is that possible? Ah ...:
+> breaks booting with grub here. Grub stops with error 28: 
+> Selected item cannot fit into memory.
 > 
->               (rx_processed_cnt++ < limit)) {
-> 
-> that should be:
-> 
->               (++rx_processed_cnt < limit)) {
-> 
-> right? Find the fix below.
-> 
-> 	Ingo
-> 
-> -------------------->
-> Subject: forcedeth: fix the NAPI poll function
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> fix the forcedeth NAPI poll function to not emit this warning:
-> 
-> [  186.635916] WARNING: at net/core/dev.c:2166 net_rx_action()
-> [  186.641351]  [<c060d9f5>] net_rx_action+0x145/0x1b0
-> [  186.646191]  [<c011d752>] __do_softirq+0x42/0x90
-> [  186.650784]  [<c011d7c6>] do_softirq+0x26/0x30
-> [  186.655202]  [<c011db48>] local_bh_enable+0x48/0xa0
-> [  186.660055]  [<c06023e0>] lock_sock_nested+0xa0/0xc0
-> [  186.664995]  [<c065da16>] tcp_recvmsg+0x16/0xbc0
-> [  186.669588]  [<c013e94b>] __generic_file_aio_write_nolock+0x27b/0x520
-> [  186.676001]  [<c0601d75>] sock_common_recvmsg+0x45/0x70
-> [  186.681202]  [<c05ff5df>] sock_aio_read+0x11f/0x140
-> [  186.686054]  [<c015c086>] do_sync_read+0xc6/0x110
-> [  186.690735]  [<c012b9b0>] autoremove_wake_function+0x0/0x40
-> [  186.696280]  [<c060dcfc>] net_tx_action+0x3c/0xe0
-> [  186.700961]  [<c015c9c2>] vfs_read+0x132/0x140
-> [  186.705378]  [<c015cd41>] sys_read+0x41/0x70
-> [  186.709625]  [<c0102b66>] sysenter_past_esp+0x5f/0x89
-> [  186.714651]  =======================
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/net/forcedeth.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux/drivers/net/forcedeth.c
-> ===================================================================
-> --- linux.orig/drivers/net/forcedeth.c
-> +++ linux/drivers/net/forcedeth.c
-> @@ -2274,7 +2274,7 @@ static int nv_rx_process(struct net_devi
->  
->  	while((np->get_rx.orig != np->put_rx.orig) &&
->  	      !((flags = le32_to_cpu(np->get_rx.orig->flaglen)) & NV_RX_AVAIL) &&
-> -		(rx_processed_cnt++ < limit)) {
-> +		(++rx_processed_cnt < limit)) {
->  
->  		dprintk(KERN_DEBUG "%s: nv_rx_process: flags 0x%x.\n",
->  					dev->name, flags);
-> @@ -2412,7 +2412,7 @@ static int nv_rx_process_optimized(struc
->  
->  	while((np->get_rx.ex != np->put_rx.ex) &&
->  	      !((flags = le32_to_cpu(np->get_rx.ex->flaglen)) & NV_RX2_AVAIL) &&
-> -	      (rx_processed_cnt++ < limit)) {
-> +	      (++rx_processed_cnt < limit)) {
+> Reverting the commit fixes the problem.
 
-Would the attached patch be ok with people?
-
-It's basically the same thing, except that it aligns a bit more closely 
-with forcedeth rework stuff I'm doing.
-
-I'll send upstream today unless people scream...
-
-	Jeff
+Wow.  I had a similar issue with lilo, but I had no idea
+what may have caused it.  Thanks.
 
 
+Fatal: Kernel /boot/kernel-2.6.23-git10 is too big
+ERROR:  Failed to run lilo.
 
---------------030809030204030805080102
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
 
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index dae30b7..2e70815 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -2268,13 +2268,13 @@ static int nv_rx_process(struct net_device *dev, int limit)
- {
- 	struct fe_priv *np = netdev_priv(dev);
- 	u32 flags;
--	u32 rx_processed_cnt = 0;
-+	int rx_work = 0;
- 	struct sk_buff *skb;
- 	int len;
- 
- 	while((np->get_rx.orig != np->put_rx.orig) &&
- 	      !((flags = le32_to_cpu(np->get_rx.orig->flaglen)) & NV_RX_AVAIL) &&
--		(rx_processed_cnt++ < limit)) {
-+		(rx_work < limit)) {
- 
- 		dprintk(KERN_DEBUG "%s: nv_rx_process: flags 0x%x.\n",
- 					dev->name, flags);
-@@ -2396,9 +2396,11 @@ next_pkt:
- 			np->get_rx.orig = np->first_rx.orig;
- 		if (unlikely(np->get_rx_ctx++ == np->last_rx_ctx))
- 			np->get_rx_ctx = np->first_rx_ctx;
-+
-+		rx_work++;
- 	}
- 
--	return rx_processed_cnt;
-+	return rx_work;
- }
- 
- static int nv_rx_process_optimized(struct net_device *dev, int limit)
-
---------------030809030204030805080102--
+---
+~Randy
