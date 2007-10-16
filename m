@@ -1,69 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXJPRK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765682AbXJPRSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbXJPRK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760126AbXJPRKH
+	id S1765682AbXJPRSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760018AbXJPRSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:10:07 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:24447 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759607AbXJPRKF (ORCPT
+	Tue, 16 Oct 2007 13:18:34 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:54791 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759111AbXJPRSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:10:05 -0400
-Date: Tue, 16 Oct 2007 11:08:08 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] gianfar: fix compile errors and warnings
-To: jeff@garzik.org, Li Yang <leoli@freescale.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <20071016170808.17883.39779.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-User-Agent: StGIT/0.12.1
+	Tue, 16 Oct 2007 13:18:33 -0400
+Subject: maps3: introduce task_size_of for all arches (updated v4)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+In-Reply-To: <alpine.DEB.0.9999.0710151924420.11508@chino.kir.corp.google.com>
+References: <3.290135367@selenic.com>
+	 <alpine.DEB.0.9999.0710151643260.18722@chino.kir.corp.google.com>
+	 <1192494989.6118.142.camel@localhost>
+	 <alpine.DEB.0.9999.0710151924420.11508@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 10:18:13 -0700
+Message-Id: <1192555093.6118.164.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+The following replaces the earlier patches sent.  It should address
+David Rientjes's comments, and has been compile tested on all the
+architectures that it touches, save for parisc.
 
-Fixes compile error from commit 09f75cd7bf13720738e6a196cc0107ce9a5bd5a0.
-Also eliminates an unused variable and eliminates an uninitialized variable
-warning.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+----
+
+For the /proc/<pid>/pagemap code[1], we need to able to query how
+much virtual address space a particular task has.  The trick is
+that we do it through /proc and can't use TASK_SIZE since it
+references "current" on some arches.  The process opening the
+/proc file might be a 32-bit process opening a 64-bit process's
+pagemap file.
+
+x86_64 already has a TASK_SIZE_OF() macro:
+
+#define TASK_SIZE_OF(child)     ((test_tsk_thread_flag(child, TIF_IA32)) ? IA32_PAGE_OFFSET : TASK_SIZE64)
+
+I'd like to have that for other architectures.  So, add it
+for all the architectures that actually use "current" in 
+their TASK_SIZE.  For the others, just add a quick #define
+in sched.h to use plain old TASK_SIZE.
+
+1. http://www.linuxworld.com/news/2007/042407-kernel.html
+
+- MIPS portion from Ralf Baechle <ralf@linux-mips.org>
+
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 ---
 
- drivers/net/gianfar.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ lxc-dave/include/asm-ia64/processor.h    |    3 ++-
+ lxc-dave/include/asm-mips/processor.h    |    4 ++++
+ lxc-dave/include/asm-parisc/processor.h  |    3 ++-
+ lxc-dave/include/asm-powerpc/processor.h |    3 ++-
+ lxc-dave/include/asm-s390/processor.h    |    3 ++-
+ lxc-dave/include/linux/sched.h           |    4 ++++
+ 6 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 558440c..0a2f2b3 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -696,7 +696,7 @@ int startup_gfar(struct net_device *dev)
- {
- 	struct txbd8 *txbdp;
- 	struct rxbd8 *rxbdp;
--	dma_addr_t addr;
-+	dma_addr_t addr = 0;
- 	unsigned long vaddr;
- 	int i;
- 	struct gfar_private *priv = netdev_priv(dev);
-@@ -1237,8 +1237,6 @@ static int gfar_change_mtu(struct net_device *dev, int new_mtu)
-  * starting over will fix the problem. */
- static void gfar_timeout(struct net_device *dev)
- {
--	struct gfar_private *priv = netdev_priv(dev);
--
- 	dev->stats.tx_errors++;
+diff -puN include/asm-ia64/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/asm-ia64/processor.h
+--- lxc/include/asm-ia64/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/asm-ia64/processor.h	2007-10-15 17:29:22.000000000 -0700
+@@ -31,7 +31,8 @@
+  * each (assuming 8KB page size), for a total of 8TB of user virtual
+  * address space.
+  */
+-#define TASK_SIZE		(current->thread.task_size)
++#define TASK_SIZE_OF(tsk)	((tsk)->thread.task_size)
++#define TASK_SIZE       	TASK_SIZE_OF(current)
  
- 	if (dev->flags & IFF_UP) {
-@@ -1346,7 +1344,7 @@ struct sk_buff * gfar_new_skb(struct net_device *dev, struct rxbd8 *bdp)
+ /*
+  * This decides where the kernel will search for a free chunk of vm
+diff -puN include/asm-mips/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/asm-mips/processor.h
+--- lxc/include/asm-mips/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/asm-mips/processor.h	2007-10-16 09:26:44.000000000 -0700
+@@ -45,6 +45,8 @@ extern unsigned int vced_count, vcei_cou
+  * space during mmap's.
+  */
+ #define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
++#define TASK_SIZE_OF(tsk)						\
++	(test_tsk_thread_flag(tsk, TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
+ #endif
  
- static inline void count_errors(unsigned short status, struct gfar_private *priv)
- {
--	struct net_device_stats *stats = &dev->stats;
-+	struct net_device_stats *stats = &priv->dev->stats;
- 	struct gfar_extra_stats *estats = &priv->extra_stats;
+ #ifdef CONFIG_64BIT
+@@ -65,6 +67,8 @@ extern unsigned int vced_count, vcei_cou
+ #define TASK_UNMAPPED_BASE						\
+ 	(test_thread_flag(TIF_32BIT_ADDR) ?				\
+ 		PAGE_ALIGN(TASK_SIZE32 / 3) : PAGE_ALIGN(TASK_SIZE / 3))
++#define TASK_SIZE_OF(tsk)						\
++	(test_tsk_thread_flag(tsk, TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
+ #endif
  
- 	/* If the packet was truncated, none of the other errors
+ #define NUM_FPU_REGS	32
+diff -puN include/asm-parisc/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/asm-parisc/processor.h
+--- lxc/include/asm-parisc/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/asm-parisc/processor.h	2007-10-15 17:31:39.000000000 -0700
+@@ -32,7 +32,8 @@
+ #endif
+ #define current_text_addr() ({ void *pc; current_ia(pc); pc; })
+ 
+-#define TASK_SIZE               (current->thread.task_size)
++#define TASK_SIZE_OF(tsk)       ((tsk)->thread.task_size)
++#define TASK_SIZE	        TASK_SIZE_OF(current)
+ #define TASK_UNMAPPED_BASE      (current->thread.map_base)
+ 
+ #define DEFAULT_TASK_SIZE32	(0xFFF00000UL)
+diff -puN include/asm-powerpc/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/asm-powerpc/processor.h
+--- lxc/include/asm-powerpc/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/asm-powerpc/processor.h	2007-10-15 17:32:00.000000000 -0700
+@@ -99,8 +99,9 @@ extern struct task_struct *last_task_use
+  */
+ #define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
+ 
+-#define TASK_SIZE (test_thread_flag(TIF_32BIT) ? \
++#define TASK_SIZE_OF(tsk) (test_tsk_thread_flag(tsk, TIF_32BIT) ? \
+ 		TASK_SIZE_USER32 : TASK_SIZE_USER64)
++#define TASK_SIZE	  TASK_SIZE_OF(current)
+ 
+ /* This decides where the kernel will search for a free chunk of vm
+  * space during mmap's.
+diff -puN include/asm-s390/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/asm-s390/processor.h
+--- lxc/include/asm-s390/processor.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/asm-s390/processor.h	2007-10-15 17:32:31.000000000 -0700
+@@ -73,8 +73,9 @@ extern struct task_struct *last_task_use
+ 
+ #else /* __s390x__ */
+ 
+-# define TASK_SIZE		(test_thread_flag(TIF_31BIT) ? \
++# define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk, TIF_31BIT) ? \
+ 					(0x80000000UL) : (0x40000000000UL))
++# define TASK_SIZE		TASK_SIZE_OF(current)
+ # define TASK_UNMAPPED_BASE	(TASK_SIZE / 2)
+ # define DEFAULT_TASK_SIZE	(0x40000000000UL)
+ 
+diff -puN include/linux/sched.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches include/linux/sched.h
+--- lxc/include/linux/sched.h~PATCH_2_11_maps3-_introduce_task_size_of_for_all_arches	2007-10-15 17:29:22.000000000 -0700
++++ lxc-dave/include/linux/sched.h	2007-10-15 17:32:42.000000000 -0700
+@@ -1953,6 +1953,10 @@ static inline void inc_syscw(struct task
+ }
+ #endif
+ 
++#ifndef TASK_SIZE_OF
++#define TASK_SIZE_OF(tsk)	TASK_SIZE
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+_
+
+
+-- Dave
 
