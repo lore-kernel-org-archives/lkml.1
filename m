@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbXJPMP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbXJPMQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760789AbXJPMP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 08:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXJPMPO
+	id S1764738AbXJPMQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 08:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbXJPMQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 08:15:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54936 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755020AbXJPMPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 08:15:12 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX1+E/yZFBY6Eu1oPWjNaB9N3Dl+Gpf3GV5vcvTkVmG
-	asXvOShUjzw55i
-From: Jan-Simon =?utf-8?q?M=C3=B6ller?= <dl9pf@gmx.de>
+	Tue, 16 Oct 2007 08:16:00 -0400
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:39326 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755501AbXJPMP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 08:15:59 -0400
+X-Belgacom-Dynamic: yes
+Date: Tue, 16 Oct 2007 14:21:51 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] memory leak in dm
-Date: Tue, 16 Oct 2007 14:15:12 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-References: <20071016113800.GA4631@luggage>
-In-Reply-To: <20071016113800.GA4631@luggage>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Subject: Linux v2.6.24 Watchdog Device Drivers patches
+Message-ID: <20071016122151.GA606@infomag.infomag.iguana.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710161415.13018.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 16 Oktober 2007 13:38:00 schrieb Kristof Provost:
-> Hi,
->
-> I'm seeing a serious memory leak whenever I use my /home partition.
-> It's an encrypted partition using dm-crypt. Simply running
-> 'stress -d 5' is enough to exhaust the memory in a few minutes.
+Hi All,
 
-Same setup here - I can confirm the leak. Happened here while compiling latest 
-kernel while using the previous build. Over 1GB "vanished" :D ... Now i'm 
-back to the default kernel.
+Work and personal issues prevented me in being faster in sending out this e-mail.
+Sorry for that.
 
-I'll apply the patch now and report.
+Concerning the watchdog device drivers: this is what is still out to be merged:
+1) Move the watchdog device drivers from drivers/char/watchdog to drivers/watchdog.
+(Unless someone objects). We do this to make it conform with the other type of
+drivers (like hwmon, i2c, parport, ...)
+2) The Uniform watchdog device driver is in the -mm tree since +-19 August. I still
+need to ask a number of people to review the code before I want to release it.
+I also need to document it properly before it get's released.
+3) iTCO_wdt.c -> add additional ICH8 PCI-ID's, clean-up pci-device-id-table, ...
+4) change naming of IPC SBC Watchdog Timer Driver (used to be wafer but the driver
+runs on several IPC boards).
+5) AR7 Watchdog Timer
+6) Improvements on Documentation/watchdog/src/watchdog-simple.c.
+7) Watchdog driver for the Atmel AT91SAM9xx range of processors (After review).
+8) SBC Nano 7240 Watchdog Timer (After review).
 
-Greets
-Jan-Simon
+If someone has objections or when I missed something: please let me know.
+
+Thanks,
+Wim.
+
+(Note: for people that want to look at the Uniform Watchdog Device Driver: please see
+the code in the linux-2.6-watchdog-mm git tree at:
+http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-mm.git;a=summary )
 
