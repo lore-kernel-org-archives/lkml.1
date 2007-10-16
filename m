@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935689AbXJPVTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966003AbXJPVTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935689AbXJPVTL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:19:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965484AbXJPVSv
+	id S966003AbXJPVTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965630AbXJPVTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:18:51 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:18944 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965506AbXJPVSu (ORCPT
+	Tue, 16 Oct 2007 17:19:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:20595 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965645AbXJPVTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:18:50 -0400
+	Tue, 16 Oct 2007 17:19:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AFXGtosCJpeCSJMyhG7t0wLcGCAHZwI9WFGlkMAT+5OXmtEXHBdJEKtXqSsjb1XqJ6PISHr/kFhq2BY18THgLnAAGsQE54bb8M3e2587et3LbkWwYQjiryX4RtNdrR+juPkfrUKU8wK76rumoSXkKevDDODLN6H+MboOVhhlZ4c=
-Message-ID: <d120d5000710161418r1f796a33n276cbd3fb3585ccd@mail.gmail.com>
-Date: Tue, 16 Oct 2007 17:18:47 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Matthew Garrett" <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Jeremy Katz" <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-In-Reply-To: <20071016205553.GA28531@srcf.ucam.org>
+        b=emG7aP7fZCHTa6PljOh8pmNOsv+S554w3hwwaX5Gpwh77B9AzuBcm0SEENhhIQBf3Htnj2xnWUeRcJPQu9Ohuh0QU0IhPk2chHXilicSpJ+xXkVS39u509So78+oLnZY0qJBGPACGK+9IqbhFXTt373bAxKBqyJdFdWHgZAwds4=
+Message-ID: <4af2d03a0710161419n3727dbfev10b1319599d30b49@mail.gmail.com>
+Date: Tue, 16 Oct 2007 23:19:28 +0200
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Wagner Ferenc" <wferi@niif.hu>
+Subject: Re: RocketPort Linux driver errors on module reload
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87myujsdpr.fsf@szonett.ki.iif.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071016130053.GA20010@srcf.ucam.org>
-	 <20071016142121.GA21431@srcf.ucam.org>
-	 <20071016143124.GB3237@khazad-dum.debian.net>
-	 <20071016144016.GA21749@srcf.ucam.org>
-	 <20071016165623.GA13643@khazad-dum.debian.net>
-	 <20071016184606.GB25181@srcf.ucam.org>
-	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
-	 <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
-	 <471523B6.7030506@intel.com> <20071016205553.GA28531@srcf.ucam.org>
+References: <bububu786234897832@pripojeni.net> <87k5pozgb5.fsf@tac.ki.iif.hu>
+	 <4713BAD0.9020606@gmail.com> <87myujsdpr.fsf@szonett.ki.iif.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Tue, Oct 16, 2007 at 01:48:54PM -0700, Kok, Auke wrote:
+On 10/16/07, Wagner Ferenc <wferi@niif.hu> wrote:
+> Jiri Slaby <jirislaby@gmail.com> writes:
 >
-> > real life example: hook up one of those fancy usb keyboards with volume buttons to
-> > your thinkpad. The volume keys on the thinkpad do adjust the volume, the ones on
-> > the USB keyboard do not - software needs to be able to distinguish between them,
-> > and sane defaults for these events need to not overlap.
+> > Anyway the driver faces another problem with pci refcounting (it
+> > doesn't increment the counter) and the device might be removed from
+> > it any time the pci bus code decides.
 >
-> That's not a problem - they'll be coming from different input devices.
+> That doesn't sound too good...  Do you mean the module could stop
+> working any time, even if its devices are being used continuously?
+
+Hmm, nobody holds the reference according to the current
+implementation, so the pci layer doesn't know that anybody is working
+with it.
+
+> > Are you willing to test to-pci-probing patches (i.e. patches which
+> > converts the driver to the model introduced in linux 2.4)?
 >
+> Well yes.  We've got a copule of such cards, which raises some
+> interest in a proper driver.  Just send the patches with some
+> instructions along, or point me to a git branch if you prefer.
 
-You could connect an external PS/2 keyboard and map some keys to
-control the volume/brightness there. It most likely will be the same
-device from the kerenl POV.
+Maybe the git with stand-alone module would be better...
 
-More important - is brightness and volume are the only notifications
-userspace is interested in? Aren't there other events that might be
-interesting to userspace?
+> > If not, I'll only increment the counter on modprobe and decrement it
+> > on rmmod, since it would be a safe (in the meaning of not changing
+> > that much code) way of fixing the problem.
+>
+> And what are the drawbacks of this simple solution?
 
--- 
-Dmitry
+Nothing, but it's not the proper way -- just a safe fallback. But you
+can still say no :).
+
+regards,
+--js
