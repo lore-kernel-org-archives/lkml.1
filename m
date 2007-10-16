@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935546AbXJPVhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936116AbXJPVjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935546AbXJPVhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 17:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935065AbXJPVh3
+	id S936116AbXJPVjM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 17:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935092AbXJPViu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 17:37:29 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:25787 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934016AbXJPVhZ (ORCPT
+	Tue, 16 Oct 2007 17:38:50 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49591
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934232AbXJPVit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 17:37:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=Aoa9DReObURG3hBaoCWlP+R9e/5f3PWYbqwXQYwdONFGaiL+NdKy/E2H4f745MaPJBBi7kJmtAJHRsZRsLAmABxMFB+fxLcclwrGVUUt0ttjhM452Pk5jEhUYhuOpRU9Co0j0KaZzKvz9X0vxuF36ltCcfrHS7lDAIRoXmwAog4=
-Date: Tue, 16 Oct 2007 23:37:27 -0700
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] : IDE-CS Add additional id string (corsair, 1GB)
-Message-Id: <20071016233727.bd36bcbf.Kristoffer.ericson@gmail.com>
-In-Reply-To: <200710162135.51149.bzolnier@gmail.com>
-References: <20071014210403.13d6f560.Kristoffer.Ericson@Gmail.com>
-	<200710162135.51149.bzolnier@gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 17:38:49 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Add Documentation/block/00-INDEX
+Date: Tue, 16 Oct 2007 16:38:13 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <200710150453.15484.rob@landley.net> <20071016081107.GE5045@kernel.dk>
+In-Reply-To: <20071016081107.GE5045@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Content-Disposition: inline
+Message-Id: <200710161638.14278.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 21:35:51 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Tuesday 16 October 2007 3:11:08 am Jens Axboe wrote:
+> On Mon, Oct 15 2007, Rob Landley wrote:
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Add Documentation/block/00-INDEX
+>
+> Not sure where this is heading, but I guess this one is fine with me.
+> Applied.
 
-> On Monday 15 October 2007, Kristoffer Ericson wrote:
-> > Greetings,
-> > 
-> > The manf string looks weird (0x0 + 0x0), but I assume its correct. Also,
-> > whitespaces seems almost intentional, so am I missing something? 
-> 
-> Nope, thanks for cleaning this.
-Ah, good.
+I'm working towards full coverage of 00-INDEX files, because I use them to 
+create index.html files for the web version at 
+http://kernel.org/doc/Documentation (somewhere stable that Google can find 
+it, regularly updated).  Then I run a 404 checker on those index.html files.
 
-> 
-> > Shortlog:
-> > This patch adds id strings for Corsair 1GB (identified as Hyperstone Model1)
-> > inside legacy/ide-cs.c 
-> > 
-> > It also includes some minor whitespace cleanups.
-> > 
-> > Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-> 
-> applied
-Thanks.
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
