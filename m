@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934402AbXJPP1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbXJPP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934402AbXJPP1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 11:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933211AbXJPP06
+	id S934151AbXJPP1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 11:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933407AbXJPP1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 11:26:58 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:6276 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932831AbXJPP05 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 11:26:57 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 3/5] IB/ehca: Fix ehca_encode_hwpage_size() and alloc_fmr()
-User-Agent: KMail/1.9.1
-Cc: Roland Dreier <rolandd@cisco.com>, "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
+	Tue, 16 Oct 2007 11:27:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34956 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934396AbXJPP1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 11:27:15 -0400
+Date: Wed, 17 Oct 2007 01:27:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Q Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+       Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
        Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200710161722.29144.fenkes@de.ibm.com>
-In-Reply-To: <200710161722.29144.fenkes@de.ibm.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1982
-Date: Tue, 16 Oct 2007 17:26:54 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710161726.54648.fenkes@de.ibm.com>
+Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
+ match eHCA and eHEA drivers
+Message-Id: <20071017012706.adbd3188.sfr@canb.auug.org.au>
+In-Reply-To: <200710162320.00630.fenkes@de.ibm.com>
+References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
+	<200710162320.00630.fenkes@de.ibm.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Oct_2007_01_27_06_+1000_0XWMKq/49uR6BW_i"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify ehca_encode_hwpage_size(), fixing an infinite loop for pgsize == 0
-in the process. Fix the bug in alloc_fmr() that triggered the loop.
+--Signature=_Wed__17_Oct_2007_01_27_06_+1000_0XWMKq/49uR6BW_i
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_mrmw.c |   15 ++++-----------
- 1 files changed, 4 insertions(+), 11 deletions(-)
+On Tue, 16 Oct 2007 23:20:00 +0200 Joachim Fenkes <fenkes@de.ibm.com> wrote:
+>
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index 16c9efd..b9a788c 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -72,17 +72,9 @@ enum ehca_mr_pgsize {
- 
- static u32 ehca_encode_hwpage_size(u32 pgsize)
- {
--	u32 idx = 0;
--	pgsize >>= 12;
--	/*
--	 * map mr page size into hw code:
--	 * 0, 1, 2, 3 for 4K, 64K, 1M, 64M
--	 */
--	while (!(pgsize & 1)) {
--		idx++;
--		pgsize >>= 4;
--	}
--	return idx;
-+	int log = ilog2(pgsize);
-+	WARN_ON(log < 12 || log > 24 || log & 3);
-+	return (log - 12) / 4;
- }
- 
- static u64 ehca_get_max_hwpage_size(struct ehca_shca *shca)
-@@ -826,6 +818,7 @@ struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
- 
- 	/* register MR on HCA */
- 	memset(&pginfo, 0, sizeof(pginfo));
-+	pginfo.hwpage_size = hw_pgsize;
- 	/*
- 	 * pginfo.num_hwpages==0, ie register_rpages() will not be called
- 	 * but deferred to map_phys_fmr()
--- 
-1.5.2
+One small change - I intend to remove the name and owner fields from
+struct of_platform_driver, so you should not bother initialising the name
+field and just initialise the name field of the embedded struct
+device_driver instead.  This, of course, means that you don't need
 
+	drv->driver.name =3D drv->name;
 
+in ibmebus_register_driver.
+
+Sorry for not picking this up earlier.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__17_Oct_2007_01_27_06_+1000_0XWMKq/49uR6BW_i
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHFNhQTgG2atn1QN8RAg8JAJwNZcBRPjzYHy6ZFr4zTdD6xzbG+wCfbyFu
+FwuA+pG1SWXaVdvQZKza554=
+=sWnd
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Oct_2007_01_27_06_+1000_0XWMKq/49uR6BW_i--
