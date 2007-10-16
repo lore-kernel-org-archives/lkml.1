@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966474AbXJPW3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966570AbXJPWcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966474AbXJPW3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 18:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933746AbXJPW3X
+	id S966570AbXJPWcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 18:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965890AbXJPWcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 18:29:23 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51830 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935517AbXJPW3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 18:29:23 -0400
-Date: Wed, 17 Oct 2007 00:29:21 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
-Message-ID: <20071016222921.GA29378@wotan.suse.de>
-References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz> <20071015143732.01d99af8@laptopd505.fenrus.org> <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz> <20071016002229.GA5851@wotan.suse.de> <Pine.LNX.4.64.0710161221300.1315@artax.karlin.mff.cuni.cz>
+	Tue, 16 Oct 2007 18:32:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54419
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965897AbXJPWcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 18:32:42 -0400
+Date: Tue, 16 Oct 2007 15:32:48 -0700 (PDT)
+Message-Id: <20071016.153248.95506316.davem@davemloft.net>
+To: greg@kroah.com
+Cc: jens.axboe@oracle.com, kay.sievers@vrfy.org, rjw@sisk.pl,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       htejun@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071016213730.GB21815@kroah.com>
+References: <20071016204238.GA1093@kroah.com>
+	<20071016205053.GI9942@kernel.dk>
+	<20071016213730.GB21815@kroah.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710161221300.1315@artax.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 12:33:54PM +0200, Mikulas Patocka wrote:
-> 
-> 
-> On Tue, 16 Oct 2007, Nick Piggin wrote:
-> 
-> > > > The cpus also have an explicit set of instructions that deliberately do 
-> > > > unordered stores/loads, and s/lfence etc are mostly designed for those.
-> > > 
-> > > I know about unordered stores (movnti & similar) --- they basically use 
-> > > write-combining method on memory that is normally write-back --- and they 
-> > > need sfence. But which one instruction does unordered load and needs 
-> > > lefence?
-> > 
-> > Also, for non-wb memory. I don't think the Intel document referenced
-> > says anything about this, but the AMD document says that loads can pass
-> > loads (page 8, rule b).
-> > 
-> > This is why our rmb() is still an lfence.
-> 
-> I see, AMD says that WC memory loads can be out-of-order.
-> 
-> There is very little usability to it --- framebuffer and AGP aperture is 
-> the only piece of memory that is WC and no kernel structures are placed 
-> there, so it is possible to remove that lfence.
+From: Greg KH <greg@kroah.com>
+Date: Tue, 16 Oct 2007 14:37:30 -0700
 
-No. In Linux kernel, rmb() means that all previous loads, including to
-any IO regions, will be executed before any subsequent load.
+> Kay, are we doing something wrong in userspace when renaming wireless
+> devices such that we can overlap names?
 
-How can you possibly get rid of lfence from there just because you may
-happen to *know* that it isn't used (btw. the IO serialisation isn't for
-kernel data structures, it is for actual IO operations, generally).
+It does it for all network devices, I see this ugly message on every
+single system I have from Fedora foo to RHEL foo to ubuntu foo to
+debian foo.
 
-Doing that would lead to an unmaintainable mess. If drivers don't need rmb,
-then they don't call it.
+udev simply applies the MAC address to device name rules blindly, it
+doesn't check if the device already has the desired name already
+
+It's been like this forever, and since userland has been doing it for
+so long, you can't warn on this there is too much established
+practice.  Expecting people to install "fixed" udev is not an
+acceptable answer, the warning is a regression and therefore you'll
+have to remove the kernel warning for this case and live with this
+issue essentially forever.
