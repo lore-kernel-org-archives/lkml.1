@@ -1,89 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbXJPK2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764982AbXJPKd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933408AbXJPK2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760671AbXJPK2J
+	id S1764982AbXJPKd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXJPKdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:28:09 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:53809 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759454AbXJPK2I (ORCPT
+	Tue, 16 Oct 2007 06:33:18 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60110 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755098AbXJPKdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:28:08 -0400
-Date: Tue, 16 Oct 2007 00:28:06 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] kbuild: fix typo SRCARCH in find_sources
-To: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200710160028.06468.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Tue, 16 Oct 2007 06:33:17 -0400
+Date: Tue, 16 Oct 2007 16:03:08 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
+Subject: [RFC PATCH 0/4] Refcount Based Cpu-Hotplug Revisit.
+Message-ID: <20071016103308.GA9907@in.ibm.com>
+Reply-To: ego@in.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] kbuild: fix typo SRCARCH in find_sources
+Hi, 
+This patch series attempts to revisit the topic of 
+cpu-hotplug locking model. 
 
-otherwise get the two copy file list in SRCARCH
+Prior to this attempt, there were several different suggestions on 
+how it should be implemented. 
 
-for cscope:
-C symbol: start_kernel
+The ones that were posted before were
 
-  File           Function            Line
-0 proto.h        <global>              11 extern void start_kernel(void );
-1 start_kernel.h <global>              10 extern asmlinkage void __init start_kernel(void );
-2 head32.c       i386_start_kernel     37 start_kernel();
-3 head32.c       i386_start_kernel     37 start_kernel();
-4 head64.c       x86_64_start_kernel   85 start_kernel();
-5 head64.c       x86_64_start_kernel   85 start_kernel();
-6 head_32.S      options              199 cmpb $0,%cl #the first CPU calls start_kernel
-7 head_32.S      options              199 cmpb $0,%cl #the first CPU calls start_kernel
-8 enlighten.c    xen_start_kernel    1145 start_kernel();
-9 enlighten.c    xen_start_kernel    1145 start_kernel();
-a lguest.c       lguest_init         1095 start_kernel();
-b main.c         start_kernel         513 asmlinkage void __init start_kernel(void )
+a) Refcount + Waitqueue model:
+   Here the threads that want to avoid a cpu hotplug operation while 
+   they are operating in cpu-hotplug critical section, bump up the 
+   reference to the global online cpu state. 
+   The thread which wants to perform a cpu-hotplug, 
+   blocks until the reference to the global online state goes
+   to zero. Any threads which want to enter the cpu-hotplug critical
+   section during an ongoing cpu-hotplug operatoin, are blocked using 
+   a waitqueue.
 
-after the patch:
-C symbol: start_kernel
+   The advantange of this model was that it is along the lines of 
+   the well known get/put model. Only that it allows sleeping of readers
+   and writers.
 
-  File           Function            Line
-0 proto.h        <global>              11 extern void start_kernel(void );
-1 start_kernel.h <global>              10 extern asmlinkage void __init start_kernel(void );
-2 head32.c       i386_start_kernel     37 start_kernel();
-3 head64.c       x86_64_start_kernel   85 start_kernel();
-4 head_32.S      options              199 cmpb $0,%cl #the first CPU calls start_kernel
-5 enlighten.c    xen_start_kernel    1145 start_kernel();
-6 lguest.c       lguest_init         1095 start_kernel();
-7 main.c         start_kernel         513 asmlinkage void __init start_kernel(void )
+   The disadvantage, as Andrew pointed out was that there do exist
+   a whole bunch of lock_cpu_hotplug()'s whose existance is undocumented,
+   and an approach like this will not improve such a situation.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+b) Per Subsystem cpu-hotplug locks: Each subsystem which has cpu-hotplug
+   critical data, uses a lock to protect that data. Such a subsystem
+   needs to subscribe to the cpu-hotplug notification, especially the
+   CPU_LOCK_ACQUIRE and CPU_LOCK_RELEASE events which are sent before
+   and and after a cpu-hotplug operation. While handling these events
+   respectively, the subsystem lock is taken or released. 
+   
+   The advantage this model offered was that lock was associated with the
+   data, which made easy to understand the purpose of locking. 
 
-diff --git a/Makefile b/Makefile
-index 1274084..7ee4c04 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1309,8 +1309,8 @@ ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
- endif
- 
- define find-sources
--        ( for ARCH in $(ALLSOURCE_ARCHS) ; do \
--	       find $(__srctree)arch/$${SRCARCH} $(RCS_FIND_IGNORE) \
-+        ( for arch in $(ALLSOURCE_ARCHS) ; do \
-+	       find $(__srctree)arch/$${arch} $(RCS_FIND_IGNORE) \
- 	            -name $1 -print; \
- 	  done ; \
- 	  find $(__srctree)security/selinux/include $(RCS_FIND_IGNORE) \
-@@ -1318,8 +1318,8 @@ define find-sources
- 	  find $(__srctree)include $(RCS_FIND_IGNORE) \
- 	       \( -name config -o -name 'asm-*' \) -prune \
- 	       -o -name $1 -print; \
--	  for ARCH in $(ALLINCLUDE_ARCHS) ; do \
--	       find $(__srctree)include/asm-$${SRCARCH} $(RCS_FIND_IGNORE) \
-+	  for arch in $(ALLINCLUDE_ARCHS) ; do \
-+	       find $(__srctree)include/asm-$${arch} $(RCS_FIND_IGNORE) \
- 	            -name $1 -print; \
- 	  done ; \
- 	  find $(__srctree)include/asm-generic $(RCS_FIND_IGNORE) \
+   The disadvantage was that any cpu-hotplug aware function, could 
+   not be called from a cpu-hotplug callback path, since we would have 
+   acquired the subsystem lock during CPU_LOCK_ACQUIRE and attempting
+   to reacquire it would result in a deadlock. 
+   The case which pointed this limitation out was the implementation of
+   synchronize_sched in preemptible rcu.
+
+c) Freezer based cpu-hotplug: 
+   The idea here was to freeze the system using the process freezer
+   technique which is being used for suspend/hibernate purpose, before
+   performing a cpu-hotplug operation. This would ensure that none of
+   the kernel threads are accessing any of the cpu-hotplug critical
+   data, because they are frozen at well known points. 
+
+   This would have helped to remove all kinds of locks because when a 
+   thread is accessing a cpu-hotplug critical data, it meant that the
+   system was not frozen and hence there would be no cpu-hotplug 
+   operation untill the thread either voluntarily calls try_to_freeze 
+   or returns out of the kernel.
+
+   The disadvantage of this approach was that any kind of dependencies
+   between threads might call the freezer to fail. For eg, thread A is
+   waiting for thread B to accomplish something, but thread B is already
+   frozen, leading to a freeze failure. There could be other subtle
+   races which might be difficult to track.
+
+Some time in May 2007, Linus suggested using the refcount model, and
+this patch series simplifies and reimplements the Refcount + waitqueue
+model, based on the discussions in the past and inputs from
+Vatsa and Rusty.
+
+Patch 1/4: Implements the core refcount + waitqueue model.
+Patch 2/4: Replaces all the lock_cpu_hotplug/unlock_cpu_hotplug instances
+	   with get_online_cpus()/put_online_cpus()
+Patch 3/4: Replaces the subsystem mutexes (we do have three of them now, 
+           in sched.c, slab.c and workqueue.c) with get_online_cpus,
+	   put_online_cpus.
+Patch 4/4: Eliminates the CPU_DEAD and CPU_UP_CANCELLED event handling
+ 	   from workqueue.c
+
+The patch series has survived an overnight test with kernbench on i386.
+and has been tested with Paul Mckenney's latest preemptible rcu code.
+
+Awaiting thy feedback!
+
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
