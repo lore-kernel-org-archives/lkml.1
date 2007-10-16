@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933478AbXJPHrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933430AbXJPHuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933478AbXJPHrl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 03:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbXJPHrc
+	id S933430AbXJPHuG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 03:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763386AbXJPHtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 03:47:32 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:58375 "EHLO tac.ki.iif.hu"
+	Tue, 16 Oct 2007 03:49:55 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42415 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755510AbXJPHrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 03:47:32 -0400
-From: Wagner Ferenc <wferi@niif.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RocketPort Linux driver errors on module reload
-References: <bububu786234897832@pripojeni.net> <87k5pozgb5.fsf@tac.ki.iif.hu>
-	<4713BAD0.9020606@gmail.com>
-Date: Tue, 16 Oct 2007 09:47:28 +0200
-In-Reply-To: <4713BAD0.9020606@gmail.com> (Jiri Slaby's message of "Mon, 15
-	Oct 2007 21:09:04 +0200")
-Message-ID: <87myujsdpr.fsf@szonett.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1759294AbXJPHty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 03:49:54 -0400
+Date: Tue, 16 Oct 2007 09:49:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+Message-ID: <20071016074943.GA24481@elte.hu>
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <4713EC59.4010106@pobox.com> <20071016054236.GA27906@elte.hu> <47145075.1080003@garzik.org> <20071016064026.GA9578@elte.hu> <47146593.2060909@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47146593.2060909@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
 
-> Anyway the driver faces another problem with pci refcounting (it
-> doesn't increment the counter) and the device might be removed from
-> it any time the pci bus code decides.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-That doesn't sound too good...  Do you mean the module could stop
-working any time, even if its devices are being used continuously?
+> >FYI, looks good so far, ontop of Linus' latest -git tree.
+> >
+> >btw., one thing i always found weird about forcedeth is that it 
+> >generates an extra ~100 irqs per second even when there's no network 
+> >traffic:
+> >
+> > 11:      89752    XT-PIC-XT        eth0
+> > 11:      89854    XT-PIC-XT        eth0
+> > 11:      89955    XT-PIC-XT        eth0
+> > 11:      90056    XT-PIC-XT        eth0
+> > 11:      90157    XT-PIC-XT        eth0
+> >
+> >(irq count snapshot every second). Just in case it's easy to fix ...
+> 
+> 
+> May I presume that behavior occurs in both mainline and my fe-lock 
+> branch?
 
-> Are you willing to test to-pci-probing patches (i.e. patches which
-> converts the driver to the model introduced in linux 2.4)?
+correct.
 
-Well yes.  We've got a copule of such cards, which raises some
-interest in a proper driver.  Just send the patches with some
-instructions along, or point me to a git branch if you prefer.
+> That is likely the NIC's timer irq, which is programmed to kick the 
+> irq handler every so often.  DEV_NEED_TIMERIRQ is a starting point, as 
+> well as "Known bugs" at the top of forcedeth.c, if you're curious.
+> 
+> I'm _betting_ that some of that can be eliminated, but we'll see...
 
-> If not, I'll only increment the counter on modprobe and decrement it
-> on rmmod, since it would be a safe (in the meaning of not changing
-> that much code) way of fixing the problem.
+ok. Was just a FYI - you were looking for feedback :-)
 
-And what are the drawbacks of this simple solution?
--- 
-Regards,
-Feri.
+	Ingo
