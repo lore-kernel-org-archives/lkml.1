@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXJPNHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXJPNIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbXJPNHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 09:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbXJPNHU
+	id S933317AbXJPNIz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 09:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbXJPNIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 09:07:20 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:9129 "EHLO kernel.dk"
+	Tue, 16 Oct 2007 09:08:43 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:36070 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932211AbXJPNHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 09:07:18 -0400
-Date: Tue, 16 Oct 2007 15:06:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: greg@kroah.com
-Subject: sysfs: duplicate filename 'bInterfaceNumber' can not be created
-Message-ID: <20071016130658.GG5263@kernel.dk>
+	id S932141AbXJPNIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 09:08:42 -0400
+Message-ID: <4714B7D7.7090005@free.fr>
+Date: Tue, 16 Oct 2007 15:08:39 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Dick Johnson <linux-os@analogic.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       robert.moore@intel.com, len.brown@intel.com
+Subject: Re: halt does not shut the system down
+References: <470A58AF.9080402@free.fr> <470C9731.6030200@free.fr> <470F4535.3050004@free.fr> <470F4F58.4080900@gmail.com> <470F7264.8070205@free.fr> <471342C8.2030305@free.fr> <4714979C.5010103@free.fr> <Pine.LNX.4.61.0710160835160.11232@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0710160835160.11232@chaos.analogic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Dick Johnson wrote:
 
-I get this on booting git as of this morning, HEAD is at
-65a6ec0d72a07f16719e9b7a96e1c4bae044b591.
+> John Sigler wrote:
+> 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=9148
+>>
+>> Writing 15361 (i.e. 0x3C01) to ACPI_REGISTER_PM1A_CONTROL appears to
+>> hang my system in acpi_os_write_port(). What can I do about that?
+>>
+>> Another observation: if I connect a screen to the system's VGA port,
+>> when I call 'poweroff' the screen goes into power saving mode. This
+>> seems to indicate that the integrated video card is properly shut down.
+>>
+>> So the fans keep spinning, the LEDs keep shining, the LCD keeps
+>> displaying, but the video card is shut down?
+>>
+>> Might this help pinpoint the problem?
+> 
+> Check the BIOS to see if the "Power Button" is configured to
+> shut the system down. Some BIOS configure APM to do what
+> the power button does!
 
-sysfs: duplicate filename 'bInterfaceNumber' can not be created
-WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
+Here is the relevant BIOS menu.
 
-Call Trace:
- [<ffffffff802bd786>] sysfs_add_one+0x5c/0xc9
- [<ffffffff802bd21a>] sysfs_add_file+0x59/0x8d
- [<ffffffff802bed57>] sysfs_create_group+0x9c/0xf5
- [<ffffffff8803b1db>] :usbcore:usb_create_sysfs_intf_files+0x35/0xd6
- [<ffffffff88037a39>] :usbcore:usb_set_configuration+0x49d/0x4bf
- [<ffffffff8803bb35>] :usbcore:usb_create_ep_files+0x290/0x2df
- [<ffffffff8803ed11>] :usbcore:generic_probe+0x5d/0xa0
- [<ffffffff8803902d>] :usbcore:usb_probe_device+0x39/0x3b
- [<ffffffff803ec13e>] driver_probe_device+0xde/0x165
- [<ffffffff803ec1c5>] __device_attach+0x0/0xb
- [<ffffffff803ec1ce>] __device_attach+0x9/0xb
- [<ffffffff803eb33d>] bus_for_each_drv+0x4b/0x82
- [<ffffffff803ec258>] device_attach+0x64/0x7c
- [<ffffffff803eb2a6>] bus_attach_device+0x2d/0x79
- [<ffffffff803ea092>] device_add+0x38c/0x60d
- [<ffffffff88032f1e>] :usbcore:usb_new_device+0x51/0x91
- [<ffffffff88033b5f>] :usbcore:hub_thread+0x7a0/0xbae
- [<ffffffff80247770>] autoremove_wake_function+0x0/0x38
- [<ffffffff880333bf>] :usbcore:hub_thread+0x0/0xbae
- [<ffffffff80247641>] kthread+0x49/0x78
- [<ffffffff8020c658>] child_rip+0xa/0x12
- [<ffffffff802475f8>] kthread+0x0/0x78
- [<ffffffff8020c64e>] child_rip+0x0/0x12
+         Phoenix - AwardBIOS CMOS Setup Utility
+                 Power Management Setup
++=====================================================+
+|    ACPI Function             [Enabled]              |
+|    MODEM Use IRQ             [NA]                   |
+|    Soft-Off by PWR-BTTN      [Instant-Off]          |
+|    CPU THRM-Throttling       [50.0%]                |
+|    Resume by Alarm           [Disabled]             |
+|  x  Date(of Month) Alarm       0                    |
+|  x  Time(hh:mm:ss) Alarm       0 :  0 :  0          |
+|                                                     |
+|    ** Reload Global Timer Events **                 |
+|    Primary IDE 0             [Disabled]             |
+|    Primary IDE 1             [Disabled]             |
+|    Secondary IDE 0           [Disabled]             |
+|    Secondary IDE 1           [Disabled]             |
+|    FDD,COM,LPT Port          [Disabled]             |
+|    PCI PIRQ[A-D]#            [Disabled]             |
+|                                                     |
++=====================================================+
 
--- 
-Jens Axboe
+          +===================================+
+          | Soft-Off by PWR-BTTN              |
+          |-----------------------------------|
+          | Instant-Off  ..... [v]            |
+          | Delay 4 Sec. ..... [ ]            |
+          |                                   |
+          |-----------------------------------|
+          |  ^V:Move ENTER:Accept ESC:Abort   |
+          +===================================+
 
+'Instant-Off' is the appropriate setting, right?
+
+In a different menu, there are two other (relevant?) options:
+
+     PWRON After PWR-Fail      [On]
+     Watch Dog Timer Select    [Disabled]
+
+Regards.
