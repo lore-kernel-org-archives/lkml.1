@@ -1,117 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbXJPRVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934301AbXJPRWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933983AbXJPRVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXJPRVe
+	id S934301AbXJPRWX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXJPRWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:21:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41830 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbXJPRVd (ORCPT
+	Tue, 16 Oct 2007 13:22:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55259 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753484AbXJPRV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:21:33 -0400
-Date: Tue, 16 Oct 2007 19:21:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Yi Yang <yang.y.yi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mj@atrey.karlin.mff.cuni.cz,
-       crutcher+kernel@datastacks.com
-Subject: Re: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef
-	key
-Message-ID: <20071016172124.GA19882@elf.ucw.cz>
-References: <4714DDA8.8030204@gmail.com>
+	Tue, 16 Oct 2007 13:21:59 -0400
+Date: Tue, 16 Oct 2007 10:20:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Gautham R Shenoy <ego@in.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
+Subject: Re: [RFC PATCH 0/4] Refcount Based Cpu-Hotplug Revisit.
+In-Reply-To: <20071016103308.GA9907@in.ibm.com>
+Message-ID: <alpine.LFD.0.999.0710161015510.6887@woody.linux-foundation.org>
+References: <20071016103308.GA9907@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4714DDA8.8030204@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> For SysRq, we just can get hot key list from Documentation/sysrq.txt
-> , but in the most of cases, the user can't access it by hand on
-> using SysRq to debug, so it is better for SysRq to provide an online
-> help for the users.
-> 
-> SysRq has already provided a similiar help before this patch, but it
-> is not so definite that the user doesn't know what happened and how
-> to do on pressing an undefined hot key.
-> 
-> In addition, that funtion has a big loop with another big loop
-> embedded which is very inefficient, it is intended to skip some hot
-> key help info for such a function as "Changing Loglevel", just print
-> a help info for this, that is very unnecessary. In fact, the key '0'
->  - '8' have different results the user should know.
-> 
-> This patch add this online help function, it'll print thw whole hot
-> key list and corresponding function descriptions, it can print the new
-> defined hot key without any changed needed.
-> 
-> The output is the below on pressing an undefined hot key:
-> 
-> SysRq : <6>this hot key isn't defined.
-> 
-> SysRq Help Information:
-> 
->   Hot Key      Function Description
-> ===========    ====================
-> ALT+SysRq+0    Changing Loglevel to this value
-> ALT+SysRq+1    Changing Loglevel to this value
-> ALT+SysRq+2    Changing Loglevel to this value
-> ALT+SysRq+3    Changing Loglevel to this value
-> ALT+SysRq+4    Changing Loglevel to this value
-> ALT+SysRq+5    Changing Loglevel to this value
-> ALT+SysRq+6    Changing Loglevel to this value
-> ALT+SysRq+7    Changing Loglevel to this value
-> ALT+SysRq+8    Changing Loglevel to this value
-> ALT+SysRq+9    Changing Loglevel to this value
-> ALT+SysRq+a    Not defined
-> ALT+SysRq+b    Resetting
-> ALT+SysRq+c    Trigger a crashdump
-> ALT+SysRq+d    Not defined
-> ALT+SysRq+e    Terminate All Tasks
-> ALT+SysRq+f    Manual OOM execution
-> ALT+SysRq+g    Not defined
-> ALT+SysRq+h    Not defined
-> ALT+SysRq+i    Kill All Tasks
-> ALT+SysRq+j    Not defined
-> ALT+SysRq+k    SAK
-> ALT+SysRq+l    Not defined
-> ALT+SysRq+m    Show Memory
-> ALT+SysRq+n    Nice All RT Tasks
-> ALT+SysRq+o    Power Off
-> ALT+SysRq+p    Show Regs
-> ALT+SysRq+q    Show Pending Timers
-> ALT+SysRq+r    Keyboard mode set to XLATE
-> ALT+SysRq+s    Emergency Sync
-> ALT+SysRq+t    Show State
-> ALT+SysRq+u    Emergency Remount R/O
-> ALT+SysRq+v    Not defined
-> ALT+SysRq+w    Show Blocked State
-> ALT+SysRq+x    Not defined
-> ALT+SysRq+y    Not defined
-> ALT+SysRq+z    Not defined
 
-This will scroll out of users view on small terminals.
+On Tue, 16 Oct 2007, Gautham R Shenoy wrote:
+> 
+> Patch 1/4: Implements the core refcount + waitqueue model.
+> Patch 2/4: Replaces all the lock_cpu_hotplug/unlock_cpu_hotplug instances
+> 	   with get_online_cpus()/put_online_cpus()
+> Patch 3/4: Replaces the subsystem mutexes (we do have three of them now, 
+>            in sched.c, slab.c and workqueue.c) with get_online_cpus,
+> 	   put_online_cpus.
+> Patch 4/4: Eliminates the CPU_DEAD and CPU_UP_CANCELLED event handling
+>  	   from workqueue.c
+> 
+> The patch series has survived an overnight test with kernbench on i386.
+> and has been tested with Paul Mckenney's latest preemptible rcu code.
+> 
+> Awaiting thy feedback!
 
-Plus it is untrue. On sparc, it is stop+x, not sysrq+x.
+Well, afaik, the patch series is fairly clean, and I'm obviously perfectly 
+happy with the approach, so I have no objections. 
 
-> +/*
-> + * Hot key table SysRq supports
-> + */
-> +static char __read_mostly sysrq_hot_key_table[36] = {
-> +	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-> +	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-> +	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-> +	'u', 'v', 'w', 'x', 'y', 'z'
-> +};
+But it looks buggy. This:
 
-Plus this is practically guaranteed to get out of sync with
-reality. If you did this to make sysrq printing faster... then that is
-very bad optimization.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	+static void cpu_hotplug_begin(void)
+	+{
+	+       mutex_lock(&cpu_hotplug.lock);
+	+       cpu_hotplug.active_writer = current;
+	+       while (cpu_hotplug.refcount) {
+	+               mutex_unlock(&cpu_hotplug.lock);
+	+               wait_for_completion(&cpu_hotplug.readers_done);
+	+               mutex_lock(&cpu_hotplug.lock);
+	+       }
+	+
+	+}
+
+drops the cpu_hotplug.lock, which - as far as I can see - means that 
+another process can come in and do the same, and mess up the 
+"active_writer" thing. The oerson that actually *gets* the lock may not be 
+the same one that has "active_writer" set to itself. No? Am I missing 
+something.
+
+So I think this needs (a) more people looking at it (I think I found a 
+bug, who knows if there are more subtle ones lurking) and (b) lots of 
+testing. 
+
+			Linus
