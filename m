@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbXJPGHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933070AbXJPGIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329AbXJPGHp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXJPGHh
+	id S933070AbXJPGIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXJPGIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:07:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38733 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758523AbXJPGHg (ORCPT
+	Tue, 16 Oct 2007 02:08:09 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:34044 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932644AbXJPGIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:07:36 -0400
-Date: Mon, 15 Oct 2007 23:07:29 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: menage@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
-       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
-Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
-Message-Id: <20071015230729.53fcbaf7.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com>
-References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com>
-	<alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Oct 2007 02:08:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QnXfuLP9cSmcpEKSPXnScN4Qi0lFrEJ9ozjkBoNRfNeux/fEuWd5Ex6/uOMYVnF8YLR5zyMyeokmIE9cVqd3Wj2h5ukxO1+CsnYXtB8JtujahlKBONwgSFk78+I6ePlCH9LdseRzXbnhTXWwuY5HxLAhD0PnQHNpyacUYWhmkOI=
+Message-ID: <386072610710152308o3d4a04bfgfcecafc9c345286b@mail.gmail.com>
+Date: Tue, 16 Oct 2007 14:08:04 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: [PATCH try #3] Input/Joystick Driver: add support AD7142 joystick driver
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, bryan.wu@analog.com,
+       "Andrey Panin" <pazke@donpac.ru>, "Roel Kluin" <12o3l@tiscali.nl>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
+In-Reply-To: <20071015182743.GA2529@Ahmed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192459625.6215.17.camel@roc-laptop>
+	 <d120d5000710150848t1993b0aavbbc0cd7971e3ef3e@mail.gmail.com>
+	 <20071015182743.GA2529@Ahmed>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +			if (cpus_equal(*cpus, t->cpus_allowed))
-> > +				continue;
-> > ...
-> > +		for (q = tasks; q < p; q++) {
-> > +			set_cpus_allowed(*q, *cpus);
-> > +			put_task_struct(*q);
-> > +		}
-> > +	}
-> > +}
-> 
-> Yet by not doing any locking here to prevent a cpu from being 
-> hot-unplugged, you can race and allow the hot-unplug event to happen 
-> before calling set_cpus_allowed().  That makes this entire function a 
-> no-op with set_cpus_allowed() returning -EINVAL for every call, which 
-> isn't caught, and no error is reported to userspace.
-> 
-> Now all the tasks in the cpuset have an inconsistent state with respect to 
-> their p->cpuset->cpus_allowed, because that was already updated in 
-> update_cpumask().
+On 10/16/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> On Mon, Oct 15, 2007 at 11:48:17AM -0400, Dmitry Torokhov wrote:
+> > Hi Bryan,
+> >
+> > On 10/15/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > > +
+> > > +static int ad7142_thread(void *nothing)
+> > > +{
+> > > +       do {
+> > > +               wait_for_completion(&ad7142_completion);
+> > > +               ad7142_decode();
+> > > +               enable_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX);
+> > > +       } while (!kthread_should_stop());
+> > > +
+> >
+> > No, this is not going to work well:
+> > - you at least need to reinitialize the completion before enabling
+> > IRQ, otherwise you will spin in a very tight loop
+> > - if noone would touch the joystick ad7142_clsoe would() block
+> > infinitely because noone would signal the completion and
+> > ad7142_thread() would never stop.
+> >
+> > Completion is just not a good abstraction here... Please use work
+> > abstraction and possibly a separate workqueue.
+> >
+>
+> Bryan, I'm very interested in the technical advantage of using a completion
+> here.
+>
+You are welcome, I'd like to discuss these things here.
 
-My solution may be worse than that.  Because set_cpus_allowed() will
-fail if asked to set a non-overlapping cpumask, my solution could never
-terminate.  If asked to set a cpusets cpus to something that went off
-line right then, this I'd guess this code could keep looping forever,
-looking for cpumasks that didn't match, and then not noticing that it
-was failing to set them so as they would match.
+> In my _not-experienced_ opinion, I remember completions was created mainly for
+> "create_task, wait till task got finished, go on" case. Why using it in a
+> different context while workqueues was created for a similar situation to
+> ad7142 one (non-irq context bottom-half) ?
 
-... it needs work ... or the alternative solution from Paul M.
+I like completion because it is simple to use and understand. Your
+understanding is right. But there is no limit for using different
+context with completion. completion is a wrapper of waitqueue+done
+flag. For some drivers, in process context call
+wait_for_completetion(), then schedule out and in irq handler call
+complete(). This is very simple and helpful for driver design (For
+example, you call dma function to transfer data, then you schedule out
+and then DMA IRQ handler will call complete() to wakeup you).
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+But in this driver, a) can not call ad7142_decode() in IRQ handler,
+because it will sleep in IRQ context by calling some i2c API, b) in
+original design, creating a new kthread and using some waitqueue API
+is the same way as using workqueue, c) cannot use completion as Dmitry
+said.
+
+I am going to use workqueue here.
+
+Any idea?
+
+Thanks
+-Bryan Wu
