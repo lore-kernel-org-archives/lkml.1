@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966784AbXJPWVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966830AbXJPWVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966784AbXJPWVG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 18:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966244AbXJPWTZ
+	id S966830AbXJPWVf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 18:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966787AbXJPWVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 18:19:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:36743 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966667AbXJPWTX (ORCPT
+	Tue, 16 Oct 2007 18:21:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58094 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966662AbXJPWVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 18:19:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=K23zpuA3L5VaNTpqs1uYf4g9TRLwZIgF21+ANBj+6xsm0+wWIILWxw9lY/tw6rZwzJld8rgUO7H9FNsDaT9JUpRACq8QfDaVvACs/oWItLYdKjKdOZnxCJcydBVwXOCH8jTjisLmQnt+HlsGbkqxJCsiyisGEofpgA3v4vI0PVw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sonic Zhang <sonic.adi@gmail.com>
-Subject: Re: [PATCH] Update libata driver for bf548 atapi controller against the 2.6.24 tree.
-Date: Wed, 17 Oct 2007 00:24:21 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux IDE <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-References: <1192524207.11166.1.camel@sevens.analog.com>
-In-Reply-To: <1192524207.11166.1.camel@sevens.analog.com>
+	Tue, 16 Oct 2007 18:21:13 -0400
+Date: Tue, 16 Oct 2007 15:20:37 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: stern@rowland.harvard.edu, david-b@pacbell.net,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
+Message-ID: <20071016222037.GA23793@kroah.com>
+References: <20071015.165828.59656315.davem@davemloft.net> <Pine.LNX.4.44L0.0710161107510.4418-100000@iolanthe.rowland.org> <20071016.150631.122031826.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710170024.22103.bzolnier@gmail.com>
+In-Reply-To: <20071016.150631.122031826.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007, Sonic Zhang wrote:
-> Changes:
-> 1. Remove irq_ack() and port_disable() methods
-> 2. Acocomodate for the libata-link patches
-> 3. Change Kconfig ATAPI mode option into a module param.
-> 4. Add supported WMDMA mode.
+On Tue, Oct 16, 2007 at 03:06:31PM -0700, David Miller wrote:
+> From: Alan Stern <stern@rowland.harvard.edu>
+> Date: Tue, 16 Oct 2007 11:23:58 -0400 (EDT)
 > 
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+> > Unfortunately that simply isn't possible.  No matter what you do, the 
+> > user can always unload ehci-hcd and then load it back in again.
+> 
+> Yes we can, by making OHCI and EHCI one module with a top-level
+> dispatch.  If you enable both OHCI and EHCI, the top-level
+> module will dispatch the host initializations in the correct order.
+> 
+> This is what I've suggested from the beginning.
 
-thanks, looks good
+Wait, you can have hardware with both EHCI and UHCI too.  Does that mean
+we should merge all three together?  I don't think so :)
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+But perhaps we can order the hardware init stuff from all three together
+like this into a separate module they all depend on.  In a way, that's
+what the lock tried to do, right?  Are we just not catching all places
+we could have hardware being talked to by two modules at the same time?
+
+thanks,
+
+greg k-h
