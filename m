@@ -1,101 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765787AbXJPFba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765429AbXJPFn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765787AbXJPFba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 01:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbXJPFbX
+	id S1765429AbXJPFn1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 01:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbXJPFnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 01:31:23 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56036 "EHLO mx2.suse.de"
+	Tue, 16 Oct 2007 01:43:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54621 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757001AbXJPFbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 01:31:22 -0400
-Date: Mon, 15 Oct 2007 22:26:54 -0700
-From: Greg KH <gregkh@suse.de>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: usb
-Message-ID: <20071016052654.GA8730@suse.de>
-References: <86802c440710151037y75e6e8eex3e17da8763d68643@mail.gmail.com>
+	id S1752971AbXJPFnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 01:43:17 -0400
+Date: Tue, 16 Oct 2007 07:42:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+Message-ID: <20071016054236.GA27906@elte.hu>
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <4713EC59.4010106@pobox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440710151037y75e6e8eex3e17da8763d68643@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4713EC59.4010106@pobox.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.1.7-deb
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1653]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 10:37:04AM -0700, Yinghai Lu wrote:
-> Greg,
-> 
-> from linus's git this morning..
-> 
-> ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUB2] -> GSI 21 (level,
-> low) -> IRQ 21
-> ehci_hcd 0000:00:02.1: EHCI Host Controller
-> ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
-> ehci_hcd 0000:00:02.1: debug port 1
-> ehci_hcd 0000:00:02.1: irq 21, io mem 0xdefbec00
-> ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 10 ports detected
-> ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUB0] -> GSI 22 (level,
-> low) -> IRQ 22
-> ohci_hcd 0000:00:02.0: OHCI Host Controller
-> ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
-> ohci_hcd 0000:00:02.0: irq 22, io mem 0xdefbf000
-> usb 1-1: new high speed USB device using ehci_hcd and address 2
-> usb usb2: configuration #1 chosen from 1 choice
-> hub 2-0:1.0: USB hub found
-> hub 2-0:1.0: 10 ports detected
-> USB Universal Host Controller Interface driver v3.0
-> Initializing USB Mass Storage driver...
-> usb 1-1: configuration #1 chosen from 1 choice
-> usb 1-6: new high speed USB device using ehci_hcd and address 5
-> usb 1-6: configuration #1 chosen from 1 choice
-> hub 1-6:1.0: USB hub found
-> hub 1-6:1.0: 4 ports detected
-> sysfs: duplicate filename 'bInterfaceNumber' can not be created
-> WARNING: at fs/sysfs/dir.c:425 sysfs_add_one()
-> 
-> Call Trace:
->  [<ffffffff802bf326>] sysfs_add_one+0x54/0xbd
->  [<ffffffff802bee22>] sysfs_add_file+0x50/0x81
->  [<ffffffff802c07ec>] sysfs_create_group+0x9a/0xf2
->  [<ffffffff80616cb6>] usb_create_sysfs_intf_files+0x32/0xc7
->  [<ffffffff80613762>] usb_set_configuration+0x49d/0x4c0
->  [<ffffffff8061a672>] generic_probe+0x53/0x95
->  [<ffffffff804a57d3>] driver_probe_device+0xd3/0x150
->  [<ffffffff804a5850>] __device_attach+0x0/0x5
->  [<ffffffff804a4aec>] bus_for_each_drv+0x40/0x71
->  [<ffffffff804a58db>] device_attach+0x63/0x7a
->  [<ffffffff804a4a5e>] bus_attach_device+0x2a/0x78
->  [<ffffffff804a3a20>] device_add+0x308/0x51e
->  [<ffffffff8060ef04>] usb_new_device+0x47/0x80
->  [<ffffffff8060facd>] hub_thread+0x75a/0xb4a
->  [<ffffffff80245787>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff8060f373>] hub_thread+0x0/0xb4a
->  [<ffffffff8024565d>] kthread+0x47/0x76
->  [<ffffffff8020ca58>] child_rip+0xa/0x12
->  [<ffffffff80245616>] kthread+0x0/0x76
->  [<ffffffff8020ca4e>] child_rip+0x0/0x12
-> 
-> usb 2-3: new full speed USB device using ohci_hcd and address 2
-> usb 2-3: configuration #1 chosen from 1 choice
-> hub 2-3:1.0: USB hub found
-> hub 2-3:1.0: 4 ports detected
-> usb 2-5: new low speed USB device using ohci_hcd and address 3
-> usb 2-5: configuration #1 chosen from 1 choice
-> scsi15 : SCSI emulation for USB Mass Storage devices
-> usb 2-3.1: new low speed USB device using ohci_hcd and address 4
-> usb 2-3.1: configuration #1 chosen from 1 choice
-> usb 2-3.4: new low speed USB device using ohci_hcd and address 5
-> usb 2-3.4: configuration #1 chosen from 1 choice
 
-Yes, I can duplicate this here now too.  Will work on this tomorrow to
-track down...
+* Jeff Garzik <jgarzik@pobox.com> wrote:
 
-thanks,
+> Two comments:
+> 
+> 1) we have a vague definition of "RX work processed."  Due to error 
+> conditions and goto's in that function, rx_processed_cnt may or may 
+> not equal the number of packets actually processed.
+> 
+> 2) man I dislike these inline C statement combinations (ranting at 
+> original code style, not you).  I would much rather waste a few extra 
+> lines of source code and make the conditions obvious:
+> 
+> 	while (... && (rx_processed_cnt < limit)) {
+> 		rx_processed_cnt++;
+> 
+> 		...
+> 	}
+> 
+> or even
+> 
+> 	while (1) {
+> 		...
+> 		if (rx_processed_cnt == limit)
+> 			break;
+> 		rx_processed_cnt++;
+> 	}
+> 
+> The compiler certainly doesn't care, and IMO it prevents bugs.
 
-greg k-h
+agreed. Do you have an uptodate patch/git-URI for the forcedeth rewrite 
+you did? I can throw it into the testbed.
+
+	Ingo
