@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbXJPKNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXJPKSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765728AbXJPKNd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbXJPKNY
+	id S932396AbXJPKSI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXJPKRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:13:24 -0400
-Received: from ns.kkc.fi ([62.148.199.203]:48109 "EHLO smtp.kkc.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758822AbXJPKNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:13:23 -0400
-X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Oct 2007 06:13:23 EDT
-Message-ID: <47148CAC.8060603@mandriva.org>
-Date: Tue, 16 Oct 2007 13:04:28 +0300
-From: Thomas Backlund <tmb@mandriva.org>
+	Tue, 16 Oct 2007 06:17:53 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:33182 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759122AbXJPKRw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 06:17:52 -0400
+Date: Tue, 16 Oct 2007 12:17:51 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Arjan van de Ven <arjan@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
+In-Reply-To: <471401AF.4090802@zytor.com>
+Message-ID: <Pine.LNX.4.64.0710161205160.1315@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz>
+ <20071015143732.01d99af8@laptopd505.fenrus.org>
+ <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz> <471401AF.4090802@zytor.com>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] scheduler updates for v2.6.24
-References: <20071015141723.GA29486@elte.hu>
-In-Reply-To: <20071015141723.GA29486@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar skrev:
-> Linus, please pull the latest scheduler git tree from:
+On Mon, 15 Oct 2007, H. Peter Anvin wrote:
+
+> Mikulas Patocka wrote:
+> > 
+> > I know about unordered stores (movnti & similar) --- they basically use
+> > write-combining method on memory that is normally write-back --- and they
+> > need sfence. But which one instruction does unordered load and needs
+> > lefence?
+> > 
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+> PREFETCHNTA.
+
+PREFETCH* doesn't change program semantics. The processor is allowed to 
+ignore prefetch instruction if it doesn't have resources needed for 
+prefetch. It not ordered wrt. fences.
+
+PREFETCHNTA was implemented as prefetch into L1 cache and omitting L2 
+cache on Pentium 3 and M --- and it is implemented as prefetch into L2 
+cache on other --- do it doesn't really use any special buffers.
+
+Mikulas
+
+> 	-hpa
 > 
-> It contains lots of scheduler updates from lots of people - hopefully 
-> the last big one for quite some time. Most of the focus was on 
-> performance (both micro-performance and scalability/balancing), but 
-> there's the fair-scheduling feature now Kconfig selectable too. Find the 
-> shortlog below.
-> 
-
-
-How does this one compare to the v22 you released earlier ?
-
-I'm thinking of backporting any fixes/optimizations to 2.6.22
-(and possibly 2.6.23)
-
---
-Thomas
