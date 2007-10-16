@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934358AbXJPR1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbXJPR2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934358AbXJPR1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 13:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbXJPR1N
+	id S933856AbXJPR2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 13:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbXJPR2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 13:27:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:62994 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbXJPR1M (ORCPT
+	Tue, 16 Oct 2007 13:28:43 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:42935 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759311AbXJPR2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 13:27:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=MrTDpvecBcSTGZ7EMDhkYeXL/tKDd2VqsfFsF2pfYpZHqD/pFeuXORWAsrR1TrZiy
-	3d7h1chdbCCvTvx0Xub1A==
-Date: Tue, 16 Oct 2007 10:25:20 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dave Hansen <haveblue@us.ibm.com>
-cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: maps3: introduce task_size_of for all arches (updated v4)
-In-Reply-To: <1192555093.6118.164.camel@localhost>
-Message-ID: <alpine.DEB.0.9999.0710161025050.11410@chino.kir.corp.google.com>
-References: <3.290135367@selenic.com>  <alpine.DEB.0.9999.0710151643260.18722@chino.kir.corp.google.com>  <1192494989.6118.142.camel@localhost>  <alpine.DEB.0.9999.0710151924420.11508@chino.kir.corp.google.com> <1192555093.6118.164.camel@localhost>
+	Tue, 16 Oct 2007 13:28:41 -0400
+Date: Tue, 16 Oct 2007 19:25:17 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: r8169 & TX offload
+Message-ID: <20071016172517.GA8120@electric-eye.fr.zoreil.com>
+References: <4714D785.3000402@vlnb.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4714D785.3000402@vlnb.net>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Dave Hansen wrote:
+(please remove l-k from the Cc:, this ought to be sent to netdev)
 
-> For the /proc/<pid>/pagemap code[1], we need to able to query how
-> much virtual address space a particular task has.  The trick is
-> that we do it through /proc and can't use TASK_SIZE since it
-> references "current" on some arches.  The process opening the
-> /proc file might be a 32-bit process opening a 64-bit process's
-> pagemap file.
+Vladislav Bolkhovitin <vst@vlnb.net> :
+>
+> I've recently bought Realtek RTL8169S-32 chip based Gigabit Ethernet card:
 > 
-> x86_64 already has a TASK_SIZE_OF() macro:
-> 
-> #define TASK_SIZE_OF(child)     ((test_tsk_thread_flag(child, TIF_IA32)) ? IA32_PAGE_OFFSET : TASK_SIZE64)
-> 
-> I'd like to have that for other architectures.  So, add it
-> for all the architectures that actually use "current" in 
-> their TASK_SIZE.  For the others, just add a quick #define
-> in sched.h to use plain old TASK_SIZE.
-> 
-> 1. http://www.linuxworld.com/news/2007/042407-kernel.html
-> 
-> - MIPS portion from Ralf Baechle <ralf@linux-mips.org>
-> 
-> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> # lspci -vv
+[...]
+> I've noticed that all TX offload features (tx-checksumming, 
+> scatter-gather and TSO) are disabled by default and should be manually 
+> enabled by ethtool. I wonder, is there any particular reason for that? 
 
-Acked-by: David Rientjes <rientjes@google.com>
+As far as I can tell, it is mostly a lack of pressure from the users and
+my desire to avoid a change of behavior.
+
+> Why they are not enabled by default as it was done for e1000 or tg3? Are 
+> there any hidden drawbacks in enabling them?
+
+None that I know of. I had not noticed a huge difference and people did
+not comment a lot either...
+
+> Those offload options are definitely work. They give in my setup (32-bit 
+> 66MHz PCI, Xeon 1.7GHz CPU, open-iscsi) CPU offload from 75% to 45% and 
+> data write throughput improvement from 55MB/s to 59MB/s.
+
+...but your datapoint is welcome.
+
+-- 
+Ueimor
