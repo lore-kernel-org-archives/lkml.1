@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbXJPSEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbXJPSFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934089AbXJPSEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964910AbXJPSDr
+	id S1750962AbXJPSFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbXJPSEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:03:47 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48078 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934866AbXJPSDm (ORCPT
+	Tue, 16 Oct 2007 14:04:49 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51718 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754484AbXJPSEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:03:42 -0400
-Date: Tue, 16 Oct 2007 14:02:38 -0400
-Message-Id: <200710161802.l9GI2ca6012758@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, "Hugh Dickins" <hugh@veritas.com>,
-       "Ryan Finnie" <ryan@finnie.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-reply-to: Your message of "Mon, 15 Oct 2007 14:47:52 +0300."
-             <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com> 
-X-MailKey: Erez_Zadok
+	Tue, 16 Oct 2007 14:04:45 -0400
+Date: Tue, 16 Oct 2007 14:04:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+cc: Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>,
+       <bbpetkov@yahoo.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
+In-Reply-To: <20071016163348.GB24082@one-eyed-alien.net>
+Message-ID: <Pine.LNX.4.44L0.0710161355150.9662-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>, "Pekka Enberg" writes:
-> Hi,
+On Tue, 16 Oct 2007, Matthew Dharm wrote:
+
+> I haven't looked at this code at all, but neither approach feels right to
+> me.
 > 
-> On 10/15/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
-> > Pekka, with a small change to your patch (to handle time-based cache
-> > coherency), your patch worked well and passed all my tests.  Thanks.
-> >
-> > So now I wonder if we still need the patch to prevent AOP_WRITEPAGE_ACTIVATE
-> > from being returned to userland.  I guess we still need it, b/c even with
-> > your patch, generic_writepages() can return AOP_WRITEPAGE_ACTIVATE back to
-> > the VFS and we need to ensure that doesn't "leak" outside the kernel.
-> 
-> I wonder whether _not setting_ BDI_CAP_NO_WRITEBACK implies that
-> ->writepage() will never return AOP_WRITEPAGE_ACTIVATE for
-> !wbc->for_reclaim case which would explain why we haven't hit this bug
-> before. Hugh, Andrew?
-> 
-> And btw, I think we need to fix ecryptfs too.
+> How does this work at all?  Even if you load a driver later, wouldn't it
+> call usb_set_interface(), which would call usb_create_sysfs_intf_files()
+> and hit the same issue?
 
-Yes, ecryptfs needs this fix too (and probably a couple of other mmap fixes
-I've made to unionfs recently -- Mike Halcrow already knows :-)
+usb_set_interface() is smart enough to remove the old interface files
+before creating new ones, since it expects them to exist already.  
+Hence there's no problem in that scenario.
 
-Of course, running ecryptfs on top of tmpfs is somewhat odd and uncommon;
-but with unionfs, users use tmpfs as the copyup branch very often.
+But usb_set_configuration doesn't expect there to be any pre-existing
+interface files, because there isn't even an interface until the
+registration is performed.
 
->                                            Pekka
+> Heck, why do both call usb_create_sysfs_intf_file()?  I would guess if
+> you're *changing* the active configuration you would need to do that, but
+> why in usb_set_interface() at all?
 
-Erez.
+For a couple of reasons.  The "interface" attribute file contains the
+iInterface string descriptor, and that file is present only if such a
+descriptor exists.  Since different altsettings might not agree on
+whether or not iInterface exists, the attribute has to be created anew
+for each altsetting.  (Yes, we could let the file always be present and
+just be blank if there is no descriptor.)
+
+The most important reason has to do with the endpoint pseudo-devices.  
+Different altsettings can have different endpoints, so those have to be
+removed and re-created whenever the altsetting changes.
+
+Alan Stern
+
