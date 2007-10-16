@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763833AbXJSLtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765911AbXJSLu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763833AbXJSLtq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 07:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbXJSLtj
+	id S1765911AbXJSLu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 07:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755623AbXJSLuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 07:49:39 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:46742 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbXJSLti (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 07:49:38 -0400
-Message-ID: <471899CA.8060206@de.ibm.com>
-Date: Fri, 19 Oct 2007 13:49:30 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Fri, 19 Oct 2007 07:50:51 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:53382 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754009AbXJSLuu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 07:50:50 -0400
+Message-ID: <4715481F.7060502@blueyonder.co.uk>
+Date: Wed, 17 Oct 2007 00:24:15 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: carsteno@de.ibm.com, Aurelien Jarno <aurelien@aurel32.net>,
-       "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
-       Linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
-References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net> <47189706.1040809@de.ibm.com> <4718982D.4020500@bull.net>
-In-Reply-To: <4718982D.4020500@bull.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.23-git10 make  bzImage problem
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> How do you know the problem has been introduced by kvm ?
-I don't. In fact I think it has not been introduced by kvm. All I 
-stated, is that we experienced the problem when running the kvm.git 
-kernel after the 2.6.23 update that has not been present in the 
-kvm.git -rc8 as of last thursday.
+When booted, it complains that kernel size is too big, but size OK for a 
+bzImage, not for zImage as is returned by the file command, -git9 was 
+OK, x86_64 SMP kernel on two 64x2 boxes.
+I shall supplymy .config if needed, but they are the same as for -git9.
+
+  # l arch/x86/boot/bzImage
+-rw-r--r-- 1 root root 1761496 2007-10-16 22:45 arch/x86/boot/bzImage
+
+# file arch/x86_64/boot/bzImage
+arch/x86_64/boot/bzImage: symbolic link to 
+`/usr/src/linux-2.6.23-git10/arch/x86/boot/bzImage'
+
+# file arch/x86/boot/bzImage
+arch/x86/boot/bzImage: Linux/x86 Kernel, Setup Version 0x206, zImage, 
+RO-rootFS, root_dev 0x801, swap_dev 0x1, Prompt for Videomode
+
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
