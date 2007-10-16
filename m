@@ -1,83 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932987AbXJPLnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXJPLpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932987AbXJPLnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 07:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760860AbXJPLn0
+	id S933198AbXJPLpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 07:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759835AbXJPLpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 07:43:26 -0400
-Received: from mx1.minet.net ([157.159.40.25]:56624 "EHLO mx1.minet.net"
+	Tue, 16 Oct 2007 07:45:19 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17091 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760789AbXJPLnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 07:43:25 -0400
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-Date: Tue, 16 Oct 2007 13:41:35 +0200
-Subject: [PATCH 4/4] [x86] : Add the RDC machine specific reboot fixup
+	id S1759325AbXJPLpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 07:45:17 -0400
+Date: Tue, 16 Oct 2007 13:44:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kristof Provost <Kristof@provost-engineering.be>
+Cc: linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>
+Subject: Re: [BUG] memory leak in dm
+Message-ID: <20071016114458.GD5263@kernel.dk>
+References: <20071016113800.GA4631@luggage>
 MIME-Version: 1.0
-X-Length: 2018
-To: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_wNKFHAnsfnJILB1"
-Message-Id: <200710161341.36375.florian.fainelli@telecomint.eu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071016113800.GA4631@luggage>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---Boundary-00=_wNKFHAnsfnJILB1
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, Oct 16 2007, Kristof Provost wrote:
+> 
+> Hi,
+> 
+> I'm seeing a serious memory leak whenever I use my /home partition.
+> It's an encrypted partition using dm-crypt. Simply running 
+> 'stress -d 5' is enough to exhaust the memory in a few minutes.
+> 
+> When I stop 'stress' the memory isn't returned.
+> This doesn't seem to happen when I run stress on a normal (no dm and 
+> no encryption) partition.
+> 
+> Here's the output of 'free -m' before and after 'stress -d 1 -t 5'
+> Before:
+>              total       used       free     shared    buffers     cached
+> Mem:           751        584        167          0         14        235
+> -/+ buffers/cache:        334        416
+> Swap:          980          0        980
+> 
+> After:
+>              total       used       free     shared    buffers     cached
+> Mem:           751        619        131          0         12        169
+> -/+ buffers/cache:        437        313
+> Swap:          980          0        980
+> 
+> That's 100Mb of RAM gone in 5 seconds.  
+> 
+> I'm using a standard x86 centrino laptop.
+> The log files don't reveal anything suspicious.
+> 
+> git bisect tells me it started in one of these commits:
+> d24517d793f21edab1a411da95f2c45cb88a84aa, 
+> 5bb23a688b2de23d7765a1dd439d89c038378978 and 
+> 9cc54d40b8ca01fcefc9151044b6996565061d90. 
+> 
+> The bug is still present in the last version of Linus' tree
+> (65a6ec0d72a07f16719e9b7a96e1c4bae044b591)
+> 
+> Let me know if I can provide more information.
 
-The RDC R-321x SoC needs a reboot fixup which
-uses its internal hardware watchdog set to
-reset the CPU on next tick.
+Please try with this patch from Neil.
 
-Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
----
- arch/x86/kernel/reboot_fixups_32.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
---Boundary-00=_wNKFHAnsfnJILB1
-Content-Type: text/plain;
-  charset="utf-8";
-  name="aa62d42093f0d41c12f8eb4dc07644fdd4f86637.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="aa62d42093f0d41c12f8eb4dc07644fdd4f86637.diff"
-
-diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-index 8b30b26..26e23fc 100644
---- a/arch/x86/kernel/reboot_fixups_32.c
-+++ b/arch/x86/kernel/reboot_fixups_32.c
-@@ -32,6 +32,19 @@ static void cs5536_warm_reset(struct pci_dev *dev)
- 	udelay(50); /* shouldn't get here but be safe and spin a while */
+diff .prev/drivers/md/dm-crypt.c ./drivers/md/dm-crypt.c
+--- .prev/drivers/md/dm-crypt.c	2007-10-15 17:18:20.000000000 +1000
++++ ./drivers/md/dm-crypt.c	2007-10-15 17:21:43.000000000 +1000
+@@ -444,32 +444,12 @@ static struct bio *crypt_alloc_buffer(st
  }
  
-+static void rdc321x_reset(struct pci_dev *dev)
-+{
-+	unsigned i;
-+	/* Voluntary reset the watchdog timer */
-+	outl(0x80003840, 0xCF8);
-+	/* Generate a CPU reset on next tick */
-+	i = inl(0xCFC);
-+	/* Use the minimum timer resolution */
-+	i |= 0x1600;
-+	outl(i, 0xCFC);
-+	outb(1, 0x92);
-+}
-+
- struct device_fixup {
- 	unsigned int vendor;
- 	unsigned int device;
-@@ -41,6 +54,7 @@ struct device_fixup {
- static struct device_fixup fixups_table[] = {
- { PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_LEGACY, cs5530a_warm_reset },
- { PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, cs5536_warm_reset },
-+{ PCI_VENDOR_ID_RDC, PCI_DEVICE_ID_RDC_R6030, rdc321x_reset },
- };
+ static void crypt_free_buffer_pages(struct crypt_config *cc,
+-				    struct bio *clone, unsigned int bytes)
++				    struct bio *clone)
+ {
+-	unsigned int i, start, end;
++	unsigned int i;
+ 	struct bio_vec *bv;
  
- /*
+-	/*
+-	 * This is ugly, but Jens Axboe thinks that using bi_idx in the
+-	 * endio function is too dangerous at the moment, so I calculate the
+-	 * correct position using bi_vcnt and bi_size.
+-	 * The bv_offset and bv_len fields might already be modified but we
+-	 * know that we always allocated whole pages.
+-	 * A fix to the bi_idx issue in the kernel is in the works, so
+-	 * we will hopefully be able to revert to the cleaner solution soon.
+-	 */
+-	i = clone->bi_vcnt - 1;
+-	bv = bio_iovec_idx(clone, i);
+-	end = (i << PAGE_SHIFT) + (bv->bv_offset + bv->bv_len) - clone->bi_size;
+-	start = end - bytes;
+-
+-	start >>= PAGE_SHIFT;
+-	if (!clone->bi_size)
+-		end = clone->bi_vcnt;
+-	else
+-		end >>= PAGE_SHIFT;
+-
+-	for (i = start; i < end; i++) {
++	for (i = 0; i < clone->bi_vcnt; i++) {
+ 		bv = bio_iovec_idx(clone, i);
+ 		BUG_ON(!bv->bv_page);
+ 		mempool_free(bv->bv_page, cc->page_pool);
+@@ -539,7 +519,7 @@ static void crypt_endio(struct bio *clon
+ 	 * free the processed pages
+ 	 */
+ 	if (!read_io) {
+-		crypt_free_buffer_pages(cc, clone, clone->bi_size);
++		crypt_free_buffer_pages(cc, clone);
+ 		goto out;
+ 	}
+ 
+@@ -628,7 +608,7 @@ static void process_write(struct dm_cryp
+ 		ctx.idx_out = 0;
+ 
+ 		if (unlikely(crypt_convert(cc, &ctx) < 0)) {
+-			crypt_free_buffer_pages(cc, clone, clone->bi_size);
++			crypt_free_buffer_pages(cc, clone);
+ 			bio_put(clone);
+ 			crypt_dec_pending(io, -EIO);
+ 			return;
 
---Boundary-00=_wNKFHAnsfnJILB1--
-
+-- 
+Jens Axboe
 
