@@ -1,86 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935298AbXJPSbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935333AbXJPScW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935298AbXJPSbW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 14:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXJPSbN
+	id S935333AbXJPScW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 14:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbXJPScK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 14:31:13 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37002 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753953AbXJPSbL (ORCPT
+	Tue, 16 Oct 2007 14:32:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60765 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932429AbXJPScJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 14:31:11 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 16 Oct 2007 20:30:58 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: avoid an atomic allocation
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-In-Reply-To: <tkrat.ee2f970ab4b4ccbd@s5r6.in-berlin.de>
-Message-ID: <tkrat.ee2011f98a2490f3@s5r6.in-berlin.de>
-References: <tkrat.2493a847503e3d62@s5r6.in-berlin.de>
- <4714F652.1060007@s5r6.in-berlin.de>
- <tkrat.c21e564719351bc6@s5r6.in-berlin.de>
- <tkrat.ee2f970ab4b4ccbd@s5r6.in-berlin.de>
+	Tue, 16 Oct 2007 14:32:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=WzWOcF8e+fGQs0XJlYCP5Cp09HN5+J8/FweU2cncnewEEaTT5WpcCRqxnb/bfYkGh
+	yXijxiPrctlmqa30kPkDw==
+Date: Tue, 16 Oct 2007 11:27:15 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: menage@google.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, clg@fr.ibm.com,
+       ebiederm@xmission.com, containers@lists.osdl.org, serue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
+Subject: Re: [RFC] cpuset update_cgroup_cpus_allowed
+In-Reply-To: <20071016021626.15b94649.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710161121450.32268@chino.kir.corp.google.com>
+References: <20071015071115.16057.72116.sendpatchset@jackhammer.engr.sgi.com> <alpine.DEB.0.9999.0710151135150.24837@chino.kir.corp.google.com> <20071015230729.53fcbaf7.pj@sgi.com> <alpine.DEB.0.9999.0710152311180.22383@chino.kir.corp.google.com>
+ <20071016021626.15b94649.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All of the buffers which are allocated during fw-ohci's pci_probe can be
-allocated with GFP_KERNEL.
+On Tue, 16 Oct 2007, Paul Jackson wrote:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> David wrote:
+> > Why can't you just add a helper function to sched.c:
+> > 
+> > 	void set_hotcpus_allowed(struct task_struct *task,
+> > 				 cpumask_t cpumask)
+> > 	{
+> > 		mutex_lock(&sched_hotcpu_mutex);
+> > 		set_cpus_allowed(task, cpumask);
+> > 		mutex_unlock(&sched_hotcpu_mutex);
+> > 	}
+> > 
+> > And then change each task's cpus_allowed via that function instead of 
+> > set_cpus_allowed() directly?
+> 
+> I guess this would avoid race conditions within the set_cpus_allowed()
+> routine, between its code to read the cpu_online_map and set the tasks
+> cpus_allowed ... though if that's useful, don't we really need to add
+> locking/unlocking on sched_hotcpu_mutex right inside the
+> set_cpus_allowed() routine, for all users of set_cpus_allowed ??
+> 
+
+Not necessarily because migration only occurs to any online cpu in the 
+mask, it won't attempt to migrate it to some cpu that has been downed.
+
+> > My solution may be worse than that.  Because set_cpus_allowed() will
+> > fail if asked to set a non-overlapping cpumask, my solution could never
+> > terminate.  If asked to set a cpusets cpus to something that went off
+> > line right then, this I'd guess this code could keep looping forever,
+> > looking for cpumasks that didn't match, and then not noticing that it
+> > was failing to set them so as they would match.
+> 
+> These races involve reading the tasks cpuset cpus_allowed mask, reading
+> the online map, and both reading and writing the tasks task_struct
+> cpus_allowed.  Unless one holds the relevant lock for the entire
+> interval surrounding the critical accesses to these values, it won't do
+> any good that I can see.  Just briefly holding a lock around each
+> separate access is useless.
+> 
+
+It's not useless since a cpu hot-unplug event automatically updates the 
+cpus_allowed for all cpusets in the hierarchy by removing it.
+
+You could protect the entire reassignment with the same mutex since it's 
+so lightly contended, but it's unnecessary.  All it would guarantee is 
+that cpuset->cpus_allowed is consistent with task->cpus_allowed for all 
+tasks in cpuset.
+
+Something like the following (untested) patch, but adding a 
+set_hotcpus_allowed() helper would also work if it's protected by 
+sched_hotcpu_mutex.
 ---
- drivers/firewire/fw-ohci.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ include/linux/sched.h |    8 +++++
+ kernel/cpuset.c       |   79 ++++++++++++++++++++++++++++--------------------
+ kernel/sched.c        |   13 ++++++--
+ mm/pdflush.c          |    3 --
+ 4 files changed, 64 insertions(+), 39 deletions(-)
 
-Index: linux-2.6.23-rc6/drivers/firewire/fw-ohci.c
-===================================================================
---- linux-2.6.23-rc6.orig/drivers/firewire/fw-ohci.c
-+++ linux-2.6.23-rc6/drivers/firewire/fw-ohci.c
-@@ -242,14 +242,14 @@ ohci_update_phy_reg(struct fw_card *card
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1391,6 +1391,8 @@ static inline void put_task_struct(struct task_struct *t)
+ 
+ #ifdef CONFIG_SMP
+ extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
++extern void sched_hotcpu_lock(void);
++extern void sched_hotcpu_unlock(void);
+ #else
+ static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
+ {
+@@ -1398,6 +1400,12 @@ static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
+ 		return -EINVAL;
  	return 0;
  }
++static inline void sched_hotcpu_lock(void)
++{
++}
++static inline void sched_hotcpu_unlock(void)
++{
++}
+ #endif
  
--static int ar_context_add_page(struct ar_context *ctx)
-+static int ar_context_add_page(struct ar_context *ctx, gfp_t gfp_mask)
+ extern unsigned long long sched_clock(void);
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -706,40 +706,51 @@ done:
+  */
+ static void update_cgroup_cpus_allowed(struct cgroup *cont, cpumask_t *cpus)
  {
- 	struct device *dev = ctx->ohci->card.device;
- 	struct ar_buffer *ab;
- 	dma_addr_t ab_bus;
- 	size_t offset;
+-	int need_repeat = true;
+-
+-	while (need_repeat) {
+-		struct cgroup_iter it;
+-		const int ntasks = 10;
+-		struct task_struct *tasks[ntasks];
+-		struct task_struct **p, **q;
+-
+-		need_repeat = false;
+-		p = tasks;
+-
+-		cgroup_iter_start(cont, &it);
+-		while (1) {
+-			struct task_struct *t;
+-
+-			t = cgroup_iter_next(cont, &it);
+-			if (!t)
+-				break;
+-			if (cpus_equal(*cpus, t->cpus_allowed))
+-				continue;
+-			if (p == tasks + ntasks) {
+-				need_repeat = true;
+-				break;
+-			}
+-			get_task_struct(t);
+-			*p++ = t;
+-		}
+-		cgroup_iter_end(cont, &it);
++	struct cgroup_iter it;
++	struct task_struct *p, **tasks;
++	const int max_tasks = 10;
++	int nr_tasks;
++	int i = 0;
++
++	cgroup_iter_start(cont, &it);
++repeat:
++	for (nr_tasks = max_tasks - 1;
++	     (p = cgroup_iter_next(cont, &it)); nr_tasks--) {
++		/*
++		 * If the cpumask is already equal for this task, there's no
++		 * reason to call set_cpus_allowed() because no change is
++		 * needed and no migration is required.
++		 */
++		if (cpus_equal(p->cpus_allowed, *cpus))
++			continue;
  
--	ab = (struct ar_buffer *) __get_free_page(GFP_ATOMIC);
-+	ab = (struct ar_buffer *) __get_free_page(gfp_mask);
- 	if (ab == NULL)
- 		return -ENOMEM;
+-		for (q = tasks; q < p; q++) {
+-			set_cpus_allowed(*q, *cpus);
+-			put_task_struct(*q);
+-		}
++		/*
++		 * Save a reference to the task structure so it doesn't exit
++		 * prematurely.
++		 */
++		get_task_struct(p);
++		tasks[i++] = p;
++		if (!nr_tasks)
++			goto set_allowed;
++	}
++	cgroup_iter_end(cont, &it);
++
++set_allowed:
++	while (--i >= 0) {
++		/*
++		 * Update the cpus_allowed for this task and migrate it if
++		 * necessary.  Then, decrement the task's usage counter.
++		 */
++		set_cpus_allowed(tasks[i], *cpus);
++		put_task_struct(tasks[i]);
+ 	}
++
++	/*
++	 * We may need to continue iterating through more tasks if we exhausted
++	 * our stack from the previous set.
++	 */
++	if (!nr_tasks)
++		goto repeat;
+ }
  
-@@ -397,7 +397,7 @@ static void ar_context_tasklet(unsigned 
- 			buffer = handle_ar_packet(ctx, buffer);
+ /*
+@@ -779,11 +790,13 @@ static int update_cpumask(struct cpuset *cs, char *buf)
+ 	if (cpus_equal(cs->cpus_allowed, trialcs.cpus_allowed))
+ 		return 0;
  
- 		free_page((unsigned long)buffer);
--		ar_context_add_page(ctx);
-+		ar_context_add_page(ctx, GFP_ATOMIC);
- 	} else {
- 		buffer = ctx->pointer;
- 		ctx->pointer = end =
-@@ -418,8 +418,8 @@ ar_context_init(struct ar_context *ctx, 
- 	ctx->last_buffer = &ab;
- 	tasklet_init(&ctx->tasklet, ar_context_tasklet, (unsigned long)ctx);
++	sched_hotcpu_lock();
+ 	mutex_lock(&callback_mutex);
+ 	cs->cpus_allowed = trialcs.cpus_allowed;
+ 	mutex_unlock(&callback_mutex);
+-
+ 	update_cgroup_cpus_allowed(cs->css.cgroup, &cs->cpus_allowed);
++	sched_hotcpu_unlock();
++
+ 	rebuild_sched_domains();
+ 	return 0;
+ }
+diff --git a/kernel/sched.c b/kernel/sched.c
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -51,7 +51,6 @@
+ #include <linux/rcupdate.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuset.h>
+-#include <linux/cgroup.h>
+ #include <linux/percpu.h>
+ #include <linux/cpu_acct.h>
+ #include <linux/kthread.h>
+@@ -363,6 +362,16 @@ struct rq {
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+ static DEFINE_MUTEX(sched_hotcpu_mutex);
  
--	ar_context_add_page(ctx);
--	ar_context_add_page(ctx);
-+	ar_context_add_page(ctx, GFP_KERNEL);
-+	ar_context_add_page(ctx, GFP_KERNEL);
- 	ctx->current_buffer = ab.next;
- 	ctx->pointer = ctx->current_buffer->data;
++void sched_hotcpu_lock(void)
++{
++	mutex_lock(&sched_hotcpu_mutex);
++}
++
++void sched_hotcpu_unlock(void)
++{
++	mutex_unlock(&sched_hotcpu_mutex);
++}
++
+ static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
+ {
+ 	rq->curr->sched_class->check_preempt_curr(rq, p);
+@@ -4365,11 +4374,9 @@ long sched_setaffinity(pid_t pid, cpumask_t new_mask)
+ 	if (retval)
+ 		goto out_unlock;
  
-
--- 
-Stefan Richter
--=====-=-=== =-=- =----
-http://arcgraph.de/sr/
-
+-	cgroup_lock();
+ 	cpus_allowed = cpuset_cpus_allowed(p);
+ 	cpus_and(new_mask, new_mask, cpus_allowed);
+ 	retval = set_cpus_allowed(p, new_mask);
+-	cgroup_unlock();
+ 
+ out_unlock:
+ 	put_task_struct(p);
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+--- a/mm/pdflush.c
++++ b/mm/pdflush.c
+@@ -21,7 +21,6 @@
+ #include <linux/writeback.h>	// Prototypes pdflush_operation()
+ #include <linux/kthread.h>
+ #include <linux/cpuset.h>
+-#include <linux/cgroup.h>
+ #include <linux/freezer.h>
+ 
+ 
+@@ -188,10 +187,8 @@ static int pdflush(void *dummy)
+ 	 * This is needed as pdflush's are dynamically created and destroyed.
+ 	 * The boottime pdflush's are easily placed w/o these 2 lines.
+ 	 */
+-	cgroup_lock();
+ 	cpus_allowed = cpuset_cpus_allowed(current);
+ 	set_cpus_allowed(current, cpus_allowed);
+-	cgroup_unlock();
+ 
+ 	return __pdflush(&my_work);
+ }
