@@ -1,45 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933157AbXJPKS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbXJPKYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933157AbXJPKS3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 06:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760773AbXJPKRz
+	id S933140AbXJPKYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 06:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXJPKYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 06:17:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57261 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759454AbXJPKRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 06:17:53 -0400
-Date: Tue, 16 Oct 2007 11:19:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: david@lang.hm
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Matthew Wilcox <matthew@wil.cx>, Rob Landley <rob@landley.net>,
-       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-Message-ID: <20071016111911.30a18e12@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm>
-References: <200710112011.22000.rob@landley.net>
-	<200710141836.55211.rob@landley.net>
-	<4712FE33.3000400@s5r6.in-berlin.de>
-	<200710150426.04924.rob@landley.net>
-	<20071015160800.GA324@parisc-linux.org>
-	<47139F15.7050702@s5r6.in-berlin.de>
-	<Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 16 Oct 2007 06:24:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38933 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759317AbXJPKYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 06:24:05 -0400
+Subject: Re: [PATCH] powerpc64 vDSO: linker script indentation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>
+In-Reply-To: <20071016034333.19BEE4D0389@magilla.localdomain>
+References: <20071016034333.19BEE4D0389@magilla.localdomain>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 20:23:43 +1000
+Message-Id: <1192530223.7205.25.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > /dev/sd-ide-b	- second IDE HDD,
-> > /dev/sr-sata-0	- first SATA CD-ROM,
 
-I wouldn't try dividing those by pata v sata. You'll cause all sorts of
-problems in the process because of PATA-SATA and SATA-PATA bridges.
+On Mon, 2007-10-15 at 20:43 -0700, Roland McGrath wrote:
+> This cleans up the formatting in the vDSO linker script, mostly just the
+> use of whitespace.  It's intended to approximate the kernel standard
+> conventions for indenting C, treating elements of the linker script about
+> like initialized variable definitions.
+> 
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> CC: Sam Ravnborg <sam@ravnborg.org>
+
+Thanks Roland !
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ 
+> ---
+>  arch/powerpc/kernel/vdso64/vdso64.lds.S |  225 +++++++++++++++++--------------
+>  1 files changed, 122 insertions(+), 103 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> index 2d70f35..932b3fd 100644
+> --- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> +++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> @@ -10,100 +10,114 @@ ENTRY(_start)
+>  
+>  SECTIONS
+>  {
+> -  . = VDSO64_LBASE + SIZEOF_HEADERS;
+> -  .hash           : { *(.hash) }		:text
+> -  .gnu.hash       : { *(.gnu.hash) }
+> -  .dynsym         : { *(.dynsym) }
+> -  .dynstr         : { *(.dynstr) }
+> -  .gnu.version    : { *(.gnu.version) }
+> -  .gnu.version_d  : { *(.gnu.version_d) }
+> -  .gnu.version_r  : { *(.gnu.version_r) }
+> -
+> -  .note		  : { *(.note.*) }		:text	:note
+> -
+> -  . = ALIGN (16);
+> -  .text           :
+> -  {
+> -    *(.text .stub .text.* .gnu.linkonce.t.*)
+> -    *(.sfpr .glink)
+> -  }						:text
+> -  PROVIDE (__etext = .);
+> -  PROVIDE (_etext = .);
+> -  PROVIDE (etext = .);
+> -
+> -  . = ALIGN(8);
+> -  __ftr_fixup : {
+> -    *(__ftr_fixup)
+> -  }
+> -
+> -  . = ALIGN(8);
+> -  __fw_ftr_fixup : {
+> -    *(__fw_ftr_fixup)
+> -  }
+> -
+> -  /* Other stuff is appended to the text segment: */
+> -  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+> -  .rodata1        : { *(.rodata1) }
+> -  .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text	:eh_frame_hdr
+> -  .eh_frame       : { KEEP (*(.eh_frame)) }	:text
+> -  .gcc_except_table   : { *(.gcc_except_table) }
+> -
+> -  .opd           ALIGN(8) : { KEEP (*(.opd)) }
+> -  .got		 ALIGN(8) : { *(.got .toc) }
+> -  .rela.dyn	 ALIGN(8) : { *(.rela.dyn) }
+> -
+> -  .dynamic        : { *(.dynamic) }		:text	:dynamic
+> -
+> -  _end = .;
+> -  PROVIDE (end = .);
+> -
+> -  /* Stabs debugging sections are here too
+> -   */
+> -  .stab          0 : { *(.stab) }
+> -  .stabstr       0 : { *(.stabstr) }
+> -  .stab.excl     0 : { *(.stab.excl) }
+> -  .stab.exclstr  0 : { *(.stab.exclstr) }
+> -  .stab.index    0 : { *(.stab.index) }
+> -  .stab.indexstr 0 : { *(.stab.indexstr) }
+> -  .comment       0 : { *(.comment) }
+> -  /* DWARF debug sectio/ns.
+> -     Symbols in the DWARF debugging sections are relative to the beginning
+> -     of the section so we begin them at 0.  */
+> -  /* DWARF 1 */
+> -  .debug          0 : { *(.debug) }
+> -  .line           0 : { *(.line) }
+> -  /* GNU DWARF 1 extensions */
+> -  .debug_srcinfo  0 : { *(.debug_srcinfo) }
+> -  .debug_sfnames  0 : { *(.debug_sfnames) }
+> -  /* DWARF 1.1 and DWARF 2 */
+> -  .debug_aranges  0 : { *(.debug_aranges) }
+> -  .debug_pubnames 0 : { *(.debug_pubnames) }
+> -  /* DWARF 2 */
+> -  .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+> -  .debug_abbrev   0 : { *(.debug_abbrev) }
+> -  .debug_line     0 : { *(.debug_line) }
+> -  .debug_frame    0 : { *(.debug_frame) }
+> -  .debug_str      0 : { *(.debug_str) }
+> -  .debug_loc      0 : { *(.debug_loc) }
+> -  .debug_macinfo  0 : { *(.debug_macinfo) }
+> -  /* SGI/MIPS DWARF 2 extensions */
+> -  .debug_weaknames 0 : { *(.debug_weaknames) }
+> -  .debug_funcnames 0 : { *(.debug_funcnames) }
+> -  .debug_typenames 0 : { *(.debug_typenames) }
+> -  .debug_varnames  0 : { *(.debug_varnames) }
+> -
+> -  /DISCARD/ : { *(.note.GNU-stack) }
+> -  /DISCARD/ : { *(.branch_lt) }
+> -  /DISCARD/ : { *(.data .data.* .gnu.linkonce.d.*) }
+> -  /DISCARD/ : { *(.bss .sbss .dynbss .dynsbss) }
+> +	. = VDSO64_LBASE + SIZEOF_HEADERS;
+> +
+> +	.hash		: { *(.hash) }			:text
+> +	.gnu.hash	: { *(.gnu.hash) }
+> +	.dynsym		: { *(.dynsym) }
+> +	.dynstr		: { *(.dynstr) }
+> +	.gnu.version	: { *(.gnu.version) }
+> +	.gnu.version_d	: { *(.gnu.version_d) }
+> +	.gnu.version_r	: { *(.gnu.version_r) }
+> +
+> +	.note		: { *(.note.*) }		:text	:note
+> +
+> +	. = ALIGN(16);
+> +	.text		: {
+> +		*(.text .stub .text.* .gnu.linkonce.t.*)
+> +		*(.sfpr .glink)
+> +	}						:text
+> +	PROVIDE(__etext = .);
+> +	PROVIDE(_etext = .);
+> +	PROVIDE(etext = .);
+> +
+> +	. = ALIGN(8);
+> +	__ftr_fixup	: { *(__ftr_fixup) }
+> +
+> +	. = ALIGN(8);
+> +	__fw_ftr_fixup	: { *(__fw_ftr_fixup) }
+> +
+> +	/*
+> +	 * Other stuff is appended to the text segment:
+> +	 */
+> +	.rodata		: { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+> +	.rodata1	: { *(.rodata1) }
+> +
+> +	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
+> +	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
+> +	.gcc_except_table : { *(.gcc_except_table) }
+> +
+> +	.opd ALIGN(8)	: { KEEP (*(.opd)) }
+> +	.got ALIGN(8)	: { *(.got .toc) }
+> +	.rela.dyn ALIGN(8) : { *(.rela.dyn) }
+> +
+> +	.dynamic	: { *(.dynamic) }		:text	:dynamic
+> +
+> +	_end = .;
+> +	PROVIDE(end = .);
+> +
+> +	/*
+> +	 * Stabs debugging sections are here too.
+> +	 */
+> +	.stab          0 : { *(.stab) }
+> +	.stabstr       0 : { *(.stabstr) }
+> +	.stab.excl     0 : { *(.stab.excl) }
+> +	.stab.exclstr  0 : { *(.stab.exclstr) }
+> +	.stab.index    0 : { *(.stab.index) }
+> +	.stab.indexstr 0 : { *(.stab.indexstr) }
+> +	.comment       0 : { *(.comment) }
+> +
+> +	/*
+> +	 * DWARF debug sections.
+> +	 * Symbols in the DWARF debugging sections are relative to the beginning
+> +	 * of the section so we begin them at 0.
+> +	 */
+> +	/* DWARF 1 */
+> +	.debug          0 : { *(.debug) }
+> +	.line           0 : { *(.line) }
+> +	/* GNU DWARF 1 extensions */
+> +	.debug_srcinfo  0 : { *(.debug_srcinfo) }
+> +	.debug_sfnames  0 : { *(.debug_sfnames) }
+> +	/* DWARF 1.1 and DWARF 2 */
+> +	.debug_aranges  0 : { *(.debug_aranges) }
+> +	.debug_pubnames 0 : { *(.debug_pubnames) }
+> +	/* DWARF 2 */
+> +	.debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+> +	.debug_abbrev   0 : { *(.debug_abbrev) }
+> +	.debug_line     0 : { *(.debug_line) }
+> +	.debug_frame    0 : { *(.debug_frame) }
+> +	.debug_str      0 : { *(.debug_str) }
+> +	.debug_loc      0 : { *(.debug_loc) }
+> +	.debug_macinfo  0 : { *(.debug_macinfo) }
+> +	/* SGI/MIPS DWARF 2 extensions */
+> +	.debug_weaknames 0 : { *(.debug_weaknames) }
+> +	.debug_funcnames 0 : { *(.debug_funcnames) }
+> +	.debug_typenames 0 : { *(.debug_typenames) }
+> +	.debug_varnames  0 : { *(.debug_varnames) }
+> +
+> +	/DISCARD/	: {
+> +		*(.note.GNU-stack)
+> +		*(.branch_lt)
+> +		*(.data .data.* .gnu.linkonce.d.* .sdata*)
+> +		*(.bss .sbss .dynbss .dynsbss)
+> +	}
+>  }
+>  
+> +/*
+> + * Very old versions of ld do not recognize this name token; use the constant.
+> + */
+> +#define PT_GNU_EH_FRAME	0x6474e550
+> +
+> +/*
+> + * We must supply the ELF program headers explicitly to get just one
+> + * PT_LOAD segment, and set the flags explicitly to make segments read-only.
+> + */
+>  PHDRS
+>  {
+> -  text PT_LOAD FILEHDR PHDRS FLAGS(5); /* PF_R|PF_X */
+> -  note PT_NOTE FLAGS(4); /* PF_R */
+> -  dynamic PT_DYNAMIC FLAGS(4); /* PF_R */
+> -  eh_frame_hdr 0x6474e550; /* PT_GNU_EH_FRAME, but ld doesn't match the name */
+> +	text		PT_LOAD FILEHDR PHDRS FLAGS(5);	/* PF_R|PF_X */
+> +	dynamic		PT_DYNAMIC FLAGS(4);		/* PF_R */
+> +	note		PT_NOTE FLAGS(4);		/* PF_R */
+> +	eh_frame_hdr	PT_GNU_EH_FRAME;
+>  }
+>  
+>  /*
+> @@ -111,17 +125,22 @@ PHDRS
+>   */
+>  VERSION
+>  {
+> -  VDSO_VERSION_STRING {
+> -    global:
+> -	__kernel_datapage_offset; /* Has to be there for the kernel to find */
+> -	__kernel_get_syscall_map;
+> -    	__kernel_gettimeofday;
+> -	__kernel_clock_gettime;
+> -	__kernel_clock_getres;
+> -	__kernel_get_tbfreq;
+> -	__kernel_sync_dicache;
+> -	__kernel_sync_dicache_p5;
+> -	__kernel_sigtramp_rt64;
+> -    local: *;
+> -  };
+> +	VDSO_VERSION_STRING {
+> +	global:
+> +		/*
+> +		 * Has to be there for the kernel to find
+> +		 */
+> +		__kernel_datapage_offset;
+> +
+> +		__kernel_get_syscall_map;
+> +		__kernel_gettimeofday;
+> +		__kernel_clock_gettime;
+> +		__kernel_clock_getres;
+> +		__kernel_get_tbfreq;
+> +		__kernel_sync_dicache;
+> +		__kernel_sync_dicache_p5;
+> +		__kernel_sigtramp_rt64;
+> +
+> +	local: *;
+> +	};
+>  }
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
