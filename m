@@ -1,83 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935000AbXJPTp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935433AbXJPTq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935000AbXJPTp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 15:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbXJPTpJ
+	id S935433AbXJPTq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 15:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXJPTqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 15:45:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36776 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760659AbXJPTpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 15:45:07 -0400
-Message-ID: <471514B7.9080002@pobox.com>
-Date: Tue, 16 Oct 2007 15:44:55 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 16 Oct 2007 15:46:15 -0400
+Received: from duempel.org ([81.209.165.42]:44413 "HELO duempel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933419AbXJPTqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 15:46:14 -0400
+Date: Tue, 16 Oct 2007 21:38:50 +0200
+From: Max Kellermann <mk@cm4all.com>
+To: chrisw@sous-sol.org, linux-security-module@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] /proc Security Hooks
+Message-ID: <20071016193850.GA5418@roonstrasse.net>
+Mail-Followup-To: chrisw@sous-sol.org,
+	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Manfred Spraul <manfred@colorfullife.com>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MSI interrupts and disable_irq
-References: <46FC15A9.1070803@nvidia.com> <46FDBCB4.9090802@pobox.com>	 <4710901F.8010206@colorfullife.com> <4713E713.9060702@pobox.com>	 <86802c440710161023p3fbd6832gdb6d10a1b5e9d932@mail.gmail.com>	 <4714F736.5000302@pobox.com> <86802c440710161059x17fdb4f2sb1b9582d64a883f9@mail.gmail.com>
-In-Reply-To: <86802c440710161059x17fdb4f2sb1b9582d64a883f9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On 10/16/07, Jeff Garzik <jgarzik@pobox.com> wrote:
->> Yinghai Lu wrote:
->>> On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
->>>> Manfred Spraul wrote:
->>>>> Jeff Garzik wrote:
->>>>>> I think the scenario you outline is an illustration of the approach's
->>>>>> fragility:  disable_irq() is a heavy hammer that originated with INTx,
->>>>>> and it relies on a chip-specific disable method (kernel/irq/manage.c)
->>>>>> that practically guarantees behavior will vary across MSI/INTx/etc.
->>>>>>
->>>>> I checked the code: IRQ_DISABLE is implemented in software, i.e.
->>>>> handle_level_irq() only calls handle_IRQ_event() [and then the nic irq
->>>>> handler] if IRQ_DISABLE is not set.
->>>>> OTHO: The last trace looks as if nv_do_nic_poll() is interrupted by an irq.
->>>>>
->>>>> Perhaps something corrupts dev->irq? The irq is requested with
->>>>>    request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev)
->>>>> and disabled with
->>>>>    disable_irq_lockdep(dev->irq);
->>>>>
->>>>> Someone around with a MSI capable board? The forcedeth driver does
->>>>>    dev->irq = pci_dev->irq
->>>>> in nv_probe(), especially before pci_enable_msi().
->>>>> Does pci_enable_msi() change pci_dev->irq? Then we would disable the
->>>>> wrong interrupt....
->>>> Remember, fundamentally MSI-X is a one-to-many relationship, when you
->>>> consider a single PCI device might have multiple vectors.
->>> msi-x is using other entry
->>>
->>>                if (np->msi_flags & NV_MSI_X_ENABLED)
->>>
->>> enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->> Correct, but the overall point was that MSI-X conceptually conflicts
->> with the existing "lockless" disable_irq() schedule, which was written
->> when there was a one-one relationship between irq, PCI device, and work
->> to be done.
-> 
-> Can I use your new driver with RHEL 5 or RHEL 5.1?
+Add two LSM hooks for limiting access to the proc file system.
 
-Not without modification, since it depends on the napi_struct work 
-currently in torvalds/linux-2.6.git.
+security_proc_task() defines the visibility of tasks in /proc.
 
-But I am currently rewriting the fe-lock yet again, and most of those 
-changes can be applied to pre-napi_struct forcedeth.
+security_proc_generic() lets the LSM define who will see "generic"
+proc entries (see fs/proc/generic.c).
 
-	Jeff
+This patch attempts to unify duplicated code found in modules like
+Linux VServer.
 
+Signed-off-by: Max Kellermann <mk@cm4all.com>
 
+---
+ fs/proc/base.c           |    9 +++++++++
+ fs/proc/generic.c        |   15 +++++++++++++++
+ include/linux/security.h |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ security/Kconfig         |    8 ++++++++
+ security/dummy.c         |   16 ++++++++++++++++
+ 5 files changed, 94 insertions(+), 0 deletions(-)
 
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 19489b0..a6ebe2d 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2317,6 +2317,10 @@ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ 	     put_task_struct(task), task = next_tgid(tgid + 1)) {
+ 		tgid = task->pid;
+ 		filp->f_pos = tgid + TGID_OFFSET;
++#ifdef CONFIG_SECURITY_PROC
++		if (security_proc_task(task) != 0)
++			continue;
++#endif
+ 		if (proc_pid_fill_cache(filp, dirent, filldir, task, tgid) < 0) {
+ 			put_task_struct(task);
+ 			goto out;
+@@ -2453,6 +2457,11 @@ static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry
+ 		goto out;
+ 	if (leader->tgid != task->tgid)
+ 		goto out_drop_task;
++#ifdef CONFIG_SECURITY_PROC
++	result = ERR_PTR(security_proc_task(task));
++	if (IS_ERR(result))
++		goto out_drop_task;
++#endif
+ 
+ 	result = proc_task_instantiate(dir, dentry, task, NULL);
+ out_drop_task:
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index b5e7155..7b17ec3 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -21,6 +21,9 @@
+ #include <linux/bitops.h>
+ #include <linux/spinlock.h>
+ #include <linux/completion.h>
++#ifdef CONFIG_SECURITY_PROC
++#include <linux/security.h>
++#endif
+ #include <asm/uaccess.h>
+ 
+ #include "internal.h"
+@@ -400,6 +403,11 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ 				unsigned int ino = de->low_ino;
+ 
+ 				de_get(de);
++#ifdef CONFIG_SECURITY_PROC
++				error = security_proc_generic(de);
++				if (error != 0)
++					break;
++#endif
+ 				spin_unlock(&proc_subdir_lock);
+ 				error = -EINVAL;
+ 				inode = proc_get_inode(dir->i_sb, ino, de);
+@@ -483,6 +491,10 @@ int proc_readdir(struct file * filp,
+ 
+ 				/* filldir passes info to user space */
+ 				de_get(de);
++#ifdef CONFIG_SECURITY_PROC
++				if (security_proc_generic(de) != 0)
++					goto skip;
++#endif
+ 				spin_unlock(&proc_subdir_lock);
+ 				if (filldir(dirent, de->name, de->namelen, filp->f_pos,
+ 					    de->low_ino, de->mode >> 12) < 0) {
+@@ -490,6 +502,9 @@ int proc_readdir(struct file * filp,
+ 					goto out;
+ 				}
+ 				spin_lock(&proc_subdir_lock);
++#ifdef CONFIG_SECURITY_PROC
++			skip:
++#endif
+ 				filp->f_pos++;
+ 				next = de->next;
+ 				de_put(de);
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 1a15526..3fbeacf 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -68,6 +68,10 @@ struct xfrm_policy;
+ struct xfrm_state;
+ struct xfrm_user_sec_ctx;
+ 
++#ifdef CONFIG_SECURITY_PROC
++struct proc_dir_entry;
++#endif
++
+ extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
+ extern int cap_netlink_recv(struct sk_buff *skb, int cap);
+ 
+@@ -915,6 +919,17 @@ struct request_sock;
+  *	Return 1 if permission granted, 0 if permission denied and -ve it the
+  *      normal permissions model should be effected.
+  *
++ * Security hooks affecting proc visibility
++ *
++ * @proc_task:
++ *      Determines whether a task is visible.
++ *      @task the requested task
++ *	Return 0 if task is visible, -ENOENT if not, or -errno on other errors
++ * @proc_generic:
++ *      Determines whether a generic proc entry is visible
++ *      @de the requested proc_dir_entry structure
++ *	Return 0 if entry is visible, -ENOENT if not, or -errno on other errors
++ *
+  * Security hooks affecting all System V IPC operations.
+  *
+  * @ipc_permission:
+@@ -1399,6 +1414,11 @@ struct security_operations {
+ 
+ #endif	/* CONFIG_KEYS */
+ 
++ #ifdef CONFIG_SECURITY_PROC
++	int (*proc_task)(struct task_struct *task);
++	int (*proc_generic)(struct proc_dir_entry *de);
++ #endif
++
+ };
+ 
+ /* global variables */
+@@ -3314,5 +3334,31 @@ static inline int security_key_permission(key_ref_t key_ref,
+ #endif
+ #endif /* CONFIG_KEYS */
+ 
++#ifdef CONFIG_SECURITY_PROC
++#ifdef CONFIG_SECURITY
++static inline int security_proc_task(struct task_struct *task)
++{
++	return security_ops->proc_task(task);
++}
++
++static inline int security_proc_generic(struct proc_dir_entry *de)
++{
++	return security_ops->proc_generic(de);
++}
++
++#else
++
++static inline int security_proc_task(struct task_struct *task)
++{
++	return 0;
++}
++
++static inline int security_proc_generic(struct proc_dir_entry *de)
++{
++	return 0;
++}
++#endif
++#endif
++
+ #endif /* ! __LINUX_SECURITY_H */
+ 
+diff --git a/security/Kconfig b/security/Kconfig
+index 460e5c9..bd6ad4b 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -73,6 +73,14 @@ config SECURITY_NETWORK_XFRM
+ 	  IPSec.
+ 	  If you are unsure how to answer this question, answer N.
+ 
++config SECURITY_PROC
++	bool "/proc Security Hooks"
++	depends on PROC_FS && SECURITY
++	help
++	  This enables the /proc security hooks.
++	  These allow an LSM to hide nodes in the proc filesystem.
++	  If you are unsure how to answer this question, answer N.
++
+ config SECURITY_CAPABILITIES
+ 	tristate "Default Linux Capabilities"
+ 	depends on SECURITY
+diff --git a/security/dummy.c b/security/dummy.c
+index 853ec22..3ec57be 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -949,6 +949,18 @@ static inline int dummy_key_permission(key_ref_t key_ref,
+ }
+ #endif /* CONFIG_KEYS */
+ 
++#ifdef CONFIG_SECURITY_PROC
++static int dummy_proc_task(struct task_struct *task)
++{
++	return 0;
++}
++
++static int dummy_proc_generic(struct proc_dir_entry *de)
++{
++	return 0;
++}
++#endif
++
+ struct security_operations dummy_security_ops;
+ 
+ #define set_to_dummy_if_null(ops, function)				\
+@@ -1131,6 +1143,10 @@ void security_fixup_ops (struct security_operations *ops)
+ 	set_to_dummy_if_null(ops, key_free);
+ 	set_to_dummy_if_null(ops, key_permission);
+ #endif	/* CONFIG_KEYS */
++#ifdef CONFIG_SECURITY_PROC
++	set_to_dummy_if_null(ops, proc_task);
++	set_to_dummy_if_null(ops, proc_generic);
++#endif
+ 
+ }
+ 
