@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764228AbXJPAfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765449AbXJPAgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764228AbXJPAfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbXJPAfb
+	id S1765449AbXJPAgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbXJPAgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:35:31 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:60382
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbXJPAfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:35:30 -0400
-Date: Mon, 15 Oct 2007 17:39:43 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Mark Gross <mgross@linux.intel.com>
-cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-In-Reply-To: <20071015170411.GB18550@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0710151737080.3949@asgard.lang.hm>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071015170411.GB18550@linux.intel.com>
+	Mon, 15 Oct 2007 20:36:24 -0400
+Received: from waste.org ([66.93.16.53]:49525 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753559AbXJPAgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Oct 2007 20:36:23 -0400
+Date: Mon, 15 Oct 2007 19:35:39 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: [PATCH 10/11] maps3: add /proc/kpagecount and /proc/kpageflags interfaces
+Message-ID: <20071016003538.GC19691@waste.org>
+References: <11.290135367@selenic.com> <1192488513.6118.98.camel@localhost> <20071015231106.GX19691@waste.org> <1192491297.6118.129.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192491297.6118.129.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Mark Gross wrote:
+On Mon, Oct 15, 2007 at 04:34:57PM -0700, Dave Hansen wrote:
+> On Mon, 2007-10-15 at 18:11 -0500, Matt Mackall wrote:
+> > > Could we just have /proc/kpagereferenced?  Is there a legitimate need
+> > > for other flags to be visible?
+> > 
+> > Referenced, dirty, uptodate, lru, active, slab, writeback, reclaim,
+> > and buddy all look like they might be interesting to me from the point
+> > of view of watching what's happening in the VM graphically in
+> > real-time.
+> 
+> This is true, but it forces a lot of logic from the kernel to be run in
+> userspace to figure out what is going on.  Looking at mainline today:
+> 
+> #define PG_reclaim              17      /* To be reclaimed asap */
+> ...
+> #define PG_readahead            PG_reclaim /* Reminder to do async read-ahead */
+> 
+> All of a sudden, to figure out which flag it actually is, we need to
+> have all of the logic that the kernel does.  
+> 
+> Does this establish a fixed user<->kernel ABI that will keep us from
+> doing this in the future:
+> 
+> -#define PG_slab                  7      /* slab debug (Suparna wants this) */
+> +#define PG_slab                  14      /* slab debug (Suparna wants this) */
+> 
+> Or, even something like this:
+> 
+> -#define PageSlab(page)          test_bit(PG_slab, &(page)->flags)
+> +#define PageSlab(page)          (!PageLRU(page) && !PageHighmem(page))
 
-> On Sun, Oct 14, 2007 at 07:01:28PM -0400, Rik van Riel wrote:
->> The kernel newbies community often gets inquiries from CS students who
->> need a project for their studies and would like to do something with
->> the Linux kernel, but would also like their code to be useful to the
->> community afterwards.
->>
->> In order to make it easier for them, I am trying to put together a
->> page with projects that:
->> - Are self contained enough that the students can implement the
->>   project by themselves, since that is often a university requirement.
->> - Are self contained enough that Linux could merge the code (maybe
->>   with additional changes) after the student has been working on it
->>   for a few months.
->> - Are large enough to qualify as a student project, luckily there is
->>   flexibility here since we get inquiries for anything from 6 week
->>   projects to 6 month projects.
->>
->> If you have ideas on what projects would be useful, please add them
->> to this page (or email me):
->>
->> http://kernelnewbies.org/KernelProjects
->
-> Is there already a make config option that will do a good job at setting
-> a default .config file based on what is already running on a system?
->
-> I get tiered of trimming down my .config for my laptop build so it takes
-> less than 30min to build a kernel.
->
-> Bonus credit to additional "expert" options (like those powertop puts
-> out) for target uses, laptop, HPC, home file share, embedded targets....
->
-> Oh, and lets make the expert configs easily extensible.
+Yeah, there are a bunch of flags that aren't mutually exclusive and we
+could probably recover a few.
 
-another config thing that would be nice would be to take something like 
-Rob Landley's miniconfig tool and make it work well enough to be 
-integrated (it creates a version of .config that only contains the things 
-that need to be set, not everything that's at a default that doesn't make 
-any difference)
+> If we actually had several (or even still one file) that exposed this
+> state, independent of the actual content of page->flags, I think we'd be
+> better off.  I think that's the difference between a fun, super-useful
+> debugging feature and one that can stay in mainline and have
+> applications stay using it (without breaking) for a long time.
+> 
+> The flags you listed are things that I would imagine will always exist,
+> logically.  But, we might not always have a specific page flag for pages
+> under writeback or in the buddy list for that matter.  PG_buddy isn't
+> that old.  Perhaps that would be better abstracted to something like
+> page_in_main_allocator().
 
-David Lang
+Perhaps we need something like:
+
+flags = page->flags;
+userflags = 
+	  FLAG_BIT(USER_REFERENCED, flags & PG_referenced) |
+	  ...
+
+etc. for the flags we want to export. This will let us change to
+
+	 FLAG_BIT(USER_SLAB, PageSlab(page)) |
+
+if we make a virtual slab bit.
+
+And it shows up in grep.
+
+Unfortunately, i386 test_bit is an asm inline and not a macro so we
+can't hope for the compiler to fold up a bunch of identity bit
+mappings for us.
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
