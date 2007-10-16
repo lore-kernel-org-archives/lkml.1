@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXJPAIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXJPALW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762137AbXJPAIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbXJPAIq
+	id S1756608AbXJPALW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbXJPALP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:08:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52864 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756077AbXJPAIp (ORCPT
+	Mon, 15 Oct 2007 20:11:15 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:38802 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752973AbXJPALO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:08:45 -0400
-Date: Mon, 15 Oct 2007 17:08:42 -0700
-From: Paul Jackson <pj@sgi.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: akpm@linux-foundation.org, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, andrew.vasquez@qlogic.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] git scsi misc include fix
-Message-Id: <20071015170842.9cfe4846.pj@sgi.com>
-In-Reply-To: <1192491330.14524.16.camel@localhost.localdomain>
-References: <20071014053508.30836.69658.sendpatchset@jackhammer.engr.sgi.com>
-	<1192491330.14524.16.camel@localhost.localdomain>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Oct 2007 20:11:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PF8YwUCVfICH/DPbLrNCVtR6Ea2RmLGlDFaywwEldq2i6+WWXPLyxU/s15Qj0kUYVR1A9Gkpfe0M31SMQ0kpVyxi9vfrbXQJktZBT0dn1emDJzkQAjUIKnKSLW7dYVFNWAc1nndxsNYqZST4iMugF0idpiHmxT3rjCK9OBeUyJ0=  ;
+X-YMail-OSG: FX0WlMkVM1k_ltU7wbCCr1SydxezlNsBNf.XaeQSEezskAJzwh5Pd9ifNEAmz2Ef5actwvrPxIqrwlXZoEQ0CaZ67O3Exr01MNy5KoNw7_obLo4IROoRkv94cMiQcQ--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] scheduler updates for v2.6.24
+Date: Tue, 16 Oct 2007 12:38:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20071015141723.GA29486@elte.hu>
+In-Reply-To: <20071015141723.GA29486@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710161238.47432.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James wrote:
-> The requirement for struct scatterlist is the same
-> before and after the gid scsi-misc patch. 
+On Tuesday 16 October 2007 00:17, Ingo Molnar wrote:
+> Linus, please pull the latest scheduler git tree from:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+>
+> It contains lots of scheduler updates from lots of people - hopefully
+> the last big one for quite some time. Most of the focus was on
+> performance (both micro-performance and scalability/balancing), but
+> there's the fair-scheduling feature now Kconfig selectable too. Find the
+> shortlog below.
 
-Not so.  The git-scsi-misc.patch in 2.6.23-mm1 clearly adds the line:
+Nice work...
 
-    struct scatterlist sense_sgl;
+However it's a pity all the balancing stuff got wildly changed
+in 2.6.23 and then somewhat changed back again now.
 
-as part of the added struct scsi_eh_save in scsi/scsi_eh.h.
+Despite appearances, a lot of those things weren't actually
+*completely* arbitrary values. I fear that it will make finding
+performance regressions harder than it should have...
 
-This bit me while I was doing a bisection on 2.6.23-mm1, for another
-problem, in git-sched, which is discussed in the lkml thread:
+Anyway.
 
-    git-sched patch won't boot on SN arch, 2.6.23-mm1
-
-This is using sn2_defconfig.  The full 2.6.23-mm1 patch set builds ok,
-because another patch, git-block.patch as I recall, includes
-scatterlist.h some other way, but for the following range of patches in
-2.6.23-mm1, on the configuration sn2_defconfig, the build is broken,
-due to 'struct scatterlist' being an incomplete type:
-
-    git-scsi-misc.patch
-    git-scsi-misc-include-fix.patch
-    git-scsi-misc-fixup.patch
-    qla2xxx-printk-fixes.patch
-    pci-error-recovery-symbios-scsi-base-support.patch
-    pci-error-recovery-symbios-scsi-first-failure.patch
-    nsp32_restart_autoscsi-remove-error-check.patch
-    scsi-send-media-state-change-modification-events.patch
-    scsi-early-detection-of-medium-not-present-updated.patch
-    mptbase-reset-ioc-initiator-during-pci-resume.patch
-    scsi-use-notifier-chain-for-asynchronous-event.patch
-    initio-fix-conflict-when-loading-driver.patch
-    git-block.patch
-
-> it should also fail with vanilla 2.6.23
-
-I don't know about the vanilla 2.6.23 case.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
