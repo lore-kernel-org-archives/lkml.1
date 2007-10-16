@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932958AbXJPGda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXJPGeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932958AbXJPGda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 02:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXJPGdV
+	id S933127AbXJPGeo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 02:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763432AbXJPGee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 02:33:21 -0400
-Received: from mail.hevs.ch ([153.109.23.15]:52512 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbXJPGdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 02:33:20 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Daniel Drake <dsd@gentoo.org>
-Subject: Re: [PATCH] zd1211rw, fix oops when ejecting install media
-Date: Tue, 16 Oct 2007 08:33:09 +0200
-User-Agent: KMail/1.9.7
-Cc: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
-       kune@deine-taler.de, linux-kernel@vger.kernel.org
-References: <200710150851.52995.marc.pignat@hevs.ch> <4713498E.8040305@gentoo.org>
-In-Reply-To: <4713498E.8040305@gentoo.org>
+	Tue, 16 Oct 2007 02:34:34 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35114 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760993AbXJPGed (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 02:34:33 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47145B31.8080104@s5r6.in-berlin.de>
+Date: Tue, 16 Oct 2007 08:33:21 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeff Garzik <jeff@garzik.org>
+CC: Greg KH <greg@kroah.com>, Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com> <4713B58B.9050905@garzik.org>
+In-Reply-To: <4713B58B.9050905@garzik.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710160833.10515.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+Jeff Garzik wrote:
+> Greg KH wrote:
+>> On Mon, Oct 15, 2007 at 03:36:15AM -0500, Rob Landley wrote:
+>>> The point I was trying to make is that it seems to me like it would
+>>> be possible to keep the namespace separate here, and thus reduce the
+>>> enumeration problems to the point where common cases (like my laptop)
+>>> aren't impacted by them during early boot.
+>>
+>> Proposals on how to do this would be gladly reviewed.
+> 
+> Agreed.
 
-On Monday 15 October 2007, Daniel Drake wrote:
-...
-> Acked-by: Daniel Drake <dsd@gentoo.org>
+  - move the networking core's facilities to build the default name of
+    an interface into lib/
+  - expand it to optionally use base-26 numbering (a...nn...zzz) as
+    alternative to decimal numbering
+  - let SCSI low-level drivers optionally provide a short constant
+    string, resembling its transport name, in the host template or
+    transport template
+  - let SCSI high-level driver make use of the new naming functions in
+    lib/, providing either just "sd", "sr" etc. or "sd-$transport-" as
+    name prefix
 
-Is there any hope to apply this to 2.6.23.2, as this is a regression fix?
-
-Regards
-
-Marc
+No patch yet, and alas I'm currently short of spare time.
+-- 
+Stefan Richter
+-=====-=-=== =-=- =----
+http://arcgraph.de/sr/
