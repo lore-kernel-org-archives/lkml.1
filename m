@@ -1,82 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966614AbXJPWSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966592AbXJPWT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966614AbXJPWSy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 18:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966057AbXJPWSP
+	id S966592AbXJPWT2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 18:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966178AbXJPWSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 18:18:15 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:39390 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966439AbXJPWSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 18:18:10 -0400
-Message-ID: <4715389B.5070004@us.ibm.com>
-Date: Tue, 16 Oct 2007 15:18:03 -0700
-From: Badari <pbadari@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext2 statfs improvement for block and inode free count
-References: <1184377014.15968.14.camel@dyn9047017100.beaverton.ibm.com> <20071016150033.677efd09.akpm@linux-foundation.org>
-In-Reply-To: <20071016150033.677efd09.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 18:18:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51469 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966101AbXJPWST (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 18:18:19 -0400
+Date: Tue, 16 Oct 2007 15:18:16 -0700
+From: sukadev@us.ibm.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>, stern@rowland.harvard.edu,
+       cornelia.huck@de.ibm.com
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
+Message-ID: <20071016221816.GA14787@us.ibm.com>
+References: <11902755392688-git-send-email-htejun@gmail.com> <20070925221736.GA3566@kroah.com> <46FB956B.8000205@gmail.com> <m1zlz7hpvn.fsf_-_@ebiederm.dsl.xmission.com> <20071005062302.GB16914@kroah.com> <m1d4vtn4jq.fsf@ebiederm.dsl.xmission.com> <20071009225139.GF21228@kroah.com> <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m14pgzun27.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 13 Jul 2007 18:36:54 -0700
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
->
->   
->> More statfs() improvements for ext2. ext2 already maintains
->> percpu counters for free blocks and inodes. Derive free
->> block count and inode count by summing up percpu counters,
->> instead of counting up all the groups in the filesystem
->> each time.
->>
->>
->> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
->> Acked-by: Andreas Dilger <adilger@clusterfs.com>
->>
->>  fs/ext2/super.c |    4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> Index: linux-2.6.22/fs/ext2/super.c
->> ===================================================================
->> --- linux-2.6.22.orig/fs/ext2/super.c	2007-07-13 20:06:38.000000000 -0700
->> +++ linux-2.6.22/fs/ext2/super.c	2007-07-13 20:06:51.000000000 -0700
->> @@ -1136,12 +1136,12 @@ static int ext2_statfs (struct dentry * 
->>  	buf->f_type = EXT2_SUPER_MAGIC;
->>  	buf->f_bsize = sb->s_blocksize;
->>  	buf->f_blocks = le32_to_cpu(es->s_blocks_count) - overhead;
->> -	buf->f_bfree = ext2_count_free_blocks(sb);
->> + 	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
->>  	buf->f_bavail = buf->f_bfree - le32_to_cpu(es->s_r_blocks_count);
->>  	if (buf->f_bfree < le32_to_cpu(es->s_r_blocks_count))
->>  		buf->f_bavail = 0;
->>  	buf->f_files = le32_to_cpu(es->s_inodes_count);
->> -	buf->f_ffree = ext2_count_free_inodes(sb);
->> + 	buf->f_ffree = percpu_counter_sum(&sbi->s_freeinodes_counter);
->>  	buf->f_namelen = EXT2_NAME_LEN;
->>  	fsid = le64_to_cpup((void *)es->s_uuid) ^
->>  	       le64_to_cpup((void *)es->s_uuid + sizeof(u64));
->>
->>     
->
-> Guys, I have this patch in a stalled state pending some convincing
-> demonstration/argument that it's actually a worthwhile change.
->
-> How much hurt will it cause on large-numa, and how much benefit do we get
-> for that hurt? 
->   
-Unfortunately, I couldn't find any noticeable significant improvements 
-with or without this patch.
-May be none of my filesystems are large enough on a large enough NUMA 
-box to verify.
-Lets drop it for now and re-visit it if needed.
+Eric W. Biederman [ebiederm@xmission.com] wrote:
+| Greg KH <greg@kroah.com> writes:
+| 
+| > On Fri, Oct 05, 2007 at 06:12:41AM -0600, Eric W. Biederman wrote:
+| >> Greg KH <greg@kroah.com> writes:
+| >> >
+| >> >>   Also fun is that the dev file implementation needs to be able to
+| >> >>   report different major:minor numbers based on which mount of
+| >> >>   sysfs we are dealing with.
+| >> >
+| >> > Um, no, that's not going to happen.  /dev/sda will _always_ have the
+| >> > same major:minor number, as defined by the LSB spec.  You can not break
+| >> > that at all.  So while you might not want to show all mounts
+| >> > /sys/devices/block/sda/ the ones that you do, will all have the LSB
+| >> > defined major:minor number assigned to it.
+| >> 
+| >> Hmm.  If that is in the LSB it must come from
+| >> Documentation/devices.txt
+| >
+| > Yes, that is the requirement.
+| >
+| >> I'm not after changing the user visible major/minor assignments.
+| >
+| > Oh, I misunderstood what you wrote above then.
+| 
+| My above sentence is slightly misleading.  That should have been.
+| I am not after changing the device name to major:minor assignments
+| as specified in Documentation/devices.txt.
+| 
+| So within a single device namespace everything is normal and as it
+| always has been.  Weirdness only ensues when you look across device
+| namespaces.
+| 
+| >> Let me see if a concrete example will help.  Suppose I have
+| >> have a SAN with two disks:  disk-1 and disk-2.  I have
+| >> two machines A and B.  On machine A I get the mapping:
+| >> sda -> disk-1, sdb ->disk-2.  On machine B I wind up with
+| >> a different probe order so I get the mapping: sda -> disk-2
+| >> sdb ->disk-1.
+| >
+| > Ok.
+| >
+| >> To be very clear by sda I mean the block device with major 8 and
+| >> minor 0, and by sdb I mean the block device with major 8 and minor
+| >> 16.
+| >
+| > Ok.
+| >
+| >> So I decide I want an environment on machine B that looks just
+| >> like the environment on machine A, so I can bring transfer over
+| >> a running program or whatever.  So I run around looking at UUID
+| >> labels and what not and I discover that the machine B knows disk-1 as
+| >> sdb and that machine A knows disk-1 as sda.  So I want to say:
+| >> /sys/devices/block/sdb show up in this other device namespace as
+| >> /sys/devices/block/sda.
+| 
+| >
+| > Ah, but if you do that then the "other" device namespace would have
+| > /sys/devices/block/sda/dev be 8:16, right? 
+| 
+| No. The "other" device namespace I would construct on machine B to
+| look just like the device namespace that existed on machine A.
+| Making /sys/devices/block/sda would still be 8:0.
+| 
+| So to be very clear on machine B when talking about disk-1 I would have.
+| initial device namespace:
+|   /sys/devices/block/sdb
+|   /sys/devices/block/sdb/dev 8:16
+| 
+| "other" device namespace:
+|   /sys/devices/block/sda
+|   /sys/devices/block/sda/dev 8:0
+| 
+| Similarly on machine B when talking about disk-2 I would have.
+| initial device namespace:
+|   /sys/devices/block/sda
+|   /sys/devices/block/sda/dev 8:0
+| 
+| "other" device namespace:
+|   /sys/devices/block/sdb
+|   /sys/devices/block/sdb/dev 8:16
+| 
+| So between the two devices namespaces on machine B the two disks
+| would exchange their user visible identities.
 
-Thanks,
-Badari
+So an application that would migrate from machine A to B has to
+use virtual names (like "disk-1" and "disk-2") to access the disk
+right ? 
 
+| 
+| Eric
+| _______________________________________________
+| Containers mailing list
+| Containers@lists.linux-foundation.org
+| https://lists.linux-foundation.org/mailman/listinfo/containers
