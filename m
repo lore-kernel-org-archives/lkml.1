@@ -1,36 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXJPAZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbXJPAaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762831AbXJPAZK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Oct 2007 20:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbXJPAY5
+	id S1759400AbXJPAaB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Oct 2007 20:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbXJPA3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Oct 2007 20:24:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30826 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbXJPAY4 (ORCPT
+	Mon, 15 Oct 2007 20:29:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44625 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbXJPA3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Oct 2007 20:24:56 -0400
-Date: Mon, 15 Oct 2007 20:22:31 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nathan Scott <nscott@aconex.com>, Andrea Arcangeli <andrea@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: More Large blocksize benchmarks
-Message-ID: <20071016002231.GA21378@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 15 Oct 2007 20:29:52 -0400
+Date: Mon, 15 Oct 2007 17:29:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>,
+       Eric.Moore@lsi.com, scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 1/4] docbook: fix kernel-api content
+Message-Id: <20071015172933.80ab7d1d.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -38,37 +29,34 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I'm stealing the cc list and reviving and old thread because I've
-finally got some numbers to go along with the Btrfs variable blocksize
-feature.  The basic idea is to create a read/write interface to
-map a range of bytes on the address space, and use it in Btrfs for all
-metadata operations (file operations have always been extent based).
+Fix kernel-api docbook warnings.
 
-So, instead of casting buffer_head->b_data to some structure, I read and
-write at offsets in a struct extent_buffer.  The extent buffer is very
-small and backed by an address space, and I get large block sizes the
-same way file_write gets to write to 16k at a time, by finding the
-appropriate page in the addess space.  This is an over simplification
-since I try to cache these mapping decisions to avoid using too much
-CPU, but hopefully you get the idea.
+Warning(linux-2.6.23-git8//drivers/message/fusion/mptscsih.c:2618): No description found for parameter 'sc'
 
-The advantage to this approach is the changes are all inside Btrfs.  No
-extra kernel patches were required.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/message/fusion/mptscsih.c |   10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-Dave reported that XFS saw much higher write throughput with large
-blocksizes, but so far I'm seeing the most benefits during reads.
-
-The next step is a bunch more benchmarks.  I've done the first round
-and posted it here:
-
-http://oss.oracle.com/~mason/blocksizes/
-
-The Btrfs code makes it relatively easy to experiment, and so this may
-be a good step toward figuring out if some automagic solution is worth
-it in general.  I can even use different sizes for nodes and leaves,
-although I haven't done much testing at all there yet.
-
--chris
-
+--- linux-2.6.23-git8.orig/drivers/message/fusion/mptscsih.c
++++ linux-2.6.23-git8/drivers/message/fusion/mptscsih.c
+@@ -2605,14 +2605,10 @@ mptscsih_set_scsi_lookup(MPT_ADAPTER *io
+ }
+ 
+ /**
+- * SCPNT_TO_LOOKUP_IDX
+- *
+- * search's for a given scmd in the ScsiLookup[] array list
+- *
++ * SCPNT_TO_LOOKUP_IDX - searches for a given scmd in the ScsiLookup[] array list
+  * @ioc: Pointer to MPT_ADAPTER structure
+- * @scmd: scsi_cmnd pointer
+- *
+- **/
++ * @sc: scsi_cmnd pointer
++ */
+ static int
+ SCPNT_TO_LOOKUP_IDX(MPT_ADAPTER *ioc, struct scsi_cmnd *sc)
+ {
