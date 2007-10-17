@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbXJQMVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760468AbXJQMYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbXJQMVN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 08:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbXJQMU6
+	id S1760468AbXJQMYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 08:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbXJQMYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 08:20:58 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:41659 "EHLO smtp4-g19.free.fr"
+	Wed, 17 Oct 2007 08:24:37 -0400
+Received: from mx1.suse.de ([195.135.220.2]:33535 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbXJQMU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 08:20:57 -0400
-Message-ID: <4715FE27.2000802@free.fr>
-Date: Wed, 17 Oct 2007 14:20:55 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: NMI watchdog
-References: <470F3BE0.4050807@free.fr> <Pine.LNX.4.58.0710120625380.8208@gandalf.stny.rr.com> <470F7620.6040705@free.fr> <Pine.LNX.4.58.0710121210210.12663@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0710121210210.12663@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753417AbXJQMYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 08:24:36 -0400
+Date: Wed, 17 Oct 2007 14:24:35 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
+Message-ID: <20071017122435.GA14401@wotan.suse.de>
+References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz> <20071015143732.01d99af8@laptopd505.fenrus.org> <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz> <20071016002229.GA5851@wotan.suse.de> <Pine.LNX.4.64.0710161221300.1315@artax.karlin.mff.cuni.cz> <20071016222921.GA29378@wotan.suse.de> <Pine.LNX.4.64.0710170049450.19210@artax.karlin.mff.cuni.cz> <20071016232153.GC29378@wotan.suse.de> <Pine.LNX.4.64.0710170212090.15954@artax.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710170212090.15954@artax.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> --
-
-(Strange characters.)
-
-> John Sigler wrote:
+On Wed, Oct 17, 2007 at 02:30:32AM +0200, Mikulas Patocka wrote:
+> > > You already must not place any data structures into WC memory --- for 
+> > > example, spinlocks wouldn't work there.
+> > 
+> > What do you mean "already"?
 > 
->> APIC timer registered as dummy, due to nmi_watchdog=1!
->> Clockevents: could not switch to one-shot mode: lapic is not functional.
->> Could not switch to high resolution mode on CPU 0
->>
->> Do you know why nmi_watchdog=1 disables high-resolution timers?
->>
->> And why nmi_watchdog=1 implies APIC timer registered as dummy?
+> I mean "in current kernel" (I checked it in 2.6.22)
+
+Ahh, that's not "current kernel", though ;)
+
+4071c718555d955a35e9651f77086096ad87d498
+
+ 
+> > If we already have drivers loading data from
+> > WC memory, then rmb() needs to order them, whether or not they actually
+> > need it. If that were prohibitively costly, then we'd introduce a new
+> > barrier which does not order WC memory, right?
+> > 
+> > 
+> > > wmb() also won't work on WC 
+> > > memory, because it assumes that writes are ordered.
+> > 
+> > You mean the one defined like this:
+> >   #define wmb()   asm volatile("sfence" ::: "memory")
+> > ? If it assumed writes are ordered, then it would just be a barrier().
 > 
-> Crap, I forgot about that. Thomas explained why to me once, and I forgot.
+> You read wrong part of the include file. Really, it is 
+> (2.6.22,include/asm-i386/system.h):
+> #ifdef CONFIG_X86_OOSTORE
+> #define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", 
+> X86_FEATURE_XMM)
+> #else
+> #define wmb()   __asm__ __volatile__ ("": : :"memory")
+> #endif
+> 
+> CONFIG_X86_OOSTORE is dependent on MWINCHIP3D || MWINCHIP2 || MWINCHIPC6
+> --- so on Intel and AMD, it is really just barrier().
+> 
+> So drivers can't assume that wmb() works on write-combining memory.
 
-Thomas,
+Drivers should be able to assume that wmb() orders _everything_ (except
+some whacky Altix thing, which I really want to fold under wmb at some
+point anyway).
 
-Could you explain again why using the IO-APIC watchdog disables hrt?
+So I decided that old x86 semantics isn't right, and now it really is a
+lock op / sfence everywhere.
 
-> Does it still crash? If not, does it crash if you turn off highres?
 
-It's not that simple. My app depends on hrt. I'd have to tweak it to 
-make it work when hrt are not available.
-
-BTW, it's not a crash, it's a complete system lock-up. Nothing works, 
-and I really do mean nothing: ping is ignored, I can't open an ssh 
-connection, the serial console won't budge, even if I send SysRq combos...
-
-> Or better yet, try turning off dynamic-ticks. We had a bug once before
-> that had a problem with the new RCU code and dynamic ticks.
-
-I didn't enable dynamic-ticks kernel support.
-
-CONFIG_TICK_ONESHOT=y
-# CONFIG_NO_HZ is not set
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-...
-# CONFIG_HPET_TIMER is not set
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT_DESKTOP is not set
-CONFIG_PREEMPT_RT=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_SOFTIRQS=y
-CONFIG_PREEMPT_HARDIRQS=y
-CONFIG_PREEMPT_BKL=y
-# CONFIG_CLASSIC_RCU is not set
-CONFIG_PREEMPT_RCU=y
-# CONFIG_RCU_TRACE is not set
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_UP_IOAPIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-# CONFIG_X86_MCE is not set
-# CONFIG_VM86 is not set
-# CONFIG_TOSHIBA is not set
-# CONFIG_I8K is not set
-# CONFIG_X86_REBOOTFIXUPS is not set
-# CONFIG_MICROCODE is not set
-# CONFIG_X86_MSR is not set
-
-Regards.
