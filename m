@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbXJQVeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXJQVe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbXJQVeK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXJQVd4
+	id S1754559AbXJQVe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXJQVeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:33:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48592 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbXJQVd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:33:56 -0400
-Date: Wed, 17 Oct 2007 17:33:37 -0400
-From: Dave Jones <davej@redhat.com>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
-Subject: Re: [PATCH][try 4] architectural pstate driver for powernow-k8
-Message-ID: <20071017213337.GE9748@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Mark Langsdorf <mark.langsdorf@amd.com>,
-	linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
-References: <200710091446.38432.mark.langsdorf@amd.com> <20071015154031.GA30754@redhat.com> <200710151123.45582.mark.langsdorf@amd.com> <200710151603.48489.mark.langsdorf@amd.com>
+	Wed, 17 Oct 2007 17:34:08 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:61567 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759351AbXJQVeG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 17:34:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FMSAleEoUONKZse8or58qBcNvSaen+J2rvuafRUum5YKA62ehUhAzMyny9oFKnobICNAy0/WqZikAs1a0wPYWXHhus6cQSIt4j4IzIEmBVbju1AhOFQGMcNzk9nWsrKaj5Bkb/Q43ndFoxksomQL3gpsEon/tu++WGH/IDBFjcg=
+Message-ID: <a4e6962a0710171434l5ff6cecfib1e8b231b8b610b6@mail.gmail.com>
+Date: Wed, 17 Oct 2007 16:34:02 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: torvalds@osdl.org
+Subject: [GIT PULL] 9p patches for 2.6.24 merge window
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200710151603.48489.mark.langsdorf@amd.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 04:03:48PM -0500, Mark Langsdorf wrote:
- > This patch should apply cleanly to the 2.6.23-git7 kernel.  It changes the
- > powernow-k8 driver code that deals with 3rd generation Opteron, Phenom,
- > and later processors to match the architectural pstate driver described
- > in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18.  The
- > initial implementation of the hardware pstate driver for PowerNow!
- > used some processor-version specific features, and would not be
- > maintainable in the long term as the processor features changed.
- > This architectural driver should work on all future AMD processors.
- >  
- > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
- > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Linus, please pull from the 'for-linus' branch of:
+  git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git/ for-linus
 
-MIME damaged, can't apply.
+This tree contains the following:
 
-	Dave
+Latchesar Ionkov(3):
+  attach-per-user support
+  rename uid and gid parameters
+  define session flags
 
--- 
-http://www.codemonkey.org.uk
+Eric Van Hensbergen(4)
+  remove sysctl code
+  fix bad kconfig cross-dependency
+  soften invalidationin loose mode
+  make transports dynamic
+
+There are a few patches relating to a virtio transport support that
+I'm holding back until I know Rusty's lguest series is merged.
+
+ b/Documentation/filesystems/9p.txt |   22 +
+ b/fs/9p/fid.c                      |  157 +++++++++++--
+ b/fs/9p/v9fs.c                     |  189 +++++++---------
+ b/fs/9p/v9fs.h                     |   38 +--
+ b/fs/9p/vfs_file.c                 |    6
+ b/fs/9p/vfs_inode.c                |   50 ++--
+ b/fs/9p/vfs_super.c                |   19 -
+ b/include/net/9p/9p.h              |   21 -
+ b/include/net/9p/client.h          |    9
+ b/include/net/9p/conn.h            |    4
+ b/include/net/9p/transport.h       |   27 +-
+ b/net/9p/Kconfig                   |   10
+ b/net/9p/Makefile                  |    5
+ b/net/9p/client.c                  |   13 -
+ b/net/9p/conv.c                    |   32 ++
+ b/net/9p/mod.c                     |   71 +++++-
+ b/net/9p/mux.c                     |    5
+ b/net/9p/trans_fd.c                |  419 +++++++++++++++++++++++--------------
+ net/9p/sysctl.c                    |   81 -------
+ 19 files changed, 689 insertions(+), 489 deletions(-)
+
+
+                Thanks,
+                      -eric
