@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936378AbXJQRgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965640AbXJQRhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936378AbXJQRgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762636AbXJQRg1
+	id S965640AbXJQRhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbXJQRgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:36:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34511 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761733AbXJQRg0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:36:26 -0400
-Subject: Re: [PATCH] nfs: fix nfs_writepage()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1192638372.27435.154.camel@twins>
-References: <1192628458.27435.119.camel@twins>
-	 <1192634702.7573.10.camel@heimdal.trondhjem.org>
-	 <1192635028.27435.137.camel@twins>
-	 <1192635917.7573.24.camel@heimdal.trondhjem.org>
-	 <1192636074.7573.27.camel@heimdal.trondhjem.org>
-	 <1192636652.27435.147.camel@twins>
-	 <1192638253.7573.38.camel@heimdal.trondhjem.org>
-	 <1192638372.27435.154.camel@twins>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 19:36:24 +0200
-Message-Id: <1192642584.27435.157.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 13:36:53 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10382 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765017AbXJQRgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 13:36:52 -0400
+Date: Wed, 17 Oct 2007 19:36:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] block subsystem related crash with latest -git
+Message-ID: <20071017173647.GK15552@kernel.dk>
+References: <20071017154655.GA13394@elte.hu> <alpine.LFD.0.999.0710170929270.26902@woody.linux-foundation.org> <20071017165949.GF15552@kernel.dk> <20071017170804.GG15552@kernel.dk> <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017173408.GA1960@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 18:26 +0200, Peter Zijlstra wrote:
-> On Wed, 2007-10-17 at 12:24 -0400, Trond Myklebust wrote:
-> > On Wed, 2007-10-17 at 17:57 +0200, Peter Zijlstra wrote:
-> > > On Wed, 2007-10-17 at 11:47 -0400, Trond Myklebust wrote:
-> > > > On Wed, 2007-10-17 at 11:45 -0400, Trond Myklebust wrote:
-> > > > > On Wed, 2007-10-17 at 17:30 +0200, Peter Zijlstra wrote:
-> > > > > 
-> > > > > > The thing is, swapper_space just calls ->writepage() and expects the
-> > > > > > page to be written out. So either the a_ops usage of swapper_space is
-> > > > > > deviant or NFS' is.
-> > > > > 
-> > > > > Could somebody please document WTF writepage() is supposed to do, and
-> > > > > WTF page_mkwrite() is for?
-> > > > > 
-> > > > > I thought that page_mkwrite() was supposed to finally allow us to deal
-> > > > > with dirty pages in a clean manner: the caller gets to tell the
-> > > > > filesystem that it wants the entire page written out, and then dirties
-> > > > > the page. What is the point if the VM then expects to be able to
-> > > > > circumvent this?
-> > > > 
-> > > > Put differently:
-> > > >       * _who_ is dirtying the page when the swapper is trying to write
-> > > >         the page out?
-> > > >       * why are they not calling either page_mkwrite() or
-> > > >         commit_write()?
-> > > 
-> > > I'm writing anonymous pages (I'm the crazy person doing swap over NFS).
-> > > And anonymous is dirty by default.
-> > 
-> > I'd really prefer to _know_ that these writes are coming from the
-> > swapper. That makes it possible to give them a correct credential and
-> > open context.
-> > 
-> > Could you perhaps funnel them through a new a_op->swap_out() and default
-> > back to ->writepage() for those filesystems that don't define it?
+On Wed, Oct 17 2007, Ingo Molnar wrote:
 > 
-> Sure, will do that.
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > OK, it is fine, as long as the sglist is cleared initially. And I 
+> > don't think there's anyway around that, clearly I didn't think long 
+> > enough before including the memset() removal from Tomo.
+> > 
+> > Ingo, please try this rolled up version.
+> > 
+> > Linus, this should work. It would probably be best if you first did a 
+> > git revert on f5c0dde4c66421a3a2d7d6fa604a712c9b0744e5 and then 
+> > applied the ll_rw_blk.c bit alone. Do you want me to stuff that 
+> > (revert + patch) into a branch for you to pull?
+> 
+> yep, this one did the trick, it booted up fine twice in a row already!
+> 
+>  Tested-by: Ingo Molnar <mingo@elte.hu>
+> 
+> thanks!
 
-OTOH these pages will have PageSwapCache() and IS_SWAPFILE(inode) will
-be true, so ->writepage() can already know. Do you still prefer
-->swap_out() ?
+Great! Thanks a lot for reporting and testing... Linus, care to pull
+
+  git://git.kernel.dk/data/git/linux-2.6-block.git for-linus
+
+Jens Axboe (2):
+      Revert "[SCSI] Remove full sg table memset()"
+      [BLOCK] blk_rq_map_sg() next_sg fixup
+
+ block/ll_rw_blk.c       |   10 ++++++----
+ drivers/scsi/scsi_lib.c |    2 ++
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+-- 
+Jens Axboe
 
