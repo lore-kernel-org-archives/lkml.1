@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933733AbXJQLM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932888AbXJQLOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933733AbXJQLM0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbXJQLMQ
+	id S932888AbXJQLOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758637AbXJQLOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:12:16 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:8186 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757217AbXJQLMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:12:15 -0400
-Date: Wed, 17 Oct 2007 13:11:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-Message-ID: <20071017111146.GW5043@kernel.dk>
-References: <20071017.035441.74746708.davem@davemloft.net> <20071017105840.GT5043@kernel.dk> <20071017110142.GU5043@kernel.dk> <20071017.041004.21594558.davem@davemloft.net>
+	Wed, 17 Oct 2007 07:14:01 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:47440 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757976AbXJQLOA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:14:00 -0400
+Date: Wed, 17 Oct 2007 12:13:53 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: veerasena reddy <veerasena_b@yahoo.co.in>
+cc: "linux-kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Linux-2.6.18.8 compilation errors with GCC-4.2.1 and binutils-2.17
+ on MIPS
+In-Reply-To: <304090.76321.qm@web8411.mail.in.yahoo.com>
+Message-ID: <Pine.LNX.4.64N.0710171207580.28993@blysk.ds.pg.gda.pl>
+References: <304090.76321.qm@web8411.mail.in.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017.041004.21594558.davem@davemloft.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Wed, 17 Oct 2007 13:01:42 +0200
-> 
-> > Actually, just clearing AFTER sg_next() would be fine, since we know
-> > that is not a link entry. Duh...
-> 
-> Yes and I'm running a kernel successfully with this fix.
+On Wed, 17 Oct 2007, veerasena reddy wrote:
 
-Great!
+> mips-linux-ld: final link failed: Bad value
 
-> Jens, please also add the following on top of Fujita-san's most recent
-> sparc64 patch and we should be good to go.
+ It looks like some kind of a problem with a relocation somewhere.  The 
+error is cryptic and of little help, I know, but I reckon diagnostics has 
+been a little bit improved in this area of the linker since 2.17, so it 
+would help if you upgraded binutils to 2.18.
 
-Awesome, thanks. And sorry for messing up sparc64.
-
--- 
-Jens Axboe
-
+  Maciej
