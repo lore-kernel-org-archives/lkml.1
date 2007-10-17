@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763025AbXJQTwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbXJQTyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763025AbXJQTwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbXJQTwV
+	id S1762184AbXJQTyV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbXJQTyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:52:21 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:40588 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756542AbXJQTwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:52:20 -0400
-Date: Wed, 17 Oct 2007 21:52:17 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmc_spi stopped working
-Message-ID: <20071017215217.177cdb14@poseidon.drzeus.cx>
-In-Reply-To: <20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20071017211923.31fde15e@poseidon.drzeus.cx>
-	<20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 15:54:13 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:44405 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753295AbXJQTyM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:54:12 -0400
+Date: Wed, 17 Oct 2007 21:54:39 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Riku Voipio <riku.voipio@iki.fi>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: hwmon/f75375s.c: buggy if()
+Message-ID: <20071017195439.GD3778@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 12:37:13 -0700
-David Brownell <david-b@pacbell.net> wrote:
+drivers/hwmon/f75375s.c contains the following code:
 
-> 
-> That issue is 49dce689ad4ef0fd1f970ef762168e4bd46f69a3, the
-> classdev-elimination patch from Tony Jones.  It broke the
-> "does this bus have more than one device" test by relocating
-> the relevant sysfs nodes.
-> 
-> Quick workaround for that one is to disable the fault return
-> after that test.
-> 
+<--  snip  -->
 
-Annoying. Feel free to ping me when you've pushed fixes to Linus.
+...
+static ssize_t set_pwm_mode(struct device *dev, struct device_attribute *attr,
+                const char *buf, size_t count)
+{
+...
+        if (val != 0 || val != 1 || data->kind == f75373)
+                return -EINVAL;
+...
 
-> When enumerating MMC cards using SPI, don't support the "just probe"
-> mechanism since it doesn't always work.  Instead, always wait for the
-> reset to complete before issuing the next request.
-> 
-> This is a regression ... this SanDisk MMC card used to enumerate with
-> no trouble, despite this particular spec violation.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> 
+<--  snip  -->
 
-I think I'll have to NAK this as I believe it breaks MMC 4.2. I'll check
-and get back to you.
+I'm not sure what exactly was intended, but it was for sure not intended 
+to always return -EINVAL...
 
-Rgds
+Spotted by the Coverity checker.
+
+cu
+Adrian
+
 -- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
