@@ -1,123 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761447AbXJQW7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbXJQW7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761447AbXJQW7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 18:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXJQW6v
+	id S1760336AbXJQW7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 18:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759797AbXJQW73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 18:58:51 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49147 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751278AbXJQW6u (ORCPT
+	Wed, 17 Oct 2007 18:59:29 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:49092 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758227AbXJQW71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 18:58:50 -0400
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-From: Chris Mason <chris.mason@oracle.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-In-Reply-To: <m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	 <m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	 <200710160956.58061.borntraeger@de.ibm.com>
-	 <200710171814.01717.borntraeger@de.ibm.com>
-	 <m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	 <1192648456.15717.7.camel@think.oraclecorp.com>
-	 <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-	 <1192654481.15717.16.camel@think.oraclecorp.com>
-	 <m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+	Wed, 17 Oct 2007 18:59:27 -0400
+Subject: [PATCH] ip_gra_reasm() should set "err" incase of skb_clone()
+	failure
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: netdev@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 17 Oct 2007 18:58:09 -0400
-Message-Id: <1192661889.15717.27.camel@think.oraclecorp.com>
+Date: Wed, 17 Oct 2007 16:02:33 -0700
+Message-Id: <1192662154.14504.7.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 15:30 -0600, Eric W. Biederman wrote:
-> Chris Mason <chris.mason@oracle.com> writes:
-> 
-> >> Thinking about it.  I don't believe anyone has ever intentionally built
-> >> a filesystem tool that depends on being able to modify a file systems
-> >> metadata buffer heads while the filesystem is running, and doing that
-> >> would seem to be fragile as it would require a lot of cooperation
-> >> between the tool and the filesystem about how the filesystem uses and
-> >> implement things.
-> >> 
-> >
-> > That's right.  For example, ext2 is doing directories in the page cache
-> > of the directory inode, so there's a cache alias between the block
-> > device page cache and the directory inode page cache.
-> >
-> >> Now I guess I need to see how difficult a patch would be to give
-> >> filesystems magic inodes to keep their metadata buffer heads in.
-> >
-> > Not hard, the block device inode is already a magic inode for metadata
-> > buffer heads.  You could just make another one attached to the bdev.
-> >
-> > But, I don't think I fully understand the problem you're trying to
-> > solve?
-> 
-> 
-> So the start:
-> When we write buffers from the buffer cache we clear buffer_dirty
-> but not PageDirty
->
-> So try_to_free_buffers() will mark any page with clean buffer_heads
-> that is not clean itself clean.
-> 
-> The ramdisk set pages dirty to keep them from being removed from the
-> page cache, just like ramfs.
-> 
-So, the problem is using the Dirty bit to indicate pinned.  You're
-completely right that our current setup of buffer heads and pages and
-filesystem metadata is complex and difficult.
+Simple error handling fix (against 2.26.23-git12).
 
-But, moving the buffer heads off of the page cache pages isn't going to
-make it any easier to use dirty as pinned, especially in the face of
-buffer_head users for file data pages.
+Thanks,
+Badari
 
-You've already seen Nick fsblock code, but you can see my general
-approach to replacing buffer heads here:
+Need to initialize "err" in case of skb_clone() failure.
 
-http://oss.oracle.com/mercurial/mason/btrfs-unstable/file/f89e7971692f/extent_map.h
+net/ipv4/ip_fragment.c: In function `ip_defrag':
+net/ipv4/ip_fragment.c:540: warning: `err' might be used uninitialized in this function
 
-(alpha quality implementation in extent_map.c and users in inode.c)  The
-basic idea is to do extent based record keeping for mapping and state of
-things in the filesystem, and to avoid attaching these things to the
-page.
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+---
+ net/ipv4/ip_fragment.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> Unfortunately when those dirty ramdisk pages get buffers on them and
-> those buffers all go clean and we are trying to reclaim buffer_heads
-> we drop those pages from the page cache.   Ouch!
-> 
-> We can fix the ramdisk by setting making certain that buffer_heads
-> on ramdisk pages stay dirty as well.  The problem is this breaks
-> filesystems like reiserfs and ext3 that expect to be able to make 
-> buffer_heads clean sometimes.
-> 
-> There are other ways to solve this for ramdisks, such as changing
-> where ramdisks are stored.  However fixing the ramdisks this way
-> still leaves the general problem that there are other paths to the
-> filesystem metadata buffers, and those other paths cause the code
-> to be complicated and buggy.
-> 
-> So I'm trying to see if we can untangle this Gordian knot, so the
-> code because more easily maintainable.  
-> 
+Index: linux-2.6.23/net/ipv4/ip_fragment.c
+===================================================================
+--- linux-2.6.23.orig/net/ipv4/ip_fragment.c	2007-10-17 15:33:27.000000000 -0700
++++ linux-2.6.23/net/ipv4/ip_fragment.c	2007-10-17 15:50:51.000000000 -0700
+@@ -544,6 +544,7 @@ static int ip_frag_reasm(struct ipq *qp,
+ 	/* Make the one we just received the head. */
+ 	if (prev) {
+ 		head = prev->next;
++		err = -ENOMEM;
+ 		fp = skb_clone(head, GFP_ATOMIC);
+ 
+ 		if (!fp)
 
-Don't get me wrong, I'd love to see a simple and coherent fix for what
-reiserfs and ext3 do with buffer head state, but I think for the short
-term you're best off pinning the ramdisk pages via some other means.
-
--chris
 
 
