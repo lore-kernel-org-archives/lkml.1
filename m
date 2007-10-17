@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764995AbXJQNNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765715AbXJQNPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764995AbXJQNNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbXJQNNH
+	id S1765715AbXJQNPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 09:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760017AbXJQNPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:13:07 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:47134 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759590AbXJQNNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:13:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=V2QKs84kgtXI1Ao+0Xuv72AZd8cRnTxFBbpHUppWwzAfSrvetmOuaEcGMHU/DW0YFxSlqmQOVx6RQBGsonOW5pQ5eMHP7iibUug3H/dStap5l08OVp/626XxNs3JNuGpyRHzCdqeaGEvYQIcM7+9uTWQnrQZSIydvGI5s2Yrxeg=
-Date: Wed, 17 Oct 2007 15:13:08 -0700
-To: "Szabolcs Feczak" <sub@sierraforce.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Community research
-Message-Id: <20071017151308.9f41af12.Kristoffer.ericson@gmail.com>
-In-Reply-To: <cffacb0a0710170428q6982298cyb3d1cd3f4d4943ba@mail.gmail.com>
-References: <cffacb0a0710140457q70e6bc61mec67dc0ef0bd3f2c@mail.gmail.com>
-	<cffacb0a0710170428q6982298cyb3d1cd3f4d4943ba@mail.gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 17 Oct 2007 09:15:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:40307 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759956AbXJQNPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 09:15:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Frank Mandarino <fmandarino@endrelia.com>
+Subject: Re: audio codec control
+Date: Wed, 17 Oct 2007 08:57:09 -0400
+Organization: Endrelia Technologies Inc.
+Message-ID: <471606A5.90807@endrelia.com>
+References: <21590.1909782135$1192548826@news.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+X-Gmane-NNTP-Posting-Host: bas17-toronto12-1177718679.dsl.bell.ca
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+In-Reply-To: <21590.1909782135$1192548826@news.gmane.org>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 21:28:42 +1000
-"Szabolcs Feczak" <sub@sierraforce.com> wrote:
+Pierre Savary wrote:
+> Hello,
+> 
+> thank you for your help about my previous request concerning a problem in
+> audio capture on CS42L51 codec. 
+> 
+> For your information, my problem came from a bad configuration of an ARM9
+> register. As my register settings, the capture had to start with an event on
+> RD pin, which is not connected with the codec on my board. Setting the START
+> bits to 0 = "continuous" solved my problem.
+> 
+> Today, I need some more help to understand how your driver is used from an
+> external application. Notably, how do you call the controls "Master Playback
+> Volume", "Master Playback ZC Switch", "Capture Volume", etc, but also the
+> "Input Select" and "Output Mixer", for example ?
+> Shouldn't we modify the field at91_pcm_ops->ioctl (in
+> /sound/soc/at91/at91-pcm.c), which is now set to the common function
+> snd_pcm_lib_ioctl, in order to launch codec-related commands ?
+> 
+> Thank you in advance for your help.
+> 
+> 
+> Sylvain
+> 
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> 
 
-> Thanks for everyone who filled out the survey
-> 
-> 19 hours left till closing, so be quick if you want to raise the
-> percentage of your country :)
-> the participating subjects by countries so far:
-Seeing that sweden only got 2 so far, You've got my attention.
+Pierre and/or Sylvain,
 
-> 
-> 536 total / 472 from Hungary / 4 United States / 1 Ukraine / 1 UK / 1
-> Turkey / 2 Sweden / 4 Slovakia / 1 Singapore / 2 Serbia / 2 Russia / 7
-sweden only 2? And how did Hungary get so many developers?
+I'm not sure how you call the controls from an external application.  I
+have only used the alsa-utils amixer command to set the controls, and
+alsactl to save the settings in /etc/asound.state and then restore them
+at boot.
 
-> Romania / 1 Poland / 1 Philippines / 1 Norway / 1 New Zealand / 1
-> Netherlands / 1 Malawi / 1 Indonesia / 3 India / 11 Germany / 2 France
-> / 1 Finland / 2 Denmark / 1 Columbia / 10 Australia / 1 Albania
-> 
-> Cheers
-> 
-> Sub
-> 
-> On 10/14/07, Szabolcs Feczak <sub@sierraforce.com> wrote:
-> > Hi everybody,
-> >
-> > I know it is a bit off-topic, but I am doing a research at uni
-> > about online communities (like the Linux community itself),
-> > and I need primary data, so if some of you would kind enough
-> > to donate his time and take my survey at:
-> >
-> > http://q.sierraforce.com/
-> >
-> > Would be greatly appreciated.
-> >
-> > Thank you all,
-> >
-> > keep up the good work
-> >
-> > Cheers
-> >
-> > Sub
-> >
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+So you could look at the amixer source to see how they are called.
+
+The available controls are normally defined in the ASoC codec driver,
+and you shouldn't need to modify the at91_pcm_ops->ioctl pointer to
+access them.
+
+../fam
+-- 
+Frank Mandarino                                fmandarino(a)endrelia.com
+Endrelia Technologies Inc.
+Toronto, Ontario, Canada
+
