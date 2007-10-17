@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935911AbXJQQMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936104AbXJQQNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935911AbXJQQMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 12:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbXJQQMn
+	id S936104AbXJQQNa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 12:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763486AbXJQQNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 12:12:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:40858 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759836AbXJQQMl (ORCPT
+	Wed, 17 Oct 2007 12:13:18 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:54882 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760128AbXJQQNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 12:12:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fyV7GiW53Ex8hr2mbOo/J2bGAoVX93ckbVKTcqvNyh+O1/Q9HrwF6MnTfsFrM7PVrKH4YIajwvFaU7Kr5TdaFYxE7ir4QZb5+habOGfeInQWSS7vGOXaqdwGD5/YUxaNsug1TYWsIdUR5sK61+z1YjnhDAf7RVURTITwSBWsJlI=
-Message-ID: <d120d5000710170912o3503a0f8s55bb4b7294f80e58@mail.gmail.com>
-Date: Wed, 17 Oct 2007 12:12:38 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH try #4] Input/Joystick Driver: add support AD7142 joystick driver
-Cc: "Andrey Panin" <pazke@donpac.ru>, "Roel Kluin" <12o3l@tiscali.nl>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Jean Delvare" <khali@linux-fr.org>
-In-Reply-To: <1192605120.7920.15.camel@roc-laptop>
+	Wed, 17 Oct 2007 12:13:16 -0400
+Date: Wed, 17 Oct 2007 11:13:08 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
+Subject: Re: [RFC PATCH 2/4] Rename lock_cpu_hotplug to get_online_cpus
+Message-ID: <20071017161308.GD6773@localdomain>
+References: <20071016103308.GA9907@in.ibm.com> <20071016103506.GB16570@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1192605120.7920.15.camel@roc-laptop>
+In-Reply-To: <20071016103506.GB16570@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
+Hi Gautham-
 
-On 10/17/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> Subject: [PATCH try #4] Input/Joystick Driver: add support AD7142 joystick driver
->
+Gautham R Shenoy wrote:
+> Replace all lock_cpu_hotplug/unlock_cpu_hotplug from the kernel and use 
+> get_online_cpus and put_online_cpus instead as it highlights
+> the refcount semantics in these operations.
 
-My comments are in addition to Jean's:
+Something other than "get_online_cpus", please?  lock_cpu_hotplug()
+protects cpu_present_map as well as cpu_online_map.  For example, some
+of the powerpc code modified in this patch is made a bit less clear
+because it is manipulating cpu_present_map, not cpu_online_map.
 
-> +
-> +static void ad7142_close(struct input_dev *dev)
-> +{
-> +       struct ad7142_data *data = input_get_drvdata(dev);
-> +       struct i2c_client *client = &data->client;
-> +       unsigned short value;
-> +
 
-I think you need disable_irq() here
-
-> +       flush_scheduled_work();
-> +
-> +       /*
-> +        * Turn AD7142 to full shutdown mode
-> +        * No CDC conversions
-> +        */
-> +       value = 0x0001;
-> +       ad7142_i2c_write(client, PWRCONVCTL, &value, 1);
-
-and enable_irq() here. This way you can be sure that you will not
-re-arm the work between flush_scheduled_work() and shutting off the
-controller.
-
-> +
-> +static int ad7142_attach(struct i2c_adapter *adap)
-> +{
-> +       return i2c_probe(adap, &addr_data, &ad7142_probe);
-> +}
-> +
-> +static int ad7142_detach(struct i2c_client *client)
-> +{
-> +       int rc;
-> +
-> +       free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
-> +
-> +       flush_scheduled_work();
-> +
-> +       rc = i2c_detach_client(client);
-> +       if (!rc)
-> +               kfree(i2c_get_clientdata(client));
-> +       return rc;
-> +}
-> +
-> +
-> +static int __init ad7142_init(void)
-> +{
-> +       return i2c_add_driver(&ad7142_driver);
-> +}
-> +
-> +static void __exit ad7142_exit(void)
-> +{
-> +       i2c_del_driver(&ad7142_driver);
-> +}
-> +
-> +module_init(ad7142_init);
-> +module_exit(ad7142_exit);
-
-Where did input_unregister_device() go? It still needs to be somewhere...
-
--- 
-Dmitry
+> Index: linux-2.6.23/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> ===================================================================
+> --- linux-2.6.23.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ linux-2.6.23/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -151,7 +151,7 @@ static int pseries_add_processor(struct 
+>  	for (i = 0; i < nthreads; i++)
+>  		cpu_set(i, tmp);
+>  
+> -	lock_cpu_hotplug();
+> +	get_online_cpus();
+>  
+>  	BUG_ON(!cpus_subset(cpu_present_map, cpu_possible_map));
+>  
+> @@ -188,7 +188,7 @@ static int pseries_add_processor(struct 
+>  	}
+>  	err = 0;
+>  out_unlock:
+> -	unlock_cpu_hotplug();
+> +	put_online_cpus();
+>  	return err;
+>  }
+>  
+> @@ -209,7 +209,7 @@ static void pseries_remove_processor(str
+>  
+>  	nthreads = len / sizeof(u32);
+>  
+> -	lock_cpu_hotplug();
+> +	get_online_cpus();
+>  	for (i = 0; i < nthreads; i++) {
+>  		for_each_present_cpu(cpu) {
+>  			if (get_hard_smp_processor_id(cpu) != intserv[i])
+> @@ -223,7 +223,7 @@ static void pseries_remove_processor(str
+>  			printk(KERN_WARNING "Could not find cpu to remove "
+>  			       "with physical id 0x%x\n", intserv[i]);
+>  	}
+> -	unlock_cpu_hotplug();
+> +	put_online_cpus();
+>  }
