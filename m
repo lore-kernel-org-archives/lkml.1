@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJQFfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762556AbXJQFiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXJQFfx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 01:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXJQFfn
+	id S1762556AbXJQFiZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 01:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbXJQFiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 01:35:43 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35904 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXJQFfm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 01:35:42 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rob Landley <rob@landley.net>
-Cc: Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-In-Reply-To: Your message of "Mon, 15 Oct 2007 03:04:00 CDT."
-             <200710150304.00901.rob@landley.net>
-From: Valdis.Kletnieks@vt.edu
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015014503.GF9715@thunk.org>
-            <200710150304.00901.rob@landley.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1192599264_3070P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 17 Oct 2007 01:34:24 -0400
-Message-ID: <25897.1192599264@turing-police.cc.vt.edu>
+	Wed, 17 Oct 2007 01:38:17 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43303 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbXJQFiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 01:38:16 -0400
+Date: Wed, 17 Oct 2007 11:07:54 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
+Subject: Re: [RFC PATCH 1/4] Refcount Based Cpu-Hotplug Implementation
+Message-ID: <20071017053754.GB9940@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20071016103308.GA9907@in.ibm.com> <20071016103417.GA16570@in.ibm.com> <200710171047.42693.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710171047.42693.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1192599264_3070P
-Content-Type: text/plain; charset=us-ascii
+On Wed, Oct 17, 2007 at 10:47:41AM +1000, Rusty Russell wrote:
+> On Tuesday 16 October 2007 20:34:17 Gautham R Shenoy wrote:
+> > This patch implements a Refcount + Waitqueue based model for
+> > cpu-hotplug.
+> 
+> Hi Gautham,
 
-On Mon, 15 Oct 2007 03:04:00 CDT, Rob Landley said:
-> I note that the eth0 and eth1 names are dynamically assigned on a first come
-> first serve basis (like scsi).  This never causes me a problem because the
-> driver loading order is constant, and once you figure out that eth0 is
-> gigabit and eth1 is the 80211g it _stays_ that way across reboots, reliably.
-> Yeah, it's a heuristic.  Hands up everybody relying on such a heuristic in
-> the real world.
+Hi Rusty, 
 
-I've gotten burned by that heuristic enough times to not rely on it.  My last
-laptop had an ethernet on the motherboard, a *separate* ethernet in the docking
-station, an ethernet on a multifunction pcmcia card (I usually just used the
-modem side), and a wireless that looked like an ethernet - so it was possible
-for a given interface to be eth1 (if no dock and no pcmcia card) or eth3 (if
-both were present).  And that's on a laptop from almost 5 years ago.
+> 
+> 	I can't see where you re-initialize the completion.  
 
-And then there's the recent Sun and Dell 1U rack-mounts that have 4 ethernets
-on the motherboard, and they *never* seem to assign in a 0,1,2,3 order that
-matches the 0 1 2 3 printed above the 4 RJ45's ;)
+The cpu_hotplug.readers_done is a global variable which has been
+initialized in cpu_hotplug_init. 
 
-So I have for years been a proponent of 'ethN is nailed by MAC address' :)
+So I am wondering is the re-initialization required ? 
 
---==_Exmh_1192599264_3070P
-Content-Type: application/pgp-signature
+> 
+> > +static void cpu_hotplug_begin(void)
+> > +{
+> > +	mutex_lock(&cpu_hotplug.lock);
+> > +	cpu_hotplug.active_writer = current;
+> > +	while (cpu_hotplug.refcount) {
+> > +		mutex_unlock(&cpu_hotplug.lock);
+> > +		wait_for_completion(&cpu_hotplug.readers_done);
+> > +		mutex_lock(&cpu_hotplug.lock);
+> > +	}
+> 
+> AFAICT this will busy-wait on the second CPU hotplug.
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Well when the first cpu_hotplug comes out of wait_for_completion, it
+would have decremented the ->done count, so it's as good as new 
+for the second CPU hotplug, no?
 
-iD8DBQFHFZ7gcC3lWbTT17ARAsZXAJ4xuUB1ebX7Vk0jcCwwfaDOEL+g4gCg7TJf
-rz3Is447x34Dx3ZHEU167KY=
-=glX8
------END PGP SIGNATURE-----
+> Cheers,
+> Rusty.
 
---==_Exmh_1192599264_3070P--
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
