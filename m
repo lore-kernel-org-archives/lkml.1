@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936538AbXJQCrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936627AbXJQCsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936538AbXJQCrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 22:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765953AbXJQCr2
+	id S936627AbXJQCsP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 22:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761536AbXJQCr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 22:47:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35682 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756398AbXJQCr1 (ORCPT
+	Tue, 16 Oct 2007 22:47:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:17273 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936407AbXJQCry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 22:47:27 -0400
-Date: Tue, 16 Oct 2007 19:46:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Qi Yong <qiiyoong@gmail.com>
-cc: Stefan Seyfried <seife@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-In-Reply-To: <2cd57c900710161935l2121bffex78475ca33f0574ca@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0710161943440.26902@woody.linux-foundation.org>
-References: <200611011323.14830.rjw@sisk.pl> <200705111121.51704.rjw@sisk.pl>
-  <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org> 
- <200705112208.53971.rjw@sisk.pl>  <alpine.LFD.0.98.0705111550540.3986@woody.linux-foundation.org>
-  <20070514075045.GA10238@suse.de>
- <2cd57c900710161935l2121bffex78475ca33f0574ca@mail.gmail.com>
+	Tue, 16 Oct 2007 22:47:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ILv0QnBxg1fxdnIF3vcgJwjhb7OEmxV7NRxMw1GaxZmzKMziupbB1jNa/+uOFyaxNa8hU66/3kTQgZFVus2jKOIN3+YNiHvt0b3oRdTz2tFNzwqzu4swur8nCP9qbMFj2T1JW5c3Hhc75HJ/vkW0SrM7KcpIlvpYu+gQuI2eYZs=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: Re: hda-intel: no soundcard with current linus' git tree
+Date: Wed, 17 Oct 2007 04:47:21 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org
+References: <471538C2.80806@m3y3r.de>
+In-Reply-To: <471538C2.80806@m3y3r.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710170447.21556.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 17 Oct 2007, Qi Yong wrote:
+On Wednesday 17 October 2007 00:18:42 Thomas Meyer wrote:
+> $ dmesg
 > 
-> The key point is "fall back to shutdown _only_ if !ops, otherwise
-> don't touch hibernation_mode". And that solves my problem.
+> [schnipp]
+> 
+> ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 22 (level, low) -> IRQ 21
+> PCI: Enabling bus mastering for device 0000:00:1b.0
+> PCI: Setting latency timer of device 0000:00:1b.0 to 64
+> hda_codec: STAC922x, Apple subsys_id=106b0200
+> ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+> HDA Intel: probe of 0000:00:1b.0 failed with error -16
+> 
+> [schnipp]
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Please, when resurrecting a five-month-old discussion, give more of the 
-old context.
 
-I don't know about anybody else, but I get enough email that "five months" 
-might as well be "last century" when it comes to email discussions, and I 
-have long since forgotten the details of whatever caused the issue to 
-begin with ;)
+Please bisect this (the alsa merge happened just short time ago)
+Which kernel did work?
 
-			Linus
+Best regards,
+	Maxim Levitsky
