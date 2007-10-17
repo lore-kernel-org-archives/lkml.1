@@ -1,89 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbXJQX0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbXJQXaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760792AbXJQX0V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXJQX0M
+	id S1761442AbXJQXaE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 19:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbXJQX3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:26:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49458 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755833AbXJQX0L (ORCPT
+	Wed, 17 Oct 2007 19:29:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50929 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756124AbXJQX3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:26:11 -0400
-Date: Wed, 17 Oct 2007 16:25:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org, greg@kroah.com,
-       pcihpd-discuss@lists.sourceforge.net, tytso@mit.edu
-Subject: Re: [PATCH 0/4] Fix PCIe hotplug for non-ACPI ExpressCard slots
- (version 2)
-Message-Id: <20071017162553.986a0f70.akpm@linux-foundation.org>
-In-Reply-To: <471693DF.4020608@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-	<47150982.6050102@rtr.ca>
-	<471509FE.7080505@rtr.ca>
-	<47151191.40406@rtr.ca>
-	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>
-	<4715217D.2000803@rtr.ca>
-	<20071016214143.GC21815@kroah.com>
-	<471533AF.60100@rtr.ca>
-	<47156B14.2080608@rtr.ca>
-	<20071017150243.1c21fea4.akpm@linux-foundation.org>
-	<471693DF.4020608@rtr.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 19:29:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<1192648456.15717.7.camel@think.oraclecorp.com>
+	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+	<1192654481.15717.16.camel@think.oraclecorp.com>
+	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+	<1192661889.15717.27.camel@think.oraclecorp.com>
+Date: Wed, 17 Oct 2007 17:28:51 -0600
+In-Reply-To: <1192661889.15717.27.camel@think.oraclecorp.com> (Chris Mason's
+	message of "Wed, 17 Oct 2007 18:58:09 -0400")
+Message-ID: <m16415cocs.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 18:59:43 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+Chris Mason <chris.mason@oracle.com> writes:
 
-> Andrew Morton wrote:
-> > On Tue, 16 Oct 2007 21:53:24 -0400
-> > Mark Lord <lkml@rtr.ca> wrote:
-> > 
-> >> Fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks
-> >> in conjunction with the modparam of pciehp_force=1.
-> >>
-> >> The PCIe Hotplug driver has two shortcomings when used on Dell notebooks
-> >> which lack ACPI BIOS support for PCIe hotplug:
-> > 
-> > You just sent four patches all of which are identified as "Fix PCIe hotplug
-> > for non-ACPI ExpressCard slots (version 2)".  Please do not do this.
-> 
-> Eh?  They were labelled as 1/4, 2/4, 3/4, and 4/4.
+> So, the problem is using the Dirty bit to indicate pinned.  You're
+> completely right that our current setup of buffer heads and pages and
+> filesystpem metadata is complex and difficult.
+>
+> But, moving the buffer heads off of the page cache pages isn't going to
+> make it any easier to use dirty as pinned, especially in the face of
+> buffer_head users for file data pages.
 
-Please, review http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt -
-a lot of experiecne has gone into that...
+Let me specific.  Not moving buffer_heads off of page cache pages,
+moving buffer_heads off of the block devices page cache pages.
 
-When preparing patches, always think "how will this appear to someone who
-is reading it in the git tree a year from now".
+My problem is the coupling of how block devices are cached and the
+implementation of buffer heads, and by removing that coupling
+we can generally make things better.  Currently that coupling
+means silly things like all block devices are cached in low memory.
+Which probably isn't what you want if you actually have a use
+for block devices.
 
-Obviously stuff like "[patch 2/4]" won't be there, because it is
-meaningless once the patch hits the git tree.  Also text such as "the previous
-patch" and "my patch from yesterday" and "John Doe's comments" and lots of
-other stuff which is appropriate to an email conversation is _not_
-appropriate to a permanent git commit.
+For the ramdisk case in particular what this means is that there
+are no more users that create buffer_head mappings on the block
+device cache so using the dirty bit will be safe. 
 
-> But I'll make the rest of the subject line unique as well on resubmit, then.
-> 
+Further it removes the nasty possibility of user space messing with
+metadata buffer head state.  So the only way those cases can happen is
+a code bug, or a hardware bug.
 
-Thanks.  That's much better than having me invent the subject, because when
-you choose the title, everyone agrees on what the patch is _called_ (as
-long as the title isn't so poorly chosen that I have to fix it).
+So I think by removing these unnecessary code paths things will
+become easier to work with.
 
-If the patch title is well-chosen then it becomes a nice google search key,
-so if someone wants to find out what we were thinking when we did a
-particular patch two years ago, they can just google for the title and go
-and read all the email discussion.
+> You've already seen Nick fsblock code, but you can see my general
+> approach to replacing buffer heads here:
+>
+> http://oss.oracle.com/mercurial/mason/btrfs-unstable/file/f89e7971692f/extent_map.h
+>
+> (alpha quality implementation in extent_map.c and users in inode.c)  The
+> basic idea is to do extent based record keeping for mapping and state of
+> things in the filesystem, and to avoid attaching these things to the
+> page.
 
-> 
-> So far, two postings, and zero comments from anyone on the actual code.
+Interesting.  Something to dig into.
 
-Actual code?  That sounds hard ;)
+> Don't get me wrong, I'd love to see a simple and coherent fix for what
+> reiserfs and ext3 do with buffer head state, but I think for the short
+> term you're best off pinning the ramdisk pages via some other means.
+
+Yes.  And the problem is hard enough to trigger that a short term fix
+is actually of debatable value.  The reason this hasn't shown up more
+frequently is that it only ever triggers if you are in the buffer head
+reclaim state, which on a 64bit box means you have to use < 4K buffers
+and have your ram cache another block device.  That plus most people
+use initramfs these days.
+
+For the short term we have Christian's other patch which simply
+disables calling try_to_free_buffers.  Although that really feels
+like a hack to me.
+
+For 2.6.25 I think I have a shot at fixing these things cleanly.
+
+Eric
