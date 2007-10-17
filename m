@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936375AbXJQQce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935733AbXJQQgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936375AbXJQQce (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 12:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXJQQcY
+	id S935733AbXJQQgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 12:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbXJQQgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 12:32:24 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12077 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761994AbXJQQcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 12:32:23 -0400
-Date: Wed, 17 Oct 2007 18:32:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [bug] block subsystem related crash with latest -git
-Message-ID: <20071017163216.GA15552@kernel.dk>
-References: <20071017154655.GA13394@elte.hu> <20071017155032.GA15215@elte.hu>
+	Wed, 17 Oct 2007 12:36:01 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49909 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760288AbXJQQgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 12:36:00 -0400
+Date: Wed, 17 Oct 2007 18:35:59 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       adaplas@gmail.com
+Subject: Re: [PATCH] vc bell config
+In-Reply-To: <20071011181137.GA3868@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0710171820570.28622@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0710051347000.13406@fbirervta.pbzchgretzou.qr>
+ <20071011181137.GA3868@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017155032.GA15215@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > i tried another bootup with the same kernel and the crash did not 
-> > reoccur, so it seems to be spurious. This crash could be related to 
-> > the scsi or block merges done in the past few days - never saw this 
-> > before.
-> 
-> managed to trigger it a second time, so it seems rather reproducible:
 
-Can you pull
+On Oct 11 2007 18:11, Pavel Machek wrote:
+>
+>> It is already possible to deactivate the vc bell on a per-tty basis,
+>> by using echo -en "\e[11;0]", but this is reset on reset(1).
+>> 
+>> This adds a sysfs parameter to globally control the vc bell, as well
+>> as sysfs parameters for default pitch and duration.
+>> 
+>> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+>
+>There are more parameters that should be set during reset... like
+>cursor size and color, palette, .... What about /sys/.../string_to_interpret
+>_on_reset ?
 
-git://git.kernel.dk/linux-2.6-block.git for-linus
+On reset(1), cursor size, palette, and bell parameters _do_ get reset
+to the defaults. Some defaults may already be changed by the user,
+like palette or default_utf8.
 
-and see if it still reproduces?
-
--- 
-Jens Axboe
-
+Bell configuration is currently not one of them so, should a program
+decide to reset the tty, or should it happen that your output is
+garbled (forcing you to do reset), some settings change back to
+"unwanted defaults".
