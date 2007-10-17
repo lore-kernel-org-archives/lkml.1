@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXJQJDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764774AbXJQJEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761680AbXJQJDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXJQJDO
+	id S1764774AbXJQJEZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXJQJER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:03:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43369 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753074AbXJQJDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:03:12 -0400
-Date: Wed, 17 Oct 2007 02:02:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: 2.6.23-mm1
-Message-Id: <20071017020225.7c4d665c.akpm@linux-foundation.org>
-In-Reply-To: <20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Oct 2007 05:04:17 -0400
+Received: from mga02.intel.com ([134.134.136.20]:54407 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbXJQJEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:04:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,289,1188802800"; 
+   d="scan'208";a="249022487"
+Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <p73odeyxi3u.fsf@crumb.suse.de>
+References: <1192168345.17539.42.camel@caritas-dev.intel.com>
+	 <1192586376.17856.26.camel@caritas-dev.intel.com>
+	 <p73odeyxi3u.fsf@crumb.suse.de>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 17 Oct 2007 17:05:47 +0800
+Message-Id: <1192611948.17856.39.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 17 Oct 2007 09:03:20.0877 (UTC) FILETIME=[90B4CDD0:01C8109C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 16:01:01 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> I noticed 32bit binary on x86_64 behavior is changed on 2.6.23-mm1.
+On Wed, 2007-10-17 at 10:25 +0200, Andi Kleen wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
 > 
-> This is a result of pmap after process returns -ENOMEM.(see attached program)
-> == on 2.6.23 ==
-> errno 12
-> 3531:   ./malloc
-> 0000000000001000   6272K -----    [ anon ]
-> 0000000000621000    100K r-x--  /lib/ld-2.5.so
-> 000000000063a000      4K r----  /lib/ld-2.5.so
-> 000000000063b000      4K rw---  /lib/ld-2.5.so
-> 000000000063c000      8K -----    [ anon ]
-> 000000000063e000   1244K r-x--  /lib/libc-2.5.so
-> 0000000000775000      8K r----  /lib/libc-2.5.so
-> 0000000000777000      4K rw---  /lib/libc-2.5.so
-> 0000000000778000     12K rw---    [ anon ]
-> 000000000077b000 123700K -----    [ anon ]
-> 0000000008048000      4K r-x--  /home/kamezawa/malloc
-> 0000000008049000      4K rw---  /home/kamezawa/malloc
-> 000000000804a000 3929824K -----    [ anon ]
-> 00000000f7f02000      8K rw---    [ anon ]
-> 00000000f7f04000    100K -----    [ anon ]
-> 00000000f7f1d000      4K rw---    [ anon ]
-> 00000000f7f1e000 131812K -----    [ anon ]
-> 00000000fffd7000     84K rw---    [ stack ]
-> 00000000fffec000     72K -----    [ anon ]
-> 00000000ffffe000      4K r-x--    [ anon ]
->  total          4193272K
-> ==
+> > Do you think it is a good idea to check the collision between setup data
+> > and memory area used during kernel boot through bootmem allocator?
 > 
-> == on 2.6.23-mm1==
-> errno 12
-> 3504:   ./malloc
-> 0000000000621000    100K r-x--  /lib/ld-2.5.so
-> 000000000063a000      4K r----  /lib/ld-2.5.so
-> 000000000063b000      4K rw---  /lib/ld-2.5.so
-> 000000000063e000   1244K r-x--  /lib/libc-2.5.so
-> 0000000000775000      8K r----  /lib/libc-2.5.so
-> 0000000000777000      4K rw---  /lib/libc-2.5.so
-> 0000000000778000     12K rw---    [ anon ]
-> 0000000008048000      4K r-x--  /home/kamezawa/malloc
-> 0000000008049000      4K rw---  /home/kamezawa/malloc
-> 0000000055555000      4K rw---    [ anon ]
-> 0000000055556000    100K -----    [ anon ]
-> 000000005556f000      8K rw---    [ anon ]
-> 0000000055671000 2789016K -----    [ anon ]
-> 00000000ffa17000     84K rw---    [ stack ]
-> 00000000ffa2c000   5960K -----    [ anon ]
-> 00000000ffffe000      4K r-x--    [ anon ]
->  total          2796560K
-> ==
+> You can't solve this through bootmem because x86-64 allocates memory
+> in several places before bootmem (using functions in e820.c) Right now
+> this is quite hackish with hard coded areas to avoid conflicts.  But I
+> recently had a need to allocate more memory that early too and changed
+> the code to a generic early reservation interface. With that it would
+> be relatively easy to reserve.
 
-So it only managed to allocate half as much virtual memory?  Lovely.
-Thanks for the test case.
+Can you tell me what that early reservation interface is? What I find in
+x86_64 that does early memory allocation is alloc_low_page, which gets
+non-conflict memory area through e820 map.
 
-> Maybe get_unmapped_area() had some change.
-> Is this intended ?
+Because setup data is allocated by bootloader or kernel 16-bit setup
+code, and the e820 map is created there too, the memory area used by
+setup data can be made reserved memory area in e820 map by bootloader or
+kernel 16-bit setup code. This way, they will not be overwritten by
+kernel. Do you think this works.
 
-It had better not be.
-
-It is due to pie-executable-randomization.patch.  That patch has been an
-ongoing source of trouble.  I'll drop it.  Again.  Guys, please don't resend
-it until it actually works.
-
+Best Regards,
+Huang Ying
