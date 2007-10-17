@@ -1,68 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764866AbXJQKT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763001AbXJQKWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764866AbXJQKT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 06:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbXJQKTo
+	id S1763001AbXJQKWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 06:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbXJQKWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 06:19:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:44979 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755174AbXJQKTm (ORCPT
+	Wed, 17 Oct 2007 06:22:42 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:24259 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbXJQKWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 06:19:42 -0400
+	Wed, 17 Oct 2007 06:22:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=W569AOeHGhOi1CAes2ZJ//fozWGuC/hzItpyc+BHejkWGLCwCM8OseShHQPTN+NIaYCVxftd6SuZ4aO1tTdieFm5+VYcR2P0nD4/RcfHJrx+B10Yb45WKp+udGgHCNn5c52e+hSQet/ich8mc2j2S9uxQdkCsaaugaGjelPwTT4=
-Subject: Re: [GIT PULL] Remove the use of magic macros for
-	boot_params/screen_info
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Arch Mailing list <linux-arch@vger.kernel.org>
-In-Reply-To: <200710170656.l9H6ugvf016636@tazenda.hos.anvin.org>
-References: <200710170656.l9H6ugvf016636@tazenda.hos.anvin.org>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 18:19:16 +0800
-Message-Id: <1192616356.31565.4.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=dpnM1DO1QtjTNI/5n/cwtKX9z8Jp2sb2eQ/Q4vpL38xwYE6ieBmW7cQqI03KmYYX9DZJwLBeJlphw0JLnsq/FBbD/c7u5p/yn/v3WujL+iZgQtCOANOFngxu19zcmmpd3dpzHg3Uzn2pUbBfcUiefDpiRWUSYtaXAAlvOwWuiZg=
+Message-ID: <3ae72650710170322r6e41a14k3ab24ab6683522d2@mail.gmail.com>
+Date: Wed, 17 Oct 2007 12:22:40 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Cc: "Greg KH" <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tejun Heo" <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071016205053.GI9942@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200710132126.33085.rjw@sisk.pl> <20071016045025.GC8125@kroah.com>
+	 <200710162204.51961.rjw@sisk.pl> <20071016204238.GA1093@kroah.com>
+	 <20071016205053.GI9942@kernel.dk>
+X-Google-Sender-Auth: 392cb0e33598588c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-16 at 23:56 -0700, H. Peter Anvin wrote:
-> Hi Linus,
-> 
-> Please pull:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git master
-> 
-> This patch removes all uses of magic macros to access the former
-> zeropage, now the boot_params structure, as well as the screen_info
-> structure.  The equivalent (pre-x86-merge) of the boot_params patch
-> has been in -mm since shortly after 2.6.22.
-> 
-> A minor note: the video mode number 0x6A was officially assigned by
-> VESA; the only VESA standard 7-bit video mode number ever assigned.
-> 
-> H. Peter Anvin (2):
->       [x86] remove uses of magic macros for boot_params access
->       Remove magic macros for screen_info structure members
-> 
+On 10/16/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Tue, Oct 16 2007, Greg KH wrote:
+> > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
+> > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > >
+> > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> > > > > appear for vanilla 2.6.23):
+> > > > >
+> > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
+> > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> > > > >
+> > > > > Call Trace:
+> > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+> > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+> > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
+> > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+> > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+> > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+> > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+> > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
+> > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+> > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+> > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+> > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+> > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> > > > >
+> > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> > > > > sysfs: duplicate filename 'eth1' can not be created
+> > > > >
+> > > > > Everything seems to work, but this just looks fishy.
+> > > >
+> > > > This is a userspace program renaming your network device to a name that
+> > > > is already in use.  What distro and release is this?
+> > >
+> > > openSUSE 10.2, with some updates (not the most recent, though).
+> >
+> > Can you try 10.3?  I think we fixed this issue there.
+>
+> Ehm nope:
+>
+> Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
+> can not be created
+> Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
+> eth1
+> Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
+> sysfs_add_one()
+> Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
+> Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
+> Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
+> Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
+> Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
+> Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
+> Oct 16 19:36:27 carl kernel:  [<c01a1938>]
+> inotify_d_instantiate+0x18/0x80
+> Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
+> Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
+> Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
+> Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
+> Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
+> Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
+> Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
+> Oct 16 19:36:27 carl kernel:  =======================
+> Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
+> sysfs_create_symlink failed (-17)
 
->  drivers/video/console/dummycon.c   |    4 +-
->  drivers/video/console/vgacon.c     |   51 ++++++++++++++-------------
->  drivers/video/intelfb/intelfbdrv.c |    5 ++-
->  drivers/video/vga16fb.c            |    2 +-
+Are you switching from the ipw to the iwl driver?
+Care to delete (or remove the entries):
+  /etc/udev/rules.d/70-persistent-net.rules
+and try with iwl only? It should work then, even when going back to ipw.
 
-Acked-by: Antonino A. Daplas <adaplas@gmail.com>
+A fix for this didn't make it into the 10.3 release, but is in the
+upstream udev tree.
 
-with respect to the drivers/video portion.
-
-Tony
-
+Thanks,
+Kay
