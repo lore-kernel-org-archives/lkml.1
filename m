@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbXJQUMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXJQUMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933138AbXJQUMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXJQUL7
+	id S1761580AbXJQUMc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXJQUMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:11:59 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35071 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbXJQUL6 (ORCPT
+	Wed, 17 Oct 2007 16:12:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41443 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760188AbXJQUMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:11:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47166C83.2050207@s5r6.in-berlin.de>
-Date: Wed, 17 Oct 2007 22:11:47 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: VIA VT6307 OHCI version?
-References: <m3sl4ciz1h.fsf@maximus.localdomain>	<4714EF01.2060609@s5r6.in-berlin.de>	<m3d4vebylw.fsf@maximus.localdomain>	<471527E5.1050407@s5r6.in-berlin.de> <m34pgpmszu.fsf@maximus.localdomain>
-In-Reply-To: <m34pgpmszu.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 16:12:20 -0400
+Date: Wed, 17 Oct 2007 13:10:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: akepner@sgi.com
+Cc: tony.luck@intel.com, grundler@parisc-linux.org, jbarnes@virtuousgeek.org,
+       jes@sgi.com, randy.dunlap@oracle.com, rdreier@cisco.com,
+       James.Bottomley@steeleye.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dma: add dma_flags_set/get_*() interfaces
+Message-Id: <20071017131054.d3d88c62.akpm@linux-foundation.org>
+In-Reply-To: <20071017160327.GP5601@sgi.com>
+References: <20071017014128.GJ5601@sgi.com>
+	<20071016202728.81450e25.akpm@linux-foundation.org>
+	<20071017160327.GP5601@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+On Wed, 17 Oct 2007 09:03:27 -0700
+akepner@sgi.com wrote:
+
+> > 
+> > What would be the cost of doing this cleanly and either redefining
+> > dma_data_direction to be a field-of-bits or just leave dma_data_direction
+> > alone (it is quite unrelated to this work, isn't it?) and adding new
+> > fields/arguments to manage this new functionality?
 > 
->> And in case of VT6307, I suspect it's VIA who
->> selects the implementation level (based on chip revision), not the card
->> vendor.
-> 
-> Can't be, the customers (real ones - board makers) would kill them
-> at once and then buy a different brand. That's not selling a different
+> It'd be significantly more work to do change or add arguments 
+> to the dma_map_* functions. But if that's what I need to do to 
+> get this accepted, I'll back up and have another go at it.
 
-What I meant was:  First revisions may have had incomplete OHCI 1.1
-support and were sold as OHCI 1.0 chips, and as soon as they stabilized
-it they sold them as OHCI 1.1 chips.  But that's mere speculation on my
-part.  I can't think of any other reason though why anybody would hide
-OHCI 1.1 compatibility.
+I don't have any particularly strong opinions on which would be the best
+way to clean this up.  Hopefully someone who is more involved with the DMA
+mapping interfaces can help out.
 
-> Anyway, I just connected a programmer to the EEPROM (machine "a" in my
-> previous mail = EPIA-M 600 MHz), wrote "8" to the 16-bit word at address
-> 0x11 (93c46 EEPROM), and now this VT6307S dated 0239CD (2002, 39th week)
-> says:
-> ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[12]  MMIO=[de000000-de0007ff]
->   Max Packet=[2048]  IR/IT contexts=[4/8]
+It wouldn't be efficient for you to implement something new, only to have
+it criticized again.  I'd suggest that you come up with a concrete
+design, describe to us what you propose to do and let's take it from there.
 
-And are you going to test if and how stable OHCI 1.1 features work?
-(Which features are these?  Right now only dual buffer reception comes
-to my mind.)
--- 
-Stefan Richter
--=====-=-=== =-=- =---=
-http://arcgraph.de/sr/
