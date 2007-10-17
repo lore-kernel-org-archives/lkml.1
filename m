@@ -1,62 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761720AbXJQHU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbXJQHW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761720AbXJQHU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbXJQHUU
+	id S1762673AbXJQHW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbXJQHWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:20:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58245 "EHLO mx2.mail.elte.hu"
+	Wed, 17 Oct 2007 03:22:17 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:18808 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbXJQHUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:20:19 -0400
-Date: Wed, 17 Oct 2007 09:20:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] sched: fix improper load balance across sched domain
-Message-ID: <20071017072003.GA18044@elte.hu>
-References: <b040c32a0710161207s4d6d4d4cq1fa7f0dd1a7f017d@mail.gmail.com>
+	id S1752820AbXJQHWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 03:22:16 -0400
+Date: Wed, 17 Oct 2007 09:21:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+Message-ID: <20071017072149.GC5041@kernel.dk>
+References: <20071017140747Q.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b040c32a0710161207s4d6d4d4cq1fa7f0dd1a7f017d@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0200]
+In-Reply-To: <20071017140747Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 17 2007, FUJITA Tomonori wrote:
+> Commit 2c941a204070ab32d92d40318a3196a7fb994c00 looks incomplete. The
+> helper functions like prepare_sg() need to support sg chaining too.
 
-* Ken Chen <kenchen@google.com> wrote:
+Thanks Tomo, applied. I'll get this pushed out later today with any
+other sg chaining fallout we may see.
 
-> We recently discovered a nasty performance bug in the kernel CPU load 
-> balancer where we were hit by 50% performance regression.
-> 
-> When tasks are assigned to a subset of CPUs that span across 
-> sched_domains (either ccNUMA node or the new multi-core domain) via 
-> cpu affinity, kernel fails to perform proper load balance at these 
-> domains, due to several logic in find_busiest_group() miss identified 
-> busiest sched group within a given domain. This leads to inadequate 
-> load balance and causes 50% performance hit.
-[...]
-> So proposing the following fix: add addition logic in 
-> find_busiest_group to detect intrinsic imbalance within the busiest 
-> group.  When such condition is detected, load balance goes into spread 
-> mode instead of default grouping mode.
+-- 
+Jens Axboe
 
-thanks - i've added your fix to the scheduler queue, and i'll check it 
-with a few workloads too. (Right now the scheduler queue is blocked by a 
-showstopper crasher bug in group scheduling and we are trying to fix 
-that first, before doing any other change.)
-
-	Ingo
