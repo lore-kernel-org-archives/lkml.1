@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759215AbXJQIBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760593AbXJQIES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759215AbXJQIBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 04:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbXJQIA5
+	id S1760593AbXJQIES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 04:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbXJQIDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 04:00:57 -0400
-Received: from hu-out-0506.google.com ([72.14.214.224]:40110 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbXJQIAz (ORCPT
+	Wed, 17 Oct 2007 04:03:52 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:62596 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755715AbXJQIDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 04:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:sender;
-        b=mMkG7u8dM/x4TUIDoIfhqye3irhIojkjs4Z3xRF30Rfr1CaLk9NtrEwOuf49b18h2MQhPtUQQIDLkRxXDKSO1MqPz6zKPg8WoyxtSAQNSQ5LV8mT/yLU2seHZtBJXQk8nUgKJkg8yiQ8ra/EIi2RolhqiKtJvEpkTkJOC/cbWeA=
-Message-ID: <4715C133.60505@iki.fi>
-Date: Wed, 17 Oct 2007 11:00:51 +0300
-From: =?ISO-8859-1?Q?Timo_Ter=E4s?= <timo.teras@iki.fi>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: davem@davemloft.net, netdev@vger.kernel.org
-CC: kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org
-Subject: [PATCH] ip_gre: sendto/recvfrom NBMA address
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 17 Oct 2007 04:03:48 -0400
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: linux-scsi@vger.kernel.org, tomof@acm.org
+Subject: [PATCH] swiotlb: fix map_sg failure handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071017170329B.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 17 Oct 2007 17:03:29 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When GRE tunnel is in NBMA mode, this patch allows an application to use
-a PF_PACKET socket to:
-- send a packet to specific NBMA address with sendto()
-- use recvfrom() to receive packet and check which NBMA address it came from
+sg list elements might not be continuous.
 
-Signed-off-by: Timo Teras <timo.teras@iki.fi>
-
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
+ lib/swiotlb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-This is useful for implementing NHRP over NBMA GRE tunnels.
-
-Sent earlier to netdev list only. Resending to wider audience with
-a style issue fixed.
-
-net/ipv4/ip_gre.c |   12 +++++++++++-
-1 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/net/ipv4/ip_gre.c b/net/ipv4/ip_gre.c
-index f151900..b1e3816 100644
---- a/net/ipv4/ip_gre.c
-+++ b/net/ipv4/ip_gre.c
-@@ -1033,7 +1033,6 @@ static int ipgre_tunnel_change_mtu(struct net_device *dev, int new_mtu)
-	return 0;
-}
-
--#ifdef CONFIG_NET_IPGRE_BROADCAST
-/* Nice toy. Unfortunately, useless in real life :-)
-   It allows to construct virtual multiprotocol broadcast "LAN"
-   over the Internet, provided multicast routing is tuned.
-@@ -1092,10 +1091,19 @@ static int ipgre_header(struct sk_buff *skb, struct net_device *dev,
-	return -t->hlen;
-}
-
-+static int ipgre_header_parse(const struct sk_buff *skb, unsigned char *haddr)
-+{
-+	struct iphdr *iph = (struct iphdr *) skb_mac_header(skb);
-+	memcpy(haddr, &iph->saddr, 4);
-+	return 4;
-+}
-+
-static const struct header_ops ipgre_header_ops = {
-	.create	= ipgre_header,
-+	.parse  = ipgre_header_parse,
-};
-
-+#ifdef CONFIG_NET_IPGRE_BROADCAST
-static int ipgre_open(struct net_device *dev)
-{
-	struct ip_tunnel *t = netdev_priv(dev);
-@@ -1197,6 +1205,8 @@ static int ipgre_tunnel_init(struct net_device *dev)
-			dev->stop = ipgre_close;
-		}
-#endif
-+	} else {
-+		dev->header_ops = &ipgre_header_ops;
-	}
-
-	if (!tdev && tunnel->parms.link)
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index c419ecf..752fd95 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -696,7 +696,7 @@ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 				/* Don't panic here, we expect map_sg users
+ 				   to do proper error handling. */
+ 				swiotlb_full(hwdev, sg->length, dir, 0);
+-				swiotlb_unmap_sg(hwdev, sg - i, i, dir);
++				swiotlb_unmap_sg(hwdev, sgl, i, dir);
+ 				sgl[0].dma_length = 0;
+ 				return 0;
+ 			}
+-- 
+1.5.2.4
 
