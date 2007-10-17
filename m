@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXJQHSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761720AbXJQHU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbXJQHSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbXJQHSa
+	id S1761720AbXJQHU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbXJQHUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:18:30 -0400
-Received: from n4.bullet.ukl.yahoo.com ([217.146.182.181]:23365 "HELO
-	n4.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754677AbXJQHS3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:18:29 -0400
-X-Greylist: delayed 358 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 03:18:29 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 364627.82708.bm@omp100.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=IcAPtJEDEuf2yP9fhTYW0xTjEkdGBZr4L6qgoICRCUpbIobZT/BogzR+WmWW9Dl/xeTmHr8UIltQAAMt/+yw83qBN5nDzCX8gZEttxBEhd7XkLDM0wtBqOhH29NbMHeY7ZV5NYli3xM6RxjOWaSjYAQDB9gUkfx4kfof6zFVcZ0=;
-X-YMail-OSG: x3fqIzMVM1mJr6LyhOfk270m6rCaQSDtgTT3xlfJ_XZ8XyLPPN01TsifsqoW6S_BviHp1_Xf5M7cIWTD5zMinROvZwvB4ig2RZbu9V0BAEouEG2GWSBN7BsGD1ZT3Q--
-Date: Wed, 17 Oct 2007 08:12:27 +0100 (BST)
-From: veerasena reddy <veerasena_b@yahoo.co.in>
-Subject: Linux-2.6.18.8 compilation errors with GCC-4.2.1 and binutils-2.17 on MIPS
-To: "linux-kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>
+	Wed, 17 Oct 2007 03:20:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58245 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754677AbXJQHUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 03:20:19 -0400
+Date: Wed, 17 Oct 2007 09:20:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ken Chen <kenchen@google.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] sched: fix improper load balance across sched domain
+Message-ID: <20071017072003.GA18044@elte.hu>
+References: <b040c32a0710161207s4d6d4d4cq1fa7f0dd1a7f017d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <304090.76321.qm@web8411.mail.in.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b040c32a0710161207s4d6d4d4cq1fa7f0dd1a7f017d@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0200]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I tried to compile Linux-2.6.18.8 for MIPS24KE
-processor using cross-compiler built from gcc-4.2.1,
-binutils-2.17 and uClibc-0.9.27. But, the compilation
-failed with below error message ("mips-linux-ld: final
-link failed: Bad value"):
-================================
-mips-linux-gcc -Wp,-MD,drivers/mtd/.mtd_blkdevs.o.d 
--nostdinc -isystem /home/
-sedara/BETA_REL/buildroot/build_mips_nofpu/staging_dir/lib/gcc/mips-linux-uclibc/4.2.1/include
+* Ken Chen <kenchen@google.com> wrote:
 
--D__KERNEL__ -Iinclude  -include
-include/linux/autoconf.h -DNEW_C
-ONFIG -I/home/sedara/BETA_REL/linux-2.6.18/include
--I/home/sedara/BETA_REL/linux
--2.6.18/../fusiv_src/kernel/ap_code
--I/home/sedara/BETA_REL/linux-2.6.18/../fusi
-v_src/kernel/ap_code/inc
--I/home/sedara/BETA_REL/linux-2.6.18/../fusiv_src/kerne
-l/drivers/inc
--I/home/sedara/BETA_REL/linux-2.6.18/../fusiv_src/kernel/drivers/a
-dsl -Wall -Wstrict-prototypes -Wno-trigraphs
--fno-strict-aliasing -fno-common -O
-2  -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe
--msoft-float -ffreestanding  -marc
-h=mips32r2 -Wa,-mips32r2 -Wa,--trap
--Iinclude/asm-mips/mach-ikan_mips -Iinclude/
-asm-mips/mach-generic -fomit-frame-pointer 
--fno-stack-protector -Wdeclaration-a
-fter-statement -Wno-pointer-sign   
--D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUI
-LD_STR(mtd_blkdevs)" 
--D"KBUILD_MODNAME=KBUILD_STR(mtd_blkdevs)" -c -o
-drivers/m
-td/.tmp_mtd_blkdevs.o drivers/mtd/mtd_blkdevs.c
-mips-linux-ld: final link failed: Bad value
-make[2]: *** [drivers/mtd/mtd_blkdevs.o] Error 1
-make[1]: *** [drivers/mtd] Error 2
-make: *** [drivers] Error 2
-=====================================
+> We recently discovered a nasty performance bug in the kernel CPU load 
+> balancer where we were hit by 50% performance regression.
+> 
+> When tasks are assigned to a subset of CPUs that span across 
+> sched_domains (either ccNUMA node or the new multi-core domain) via 
+> cpu affinity, kernel fails to perform proper load balance at these 
+> domains, due to several logic in find_busiest_group() miss identified 
+> busiest sched group within a given domain. This leads to inadequate 
+> load balance and causes 50% performance hit.
+[...]
+> So proposing the following fix: add addition logic in 
+> find_busiest_group to detect intrinsic imbalance within the busiest 
+> group.  When such condition is detected, load balance goes into spread 
+> mode instead of default grouping mode.
 
-has anybody faced similar problem?
+thanks - i've added your fix to the scheduler queue, and i'll check it 
+with a few workloads too. (Right now the scheduler queue is blocked by a 
+showstopper crasher bug in group scheduling and we are trying to fix 
+that first, before doing any other change.)
 
-Could you please help in resolving this?
-
-Thanks in advance.
-
-Regards,
-Veerasena.
-
-
-      Save all your chat conversations. Find them online at http://in.messenger.yahoo.com/webmessengerpromo.php
-
+	Ingo
