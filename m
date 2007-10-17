@@ -1,57 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934965AbXJQRZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935989AbXJQRZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934965AbXJQRZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760340AbXJQRZX
+	id S935989AbXJQRZw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935323AbXJQRZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:25:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57184 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760147AbXJQRZW (ORCPT
+	Wed, 17 Oct 2007 13:25:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37834 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935164AbXJQRZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:25:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4716452F.4080408@s5r6.in-berlin.de>
-Date: Wed, 17 Oct 2007 19:23:59 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Gabor Gombas <gombasg@sztaki.hu>
-CC: david@lang.hm, Matthew Wilcox <matthew@wil.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rob Landley <rob@landley.net>,
-       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710141836.55211.rob@landley.net> <4712FE33.3000400@s5r6.in-berlin.de> <200710150426.04924.rob@landley.net> <20071015160800.GA324@parisc-linux.org> <47139F15.7050702@s5r6.in-berlin.de> <Pine.LNX.4.64.0710151954550.3949@asgard.lang.hm> <20071016111911.30a18e12@the-village.bc.nu> <Pine.LNX.4.64.0710161238140.6995@asgard.lang.hm> <20071016195432.GA31306@parisc-linux.org> <Pine.LNX.4.64.0710161302460.6995@asgard.lang.hm> <20071017094838.GB18035@boogie.lpds.sztaki.hu>
-In-Reply-To: <20071017094838.GB18035@boogie.lpds.sztaki.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 13:25:36 -0400
+Date: Wed, 17 Oct 2007 15:17:34 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB fixes
+Message-Id: <1192641913.5745.77.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabor Gombas wrote:
-> On Tue, Oct 16, 2007 at 01:55:07PM -0700, david@lang.hm wrote:
->> why is this any different from the external enclosures? they have always 
->> appeared as the type of device that connects them to the motherboard, (and 
->> even with SCSI, there are some controllers that don't generate sdX devices)
-> 
-> In the past enclosures supported only one kind of connector so this
-> assumption was fine. But nowadays an external disk may have several
-> connectors (like USB, Firewire and eSata). Why should the disk's name
-> depend on what type of cable did I manage to grab first? It is the
-> _same_ disk regardless of the cable type.
+Linus,
 
-Yes, but even udev won't give you one and the same symlink to the disk's
-device file then.¹  There isn't a persistent unique target/unit property
-which all of these transports have in common.
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git devel
 
-The only thing that could be common in the best case is the symlink to
-the partition's device file, based on filesystem UUID or filesystem label.
+For the following fixes:
 
-¹) unless you write your own rule specific to this on particular enclosure
--- 
-Stefan Richter
--=====-=-=== =-=- =---=
-http://arcgraph.de/sr/
+   - removal of the unused .hardware field, that were causing
+        compilation troubles when V4L1 compat were not selected;
+
+   - misc fixes at several parts of V4L/DVB: tuner-core, cinergyT2,
+        saa7134, cx23885, ivtv, cx88, pvrusb2, dib0700, ir-kdb-i2c,
+        dvb_ca_en50221 and em28xx;
+
+Additionally, there are two pending patches for:
+
+   - Two cx88-alsa patches that were waiting for -ALSA merge;
+
+And the removal of an obsolete, unused set of ioctls:
+
+   - Remove the obsolete VIDIOC_S/G_MPEGCOMP ioctls;
+
+Also, feature-removal-schedule.txt V4L entries were updated.
+
+Cheers,
+Mauro.
+
+---
+
+ Documentation/feature-removal-schedule.txt         |   22 +--
+ drivers/media/dvb/cinergyT2/cinergyT2.c            |   42 ++++--
+ drivers/media/dvb/dvb-core/dvb_ca_en50221.c        |    2 +-
+ drivers/media/dvb/dvb-usb/dib0700_devices.c        |    2 +-
+ drivers/media/radio/miropcm20-radio.c              |    1 -
+ drivers/media/radio/radio-gemtek.c                 |    1 -
+ drivers/media/video/arv.c                          |    1 -
+ drivers/media/video/bt8xx/bttv-driver.c            |    3 -
+ drivers/media/video/bw-qcam.c                      |    1 -
+ drivers/media/video/c-qcam.c                       |    1 -
+ drivers/media/video/cpia.c                         |    5 -
+ drivers/media/video/cpia2/cpia2_v4l.c              |    5 -
+ drivers/media/video/cx23885/cx23885-core.c         |    6 +-
+ drivers/media/video/cx88/cx88-alsa.c               |   86 +++++++++--
+ drivers/media/video/cx88/cx88-blackbird.c          |   57 -------
+ drivers/media/video/cx88/cx88-dvb.c                |    3 +-
+ drivers/media/video/cx88/cx88-mpeg.c               |  133 +++++++----------
+ drivers/media/video/cx88/cx88-video.c              |    1 -
+ drivers/media/video/cx88/cx88-vp3054-i2c.c         |   16 +-
+ drivers/media/video/cx88/cx88.h                    |   24 ++-
+ drivers/media/video/em28xx/em28xx-core.c           |    3 +-
+ drivers/media/video/em28xx/em28xx-video.c          |    2 -
+ drivers/media/video/et61x251/et61x251_core.c       |    1 -
+ drivers/media/video/ir-kbd-i2c.c                   |    1 +
+ drivers/media/video/ivtv/ivtv-driver.c             |   11 +-
+ drivers/media/video/ivtv/ivtv-fileops.c            |    8 +-
+ drivers/media/video/ivtv/ivtv-ioctl.c              |   13 +-
+ drivers/media/video/ivtv/ivtv-streams.c            |  116 +++++++++------
+ drivers/media/video/ivtv/ivtv-streams.h            |    1 +
+ drivers/media/video/ivtv/ivtv-yuv.c                |  160 ++++++++++---------
+ drivers/media/video/ivtv/ivtv-yuv.h                |    1 +
+ drivers/media/video/ivtv/ivtvfb.c                  |   19 +--
+ drivers/media/video/meye.c                         |    1 -
+ drivers/media/video/ov511.c                        |    1 -
+ drivers/media/video/planb.c                        |    1 -
+ drivers/media/video/pms.c                          |    1 -
+ drivers/media/video/pvrusb2/pvrusb2-encoder.c      |    6 +
+ drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h |   11 +-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c          |    3 +
+ drivers/media/video/pvrusb2/pvrusb2-v4l2.c         |    3 -
+ drivers/media/video/pwc/pwc-if.c                   |    1 -
+ drivers/media/video/saa7134/saa6752hs.c            |  111 --------------
+ drivers/media/video/saa7134/saa7134-core.c         |   42 ++++-
+ drivers/media/video/saa7134/saa7134-empress.c      |   12 --
+ drivers/media/video/saa7134/saa7134-input.c        |    4 +-
+ drivers/media/video/saa7134/saa7134-tvaudio.c      |   32 +++-
+ drivers/media/video/saa7134/saa7134-video.c        |   28 ++--
+ drivers/media/video/saa7134/saa7134.h              |    7 +-
+ drivers/media/video/se401.c                        |    1 -
+ drivers/media/video/sn9c102/sn9c102_core.c         |    1 -
+ drivers/media/video/stradis.c                      |    1 -
+ drivers/media/video/stv680.c                       |    1 -
+ drivers/media/video/tuner-core.c                   |    2 +-
+ drivers/media/video/usbvideo/usbvideo.c            |    1 -
+ drivers/media/video/usbvideo/vicam.c               |    1 -
+ drivers/media/video/usbvision/usbvision-video.c    |    3 -
+ drivers/media/video/v4l2-common.c                  |    2 -
+ drivers/media/video/videobuf-core.c                |    2 +-
+ drivers/media/video/videocodec.c                   |    4 +-
+ drivers/media/video/videodev.c                     |   42 -----
+ drivers/media/video/vivi.c                         |    1 -
+ drivers/media/video/w9966.c                        |    1 -
+ drivers/media/video/w9968cf.c                      |    1 -
+ drivers/media/video/zc0301/zc0301_core.c           |    1 -
+ drivers/media/video/zoran_card.c                   |   10 +-
+ drivers/media/video/zoran_driver.c                 |    2 -
+ include/linux/videodev.h                           |   42 -----
+ include/linux/videodev2.h                          |   92 -----------
+ include/media/v4l2-dev.h                           |    5 -
+ sound/i2c/other/tea575x-tuner.c                    |    1 -
+ 70 files changed, 485 insertions(+), 744 deletions(-)
+
+Adrian Bunk (1):
+      V4L/DVB (6328): ivtv: fix NULL dereference
+
+Florin Malita (2):
+      V4L/DVB (6325): Double-free in cx23885_initdev
+      V4L/DVB (6350): V4L: possible leak in em28xx_init_isoc
+
+Hans Verkuil (8):
+      V4L/DVB (6321): Remove obsolete VIDIOC_S/G_MPEGCOMP ioctls
+      V4L/DVB (6338): ivtv: fix incorrect EBUSY return
+      V4L/DVB (6339): ivtv: set the video color to black instead of green when capturing from the radio
+      V4L/DVB (6341): ivtv: fix resizing MPEG1 streams
+      V4L/DVB (6342): ivtv: fix circular locking (bug 9037)
+      V4L/DVB (6343): ivtvfb: check return value of unregister_framebuffer
+      V4L/DVB (6347): ivtv: fix video mute when radio is used
+      V4L/DVB (6348): ivtv: undo video mute when closing the radio
+
+Ian Armstrong (3):
+      V4L/DVB (6340): ivtvfb: screen mode change sometimes goes wrong
+      V4L/DVB (6345): ivtvfb: YUV handling of an image which is not visible in the display area
+      V4L/DVB (6346): ivtvfb: YUV output size fix when ivtvfb is not loaded
+
+Jiri Slaby (1):
+      V4L/DVB (6323): V4L: cinergyT2, remove bad usage of ERESTARTSYS
+
+Marco Schluessler (1):
+      V4L/DVB (6356): "while (!ca->wakeup)" breaks the CAM initialisation
+
+Mauro Carvalho Chehab (3):
+      V4L/DVB (6320): v4l core: remove the unused .hardware V4L1 field
+      V4L/DVB (6378a): Removal of VIDIOC_[G|S]_MPEGCOMP from feature-removal-schedule.txt
+      V4L/DVB (6378b): Updates info about the removal of V4L1 at feature-removal-schedule.txt
+
+Maxim Levitsky (2):
+      V4L/DVB (6329): Additional Fixes for saa7134 suspend/resume
+      V4L/DVB (6330): V4L: saa7134: Fix interaction between tvaudio thread and the freezer
+
+Michael Krufky (1):
+      V4L/DVB (6326): tuner-core.c: fe_has_signal() can return uninitialized value
+
+Mike Isely (1):
+      V4L/DVB (6357): pvrusb2: Improve encoder chip health tracking
+
+Patrick Boettcher (1):
+      V4L/DVB (6378): DiB0700-device: Using 1.10 firmware
+
+Pekka Enberg (1):
+      V4L/DVB (6324): fix videobuf_cgmbuf export
+
+Pekka SeppÃ¤nen (1):
+      V4L/DVB (6319): radio-gemtek: fix 'VID_HARDWARE_GEMTEK' undeclared
+
+Trent Piepho (8):
+      V4L/DVB (6185): cx88-alsa: Add mute controls, change control names
+      V4L/DVB (6187): cx88-alsa: Add TLV support
+      V4L/DVB (6332): cx88: Only include the blackbird fields if blackbird is selected
+      V4L/DVB (6333): cx88: Change void* card_priv to struct vp3054_i2c_state
+      V4L/DVB (6334): cx88: Change (struct cx8802_dev)->drvlist to a list_head and fix bugs
+      V4L/DVB (6335): cx8802: Replace list_for_each+list_entry with list_for_each_entry
+      V4L/DVB (6336): cx8802: Plug memory leak when unregistering a driver
+      V4L/DVB (6352): ir-kbd-i2c: Missing break statement
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
+
