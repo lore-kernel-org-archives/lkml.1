@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965764AbXJQPzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934787AbXJQP4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965764AbXJQPzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935323AbXJQPzj
+	id S934787AbXJQP4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763083AbXJQP4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:55:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54236 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935291AbXJQPzg (ORCPT
+	Wed, 17 Oct 2007 11:56:23 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47911 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1762484AbXJQP4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:55:36 -0400
-Date: Wed, 17 Oct 2007 08:55:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jaroslav Kysela <perex@perex.cz>
-cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl
-Subject: Re: suspicious ALSA empty commit
-In-Reply-To: <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
-Message-ID: <alpine.LFD.0.999.0710170854280.26902@woody.linux-foundation.org>
-References: <20071016.155044.82377336.davem@davemloft.net>
- <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
- <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
+	Wed, 17 Oct 2007 11:56:22 -0400
+Date: Wed, 17 Oct 2007 11:56:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: David Miller <davem@davemloft.net>, <david-b@pacbell.net>,
+       <linux-usb-users@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-usb-users] OHCI root_port_reset() deadly loop...
+In-Reply-To: <20071016222037.GA23793@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0710171152030.4468-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Oct 2007, Greg KH wrote:
 
+> But perhaps we can order the hardware init stuff from all three together
+> like this into a separate module they all depend on.  In a way, that's
+> what the lock tried to do, right?  Are we just not catching all places
+> we could have hardware being talked to by two modules at the same time?
 
-On Wed, 17 Oct 2007, Jaroslav Kysela wrote:
-> 
-> I didn't notice, too. I've fixed this commit in my git tree.
+No, we do catch the one place where it happens.  The problem seems to
+be that the hardware update takes some time.  That is, on one side we
+take the write lock, talk to the EHCI hardware, and drop the write
+lock.  On the other side we take the read lock, talk to the OHCI 
+hardware, and drop the read lock.  Nevertheless, the interference 
+occurs.  David B.'s interpretation is that the hardware's change of 
+state takes more time than the CPU uses in manipulating locks and 
+switching tasks.  Hence his suggestion for adding a delay.
 
-More importantly, how did it get there in the first place?
+Alan Stern
 
-As mentioned, normal git tools will not even *allow* you to create an 
-empty commit by default! So you must be using some really strange workflow 
-to get an empty commit, or be triggering a git bug, both of which should 
-be resolved first.
-
-		Linus
