@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbXJQTkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbXJQTnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762520AbXJQTkS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXJQTkF
+	id S1760828AbXJQTnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbXJQTnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:40:05 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:46852 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbXJQTkB (ORCPT
+	Wed, 17 Oct 2007 15:43:09 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:45537 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbXJQTnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:40:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GcA8GAuZwovW9G1XCEEC8hrS5pA/xslsk44B2k78eI1PwNRkKkCa/AQcCI23oGwZ/7VBOvjZB2wmEfDovaftvopsNHM1o9Uv4nqVP0QNFXuorWzS8kkDllP4Ck/h/AUuJPgNfVZY1TeHQEIfGWfug/qA2RANcZij993YhOUtUZ8=
-Message-ID: <29495f1d0710171239i30776a2ci6db65c4f135b0754@mail.gmail.com>
-Date: Wed, 17 Oct 2007 12:39:59 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] hwmon/ibmpex.c: fix NULL dereference
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071017192902.GB3778@stusta.de>
+	Wed, 17 Oct 2007 15:43:08 -0400
+Message-ID: <471663F4.9030403@freescale.com>
+Date: Wed, 17 Oct 2007 14:35:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jochen Friedrich <jochen@scram.de>
+CC: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
+       linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
+       Carsten Juttner <carjay@gmx.net>
+Subject: Re: [PATCH take2] [POWERPC] i2c: adds support for i2c bus on 8xx
+References: <47134A94.60606@scram.de> <20071015183107.GA4361@loki.buserror.net> <47166085.1010608@scram.de>
+In-Reply-To: <47166085.1010608@scram.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071017192902.GB3778@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/17/07, Adrian Bunk <bunk@kernel.org> wrote:
-> Don't dereference "data" when we know for sure it's NULL.
->
-> Spotted by the Coverity checker.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
-> 66bec2ef5c6d55fc30ef6ac5bb97fdfcfaf394f2
-> diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
-> index c462824..e14ce3d 100644
-> --- a/drivers/hwmon/ibmpex.c
-> +++ b/drivers/hwmon/ibmpex.c
-> @@ -457,7 +457,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
->         data = kzalloc(sizeof(*data), GFP_KERNEL);
->         if (!data) {
->                 printk(KERN_ERR DRVNAME ": Insufficient memory for BMC "
-> -                      "interface %d.\n", data->interface);
-> +                      "interface.\n");
+Jochen Friedrich wrote:
+>>> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts 
+>>> b/arch/powerpc/boot/dts/mpc885ads.dts
+>>> index 8848e63..a526c02 100644
+>>> --- a/arch/powerpc/boot/dts/mpc885ads.dts
+>>> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
+>>> @@ -213,6 +213,15 @@
+>>>                  fsl,cpm-command = <0080>;
+>>>                  linux,network-index = <2>;
+>>>              };
+>>> +
+>>> +            i2c@860 {
+>>> +                device_type = "i2c";
+>>>     
+>>
+>> No device_type.
+>>   
+> 
+> Why? Documentation/powerpc/booting-without-of.txt says for I2C interfaces
+> device_type is required and should be "i2c". Is this no longer true?
 
-Hrm but what data->interface would be is specified by the iface
-parameter? Just spit that out instead?
+booting-without-of.txt should be changed.
 
-Thanks,
-Nish
+>> Should be fsl,cpm-i2c.  Is cpm2 i2c the same?  If not, it should be
+>> fsl,cpm1-i2c.  It's probably best to specify it anyway, along with
+>> fsl,mpc885-i2c.
+> 
+> CPM2 i2c seems to be the same. However, i have no way to test this.
+
+OK, let's make the compatible "fsl,mpc885-i2c", "fsl,cpm1-i2c", 
+"fsl,cpm-i2c".
+
+For now, match on the last one, but if any differences pop up, we have 
+the more specific ones.
+
+> I noticed cpm1_set_pin32, but this function don't seem to set the
+> odr register. Will this be added? Then it would be:
+> 
+>     {CPM_PORTB, 26, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
+>     {CPM_PORTB, 27, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
+> 
+
+Ah, missed that -- there's opendrain support for port E, but I missed 
+that port B had it as well.  Feel free to add it.
+
+>> It's a 7-bit address...  and are you sure that 0x7e is unique?  Does this
+>> driver even support slave operation?
+> 
+> It's in fact 0x7F << 1.
+
+Gah, I hate powerpc bit numbering, especially without the 
+numbered-as-if-64-bit hack.  I specifically looked at the manual before 
+to see if it was shifted, saw "0-6", and concluded it wasn't. :-P
+
+> The same value is used in the 2.4 driver and
+> in u-boot, as well.
+
+That doesn't mean that this isn't a good time to review what the code is 
+doing. :-)
+
+> Slave operation is not supported.
+
+If slave operation isn't supported, how is this value used?
+
+>> Why is an 8xx driver matching all i2c cpm (i.e. what about cpm2)?
+> 
+> With the suggested change to use fsl,cpm-command, the driver should
+> be able to use  both cpm1 and cpm2. The operation and structs for i2c
+> are identical. The only difference might be the hack^wsupport for
+> relocation.
+
+OK.  Would that allow it to become one driver, rather than a wrapper and 
+an algorithm?
+
+-Scott
