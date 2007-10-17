@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbXJQF3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJQFfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761443AbXJQF3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 01:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXJQF33
+	id S1758234AbXJQFfx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 01:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXJQFfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 01:29:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33052 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750844AbXJQF32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 01:29:28 -0400
-Date: Tue, 16 Oct 2007 22:27:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: Simon Horman <horms@verge.net.au>, Don Zickus <dzickus@redhat.com>,
-       Neil Horman <nhorman@redhat.com>, Dan Aloni <da-x@monatomic.org>,
-       Bernhard Walle <bwalle@suse.de>, kexec-ml <kexec@lists.infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
-Message-Id: <20071016222744.a8f4b987.akpm@linux-foundation.org>
-In-Reply-To: <47159AA3.10305@mxs.nes.nec.co.jp>
-References: <20070822210838oomichi@mail.jp.nec.com>
-	<20070822211339oomichi@mail.jp.nec.com>
-	<20071017023305.GC6709@verge.net.au>
-	<47159AA3.10305@mxs.nes.nec.co.jp>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 17 Oct 2007 01:35:43 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35904 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbXJQFfm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 01:35:42 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Rob Landley <rob@landley.net>
+Cc: Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+In-Reply-To: Your message of "Mon, 15 Oct 2007 03:04:00 CDT."
+             <200710150304.00901.rob@landley.net>
+From: Valdis.Kletnieks@vt.edu
+References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015014503.GF9715@thunk.org>
+            <200710150304.00901.rob@landley.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1192599264_3070P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 17 Oct 2007 01:34:24 -0400
+Message-ID: <25897.1192599264@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 14:16:19 +0900 "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp> wrote:
+--==_Exmh_1192599264_3070P
+Content-Type: text/plain; charset=us-ascii
 
-> Simon Horman wrote:
-> > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
-> >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
-> >> The patch is for kexec-tools-testing-20070330.
-> >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
-> >> kexec command gets the address and size of the vmcoreinfo data from
-> >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
-> >> ELF header of /proc/vmcore. When the second kernel is booting, the
-> >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
-> >> segment into /proc/vmcore.
-> > 
-> > Sorry for the long delay, I completely missed this patch.
-> > 
-> > The kexec-tools change seems ok to me. What is the status of
-> > the kernel portion of the change?
-> 
-> The kernel portion is merged into linux-2.6.23-mm1.
-> According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
-> "The infamous misc.  Will re-review and will merge basically all of them".
+On Mon, 15 Oct 2007 03:04:00 CDT, Rob Landley said:
+> I note that the eth0 and eth1 names are dynamically assigned on a first come
+> first serve basis (like scsi).  This never causes me a problem because the
+> driver loading order is constant, and once you figure out that eth0 is
+> gigabit and eth1 is the 80211g it _stays_ that way across reboots, reliably.
+> Yeah, it's a heuristic.  Hands up everybody relying on such a heuristic in
+> the real world.
 
-It's all in this evening's batch, which is going through final QA (heh)
-now.  Is looking OK.
+I've gotten burned by that heuristic enough times to not rely on it.  My last
+laptop had an ethernet on the motherboard, a *separate* ethernet in the docking
+station, an ethernet on a multifunction pcmcia card (I usually just used the
+modem side), and a wireless that looked like an ethernet - so it was possible
+for a given interface to be eth1 (if no dock and no pcmcia card) or eth3 (if
+both were present).  And that's on a laptop from almost 5 years ago.
 
+And then there's the recent Sun and Dell 1U rack-mounts that have 4 ethernets
+on the motherboard, and they *never* seem to assign in a 0,1,2,3 order that
+matches the 0 1 2 3 printed above the 4 RJ45's ;)
+
+So I have for years been a proponent of 'ethN is nailed by MAC address' :)
+
+--==_Exmh_1192599264_3070P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHFZ7gcC3lWbTT17ARAsZXAJ4xuUB1ebX7Vk0jcCwwfaDOEL+g4gCg7TJf
+rz3Is447x34Dx3ZHEU167KY=
+=glX8
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1192599264_3070P--
