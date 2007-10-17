@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762097AbXJQTca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbXJQTdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762097AbXJQTca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbXJQTcW
+	id S1761140AbXJQTdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXJQTdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:32:22 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:32999 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbXJQTcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:32:22 -0400
-Date: Wed, 17 Oct 2007 21:32:18 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Florin Malita <fmalita@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mmc: possible leak in mmc_read_ext_csd
-Message-ID: <20071017213218.28115e57@poseidon.drzeus.cx>
-In-Reply-To: <4710F1E8.6090103@gmail.com>
-References: <4710F1E8.6090103@gmail.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+	Wed, 17 Oct 2007 15:33:25 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33445 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755727AbXJQTdY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:33:24 -0400
+Date: Wed, 17 Oct 2007 20:33:21 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND] file operations: release can race with read/write?
+Message-ID: <20071017193320.GK8181@ftp.linux.org.uk>
+References: <adave96ki0x.fsf@cisco.com> <adaodexh9uz.fsf@cisco.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaodexh9uz.fsf@cisco.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Oct 2007 12:27:20 -0400
-Florin Malita <fmalita@gmail.com> wrote:
-
-> The exception path associated with an invalid ext_csd_struct returns 
-> without freeing ext_csd.
+On Wed, Oct 17, 2007 at 11:30:44AM -0700, Roland Dreier wrote:
+> static unsigned long flag;
 > 
-> Coverity CID 1909.
+> static int cw_open(struct inode *inode, struct file *filp)
+> {
+> 	return 0;
+> }
 > 
-> Signed-off-by: Florin Malita
+> static int cw_close(struct inode *inode, struct file *filp)
+> {
+> 	clear_bit(1, &flag);
+> 
+> 	msleep(1);
+> 
+> 	if (test_and_set_bit(1, &flag))
+> 		printk(KERN_ERR "Write raced with close?\n");
 
-Quite right. Applied.
+Of _course_ you can trigger that - just open two files and have write
+on one of them while another gets closed.
 
-Rgds
--- 
-     -- Pierre Ossman
+That is certainly possible, but it has nothing whatsoever with the
+race you've described - you have two different objects and method
+call on one of them might happen when destructor is called on another.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+You have protection against ->release() for a struct file called
+while you are in ->write() for _same_ struct file.
