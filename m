@@ -1,93 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXJQUVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbXJQUWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXJQUVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXJQUU7
+	id S934574AbXJQUWI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbXJQUVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:20:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41639 "EHLO
+	Wed, 17 Oct 2007 16:21:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37197 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759358AbXJQUU5 (ORCPT
+	by vger.kernel.org with ESMTP id S1757054AbXJQUVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:20:57 -0400
-Date: Wed, 17 Oct 2007 13:20:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Tony Luck" <tony.luck@intel.com>
-Cc: oomichi@mxs.nes.nec.co.jp, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org, nhorman@redhat.com, vgoyal@in.ibm.com,
-       bwalle@suse.de, dzickus@redhat.com, da-x@monatomic.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 0/3] vmcoreinfo support for dump filtering
-Message-Id: <20071017132018.218043bb.akpm@linux-foundation.org>
-In-Reply-To: <12c511ca0710171019t35cb1670k9e1bdcfb3bf99793@mail.gmail.com>
-References: <20070822210838oomichi@mail.jp.nec.com>
-	<12c511ca0710171019t35cb1670k9e1bdcfb3bf99793@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 17 Oct 2007 16:21:51 -0400
+Date: Wed, 17 Oct 2007 13:21:31 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC] remove netpoll receive code
+Message-ID: <20071017132131.1992bedd@freepuppy.rosehill>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 10:19:18 -0700
-"Tony Luck" <tony.luck@intel.com> wrote:
+The netpoll receive code is:
+1. Not used by any in-tree features, it is used by kgdb-over-ether.
+2. A nice hook for people doing nasty things like private binary network stacks or rootkits.
+3. Unsecured by any of the normal firewalling code.
 
-> > This patch set frees the restriction that makedumpfile users should
-> > install a vmlinux file (including the debugging information) into
-> > each system.
-> 
-> This patch went from Andrew to Linus last night, and looks at first
-> glance to be the reason why the ia64 build is broken this morning
-> when using the arch/ia64/configs/tiger_defconfig configuration.
-> 
-> Here are the error messages:
-> arch/ia64/kernel/machine_kexec.c: In function `arch_crash_save_vmcoreinfo':
-> arch/ia64/kernel/machine_kexec.c:131: error: `pgdat_list' undeclared
-> (first use in this function)
-> arch/ia64/kernel/machine_kexec.c:131: error: (Each undeclared
-> identifier is reported only once
-> arch/ia64/kernel/machine_kexec.c:131: error: for each function it appears in.)
-> arch/ia64/kernel/machine_kexec.c:134: error: `node_memblk' undeclared
-> (first use in this function)
-> arch/ia64/kernel/machine_kexec.c:135: error: `NR_NODE_MEMBLKS'
-> undeclared (first use in this function)
-> arch/ia64/kernel/machine_kexec.c:136: error: invalid application of
-> `sizeof' to incomplete type `node_memblk_s'
-> arch/ia64/kernel/machine_kexec.c:137: error: dereferencing pointer to
-> incomplete type
-> arch/ia64/kernel/machine_kexec.c:138: error: dereferencing pointer to
-> incomplete type
-> make[1]: *** [arch/ia64/kernel/machine_kexec.o] Error 1
-> 
+Hopefully all distro's are smart enough to turn it off in their default config *nudge, nudge*.
+Doubly true for any distribution that claims to be secure or enterprise ready.
 
-This?
+I propose that we take out all the whole netpoll rx path. If/when kgdb gets submitted
+a better and alternative receive path can be added.
 
-
---- a/arch/ia64/kernel/machine_kexec.c~ia64-fix-non-numa-build
-+++ a/arch/ia64/kernel/machine_kexec.c
-@@ -17,6 +17,8 @@
- #include <linux/efi.h>
- #include <linux/numa.h>
- #include <linux/mmzone.h>
-+
-+#include <asm/numa.h>
- #include <asm/mmu_context.h>
- #include <asm/setup.h>
- #include <asm/delay.h>
-@@ -127,7 +129,7 @@ void machine_kexec(struct kimage *image)
- 
- void arch_crash_save_vmcoreinfo(void)
- {
--#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
-+#if defined(CONFIG_ARCH_DISCONTIGMEM_ENABLE) && defined(CONFIG_NUMA)
- 	VMCOREINFO_SYMBOL(pgdat_list);
- 	VMCOREINFO_LENGTH(pgdat_list, MAX_NUMNODES);
- 
-_
-
-(the asm/numa.h include isn't needed by this patch, but strictly should be
-there, as this file refers to things which are defined in asm/numa.h)
-
-(it's weird that linux/numa.h doesn't include asm/numa.h)
-
-(please tell me if you want me to send this to Linus)
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
