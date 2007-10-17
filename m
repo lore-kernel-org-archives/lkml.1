@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbXJQUcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934519AbXJQUgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933724AbXJQUcA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933357AbXJQUbs
+	id S934519AbXJQUgk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXJQUgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:31:48 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:20375 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760919AbXJQUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:31:46 -0400
-Date: Wed, 17 Oct 2007 22:31:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071017203140.GF15552@kernel.dk>
-References: <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <alpine.LFD.0.999.0710171244330.26902@woody.linux-foundation.org> <20071017195659.GD15552@kernel.dk> <20071017200638.GE15552@kernel.dk> <alpine.LFD.0.999.0710171321400.26902@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710171321400.26902@woody.linux-foundation.org>
+	Wed, 17 Oct 2007 16:36:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52464 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757655AbXJQUgb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:36:31 -0400
+Date: Wed, 17 Oct 2007 13:35:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: rjw@sisk.pl, cebbert@redhat.com, linux-kernel@vger.kernel.org,
+       david-b@pacbell.net, torvalds@linux-foundation.org,
+       nigel@nigel.suspend2.net, pavel@ucw.cz
+Subject: Re: pm_trace displays the wrong time from the RTC
+Message-Id: <20071017133549.046df71d.akpm@linux-foundation.org>
+In-Reply-To: <20071017194840.GA14530@redhat.com>
+References: <46AFA78A.9010904@redhat.com>
+	<200708011747.37932.rjw@sisk.pl>
+	<46B0CDB3.8060505@redhat.com>
+	<200708012304.35105.rjw@sisk.pl>
+	<20071017194840.GA14530@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 17 Oct 2007, Jens Axboe wrote:
-> > 
-> > So until that is fixed up, how about this? Should cover all block
-> > devices, and I don't think sg_next()/for_each_sg() has spread outside of
-> > that yet.
-> 
-> Heh. Not good. There are drivers that set max phys segmsnts to 1. Either 
-> through some host-specific setting (MMC), or explicitly (eg a grep shows 
-> viodasd uses just a constant 1 there).
+On Wed, 17 Oct 2007 15:48:40 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-That would hurt... Care to commit your for_each_sg() uglification fixup
-for now then? Or disable the allocation debug config entry, so that the
-sg+1 deref wont crash? Whichever your prefer, just don't want to cause
-crash pains for the unfortunate souls that happen to run into this
-before the real fix is done.
+> The patch below seems to have got dropped on the floor.
+> We've had it in Fedora since it was posted, and it does the
+> right thing, so I'm happy to give this an
+> 
+> ACKed-by: Dave Jones <davej@redhat.com>
+> 
+> if it helps it into upstream.
 
--- 
-Jens Axboe
-
+I have it queued for 2.6.24, but the entire PM patch series is presently
+twiddling thumbs awaiting an acpi merge.
