@@ -1,54 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935447AbXJQAsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935577AbXJQAxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935447AbXJQAsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 20:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760959AbXJQAsB
+	id S935577AbXJQAxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 20:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761546AbXJQAxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 20:48:01 -0400
-Received: from ozlabs.org ([203.10.76.45]:40949 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759050AbXJQAsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 20:48:00 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: ego@in.ibm.com
-Subject: Re: [RFC PATCH 1/4] Refcount Based Cpu-Hotplug Implementation
-Date: Wed, 17 Oct 2007 10:47:41 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
-References: <20071016103308.GA9907@in.ibm.com> <20071016103417.GA16570@in.ibm.com>
-In-Reply-To: <20071016103417.GA16570@in.ibm.com>
+	Tue, 16 Oct 2007 20:53:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58538 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751250AbXJQAxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 20:53:46 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+2tfBTIt22jSYUyPig/A20FcaaJVBfERgHAKSuTJ
+	po2Nqd0TEJmV4Z
+Date: Wed, 17 Oct 2007 02:53:42 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com
+Subject: Re: arcmsr changelog differs from diffs
+Message-ID: <20071017005342.GA14212@atjola.homenet>
+References: <200710170007.20454.hpj@urpla.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200710171047.42693.rusty@rustcorp.com.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710170007.20454.hpj@urpla.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 20:34:17 Gautham R Shenoy wrote:
-> This patch implements a Refcount + Waitqueue based model for
-> cpu-hotplug.
+On 2007.10.17 00:07:19 +0200, Hans-Peter Jansen wrote:
+> Hi Jeff,
+> 
+> while browsing through Linus' current check ins, I stumbled upon:
+> 
+> [SCSI] arcmsr: irq handler fixes, cleanups, micro-opts:
+> 
+> --8<--
+> 488a5c8a9a3b67ae117784cd0d73bef53a73d57d
+>  drivers/scsi/arcmsr/arcmsr_hba.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c 
+> b/drivers/scsi/arcmsr/arcmsr_hba.c
+> index 7832a10..f4d2d52 100644
+> --- a/drivers/scsi/arcmsr/arcmsr_hba.c
+> +++ b/drivers/scsi/arcmsr/arcmsr_hba.c
+> @@ -422,7 +422,7 @@ static int arcmsr_probe(struct pci_dev *pdev,
+>  		goto out_release_regions;
+>  
+>  	error = request_irq(pdev->irq, arcmsr_do_interrupt,
+> -				IRQF_SHARED, "arcmsr", acb);
+> +			    IRQF_SHARED, "arcmsr", acb);
+>  	if (error)
+>  		goto out_free_ccb_pool;
+>  
+> -->8--
+> 
+> and: [SCSI] arcmsr: Fix hardware wait loops
+> 
+> --8<--
+> 24430458bb924e371ff894e26bfa9f73707f53fb
+>  drivers/scsi/arcmsr/arcmsr_hba.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c 
+> b/drivers/scsi/arcmsr/arcmsr_hba.c
+> index 50e1310..7832a10 100644
+> --- a/drivers/scsi/arcmsr/arcmsr_hba.c
+> +++ b/drivers/scsi/arcmsr/arcmsr_hba.c
+> @@ -2092,8 +2092,10 @@ static void arcmsr_iop_reset(struct 
+> AdapterControlBlock *acb)
+>  	if (atomic_read(&acb->ccboutstandingcount) != 0) {
+>  		/* talk to iop 331 outstanding command aborted */
+>  		arcmsr_abort_allcmd(acb);
+> +
+>  		/* wait for 3 sec for all command aborted*/
+>  		ssleep(3);
+> +
+>  		/* disable all outbound interrupt */
+>  		intmask_org = arcmsr_disable_outbound_ints(acb);
+>  		/* clear all outbound posted Q */
+> -->8--
+> 
+> where both changelogs differ significantly from the actual diffs, which both 
+> are simple WS fixups and nothing else. Does qgit fools me here, or is 
+> anything else wrong on my side?
 
-Hi Gautham,
+Nothing wrong on your side. I took a look at the second one, and
+everything but the whitespace changes already found its way into Linus'
+tree via 1a4f550a09f89e3a15eff1971bc9db977571b9f6. One hunk of the
+original patch[1] was actually made redundant because the code was
+removed in that commit, so that's probably what James fixed (see full
+commit message).
 
-	I can't see where you re-initialize the completion.  
+And then, if I may guess, James probably just noticed that there were
+changes left and commited them (while they were now down to just the
+whitespace change), without checking what changes were actually left (no
+offense intended). At least I think that git wouldn't cripple the diff
+if the changes that James checked in were not already whitespace-only at
+the time he commited them, and the git history of his tree seems to
+agree.
 
-> +static void cpu_hotplug_begin(void)
-> +{
-> +	mutex_lock(&cpu_hotplug.lock);
-> +	cpu_hotplug.active_writer = current;
-> +	while (cpu_hotplug.refcount) {
-> +		mutex_unlock(&cpu_hotplug.lock);
-> +		wait_for_completion(&cpu_hotplug.readers_done);
-> +		mutex_lock(&cpu_hotplug.lock);
-> +	}
+Probably the other commit is similar.
 
-AFAICT this will busy-wait on the second CPU hotplug.
+Björn
 
-Cheers,
-Rusty.
+[1] http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-07/msg11957.html
