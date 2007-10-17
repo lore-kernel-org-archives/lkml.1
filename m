@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbXJQJex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXJQJin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762378AbXJQJex (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXJQJep
+	id S1763732AbXJQJin (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbXJQJig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:34:45 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59020 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756127AbXJQJeo (ORCPT
+	Wed, 17 Oct 2007 05:38:36 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39712 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755338AbXJQJif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:34:44 -0400
-Date: Wed, 17 Oct 2007 18:36:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-mm1
-Message-Id: <20071017183626.70bdd13e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0710171108090.18815@twin.jikos.cz>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0710171108090.18815@twin.jikos.cz>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 05:38:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
+References: <1192168345.17539.42.camel@caritas-dev.intel.com>
+Date: Wed, 17 Oct 2007 03:38:10 -0600
+In-Reply-To: <1192168345.17539.42.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Fri, 12 Oct 2007 13:52:25 +0800")
+Message-ID: <m1abqif5dp.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 11:10:23 +0200 (CEST)
-Jiri Kosina <jikos@jikos.cz> wrote:
-> Hi,
-> 
-> hm, I guess this is probably due to pie-randomization patch, right? (could 
-> you please try reverting it, to see whether things get back to normal).
-> 
-> Oh well, this causes more trouble that I have ever imagined ... I will 
-> look into it, thanks a lot for the report. Andrew, please drop this one 
-> again, I will fix it up.
-> 
-Maybe this can be fix.
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-Thanks,
--Kame
+> This patchset defines a 32-bit boot protocol for i386/x86_64 platform,
+> adds an extensible boot parameter passing mechanism, export the boot
+> parameters via sysfs.
+>
+> The patchset has been tested against 2.6.23-rc8-mm2 kernel on x86_64
+> and i386.
+>
+> This patchset is based on the proposal of Peter Anvin.
+>
+>
+> Known Issues:
+>
+> - Where is safe to place the linked list of setup_data?  Because the
+>   length of the linked list of setup_data is variable, it can not be
+>   copied into BSS segment of kernel as that of "zero page". We must
+>   find a safe place for it, where it will not be overwritten by kernel
+>   during booting up. The i386 kernel will overwrite some pages after
+>   _end. The x86_64 kernel will overwrite some pages from 0x1000 on.
 
-==
-ia32 on x86_64 seems to be handled as it is.
+Well there actually is no reason to copy the current data into the
+zero page.  We really should just leave it where it is until the
+kernel has managed to bootstrap it's basic services.
 
- arch/x86_64/mm/mmap.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+As for the setup data can we please remove the pointers. And just
+require the that the data items be appended one after each other
+in memory.  Then we would just need a field where we could
+report an offset to the binary data from where we loaded the
+16bit code/data.  We could even specify the end by requiring
+that we fill in setup_move_size or something of that nature.
 
-Index: devel-2.6.23-mm1/arch/x86_64/mm/mmap.c
-===================================================================
---- devel-2.6.23-mm1.orig/arch/x86_64/mm/mmap.c
-+++ devel-2.6.23-mm1/arch/x86_64/mm/mmap.c
-@@ -54,13 +54,17 @@ static inline unsigned long mmap_base(vo
- 	return TASK_SIZE - (gap & PAGE_MASK);
- }
- 
--static inline int mmap_is_legacy(void)
-+static inline int mmap_is_32(void)
- {
- #ifdef CONFIG_IA32_EMULATION
- 	if (test_thread_flag(TIF_IA32))
- 		return 1;
- #endif
-+	return 0;
-+}
- 
-+static inline int mmap_is_legacy(void)
-+{
- 	if (current->personality & ADDR_COMPAT_LAYOUT)
- 		return 1;
- 
-@@ -89,7 +93,12 @@ void arch_pick_mmap_layout(struct mm_str
- 	 * Fall back to the standard layout if the personality
- 	 * bit is set, or if the expected stack growth is unlimited:
- 	 */
--	if (mmap_is_legacy()) {
-+	if (mmap_is_32()) {
-+#ifdef CONFIG_IA32_EMULATION
-+		/* ia32_pick_mmap_layout has its own. */
-+		return ia32_pick_mmap_layout(mm);
-+#endif
-+	} else if(mmap_is_legacy()) {
- 		mm->mmap_base = TASK_UNMAPPED_BASE;
- 		mm->get_unmapped_area = arch_get_unmapped_area;
- 		mm->unmap_area = arch_unmap_area;
+Beyond that we should provide the bootloaders enough information to
+know which information the kernel will overwrite before it consults
+the e820 map and other indicators of what memory is free.
 
+Eric
