@@ -1,44 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935971AbXJQCaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936105AbXJQCdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935971AbXJQCaK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 22:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbXJQC35
+	id S936105AbXJQCdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 22:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbXJQCdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 22:29:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37192 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754103AbXJQC34 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 22:29:56 -0400
-Date: Tue, 16 Oct 2007 19:23:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dipankar Sarma <dipankar@in.ibm.com>
-cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Rusty Russel <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: [RFC PATCH 0/4] Refcount Based Cpu-Hotplug Revisit.
-In-Reply-To: <20071017021112.GA15895@in.ibm.com>
-Message-ID: <alpine.LFD.0.999.0710161922430.26902@woody.linux-foundation.org>
-References: <20071016103308.GA9907@in.ibm.com>
- <alpine.LFD.0.999.0710161015510.6887@woody.linux-foundation.org>
- <20071017021112.GA15895@in.ibm.com>
+	Tue, 16 Oct 2007 22:33:12 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:47155 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753550AbXJQCdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 22:33:11 -0400
+Date: Wed, 17 Oct 2007 11:33:07 +0900
+From: Simon Horman <horms@verge.net.au>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Don Zickus <dzickus@redhat.com>,
+       Neil Horman <nhorman@redhat.com>, Dan Aloni <da-x@monatomic.org>,
+       Bernhard Walle <bwalle@suse.de>, kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>
+Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
+Message-ID: <20071017023305.GC6709@verge.net.au>
+References: <20070822210838oomichi@mail.jp.nec.com> <20070822211339oomichi@mail.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070822211339oomichi@mail.jp.nec.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 17 Oct 2007, Dipankar Sarma wrote:
+On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
 > 
-> Unless I am reading the patch wrongly, it seems cpu_hotplug_begin() is called 
-> while holding the cpu_add_remove_lock mutex. So, another CPU cannot come in
-> and do the same until _cpu_down() is over.
+> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
+> The patch is for kexec-tools-testing-20070330.
+> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
+> kexec command gets the address and size of the vmcoreinfo data from
+> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
+> ELF header of /proc/vmcore. When the second kernel is booting, the
+> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
+> segment into /proc/vmcore.
 
-Ahh, in that case I take back that objection, although maybe a comment 
-about the required nesting within the other mutex is in order? Or maybe 
-it's there and I just missed it (blush).
+Sorry for the long delay, I completely missed this patch.
 
-			Linus
+The kexec-tools change seems ok to me. What is the status of
+the kernel portion of the change? Do you still want the
+kexec-tools portion applied?
+
+> 
+> Thanks
+> Ken'ichi Ohmichi
+> 
+> ---
+> Signed-off-by: Dan Aloni <da-x@monatomic.org>
+> Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+> 
+> ---
+> diff -rpuN backup/kexec-tools-testing-20070330/kexec/crashdump-elf.c kexec-tools/kexec/crashdump-elf.c
+> --- backup/kexec-tools-testing-20070330/kexec/crashdump-elf.c	2007-03-30 13:34:36.000000000 +0900
+> +++ kexec-tools/kexec/crashdump-elf.c	2007-08-03 14:45:47.000000000 +0900
+> @@ -36,6 +36,8 @@ int FUNC(struct kexec_info *info,
+>  	char *bufp;
+>  	long int nr_cpus = 0;
+>  	uint64_t notes_addr, notes_len;
+> +	uint64_t vmcoreinfo_addr, vmcoreinfo_len;
+> +	int has_vmcoreinfo = 0;
+>  	int (*get_note_info)(int cpu, uint64_t *addr, uint64_t *len);
+>  
+>  	if (xen_present())
+> @@ -47,7 +49,11 @@ int FUNC(struct kexec_info *info,
+>  		return -1;
+>  	}
+>  
+> -	sz = sizeof(EHDR) + nr_cpus * sizeof(PHDR) + ranges * sizeof(PHDR);
+> +	if (get_kernel_vmcoreinfo(&vmcoreinfo_addr, &vmcoreinfo_len) == 0) {
+> +		has_vmcoreinfo = 1;
+> +	}
+> +
+> +	sz = sizeof(EHDR) + (nr_cpus + has_vmcoreinfo) * sizeof(PHDR) + ranges * sizeof(PHDR);
+>  
+>  	/*
+>  	 * Certain architectures such as x86_64 and ia64 require a separate
+> @@ -148,6 +154,21 @@ int FUNC(struct kexec_info *info,
+>  		dfprintf_phdr(stdout, "Elf header", phdr);
+>  	}
+>  
+> +	if (has_vmcoreinfo) {
+> +		phdr = (PHDR *) bufp;
+> +		bufp += sizeof(PHDR);
+> +		phdr->p_type	= PT_NOTE;
+> +		phdr->p_flags	= 0;
+> +		phdr->p_offset  = phdr->p_paddr = vmcoreinfo_addr;
+> +		phdr->p_vaddr   = 0;
+> +		phdr->p_filesz	= phdr->p_memsz	= vmcoreinfo_len;
+> +		/* Do we need any alignment of segments? */
+> +		phdr->p_align	= 0;
+> +
+> +		(elf->e_phnum)++;
+> +		dfprintf_phdr(stdout, "vmcoreinfo header", phdr);
+> +	}
+> +
+>  	/* Setup an PT_LOAD type program header for the region where
+>  	 * Kernel is mapped if info->kern_size is non-zero.
+>  	 */
+> diff -rpuN backup/kexec-tools-testing-20070330/kexec/crashdump.c kexec-tools/kexec/crashdump.c
+> --- backup/kexec-tools-testing-20070330/kexec/crashdump.c	2007-03-30 13:34:36.000000000 +0900
+> +++ kexec-tools/kexec/crashdump.c	2007-08-03 14:45:05.000000000 +0900
+> @@ -108,3 +108,35 @@ int get_crash_notes_per_cpu(int cpu, uin
+>  
+>  	return 0;
+>  }
+> +
+> +/* Returns the physical address of start of crash notes buffer for a kernel. */
+> +int get_kernel_vmcoreinfo(uint64_t *addr, uint64_t *len)
+> +{
+> +	char kdump_info[PATH_MAX];
+> +	char line[MAX_LINE];
+> +	int count;
+> +	FILE *fp;
+> +	unsigned long long temp, temp2;
+> +
+> +	*addr = 0;
+> +	*len = 0;
+> +
+> +	sprintf(kdump_info, "/sys/kernel/vmcoreinfo");
+> +	fp = fopen(kdump_info, "r");
+> +	if (!fp) {
+> +		die("Could not open \"%s\": %s\n", kdump_info,
+> +		    strerror(errno));
+> +		return -1;
+> +	}
+> +
+> +	if (!fgets(line, sizeof(line), fp))
+> +		die("Cannot parse %s: %s\n", kdump_info, strerror(errno));
+> +	count = sscanf(line, "%Lx %Lx", &temp, &temp2);
+> +	if (count != 2)
+> +		die("Cannot parse %s: %s\n", kdump_info, strerror(errno));
+> +
+> +	*addr = (uint64_t) temp;
+> +	*len = (uint64_t) temp2;
+> +
+> +	return 0;
+> +}
+> diff -rpuN backup/kexec-tools-testing-20070330/kexec/crashdump.h kexec-tools/kexec/crashdump.h
+> --- backup/kexec-tools-testing-20070330/kexec/crashdump.h	2007-03-30 13:34:36.000000000 +0900
+> +++ kexec-tools/kexec/crashdump.h	2007-08-03 14:45:05.000000000 +0900
+> @@ -2,6 +2,7 @@
+>  #define CRASHDUMP_H
+>  
+>  extern int get_crash_notes_per_cpu(int cpu, uint64_t *addr, uint64_t *len);
+> +extern int get_kernel_vmcoreinfo(uint64_t *addr, uint64_t *len);
+>  
+>  /* Need to find a better way to determine per cpu notes section size. */
+>  #define MAX_NOTE_BYTES		1024
+> _
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
