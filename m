@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935042AbXJQPaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933945AbXJQPfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935042AbXJQPaw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934446AbXJQPad
+	id S933945AbXJQPfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbXJQPf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:30:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39068 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934416AbXJQPab (ORCPT
+	Wed, 17 Oct 2007 11:35:29 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:44730 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbXJQPf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:30:31 -0400
-Subject: Re: [PATCH] nfs: fix nfs_writepage()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1192634702.7573.10.camel@heimdal.trondhjem.org>
-References: <1192628458.27435.119.camel@twins>
-	 <1192634702.7573.10.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 17:30:28 +0200
-Message-Id: <1192635028.27435.137.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 11:35:28 -0400
+Date: Wed, 17 Oct 2007 11:34:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RT] seqlocks: use of PICK_FUNCTION breaks kernel compile when
+ CONFIG_GENERIC_TIME is NOT set
+In-Reply-To: <1192634645.17527.134.camel@imap.mvista.com>
+Message-ID: <Pine.LNX.4.58.0710171133490.26554@gandalf.stny.rr.com>
+References: <1192632502.17527.129.camel@imap.mvista.com> 
+ <1192633836.8265.6.camel@localhost.localdomain> <1192634645.17527.134.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 11:25 -0400, Trond Myklebust wrote:
-> On Wed, 2007-10-17 at 15:40 +0200, Peter Zijlstra wrote:
-> > I noticed that ->writepage() didn't actually do anything since it
-> > doesn't generate a write request for the given page.
-> > 
-> > The below is an attempt at fixing it, and it works for me. Although I'm
-> > not quite sure its the proper fix.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  fs/nfs/write.c |   20 ++++++++++++++++++++
-> >  1 file changed, 20 insertions(+)
-> > 
-> > Index: linux-2.6/fs/nfs/write.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/nfs/write.c
-> > +++ linux-2.6/fs/nfs/write.c
-> > @@ -332,10 +332,30 @@ static int nfs_page_async_flush(struct n
-> >  static int nfs_do_writepage(struct page *page, struct writeback_control *wbc, struct nfs_pageio_descriptor *pgio)
-> >  {
-> >  	struct inode *inode = page_file_mapping(page)->host;
-> > +	struct rpc_cred *cred;
-> > +	struct nfs_open_context *ctx;
-> > +	int status;
-> >  
-> >  	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGE);
-> >  	nfs_add_stats(inode, NFSIOS_WRITEPAGES, 1);
-> >  
-> > +	cred = rpcauth_lookupcred(NFS_CLIENT(inode)->cl_auth, 0);
-> > +	if (IS_ERR(cred))
-> > +		return PTR_ERR(cred);
-> > +
-> > +	ctx = nfs_find_open_context(inode, cred, FMODE_WRITE);
-> > +	if (!ctx)
-> > +		return -EBADF;
-> > +
-> > +	status = nfs_writepage_setup(ctx, page, 0, nfs_page_length(page));
-> > +
-> > +	put_nfs_open_context(ctx);
-> > +
-> > +	if (status < 0) {
-> > +		nfs_set_pageerror(page);
-> > +		return status;
-> > +	}
-> > +
-> >  	nfs_pageio_cond_complete(pgio, page_file_index(page));
-> >  	return nfs_page_async_flush(pgio, page);
-> >  }
-> 
-> NACK. writepage()'s job is simply to start writeout on the page.
-> nfs_vm_page_mkwrite(), and nfs_commit_write() actually set up the
-> nfs_page structure before we ever get to writepage().
 
-Do all a_ops require this? From what I can gather other address_spaces
-do not require this, but I might be wrong.
+--
 
-The thing is, swapper_space just calls ->writepage() and expects the
-page to be written out. So either the a_ops usage of swapper_space is
-deviant or NFS' is.
+On Wed, 17 Oct 2007, Daniel Walker wrote:
 
+> On Wed, 2007-10-17 at 11:10 -0400, Steven Rostedt wrote:
+>
+> > > >
+> > > >  #define read_seqbegin_irqsave(lock, flags)			\
+> > > > -do {								\
+> > > > +({								\
+> > > >  	flags = PICK_SEQ_OP_RET(__read_seqbegin_irqsave_raw,	\
+> > > >  		__read_seqbegin_irqsave, lock);			\
+> > > > -} while (0)
+> > > > +	read_seqbegin(lock);					\
+> > > > +})
+> >
+> > Yes, definitely the raw and unraw functions should be called
+> > local_irqsave_raw or something else that makes this obvious to what it
+> > is doing.
+>
+> Hmm.. I'm not sure what else to name them .. Since it's in the seqlock.h
+> I don't think it should be called anything "local_irq*" .. It could be
+> seq_irqsave_{raw} .
+
+Hmm, what about a __seq_irqsave_raw and __seq_nop?
+
+That way it spells out that irqs are NOT touched if it is not a raw lock.
+
+-- Steve
 
