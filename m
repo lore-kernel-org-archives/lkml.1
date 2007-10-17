@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935741AbXJQRvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936084AbXJQRxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935741AbXJQRvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXJQRu7
+	id S936084AbXJQRxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758221AbXJQRx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:50:59 -0400
-Received: from z2.cat.iki.fi ([212.16.98.133]:43800 "EHLO z2.cat.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759330AbXJQRu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:50:58 -0400
-Date: Wed, 17 Oct 2007 20:50:54 +0300
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: your mail
-Message-ID: <20071017175054.GE6372@mea-ext.zmailer.org>
-References: <101720071630.22047.4716389F000E33190000561F219792474103010CD2079C080C03BFCE02019C9F0301089BD29C0E0401080C0702@mchsi.com> <Pine.LNX.4.64.0710171836100.28622@fbirervta.pbzchgretzou.qr>
+	Wed, 17 Oct 2007 13:53:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51880 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757309AbXJQRx1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 13:53:27 -0400
+Date: Wed, 17 Oct 2007 10:52:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] block subsystem related crash with latest -git
+In-Reply-To: <20071017170804.GG15552@kernel.dk>
+Message-ID: <alpine.LFD.0.999.0710171022340.26902@woody.linux-foundation.org>
+References: <20071017154655.GA13394@elte.hu>
+ <alpine.LFD.0.999.0710170929270.26902@woody.linux-foundation.org>
+ <20071017165949.GF15552@kernel.dk> <20071017170804.GG15552@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710171836100.28622@fbirervta.pbzchgretzou.qr>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nope, wrong clues.
-The right clues are in the footer of this message after it travels thru the list.
-
-I supplied them to Nicholas already, but apparently others need to be reminded of
-them every now and then  :-]   That footer is in these list messages for a reason!
-
-    /Matti Aarnio -- one of  <postmaster@vger.kernel.org>
-
-PS: You want to contact VGER's email and list managers ?
-    We use the internet email standard address "postmaster"
 
 
-On Wed, Oct 17, 2007 at 06:36:19PM +0200, Jan Engelhardt wrote:
-> Date: Wed, 17 Oct 2007 18:36:19 +0200 (CEST)
-> From: Jan Engelhardt <jengelh@computergmbh.de>
-> To: nicholas.thompson1@mchsi.com
-> cc: linux-kernel@vger.kernel.org
-> Subject: Re: your mail
+On Wed, 17 Oct 2007, Jens Axboe wrote:
 > 
-> On Oct 17 2007 16:30, nicholas.thompson1@mchsi.com wrote:
-> >Date: Wed, 17 Oct 2007 16:30:24 +0000
-> >From:  <nicholas.thompson1@mchsi.com>
-> >To:  <linux-kernel@vger.kernel.org>
->              ^^^^^^
-> >
-> >subscribe linux-alpha
->                  ^^^^^
+> OK, the below should actually be safe, I don't know why I talked myself
+> into the next_sg stuff in the beginning. It's always safe to zero sg,
+> since it's a valid entry - nothing to save in ->page. Ingo, does this
+> work for you?
+
+I really don't think this should work.
+
+Doing "sg_next()" on a valid sg is *always* ok. So if the old code didn't 
+work, then "sg" wasn't valid to start with (and the code *after* the 
+sg_next() would have oopsed even if you try to avoid using sg_next.
+
+So avoiding the "sg_next()" on the last entry is pointless. 
+
+Also, your patch makes the code almost totally unreadable, with that 
+subtle issue of the "if (bvprv && cluster)" case not triggering on the 
+first case, so the NULL initial sg is "safe".
+
+So at a guess, I think the *real* problem is simply that the passed-in 
+sglist was just too small. What guarantees that the sg list allocation 
+(apparently done by scsi_alloc_sgtable()) is big enough? 
+
+If I read things right, scsi_alloc_sgtable() will allocate "cmd->use_sg" 
+SG enties, no? But I also notice that it does not seem to initialize the 
+SG allocation, so those SG entries contain random crap - including, 
+perhaps, a random - and bogus - chain pointer in sg->page..
+
+Yes, we set sh->page *if* we create a chain, but if we don't chain, we 
+leave the old random contents around which in turn may include old and 
+stale chain pointers. Or am I missing something?
+
+So when you added that "memset(sg, 0, sizeof(*sg))" into blk_rq_map_sg(), 
+you did it way too late - it needs to be done when the sg chain is 
+allocated, and for every entry (and then the "link" entry needs to be 
+linked in separately)
+
+I think.
+
+		Linus
+
