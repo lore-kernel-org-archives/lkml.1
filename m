@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765493AbXJQJGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932974AbXJQJIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765493AbXJQJGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXJQJGo
+	id S932974AbXJQJIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXJQJID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:06:44 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:56672 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753074AbXJQJGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:06:43 -0400
-Date: Wed, 17 Oct 2007 11:09:46 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Maciej W\. Rozycki" <macro@linux-mips.org>
-Cc: Andy Fleming <afleming@freescale.com>,
+	Wed, 17 Oct 2007 05:08:03 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2777 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbXJQJIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:08:01 -0400
+Date: Wed, 17 Oct 2007 10:07:53 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071017090946.GB1658@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local>
-Mime-Version: 1.0
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.23-git8 kernel oops at __rb_rotate_left+0x7/0x70
+Message-ID: <20071017090753.GH2657@shadowen.org>
+References: <47144B4F.3050108@linux.vnet.ibm.com> <20071016091012.GB24341@elte.hu> <20071016094631.GA10649@elte.hu> <20071016180037.GC5670@shadowen.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017085809.GA1658@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20071016180037.GC5670@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 10:58:09AM +0200, Jarek Poplawski wrote:
-...
-> 5) phy_stop_interrupts(): maybe I miss something, but it seems
-> phy_stop() is required before this, so maybe there should be a
-> comment on this?
+On Tue, Oct 16, 2007 at 07:00:37PM +0100, Andy Whitcroft wrote:
+> On Tue, Oct 16, 2007 at 11:46:31AM +0200, Ingo Molnar wrote:
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > While running kernbench with the 2.6.23-git8 following oops is 
+> > > > produced
+> > > > 
+> > > > Unable to handle kernel NULL pointer dereference at 0000000000000010 RIP: 
+> > > >  [<ffffffff8033f347>] __rb_rotate_left+0x7/0x70
+> > > 
+> > > that looks nasty ...
+> > > 
+> > > and -git8 should have the v2.6.23 scheduler code in essence.
+> > 
+> > ah, this is likely with the recent scheduler commits included as well, 
+> > right?
+> > 
+> > if it's reproducable, could you try with group scheduling disabled, i.e. 
+> > with:
+> > 
+> >   # CONFIG_FAIR_GROUP_SCHED is not set
+> > 
+> > as that would be the main suspect for such type of a crash.
 > 
-> 6) phy_stop_interrupts(): if I'm not wrong with #3 calling
+> Ok, preliminary results with this disabled seem to get us past
+> kernbench.  I am rerunning with it enabled to confirm it blammo's.
 
-Should be:
-  6) phy_stop_interrupts(): if I'm not wrong with #5 calling
+A rerun with it enabled however ran to completion.  So I think we have
+to assume this is at best not 100% reproducible.  Seems that more
+directed testing is going on now.
 
-Jarek P.
+-apw
