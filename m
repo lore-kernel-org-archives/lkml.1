@@ -1,77 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762386AbXJQXjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbXJQXla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762386AbXJQXjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbXJQXid
+	id S1762187AbXJQXla (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 19:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbXJQXlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:38:33 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:52727 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757735AbXJQXic (ORCPT
+	Wed, 17 Oct 2007 19:41:22 -0400
+Received: from homer.mvista.com ([63.81.120.158]:10191 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbXJQXlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:38:32 -0400
-Date: Wed, 17 Oct 2007 17:37:03 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Understanding lspci output
-In-reply-to: <fa.FcCntqDHRe76qrRi4OjUjOq2ak4@ifi.uio.no>
-To: John Sigler <linux.kernel@free.fr>
-Cc: Martin Mares <mj@ucw.cz>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Message-id: <47169C9F.9040809@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.l0Y1Suv/oOMZej6qugSY8HCfo78@ifi.uio.no>
- <fa.5QGRWM6v1/dwLaQe8D1zMU1KZeM@ifi.uio.no>
- <fa.FcCntqDHRe76qrRi4OjUjOq2ak4@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 17 Oct 2007 19:41:21 -0400
+Date: Wed, 17 Oct 2007 19:41:20 -0400
+From: "George G. Davis" <gdavis@mvista.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Fix hang in posix_locks_deadlock()
+Message-ID: <20071017234120.GH3785@mvista.com>
+References: <20071017185157.GC3785@mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MW5yreqqjyrRcusr"
+Content-Disposition: inline
+In-Reply-To: <20071017185157.GC3785@mvista.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Sigler wrote:
->>> 4. Does the system have a PCI-X bus?
->>
->> Yes, the devices on bus 01 are PCI-X devices, so there is a PCI-X bus.
-> 
-> I thought PCI-X devices could operate on a PCI bus? If that is true, 
-> then the presence of a PCI-X device would not necessarily imply the 
-> presence of a PCI-X bus, right?
-> 
-> There are no external PCI-X slots in the system, only 2 PCI slots.
-> The 4 NICs are integrated to the motherboard.
-> http://advantech.com/products/1U-Rackmount-Intel-Pentium-4Processor-based-Platform-with-4PCI-LAN-Ports-2-PCI-Expansion-Slots/mod_1-23A2W4.aspx 
 
-The NICs are all PCI-X devices and they report "64bit+" so they will be 
-running on a PCI-X bus internally.
+--MW5yreqqjyrRcusr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> 
-> 
->>> 2. Do any of the PCI buses support 66 MHz operation?
->>
->> Yes, PCI-X does.
-> 
-> So the 01:0f.0 device (Multimedia video controller) is on the same bus 
-> as the 4 PCI-X devices and will have to share the bus bandwidth?
-> 
-> Does 66MHz+ in the Status line means this device is running at 66 MHz?
+On Wed, Oct 17, 2007 at 02:51:57PM -0400, George G. Davis wrote:
+> Not sure if this is the correct fix but it does resolve the hangs we're
+> observing in posix_locks_deadlock().  Comments greatly appreciated...
 
-I believe so.
-
-> 
->>> 3. Do any of the PCI slots support 64-bit data path?
->>
->> This cannot be inferred from the lspci output -- there is no way how to
->> tell if a bus has physical slots or it exists only internally.
-> 
-> Can I use lspci to see whether a specific PCI device is using a 64-bit 
-> data path? (e.g. the 01:0f.0 device)
-
-The "Multimedia video controller: DekTec Digital Video B.V. DTA-105" 
-doesn't report PCI-X capabilities. And looking at the card on their web 
-site, it does not have a 64-bit extension, so it doesn't support 64-bit.
+Attached is a test case which exhibits the hang on an F7 host with all
+updates applied.  Also occurs on linux-2.6.git latest.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Regards,
+George
 
+--MW5yreqqjyrRcusr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="posix_locks_deadlock-hang.c"
+
+// gcc -o fcntltest -pthread posix_locks_deadlock-hang.c
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define __USE_GNU 1
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define NUM_THREADS 100
+#define NUM_PROCS 5
+#define NUM_FILES 64
+
+pthread_mutex_t locks[NUM_FILES];
+pthread_mutex_t gross_lock = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+
+static void *thread_routine(int number)
+{
+	const char *fname = NULL;
+	int f, rc;
+	struct flock lock_it;
+	pthread_mutex_t *lock = NULL;
+
+	// get the gross lock
+	pthread_mutex_lock(&gross_lock);
+
+	lock_it.l_whence = SEEK_SET;	/* from current point */
+	lock_it.l_start = 0;		/* -"- */
+	lock_it.l_len = 0;		/* until end of file */
+	lock_it.l_type = F_WRLCK;	/* set exclusive/write lock */
+	lock_it.l_pid = 0;		/* pid not actually interesting */
+
+	fname = calloc(1, 500);
+
+	snprintf(fname, 499, "%i.txt", number);
+	lock = &locks[number];
+
+	if (pthread_mutex_trylock(lock) != 0) {
+		pthread_mutex_unlock(&gross_lock);
+		pthread_mutex_lock(lock);
+		pthread_mutex_unlock(&gross_lock);
+	}
+
+	int randm = (rand() % 32768) * 10;
+	printf("Opening %s...\n", fname);
+	f = open(fname, O_TRUNC | O_CREAT | O_WRONLY, 0644);
+	if (f < 0) {
+		perror(fname);
+		exit(1);
+	}
+	printf("Locking %s...\n", fname);
+	// release the gross lock before attempting the fcntl
+	pthread_mutex_unlock(&gross_lock);
+	rc = fcntl(f, F_SETLKW, &lock_it);
+	sleep(5);
+	// gain the gross lock again
+	pthread_mutex_lock(&gross_lock);
+	if (rc < 0) {
+		perror(fname);
+		usleep(randm);
+		pthread_mutex_unlock(lock);
+		pthread_mutex_unlock(&gross_lock);
+		exit(1);
+	}
+
+	usleep(randm);
+	// unlocks the file
+	close(rc);
+	pthread_mutex_unlock(lock);
+	pthread_mutex_unlock(&gross_lock);
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	int i, rc;
+	pthread_t tids[NUM_THREADS];
+	memset(tids, 0, sizeof(tids));
+	memset(locks, 0, sizeof(locks));
+
+	for (i = 0; i < NUM_PROCS; i++) {
+		pid_t mypid = fork();
+		if (mypid == 0)
+			break;
+	}
+
+	for (i = 0; i < NUM_THREADS; i++) {
+		rc = pthread_create(&tids[i], NULL, thread_routine,
+				    (rand() % NUM_FILES));
+		if (rc != 0) {
+			tids[i] = 0;
+		}
+	}
+
+	for (i = 0; i < 500; i++) {
+		if (tids[i] != 0) {
+			pthread_join(tids[i], NULL);
+		}
+	}
+
+	return 0;
+}
+
+--MW5yreqqjyrRcusr--
