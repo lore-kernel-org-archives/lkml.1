@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761245AbXJQW3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXJQWcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761245AbXJQW3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 18:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbXJQW2s
+	id S933080AbXJQWcg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 18:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXJQWc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 18:28:48 -0400
-Received: from mail.tmr.com ([64.65.253.246]:50644 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbXJQW2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 18:28:46 -0400
-Message-ID: <47168EA1.1080300@tmr.com>
-Date: Wed, 17 Oct 2007 18:37:21 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFD] iptables:  mangle table obsoletes filter table
-References: <200710120031.42805.a1426z@gawab.com> <470EF994.4080403@trash.net> <200710120837.18152.a1426z@gawab.com>
-In-Reply-To: <200710120837.18152.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 17 Oct 2007 18:32:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50052 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758390AbXJQWc2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 18:32:28 -0400
+Date: Wed, 17 Oct 2007 15:32:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk
+Subject: Re: [PATCH] dcache: don't expose uninitialized memory in
+ /proc/<pid>/fd/<fd>
+Message-Id: <20071017153201.d4e0679b.akpm@linux-foundation.org>
+In-Reply-To: <20071016193557.GB8650@fieldses.org>
+References: <20071016193230.GA8650@fieldses.org>
+	<20071016193557.GB8650@fieldses.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Patrick McHardy wrote:
->> Please send mails discussing netfilter to netfilter-devel.
-> 
-> Ok.  I just found out this changed to vger.  But 
-> netfilter-devel@vger.kernel.org is bouncing me.
-> 
->> Al Boldi wrote:
->>> With the existence of the mangle table, how useful is the filter table?
->>>
->>> Other than requiring the REJECT target to be ported to the mangle table,
->>> is the filter table faster than the mangle table?
->> There are some minor differences in ordering (mangle comes before
->> DNAT, filter afterwards), but for most rulesets thats completely
->> irrelevant. The only difference that really matters is that mangle
->> performs rerouting in LOCAL_OUT for packets that had their routing
->> key changed, so its really a superset of the filter table. If you
->> want to use REJECT in the mangle table, you just need to remove the
->> restriction to filter, it works fine. I would prefer to also remove
->> the restriction of MARK, CONNMARK etc. to mangle, they're used for
->> more than just routing today so that restriction also doesn't make
->> much sense. Patches for this are welcome.
-> 
-> Something like this (untested):
-> 
-> --- ipt_REJECT.bak.c    2007-10-12 08:25:17.000000000 +0300
-> +++ ipt_REJECT.c        2007-10-12 08:31:44.000000000 +0300
-> @@ -165,6 +165,7 @@ static void send_reset(struct sk_buff *o
->  
->  static inline void send_unreach(struct sk_buff *skb_in, int code)
->  {
-> +       if (!skb_in->dst) ip_route_me_harder(&skb_in, RTN_UNSPEC);
->         icmp_send(skb_in, ICMP_DEST_UNREACH, code, 0);
->  }
->  
-> @@ -245,9 +246,6 @@ static struct xt_target ipt_reject_reg =
->         .family         = AF_INET,
->         .target         = reject,
->         .targetsize     = sizeof(struct ipt_reject_info),
-> -       .table          = "filter",
-> -       .hooks          = (1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD) |
-> -                         (1 << NF_IP_LOCAL_OUT),
->         .checkentry     = check,
->         .me             = THIS_MODULE,
->  };
-> 
->>> If not, then shouldn't the filter table be obsoleted to avoid confusion?
->> That would probably confuse people. Just don't use it if you don't
->> need to.
-> 
-That is a most practical suggestion.
+On Tue, 16 Oct 2007 15:35:57 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-> The problem is that people think they are safe with the filter table, when in 
-> fact they need the prerouting chain to seal things.  Right now this is only 
-> possible in the mangle table.
+> From: J. Bruce Fields <bfields@citi.umich.edu>
 > 
-I'm not sure what you think is unsafe about using the filter table, and 
-the order of evaluation issues certainly seem to suggest that some 
-actions would take a major rethink at least. Perhaps you could avoid 
-breaking all of the setups which currently work, rather than force 
-everyone to do things differently because you feel that your way is better.
+> Well, it's not especially important that target->d_iname get the
+> contents of dentry->d_iname, but it's important that it get initialized
+> with *something*, otherwise we're just exposing some random piece of
+> memory to anyone who reads the link at /proc/<pid>/fd/<fd> for the
+> deleted file, when it's still held open by someone.
+> 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+hm, that was tricky.
+
+> ---
+>  fs/dcache.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> (Am I missing something?  I've also run a test program that copies a
+> short (<36 character) name ontop of a long (>=36 character) name and see
+> that the first time I run it, without this patch, I get unpredicatable
+> results out of /proc/<pid>/fd/<fd>.)
+> 
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 5663a31..24252fc 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -1483,6 +1483,8 @@ static void switch_names(struct dentry *dentry, struct dentry *target)
+>  			 * dentry:internal, target:external.  Steal target's
+>  			 * storage and make target internal.
+>  			 */
+> +			memcpy(target->d_iname, dentry->d_name.name,
+> +					dentry->d_name.len + 1);
+>  			dentry->d_name.name = target->d_name.name;
+>  			target->d_name.name = target->d_iname;
+>  		}
+
+Or we could just stick a \0 in there.
+
+Or perhaps we should set it to "(deleted file)"?
