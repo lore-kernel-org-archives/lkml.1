@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXJQWVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbXJQWXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXJQWVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 18:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXJQWVR
+	id S1761767AbXJQWXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 18:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXJQWW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 18:21:17 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57812 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758880AbXJQWVQ (ORCPT
+	Wed, 17 Oct 2007 18:22:57 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38385 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310AbXJQWW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 18:21:16 -0400
-Date: Thu, 18 Oct 2007 00:21:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jan Engelhardt <jengelh@computergmbh.de>
+	Wed, 17 Oct 2007 18:22:56 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christian Borntraeger <borntraeger@de.ibm.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       adaplas@gmail.com
-Subject: Re: [PATCH] vc bell config
-Message-ID: <20071017222114.GE2156@elf.ucw.cz>
-References: <Pine.LNX.4.64.0710051347000.13406@fbirervta.pbzchgretzou.qr> <20071011181137.GA3868@ucw.cz> <Pine.LNX.4.64.0710171820570.28622@fbirervta.pbzchgretzou.qr>
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<200710172348.23113.borntraeger@de.ibm.com>
+Date: Wed, 17 Oct 2007 16:22:13 -0600
+In-Reply-To: <200710172348.23113.borntraeger@de.ibm.com> (Christian
+	Borntraeger's message of "Wed, 17 Oct 2007 23:48:23 +0200")
+Message-ID: <m1myuhcrfu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710171820570.28622@fbirervta.pbzchgretzou.qr>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Christian Borntraeger <borntraeger@de.ibm.com> writes:
 
-> >> It is already possible to deactivate the vc bell on a per-tty basis,
-> >> by using echo -en "\e[11;0]", but this is reset on reset(1).
-> >> 
-> >> This adds a sysfs parameter to globally control the vc bell, as well
-> >> as sysfs parameters for default pitch and duration.
-> >> 
-> >> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-> >
-> >There are more parameters that should be set during reset... like
-> >cursor size and color, palette, .... What about /sys/.../string_to_interpret
-> >_on_reset ?
-> 
-> On reset(1), cursor size, palette, and bell parameters _do_ get reset
-> to the defaults. Some defaults may already be changed by the user,
-> like palette or default_utf8.
-> 
-> Bell configuration is currently not one of them so, should a program
-> decide to reset the tty, or should it happen that your output is
-> garbled (forcing you to do reset), some settings change back to
-> "unwanted defaults".
+> Am Mittwoch, 17. Oktober 2007 schrieb Eric W. Biederman:
+>> Did you have both of my changes applied?
+>> To init_page_buffer() and to the ramdisk_set_dirty_page?
+>
+> Yes, I removed my patch and applied both patches from you. 
 
-Ok, and I'm suggesting general method for the "unwanted defaults"
-problem. Just have a /sys/.../terminal_init_string.
+Thanks.
 
-During reset, let console code interpret terminal_init_string, to set
-_wanted_ defaults. So you'd do:
+Grr. Inconsistent rules on a core piece of infrastructure.
+It looks like that if there is any trivial/minimal fix it
+is based on your patch suppressing try_to_free_buffers.  Ugh.
 
-echo -en "\e[11;0]" > /sys/.../terminal_init_string... and I'd do
-something similar with softcursor settings. (Which are currently reset
-to compiled-in defaults, and that is "unwanted defaults" to me).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Eric
