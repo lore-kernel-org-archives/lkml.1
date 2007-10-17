@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbXJQP0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933137AbXJQP3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934082AbXJQP0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbXJQP0J
+	id S933137AbXJQP3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759637AbXJQP3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:26:09 -0400
-Received: from h155.mvista.com ([63.81.120.158]:4793 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760028AbXJQP0I (ORCPT
+	Wed, 17 Oct 2007 11:29:35 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1380 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756049AbXJQP3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:26:08 -0400
-Subject: Re: [RT] seqlocks: use of PICK_FUNCTION breaks kernel compile when
-	CONFIG_GENERIC_TIME is NOT set
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1192633836.8265.6.camel@localhost.localdomain>
-References: <1192632502.17527.129.camel@imap.mvista.com>
-	 <1192633836.8265.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 08:24:05 -0700
-Message-Id: <1192634645.17527.134.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 11:29:34 -0400
+Date: Wed, 17 Oct 2007 16:29:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.23-git8 kernel oops at __rb_rotate_left+0x7/0x70
+Message-ID: <20071017152916.GH21136@shadowen.org>
+References: <47144B4F.3050108@linux.vnet.ibm.com> <20071017142140.GA8634@elte.hu> <20071017150056.GA28135@linux.vnet.ibm.com> <20071017145226.GA21676@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017145226.GA21676@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 11:10 -0400, Steven Rostedt wrote:
+On Wed, Oct 17, 2007 at 04:52:26PM +0200, Ingo Molnar wrote:
 
-> > >  
-> > >  #define read_seqbegin_irqsave(lock, flags)			\
-> > > -do {								\
-> > > +({								\
-> > >  	flags = PICK_SEQ_OP_RET(__read_seqbegin_irqsave_raw,	\
-> > >  		__read_seqbegin_irqsave, lock);			\
-> > > -} while (0)
-> > > +	read_seqbegin(lock);					\
-> > > +})
+> > We (myself, Kamalesh and Dhaval) have tested the patch below, w/o 
+> > being able to recreate the problem. The patch allows for 
+> > task_new_fair() to be called even for the case when child is being 
+> > added to another cpu's runqueue.
 > 
-> Yes, definitely the raw and unraw functions should be called
-> local_irqsave_raw or something else that makes this obvious to what it
-> is doing.
+> yes, and your fix is the better one, it goes into the next batch of 
+> fixes.
 
-Hmm.. I'm not sure what else to name them .. Since it's in the seqlock.h
-I don't think it should be called anything "local_irq*" .. It could be
-seq_irqsave_{raw} . 
+Have that patch submitted too.  Somewhen we'll have some more results.
 
-Daniel
-
+-apw
