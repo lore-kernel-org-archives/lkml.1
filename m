@@ -1,180 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbXJQUam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935344AbXJQUbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934589AbXJQUam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbXJQUab
+	id S935344AbXJQUbh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbXJQUb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:30:31 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:37553 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbXJQUa3 (ORCPT
+	Wed, 17 Oct 2007 16:31:28 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39901 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757149AbXJQUb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:30:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=f3Vkob8EDOy8K0KGAulcmky/ku0SqFKHLy0UjuesB0bhFKgGOA+3mGIRZbcou0zUOGKXbIV/dIgLUmLSPW+A8ShB5dLigvpYpBO1gqUh9I5DIm5xHMP4XkdB8CsfiAlHBj1mRQiBTs16cem5WpQqHL7daEkvuIkGFBDbkk/jrFE=
-Message-ID: <8b67d60710171330n55b9b575k949f3d239b380165@mail.gmail.com>
-Date: Wed, 17 Oct 2007 21:30:28 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: alsa-devel@alsa-project.org
-Subject: [PATCH] ALSA - protect Dreamcast PCM driver (AICA) from G2 bus effects
-Cc: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
+	Wed, 17 Oct 2007 16:31:28 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<1192648456.15717.7.camel@think.oraclecorp.com>
+Date: Wed, 17 Oct 2007 14:29:20 -0600
+In-Reply-To: <1192648456.15717.7.camel@think.oraclecorp.com> (Chris Mason's
+	message of "Wed, 17 Oct 2007 15:14:16 -0400")
+Message-ID: <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The G2 bus on the SEGA Dreamcast connects both the maple peripheral
-bus and the AICA sound memory. DMA requests on one can cause the other
-to timeout on memory operations.
+Chris Mason <chris.mason@oracle.com> writes:
 
-This patch prevents maple interrupts from causing hiccoughs in the
-AICA sound (maple bus code will land in 2.6.24).
+> In this case, the commit block isn't allowed to be dirty before reiserfs
+> decides it is safe to write it.  The journal code expects it is the only
+> spot in the kernel setting buffer heads dirty, and it only does so after
+> the rest of the log blocks are safely on disk.
 
-There are other cleanups for this (AICA) code - but this is in effect
-a regression fix rather than a cleanup.
+Ok.  So the journal code here fundamentally depends on being able to
+control the order of the writes, and something else being able to set
+the buffer head dirty messes up that control.
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> Given this is a ramdisk, the check can be ignored, but I'd rather not
+> sprinkle if (ram_disk) into the FS code....
 
-diff --git a/sound/sh/aica.c b/sound/sh/aica.c
-index 7397865..407981d 100644
---- a/sound/sh/aica.c
-+++ b/sound/sh/aica.c
-@@ -106,11 +106,14 @@ static void spu_write_wait(void)
- static void spu_memset(u32 toi, u32 what, int length)
- {
- 	int i;
-+	unsigned long flags;
- 	snd_assert(length % 4 == 0, return);
- 	for (i = 0; i < length; i++) {
- 		if (!(i % 8))
- 			spu_write_wait();
-+		local_irq_save(flags);
- 		writel(what, toi + SPU_MEMORY_BASE);
-+		local_irq_restore(flags);
- 		toi++;
- 	}
- }
-@@ -118,6 +121,7 @@ static void spu_memset(u32 toi, u32 what, int length)
- /* spu_memload - write to SPU address space */
- static void spu_memload(u32 toi, void *from, int length)
- {
-+	unsigned long flags;
- 	u32 *froml = from;
- 	u32 __iomem *to = (u32 __iomem *) (SPU_MEMORY_BASE + toi);
- 	int i;
-@@ -128,7 +132,9 @@ static void spu_memload(u32 toi, void *from, int length)
- 		if (!(i % 8))
- 			spu_write_wait();
- 		val = *froml;
-+		local_irq_save(flags);
- 		writel(val, to);
-+		local_irq_restore(flags);
- 		froml++;
- 		to++;
- 	}
-@@ -138,28 +144,36 @@ static void spu_memload(u32 toi, void *from, int length)
- static void spu_disable(void)
- {
- 	int i;
-+	unsigned long flags;
- 	u32 regval;
- 	spu_write_wait();
- 	regval = readl(ARM_RESET_REGISTER);
- 	regval |= 1;
- 	spu_write_wait();
-+	local_irq_save(flags);
- 	writel(regval, ARM_RESET_REGISTER);
-+	local_irq_restore(flags);
- 	for (i = 0; i < 64; i++) {
- 		spu_write_wait();
- 		regval = readl(SPU_REGISTER_BASE + (i * 0x80));
- 		regval = (regval & ~0x4000) | 0x8000;
- 		spu_write_wait();
-+		local_irq_save(flags);
- 		writel(regval, SPU_REGISTER_BASE + (i * 0x80));
-+		local_irq_restore(flags);
- 	}
- }
+It makes no sense to implement a ramdisk in a way that requires this.
 
- /* spu_enable - set spu registers to enable sound output */
- static void spu_enable(void)
- {
-+	unsigned long flags;
- 	u32 regval = readl(ARM_RESET_REGISTER);
- 	regval &= ~1;
- 	spu_write_wait();
-+	local_irq_save(flags);
- 	writel(regval, ARM_RESET_REGISTER);
-+	local_irq_restore(flags);
- }
 
- /*
-@@ -168,25 +182,34 @@ static void spu_enable(void)
- */
- static void spu_reset(void)
- {
-+	unsigned long flags;
- 	spu_disable();
- 	spu_memset(0, 0, 0x200000 / 4);
- 	/* Put ARM7 in endless loop */
-+	local_irq_save(flags);
- 	ctrl_outl(0xea000002, SPU_MEMORY_BASE);
-+	local_irq_restore(flags);
- 	spu_enable();
- }
+>> At the same time I increasingly don't think we should allow user space
+>> to dirty or update our filesystem metadata buffer heads.  That seems
+>> like asking for trouble.
+>> 
+>
+> Demanding trouble ;)
 
- /* aica_chn_start - write to spu to start playback */
- static void aica_chn_start(void)
- {
-+	unsigned long flags;
- 	spu_write_wait();
-+	local_irq_save(flags);
- 	writel(AICA_CMD_KICK | AICA_CMD_START, (u32 *) AICA_CONTROL_POINT);
-+	local_irq_restore(flags);
- }
+Looks like it.  There are even comments in jbd about the same class
+of problems.  Apparently dump and tune2fs on mounted filesystems have
+triggered some of these issues.  The practical question is any of this
+trouble worth handling.
 
- /* aica_chn_halt - write to spu to halt playback */
- static void aica_chn_halt(void)
- {
-+	unsigned long flags;
- 	spu_write_wait();
-+	local_irq_save(flags);
- 	writel(AICA_CMD_KICK | AICA_CMD_STOP, (u32 *) AICA_CONTROL_POINT);
-+	local_irq_restore(flags);
- }
+Thinking about it.  I don't believe anyone has ever intentionally built
+a filesystem tool that depends on being able to modify a file systems
+metadata buffer heads while the filesystem is running, and doing that
+would seem to be fragile as it would require a lot of cooperation
+between the tool and the filesystem about how the filesystem uses and
+implement things.
 
- /* ALSA code below */
-@@ -213,12 +236,13 @@ static int aica_dma_transfer(int channels, int
-buffer_size,
- 	int q, err, period_offset;
- 	struct snd_card_aica *dreamcastcard;
- 	struct snd_pcm_runtime *runtime;
--	err = 0;
-+	unsigned long flags;
- 	dreamcastcard = substream->pcm->private_data;
- 	period_offset = dreamcastcard->clicks;
- 	period_offset %= (AICA_PERIOD_NUMBER / channels);
- 	runtime = substream->runtime;
- 	for (q = 0; q < channels; q++) {
-+		local_irq_save(flags);
- 		err = dma_xfer(AICA_DMA_CHANNEL,
- 			       (unsigned long) (runtime->dma_area +
- 						(AICA_BUFFER_SIZE * q) /
-@@ -228,9 +252,12 @@ static int aica_dma_transfer(int channels, int buffer_size,
- 			       AICA_CHANNEL0_OFFSET + q * CHANNEL_OFFSET +
- 			       AICA_PERIOD_SIZE * period_offset,
- 			       buffer_size / channels, AICA_DMA_MODE);
--		if (unlikely(err < 0))
-+		if (unlikely(err < 0)) {
-+			local_irq_restore(flags);
- 			break;
-+		}
- 		dma_wait_for_completion(AICA_DMA_CHANNEL);
-+		local_irq_restore(flags);
- 	}
- 	return err;
- }
+Now I guess I need to see how difficult a patch would be to give
+filesystems magic inodes to keep their metadata buffer heads in.
+
+Eric
