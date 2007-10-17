@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763580AbXJQGMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbXJQGTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763580AbXJQGMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 02:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbXJQGMJ
+	id S1760833AbXJQGTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 02:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJQGTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 02:12:09 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:60500 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbXJQGMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 02:12:08 -0400
-Date: Wed, 17 Oct 2007 08:12:06 +0200 (CEST)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl
-Subject: Re: suspicious ALSA empty commit
-In-Reply-To: <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
-References: <20071016.155044.82377336.davem@davemloft.net>
- <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 17 Oct 2007 02:19:09 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:21559 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752594AbXJQGTH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 02:19:07 -0400
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 02:19:07 EDT
+To: Pavel Roskin <proski@gnu.org>
+Subject: Re: Distinguishing releases from pre-rc snapshots
+Cc: linux-kernel@vger.kernel.org
+In-reply-To: <1192587763.3672.24.camel@dv>
+References: <1192587763.3672.24.camel@dv>
+Message-Id: <E1Ii1zU-0002Cj-EC@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Wed, 17 Oct 2007 08:02:48 +0200
+X-OriginalArrivalTime: 17 Oct 2007 06:02:48.0645 (UTC) FILETIME=[58315F50:01C81083]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007, Linus Torvalds wrote:
-
-> On Tue, 16 Oct 2007, David Miller wrote:
-> > 
-> > While scanning over today's updates in Linus's tree, I noticed
-> > the following commit has no changes, and this does not appear
-> > to be intentional.
+Pavel Roskin wrote:
+> I'm trying to keep some external drivers up to date with the kernel, and
+> the first two weeks after the release is the worst time for me.  There
+> is no way to distinguish the current git kernel from the latest release.
+> It's only after rc1 is released that I can use preprocessor to check
+> LINUX_VERSION_CODE.
 > 
-> Interesting. You're right, I didn't notice.
+> Before that, I have to rely on tricks or change the kernel version
+> myself in a separate patch and tell other team members to do the same.
+ 
+Note that you can see if there have been commits since a release (the last git tag) by using the command 'git describe'.
 
-I didn't notice, too. I've fixed this commit in my git tree.
+$ git checkout -b temp v2.6.23
+Switched to a new branch "temp"
+$ git describe
+v2.6.23
+$ git checkout master
+$ git describe
+v2.6.23-4223-g65a6ec0
 
-Linus, please pull from [the linus branch at]:
+Format is: last tag - # commits since last tag - id of HEAD commit
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
-
-					Thanks,
-						Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project
+Hope this helps,
+Frans Pop
