@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763104AbXJQNiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbXJQNlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763104AbXJQNiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbXJQNhz
+	id S1762284AbXJQNlQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 09:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXJQNlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:37:55 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:48404 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755212AbXJQNhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:37:54 -0400
-Date: Wed, 17 Oct 2007 22:37:45 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Don Zickus <dzickus@redhat.com>,
-       Neil Horman <nhorman@redhat.com>, Dan Aloni <da-x@monatomic.org>,
-       Bernhard Walle <bwalle@suse.de>, kexec-ml <kexec@lists.infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
-Message-ID: <20071017133743.GA4211@verge.net.au>
-References: <20070822210838oomichi@mail.jp.nec.com> <20070822211339oomichi@mail.jp.nec.com> <20071017023305.GC6709@verge.net.au> <47159AA3.10305@mxs.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47159AA3.10305@mxs.nes.nec.co.jp>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Wed, 17 Oct 2007 09:41:02 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57133 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbXJQNlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 09:41:01 -0400
+Subject: [PATCH] nfs: fix nfs_writepage()
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 15:40:58 +0200
+Message-Id: <1192628458.27435.119.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 02:16:19PM +0900, Ken'ichi Ohmichi wrote:
-> 
-> Hi Simon,
-> 
-> Simon Horman wrote:
-> > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
-> >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
-> >> The patch is for kexec-tools-testing-20070330.
-> >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
-> >> kexec command gets the address and size of the vmcoreinfo data from
-> >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
-> >> ELF header of /proc/vmcore. When the second kernel is booting, the
-> >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
-> >> segment into /proc/vmcore.
-> > 
-> > Sorry for the long delay, I completely missed this patch.
-> > 
-> > The kexec-tools change seems ok to me. What is the status of
-> > the kernel portion of the change?
-> 
-> The kernel portion is merged into linux-2.6.23-mm1.
-> According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
-> "The infamous misc.  Will re-review and will merge basically all of them".
-> 
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.0/0313.html
-> 
-> 
-> > Do you still want the kexec-tools portion applied?
-> 
-> Yes, I hope so.
+I noticed that ->writepage() didn't actually do anything since it
+doesn't generate a write request for the given page.
 
-Thanks, I'll try and look over it tomorrow.
+The below is an attempt at fixing it, and it works for me. Although I'm
+not quite sure its the proper fix.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/write.c |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -332,10 +332,30 @@ static int nfs_page_async_flush(struct n
+ static int nfs_do_writepage(struct page *page, struct writeback_control *wbc, struct nfs_pageio_descriptor *pgio)
+ {
+ 	struct inode *inode = page_file_mapping(page)->host;
++	struct rpc_cred *cred;
++	struct nfs_open_context *ctx;
++	int status;
+ 
+ 	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGE);
+ 	nfs_add_stats(inode, NFSIOS_WRITEPAGES, 1);
+ 
++	cred = rpcauth_lookupcred(NFS_CLIENT(inode)->cl_auth, 0);
++	if (IS_ERR(cred))
++		return PTR_ERR(cred);
++
++	ctx = nfs_find_open_context(inode, cred, FMODE_WRITE);
++	if (!ctx)
++		return -EBADF;
++
++	status = nfs_writepage_setup(ctx, page, 0, nfs_page_length(page));
++
++	put_nfs_open_context(ctx);
++
++	if (status < 0) {
++		nfs_set_pageerror(page);
++		return status;
++	}
++
+ 	nfs_pageio_cond_complete(pgio, page_file_index(page));
+ 	return nfs_page_async_flush(pgio, page);
+ }
+
+
