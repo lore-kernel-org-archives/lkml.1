@@ -1,137 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbXJQPKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbXJQPMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbXJQPKO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbXJQPKB
+	id S933334AbXJQPMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760569AbXJQPMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:10:01 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57092 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756070AbXJQPJ7 (ORCPT
+	Wed, 17 Oct 2007 11:12:06 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53525 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756049AbXJQPMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:09:59 -0400
-Message-ID: <471625A0.4020201@bull.net>
-Date: Wed, 17 Oct 2007 17:09:20 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Icedove 1.5.0.12 (X11/20070606)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, borntraeger@de.ibm.com
-Subject: Re: [PATCH] clear PF_VCPU in kvm_guest_exit()
-References: <47135D1B.1060004@bull.net> <11926264852739-git-send-email-Laurent.Vivier@bull.net> <4716192E.7040402@qumranet.com>
-In-Reply-To: <4716192E.7040402@qumranet.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/10/2007 17:16:23,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 17/10/2007 17:16:25,
-	Serialize complete at 17/10/2007 17:16:25
+	Wed, 17 Oct 2007 11:12:03 -0400
+Subject: Re: [RT] seqlocks: use of PICK_FUNCTION breaks kernel compile when
+	CONFIG_GENERIC_TIME is NOT set
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1192632502.17527.129.camel@imap.mvista.com>
+References: <1192632502.17527.129.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 11:10:35 -0400
+Message-Id: <1192633836.8265.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Laurent Vivier wrote:
->> clear PF_VCPU in kvm_guest_exit() and move kvm_guest_exit() after 
->> local_irq_enable().
->>
->> According comments from Avi, we can clear PF_VCPU in kvm_guest_exit if we move 
->> it after local_irq_enable().
->>
->> http://lkml.org/lkml/2007/10/15/114
->>
->> To simplify s390 port, we don't clear it in account_system_time().
->>
->> http://lkml.org/lkml/2007/10/15/183
->>
->> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
->> ---
->>  drivers/kvm/kvm.h      |    1 +
->>  drivers/kvm/kvm_main.c |    3 ++-
->>  kernel/sched.c         |    1 -
->>  3 files changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
->> index e9dbf67..e8b4902 100644
->> --- a/drivers/kvm/kvm.h
->> +++ b/drivers/kvm/kvm.h
->> @@ -677,6 +677,7 @@ static inline void kvm_guest_enter(void)
->>  
->>  static inline void kvm_guest_exit(void)
->>  {
->> +	current->flags &= ~PF_VCPU;
->>  }
->>   
+On Wed, 2007-10-17 at 07:48 -0700, Daniel Walker wrote:
+> Steven, 
 > 
-> 
-> Ingo already added this.
-> 
->>  
->>  static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
->> diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
->> index 87275be..a9db477 100644
->> --- a/drivers/kvm/kvm_main.c
->> +++ b/drivers/kvm/kvm_main.c
->> @@ -2194,12 +2194,13 @@ again:
->>  
->>  	kvm_x86_ops->run(vcpu, kvm_run);
->>  
->> -	kvm_guest_exit();
->>  	vcpu->guest_mode = 0;
->>  	local_irq_enable();
->>  
->>  	++vcpu->stat.exits;
->>  
->>   
-> 
-> Need a barrier() here.  Otherwise the compiler may reorder
-> "kvm_guest_exit();" and "++vcpu->stats.exits;", making kvm_guest_exit()
-> right after local_irq_enable().  If it inlines kvm_guest_exit(), and
-> further encodes it in one instruction (both likely) we get:
-> 
->          sti
->          andl $something, (something_else)
+> Could you include this patch, it was submitted on the list but you
+> didn't get CC'd ..
 
-For the moment it is:
+Thanks, it may have been a while before I see this (/me has been nose
+deep in debugging).
 
-    5676:       fb                      sti
-    5677:       48 8b 85 f8 fe ff ff    mov    0xfffffffffffffef8(%rbp),%rax
-    567e:       8b 80 10 0c 00 00       mov    0xc10(%rax),%eax
-    5684:       8d 50 01                lea    0x1(%rax),%edx
-    5687:       48 8b 85 f8 fe ff ff    mov    0xfffffffffffffef8(%rbp),%rax
-    568e:       89 90 10 0c 00 00       mov    %edx,0xc10(%rax)
-    5694:       65 48 8b 04 25 00 00    mov    %gs:0x0,%rax
-    569b:       00 00
-    569d:       48 89 45 a8             mov    %rax,0xffffffffffffffa8(%rbp)
-    56a1:       48 8b 45 a8             mov    0xffffffffffffffa8(%rbp),%rax
-    56a5:       48 89 45 b0             mov    %rax,0xffffffffffffffb0(%rbp)
-    56a9:       48 8b 45 b0             mov    0xffffffffffffffb0(%rbp),%rax
-    56ad:       48 89 c2                mov    %rax,%rdx
-    56b0:       8b 42 14                mov    0x14(%rdx),%eax
-    56b3:       83 e0 ef                and    $0xffffffffffffffef,%eax
-    56b6:       89 42 14                mov    %eax,0x14(%rdx)
+> > On Tue, 2007-10-16 at 10:35 +0200, Remy Bohmer wrote:
+> > > Hello Daniel and Ingo,
+> > > 
+> > > I use 2.6.23-rt1 and the patch of Daniel below which seems to be in
+> > > there breaks the compilation of the RT-kernel when CONFIG_GENERIC_TIME
+> > > is NOT set.
+> > > 
+> > > It breaks in the do_gettimeofday(struct timeval *tv) code in the
+> > > architecture specific code
+> > > where there is a call to: seq = read_seqbegin_irqsave(&xtime_lock, flags);
+> > > The PICK_FUNCTION implementation does not return anything, so the
+> > > compile breaks here.
+> > > 
+> > > I am figuring out how to solve this problem nicely, but I have not
+> > > found a nice solution yet. Attached I have put my hack to make it
+> > > compile on ARM again, but maybe one of you can do a better proposal to
+> > > fix this.
+> > 
+> > Here's another fix for this. I compile tested for ARM (!GENERIC_TIME) ,
+> > but I didn't boot test .. Could you boot test this patch?
+> > 
+> > ---
+> > 
+> > Move the read_seqbegin() call up in the chain so the value 
+> > can be returned
+> > 
+> > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> > 
+> > ---
+> >  include/linux/seqlock.h |    7 +++----
+> >  1 file changed, 3 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6.23/include/linux/seqlock.h
+> > ===================================================================
+> > --- linux-2.6.23.orig/include/linux/seqlock.h
+> > +++ linux-2.6.23/include/linux/seqlock.h
+> > @@ -285,21 +285,20 @@ unsigned long __read_seqbegin_irqsave_ra
+> >  	unsigned long flags;
+> >  
+> >  	local_irq_save(flags);
+> > -	__read_seqbegin_raw(sl);
+> >  	return flags;
+> >  }
+> >  
+> >  static __always_inline unsigned long __read_seqbegin_irqsave(seqlock_t *sl)
+> >  {
+> > -	__read_seqbegin(sl);
+> >  	return 0;
+> >  }
 
-So I think it is out of the interrupt shadow... but you're right I will resend
-the patch adding barrier() (because in futur gcc can behave differently),
-removing the part already added by Ingo and copying kvm-devel.
+The above should be renamed. They have nothing to do with seqlocks now.
 
-> The andl executes in interrupt shadow (that is, interrupts are still
-> disabled) and the timer tick won't see PF_VCPU.
-> 
->> +	kvm_guest_exit();
->> +
->>  	preempt_enable();
->>  
->>  	/*
->>   
-> 
-> 
-> Please copy kvm-devel on kvm patches.
-> 
+> >  
+> >  #define read_seqbegin_irqsave(lock, flags)			\
+> > -do {								\
+> > +({								\
+> >  	flags = PICK_SEQ_OP_RET(__read_seqbegin_irqsave_raw,	\
+> >  		__read_seqbegin_irqsave, lock);			\
+> > -} while (0)
+> > +	read_seqbegin(lock);					\
+> > +})
 
-Laurent
--- 
----------------- Laurent.Vivier@bull.net  -----------------
-"Given enough eyeballs, all bugs are shallow" E. S. Raymond
+Yes, definitely the raw and unraw functions should be called
+local_irqsave_raw or something else that makes this obvious to what it
+is doing.
+
+-- Steve
+
+
