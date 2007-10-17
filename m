@@ -1,49 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbXJQXnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbXJRABi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762202AbXJQXnh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbXJQXn3
+	id S1760833AbXJRABi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXJRABa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:43:29 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:54052 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755902AbXJQXn2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:43:28 -0400
-Date: Wed, 17 Oct 2007 16:43:39 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] kbuild: filter out .tmp_* in find_sources
-In-reply-to: <200710160028.06468.yinghai.lu@sun.com>
-To: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200710171643.40345.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200710160028.06468.yinghai.lu@sun.com>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Wed, 17 Oct 2007 20:01:30 -0400
+Received: from mga02.intel.com ([134.134.136.20]:22323 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758006AbXJRAB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:01:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,291,1188802800"; 
+   d="scan'208";a="249599172"
+Date: Wed, 17 Oct 2007 16:54:16 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 2/4] Fix PCIe hotplug for non-ACPI
+ ExpressCard slots (version 2)
+Message-Id: <20071017165416.3099059b.kristen.c.accardi@intel.com>
+In-Reply-To: <47156B62.3070807@rtr.ca>
+References: <4714C0A6.1030204@rtr.ca>
+	<4714D700.7060008@rtr.ca>
+	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
+	<47150565.5090102@rtr.ca>
+	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
+	<47150982.6050102@rtr.ca>
+	<471509FE.7080505@rtr.ca>
+	<47151191.40406@rtr.ca>
+	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>
+	<4715217D.2000803@rtr.ca>
+	<20071016214143.GC21815@kroah.com>
+	<471533AF.60100@rtr.ca>
+	<47156B14.2080608@rtr.ca>
+	<47156B40.4060006@rtr.ca>
+	<47156B62.3070807@rtr.ca>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] kbuild: filter out .tmp_* in find_sources
+On Tue, 16 Oct 2007 21:54:42 -0400
+Mark Lord <lkml@rtr.ca> wrote:
 
-remove .tmp_kallsyms*.S in cscope.files
+> Fix pciehp_probe() to deal with pre-inserted ExpressCard cards,
+> but only when pciehp_force==1.  Otherwise behaviour is unmodified.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+I think it would be ok to try allowing the slot to be enabled when not
+using pciehp_force mode.  We can wrap it later if it proves to break 
+things, however, see my comment below:
 
-diff --git a/Makefile b/Makefile
-index 529b904..a793511 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1341,7 +1341,7 @@ define find-sources
- 	  find $(__srctree)include/asm-generic $(RCS_FIND_IGNORE) \
- 	       -name $1 -print; \
- 	  find $(__srctree) $(RCS_FIND_IGNORE) \
--	       \( -name include -o -name arch \) -prune -o \
-+	       \( -name include -o -name arch -o -name '.tmp_*' \) -prune -o \
- 	       -name $1 -print; \
- 	  )
- endef
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> ---
+> --- old/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:14:44.000000000 -0400
+> +++ linux/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:16:36.000000000 -0400
+> @@ -37,7 +37,6 @@
+>  #include "pciehp.h"
+>  
+>  static void interrupt_event_handler(struct work_struct *work);
+> -static int pciehp_enable_slot(struct slot *p_slot);
+>  static int pciehp_disable_slot(struct slot *p_slot);
+>  
+>  static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
+> --- old/drivers/pci/hotplug/pciehp.h	2007-10-12 12:43:44.000000000 -0400
+> +++ linux/drivers/pci/hotplug/pciehp.h	2007-10-16 21:16:06.000000000 -0400
+> @@ -161,6 +161,7 @@
+>  extern int pciehp_unconfigure_device(struct slot *p_slot);
+>  extern void pciehp_queue_pushbutton_work(struct work_struct *work);
+>  int pcie_init(struct controller *ctrl, struct pcie_device *dev);
+> +int pciehp_enable_slot(struct slot *p_slot);
+>  
+>  static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
+>  {
+> --- old/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:14:44.000000000 -0400
+> +++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:15:56.000000000 -0400
+> @@ -477,7 +477,8 @@
+>  		rc = t_slot->hpc_ops->power_off_slot(t_slot);
+>  		if (rc)
+>  			goto err_out_free_ctrl_slot;
+> -	}
+> +	} else if (pciehp_force)
+> +		pciehp_enable_slot(t_slot);
+
+Here it seems like what you want to do just go ahead and try to call
+pciehp_enable_slot always, but check the return value.  If an adapter is
+not present, it will return -ENODEV, and then you can check to see if
+you have the ability to power off the slot, and try to power it off.
+Please fix CodingStyle issues too.
+
+>  
+>  	return 0;
+>  
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Splunk Inc.
+> Still grepping through log files to find problems?  Stop.
+> Now Search log events and configuration files using AJAX and a browser.
+> Download your FREE copy of Splunk now >> http://get.splunk.com/
+> _______________________________________________
+> Pcihpd-discuss mailing list
+> Pcihpd-discuss@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/pcihpd-discuss
+> 
