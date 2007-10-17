@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936266AbXJQDse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936588AbXJQDtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936266AbXJQDse (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXJQDsX
+	id S936588AbXJQDtB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936331AbXJQDsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:48:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59671 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753406AbXJQDsW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:48:22 -0400
-Date: Tue, 16 Oct 2007 20:48:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Fix to "All wake-up devices are disabled after suspend-to disk"
- isn't yet included in mainline
-Message-Id: <20071016204802.9036ad96.akpm@linux-foundation.org>
-In-Reply-To: <200710170439.30359.maximlevitsky@gmail.com>
-References: <200710170439.30359.maximlevitsky@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 23:48:46 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:47280 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754553AbXJQDsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 23:48:46 -0400
+Date: Wed, 17 Oct 2007 12:48:41 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Joe Perches <joe@perches.com>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       vgoyal@in.ibm.com, ebiederm@xmission.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] [275/2many] MAINTAINERS - KDUMP
+Message-ID: <20071017034840.GA28414@verge.net.au>
+References: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com> <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com> <20071017021902.GB6709@verge.net.au> <1192589134.9998.93.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192589134.9998.93.camel@localhost>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 04:39:30 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-
-> A while ago I asked on LKML about the problem of loosing all wake device capabilities, after a suspend to disk
-> (eg: I can't wake the system from keyboard if I suspend to disk and then to ram)
+On Tue, Oct 16, 2007 at 07:45:34PM -0700, Joe Perches wrote:
+> On Wed, 2007-10-17 at 11:19 +0900, Simon Horman wrote:
 > 
-> I was provided with the patch that fixes this problem completely.
-> The merge window is open, but I still don't see it in the kernel.
-> Due to changes it doesn't anymore apply to latest git.
+> > I take it that these changes got shelved or canned,
+> > as I still don't seem them in Linus' tree.
 > 
-> Was it missed?
+> I have all the changes kept up-to-date.
+> I still hope to get some variant into a future release.
+> 
+> > But just for the record, the file lists seem
+> > to be somewhat sort. I'm not sure exactly what the criteria is, but for
+> > starters, shouldn't all the architecture specific files that only
+> > contain kexec or kdump code be in there too?
+> 
+> If one of the maintainers, Vivek Goyal or Haren Myneni, cared
+> to improve the kdump list of files, I'd happily accept it.
 
-No, it's in Len's git tree.
+Understood. I'm happy to make a start on that.
+Do you have a criteria for including files.
+Are they files that only apply to KEXEC/KDUMP,
+or files that have KEXEC/KDUMP code and other code?
 
-Len's git-pull request from a few days ago didn't work, perhaps because I
-wanted to know if a recent -mm regression had been fixed and that hasn't
-been answered yet.  I assume that Len is offline.  Other acpi developers
-could presumably have answered that question but for some reason chose not to.
+> My maintainer entry for kdump is:
+> 
+> KDUMP
+> P:	Vivek Goyal
+> M:	vgoyal@in.ibm.com
+> P:	Haren Myneni
+> M:	hbabu@us.ibm.com
+> L:	kexec@lists.infradead.org
+> L:	linux-kernel@vger.kernel.org
+> W:	http://lse.sourceforge.net/kdump/
+> S:	Maintained
+> F:	Documentation/kdump
+> 
+> and if Eric Biederman wants to improve kexec:
+> 
+> KEXEC
+> P:	Eric Biederman
+> M:	ebiederm@xmission.com
+> W:	http://www.xmission.com/~ebiederm/files/kexec/
+> L:	linux-kernel@vger.kernel.org
+> L:	kexec@lists.infradead.org
+> S:	Maintained
+> F:	include/linux/kexec.h
+> F:	kernel/kexec.c
+> 
+> 
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
-I'm presently holding off 20-odd power management patches due to their
-dependency upon an acpi merge...
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
+
