@@ -1,79 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXJQR6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbXJQR6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbXJQR6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXJQR54
+	id S1756927AbXJQR6q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXJQR6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:57:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41210 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752134AbXJQR54 (ORCPT
+	Wed, 17 Oct 2007 13:58:36 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51039 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921AbXJQR6f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:57:56 -0400
-Date: Wed, 17 Oct 2007 10:56:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] block subsystem related crash with latest -git
-In-Reply-To: <20071017172932.GI15552@kernel.dk>
-Message-ID: <alpine.LFD.0.999.0710171053180.26902@woody.linux-foundation.org>
-References: <20071017154655.GA13394@elte.hu>
- <alpine.LFD.0.999.0710170929270.26902@woody.linux-foundation.org>
- <20071017165949.GF15552@kernel.dk> <20071017170804.GG15552@kernel.dk>
- <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk>
+	Wed, 17 Oct 2007 13:58:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+Date: Wed, 17 Oct 2007 11:57:50 -0600
+In-Reply-To: <200710171814.01717.borntraeger@de.ibm.com> (Christian
+	Borntraeger's message of "Wed, 17 Oct 2007 18:14:01 +0200")
+Message-ID: <m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christian Borntraeger <borntraeger@de.ibm.com> writes:
 
+> Eric,
+>
+> Am Dienstag, 16. Oktober 2007 schrieb Christian Borntraeger:
+>> Am Dienstag, 16. Oktober 2007 schrieb Eric W. Biederman:
+>> 
+>> > fs/buffer.c |    3 +++
+>> > 1 files changed, 3 insertions(+), 0 deletions(-)
+>> >  drivers/block/rd.c |   13 +------------
+>> >  1 files changed, 1 insertions(+), 12 deletions(-)
+>> 
+>> Your patches look sane so far. I have applied both patches, and the problem 
+>> seems gone. I will try to get these patches to our testers.
+>> 
+>> As long as they dont find new problems:
+>
+> Our testers did only a short test, and then they were stopped by problems with
+> reiserfs. At the moment I cannot say for sure if your patch caused this, but 
+> we got the following BUG
 
-On Wed, 17 Oct 2007, Jens Axboe wrote:
-> 
-> OK, it is fine, as long as the sglist is cleared initially. And I don't
-> think there's anyway around that, clearly I didn't think long enough
-> before including the memset() removal from Tomo.
+Thanks.
 
-Ok, I think that one-liner fixes the real bug.
+> ReiserFS: ram0: warning: Created .reiserfs_priv on ram0 - reserved for xattr
+> storage.
+> ------------[ cut here ]------------
+> kernel BUG at
+> /home/autobuild/BUILD/linux-2.6.23-20071017/fs/reiserfs/journal.c:1117!
+> illegal operation: 0001 [#1]
+> Modules linked in: reiserfs dm_multipath sunrpc dm_mod qeth ccwgroup vmur
+> CPU:    3    Not tainted
+> Process reiserfs/3 (pid: 2592, task: 77dac418, ksp: 7513ee88)
+> Krnl PSW : 070c3000 fb344380 (flush_commit_list+0x808/0x95c [reiserfs])
+>            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:3 PM:0
+> Krnl GPRS: 00000002 7411b5c8 0000002b 00000000
+>            7b04d000 00000001 00000000 76d1de00
+>            7513eec0 00000003 00000012 77f77680
+>            7411b608 fb343b7e fb34404a 7513ee50
+> Krnl Code: fb344374: a7210002           tmll    %r2,2
+>            fb344378: a7840004           brc     8,fb344380
+>            fb34437c: a7f40001           brc     15,fb34437e
+>           >fb344380: 5810d8c2           l       %r1,2242(%r13)
+>            fb344384: 5820b03c           l       %r2,60(%r11)
+>            fb344388: 0de1               basr    %r14,%r1
+>            fb34438a: 5810d90e           l       %r1,2318(%r13)
+>            fb34438e: 5820b03c           l       %r2,60(%r11)
+>
+>
+> Looking at the code, this really seems related to dirty buffers, so your patch
+> is the main suspect at the moment. 
 
-But I think the rest of your changes are simply bad.
+Sounds reasonable.
 
-The fix to block/ll_rw_block.c should likely be something like the 
-appended instead:
+>         if (!barrier) {
+>                 /* If there was a write error in the journal - we can't commit
+>                  * this transaction - it will be invalid and, if successful,
+>                  * will just end up propagating the write error out to
+>                  * the file system. */
+>                 if (likely(!retval && !reiserfs_is_journal_aborted (journal))) {
+>                         if (buffer_dirty(jl->j_commit_bh))
+> 1117---->                                BUG();
+>                         mark_buffer_dirty(jl->j_commit_bh) ;
+>                         sync_dirty_buffer(jl->j_commit_bh) ;
+>                 }
+>         }
 
- - remove the "memset()" you had added earlier. It's bogus. It cannot be 
-   the right thing. If the sg list wasn't initialized correctly much 
-   earlier, trying to initialize it late is pointless - it contains crap.
+Grr.  I'm not certain how to call that.
 
- - the old code was fine, but let's initialize "sg" to NULL to make it 
-   clear that the initial value of sg is pointless, and only "next_sg" 
-   matters (since sg had better be assigned from that).
+Given that I should also be able to trigger this case by writing to
+the block device through the buffer cache (to the write spot at the
+write moment) this feels like a reiserfs bug.  Although I feel
+screaming about filesystems that go BUG instead of remount read-only....
 
-Hmm?
+At the same time I increasingly don't think we should allow user space
+to dirty or update our filesystem metadata buffer heads.  That seems
+like asking for trouble.
 
-		Linus
+Did you have both of my changes applied?
+To init_page_buffer() and to the ramdisk_set_dirty_page?
 
----
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 9e3f3cc..54d974e 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1333,7 +1333,8 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
- 	 * for each bio in rq
- 	 */
- 	bvprv = NULL;
--	sg = next_sg = &sglist[0];
-+	sg = NULL;
-+	next_sg = &sglist[0];
- 	rq_for_each_segment(bvec, rq, iter) {
- 		int nbytes = bvec->bv_len;
- 
-@@ -1352,7 +1353,6 @@ new_segment:
- 			sg = next_sg;
- 			next_sg = sg_next(sg);
- 
--			memset(sg, 0, sizeof(*sg));
- 			sg->page = bvec->bv_page;
- 			sg->length = nbytes;
- 			sg->offset = bvec->bv_offset;
+I'm guessing it was the change to ramdisk_set_dirty_page....
+
+Eric
