@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761733AbXJQShq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXJQSlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761733AbXJQShq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 14:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757735AbXJQShX
+	id S1759330AbXJQSlG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 14:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbXJQSkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 14:37:23 -0400
-Received: from tanas.ca ([206.248.136.31]:53888 "EHLO mail.unchanged.net"
+	Wed, 17 Oct 2007 14:40:55 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:16502 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756015AbXJQShW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 14:37:22 -0400
-X-Greylist: delayed 677 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 14:37:22 EDT
+	id S1753131AbXJQSky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 14:40:54 -0400
+Date: Wed, 17 Oct 2007 20:40:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] block subsystem related crash with latest -git
+Message-ID: <20071017184049.GV15552@kernel.dk>
+References: <20071017154655.GA13394@elte.hu> <alpine.LFD.0.999.0710170929270.26902@woody.linux-foundation.org> <20071017165949.GF15552@kernel.dk> <20071017170804.GG15552@kernel.dk> <alpine.LFD.0.999.0710171022340.26902@woody.linux-foundation.org> <20071017180042.GP15552@kernel.dk> <alpine.LFD.0.999.0710171114320.26902@woody.linux-foundation.org> <alpine.LFD.0.999.0710171119250.26902@woody.linux-foundation.org>
 MIME-Version: 1.0
-Date: Wed, 17 Oct 2007 14:26:04 -0400
-From: Andrei Tanas <andrei@tanas.ca>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] kvm: Actually define =?UTF-8?Q?EFLG=5FIF=20used=20in=20commit=20a?=
- =?UTF-8?Q?d=36c=39=33=35c=34=39=36=33ee=35=35=37=37=32=31=30ba=34=37=34?=
- =?UTF-8?Q?=33=34c=37c=35=39aec=38=31fa?=
-Message-ID: <31718b2c56ed2d9dc58ac11c00e86bdc@localhost>
-User-Agent: RoundCube Webmail/0.1b
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710171119250.26902@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually define EFLG_IF used in commit
-ad6c935c4963ee5577210ba47434c7c59aec81fa
+On Wed, Oct 17 2007, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 17 Oct 2007, Linus Torvalds wrote:
+> > 
+> > So I think your change to use "sg_next()" only when you actually need a 
+> > next pointer is the correct one after all.
+> 
+> That still leaves the initialization issue. The link pointers need to all 
+> be initialized at SG allocation time (and not just the last one for the 
+> case where it's a linked entry).
+> 
+> And if you initialize them at allocation time, does an allocation ever get 
+> re-used without being free'd in between (if it does, you do indeed need to 
+> initialize the non-link pointers each time - but I don't see it being the 
+> case, so ..)
 
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index e974ace..ff00dc9 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -225,6 +225,7 @@ static u16 twobyte_table[256] = {
- /* EFLAGS bit definitions. */
- #define EFLG_OF (1<<11)
- #define EFLG_DF (1<<10)
-+#define EFLG_IF (1<<9)
- #define EFLG_SF (1<<7)
- #define EFLG_ZF (1<<6)
- #define EFLG_AF (1<<4)
+The links will not change, so reuse should actually be OK. The reuse
+cannot be larger than the original would hold, but that would be a bug
+without chaining as well of course.
 
+WRT reuse, if we end up requeuing a request, than we will go through the
+whole thing again. I don't think Ingo is hitting that either, though.
+
+-- 
+Jens Axboe
 
