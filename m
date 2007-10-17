@@ -1,104 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbXJQTnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbXJQToK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760828AbXJQTnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbXJQTnJ
+	id S1759625AbXJQToK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbXJQTnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:43:09 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:45537 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXJQTnI (ORCPT
+	Wed, 17 Oct 2007 15:43:55 -0400
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:41740 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753535AbXJQTny (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:43:08 -0400
-Message-ID: <471663F4.9030403@freescale.com>
-Date: Wed, 17 Oct 2007 14:35:16 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Wed, 17 Oct 2007 15:43:54 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 15:43:54 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=5ZuZ2jzReo7iOU1jNqRhSa7CnmKFMkLi0CnZLN2kHhEGpNmE4vlTRL2I3vIt1niamH4+fOUp7H37ewq87D1QDWRU5B5f933CohlKkFBKMmukp74rPejyxhqBF2nX6pR7kH+9fwpckUr6NzRUH1q3yg4Z/ntlugFECL4tSb0VUZU=  ;
+X-YMail-OSG: cmdu8LMVM1n9_XuL4.Zit5GGsb7QFk2Z41Skb53R11_WtJZ_Xy3pCPcXat3yo8s4mw9c3NIRgA--
+Date: Wed, 17 Oct 2007 12:37:13 -0700
+From: David Brownell <david-b@pacbell.net>
+To: linux-kernel@vger.kernel.org, drzeus-list@drzeus.cx
+Subject: Re: mmc_spi stopped working
+References: <20071017211923.31fde15e@poseidon.drzeus.cx>
+In-Reply-To: <20071017211923.31fde15e@poseidon.drzeus.cx>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-CC: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
-       linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
-       Carsten Juttner <carjay@gmx.net>
-Subject: Re: [PATCH take2] [POWERPC] i2c: adds support for i2c bus on 8xx
-References: <47134A94.60606@scram.de> <20071015183107.GA4361@loki.buserror.net> <47166085.1010608@scram.de>
-In-Reply-To: <47166085.1010608@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jochen Friedrich wrote:
->>> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts 
->>> b/arch/powerpc/boot/dts/mpc885ads.dts
->>> index 8848e63..a526c02 100644
->>> --- a/arch/powerpc/boot/dts/mpc885ads.dts
->>> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
->>> @@ -213,6 +213,15 @@
->>>                  fsl,cpm-command = <0080>;
->>>                  linux,network-index = <2>;
->>>              };
->>> +
->>> +            i2c@860 {
->>> +                device_type = "i2c";
->>>     
->>
->> No device_type.
->>   
-> 
-> Why? Documentation/powerpc/booting-without-of.txt says for I2C interfaces
-> device_type is required and should be "i2c". Is this no longer true?
+> I just tried out mmc_spi on Linux HEAD and it no longer works. :/
 
-booting-without-of.txt should be changed.
+I noticed that too.  I've got a patch for one bug (appended), and
+will be looking at a fix for the second.
 
->> Should be fsl,cpm-i2c.  Is cpm2 i2c the same?  If not, it should be
->> fsl,cpm1-i2c.  It's probably best to specify it anyway, along with
->> fsl,mpc885-i2c.
-> 
-> CPM2 i2c seems to be the same. However, i have no way to test this.
 
-OK, let's make the compatible "fsl,mpc885-i2c", "fsl,cpm1-i2c", 
-"fsl,cpm-i2c".
+> It seems to be caused by changes in the SPI core on how to handled bus
+> sharing. All I'm getting in dmesg is this:
+>
+> [17179577.832000] mmc_spi spi1.0: can't share SPI bus
+> [17179577.836000] mmc_spi: probe of spi1.0 failed with error -31
 
-For now, match on the last one, but if any differences pop up, we have 
-the more specific ones.
+That issue is 49dce689ad4ef0fd1f970ef762168e4bd46f69a3, the
+classdev-elimination patch from Tony Jones.  It broke the
+"does this bus have more than one device" test by relocating
+the relevant sysfs nodes.
 
-> I noticed cpm1_set_pin32, but this function don't seem to set the
-> odr register. Will this be added? Then it would be:
-> 
->     {CPM_PORTB, 26, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
->     {CPM_PORTB, 27, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
-> 
+Quick workaround for that one is to disable the fault return
+after that test.
 
-Ah, missed that -- there's opendrain support for port E, but I missed 
-that port B had it as well.  Feel free to add it.
+- Dave
 
->> It's a 7-bit address...  and are you sure that 0x7e is unique?  Does this
->> driver even support slave operation?
-> 
-> It's in fact 0x7F << 1.
+==========	CUT HERE
+When enumerating MMC cards using SPI, don't support the "just probe"
+mechanism since it doesn't always work.  Instead, always wait for the
+reset to complete before issuing the next request.
 
-Gah, I hate powerpc bit numbering, especially without the 
-numbered-as-if-64-bit hack.  I specifically looked at the manual before 
-to see if it was shifted, saw "0-6", and concluded it wasn't. :-P
+This is a regression ... this SanDisk MMC card used to enumerate with
+no trouble, despite this particular spec violation.
 
-> The same value is used in the 2.4 driver and
-> in u-boot, as well.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-That doesn't mean that this isn't a good time to review what the code is 
-doing. :-)
-
-> Slave operation is not supported.
-
-If slave operation isn't supported, how is this value used?
-
->> Why is an 8xx driver matching all i2c cpm (i.e. what about cpm2)?
-> 
-> With the suggested change to use fsl,cpm-command, the driver should
-> be able to use  both cpm1 and cpm2. The operation and structs for i2c
-> are identical. The only difference might be the hack^wsupport for
-> relocation.
-
-OK.  Would that allow it to become one driver, rather than a wrapper and 
-an algorithm?
-
--Scott
+--- a/drivers/mmc/core/mmc_ops.c	2007-10-13 17:44:43.000000000 -0700
++++ b/drivers/mmc/core/mmc_ops.c	2007-10-16 18:54:38.000000000 -0700
+@@ -115,8 +115,11 @@ int mmc_send_op_cond(struct mmc_host *ho
+ 		if (err)
+ 			break;
+ 
+-		/* if we're just probing, do a single pass */
+-		if (ocr == 0)
++		/* if we're just probing, do a single pass ... except,
++		 * accomodate cards which don't behave right until a
++		 * SPI reset completes.
++		 */
++		if (ocr == 0 && !mmc_host_is_spi(host))
+ 			break;
+ 
+ 		/* otherwise wait until reset completes */
