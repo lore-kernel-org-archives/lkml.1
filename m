@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbXJQTNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbXJQTPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932591AbXJQTNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXJQTNp
+	id S932911AbXJQTPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbXJQTPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:13:45 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:30027 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753755AbXJQTNo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:13:44 -0400
-X-IronPort-AV: i="4.21,290,1188792000"; 
-   d="scan'208"; a="41919709:sNHT86681266"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH try #4] Input/Joystick Driver: add support AD7142 joystick  driver
-Date: Wed, 17 Oct 2007 15:14:40 -0400
-User-Agent: KMail/1.9.5
-Cc: bryan.wu@analog.com, "Andrey Panin" <pazke@donpac.ru>,
-       "Roel Kluin" <12o3l@tiscali.nl>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <1192605120.7920.15.camel@roc-laptop> <20071017160702.3316fc24@hyperion.delvare>
-In-Reply-To: <20071017160702.3316fc24@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 15:15:06 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:50373 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756020AbXJQTPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:15:04 -0400
+Date: Wed, 17 Oct 2007 21:16:33 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Boaz Harrosh <bharrosh@panasas.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix kernel rebuild due to vsyscall fallout
+Message-ID: <20071017191633.GB11837@uranus.ravnborg.org>
+References: <4715F2E5.6000104@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710171514.40941.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 17 Oct 2007 19:13:42.0573 (UTC) FILETIME=[D4F025D0:01C810F1]
+In-Reply-To: <4715F2E5.6000104@panasas.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 17 Oct 2007 10:07, Jean Delvare pondered:
-> Hi Bryan,
-> 
-> On Wed, 17 Oct 2007 15:12:00 +0800, Bryan Wu wrote:
-> > Subject: [PATCH try #4] Input/Joystick Driver: add support AD7142
-> joystick driver
-> > +#define AD7142_I2C_ADDR		0x2C
-> 
-> Not worth a define IMHO, as you use it only once and the context is
-> completely clear.
+Fix rebuild of kernel when there is no changes.
+This happened for i386.
+Using make V=2 hinted that the output files were
+not assigned to targets - fixed by this patch.
 
-> > +static int ad7142_probe(struct i2c_adapter *adap, int addr, int kind)
-> > +{
-> > +	struct ad7142_data *data;
-> > +	struct i2c_client *client;
-> > +	struct input_dev *input_dev;
-> > +	int rc;
-> > +
-> > +	data = kzalloc(sizeof(struct ad7142_data), GFP_KERNEL);
-> > +	if (!data)
-> > +		return -ENOMEM;
-> > +
-> > +	client = &data->client;
-> > +
-> > +	strlcpy(client->name, AD7142_DRV_NAME, I2C_NAME_SIZE);
-> > +	client->addr = addr;
-> > +	client->adapter = adap;
-> > +	client->driver = &ad7142_driver;
-> > +
-> 
-> This is unsafe: you're not doing any kind of detection here. 
+Reported by: Boaz Harrosh <bharrosh@panasas.com>
 
-I assume that in order to do things "right", all possible addresses should be 
-probed (for this part, that is 0x2C, 0x2D, 0x2E, 0x2F)?
-
-And it should read a device ID (register 0x17 == 0xE62n (where n==rev number))
-
-How many values/registers do you need to read before you say "this is the 
-one"? rather than a temp sensor with a similar value somewhere. Is there a 
-table anywhere that maps this out?
-
-It is pretty difficult just to probe on reset values, since that disallows 
-warm resets. This part - like most other I2C parts, has no external reset, 
-only software reset.
-
-> The risk is mitigated by the fact
-> that your driver is currently built for Blackfin only, but this might
-> change in the future. 
-
-The hope is that others can use it - it shouldn't be specific to Blackfin.
-
-> This is a very good reason to switch to a 
-> new-style i2c driver.
-> 
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+index 7ff0206..a3fa11f 100644
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -51,7 +51,7 @@ obj-$(CONFIG_SCx200)		+= scx200_32.o
+ # We must build both images before we can assemble it.
+ # Note: kbuild does not track this dependency due to usage of .incbin
+ $(obj)/vsyscall_32.o: $(obj)/vsyscall-int80_32.so $(obj)/vsyscall-sysenter_32.so
+-targets += $(foreach F,int80 sysenter,vsyscall-$F.o vsyscall-$F.so)
++targets += $(foreach F,int80 sysenter,vsyscall-$F_32.o vsyscall-$F_32.so)
+ targets += vsyscall-note_32.o vsyscall_32.lds
+ 
+ # The DSO images are built using a special linker script.
