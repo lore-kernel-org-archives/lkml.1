@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933915AbXJQOtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932724AbXJQOww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933915AbXJQOtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 10:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbXJQOtP
+	id S932724AbXJQOww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 10:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757693AbXJQOwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 10:49:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43872 "EHLO e4.ny.us.ibm.com"
+	Wed, 17 Oct 2007 10:52:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41071 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932119AbXJQOtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 10:49:13 -0400
-Date: Wed, 17 Oct 2007 20:30:56 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
+	id S1754988AbXJQOwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 10:52:39 -0400
+Date: Wed, 17 Oct 2007 16:52:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -21,89 +21,55 @@ Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
        Srivatsa Vaddagiri <vatsa@in.ibm.com>, Mike Galbraith <efault@gmx.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>
 Subject: Re: [BUG] 2.6.23-git8 kernel oops at __rb_rotate_left+0x7/0x70
-Message-ID: <20071017150056.GA28135@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <47144B4F.3050108@linux.vnet.ibm.com> <20071017142140.GA8634@elte.hu>
-Mime-Version: 1.0
+Message-ID: <20071017145226.GA21676@elte.hu>
+References: <47144B4F.3050108@linux.vnet.ibm.com> <20071017142140.GA8634@elte.hu> <20071017150056.GA28135@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017142140.GA8634@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071017150056.GA28135@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 04:21:40PM +0200, Ingo Molnar wrote:
-> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+
+> On Wed, Oct 17, 2007 at 04:21:40PM +0200, Ingo Molnar wrote:
+> > * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > 
+> > > While running kernbench with the 2.6.23-git8 following oops is 
+> > > produced
+> > 
+> > Dmitry found something that might explain the crash: could you check 
+> > whether the patch below fixes it?
 > 
-> > While running kernbench with the 2.6.23-git8 following oops is 
-> > produced
+> > this should fix the put_prev_task crashes that were reported,
+> > Dmitry Adamushko noticed that it's not valid to call into
+> > task_new_fair() if this_cpu != task_cpu(p).
 > 
-> Dmitry found something that might explain the crash: could you check 
-> whether the patch below fixes it?
+> I don't see a fundamental reason why it would be invalid to call 
+> task_new_fair() when this_cpu != task_cpu(p). Besides, calling 
+> activate_task->enqueue_task->enqueue_task_fair() on a new born task 
+> (as is being done in the patch you have sent) is slightly buggy in the 
+> sense that its p->se.vruntime is not properly calculated (because we 
+> set wakeup argument as 0).
 
-> this should fix the put_prev_task crashes that were reported,
-> Dmitry Adamushko noticed that it's not valid to call into
-> task_new_fair() if this_cpu != task_cpu(p).
+yes - i pointed this out in a separate mail.
 
-I don't see a fundamental reason why it would be invalid to call
-task_new_fair() when this_cpu != task_cpu(p). Besides, calling 
-activate_task->enqueue_task->enqueue_task_fair() on a new born task (as
-is being done in the patch you have sent) is slightly buggy in the sense that 
-its p->se.vruntime is not properly calculated (because we set wakeup argument 
-as 0).
+> We (myself, Kamalesh and Dhaval) have tested the patch below, w/o 
+> being able to recreate the problem. The patch allows for 
+> task_new_fair() to be called even for the case when child is being 
+> added to another cpu's runqueue.
 
-We (myself, Kamalesh and Dhaval) have tested the patch below, w/o being
-able to recreate the problem. The patch allows for task_new_fair() to be
-called even for the case when child is being added to another cpu's
-runqueue.
+yes, and your fix is the better one, it goes into the next batch of 
+fixes.
 
---
-
-Child task may be added on a different cpu that the one on which parent
-is running. In which case, task_new_fair() should check whether the new
-born task's parent entity should be added as well on the cfs_rq.
-
-Patch below fixes the problem in task_new_fair.
-
-Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-
-
----
- kernel/sched.c      |    2 +-
- kernel/sched_fair.c |    6 +-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
-
-Index: current/kernel/sched.c
-===================================================================
---- current.orig/kernel/sched.c
-+++ current/kernel/sched.c
-@@ -1712,7 +1712,7 @@ void fastcall wake_up_new_task(struct ta
- 
- 	p->prio = effective_prio(p);
- 
--	if (!p->sched_class->task_new || !current->se.on_rq || !rq->cfs.curr) {
-+	if (!p->sched_class->task_new || !current->se.on_rq) {
- 		activate_task(rq, p, 0);
- 	} else {
- 		/*
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -1031,12 +1031,8 @@ static void task_new_fair(struct rq *rq,
- 		swap(curr->vruntime, se->vruntime);
- 	}
- 
--	update_stats_enqueue(cfs_rq, se);
--	check_spread(cfs_rq, se);
--	check_spread(cfs_rq, curr);
--	__enqueue_entity(cfs_rq, se);
--	account_entity_enqueue(cfs_rq, se);
- 	se->peer_preempt = 0;
-+	enqueue_task_fair(rq, p, 0);
- 	resched_task(rq->curr);
- }
- 
--- 
-Regards,
-vatsa
+	Ingo
