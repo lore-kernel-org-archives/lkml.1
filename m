@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932844AbXJQL1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXJQL21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932844AbXJQL1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758984AbXJQL1P
+	id S1763430AbXJQL21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXJQL2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:27:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56132 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754652AbXJQL1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:27:14 -0400
-Date: Wed, 17 Oct 2007 04:27:09 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: ego@in.ibm.com, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, vatsa@in.ibm.com, rusty@rustcorp.com.au,
-       dipankar@in.ibm.com, oleg@tv-sign.ru, mingo@elte.hu, paulmck@us.ibm.com
-Subject: Re: [RFC PATCH 1/4] Refcount Based Cpu-Hotplug Implementation
-Message-Id: <20071017042709.02525cbd.pj@sgi.com>
-In-Reply-To: <20071017035327.ff1ed622.pj@sgi.com>
-References: <20071016103308.GA9907@in.ibm.com>
-	<20071016103417.GA16570@in.ibm.com>
-	<20071017035327.ff1ed622.pj@sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 07:28:17 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:11783 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754652AbXJQL2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:28:15 -0400
+Date: Wed, 17 Oct 2007 13:27:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+Message-ID: <20071017112747.GZ5043@kernel.dk>
+References: <20071017110142.GU5043@kernel.dk> <20071017.041004.21594558.davem@davemloft.net> <20071017111146.GW5043@kernel.dk> <20071017.041823.48807727.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017.041823.48807727.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the following patch, the four cpu hotplug patches by
-Gautham R Shenoy boot successfully on my sn2_defconfig ia64
-SN2 Altix system.
+On Wed, Oct 17 2007, David Miller wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Wed, 17 Oct 2007 13:11:46 +0200
+> 
+> > On Wed, Oct 17 2007, David Miller wrote:
+> > > Jens, please also add the following on top of Fujita-san's most recent
+> > > sparc64 patch and we should be good to go.
+> > 
+> > Awesome, thanks. And sorry for messing up sparc64.
+> 
+> Don't worry, I'll keep breaking your network interfaces
+> just to keep things even :-)
 
-This patch moves the cpu_hotplug_init() code outside of the
-#ifdef CONFIG_HOTPLUG_CPU code.
-
-I will confess to being confused however as to the best way
-to handle this.  Having "cpu_hotplug_init" be a piece of code
-that has to execute whether or not CONFIG_HOTPLUG_CPU is
-enabled doesn't seem right.
-
-Signed-off-by: Paul Jackson <pj@sgi.com>
-
----
-
- include/linux/cpu.h |    3 +--
- kernel/cpu.c        |    4 ++--
- 2 files changed, 3 insertions(+), 4 deletions(-)
-
---- 2.6.23-mm1.orig/include/linux/cpu.h	2007-10-17 03:59:59.529623639 -0700
-+++ 2.6.23-mm1/include/linux/cpu.h	2007-10-17 04:03:56.257223754 -0700
-@@ -83,6 +83,7 @@ static inline void unregister_cpu_notifi
- 
- #endif /* CONFIG_SMP */
- extern struct sysdev_class cpu_sysdev_class;
-+extern void cpu_hotplug_init(void);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- /* Stop CPUs going up and down. */
-@@ -97,7 +98,6 @@ static inline void cpuhotplug_mutex_unlo
- 	mutex_unlock(cpu_hp_mutex);
- }
- 
--extern void cpu_hotplug_init(void);
- extern void get_online_cpus(void);
- extern void put_online_cpus(void);
- #define hotcpu_notifier(fn, pri) {				\
-@@ -117,7 +117,6 @@ static inline void cpuhotplug_mutex_lock
- static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
- { }
- 
--#define cpu_hotplug_init()		do { } while (0)
- #define get_online_cpus()		do { } while (0)
- #define put_online_cpus()		do { } while (0)
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
---- 2.6.23-mm1.orig/kernel/cpu.c	2007-10-17 03:59:59.873628872 -0700
-+++ 2.6.23-mm1/kernel/cpu.c	2007-10-17 04:04:52.522079165 -0700
-@@ -38,8 +38,6 @@ static struct {
- 
- #define writer_exists() (cpu_hotplug.active_writer != NULL)
- 
--#ifdef CONFIG_HOTPLUG_CPU
--
- void __init cpu_hotplug_init(void)
- {
- 	cpu_hotplug.active_writer = NULL;
-@@ -48,6 +46,8 @@ void __init cpu_hotplug_init(void)
- 	init_completion(&cpu_hotplug.readers_done);
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+
- void get_online_cpus(void)
- {
- 	might_sleep();
-
+It's a deal - I think I'm ahead so far, so I promise to smile politely
+when/if my networking craps out :)
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Jens Axboe
+
