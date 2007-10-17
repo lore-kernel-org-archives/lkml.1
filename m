@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936588AbXJQDtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936342AbXJQD41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936588AbXJQDtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936331AbXJQDsq
+	id S936342AbXJQD41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXJQD4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:48:46 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:47280 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754553AbXJQDsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:48:46 -0400
-Date: Wed, 17 Oct 2007 12:48:41 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Joe Perches <joe@perches.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       vgoyal@in.ibm.com, ebiederm@xmission.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] [275/2many] MAINTAINERS - KDUMP
-Message-ID: <20071017034840.GA28414@verge.net.au>
-References: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com> <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com> <20071017021902.GB6709@verge.net.au> <1192589134.9998.93.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1192589134.9998.93.camel@localhost>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Tue, 16 Oct 2007 23:56:19 -0400
+Received: from alnrmhc11.comcast.net ([204.127.225.91]:56326 "EHLO
+	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbXJQD4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 23:56:18 -0400
+Subject: Re: Boot Failure with 2.6.23-rc10
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <47157C4B.2000502@googlemail.com>
+References: <1192589191.6732.11.camel@localhost>
+	 <47157C4B.2000502@googlemail.com>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 23:00:10 -0500
+Message-Id: <1192593610.7141.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 07:45:34PM -0700, Joe Perches wrote:
-> On Wed, 2007-10-17 at 11:19 +0900, Simon Horman wrote:
-> 
-> > I take it that these changes got shelved or canned,
-> > as I still don't seem them in Linus' tree.
-> 
-> I have all the changes kept up-to-date.
-> I still hope to get some variant into a future release.
-> 
-> > But just for the record, the file lists seem
-> > to be somewhat sort. I'm not sure exactly what the criteria is, but for
-> > starters, shouldn't all the architecture specific files that only
-> > contain kexec or kdump code be in there too?
-> 
-> If one of the maintainers, Vivek Goyal or Haren Myneni, cared
-> to improve the kdump list of files, I'd happily accept it.
+Thank you, that worked great.
 
-Understood. I'm happy to make a start on that.
-Do you have a criteria for including files.
-Are they files that only apply to KEXEC/KDUMP,
-or files that have KEXEC/KDUMP code and other code?
+Chris
 
-> My maintainer entry for kdump is:
-> 
-> KDUMP
-> P:	Vivek Goyal
-> M:	vgoyal@in.ibm.com
-> P:	Haren Myneni
-> M:	hbabu@us.ibm.com
-> L:	kexec@lists.infradead.org
-> L:	linux-kernel@vger.kernel.org
-> W:	http://lse.sourceforge.net/kdump/
-> S:	Maintained
-> F:	Documentation/kdump
-> 
-> and if Eric Biederman wants to improve kexec:
-> 
-> KEXEC
-> P:	Eric Biederman
-> M:	ebiederm@xmission.com
-> W:	http://www.xmission.com/~ebiederm/files/kexec/
-> L:	linux-kernel@vger.kernel.org
-> L:	kexec@lists.infradead.org
-> S:	Maintained
-> F:	include/linux/kexec.h
-> F:	kernel/kexec.c
-> 
-> 
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+On Wed, 2007-10-17 at 05:06 +0200, Gabriel C wrote:
+> Chris Holvenstot wrote:
+> > Greetings - 
+> 
+> Hi,
+> 
+> > 
+> > This is likely something I am doing wrong (or stupid) but I have run
+> > through the build process a couple of times with the same result.  
+> > 
+> > When booted, the following messages are displayed:
+> > 
+> > Linux  zimage kernel to big, try "make bzImage"
+> > 
+> > Error 28: Selected item can into fit into memory
+> > 
+> > I have tried the "make bzImage" and manually copied forward to /boot -
+> > no joy.
+> > 
+> 
+> If you use git just pull is already fixed if not get that patch :
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=7eebb9348655b55553d65fc7cb6cfad292d28dbb
+> 
+> 
+> Regards,
+> 
+> Gabriel
 
