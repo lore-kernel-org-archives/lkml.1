@@ -1,599 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbXJQHMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763273AbXJQHMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885AbXJQHMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXJQHML
+	id S1763273AbXJQHMj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbXJQHMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:12:11 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:45466 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbXJQHMI (ORCPT
+	Wed, 17 Oct 2007 03:12:24 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:56996 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755486AbXJQHMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:12:08 -0400
-X-IronPort-AV: i="4.21,288,1188792000"; 
-   d="scan'208"; a="41874062:sNHT51992367"
-Subject: [PATCH try #4] Input/Joystick Driver: add support AD7142 joystick
-	driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Andrey Panin <pazke@donpac.ru>, Roel Kluin <12o3l@tiscali.nl>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Jean Delvare <khali@linux-fr.org>
-Content-Type: text/plain
+	Wed, 17 Oct 2007 03:12:21 -0400
+Message-ID: <4715B5A5.9050005@linux.vnet.ibm.com>
+Date: Wed, 17 Oct 2007 12:41:33 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [BUG] 2.6.23-rc9 kernel panic - simple_map_write+0x4e/0x75
+References: <4710686C.8060603@linux.vnet.ibm.com> <20071016134620.7b3ce56f.akpm@linux-foundation.org>
+In-Reply-To: <20071016134620.7b3ce56f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Wed, 17 Oct 2007 15:12:00 +0800
-Message-Id: <1192605120.7920.15.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 17 Oct 2007 07:12:04.0833 (UTC) FILETIME=[05795510:01C8108D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH try #4] Input/Joystick Driver: add support AD7142 joystick driver
+Andrew Morton wrote:
+> On Sat, 13 Oct 2007 12:10:44 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> Kernel panic's with following oops message with 2.6.23-rc9 kernel 
+>>
+>> [  320.747257] ks0108: ERROR: parport didn't register new device
+>> [  320.771314] cfag12864b: ERROR: ks0108 is not initialized
+>> [  320.794308] cfag12864bfb: ERROR: cfag12864b is not initialized
+>> [  320.820729] BUG: unable to handle kernel paging request at virtual address
+>> bf000000
+>> [  320.857712]  printing eip:
+>> [  320.872556] *pde = 00000000
+>> [  320.887577] Oops: 0002 [#1]
+>> [  320.902383] SMP 
+>> [  320.914174] Modules linked in:
+>> [  320.929333] CPU:    0
+>> [  320.929334] EIP:    0060:[<c0d7e4e2>]    Not tainted VLI
+>> [  320.929335] EFLAGS: 00010286   (2.6.23-rc9-1 #1)
+>> [  320.982753] EIP is at simple_map_write+0x4e/0x75
+>> [  321.001956] eax: f0f0f0f0   ebx: c1de3f00   ecx: c1de3f00   edx: c1de3f00
+>> [  321.027701] esi: c3ca8d6c   edi: bf000000   ebp: c3ca8d98   esp: c3ca8d6c
+>> [  321.053322] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+>> [  321.075981] Process swapper (pid: 1, ti=c3ca8000 task=f7f44000 task.ti=c3ca8000)
+>> [  321.103031] Stack: f0f0f0f0 00000000 00000000 00000000 00000000 00000000
+>> 00000000 00000000 
+>> [  321.139446]        c3ca8e20 00000001 c3ca8e40 c3ca8e6c c0d692e6 f0f0f0f0
+>> 00000000 00000000 
+>> [  321.176495]        00000000 00000000 00000000 00000000 00000000 00000000
+>> 00000000 000050e6 
+>> [  321.214141] Call Trace:
+>> [  321.233922]  [<c0107dff>] show_trace_log_lvl+0x19/0x2e
+>> [  321.255433]  [<c0107ec1>] show_stack_log_lvl+0x99/0xa1
+>> [  321.276706]  [<c01080c4>] show_registers+0x1b8/0x290
+>> [  321.297254]  [<c01082f9>] die+0x118/0x1fd
+>> [  321.314920]  [<c145014a>] do_page_fault+0x51c/0x5f3
+>> [  321.335291]  [<c144e6da>] error_code+0x72/0x78
+>> [  321.354413]  [<c0d692e6>] cfi_probe_chip+0x148/0x9e1
+>> [  321.375202]  [<c0d7bb3e>] genprobe_new_chip+0x82/0x98
+>> [  321.396298]  [<c0d7b8dd>] genprobe_ident_chips+0x26/0x205
+>> [  321.418493]  [<c0d7b830>] mtd_do_chip_probe+0x10/0x97
+>> [  321.439654]  [<c0d6a29e>] cfi_probe+0xd/0xf
+>> [  321.458157]  [<c0d68d57>] do_map_probe+0x40/0x53
+>> [  321.477931]  [<c200d748>] init_pnc2000+0x3b/0x6d
+>> [  321.497559]  [<c1fa382c>] do_initcalls+0x7a/0x1c2
+>> [  321.517377]  [<c1fa3990>] do_basic_setup+0x1c/0x1e
+>> [  321.537327]  [<c1fa3a2c>] kernel_init+0x69/0xaa
+>> [  321.556311]  [<c0107c2b>] kernel_thread_helper+0x7/0x10
+>> [  321.577207]  =======================
+>> [  321.592882] Code: 83 f8 01 75 0a 03 7b 10 8b 45 d4 88 07 eb 35 83 f8 02 75 0c
+>> 0f b7 45 d4 03 7b 10 66 89 07 eb 24 83 f8 04 75 0a 03 7b 10 8b 45 d4 <89> 07 eb
+>> 15 7e 13 03 7b 10 89 c1 c1 e9 02 f3 a5 89 c1 83 e1 03 
+>> [  321.668990] EIP: [<c0d7e4e2>] simple_map_write+0x4e/0x75 SS:ESP 0068:c3ca8d6c
+>> [  321.695750] Kernel panic - not syncing: Attempted to kill init!
+> 
+> Would I be correct in assuming that the machine has no mtd devices, but
+> you happened to link that driver into your vmlinux?
+> 
 
-[try #2] Changelog:
- - Coding style issues fixed, passed checkpatch.pl
- - Kill uselss "ad7142_used"
- - Move request_irq to probe
- - Move i2c_check_functionality to probe
- - Error handling added
+Hi Andrew,
 
-[try #3] Changelog:
- - Use kzalloc
- - Use strlcpy
- - Use completion instead of wait queue
- - Move input_allocate_device and input_register_device to
-ad7142_probe()
- - Fix some issues pointed by LKML
-
-[try #4] Changelog:
- - Use workqueue instead of completion
- - Shutdown AD7142 in ad7142_close()
- - Remove input_unregister_device() in ad7142_exit()
-
-Cc: Andrey Panin <pazke@donpac.ru>
-Cc: Roel Kluin <12o3l@tiscali.nl>
-Cc: Ahmed S. Darwish <darwish.07@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/input/joystick/Kconfig  |   15 ++
- drivers/input/joystick/Makefile |    1 +
- drivers/input/joystick/ad7142.c |  485 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 501 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/joystick/ad7142.c
-
-diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
-index 7c662ee..5c8c8ca 100644
---- a/drivers/input/joystick/Kconfig
-+++ b/drivers/input/joystick/Kconfig
-@@ -282,4 +282,19 @@ config JOYSTICK_XPAD_LEDS
- 	  This option enables support for the LED which surrounds the Big X on
- 	  XBox 360 controller.
- 
-+config JOYSTICK_AD7142
-+	tristate "Analog Devices AD7142 Joystick support"
-+	depends on BFIN && I2C
-+	---help---
-+	  Say Y here if you want to support an AD7142 joystick
-+
-+config BFIN_JOYSTICK_IRQ_PFX
-+	int "GPIO for Interrupt"
-+	depends on (BFIN && JOYSTICK_AD7142)
-+	range 33 120
-+	default "55" if BFIN537_STAMP
-+	default "39" if BFIN533_STAMP
-+	---help---
-+	  Choose an GPIO as Keypad interrupt.[0..15]
-+
- endif
-diff --git a/drivers/input/joystick/Makefile b/drivers/input/joystick/Makefile
-index e855abb..8df388f 100644
---- a/drivers/input/joystick/Makefile
-+++ b/drivers/input/joystick/Makefile
-@@ -5,6 +5,7 @@
- # Each configuration option enables a list of files.
- 
- obj-$(CONFIG_JOYSTICK_A3D)		+= a3d.o
-+obj-$(CONFIG_JOYSTICK_AD7142)		+= ad7142.o
- obj-$(CONFIG_JOYSTICK_ADI)		+= adi.o
- obj-$(CONFIG_JOYSTICK_AMIGA)		+= amijoy.o
- obj-$(CONFIG_JOYSTICK_ANALOG)		+= analog.o
-diff --git a/drivers/input/joystick/ad7142.c b/drivers/input/joystick/ad7142.c
-new file mode 100644
-index 0000000..e5d2ccc
---- /dev/null
-+++ b/drivers/input/joystick/ad7142.c
-@@ -0,0 +1,485 @@
-+/*
-+ * File:         drivers/input/joystick/ad7142.c
-+ * Original Author: Aubrey Li
-+ * Maintained by: Bryan Wu <bryan.wu@analog.com>
-+ *
-+ * Created:      Apr 7th, 2006
-+ * Description:
-+ *
-+ * Modified:
-+ *               Copyright 2005-2007 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; see the file COPYING.
-+ * If not, write to the Free Software Foundation,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
-+#include <linux/i2c.h>
-+#include <linux/delay.h>
-+#include <linux/uaccess.h>
-+#include <linux/irq.h>
-+#include <linux/workqueue.h>
-+
-+#include <asm/blackfin.h>
-+
-+MODULE_AUTHOR("Aubrey Li, Bryan Wu <bryan.wu@analog.com>");
-+MODULE_DESCRIPTION("Driver for AD7142 Joysticks");
-+MODULE_LICENSE("GPL");
-+
-+#define AD7142_DRV_NAME		"ad7142_js"
-+#define AD7142_I2C_ID		0xE622
-+#define AD7142_I2C_ADDR		0x2C
-+/*
-+ * Ram map - these registers are defined as we go along
-+ */
-+/* RW   Power & conversion control */
-+#define PWRCONVCTL		0x00
-+
-+/* RW   Ambient compensation control register 0 - 3 */
-+#define AMBCOMPCTL_REG0		0x01
-+#define AMBCOMPCTL_REG1		0x02
-+#define AMBCOMPCTL_REG2		0x03
-+#define AMBCOMPCTL_REG3		0x04
-+
-+/* RW   Interrupt enable register 0 - 2 */
-+#define INTEN_REG0		0x05
-+#define INTEN_REG1		0x06
-+#define INTEN_REG2		0x07
-+
-+/* R    Low limit interrupt status register 0 */
-+#define INTSTAT_REG0		0x08
-+/* R    High limit interrupt status register 1 */
-+#define INTSTAT_REG1		0x09
-+/* R    Interrupt status register 2 */
-+#define INTSTAT_REG2		0x0A
-+
-+/* R    ADC stage 0 - 11 result (uncompensated) actually located in SRAM */
-+#define ADCRESULT_S0		0x0B
-+#define ADCRESULT_S1		0x0C
-+#define ADCRESULT_S2		0x0D
-+#define ADCRESULT_S3		0x0E
-+#define ADCRESULT_S4		0x0F
-+#define ADCRESULT_S5		0x10
-+#define ADCRESULT_S6		0x11
-+#define ADCRESULT_S7		0x12
-+#define ADCRESULT_S8		0x13
-+#define ADCRESULT_S9		0x14
-+#define ADCRESULT_S10		0x15
-+#define ADCRESULT_S11		0x16
-+
-+/* R    I.D. Register */
-+#define DEVID			0x17
-+
-+/* R    Current threshold status register 0, 1 */
-+#define THRES_STAT_REG0		0x40
-+#define THRES_STAT_REG1		0x41
-+/* R    Current proximity status register 2 */
-+#define PROX_STAT_REG		0x42
-+
-+#define STAGE0_CONNECTION	0x80
-+#define STAGE1_CONNECTION	0x88
-+#define STAGE2_CONNECTION	0x90
-+#define STAGE3_CONNECTION	0x98
-+#define STAGE4_CONNECTION	0xA0
-+#define STAGE5_CONNECTION	0xA8
-+#define STAGE6_CONNECTION	0xB0
-+#define STAGE7_CONNECTION	0xB8
-+#define STAGE8_CONNECTION	0xC0
-+#define STAGE9_CONNECTION	0xC8
-+#define STAGE10_CONNECTION	0xD0
-+#define STAGE11_CONNECTION	0xD8
-+
-+/*
-+ *	STAGE0: Button1   <----> CIN6(+)	Button2    <----> CIN5(-)
-+ *	STAGE1: Button3   <----> CIN4(-)	Button4    <----> CIN3(+)
-+ *	STAGE2: Axes.Left <----> CIN11(-)	Axes.Right <----> CIN13(+)
-+ *	STAGE3: Axes.Up   <----> CIN12(-)	Axes.Down  <----> CIN10(+)
-+ */
-+static unsigned short stage[5][8] = {
-+	{0xE7FF, 0x3FFF, 0x0005, 0x2626, 0x01F4, 0x01F4, 0x028A, 0x028A},
-+	{0xFDBF, 0x3FFF, 0x0001, 0x2626, 0x01F4, 0x01F4, 0x028A, 0x028A},
-+	{0xFFFF, 0x2DFF, 0x0001, 0x2626, 0x01F4, 0x01F4, 0x028A, 0x028A},
-+	{0xFFFF, 0x37BF, 0x0001, 0x2626, 0x01F4, 0x01F4, 0x028A, 0x028A},
-+	{0xFFFF, 0x3FFF, 0x0000, 0x0606, 0x01F4, 0x01F4, 0x0320, 0x0320},
-+};
-+
-+struct ad7142_data {
-+	struct input_dev *input_dev;
-+
-+	struct i2c_driver i2c_drv;
-+	struct i2c_client client;
-+
-+	struct work_struct work;
-+
-+	unsigned short old_status_low;
-+	unsigned short old_status_high;
-+};
-+
-+static unsigned short ignore[] = { I2C_CLIENT_END };
-+static unsigned short normal_addr[] = { AD7142_I2C_ADDR, I2C_CLIENT_END };
-+
-+static struct i2c_client_address_data addr_data = {
-+	.normal_i2c = normal_addr,
-+	.probe = ignore,
-+	.ignore = ignore,
-+};
-+
-+static int ad7142_attach(struct i2c_adapter *adap);
-+static int ad7142_detach(struct i2c_client *client);
-+
-+static struct i2c_driver ad7142_driver = {
-+	.driver = {
-+		.name = AD7142_DRV_NAME,
-+	},
-+	.id = AD7142_I2C_ID,
-+	.attach_adapter = ad7142_attach,
-+	.detach_client = ad7142_detach,
-+};
-+
-+static irqreturn_t ad7142_interrupt(int irq, void *_data)
-+{
-+	struct ad7142_data *data = _data;
-+
-+	schedule_work(&data->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int ad7142_i2c_write(struct i2c_client *client, unsigned short offset,
-+		unsigned short *data, unsigned int len)
-+{
-+	int ret = -1;
-+	int i;
-+	u8 block_data[34];
-+
-+	if (len < 1 || len > 16) {
-+		printk(KERN_ERR "AD7142: Write data length error\n");
-+		return ret;
-+	}
-+
-+	/* Do raw I2C, not smbus compatible */
-+	block_data[0] = (offset & 0xFF00) >> 8;
-+	block_data[1] = (offset & 0x00FF);
-+
-+	for (i = 0; i < len; i++) {
-+		block_data[2 * i + 2] = (*data & 0xFF00) >> 8;
-+		block_data[2 * i + 3] = *data++ & 0x00FF;
-+	}
-+
-+	ret = i2c_master_send(client, block_data, (len * 2 + 2));
-+	if (ret < 0) {
-+		printk(KERN_ERR "AD7142: I2C write error\n");
-+		return ret;
-+	}
-+
-+	return ret;
-+}
-+
-+static int ad7142_i2c_read(struct i2c_client *client, unsigned short offset,
-+		unsigned short *data, unsigned int len)
-+{
-+	int ret = -1;
-+	int i;
-+	u8 block_data[32];
-+
-+	if (len < 1 || len > 16) {
-+		printk(KERN_ERR "AD7142: read data length error\n");
-+		return ret;
-+	}
-+
-+	/* Do raw I2C, not smbus compatible */
-+	block_data[0] = (offset & 0xFF00) >> 8;
-+	block_data[1] = (offset & 0x00FF);
-+
-+	ret = i2c_master_send(client, block_data, 2);
-+	if (ret < 0) {
-+		printk(KERN_ERR "AD7142: I2C read error\n");
-+		return ret;
-+	}
-+
-+	ret = i2c_master_recv(client, block_data, len * 2);
-+	if (ret < 0) {
-+		printk(KERN_ERR "AD7142: I2C transfer error\n");
-+		return ret;
-+	}
-+
-+	for (i = 0; i < len; i++) {
-+		unsigned short temp;
-+		temp = block_data[2 * i];
-+		temp = (temp << 8) & 0xFF00;
-+		*data++ = temp | block_data[2 * i + 1];
-+	}
-+
-+	return ret;
-+}
-+
-+static void ad7142_work(struct work_struct *work)
-+{
-+	struct ad7142_data *data = container_of(work, struct ad7142_data, work);
-+	struct i2c_client *client = &data->client;
-+	struct input_dev *input_dev = data->input_dev;
-+	unsigned short irqno_low, irqno_high;
-+	unsigned short temp;
-+
-+	ad7142_i2c_read(client, INTSTAT_REG0, &irqno_low, 1);
-+	temp = irqno_low ^ data->old_status_low;
-+	switch (temp) {
-+	case 0x0001:
-+		input_report_key(input_dev, BTN_BASE, (irqno_low & 0x0001));
-+		break;
-+	case 0x0002:
-+		input_report_key(input_dev, BTN_BASE4,
-+					((irqno_low & 0x0002) >> 1));
-+		break;
-+	case 0x0004:
-+		input_report_key(input_dev, KEY_UP,
-+					((irqno_low & 0x0004) >> 2));
-+		break;
-+	case 0x0008:
-+		input_report_key(input_dev, KEY_RIGHT,
-+					((irqno_low & 0x0008) >> 3));
-+		break;
-+	}
-+	data->old_status_low = irqno_low;
-+
-+	ad7142_i2c_read(client, INTSTAT_REG1, &irqno_high, 1);
-+	temp = irqno_high ^ data->old_status_high;
-+	switch (temp) {
-+	case 0x0001:
-+		input_report_key(input_dev, BTN_BASE2, irqno_high & 0x0001);
-+		break;
-+	case 0x0002:
-+		input_report_key(input_dev, BTN_BASE3,
-+					((irqno_high & 0x0002) >> 1));
-+		break;
-+	case 0x0004:
-+		input_report_key(input_dev, KEY_DOWN,
-+					((irqno_high & 0x0004) >> 2));
-+		break;
-+	case 0x0008:
-+		input_report_key(input_dev, KEY_LEFT,
-+					((irqno_high & 0x0008) >> 3));
-+		break;
-+	}
-+	data->old_status_high = irqno_high;
-+
-+	input_sync(input_dev);
-+}
-+
-+static int ad7142_open(struct input_dev *dev)
-+{
-+	struct ad7142_data *data = input_get_drvdata(dev);
-+	struct i2c_client *client = &data->client;
-+	unsigned short id, value;
-+
-+	ad7142_i2c_read(client, DEVID, &id, 1);
-+	if (id != AD7142_I2C_ID) {
-+		printk(KERN_ERR "Open AD7142 error\n");
-+		return -ENODEV;
-+	}
-+
-+	ad7142_i2c_write(client, STAGE0_CONNECTION, stage[0], 8);
-+	ad7142_i2c_write(client, STAGE1_CONNECTION, stage[1], 8);
-+	ad7142_i2c_write(client, STAGE2_CONNECTION, stage[2], 8);
-+	ad7142_i2c_write(client, STAGE3_CONNECTION, stage[3], 8);
-+	ad7142_i2c_write(client, STAGE4_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE5_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE6_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE7_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE8_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE9_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE10_CONNECTION, stage[4], 8);
-+	ad7142_i2c_write(client, STAGE11_CONNECTION, stage[4], 8);
-+
-+	/* In full power mode */
-+	value = 0x00B0;
-+	ad7142_i2c_write(client, PWRCONVCTL, &value, 1);
-+
-+	value = 0x0690;
-+	ad7142_i2c_write(client, AMBCOMPCTL_REG1, &value, 1);
-+
-+	value = 0x0664;
-+	ad7142_i2c_write(client, AMBCOMPCTL_REG2, &value, 1);
-+
-+	value = 0x290F;
-+	ad7142_i2c_write(client, AMBCOMPCTL_REG3, &value, 1);
-+
-+	value = 0x000F;
-+	ad7142_i2c_write(client, INTEN_REG0, &value, 1);
-+	ad7142_i2c_write(client, INTEN_REG1, &value, 1);
-+
-+	value = 0x0000;
-+	ad7142_i2c_write(client, INTEN_REG2, &value, 1);
-+
-+	ad7142_i2c_read(client, AMBCOMPCTL_REG1, &value, 1);
-+
-+	value = 0x000F;
-+	ad7142_i2c_write(client, AMBCOMPCTL_REG0, &value, 1);
-+
-+	return 0;
-+}
-+
-+static void ad7142_close(struct input_dev *dev)
-+{
-+	struct ad7142_data *data = input_get_drvdata(dev);
-+	struct i2c_client *client = &data->client;
-+	unsigned short value;
-+
-+	flush_scheduled_work();
-+
-+	/*
-+	 * Turn AD7142 to full shutdown mode
-+	 * No CDC conversions
-+	 */
-+	value = 0x0001;
-+	ad7142_i2c_write(client, PWRCONVCTL, &value, 1);
-+}
-+
-+static int ad7142_probe(struct i2c_adapter *adap, int addr, int kind)
-+{
-+	struct ad7142_data *data;
-+	struct i2c_client *client;
-+	struct input_dev *input_dev;
-+	int rc;
-+
-+	data = kzalloc(sizeof(struct ad7142_data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	client = &data->client;
-+
-+	strlcpy(client->name, AD7142_DRV_NAME, I2C_NAME_SIZE);
-+	client->addr = addr;
-+	client->adapter = adap;
-+	client->driver = &ad7142_driver;
-+
-+	rc = i2c_attach_client(client);
-+	if (rc) {
-+		printk(KERN_ERR "i2c_attach_client fail: %d\n", rc);
-+		goto fail_attach;
-+	}
-+
-+	/*
-+	 * The ADV7142 has an autoincrement function,
-+	 * use it if the adapter understands raw I2C
-+	 */
-+	rc = i2c_check_functionality(client->adapter, I2C_FUNC_I2C);
-+	if (!rc) {
-+		printk(KERN_ERR
-+			"AD7142: i2c bus doesn't support raw I2C operation\n");
-+		rc = -ENOSYS;
-+		goto fail_check;
-+	}
-+
-+	/* Start workqueue for defer message transfer */
-+	INIT_WORK(&data->work, ad7142_work);
-+
-+	rc = request_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt,
-+			IRQF_TRIGGER_LOW, "ad7142_joy", data);
-+	if (rc) {
-+		printk(KERN_ERR "AD7142: Can't allocate irq %d\n",
-+			CONFIG_BFIN_JOYSTICK_IRQ_PFX);
-+		goto fail_check;
-+	}
-+
-+	printk(KERN_INFO "%s_attach: at 0x%02x\n",
-+			client->name, client->addr << 1);
-+
-+	/* Allocate and register AD7142 input device */
-+	data->input_dev = input_allocate_device();
-+	if (!data->input_dev) {
-+		printk(KERN_ERR "AD7142: Can't allocate input device\n");
-+		rc = -ENOMEM;
-+		goto fail_allocate;
-+	}
-+
-+	input_dev = data->input_dev;
-+	input_dev->open = ad7142_open;
-+	input_dev->close = ad7142_close;
-+	input_dev->evbit[0] = BIT(EV_KEY);
-+	input_dev->keybit[LONG(BTN_BASE)] = BIT(BTN_BASE) | BIT(BTN_BASE2) |
-+						BIT(BTN_BASE3) | BIT(BTN_BASE4);
-+	input_dev->keybit[LONG(KEY_UP)] |= BIT(KEY_UP) | BIT(KEY_DOWN) |
-+						BIT(KEY_LEFT) | BIT(KEY_RIGHT);
-+
-+	input_dev->name = "ad7142 joystick";
-+	input_dev->phys = "ad7142/input0";
-+	input_dev->id.bustype = BUS_I2C;
-+	input_dev->id.vendor = 0x0001;
-+	input_dev->id.product = 0x0001;
-+	input_dev->id.version = 0x0100;
-+
-+	input_set_drvdata(input_dev, data);
-+
-+	rc = input_register_device(input_dev);
-+	if (rc) {
-+		printk(KERN_ERR "Failed to register AD7142 input device!\n");
-+		goto fail_register;
-+	}
-+
-+	return 0;
-+
-+fail_register:
-+	input_free_device(input_dev);
-+fail_allocate:
-+	free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
-+fail_check:
-+	i2c_detach_client(client);
-+fail_attach:
-+	kfree(client);
-+	return rc;
-+}
-+
-+static int ad7142_attach(struct i2c_adapter *adap)
-+{
-+	return i2c_probe(adap, &addr_data, &ad7142_probe);
-+}
-+
-+static int ad7142_detach(struct i2c_client *client)
-+{
-+	int rc;
-+
-+	free_irq(CONFIG_BFIN_JOYSTICK_IRQ_PFX, ad7142_interrupt);
-+
-+	flush_scheduled_work();
-+
-+	rc = i2c_detach_client(client);
-+	if (!rc)
-+		kfree(i2c_get_clientdata(client));
-+	return rc;
-+}
-+
-+
-+static int __init ad7142_init(void)
-+{
-+	return i2c_add_driver(&ad7142_driver);
-+}
-+
-+static void __exit ad7142_exit(void)
-+{
-+	i2c_del_driver(&ad7142_driver);
-+}
-+
-+module_init(ad7142_init);
-+module_exit(ad7142_exit);
+The machine do not have the mtd device, and the mtd is compiled into the vmlinuz.
+This configuration works fine for other kernels and is reproducible with
+2.6.23-rc9 only.
 -- 
-1.5.3.4
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
