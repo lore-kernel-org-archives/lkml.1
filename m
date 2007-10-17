@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935358AbXJQCTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935906AbXJQCWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935358AbXJQCTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 22:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbXJQCTJ
+	id S935906AbXJQCWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 22:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbXJQCWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 22:19:09 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:47125 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbXJQCTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 22:19:08 -0400
-Date: Wed, 17 Oct 2007 11:19:04 +0900
-From: Simon Horman <horms@verge.net.au>
-To: joe@perches.com
-Cc: vgoyal@in.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       hbabu@us.ibm.com, akpm@linux-foundation.org, ebiederm@xmission.com
-Subject: Re: [PATCH] [275/2many] MAINTAINERS - KDUMP
-Message-ID: <20071017021902.GB6709@verge.net.au>
-References: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com> <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com>
+	Tue, 16 Oct 2007 22:22:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39182 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756393AbXJQCWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 22:22:36 -0400
+Date: Tue, 16 Oct 2007 19:21:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix adbhid mismerge
+In-Reply-To: <alpine.LFD.0.999.0710161751070.26902@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0710161907020.26902@woody.linux-foundation.org>
+References: <20071017000246.GE8181@ftp.linux.org.uk>
+ <alpine.LFD.0.999.0710161751070.26902@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com> <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 11:30:38PM -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 1ea2c63..d61676a 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2634,6 +2634,7 @@ L:	kexec@lists.infradead.org
->  L:	linux-kernel@vger.kernel.org
->  W:	http://lse.sourceforge.net/kdump/
->  S:	Maintained
-> +F:	Documentation/kdump
->  
->  KERNEL AUTOMOUNTER (AUTOFS)
->  P:	H. Peter Anvin
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
 
-On Sun, Aug 12, 2007 at 11:30:49PM -0700, joe@perches.com wrote:
-> Add file pattern to MAINTAINER entry
+
+On Tue, 16 Oct 2007, Linus Torvalds wrote:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index d9a53d9..71738bd 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2694,6 +2694,8 @@ W:	http://www.xmission.com/~ebiederm/files/kexec/
->  L:	linux-kernel@vger.kernel.org
->  L:	kexec@lists.infradead.org
->  S:	Maintained
-> +F:	include/linux/kexec.h
-> +F:	kernel/kexec.c
->  
->  KPROBES
->  P:	Prasanna S Panchamukhi
+> I don't think you did anything wrong. You used both --full-history 
+> (implicitly: git-whatchanged) and you made sure to see the diffs for both 
+> sides of any merge (-m), and that means that you should see every single 
+> diff involved.
 
-I take it that these changes got shelved or canned, as I still don't
-seem them in Linus' tree. But just for the record, the file lists seem
-to be somewhat sort. I'm not sure exactly what the criteria is, but for
-starters, shouldn't all the architecture specific files that only
-contain kexec or kdump code be in there too?
+Btw, if anybody can come up with a better way to find these kinds of 
+mis-merges, I'd love to hear about it.
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+In *this* particular case, the -c flag ("combined" merge diff) probably 
+comes closest, and is certainly a lot better than passing in -m (which 
+shows each merge against both parents separately), and in fact, I think 
+you would have found the mis-merge immediately if you had used
 
+	git whatchanged -p -c v2.6.23.. drivers/macintosh/adbhid.c
+
+but I'm not going to guarantee that -c always gives you what you want.
+
+In general, the rules are:
+
+ - the default for merge diffs is to show "condensed combined" merge, ie 
+   the diff of only those parts where the result actively differs from 
+   *both* parents.
+
+   This is very terse, and it has the wonderful property of showing merges 
+   where you actually ended up doing "real work" and not just picking one 
+   side or the other, but in this case the very fact that the mis-merge 
+   had picked one side (and it really would have _needed_ a correct manual 
+   merge) also meant that the default "--cc" format didn't show anything 
+   at all.
+
+ - "-c" is for regular combined merges: any file that was modified in both 
+   parents will show up as a combination of the diffs of both sides, while 
+   a file that was taken in its *entirety* is ignored.
+
+   In this case that's exactly what you wanted. It's just too noisy to 
+   necessarily be the default, and you can still have a silent mis-merge 
+   if the merger picked *only* one side.
+
+   But in general, I suspect that "-c" is often a good thing to try if you 
+   cannot find the cause of some change in a regular commit, and suspect a 
+   merge error.
+
+ - "-m" shows each side totally independently. Quite frankly, I've never 
+   found it useful. It is essentially guaranteed to show all changes, 
+   since it shows the patches against all parents individually, so even if 
+   we took only one side, we'll still show the patch against the *other* 
+   side, but quite frankly, while it's thus useful in theory, in practice 
+   the end result is just too noisy to likely ever really be useful as 
+   anything but a "yes, the information is there (..but it's practically 
+   impossible to find for all the other noise that is also there)"
+
+The main reason "-m" exists is historical: before Junio implemented the 
+combined formats, -m was the easy way to show *any* information. I bet -m 
+can be useful in some case where you have some pattern you can search for 
+(ie I used -m in this case to find the mis-merge, but realized only later 
+that I would have been better off using -c), but it's not something I'd 
+recommend unless you were really desperate.
+
+What I'd actually really like would be something that shows the original 
+conflict, but that's really expensive to compute (it basically involves 
+re-doing the merge from scratch - finding the proper base commit(s) etc). 
+So we never did that.
+
+		Linus
