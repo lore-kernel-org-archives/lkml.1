@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936589AbXJQCvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936148AbXJQDCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936589AbXJQCvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 22:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbXJQCvj
+	id S936148AbXJQDCE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXJQDBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 22:51:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:50101 "EHLO mga11.intel.com"
+	Tue, 16 Oct 2007 23:01:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58456 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765476AbXJQCvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 22:51:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,286,1188802800"; 
-   d="scan'208";a="348241127"
-Subject: Re: [PATCH] jiffies_round -> jiffies_round_relative conversion -
-	ipw2100/ipw2200
-From: Zhu Yi <yi.zhu@intel.com>
-To: Anton Blanchard <anton@samba.org>,
-       "John W.Linville" <linville@tuxdriver.com>
-Cc: jketreno@linux.intel.com, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <20071015053801.GB3257@kryten>
-References: <20071015053428.GA3257@kryten>  <20071015053801.GB3257@kryten>
-Content-Type: text/plain
-Organization: Intel Corp.
-Date: Wed, 17 Oct 2007 10:40:06 +0800
-Message-Id: <1192588806.2992.7.camel@debian.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	id S1751220AbXJQDBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 23:01:52 -0400
+Date: Tue, 16 Oct 2007 23:01:49 -0400
+From: Dave Jones <davej@redhat.com>
+To: Pavel Roskin <proski@gnu.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Distinguishing releases from pre-rc snapshots
+Message-ID: <20071017030149.GC3397@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Pavel Roskin <proski@gnu.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1192587763.3672.24.camel@dv> <20071017023406.GA3397@redhat.com> <1192589117.3672.31.camel@dv>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192589117.3672.31.camel@dv>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 16, 2007 at 10:45:17PM -0400, Pavel Roskin wrote:
+ > 
+ > On Tue, 2007-10-16 at 22:34 -0400, Dave Jones wrote:
+ > > On Tue, Oct 16, 2007 at 10:22:43PM -0400, Pavel Roskin wrote:
+ > > 
+ > >  > It would be nice to establish a rule to increment the version number
+ > >  > immediately after the kernel release and have a suffix to indicate that
+ > >  > it's a pre-rc version.  "rc0" is my personal favorite.
+ > > 
+ > > fwiw, rc0 is also what the Fedora kernel uses for versioning when we're
+ > > shipping pre-rc1 kernels.
+ > 
+ > Thanks!  I didn't think of the possibility of anyone distributing
+ > precompiled kernels from the "pre-rc" window, but if Fedora does it
+ > (hopefully for beta-testers only), it should be absolutely clear that
+ > it's not just a release with some minor fixes.
 
-On Mon, 2007-10-15 at 00:38 -0500, Anton Blanchard wrote:
-> 
-> When rounding a relative timeout we need to use
-> round_jiffies_relative(). 
+yeah, this is just in our 'development' pool (also known as 'rawhide')
+Proper releases only ever get full point releases + -stable as updates.
 
-ACK.
+	Dave
 
-John, please apply this patch to wireless-2.6. Thanks.
-
--yi
+-- 
+http://www.codemonkey.org.uk
