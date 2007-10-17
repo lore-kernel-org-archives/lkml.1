@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbXJQUs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935434AbXJQUtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933304AbXJQUs6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbXJQUsv
+	id S935434AbXJQUtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933626AbXJQUtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:48:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40842 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756542AbXJQUsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:48:50 -0400
-Subject: Re: [GIT PULL] MMC updates
-From: Dan Williams <dcbw@redhat.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071017224422.78c082ec@poseidon.drzeus.cx>
-References: <20071017224422.78c082ec@poseidon.drzeus.cx>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 16:48:54 -0400
-Message-Id: <1192654134.15090.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Wed, 17 Oct 2007 16:49:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:10446 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933631AbXJQUtI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:49:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=hkJ4wUuyI/GQny6TKovKZTr9yKu5w5icOXj8EImyaYewFZcwWSApEQrWDbCNid++fX+d/fXb6hV0RtXF26SbzFvcqOvvqkkWHLLNghbOEksTud+YzM7x2s89c025lYJ1T+dsl5GP7U5Uz6LE67iNfnrIom24yI2zi8T6ZikqepA=
+Message-ID: <75b66ecd0710171349n2a2a5922qfc0d8bb64980a15c@mail.gmail.com>
+Date: Wed, 17 Oct 2007 16:49:07 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: VM question - accounting of SysV SHM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 3ba63c72060a4a6b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 22:44 +0200, Pierre Ossman wrote:
-> Linus, please pull from
-> 
->         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
-> 
-> The set includes one rare memory leak and some cleanup. It also includes a new frontend for the libertas driver. It is going via my tree because of interdependencies between my tree and the libertas/netdev tree.
-> 
->  drivers/mmc/core/mmc.c                  |    3 +-
->  drivers/mmc/host/at91_mci.c             |    4 +-
->  drivers/net/wireless/Kconfig            |    6 +
->  drivers/net/wireless/libertas/Makefile  |    2 +
->  drivers/net/wireless/libertas/defs.h    |    2 +
->  drivers/net/wireless/libertas/if_sdio.c | 1072 +++++++++++++++++++++++++++++++
->  drivers/net/wireless/libertas/if_sdio.h |   45 ++
+Sorry to ask this question on the list but I've Googled and found nothing.
 
-Libertas bits:
+Is system V shared memory accounted for as Cached, or as normal
+application memory?
 
-Acked-by: Dan Williams <dcbw@redhat.com>
+I have an application that uses SysV shared memory and O_DIRECT for
+all IO, but when it starts up, the cached column in vmstat seems to go
+up by the amount of shared memory allocated.
 
->  include/linux/mmc/sdio_ids.h            |    6 +
->  8 files changed, 1136 insertions(+), 4 deletions(-)
-> 
-> Andrew Victor (1):
->       mmc: at91_mci: cleanup: use MCI_ERRORS
-> 
-> Florin Malita (1):
->       mmc: possible leak in mmc_read_ext_csd
-> 
-> Pierre Ossman (1):
->       net: libertas sdio driver
-> 
-> Rgds
-> 
-
+Lee
