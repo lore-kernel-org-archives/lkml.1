@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbXJQWQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXJQWRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762110AbXJQWQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 18:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbXJQWQf
+	id S933289AbXJQWRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 18:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbXJQWRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 18:16:35 -0400
-Received: from palrel10.hp.com ([156.153.255.245]:40974 "EHLO palrel10.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754149AbXJQWQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 18:16:33 -0400
-Message-ID: <471689BF.2040909@hp.com>
-Date: Wed, 17 Oct 2007 15:16:31 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Wed, 17 Oct 2007 18:17:16 -0400
+Received: from client062.sevenl.net ([66.241.137.62]:3695 "EHLO pcburn.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759117AbXJQWRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 18:17:15 -0400
+Message-ID: <471689DA.4070008@pcburn.com>
+Date: Wed, 17 Oct 2007 18:16:58 -0400
+From: Chris Bergeron <chris@pcburn.com>
+Reply-To: chris@pcburn.com
+Organization: PCBurn Media
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-To: Felix von Leitner <felix-linuxkernel@fefe.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: bizarre network timing problem
-References: <20071017205127.GA21334@codeblau.de> <47167BDE.4000103@redhat.com> <20071017220019.GA22765@codeblau.de>
-In-Reply-To: <20071017220019.GA22765@codeblau.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: Andrey Panin <pazke@donpac.ru>
+Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
+References: <4706AD19.4040605@pcburn.com> <20071010095432.GC30345@pazke.donpac.ru> <470E5714.4040303@pcburn.com> <20071012120826.GB23378@pazke.donpac.ru> <47150B06.3040306@pcburn.com> <20071017064219.GB1953@pazke.donpac.ru>
+In-Reply-To: <20071017064219.GB1953@pazke.donpac.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the packet trace was a bit too cooked perhaps, but there were indications that 
-at times the TCP window was going to zero - perhaps something with window 
-updates or persist timers?
+Andrey Panin wrote:
+>
+> Is it possible to connect two ports and run getty on one port and minicom on
+> another ? We should check that UARTs are really working.
+>
+>   
+I used the on-board serial port as a known working control (after 
+getting it to work with the other onboard serial port) to try and 
+connect over to one of the Syba card ports (using Cutecom & getty).  The 
+lines light up, but there's nothing getting sent from the 8-port as far 
+as I can see.  The onboard port works as I'd expect, the Syba (running 
+getty identically from inittab) doesn't.
 
-rick jones
+-- Chris
+
+
