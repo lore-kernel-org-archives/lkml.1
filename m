@@ -1,118 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbXJQR6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbXJQR7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbXJQR6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXJQR6g
+	id S1757668AbXJQR7N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbXJQR6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:58:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51039 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbXJQR6f convert rfc822-to-8bit (ORCPT
+	Wed, 17 Oct 2007 13:58:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42778 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757128AbXJQR6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:58:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-Date: Wed, 17 Oct 2007 11:57:50 -0600
-In-Reply-To: <200710171814.01717.borntraeger@de.ibm.com> (Christian
-	Borntraeger's message of "Wed, 17 Oct 2007 18:14:01 +0200")
-Message-ID: <m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Oct 2007 13:58:55 -0400
+Date: Wed, 17 Oct 2007 10:58:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jaroslav Kysela <perex@perex.cz>
+cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       krzysztof.h1@wp.pl, Catalin Marinas <catalin.marinas@gmail.com>
+Subject: Re: suspicious ALSA empty commit
+In-Reply-To: <Pine.LNX.4.61.0710171928250.11118@tm8103.perex-int.cz>
+Message-ID: <alpine.LFD.0.999.0710171057090.26902@woody.linux-foundation.org>
+References: <20071016.155044.82377336.davem@davemloft.net>
+ <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
+ <alpine.LFD.0.999.0710170854280.26902@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0710171928250.11118@tm8103.perex-int.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger <borntraeger@de.ibm.com> writes:
 
-> Eric,
->
-> Am Dienstag, 16. Oktober 2007 schrieb Christian Borntraeger:
->> Am Dienstag, 16. Oktober 2007 schrieb Eric W. Biederman:
->> 
->> > fs/buffer.c |    3 +++
->> > 1 files changed, 3 insertions(+), 0 deletions(-)
->> >  drivers/block/rd.c |   13 +------------
->> >  1 files changed, 1 insertions(+), 12 deletions(-)
->> 
->> Your patches look sane so far. I have applied both patches, and the problem 
->> seems gone. I will try to get these patches to our testers.
->> 
->> As long as they dont find new problems:
->
-> Our testers did only a short test, and then they were stopped by problems with
-> reiserfs. At the moment I cannot say for sure if your patch caused this, but 
-> we got the following BUG
 
-Thanks.
+On Wed, 17 Oct 2007, Jaroslav Kysela wrote:
+> 
+> I'm using stg on top of git for merging and easy tree rebasing, but the 
+> version might be old (I'll try upgrade at first):
 
-> ReiserFS: ram0: warning: Created .reiserfs_priv on ram0 - reserved for xattr
-> storage.
-> ------------[ cut here ]------------
-> kernel BUG at
-> /home/autobuild/BUILD/linux-2.6.23-20071017/fs/reiserfs/journal.c:1117!
-> illegal operation: 0001 [#1]
-> Modules linked in: reiserfs dm_multipath sunrpc dm_mod qeth ccwgroup vmur
-> CPU:    3    Not tainted
-> Process reiserfs/3 (pid: 2592, task: 77dac418, ksp: 7513ee88)
-> Krnl PSW : 070c3000 fb344380 (flush_commit_list+0x808/0x95c [reiserfs])
->            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:3 PM:0
-> Krnl GPRS: 00000002 7411b5c8 0000002b 00000000
->            7b04d000 00000001 00000000 76d1de00
->            7513eec0 00000003 00000012 77f77680
->            7411b608 fb343b7e fb34404a 7513ee50
-> Krnl Code: fb344374: a7210002           tmll    %r2,2
->            fb344378: a7840004           brc     8,fb344380
->            fb34437c: a7f40001           brc     15,fb34437e
->           >fb344380: 5810d8c2           l       %r1,2242(%r13)
->            fb344384: 5820b03c           l       %r2,60(%r11)
->            fb344388: 0de1               basr    %r14,%r1
->            fb34438a: 5810d90e           l       %r1,2318(%r13)
->            fb34438e: 5820b03c           l       %r2,60(%r11)
->
->
-> Looking at the code, this really seems related to dirty buffers, so your patch
-> is the main suspect at the moment. 
+Ahh. That may explain it. stg may well be using the low-level git internal 
+commands (which *do* allow you to create any kind of commits you want, 
+including bogus empty ones). 
 
-Sounds reasonable.
+Catalin?
 
->         if (!barrier) {
->                 /* If there was a write error in the journal - we can't commit
->                  * this transaction - it will be invalid and, if successful,
->                  * will just end up propagating the write error out to
->                  * the file system. */
->                 if (likely(!retval && !reiserfs_is_journal_aborted (journal))) {
->                         if (buffer_dirty(jl->j_commit_bh))
-> 1117---->                                BUG();
->                         mark_buffer_dirty(jl->j_commit_bh) ;
->                         sync_dirty_buffer(jl->j_commit_bh) ;
->                 }
->         }
-
-Grr.  I'm not certain how to call that.
-
-Given that I should also be able to trigger this case by writing to
-the block device through the buffer cache (to the write spot at the
-write moment) this feels like a reiserfs bug.  Although I feel
-screaming about filesystems that go BUG instead of remount read-only....
-
-At the same time I increasingly don't think we should allow user space
-to dirty or update our filesystem metadata buffer heads.  That seems
-like asking for trouble.
-
-Did you have both of my changes applied?
-To init_page_buffer() and to the ramdisk_set_dirty_page?
-
-I'm guessing it was the change to ramdisk_set_dirty_page....
-
-Eric
+		Linus
