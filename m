@@ -1,131 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765759AbXJQKlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764983AbXJQKom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765759AbXJQKlk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 06:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXJQKla
+	id S1764983AbXJQKom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 06:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXJQKoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 06:41:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:55926 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755010AbXJQKl3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 06:41:29 -0400
-From: Hans-Peter Jansen <hpj@urpla.net>
-To: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
-Subject: Re: arcmsr changelog differs from diffs
-Date: Wed, 17 Oct 2007 12:41:11 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       James.Bottomley@steeleye.com, nick.cheng@areca.com.tw
-References: <200710170007.20454.hpj@urpla.net> <20071017005342.GA14212@atjola.homenet>
-In-Reply-To: <20071017005342.GA14212@atjola.homenet>
+	Wed, 17 Oct 2007 06:44:34 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:9497 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753671AbXJQKod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 06:44:33 -0400
+Date: Wed, 17 Oct 2007 12:44:05 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Message-ID: <20071017104405.GS5043@kernel.dk>
+References: <200710132126.33085.rjw@sisk.pl> <20071016045025.GC8125@kroah.com> <200710162204.51961.rjw@sisk.pl> <20071016204238.GA1093@kroah.com> <20071016205053.GI9942@kernel.dk> <3ae72650710170322r6e41a14k3ab24ab6683522d2@mail.gmail.com> <20071017103345.GR5043@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710171241.12575.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX1/feMByr9bsDcBosI/oTV7Tcx3OMZrsK3cPVFS
- nW1YktkbXDsjWbG82Q7LYBkuEglWdfd9zgpZfhbkeuz44WO+xV
- sKLFzwa32Zl/q5M+lrhkw==
+In-Reply-To: <20071017103345.GR5043@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Björn,
+On Wed, Oct 17 2007, Jens Axboe wrote:
+> On Wed, Oct 17 2007, Kay Sievers wrote:
+> > On 10/16/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > On Tue, Oct 16 2007, Greg KH wrote:
+> > > > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
+> > > > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> > > > > > > Hi,
+> > > > > > >
+> > > > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> > > > > > > appear for vanilla 2.6.23):
+> > > > > > >
+> > > > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
+> > > > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> > > > > > >
+> > > > > > > Call Trace:
+> > > > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+> > > > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+> > > > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
+> > > > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+> > > > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+> > > > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+> > > > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+> > > > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
+> > > > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+> > > > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+> > > > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+> > > > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+> > > > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> > > > > > >
+> > > > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> > > > > > > sysfs: duplicate filename 'eth1' can not be created
+> > > > > > >
+> > > > > > > Everything seems to work, but this just looks fishy.
+> > > > > >
+> > > > > > This is a userspace program renaming your network device to a name that
+> > > > > > is already in use.  What distro and release is this?
+> > > > >
+> > > > > openSUSE 10.2, with some updates (not the most recent, though).
+> > > >
+> > > > Can you try 10.3?  I think we fixed this issue there.
+> > >
+> > > Ehm nope:
+> > >
+> > > Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
+> > > can not be created
+> > > Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
+> > > eth1
+> > > Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
+> > > sysfs_add_one()
+> > > Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
+> > > Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
+> > > Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
+> > > Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
+> > > Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
+> > > Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
+> > > Oct 16 19:36:27 carl kernel:  [<c01a1938>]
+> > > inotify_d_instantiate+0x18/0x80
+> > > Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
+> > > Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
+> > > Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
+> > > Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
+> > > Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
+> > > Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
+> > > Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
+> > > Oct 16 19:36:27 carl kernel:  =======================
+> > > Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
+> > > sysfs_create_symlink failed (-17)
+> > 
+> > Are you switching from the ipw to the iwl driver?
+> > Care to delete (or remove the entries):
+> >   /etc/udev/rules.d/70-persistent-net.rules
+> > and try with iwl only? It should work then, even when going back to ipw.
+> 
+> Yep, that's exactly what I'm doing. I'll try and kill that udev entry.
 
-Am Mittwoch, 17. Oktober 2007 02:53 schrieb Björn Steinbrink:
-> On 2007.10.17 00:07:19 +0200, Hans-Peter Jansen wrote:
-> > Hi Jeff,
-> >
-> > while browsing through Linus' current check ins, I stumbled upon:
-> >
-> > [SCSI] arcmsr: irq handler fixes, cleanups, micro-opts:
-> >
-> > --8<--
-> > 488a5c8a9a3b67ae117784cd0d73bef53a73d57d
-> >  drivers/scsi/arcmsr/arcmsr_hba.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c
-> > b/drivers/scsi/arcmsr/arcmsr_hba.c
-> > index 7832a10..f4d2d52 100644
-> > --- a/drivers/scsi/arcmsr/arcmsr_hba.c
-> > +++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-> > @@ -422,7 +422,7 @@ static int arcmsr_probe(struct pci_dev *pdev,
-> >  		goto out_release_regions;
-> >
-> >  	error = request_irq(pdev->irq, arcmsr_do_interrupt,
-> > -				IRQF_SHARED, "arcmsr", acb);
-> > +			    IRQF_SHARED, "arcmsr", acb);
-> >  	if (error)
-> >  		goto out_free_ccb_pool;
-> >
-> > -->8--
-> >
-> > and: [SCSI] arcmsr: Fix hardware wait loops
-> >
-> > --8<--
-> > 24430458bb924e371ff894e26bfa9f73707f53fb
-> >  drivers/scsi/arcmsr/arcmsr_hba.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c
-> > b/drivers/scsi/arcmsr/arcmsr_hba.c
-> > index 50e1310..7832a10 100644
-> > --- a/drivers/scsi/arcmsr/arcmsr_hba.c
-> > +++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-> > @@ -2092,8 +2092,10 @@ static void arcmsr_iop_reset(struct
-> > AdapterControlBlock *acb)
-> >  	if (atomic_read(&acb->ccboutstandingcount) != 0) {
-> >  		/* talk to iop 331 outstanding command aborted */
-> >  		arcmsr_abort_allcmd(acb);
-> > +
-> >  		/* wait for 3 sec for all command aborted*/
-> >  		ssleep(3);
-> > +
-> >  		/* disable all outbound interrupt */
-> >  		intmask_org = arcmsr_disable_outbound_ints(acb);
-> >  		/* clear all outbound posted Q */
-> > -->8--
-> >
-> > where both changelogs differ significantly from the actual diffs, which
-> > both are simple WS fixups and nothing else. Does qgit fools me here, or
-> > is anything else wrong on my side?
->
-> Nothing wrong on your side. I took a look at the second one, and
-> everything but the whitespace changes already found its way into Linus'
-> tree via 1a4f550a09f89e3a15eff1971bc9db977571b9f6. One hunk of the
-> original patch[1] was actually made redundant because the code was
-> removed in that commit, so that's probably what James fixed (see full
-> commit message).
+Removing that udev rule file got rid of the warning here. Now I just
+have to figure out why iwl3945 doesn't work for me in the vanilla
+kernel, when it does in the SUSE kernel...
 
-Yup, I found the patch you mentioned also, but that time orginating from 
-Nick Cheng (*).
 
-That diff is unfortunately way too big for me to be able to decide, if it's 
-worth it to replace a former instance of arcmsr-1.20.0.13 for a 2.6.18.8 
-kernel, which I use and essentially depend on here.
+-- 
+Jens Axboe
 
-Thus I decided now to bluntly cc Nick and ask directly this way:
-Nick, does 1.20.0.15 provide any essential changes over 1.20.0.13 for a 
-ARC-1130 with FW 1.41 (2006-05-24), which advise updating?
-
-> And then, if I may guess, James probably just noticed that there were
-> changes left and commited them (while they were now down to just the
-> whitespace change), without checking what changes were actually left (no
-> offense intended). At least I think that git wouldn't cripple the diff
-> if the changes that James checked in were not already whitespace-only at
-> the time he commited them, and the git history of his tree seems to
-> agree.
-
-(*) Thanks for the clarification, Björn. What made me stumbling was the 
-different orginators, while Jeff isn't known with catching attention by 
-assimilating other peoples contributions. 
-
-> Probably the other commit is similar.
->
-> Björn
->
-> [1] http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-07/msg11957.html
-
-Pete
