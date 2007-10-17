@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764752AbXJQP5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935574AbXJQP5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764752AbXJQP5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXJQP5V
+	id S935574AbXJQP5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935445AbXJQP5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:57:21 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:25362 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756124AbXJQP5U (ORCPT
+	Wed, 17 Oct 2007 11:57:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36172 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757561AbXJQP5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:57:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZKEEtG3OFWs6E2556Y/w4Eh4EaeA8d9XTyAvRdfrUy5VyOVwRTpXLgnTSs2/nfanmOKCVUlg74CI65RIjIn/5rO6z44KeGMjtd+mfRTQBmTYiM1dDaz63F2PntBykMhu504VqDFDiDta6d49h8y3lL5hrDAnF6BCkeWMbq4aCLw=
-Message-ID: <d120d5000710170857i3f534544pe9cab0ca6c1b0aa4@mail.gmail.com>
-Date: Wed, 17 Oct 2007 11:57:18 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Jeremy Katz" <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-In-Reply-To: <alpine.LFD.0.999.0710161325570.6887@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 11:57:34 -0400
+Subject: Re: [PATCH] nfs: fix nfs_writepage()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1192636074.7573.27.camel@heimdal.trondhjem.org>
+References: <1192628458.27435.119.camel@twins>
+	 <1192634702.7573.10.camel@heimdal.trondhjem.org>
+	 <1192635028.27435.137.camel@twins>
+	 <1192635917.7573.24.camel@heimdal.trondhjem.org>
+	 <1192636074.7573.27.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 17:57:32 +0200
+Message-Id: <1192636652.27435.147.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1192481110-9299-1-git-send-email-katzj@redhat.com>
-	 <20071016141153.GA3237@khazad-dum.debian.net>
-	 <20071016142121.GA21431@srcf.ucam.org>
-	 <20071016143124.GB3237@khazad-dum.debian.net>
-	 <20071016144016.GA21749@srcf.ucam.org>
-	 <20071016165623.GA13643@khazad-dum.debian.net>
-	 <20071016184606.GB25181@srcf.ucam.org>
-	 <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org>
-	 <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com>
-	 <alpine.LFD.0.999.0710161325570.6887@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> On Tue, 16 Oct 2007, Dmitry Torokhov wrote:
-> >
-> > I agree that these are 2 different events. My argument is that
-> > "VOLUME_UP_NOTIFY" event is similar to "BATTERY_OUT_NOTIFY",
-> > "DOCK_UNDOCK_NOTIFY", etc, etc and should be sent not through input
-> > layer but through a generic (yet to be designed) notification
-> > mechanism. Something lighter than input. Something like uevents over
-> > netlink.
->
-> Well, I'd argue that:
->
->  - it's going to be the same entity that cares in both cases (ie anybody
->   who is ready to accept VOLUME_UP keypresses is also the exact same
->   party that also wants to know if VOLUME_UP happened *independently*)
->
->   Ergo: making it a separate "generic" notification is actually totally
->   counterproductive, because it just adds complexity.
+On Wed, 2007-10-17 at 11:47 -0400, Trond Myklebust wrote:
+> On Wed, 2007-10-17 at 11:45 -0400, Trond Myklebust wrote:
+> > On Wed, 2007-10-17 at 17:30 +0200, Peter Zijlstra wrote:
+> > 
+> > > The thing is, swapper_space just calls ->writepage() and expects the
+> > > page to be written out. So either the a_ops usage of swapper_space is
+> > > deviant or NFS' is.
+> > 
+> > Could somebody please document WTF writepage() is supposed to do, and
+> > WTF page_mkwrite() is for?
+> > 
+> > I thought that page_mkwrite() was supposed to finally allow us to deal
+> > with dirty pages in a clean manner: the caller gets to tell the
+> > filesystem that it wants the entire page written out, and then dirties
+> > the page. What is the point if the VM then expects to be able to
+> > circumvent this?
+> 
+> Put differently:
+>       * _who_ is dirtying the page when the swapper is trying to write
+>         the page out?
+>       * why are they not calling either page_mkwrite() or
+>         commit_write()?
 
-That is a good argument. If there are no other users for this other
-transport then I agree, inventing it just for keypress notifications
-is bad idea.
+I'm writing anonymous pages (I'm the crazy person doing swap over NFS).
+And anonymous is dirty by default.
 
->  - it really is a keypress. Yes, it's a keypress with side effects, but
->   it still tends to have a distinct source, and as such it is interesting
->   *as* a keypress.
->
->   IOW: it should have all the same "incidental" side effects as any other
->   keypress. Example: I think it's reasonable to consider it an event as
->   far as the screen saver is concerned. In other words, it's not *just* a
->   "volume was raised" event. It's a "volume was raised, and the user
->   actually pressed a key to do so".
->
-
-This is a good argument for having 2 separate types of events but not
-for which transport shoudl be used to deliver it.
-
-> So I do think they are keypresses, although I also suspect that like many
-> other magical keys, the "NOTIFY" version is often also totally hidden by
-> hardware/firmware interactions (ie I'm pretty sure that many of those
-> special keys will never be visible at all to the OS, because the firmware
-> hides the fact that they were pressed entirely!)
->
-
-Yes, on my old Inspiron brightness is completely handled by firmware.
-There is no ACPI, nor keyboard events generated whatsoever.
-
-OK, I guess I would like to hear once again from userspace guys -
-DBUS/HAL/etc. Do they see a need for a generic interface that can be
-used for all kinds of events, not only related to keypresses. If they
-say that they only care about notifications arising from keypresses
-then I will add EV_NOTIFY type of events to input layer. What events
-would we need? I can imagine:
-
-KEY_BRIGHTNESSUP_NOTIFY
-KEY_BRIGHTNESSDOWN_NOTIFY
-KEY_BRIGHTNESSMIN_NOTIFY
-KEY_BRIGHTNESSMAX_NOTIFY
-KEY_VOLUMEUP_NOTIFY
-KEY_VOLUMEDOWN_NOTIFY
-KEY_MUTE_NOTIFY
-KEY_DISPLAYSWITCH_NOTIFY
-KEY_WIFI_NOTIFY
-
-What else? And it better have "key" in its name, BATTERY_OUT_NOTIFY
-won't fly ;)
-
--- 
-Dmitry
