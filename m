@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbXJQT0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbXJQT1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761771AbXJQT0o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXJQT0e
+	id S1762059AbXJQT1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbXJQT1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:26:34 -0400
-Received: from www.tglx.de ([62.245.132.106]:33050 "EHLO www.tglx.de"
+	Wed, 17 Oct 2007 15:27:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:33090 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbXJQT0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:26:34 -0400
-Date: Wed, 17 Oct 2007 21:25:56 +0200 (CEST)
+	id S1752613AbXJQT1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:27:21 -0400
+Date: Wed, 17 Oct 2007 21:26:35 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Sam Ravnborg <sam@ravnborg.org>
-cc: "Denis V. Lunev" <den@openvz.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] .gitignore update for x86 arch
-In-Reply-To: <20071017192149.GD11837@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.0.9999.0710172125340.24155@localhost.localdomain>
-References: <20071016072221.GA14029@iris.sw.ru> <20071017192149.GD11837@uranus.ravnborg.org>
+cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix kernel rebuild due to vsyscall fallout
+In-Reply-To: <20071017191633.GB11837@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.0.9999.0710172126110.24155@localhost.localdomain>
+References: <4715F2E5.6000104@panasas.com> <20071017191633.GB11837@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
 On Wed, 17 Oct 2007, Sam Ravnborg wrote:
 
-> Hi Thomas.
+> Fix rebuild of kernel when there is no changes.
+> This happened for i386.
+> Using make V=2 hinted that the output files were
+> not assigned to targets - fixed by this patch.
 > 
-> Another one I expect you to take in your x86 tree - OK?
+> Reported by: Boaz Harrosh <bharrosh@panasas.com>
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+> diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+> index 7ff0206..a3fa11f 100644
+> --- a/arch/x86/kernel/Makefile_32
+> +++ b/arch/x86/kernel/Makefile_32
+> @@ -51,7 +51,7 @@ obj-$(CONFIG_SCx200)		+= scx200_32.o
+>  # We must build both images before we can assemble it.
+>  # Note: kbuild does not track this dependency due to usage of .incbin
+>  $(obj)/vsyscall_32.o: $(obj)/vsyscall-int80_32.so $(obj)/vsyscall-sysenter_32.so
+> -targets += $(foreach F,int80 sysenter,vsyscall-$F.o vsyscall-$F.so)
+> +targets += $(foreach F,int80 sysenter,vsyscall-$F_32.o vsyscall-$F_32.so)
+>  targets += vsyscall-note_32.o vsyscall_32.lds
+>  
+>  # The DSO images are built using a special linker script.
 
 Thanks, applied
- 
+
 	tglx
 
-> 	Sam
-> 
-> On Tue, Oct 16, 2007 at 11:22:21AM +0400, Denis V. Lunev wrote:
-> > This patch:
-> > - makes .gitignore files visible to git
-> > - makes arch/x86/kernel/vsyscall_32.lds and arch/i386/boot invisible
-> > 
-> > Signed-off-by: Denis V. Lunev <den@openvz.org>
-> > 
-> > diff --git a/.gitignore b/.gitignore
-> > index 27c3e83..22fb8fa 100644
-> > --- a/.gitignore
-> > +++ b/.gitignore
-> > @@ -26,6 +26,7 @@ vmlinux*
-> >  !vmlinux.lds.S
-> >  System.map
-> >  Module.symvers
-> > +!.gitignore
-> >  
-> >  #
-> >  # Generated include files
-> > diff --git a/arch/i386/.gitignore b/arch/i386/.gitignore
-> > new file mode 100644
-> > index 0000000..36ef4c3
-> > --- /dev/null
-> > +++ b/arch/i386/.gitignore
-> > @@ -0,0 +1 @@
-> > +boot
-> > diff --git a/arch/x86/kernel/.gitignore b/arch/x86/kernel/.gitignore
-> > index 40836ad..4ea38a3 100644
-> > --- a/arch/x86/kernel/.gitignore
-> > +++ b/arch/x86/kernel/.gitignore
-> > @@ -1 +1,2 @@
-> >  vsyscall.lds
-> > +vsyscall_32.lds
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
+ 
