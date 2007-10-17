@@ -1,39 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbXJQUWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934989AbXJQUWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934574AbXJQUWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbXJQUVw
+	id S934989AbXJQUWb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934654AbXJQUWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:21:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37197 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757054AbXJQUVv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:21:51 -0400
-Date: Wed, 17 Oct 2007 13:21:31 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC] remove netpoll receive code
-Message-ID: <20071017132131.1992bedd@freepuppy.rosehill>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 16:22:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:35565 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934609AbXJQUWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:22:11 -0400
+Date: Wed, 17 Oct 2007 22:21:54 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nmi_watchdog on x86_64
+In-Reply-To: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
+Message-ID: <alpine.LFD.0.9999.0710172220510.24155@localhost.localdomain>
+References: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The netpoll receive code is:
-1. Not used by any in-tree features, it is used by kgdb-over-ether.
-2. A nice hook for people doing nasty things like private binary network stacks or rootkits.
-3. Unsecured by any of the normal firewalling code.
 
-Hopefully all distro's are smart enough to turn it off in their default config *nudge, nudge*.
-Doubly true for any distribution that claims to be secure or enterprise ready.
 
-I propose that we take out all the whole netpoll rx path. If/when kgdb gets submitted
-a better and alternative receive path can be added.
+On Mon, 15 Oct 2007, Yinghai Lu wrote:
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+> just found my on hand ck804, and mcp55 based AMD servers:
+> nmi_watchdog=1 doesn't work
+> but nmi_watchdog=2 does work
+> 
+> =1, it say: IOAPIC 8259A virtual wire mode...
+> 
+> Did nmi_watchdog=1 work on any other amd64 platform?
+
+I think I used it, but I don't remember when. Will try tomorrow.
+
+  tglx
