@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762068AbXJQIGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXJQIJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762068AbXJQIGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 04:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXJQIGF
+	id S1762041AbXJQIJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 04:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXJQIJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 04:06:05 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12635 "EHLO kernel.dk"
+	Wed, 17 Oct 2007 04:09:31 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:37566 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753295AbXJQIGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 04:06:04 -0400
-Date: Wed, 17 Oct 2007 10:05:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, tomof@acm.org
-Subject: Re: [PATCH] swiotlb: fix map_sg failure handling
-Message-ID: <20071017080534.GB5043@kernel.dk>
-References: <20071017170329B.fujita.tomonori@lab.ntt.co.jp>
+	id S1753533AbXJQIJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 04:09:29 -0400
+Message-ID: <4715C337.6050705@free.fr>
+Date: Wed, 17 Oct 2007 10:09:27 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017170329B.fujita.tomonori@lab.ntt.co.jp>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       robert.moore@intel.com, len.brown@intel.com
+Subject: Re: halt does not shut the system down
+References: <470A58AF.9080402@free.fr> <470C9731.6030200@free.fr> <470F4535.3050004@free.fr> <470F4F58.4080900@gmail.com> <470F7264.8070205@free.fr> <471342C8.2030305@free.fr> <4714979C.5010103@free.fr> <Pine.LNX.4.61.0710160835160.11232@chaos.analogic.com> <4714B7D7.7090005@free.fr> <4714EF81.2070405@gmail.com>
+In-Reply-To: <4714EF81.2070405@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, FUJITA Tomonori wrote:
-> sg list elements might not be continuous.
+Alexey Starikovskiy wrote:
+
+> John Sigler wrote:
 > 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  lib/swiotlb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> index c419ecf..752fd95 100644
-> --- a/lib/swiotlb.c
-> +++ b/lib/swiotlb.c
-> @@ -696,7 +696,7 @@ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
->  				/* Don't panic here, we expect map_sg users
->  				   to do proper error handling. */
->  				swiotlb_full(hwdev, sg->length, dir, 0);
-> -				swiotlb_unmap_sg(hwdev, sg - i, i, dir);
-> +				swiotlb_unmap_sg(hwdev, sgl, i, dir);
->  				sgl[0].dma_length = 0;
->  				return 0;
->  			}
+>>          +===================================+
+>>          | Soft-Off by PWR-BTTN              |
+>>          |-----------------------------------|
+>>          | Instant-Off  ..... [v]            |
+>>          | Delay 4 Sec. ..... [ ]            |
+>>          |                                   |
+>>          |-----------------------------------|
+>>          |  ^V:Move ENTER:Accept ESC:Abort   |
+>>          +===================================+
+>>
+>> 'Instant-Off' is the appropriate setting, right?
+>
+> Actually, default should be 4 sec delay. OS should have 
+> a chance to shut down the system...
 
-Auch indeed, no math on sg entries! Applied.
-
--- 
-Jens Axboe
-
+I don't see why this setting would have an impact on the outcome
+of the 'halt' and 'poweroff' commands.
