@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936058AbXJQDK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935879AbXJQDRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936058AbXJQDK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760894AbXJQDKs
+	id S935879AbXJQDRz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbXJQDRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:10:48 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:22816 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760103AbXJQDKr (ORCPT
+	Tue, 16 Oct 2007 23:17:46 -0400
+Received: from fencepost.gnu.org ([140.186.70.10]:49822 "EHLO
+	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758017AbXJQDRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:10:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=b7diE91RlyzlzlgO/TDunCXGaQy9ptf7jrPEsFxPRnKgP4DHzZ3zvNT8FP6CL+57m41hTqXijweAkfhPxOWorcbLO5Cfkf6QXEd5+SJsewjB9Sr7vjfL5IcQ3dpLsSfhNKRS63j3CKS+W/3c6SWIUViXGtdQhs2SkStfDw9qL/k=
-Message-ID: <47157C4B.2000502@googlemail.com>
-Date: Wed, 17 Oct 2007 05:06:51 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
-MIME-Version: 1.0
-To: Chris Holvenstot <cholvenstot@comcast.net>
-CC: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Boot Failure with 2.6.23-rc10
-References: <1192589191.6732.11.camel@localhost>
-In-Reply-To: <1192589191.6732.11.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 16 Oct 2007 23:17:45 -0400
+Subject: Re: Distinguishing releases from pre-rc snapshots
+From: Pavel Roskin <proski@gnu.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071016224126.3679aea6@bree.surriel.com>
+References: <1192587763.3672.24.camel@dv>
+	 <20071016224126.3679aea6@bree.surriel.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 16 Oct 2007 23:17:43 -0400
+Message-Id: <1192591063.3672.46.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-2.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Holvenstot wrote:
-> Greetings - 
 
-Hi,
+On Tue, 2007-10-16 at 22:41 -0400, Rik van Riel wrote:
+> On Tue, 16 Oct 2007 22:22:43 -0400
+> Pavel Roskin <proski@gnu.org> wrote:
+> 
+> > I'm trying to keep some external drivers up to date with the kernel,
+> > and the first two weeks after the release is the worst time for me.
+> 
+> Consider this an incentive to submit your code for inclusion
+> in the upstream kernel.  Having all the common drivers integrated
+> in the mainline kernel makes it much easier for users to use all
+> their hardware, external drivers are not just a pain for the developers.
 
-> 
-> This is likely something I am doing wrong (or stupid) but I have run
-> through the build process a couple of times with the same result.  
-> 
-> When booted, the following messages are displayed:
-> 
-> Linux  zimage kernel to big, try "make bzImage"
-> 
-> Error 28: Selected item can into fit into memory
-> 
-> I have tried the "make bzImage" and manually copied forward to /boot -
-> no joy.
-> 
+The incentive has already worked for MadWifi, which has landed in the
+wireless-2.6 repository under the name "ath5k".  Still, there is a lot
+of work to do, and some features won't appear in the kernel driver soon,
+partly because they rely on the chipset features that still need to be
+reverse engineered.
 
-If you use git just pull is already fixed if not get that patch :
+In the meantime, somebody has to maintain the old madwifi and release
+fixed for security and kernel compatibility.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=7eebb9348655b55553d65fc7cb6cfad292d28dbb
+Also, there are drivers that are just to unwieldy to be shaped into
+something resembling a typical Linux driver.  linux-wlan-ng is such
+project.  No matter what the incentive, it won't go to the kernel.
+Maybe somebody will write a clean driver for Prism USB devices one day,
+but it didn't happen so far.
 
+Finally, there is a little at76_usb driver, which supports quite old
+802.11b devices.  It's in wireless-2.6 as well, but I simply cannot
+expect users to test it from there.  And if I make a standalone release,
+I'd rather not make another one when 2.6.24 comes out.
 
+-- 
 Regards,
+Pavel Roskin
 
-Gabriel
