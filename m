@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbXJQVh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXJQViX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759154AbXJQVh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbXJQVhn
+	id S933133AbXJQViX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932646AbXJQVhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:37:43 -0400
-Received: from lazybastard.de ([212.112.238.170]:39796 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762088AbXJQVhm (ORCPT
+	Wed, 17 Oct 2007 17:37:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:33035 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932482AbXJQVhp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:37:42 -0400
-Date: Wed, 17 Oct 2007 23:33:12 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: fix typo in mtd kconfig
-Message-ID: <20071017213311.GB14633@lazybastard.org>
-References: <20071017201830.GA24845@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071017201830.GA24845@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 17 Oct 2007 17:37:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,291,1188802800"; 
+   d="scan'208";a="249505277"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 0/3] vmcoreinfo support for dump filtering
+Date: Wed, 17 Oct 2007 14:32:21 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A02B57FA2@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20071017132018.218043bb.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/3] vmcoreinfo support for dump filtering
+Thread-Index: AcgQ+yub5svsukAXSh6dlQ88u4q1ggACc7mQ
+References: <20070822210838oomichi@mail.jp.nec.com><12c511ca0710171019t35cb1670k9e1bdcfb3bf99793@mail.gmail.com> <20071017132018.218043bb.akpm@linux-foundation.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <oomichi@mxs.nes.nec.co.jp>, <linux-kernel@vger.kernel.org>,
+       <kexec@lists.infradead.org>, <nhorman@redhat.com>, <vgoyal@in.ibm.com>,
+       <bwalle@suse.de>, <dzickus@redhat.com>, <da-x@monatomic.org>,
+       <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 17 Oct 2007 21:32:22.0036 (UTC) FILETIME=[33B97540:01C81105]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David, will you take this patch?
+> This?
 
-Signed-off-by: Dave Jones <davej@redhat.com>
-Signed-off-by: Joern Engel <joern@logfs.org>
+That does the trick, yes.
 
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 8f9c3ba..246d451 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -300,7 +300,7 @@ config MTD_NAND_PLATFORM
- 	  via platform_data.
- 
- config MTD_ALAUDA
--	tristate "MTD driver for Olympus MAUSB-10 and Fijufilm DPC-R1"
-+	tristate "MTD driver for Olympus MAUSB-10 and Fujifilm DPC-R1"
- 	depends on MTD_NAND && USB
- 	help
- 	  These two (and possibly other) Alauda-based cardreaders for
+> (please tell me if you want me to send this to Linus)
 
+I've put it in my tree now ... so I'll ask Linus to pull
+it from there.
 
-Jörn
-
--- 
-It does not matter how slowly you go, so long as you do not stop.
--- Confucius
+-Tony
