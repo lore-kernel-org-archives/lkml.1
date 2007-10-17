@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbXJQJ1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765304AbXJQJaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764998AbXJQJ1u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXJQJ1l
+	id S1765304AbXJQJaE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbXJQJ3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:27:41 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:8409 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755707AbXJQJ1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:27:40 -0400
-Date: Wed, 17 Oct 2007 11:27:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-Message-ID: <20071017092713.GL5043@kernel.dk>
-References: <20071017084528.GI5043@kernel.dk> <20071017.021305.74746838.davem@davemloft.net> <20071017091629.GK5043@kernel.dk> <20071017182401X.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017182401X.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 17 Oct 2007 05:29:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38321 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbXJQJ3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:29:53 -0400
+Subject: Re: [patch] sched: schedstat needs a diet
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071017072323.GB18044@elte.hu>
+References: <b040c32a0710161337l24d61d45h61be0ded72b54a9f@mail.gmail.com>
+	 <20071017072323.GB18044@elte.hu>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 11:29:47 +0200
+Message-Id: <1192613387.27435.114.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, FUJITA Tomonori wrote:
-> On Wed, 17 Oct 2007 11:16:29 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 2007-10-17 at 09:23 +0200, Ingo Molnar wrote:
+> * Ken Chen <kenchen@google.com> wrote:
 > 
-> > On Wed, Oct 17 2007, David Miller wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Date: Wed, 17 Oct 2007 10:45:28 +0200
-> > > 
-> > > > Righto, it's invalid to call sg_next() on the last entry!
-> > > 
-> > > Unfortunately, that's what the sparc64 code wanted to do, this
-> > > transformation in the sparc64 sg chaining patch is not equilavent:
-> > > 
-> > > -	struct scatterlist *sg_end = sg + nelems;
-> > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
-> > >  ...
-> > > -			while (sg < sg_end &&
-> > > +			while (sg != sg_end &&
+> > schedstat is useful in investigating CPU scheduler behavior.  Ideally, 
+> > I think it is beneficial to have it on all the time.  However, the 
+> > cost of turning it on in production system is quite high, largely due 
+> > to number of events it collects and also due to its large memory 
+> > footprint.
 > > 
-> > Auch indeed. That'd probably be better as a
-> > 
-> >         do {
-> >                 ...
-> >         } while (sg != sg_end);
-> > 
-> > > No, that's not what the code was doing.  The while loop
-> > > has to process the last entry in the list,
-> > > 
-> > > We really needed "sg_end" to be "one past the last element",
-> > > rather than "the last element".
-> > > 
-> > > Since you say that sg_next() on the last entry is illegal,
-> > > and that's what this code would have done to try and reach
-> > > loop termination (it doesn't actually derefrence that
-> > > "end plus one" scatterlist entry) I'll try to code this up
-> > > some other way.
-> > > 
-> > > Besides, sg_last() is so absurdly expensive, it has to walk the entire
-> > > chain in the chaining case.  So better to implement this without it.
-> > 
-> > It is, sg_last() should really not be used a lot since it'll leaf
-> > through the entire sg list. People should either keep count of the
-> > number of entries so that they know when they are dealing with the last
-> > valid entry. Or use the for_each_sg() loop helper, if possible.
-> > 
-> > Drivers are usually very simple, the iommu code does more sg tricks and
-> > thus is more complex to audit.
+> > Most of the fields probably don't need to be full 64-bit on 64-bit 
+> > arch.  Rolling over 4 billion events will most like take a long time 
+> > and user space tool can be made to accommodate that.  I'm proposing 
+> > kernel to cut back most of variable width on 64-bit system.  (note, 
+> > the following patch doesn't affect 32-bit system).
 > 
-> Can we just remove sg_last?
+> thanks, applied.
+> 
+> note that current -git has a whole bunch of new schedstats fields in 
+> /proc/<PID>/sched which can be used to track the exact balancing 
+> behavior of tasks. It can be cleared via echoing 0 to the file - so 
+> overflow is not an issue. Most of those new fields should probably be 
+> unsigned int too. (they are u64 right now.)
+> 
 
-I think that would be best, we don't want to encourage use of it, it's
-not really clear to people how expensive it is unless they go and look
-at it. The absolute worst case would be someone doing a
+FWIW I can't see how this patch saves a _lot_ of space. The stats are
+per domain or per rq, neither are things that have a lot of instances.
 
-        for_each_sg(sgl, sg, nents) {
-                ...
-                if (sg == sg_last(sgl))
-                        ...
-        }
+That said, I have no actual objection to the patch, just not getting it.
 
-which would be absolutely awful.
-
-But lets let things settle for a few days, then kill sg_last().
-
--- 
-Jens Axboe
 
