@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbXJQDX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936217AbXJQD2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936302AbXJQDX2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761748AbXJQDXT
+	id S936217AbXJQD2x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXJQD2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:23:19 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46117 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760335AbXJQDXS (ORCPT
+	Tue, 16 Oct 2007 23:28:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60953 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752552AbXJQD2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:23:18 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=IFW/1co/uZPWdVLHLgiEGvPpjuTAHLbJAWFOjEPxZzMYZFjEn76R4LGumrnqY/Nt6
-	yCAQi+iCPx4JGCcVAdwSw==
-Date: Tue, 16 Oct 2007 20:22:55 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 4/6] Have zonelist contains structs with both a zone
- pointer and zone_idx
-In-Reply-To: <20070928142446.16783.9970.sendpatchset@skynet.skynet.ie>
-Message-ID: <alpine.DEB.0.9999.0710162022220.2326@chino.kir.corp.google.com>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142446.16783.9970.sendpatchset@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Oct 2007 23:28:44 -0400
+Date: Tue, 16 Oct 2007 20:27:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: akepner@sgi.com
+Cc: Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dma: add dma_flags_set/get_*() interfaces
+Message-Id: <20071016202728.81450e25.akpm@linux-foundation.org>
+In-Reply-To: <20071017014128.GJ5601@sgi.com>
+References: <20071017014128.GJ5601@sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007, Mel Gorman wrote:
+On Tue, 16 Oct 2007 18:41:28 -0700 akepner@sgi.com wrote:
 
-> 
-> Filtering zonelists requires very frequent use of zone_idx(). This is costly
-> as it involves a lookup of another structure and a substraction operation. As
-> the zone_idx is often required, it should be quickly accessible.  The node
-> idx could also be stored here if it was found that accessing zone->node is
-> significant which may be the case on workloads where nodemasks are heavily
-> used.
-> 
-> This patch introduces a struct zoneref to store a zone pointer and a zone
-> index.  The zonelist then consists of an array of this struct zonerefs which
-> are looked up as necessary. Helpers are given for accessing the zone index
-> as well as the node index.
-> 
-> [kamezawa.hiroyu@jp.fujitsu.com: Suggested struct zoneref instead of embedding information in pointers]
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Acked-by: Christoph Lameter <clameter@sgi.com>
+> +#define DMA_BARRIER_ATTR	0x1
+> +#ifndef ARCH_USES_DMA_ATTRS
+> +static inline int dma_flags_set_attr(u32 attr, enum dma_data_direction dir) 
+> +{
+> +	return dir;
+> +}
 
-OOM locking looks good, thanks.
+This function takes an `enum dma_data_direction' as its second arg, but your
+ia64 implementation takes an 'int'.
 
-Acked-by: David Rientjes <rientjes@google.com>
+> +static inline int dma_flags_get_dir(int flags)
+> +{
+> +	return flags;
+> +}
+> +
+> +static inline int dma_flags_get_attr(int flags)
+> +{
+> +	return 0;
+> +}
+
+
