@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXJQWcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbXJQWex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXJQWcg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 18:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXJQWc3
+	id S933686AbXJQWex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 18:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbXJQWep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 18:32:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50052 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758390AbXJQWc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 18:32:28 -0400
-Date: Wed, 17 Oct 2007 15:32:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk
-Subject: Re: [PATCH] dcache: don't expose uninitialized memory in
- /proc/<pid>/fd/<fd>
-Message-Id: <20071017153201.d4e0679b.akpm@linux-foundation.org>
-In-Reply-To: <20071016193557.GB8650@fieldses.org>
-References: <20071016193230.GA8650@fieldses.org>
-	<20071016193557.GB8650@fieldses.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 18:34:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46838 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757641AbXJQWeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 18:34:44 -0400
+Message-ID: <47168DFD.6030900@garzik.org>
+Date: Wed, 17 Oct 2007 18:34:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+CC: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+       James.Bottomley@steeleye.com, nick.cheng@areca.com.tw
+Subject: Re: arcmsr changelog differs from diffs
+References: <200710170007.20454.hpj@urpla.net> <20071017005342.GA14212@atjola.homenet> <200710171241.12575.hpj@urpla.net> <20071017130145.GA15918@atjola.homenet>
+In-Reply-To: <20071017130145.GA15918@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 15:35:57 -0400
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
-
-> From: J. Bruce Fields <bfields@citi.umich.edu>
+Björn Steinbrink wrote:
+> Hi Hans,
 > 
-> Well, it's not especially important that target->d_iname get the
-> contents of dentry->d_iname, but it's important that it get initialized
-> with *something*, otherwise we're just exposing some random piece of
-> memory to anyone who reads the link at /proc/<pid>/fd/<fd> for the
-> deleted file, when it's still held open by someone.
+> On 2007.10.17 12:41:11 +0200, Hans-Peter Jansen wrote:
+>> Dear Björn,
+>>
+>> Am Mittwoch, 17. Oktober 2007 02:53 schrieb Björn Steinbrink:
+>>> And then, if I may guess, James probably just noticed that there were
+>>> changes left and commited them (while they were now down to just the
+>>> whitespace change), without checking what changes were actually left (no
+>>> offense intended). At least I think that git wouldn't cripple the diff
+>>> if the changes that James checked in were not already whitespace-only at
+>>> the time he commited them, and the git history of his tree seems to
+>>> agree.
+>> (*) Thanks for the clarification, Björn. What made me stumbling was the 
+>> different orginators, while Jeff isn't known with catching attention by 
+>> assimilating other peoples contributions. 
 > 
+> I'm just guessing here, and certainly don't want to blame anyone, but
+> Jeff's original patch was from July, while the only date I can find for
+> Nick's commit is September 13th. So it was probably Nick who integrated
+> Jeff's changes into his commit 
 
-hm, that was tricky.
+Correct.
 
-> ---
->  fs/dcache.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> (Am I missing something?  I've also run a test program that copies a
-> short (<36 character) name ontop of a long (>=36 character) name and see
-> that the first time I run it, without this patch, I get unpredicatable
-> results out of /proc/<pid>/fd/<fd>.)
-> 
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index 5663a31..24252fc 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -1483,6 +1483,8 @@ static void switch_names(struct dentry *dentry, struct dentry *target)
->  			 * dentry:internal, target:external.  Steal target's
->  			 * storage and make target internal.
->  			 */
-> +			memcpy(target->d_iname, dentry->d_name.name,
-> +					dentry->d_name.len + 1);
->  			dentry->d_name.name = target->d_name.name;
->  			target->d_name.name = target->d_iname;
->  		}
+It's also quite normal for the maintainer to grab a patch off the list, 
+integrate/massage/change it, and then apply it himself.
 
-Or we could just stick a \0 in there.
+	Jeff
 
-Or perhaps we should set it to "(deleted file)"?
+
