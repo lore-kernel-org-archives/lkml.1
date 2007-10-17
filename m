@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbXJQS2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbXJQS2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbXJQS2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 14:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXJQS2V
+	id S932139AbXJQS2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 14:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbXJQS2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 14:28:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:40298 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbXJQS2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 14:28:21 -0400
-Message-ID: <47165444.30208@goop.org>
-Date: Wed, 17 Oct 2007 11:28:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] paravirt_ops and xen updates for 2.6.24
-References: <47150D5E.6090504@goop.org> <47164C89.60400@goop.org> <20071017180626.GA9307@elte.hu>
-In-Reply-To: <20071017180626.GA9307@elte.hu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 14:28:24 -0400
+Received: from sccmmhc92.asp.att.net ([204.127.203.212]:35138 "EHLO
+	sccmmhc92.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759082AbXJQS2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 14:28:23 -0400
+From: nicholas.thompson1@mchsi.com
+To: linux-kernel@vger.kernel.org
+Subject: Re: your mail
+Date: Wed, 17 Oct 2007 18:28:21 +0000
+Message-Id: <101720071828.14460.471654440008AFC00000387C219792474103010CD2079C080C03BFCE02019C9F0301089BD29C0E0401080C0702@mchsi.com>
+X-Mailer: AT&T Message Center Version 1 (May  3 2007)
+X-Authenticated-Sender: bmljaG9sYXMudGhvbXBzb24xQG1jaHNpLmNvbQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, could we do the arch/x86 changes via the arch/x86 tree instead? 
-> We've got about a 100 patches pending there now, under QA, preparing 
-> them for pushout. Will check your paravirt patches too, ok?
+>Nope, wrong clues.
+>The right clues are in the footer of this message after it travels thru the list.
+>
+>I supplied them to Nicholas already, but apparently others need to be reminded of
+>them every now and then  :-]   That footer is in these list messages for a reason!
+>
+>    /Matti Aarnio -- one of  <postmaster@vger.kernel.org>
+>
+>PS: You want to contact VGER's email and list managers ?
+>    We use the internet email standard address "postmaster"
+>
 
-Yep, that's fine.
+Jan, Matti, + List,
+ I am very sorry about the noise, that's what I get for using cut and paste while tired and before my third cup of coffee. ;p Apologies.
 
-    J
+Nick 
 
+>>On Wed, Oct 17, 2007 at 06:36:19PM +0200, Jan Engelhardt wrote:
+>> Date: Wed, 17 Oct 2007 18:36:19 +0200 (CEST)
+>> From: Jan Engelhardt <jengelh@computergmbh.de>
+>> To: nicholas.thompson1@mchsi.com
+>> cc: linux-kernel@vger.kernel.org
+>> Subject: Re: your mail
+>> 
+>> On Oct 17 2007 16:30, nicholas.thompson1@mchsi.com wrote:
+>> >Date: Wed, 17 Oct 2007 16:30:24 +0000
+>> >From:  <nicholas.thompson1@mchsi.com>
+>> >To:  <linux-kernel@vger.kernel.org>
+>>              ^^^^^^
+> >>
+> >>subscribe linux-alpha
+>>                  ^^^^^
