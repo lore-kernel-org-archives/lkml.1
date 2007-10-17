@@ -1,130 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765104AbXJQNzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763879AbXJQOCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765104AbXJQNzl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbXJQNzd
+	id S1763879AbXJQOCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 10:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbXJQOC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:55:33 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:59689 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757204AbXJQNzc (ORCPT
+	Wed, 17 Oct 2007 10:02:27 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55924 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754518AbXJQOC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:55:32 -0400
-Message-ID: <47161451.9010309@tiscali.nl>
-Date: Wed, 17 Oct 2007 15:55:29 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 17 Oct 2007 10:02:26 -0400
+Date: Wed, 17 Oct 2007 08:02:24 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Theodore Tso <tytso@mit.edu>, pcihpd-discuss@lists.sourceforge.net,
+       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [Pcihpd-discuss] [PATCH 1/4] Fix PCIe hotplug for non-ACPI ExpressCard slots (version 2)
+Message-ID: <20071017140224.GD16728@parisc-linux.org>
+References: <471509FE.7080505@rtr.ca> <47151191.40406@rtr.ca> <20071016130757.ed2f2ce4.kristen.c.accardi@intel.com> <4715217D.2000803@rtr.ca> <20071016214143.GC21815@kroah.com> <471533AF.60100@rtr.ca> <47156B14.2080608@rtr.ca> <47156B40.4060006@rtr.ca> <20071017032907.GA16728@parisc-linux.org> <47160984.7030308@rtr.ca>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] fix not-and/or errors
-References: <47161243.6060007@tiscali.nl>
-In-Reply-To: <47161243.6060007@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47160984.7030308@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    if(!x & y) should either be if(!(x & y)) or if(!x && y)
-    I made changes as seemed appropriate, but please review
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/arm/mach-pxa/mfp.c b/arch/arm/mach-pxa/mfp.c
-index 5cd3cad..7229319 100644
---- a/arch/arm/mach-pxa/mfp.c
-+++ b/arch/arm/mach-pxa/mfp.c
-@@ -199,7 +199,7 @@ void pxa3xx_mfp_set_edge(int mfp, int edge)
- 
- 	mfpr_val &= ~MFPR_EDGE_MASK;
- 	mfpr_val |= (edge & 0x3u) << MFPR_ERE_OFFSET;
--	mfpr_val |= (!edge & 0x1) << MFPR_EC_OFFSET;
-+	mfpr_val |= (!(edge & 0x1)) << MFPR_EC_OFFSET;
- 
- 	mfpr_writel(mfpr_off, mfpr_val);
- 	mfpr_sync();
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index 3d45d24..7d78d22 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -858,7 +858,7 @@ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
- 	lsapic = (struct acpi_madt_local_sapic *)obj->buffer.pointer;
- 
- 	if ((lsapic->header.type != ACPI_MADT_TYPE_LOCAL_SAPIC) ||
--	    (!lsapic->lapic_flags & ACPI_MADT_ENABLED)) {
-+	    (!(lsapic->lapic_flags & ACPI_MADT_ENABLED))) {
- 		kfree(buffer.pointer);
- 		return -EINVAL;
- 	}
-diff --git a/arch/sh/drivers/dma/dma-sh.c b/arch/sh/drivers/dma/dma-sh.c
-index 958bac1..e8f9c85 100644
---- a/arch/sh/drivers/dma/dma-sh.c
-+++ b/arch/sh/drivers/dma/dma-sh.c
-@@ -89,7 +89,7 @@ static irqreturn_t dma_tei(int irq, void *dev_id)
- 
- static int sh_dmac_request_dma(struct dma_channel *chan)
- {
--	if (unlikely(!chan->flags & DMA_TEI_CAPABLE))
-+	if (unlikely(!(chan->flags & DMA_TEI_CAPABLE)))
- 		return 0;
- 
- 	return request_irq(get_dmte_irq(chan->chan), dma_tei,
-diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
-index cd8c740..a2cf955 100644
---- a/arch/sparc64/kernel/time.c
-+++ b/arch/sparc64/kernel/time.c
-@@ -1070,7 +1070,7 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	 * Not having a register set can lead to trouble.
- 	 * Also starfire doesn't have a tod clock.
- 	 */
--	if (!mregs && !dregs & !bregs)
-+	if (!mregs && !dregs && !bregs)
- 		return -1;
- 
- 	if (mregs) {
-diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
-index d915fec..5a67a87 100644
---- a/drivers/acpi/asus_acpi.c
-+++ b/drivers/acpi/asus_acpi.c
-@@ -596,7 +596,7 @@ write_led(const char __user * buffer, unsigned long count,
- 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
- 
- 	if (invert)		/* invert target value */
--		led_out = !led_out & 0x1;
-+		led_out = !(led_out & 0x1);
- 
- 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
- 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 9b2c0f7..48fbe9e 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -420,8 +420,8 @@ static int acpi_battery_update(struct acpi_battery *battery,
- 		result = acpi_battery_get_status(battery);
- 		if (result)
- 			goto end;
--		if ((!battery->flags.battery_present_prev & acpi_battery_present(battery))
--		    || (battery->flags.battery_present_prev & !acpi_battery_present(battery))) {
-+		if ((!battery->flags.battery_present_prev && acpi_battery_present(battery))
-+		    || (battery->flags.battery_present_prev && !acpi_battery_present(battery))) {
- 			result = acpi_battery_init_update(battery);
- 			if (result)
- 				goto end;
-diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
-index 9f4e67e..37079d9 100644
---- a/drivers/block/paride/pt.c
-+++ b/drivers/block/paride/pt.c
-@@ -660,11 +660,11 @@ static int pt_open(struct inode *inode, struct file *file)
- 	pt_identify(tape);
- 
- 	err = -ENODEV;
--	if (!tape->flags & PT_MEDIA)
-+	if (!(tape->flags & PT_MEDIA))
- 		goto out;
- 
- 	err = -EROFS;
--	if ((!tape->flags & PT_WRITE_OK) && (file->f_mode & 2))
-+	if ((!(tape->flags & PT_WRITE_OK)) && (file->f_mode & 2))
- 		goto out;
- 
- 	if (!(iminor(inode) & 128))
+On Wed, Oct 17, 2007 at 09:09:24AM -0400, Mark Lord wrote:
+> > I'd argue these comments fall under "stating the bleedin' obvious", but
+> > that's Kristen's call.
+> 
+> Hey, they're original to the file.  I'm just keeping checkpatch.pl happy here.
+> Ditto for everything else you commented on.
 
+I can see that they were there before. I just think the appropriate
+patch is to delete them rather than to move them
+
+> >>  	case INT_PRESENCE_OFF:
+> >>  		if (!HP_SUPR_RM(ctrl->ctrlcap))
+> >>  			break;
+> >> -		dbg("Surprise Removal\n");
+> >> +		dbg("Surprise Event\n");
+> >>  		update_slot_info(p_slot);
+> >>  		handle_surprise_event(p_slot);
+> >>  		break;
+> > 
+> > That doesn't seem like an obviously correct change to me.  Can you
+> > explain?
+> 
+> Yeah.  You clipped the top line:  case INT_PRESENCE_ON:
+> So that code can be run for both hot plug and hot remove operations.
+
+I didn't clip it -- diff did when it inserted three lines of context.
+
+> ..
+> >> -	temp_word = (temp_word & ~intr_enable) | intr_enable; 
+> >> +	temp_word = (temp_word & ~intr_enable) | intr_enable;
+> > 
+> > *boggle*
+> 
+> Dig out your text editor, and notice the excess whitespace at the end of the line,
+> along with similar stuff on most other lines in this patch.
+
+You, however, did clip the important line.
+
+> > 	temp_word |= intr_enable;
+
+which is what I was saying the above is equivalent to.
+
+> This is all just stuff that checkpatch.pl complains about when
+> the later patches are applied, so patch 01_... serves to reduce
+> the noise level from checkpatch.pl for the *real* patches which follow.
+
+I know, but if you're going to remove whitespace from a line, you might
+as well change the line to look like idiomatic C rather than something
+an Ada programmer wrote.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
