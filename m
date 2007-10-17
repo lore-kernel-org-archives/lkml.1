@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936560AbXJQD3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936464AbXJQD31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936560AbXJQD3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936466AbXJQD31
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S936464AbXJQD31 (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 16 Oct 2007 23:29:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44377 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936457AbXJQD30 (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935824AbXJQD3M
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 16 Oct 2007 23:29:12 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54124 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936293AbXJQD3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:29:26 -0400
-Date: Tue, 16 Oct 2007 20:29:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: akepner@sgi.com
-Cc: Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] dma: redefine dma_flags_set/get_*() for sn-ia64
-Message-Id: <20071016202904.8e9d505b.akpm@linux-foundation.org>
-In-Reply-To: <20071017014316.GK5601@sgi.com>
-References: <20071017014316.GK5601@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Oct 2007 23:29:09 -0400
+Date: Tue, 16 Oct 2007 21:29:07 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 1/4] Fix PCIe hotplug for non-ACPI ExpressCard slots (version 2)
+Message-ID: <20071017032907.GA16728@parisc-linux.org>
+References: <20071016114328.a96e8bcb.kristen.c.accardi@intel.com> <47150982.6050102@rtr.ca> <471509FE.7080505@rtr.ca> <47151191.40406@rtr.ca> <20071016130757.ed2f2ce4.kristen.c.accardi@intel.com> <4715217D.2000803@rtr.ca> <20071016214143.GC21815@kroah.com> <471533AF.60100@rtr.ca> <47156B14.2080608@rtr.ca> <47156B40.4060006@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47156B40.4060006@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 18:43:16 -0700 akepner@sgi.com wrote:
+On Tue, Oct 16, 2007 at 09:54:08PM -0400, Mark Lord wrote:
+> -	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
+> +	/* Check if slot is occupied */
+> +	t_slot->hpc_ops->get_adapter_status(t_slot, &value);
+>  	if ((POWER_CTRL(ctrl->ctrlcap)) && !value) {
+> -		rc = t_slot->hpc_ops->power_off_slot(t_slot); /* Power off slot if not occupied*/
+> +		/* Power off slot if not occupied*/
+> +		rc = t_slot->hpc_ops->power_off_slot(t_slot);
 
-> @@ -153,7 +153,7 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
->   * @dev: device to map for
->   * @cpu_addr: kernel virtual address of the region to map
->   * @size: size of the region
-> - * @direction: DMA direction
-> + * @flags: DMA direction, and arch-specific attributes
->   *
->   * Map the region pointed to by @cpu_addr for DMA and return the
->   * DMA address.
-> @@ -167,17 +167,23 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
->   *       figure out how to save dmamap handle so can use two step.
->   */
->  dma_addr_t sn_dma_map_single(struct device *dev, void *cpu_addr, size_t size,
-> -			     int direction)
-> +			     int flags)
->  {
->  	dma_addr_t dma_addr;
->  	unsigned long phys_addr;
->  	struct pci_dev *pdev = to_pci_dev(dev);
->  	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-> +	int dmabarrier = dma_flags_get_attr(flags) & DMA_BARRIER_ATTR;
+I'd argue these comments fall under "stating the bleedin' obvious", but
+that's Kristen's call.
 
-So we take an `enum data_direction' and then wedge it into a word alongside
-some extra flags?
+>  	case INT_PRESENCE_OFF:
+>  		if (!HP_SUPR_RM(ctrl->ctrlcap))
+>  			break;
+> -		dbg("Surprise Removal\n");
+> +		dbg("Surprise Event\n");
+>  		update_slot_info(p_slot);
+>  		handle_surprise_event(p_slot);
+>  		break;
 
-Can we do something nicer than that?
+That doesn't seem like an obviously correct change to me.  Can you
+explain?
+
+> -	if (((cap_reg & SLOT_IMPL) == 0) || (((cap_reg & DEV_PORT_TYPE) != 0x0040)
+> +	if (((cap_reg & SLOT_IMPL) == 0)
+> +		|| (((cap_reg & DEV_PORT_TYPE) != 0x0040)
+>  		&& ((cap_reg & DEV_PORT_TYPE) != 0x0060))) {
+> -		dbg("%s : This is not a root port or the port is not connected to a slot\n", __FUNCTION__);
+> +		dbg("%s : This is not a root port"
+> +		" or the port is not connected to a slot\n", __FUNCTION__);
+>  		goto abort_free_ctlr;
+
+Normal style would be more like ...
+
+	if (((cap_reg & SLOT_IMPL) == 0) ||
+	    (((cap_reg & DEV_PORT_TYPE) != 0x0040) &&
+	     ((cap_reg & DEV_PORT_TYPE) != 0x0060))) {
+		dbg("%s : This is not a root port or the port is not "
+		    "connected to a slot\n", __FUNCTION__);
+
+> -	info("HPC vendor_id %x device_id %x ss_vid %x ss_did %x\n", pdev->vendor, pdev->device, 
+> +	info("HPC vendor_id %x device_id %x ss_vid %x"
+> +		" ss_did %x\n", pdev->vendor, pdev->device,
+>  		pdev->subsystem_vendor, pdev->subsystem_device);
+
+Why did you choose to break the format string?
+
+	info("HPC vendor_id %x device_id %x ss_vid %x ss_did %x\n",
+		pdev->vendor, pdev->device,
+		pdev->subsystem_vendor, pdev->subsystem_device);
+
+> -	temp_word = (temp_word & ~HP_INTR_ENABLE & ~CMD_CMPL_INTR_ENABLE) | 0x00;
+> +	temp_word = (temp_word & ~HP_INTR_ENABLE & ~CMD_CMPL_INTR_ENABLE)|0x00;
+
+Just delete the | 0x00?
+
+> -	temp_word = (temp_word & ~intr_enable) | intr_enable; 
+> +	temp_word = (temp_word & ~intr_enable) | intr_enable;
+
+*boggle*
+	temp_word |= intr_enable;
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
