@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936148AbXJQBzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935778AbXJQCBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936148AbXJQBzt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 21:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965899AbXJQBzd
+	id S935778AbXJQCBq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 22:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXJQCBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 21:55:33 -0400
-Received: from rtr.ca ([76.10.145.34]:3471 "EHLO mail.rtr.ca"
+	Tue, 16 Oct 2007 22:01:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3696 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965879AbXJQBzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 21:55:31 -0400
-Message-ID: <47156B92.7070501@rtr.ca>
-Date: Tue, 16 Oct 2007 21:55:30 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, pcihpd-discuss@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>
-Subject: [PATCH 4/4] Fix PCIe hotplug for non-ACPI ExpressCard slots (version
- 2)
-References: <4714C0A6.1030204@rtr.ca> <4714D700.7060008@rtr.ca> <20071016084634.8a0d695a.kristen.c.accardi@intel.com> <47150565.5090102@rtr.ca> <20071016114328.a96e8bcb.kristen.c.accardi@intel.com> <47150982.6050102@rtr.ca> <471509FE.7080505@rtr.ca> <47151191.40406@rtr.ca> <20071016130757.ed2f2ce4.kristen.c.accardi@intel.com> <4715217D.2000803@rtr.ca> <20071016214143.GC21815@kroah.com> <471533AF.60100@rtr.ca> <47156B14.2080608@rtr.ca> <47156B40.4060006@rtr.ca> <47156B62.3070807@rtr.ca> <47156B7B.8010800@rtr.ca>
-In-Reply-To: <47156B7B.8010800@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753806AbXJQCBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 22:01:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,286,1188802800"; 
+   d="scan'208";a="248797958"
+Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1192168345.17539.42.camel@caritas-dev.intel.com>
+References: <1192168345.17539.42.camel@caritas-dev.intel.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 17 Oct 2007 09:59:36 +0800
+Message-Id: <1192586376.17856.26.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 17 Oct 2007 01:57:10.0354 (UTC) FILETIME=[077CA320:01C81061]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make use of the previously split out pcie_init_enable_events() function
-to reinitialize the hotplug hardware on resume from suspend,
-but only when pciehp_force==1.  Otherwise behaviour is unmodified.
+On Fri, 2007-10-12 at 13:52 +0800, Huang, Ying wrote:
+> Known Issues:
+> 
+> - Where is safe to place the linked list of setup_data?  Because the
+>   length of the linked list of setup_data is variable, it can not be
+>   copied into BSS segment of kernel as that of "zero page". We must
+>   find a safe place for it, where it will not be overwritten by kernel
+>   during booting up. The i386 kernel will overwrite some pages after
+>   _end. The x86_64 kernel will overwrite some pages from 0x1000 on.
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
----
---- old/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:17:27.000000000 -0400
-+++ linux/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:28:36.000000000 -0400
-@@ -37,7 +37,6 @@
- #include "pciehp.h"
- 
- static void interrupt_event_handler(struct work_struct *work);
--static int pciehp_disable_slot(struct slot *p_slot);
- 
- static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
- {
---- old/drivers/pci/hotplug/pciehp.h	2007-10-16 21:17:27.000000000 -0400
-+++ linux/drivers/pci/hotplug/pciehp.h	2007-10-16 21:28:42.000000000 -0400
-@@ -162,6 +162,8 @@
- extern void pciehp_queue_pushbutton_work(struct work_struct *work);
- int pcie_init(struct controller *ctrl, struct pcie_device *dev);
- int pciehp_enable_slot(struct slot *p_slot);
-+int pciehp_disable_slot(struct slot *p_slot);
-+int pcie_init_enable_events(struct controller *ctrl, struct pcie_device *dev);
- 
- static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
- {
---- old/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:17:27.000000000 -0400
-+++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:30:19.000000000 -0400
-@@ -512,6 +512,24 @@
- static int pciehp_resume (struct pcie_device *dev)
- {
- 	printk("%s ENTRY\n", __FUNCTION__);	
-+	if (pciehp_force) {
-+		struct pci_dev *pdev = dev->port;
-+		struct controller *ctrl = pci_get_drvdata(pdev);
-+		struct slot *t_slot;
-+		u8 status;
-+
-+		/* reinitialize the chipset's event detection logic */
-+		pcie_init_enable_events(ctrl, dev);
-+
-+		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
-+
-+		/* Check if slot is occupied */
-+		t_slot->hpc_ops->get_adapter_status(t_slot, &status);
-+		if (status)
-+			pciehp_enable_slot(t_slot);
-+		else
-+			pciehp_disable_slot(t_slot);
-+	}
- 	return 0;
- }
- #endif
+Do you think it is a good idea to check the collision between setup data
+and memory area used during kernel boot through bootmem allocator? If
+any memory area used by setup data is reserved in bootmem allocator by
+some other kernel subsystem, there is a collision, otherwise, the setup
+data should be safe.
+
+Best Regards,
+Huang Ying
