@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbXJQNAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765835AbXJQNCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932745AbXJQNAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765189AbXJQNA1
+	id S1765835AbXJQNCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 09:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbXJQNBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:00:27 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54347 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764998AbXJQNA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:00:26 -0400
-Date: Wed, 17 Oct 2007 09:00:25 -0400
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Valdis.Kletnieks@vt.edu, 7eggert@gmx.de, prasad@linux.vnet.ibm.com,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: gigabit ethernet power consumption
-Message-ID: <20071017130025.GN4000@csclub.uwaterloo.ca>
-References: <9c8XH-7gs-13@gated-at.bofh.it> <9c9qN-7Rn-19@gated-at.bofh.it> <9cs0n-3Dc-9@gated-at.bofh.it> <9csjH-43E-33@gated-at.bofh.it> <9d4yC-5hT-7@gated-at.bofh.it> <9d7ZJ-2mI-11@gated-at.bofh.it> <E1Ig9wz-0000sg-Ep@be1.lrz> <470FA243.6030908@intel.com> <12419.1192221016@turing-police.cc.vt.edu> <470FDD29.9030708@intel.com>
+	Wed, 17 Oct 2007 09:01:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50857 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757655AbXJQNBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 09:01:51 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18REkYiy68R3u5+dwGzKTdswvxjWjLW/FEULREpeH
+	iuJW515PxJSBFn
+Date: Wed, 17 Oct 2007 15:01:45 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       James.Bottomley@steeleye.com, nick.cheng@areca.com.tw
+Subject: Re: arcmsr changelog differs from diffs
+Message-ID: <20071017130145.GA15918@atjola.homenet>
+References: <200710170007.20454.hpj@urpla.net> <20071017005342.GA14212@atjola.homenet> <200710171241.12575.hpj@urpla.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <470FDD29.9030708@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710171241.12575.hpj@urpla.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 12, 2007 at 01:46:33PM -0700, Kok, Auke wrote:
-> I would assume that that is true for all PHY's - if there is no link to keep the
-> carrier active on I would think that the power consumption is nominal across the
-> board. Once the PHY detects link pulses it should obviously use different power
-> levels to negotiate the link for each speed.
+Hi Hans,
+
+On 2007.10.17 12:41:11 +0200, Hans-Peter Jansen wrote:
+> Dear Björn,
 > 
-> PHY autonegotiation just works the same across the board - the PHY's send out
-> little pulses (iow nominal power consumption) to detect a link partner, and only
-> when one is found do they engage in more aggressive conversation to establish
-> capabilities across the link.
+> Am Mittwoch, 17. Oktober 2007 02:53 schrieb Björn Steinbrink:
+> > And then, if I may guess, James probably just noticed that there were
+> > changes left and commited them (while they were now down to just the
+> > whitespace change), without checking what changes were actually left (no
+> > offense intended). At least I think that git wouldn't cripple the diff
+> > if the changes that James checked in were not already whitespace-only at
+> > the time he commited them, and the git history of his tree seems to
+> > agree.
+> 
+> (*) Thanks for the clarification, Björn. What made me stumbling was the 
+> different orginators, while Jeff isn't known with catching attention by 
+> assimilating other peoples contributions. 
 
-Too bad not much can be done about fibre ports, but then again you can't
-even change speeds on those.  Then again those are not on laptops or
-other low power devices in the first place.
+I'm just guessing here, and certainly don't want to blame anyone, but
+Jeff's original patch was from July, while the only date I can find for
+Nick's commit is September 13th. So it was probably Nick who integrated
+Jeff's changes into his commit (maybe thinking that Jeff's patch got
+lost), not Jeff assimilating a subset of Nick's changes.
 
---
-Len Sorensen
+Björn
