@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761820AbXJQHas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbXJQHlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761820AbXJQHas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbXJQHal
+	id S1758635AbXJQHlN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJQHk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:30:41 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53639 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbXJQHak (ORCPT
+	Wed, 17 Oct 2007 03:40:58 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:41137 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbXJQHk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:30:40 -0400
-Message-ID: <4715B9C4.8000904@linux.vnet.ibm.com>
-Date: Wed, 17 Oct 2007 12:59:08 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Wed, 17 Oct 2007 03:40:57 -0400
+Date: Wed, 17 Oct 2007 09:40:52 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: viro@ftp.linux.org.uk, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] missing include in mmc
+In-Reply-To: <20071017032139.17D6323A687@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Message-ID: <Pine.LNX.4.64.0710170937290.29643@anakin>
+References: <20071017000907.GF8181@ftp.linux.org.uk>
+ <20071017002551.3577B23B309@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20071017020445.GG8181@ftp.linux.org.uk>
+ <20071017032139.17D6323A687@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [BUG] 2.6.23-rc9 kernel panic - simple_map_write+0x4e/0x75
-References: <4710686C.8060603@linux.vnet.ibm.com> <20071016134620.7b3ce56f.akpm@linux-foundation.org> <4715B5A5.9050005@linux.vnet.ibm.com> <20071017002317.7ae2cbf4.akpm@linux-foundation.org>
-In-Reply-To: <20071017002317.7ae2cbf4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 17 Oct 2007 12:41:33 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->>>> [  321.592882] Code: 83 f8 01 75 0a 03 7b 10 8b 45 d4 88 07 eb 35 83 f8 02 75 0c
->>>> 0f b7 45 d4 03 7b 10 66 89 07 eb 24 83 f8 04 75 0a 03 7b 10 8b 45 d4 <89> 07 eb
->>>> 15 7e 13 03 7b 10 89 c1 c1 e9 02 f3 a5 89 c1 83 e1 03 
->>>> [  321.668990] EIP: [<c0d7e4e2>] simple_map_write+0x4e/0x75 SS:ESP 0068:c3ca8d6c
->>>> [  321.695750] Kernel panic - not syncing: Attempted to kill init!
->>> Would I be correct in assuming that the machine has no mtd devices, but
->>> you happened to link that driver into your vmlinux?
->>>
->> Hi Andrew,
->>
->> The machine do not have the mtd device, and the mtd is compiled into the vmlinuz.
->> This configuration works fine for other kernels and is reproducible with
->> 2.6.23-rc9 only.
-> 
-> So 2.6.23 is OK?
+On Tue, 16 Oct 2007, David Brownell wrote:
+> > > > AFAICS, fallout from repacing include of blkdev.h with include of bio.h.
+> > > 
+> > > Out of curiousity, which architecture(s) need this?
+> >
+> > Umm...   IIRC, m32r had been the first build to step into that, at which point
+> > the missing include had been added; the rest had reached that point later, so
+> > I'm not sure which ones would trigger the same crap.  Not hard to test,
+> > though...
+> >
+> > Aha.  m68k as well.
 
-Hi Andrew,
+Yesterday I saw a similar issue with drivers/md/dm-mpath-rdac.c, but it
+disappeared during the night, and I didn't see an obvious change that
+fixed it...
 
-The kernel panic is not seen in 2.6.23 kernel with CONFIG_MTD set.
+> Every time I seee a case where architectures don't act the same
+> with respect to #includes, I count it as an unpleasant surprise.
+> Not one that's very easy to avoid, unfortunately, but I think it's
+> been happening less often lately.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Simple rule of thumb: he who uses fields of struct xxx should include
+the header file that defines struct xxx...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
