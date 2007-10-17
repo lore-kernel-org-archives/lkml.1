@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935890AbXJQQjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936461AbXJQQjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935890AbXJQQjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 12:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759810AbXJQQjJ
+	id S936461AbXJQQjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 12:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935921AbXJQQjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 12:39:09 -0400
-Received: from mga02.intel.com ([134.134.136.20]:57402 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753638AbXJQQjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 12:39:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,290,1188802800"; 
-   d="scan'208";a="249311964"
-Message-ID: <47163A95.1000708@intel.com>
-Date: Wed, 17 Oct 2007 09:38:45 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	Wed, 17 Oct 2007 12:39:20 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4401 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935408AbXJQQjS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 12:39:18 -0400
+Date: Wed, 17 Oct 2007 17:39:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: "Mike D. Day" <ncmike@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] checkpatch: Fix line number reporting
+Message-ID: <20071017163916.GO21136@shadowen.org>
+References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Valdis.Kletnieks@vt.edu, 7eggert@gmx.de, prasad@linux.vnet.ibm.com,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: gigabit ethernet power consumption
-References: <9c8XH-7gs-13@gated-at.bofh.it> <9c9qN-7Rn-19@gated-at.bofh.it> <9cs0n-3Dc-9@gated-at.bofh.it> <9csjH-43E-33@gated-at.bofh.it> <9d4yC-5hT-7@gated-at.bofh.it> <9d7ZJ-2mI-11@gated-at.bofh.it> <E1Ig9wz-0000sg-Ep@be1.lrz> <470FA243.6030908@intel.com> <12419.1192221016@turing-police.cc.vt.edu> <470FDD29.9030708@intel.com> <20071017130025.GN4000@csclub.uwaterloo.ca>
-In-Reply-To: <20071017130025.GN4000@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Oct 2007 16:39:06.0128 (UTC) FILETIME=[3BBEF900:01C810DC]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Fri, Oct 12, 2007 at 01:46:33PM -0700, Kok, Auke wrote:
->> I would assume that that is true for all PHY's - if there is no link to keep the
->> carrier active on I would think that the power consumption is nominal across the
->> board. Once the PHY detects link pulses it should obviously use different power
->> levels to negotiate the link for each speed.
->>
->> PHY autonegotiation just works the same across the board - the PHY's send out
->> little pulses (iow nominal power consumption) to detect a link partner, and only
->> when one is found do they engage in more aggressive conversation to establish
->> capabilities across the link.
+On Tue, Oct 16, 2007 at 01:59:49PM -0400, Erez Zadok wrote:
+> In message <20071015182118.GA4459@shadowen.org>, Andy Whitcroft writes:
+> > On Sat, Oct 13, 2007 at 02:35:12PM -0400, Erez Zadok wrote:
+> > > In message <20071012193751.GA31579@shadowen.org>, Andy Whitcroft writes:
+> > > > On Fri, Oct 12, 2007 at 03:26:54PM -0400, Mike D. Day wrote:
+> > > > > Fix line number reporting when checking source files (as opposed to
+> > > > > patches)
+> > > > > 
+> > > > > Signed-off-by: Mike D. Day <ncmike@us.ibm.com>
+> > > > 
+> > > > Sorry you've had to fix this about 4 times, mostly because of ongoing
+> > > > changes, and slow replication getting in the way.  I've applied this
+> > > > and you should find it in -next when replication hits.  md5sum is
+> > > > below of the version with it in, so you can make sure you've got
+> > > > the right one.
+> > > > 
+> > > > 54f053c50265e44a6041e3147dc66a69  checkpatch.pl
+> > > > 
+> > > > -apw
+> > > 
+> > > Andy, I've tested the --emacs feature in the above latest
+> > > checkpatch.pl-next.  Below is a patch that completes the functionality of
+> > > the --emacs option: it ensures that only the cc-style error messages are
+> > > printed, no extra context lines or caret lines, no extra newlines, etc.
+> > > Although this patch changes every call to a message-producing function, it
+> > > is a trivial change, and I believe it's the cleanest way to handle the
+> > > separation between the terse cc-style messages and the verbose default
+> > > messages.  With this patch, I can finally test a single source file as
+> > > follows:
+> > > 
+> > > $ ./scripts/checkpatch.pl -q -q --emacs --file path/name/to/file
+> > 
+> > Ok I don't understand why the rest of the lines are a problem?  At least
+> > with emacs the extra context lines are just ignored right?  Are you
+> > trying to use this as a summary?
 > 
-> Too bad not much can be done about fibre ports, but then again you can't
-> even change speeds on those.  Then again those are not on laptops or
-> other low power devices in the first place.
+> Andy,
+> 
+> I'm trying to minimize excess stuff that's not necessarily useful for
+> everyone, and to match what is done elsewhere.  For example, I don't need
+> those extra newlines and find them a distraction.  And if get an error
+> message such as "put a space after a comma", I don't really need a caret
+> sign to point to the exact char in the line where it is.
+> 
+> When g/cc prints out errors from a compile, the errors are one per line, w/o
+> any additional context lines, caret markers, newlines, etc.  grep -n does
+> the same (also useful inside emacs).  So I'm just asking for a way to have
+> the same terse format.
+> 
+> If you feel that the extra info is still useful for some people, then can
+> you please provide a way for some people like me to turn off the extra lines
+> (pass a third -q, or a --terse option)?
 
-the only thing we do for fiber ports is power off the laser if the user explicitly
-powers them down at shutdown. Note that WoL needs to be disabled for that.
+Ahh, ok so this isn't quite the same as the --emacs madness.  Will see
+what we can do.  I saw your patch changing every caller, and perhaps we
+can avoid that.
 
-Auke
+-apw
