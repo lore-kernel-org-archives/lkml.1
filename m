@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966110AbXJQAAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935482AbXJQACt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966110AbXJQAAn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 20:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965515AbXJQAAI
+	id S935482AbXJQACt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 20:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXJQACk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 20:00:08 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56981
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965459AbXJQAAF (ORCPT
+	Tue, 16 Oct 2007 20:02:40 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:52800 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbXJQACj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 20:00:05 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Date: Tue, 16 Oct 2007 18:59:54 -0500
-User-Agent: KMail/1.9.6
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710160138.57893.rob@landley.net> <20071016112859.1b0fba0e@the-village.bc.nu>
-In-Reply-To: <20071016112859.1b0fba0e@the-village.bc.nu>
+	Tue, 16 Oct 2007 20:02:39 -0400
+From: Markus <lists4me@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v19
+Date: Wed, 17 Oct 2007 02:02:30 +0200
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20070706173319.GA2356@elte.hu> <alpine.LFD.0.999.0707171329370.27353@woody.linux-foundation.org> <20070717204358.GA12037@elte.hu>
+In-Reply-To: <20070717204358.GA12037@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710161859.55325.rob@landley.net>
+Message-Id: <200710170202.31914.lists4me@web.de>
+X-Provags-ID: V01U2FsdGVkX1/XScPzV3mMF6nuXFG421c9hkE639jtQ9NphjGC
+	MNLkRJZN23N54rvh82VrFuMMsZ8H8RZ5TJp03E9xA1E/mrRfgj
+	ofL6UJubs=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 October 2007 5:28:59 am Alan Cox wrote:
-> > I'm sure somebody will eventually write an OLS paper or something on the
-> > advisability of making swapping decisions with 4k granularity when disks
-> > really want bigger I/O transactions.
->
-> Funnily enough someone thought of that many years ago. They even added
-> and documented it, then they made it adjustable.
->
-> See the vm section of Documentation/filesystems/proc.txt
+Well, I am now running a 2.6.22 (without cfs) and could now see it once 
+(within a month...) that exactly the same message from konqueror was 
+produced.
+So I think its a general problem of konqueror that was hidden and 
+somehow its triggered much more often with the cfs.
 
-I presume you refer to:
+I just wonder why nobody else has this problem.
 
-  page-cluster
-  ------------
+   Markus
 
-  page-cluster controls the number of pages which are written to swap in
-  a single attempt.  The swap I/O size.
-
-  It is a logarithmic value - setting it to zero means "1 page", setting
-  it to 1 means "2 pages", setting it to 2 means "4 pages", etc.
-
-  The default value is three (eight pages at a time).  There may be some
-  small benefits in tuning this to a different value if your workload is
-  swap-intensive.
-
-I didn't know that controlled whether the pages were contiguous (or written to 
-contiguous locations in swap).  I thought it was just how many the VM tried 
-to free at a time.
-
-Still, worth a tweak.  Thanks.
-
-> Alan
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+PS: I am currently building a 2.6.23.1...
