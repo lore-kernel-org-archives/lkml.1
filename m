@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935434AbXJQUtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934171AbXJQUvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935434AbXJQUtZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933626AbXJQUtK
+	id S934171AbXJQUvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbXJQUvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:49:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:10446 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933631AbXJQUtI (ORCPT
+	Wed, 17 Oct 2007 16:51:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57860 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755669AbXJQUvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:49:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=hkJ4wUuyI/GQny6TKovKZTr9yKu5w5icOXj8EImyaYewFZcwWSApEQrWDbCNid++fX+d/fXb6hV0RtXF26SbzFvcqOvvqkkWHLLNghbOEksTud+YzM7x2s89c025lYJ1T+dsl5GP7U5Uz6LE67iNfnrIom24yI2zi8T6ZikqepA=
-Message-ID: <75b66ecd0710171349n2a2a5922qfc0d8bb64980a15c@mail.gmail.com>
-Date: Wed, 17 Oct 2007 16:49:07 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: VM question - accounting of SysV SHM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 16:51:23 -0400
+Date: Wed, 17 Oct 2007 13:50:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: tes@sgi.com, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: [GIT PULL] XFS update for 2.6.24-rc1
+Message-Id: <20071017135034.0f8cc3bf.akpm@linux-foundation.org>
+In-Reply-To: <20071017203658.GA22073@infradead.org>
+References: <20071017110339.D4B3158C38F1@chook.melbourne.sgi.com>
+	<20071017203658.GA22073@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 3ba63c72060a4a6b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry to ask this question on the list but I've Googled and found nothing.
+On Wed, 17 Oct 2007 21:36:58 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Is system V shared memory accounted for as Cached, or as normal
-application memory?
+> On Wed, Oct 17, 2007 at 09:03:39PM +1000, Tim Shimmin wrote:
+> > Hi Linus,
+> > 
+> > Please pull from the for-linus branch:
+> >     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+> > 
+> > These include changes we have had scheduled for 2.6.24.
+> > In particular they include Christoph's (hch's) behavior removal patches.
+> 
+> Can you please send my '[PATCH] cleanup fid types mess' to Linus aswell?
+> I have a stack of 15 patches reworking the nfs exporting code waiting
+> in -mm to get in in this merge window that depend on this cleanup to
+> free struct fid for generic useage.
+> 
+> Also getting the makefile cleanup into mainline to reduce spurious difference
+> would help a lot.
 
-I have an application that uses SysV shared memory and O_DIRECT for
-all IO, but when it starts up, the cached column in vmstat seems to go
-up by the amount of shared memory allocated.
+argh, -mm's *new-export*.patch has a dependency upon git-xfs's
+ef6567a363c5f301c0bc885068d93cd9b3c05cc9.  I never knew that, but I would
+have found out later today...
 
-Lee
+Tim, if you want I can just steal that diff out of the xfs tree and send it
+in separately.
+
