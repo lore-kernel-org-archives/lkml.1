@@ -1,66 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXJQXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXJQXio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbXJQXfi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXJQXf2
+	id S1761642AbXJQXio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 19:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbXJQXic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:35:28 -0400
-Received: from mail.tmr.com ([64.65.253.246]:50700 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756182AbXJQXf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:35:27 -0400
-Message-ID: <47169E12.2080108@tmr.com>
-Date: Wed, 17 Oct 2007 19:43:14 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Wed, 17 Oct 2007 19:38:32 -0400
+Received: from homer.mvista.com ([63.81.120.158]:9452 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757004AbXJQXib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 19:38:31 -0400
+Message-ID: <47169CEC.5020706@ct.jp.nec.com>
+Date: Wed, 17 Oct 2007 16:38:20 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Greg KH <greg@kroah.com>, Rob Landley <rob@landley.net>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: What still uses the block layer?
-References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com> <4713B58B.9050905@garzik.org>
-In-Reply-To: <4713B58B.9050905@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: merge init_task_32/64.c
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+Merge init_task_32/64.c.
+Move 64bit per cpu data orig_ist to setup64.c.
 
->> But again, please remember that these USB devices are really SCSI
->> devices.  Same for SATA devices.  There is a reason they are using the
->> SCSI layer, and it isn't just because the developers felt like it :)
-> 
-> /somewhat/ true I'm afraid:  libata uses the SCSI layer for ATAPI 
-> devices because they are essentially bridges to SCSI devices.  It uses 
-> the SCSI layer for ATA devices because the SCSI layer provided a huge 
-> amount of infrastructure that would need to have been otherwise 
-> duplicated, /then/ massaged into coordinating between <jgarzik's ATA 
-> layer> and <SCSI layer> when dealing with ATAPI.
-> 
-> There is also a detail that was of /huge/ value when introducing a new 
-> device class:  distro installers automatically work, if you use SCSI. If 
-> you use a new block device type, that behaves differently from other 
-> types and is on a different major, you have to poke the distros into 
-> action or do it yourself.
-> 
-> IOW, it was the high Just Works(tm) value of the SCSI layer when it came 
-> to ATA (not ATAPI) devices.
-> 
-> For the future, ATA will eventually be more independent (though the SCSI 
-> simulator will be available as an option, for compat), but the value is 
-> big enough to put that task on the back-burner.
-> 
-I remember being told that I didn't understand the problem when I 
-suggested using ide-scsi for everything and just hiding the transport. I 
-get great pleasure from having been (mostly) right on that one. I still 
-have old systems running ZIP drives as scsi...
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/i386/Makefile             |    2 +-
+ arch/x86/kernel/Makefile_32    |    2 +-
+ arch/x86/kernel/Makefile_64    |    2 +-
+ arch/x86/kernel/init_task.c    |   49 ++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/init_task_32.c |   46 ----------------------------------
+ arch/x86/kernel/init_task_64.c |   54 ----------------------------------------
+ arch/x86/kernel/setup64.c      |    6 ++++
+ arch/x86_64/Makefile           |    2 +-
+ 8 files changed, 59 insertions(+), 104 deletions(-)
+ create mode 100644 arch/x86/kernel/init_task.c
+ delete mode 100644 arch/x86/kernel/init_task_32.c
+ delete mode 100644 arch/x86/kernel/init_task_64.c
 
+diff --git a/arch/i386/Makefile b/arch/i386/Makefile
+index f036d2d..6966116 100644
+--- a/arch/i386/Makefile
++++ b/arch/i386/Makefile
+@@ -102,7 +102,7 @@ core-$(CONFIG_XEN)		+= arch/x86/xen/
+ # default subarch .h files
+ mflags-y += -Iinclude/asm-x86/mach-default
+ 
+-head-y := arch/x86/kernel/head_32.o arch/x86/kernel/init_task_32.o
++head-y := arch/x86/kernel/head_32.o arch/x86/kernel/init_task.o
+ 
+ libs-y 					+= arch/x86/lib/
+ core-y					+= arch/x86/kernel/ \
+diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+index a3fa11f..69990f0 100644
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
+ 
+-extra-y := head_32.o init_task_32.o vmlinux.lds
++extra-y := head_32.o init_task.o vmlinux.lds
+ 
+ obj-y	:= process_32.o signal_32.o entry_32.o traps_32.o irq_32.o \
+ 		ptrace_32.o time_32.o ioport_32.o ldt_32.o setup_32.o i8259_32.o sys_i386_32.o \
+diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+index 43da662..2fc3d3f 100644
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
+ 
+-extra-y 	:= head_64.o head64.o init_task_64.o vmlinux.lds
++extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
+ EXTRA_AFLAGS	:= -traditional
+ obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
+ 		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
+diff --git a/arch/x86/kernel/init_task.c b/arch/x86/kernel/init_task.c
+new file mode 100644
+index 0000000..b1deb2c
+--- /dev/null
++++ b/arch/x86/kernel/init_task.c
+@@ -0,0 +1,49 @@
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/init_task.h>
++#include <linux/fs.h>
++#include <linux/mqueue.h>
++
++#include <asm/uaccess.h>
++#include <asm/pgtable.h>
++#include <asm/desc.h>
++
++static struct fs_struct init_fs = INIT_FS;
++static struct files_struct init_files = INIT_FILES;
++static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
++static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
++struct mm_struct init_mm = INIT_MM(init_mm);
++
++EXPORT_SYMBOL(init_mm);
++
++/*
++ * Initial thread structure.
++ *
++ * We need to make sure that this is THREAD_SIZE aligned due to the
++ * way process stacks are handled. This is done by having a special
++ * "init_task" linker map entry..
++ */
++union thread_union init_thread_union 
++	__attribute__((__section__(".data.init_task"))) =
++		{ INIT_THREAD_INFO(init_task) };
++
++/*
++ * Initial task structure.
++ *
++ * All other task structs will be allocated on slabs in fork.c
++ */
++struct task_struct init_task = INIT_TASK(init_task);
++
++EXPORT_SYMBOL(init_task);
++
++/*
++ * per-CPU TSS segments. Threads are completely 'soft' on Linux,
++ * no more per-task TSS's. The TSS size is kept cacheline-aligned
++ * so they are allowed to end up in the .data.cacheline_aligned
++ * section. Since TSS's are completely CPU-local, we want them
++ * on exact cacheline boundaries, to eliminate cacheline ping-pong.
++ */ 
++DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
++
+diff --git a/arch/x86/kernel/init_task_32.c b/arch/x86/kernel/init_task_32.c
+deleted file mode 100644
+index d26fc06..0000000
+--- a/arch/x86/kernel/init_task_32.c
++++ /dev/null
+@@ -1,46 +0,0 @@
+-#include <linux/mm.h>
+-#include <linux/module.h>
+-#include <linux/sched.h>
+-#include <linux/init.h>
+-#include <linux/init_task.h>
+-#include <linux/fs.h>
+-#include <linux/mqueue.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/pgtable.h>
+-#include <asm/desc.h>
+-
+-static struct fs_struct init_fs = INIT_FS;
+-static struct files_struct init_files = INIT_FILES;
+-static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
+-static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
+-struct mm_struct init_mm = INIT_MM(init_mm);
+-
+-EXPORT_SYMBOL(init_mm);
+-
+-/*
+- * Initial thread structure.
+- *
+- * We need to make sure that this is THREAD_SIZE aligned due to the
+- * way process stacks are handled. This is done by having a special
+- * "init_task" linker map entry..
+- */
+-union thread_union init_thread_union 
+-	__attribute__((__section__(".data.init_task"))) =
+-		{ INIT_THREAD_INFO(init_task) };
+-
+-/*
+- * Initial task structure.
+- *
+- * All other task structs will be allocated on slabs in fork.c
+- */
+-struct task_struct init_task = INIT_TASK(init_task);
+-
+-EXPORT_SYMBOL(init_task);
+-
+-/*
+- * per-CPU TSS segments. Threads are completely 'soft' on Linux,
+- * no more per-task TSS's.
+- */ 
+-DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
+-
+diff --git a/arch/x86/kernel/init_task_64.c b/arch/x86/kernel/init_task_64.c
+deleted file mode 100644
+index 4ff33d4..0000000
+--- a/arch/x86/kernel/init_task_64.c
++++ /dev/null
+@@ -1,54 +0,0 @@
+-#include <linux/mm.h>
+-#include <linux/module.h>
+-#include <linux/sched.h>
+-#include <linux/init.h>
+-#include <linux/init_task.h>
+-#include <linux/fs.h>
+-#include <linux/mqueue.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/pgtable.h>
+-#include <asm/desc.h>
+-
+-static struct fs_struct init_fs = INIT_FS;
+-static struct files_struct init_files = INIT_FILES;
+-static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
+-static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
+-struct mm_struct init_mm = INIT_MM(init_mm);
+-
+-EXPORT_SYMBOL(init_mm);
+-
+-/*
+- * Initial task structure.
+- *
+- * We need to make sure that this is 8192-byte aligned due to the
+- * way process stacks are handled. This is done by having a special
+- * "init_task" linker map entry..
+- */
+-union thread_union init_thread_union 
+-	__attribute__((__section__(".data.init_task"))) =
+-		{ INIT_THREAD_INFO(init_task) };
+-
+-/*
+- * Initial task structure.
+- *
+- * All other task structs will be allocated on slabs in fork.c
+- */
+-struct task_struct init_task = INIT_TASK(init_task);
+-
+-EXPORT_SYMBOL(init_task);
+-/*
+- * per-CPU TSS segments. Threads are completely 'soft' on Linux,
+- * no more per-task TSS's. The TSS size is kept cacheline-aligned
+- * so they are allowed to end up in the .data.cacheline_aligned
+- * section. Since TSS's are completely CPU-local, we want them
+- * on exact cacheline boundaries, to eliminate cacheline ping-pong.
+- */ 
+-DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
+-
+-/* Copies of the original ist values from the tss are only accessed during
+- * debugging, no special alignment required.
+- */
+-DEFINE_PER_CPU(struct orig_ist, orig_ist);
+-
+-#define ALIGN_TO_4K __attribute__((section(".data.init_task")))
+diff --git a/arch/x86/kernel/setup64.c b/arch/x86/kernel/setup64.c
+index ba91882..e11886e 100644
+--- a/arch/x86/kernel/setup64.c
++++ b/arch/x86/kernel/setup64.c
+@@ -185,6 +185,12 @@ void __cpuinit check_efer(void)
+ unsigned long kernel_eflags;
+ 
+ /*
++ * Copies of the original ist values from the tss are only accessed during
++ * debugging, no special alignment required.
++ */
++DEFINE_PER_CPU(struct orig_ist, orig_ist);
++
++/*
+  * cpu_init() initializes state that is per-CPU. Some data is already
+  * initialized (naturally) in the bootstrap process, such as the GDT
+  * and IDT. We reload them nevertheless, this function acts as a
+diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
+index 03e1ede..ca71c43 100644
+--- a/arch/x86_64/Makefile
++++ b/arch/x86_64/Makefile
+@@ -74,7 +74,7 @@ KBUILD_CFLAGS += $(cflags-y)
+ CFLAGS_KERNEL += $(cflags-kernel-y)
+ KBUILD_AFLAGS += -m64
+ 
+-head-y := arch/x86/kernel/head_64.o arch/x86/kernel/head64.o arch/x86/kernel/init_task_64.o
++head-y := arch/x86/kernel/head_64.o arch/x86/kernel/head64.o arch/x86/kernel/init_task.o
+ 
+ libs-y 					+= arch/x86/lib/
+ core-y					+= arch/x86/kernel/ \
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+1.5.2.3
+
