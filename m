@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934449AbXJQUTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXJQUVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934449AbXJQUTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbXJQUTp
+	id S1762298AbXJQUVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXJQUU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:19:45 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:13627 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757662AbXJQUTo (ORCPT
+	Wed, 17 Oct 2007 16:20:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41639 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759358AbXJQUU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:19:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=q9lrH6a7DFsXV8tYHTJxxkNduB79KX7AqFBY8J1o9runznhNhtspaccMFJ6daJy+WvPVCbYhbvtFVhoU7yps0X/UHbebtaVGsDQ6F+xli0mtnC6qnAvEM4YJSrYgk2/uOgKjtrpVzDEiqxKya+tode4Ao5o9ExD+A1X/or5MZxU=
-Message-ID: <b0943d9e0710171319n180f05f1ta391e972a6a7efe9@mail.gmail.com>
-Date: Wed, 17 Oct 2007 21:19:39 +0100
-From: "Catalin Marinas" <catalin.marinas@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: suspicious ALSA empty commit
-Cc: "Jaroslav Kysela" <perex@perex.cz>, "David Miller" <davem@davemloft.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       krzysztof.h1@wp.pl
-In-Reply-To: <alpine.LFD.0.999.0710171057090.26902@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 16:20:57 -0400
+Date: Wed, 17 Oct 2007 13:20:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Tony Luck" <tony.luck@intel.com>
+Cc: oomichi@mxs.nes.nec.co.jp, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org, nhorman@redhat.com, vgoyal@in.ibm.com,
+       bwalle@suse.de, dzickus@redhat.com, da-x@monatomic.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 0/3] vmcoreinfo support for dump filtering
+Message-Id: <20071017132018.218043bb.akpm@linux-foundation.org>
+In-Reply-To: <12c511ca0710171019t35cb1670k9e1bdcfb3bf99793@mail.gmail.com>
+References: <20070822210838oomichi@mail.jp.nec.com>
+	<12c511ca0710171019t35cb1670k9e1bdcfb3bf99793@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071016.155044.82377336.davem@davemloft.net>
-	 <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
-	 <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
-	 <alpine.LFD.0.999.0710170854280.26902@woody.linux-foundation.org>
-	 <Pine.LNX.4.61.0710171928250.11118@tm8103.perex-int.cz>
-	 <alpine.LFD.0.999.0710171057090.26902@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/10/2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> On Wed, 17 Oct 2007, Jaroslav Kysela wrote:
-> > I'm using stg on top of git for merging and easy tree rebasing, but the
-> > version might be old (I'll try upgrade at first):
->
-> Ahh. That may explain it. stg may well be using the low-level git internal
-> commands (which *do* allow you to create any kind of commits you want,
-> including bogus empty ones).
+On Wed, 17 Oct 2007 10:19:18 -0700
+"Tony Luck" <tony.luck@intel.com> wrote:
 
-StGIT indeed creates empty commits (don't think there is anything
-wrong with that specific version). Even the most basic command, "stg
-new", creates an empty commit which is than filled with changes via
-"stg refresh". Pushing patches may result in empty commits if a patch
-was merged upstream. Failing import also leaves an empty commit if the
-patch doesn't apply cleanly (and there is a .stgit-failed.patch file
-left).
+> > This patch set frees the restriction that makedumpfile users should
+> > install a vmlinux file (including the debugging information) into
+> > each system.
+> 
+> This patch went from Andrew to Linus last night, and looks at first
+> glance to be the reason why the ia64 build is broken this morning
+> when using the arch/ia64/configs/tiger_defconfig configuration.
+> 
+> Here are the error messages:
+> arch/ia64/kernel/machine_kexec.c: In function `arch_crash_save_vmcoreinfo':
+> arch/ia64/kernel/machine_kexec.c:131: error: `pgdat_list' undeclared
+> (first use in this function)
+> arch/ia64/kernel/machine_kexec.c:131: error: (Each undeclared
+> identifier is reported only once
+> arch/ia64/kernel/machine_kexec.c:131: error: for each function it appears in.)
+> arch/ia64/kernel/machine_kexec.c:134: error: `node_memblk' undeclared
+> (first use in this function)
+> arch/ia64/kernel/machine_kexec.c:135: error: `NR_NODE_MEMBLKS'
+> undeclared (first use in this function)
+> arch/ia64/kernel/machine_kexec.c:136: error: invalid application of
+> `sizeof' to incomplete type `node_memblk_s'
+> arch/ia64/kernel/machine_kexec.c:137: error: dereferencing pointer to
+> incomplete type
+> arch/ia64/kernel/machine_kexec.c:138: error: dereferencing pointer to
+> incomplete type
+> make[1]: *** [arch/ia64/kernel/machine_kexec.o] Error 1
+> 
 
-The "stg series -e" shows the empty patches and "stg clean" removes
-them but I wouldn't do this automatically as empty patches are allowed
-in StGIT, though in general for a limited time. I'll try to add
-warning/error to commands like "mail" or "export" to make the user
-aware.
+This?
 
--- 
-Catalin
+
+--- a/arch/ia64/kernel/machine_kexec.c~ia64-fix-non-numa-build
++++ a/arch/ia64/kernel/machine_kexec.c
+@@ -17,6 +17,8 @@
+ #include <linux/efi.h>
+ #include <linux/numa.h>
+ #include <linux/mmzone.h>
++
++#include <asm/numa.h>
+ #include <asm/mmu_context.h>
+ #include <asm/setup.h>
+ #include <asm/delay.h>
+@@ -127,7 +129,7 @@ void machine_kexec(struct kimage *image)
+ 
+ void arch_crash_save_vmcoreinfo(void)
+ {
+-#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
++#if defined(CONFIG_ARCH_DISCONTIGMEM_ENABLE) && defined(CONFIG_NUMA)
+ 	VMCOREINFO_SYMBOL(pgdat_list);
+ 	VMCOREINFO_LENGTH(pgdat_list, MAX_NUMNODES);
+ 
+_
+
+(the asm/numa.h include isn't needed by this patch, but strictly should be
+there, as this file refers to things which are defined in asm/numa.h)
+
+(it's weird that linux/numa.h doesn't include asm/numa.h)
+
+(please tell me if you want me to send this to Linus)
