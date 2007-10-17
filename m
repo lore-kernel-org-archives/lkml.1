@@ -1,194 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXJQFJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbXJQFKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbXJQFJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 01:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbXJQFIw
+	id S1759783AbXJQFKA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 01:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXJQFJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 01:08:52 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:46857 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXJQFIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 01:08:50 -0400
-To: davem@davemloft.net, linux-kernel@vger.kernel.org
-Cc: jens.axboe@oracle.com, linux-scsi@vger.kernel.org
-Subject: [PATCH] SPARC64: fix iommu sg chaining
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	Wed, 17 Oct 2007 01:09:52 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1760 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbXJQFJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 01:09:51 -0400
+Subject: Re: [PATCH] [275/2many] MAINTAINERS - KDUMP
+From: Joe Perches <joe@perches.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       vgoyal@in.ibm.com, ebiederm@xmission.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20071017034840.GA28414@verge.net.au>
+References: <46bffa99.nQ27DQOgkKo2uOy+%joe@perches.com>
+	 <46bffa8e.NHuk7h7puR+3eDXo%joe@perches.com>
+	 <20071017021902.GB6709@verge.net.au> <1192589134.9998.93.camel@localhost>
+	 <20071017034840.GA28414@verge.net.au>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 21:56:19 -0700
+Message-Id: <1192596979.9998.143.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071017140747Q.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Oct 2007 14:07:47 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 2c941a204070ab32d92d40318a3196a7fb994c00 looks incomplete. The
-helper functions like prepare_sg() need to support sg chaining too.
+On Wed, 2007-10-17 at 12:48 +0900, Simon Horman wrote:
+> Do you have a criteria for including files.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/sparc64/kernel/iommu.c        |    1 -
- arch/sparc64/kernel/iommu_common.c |   51 +++++++++++++++++++++---------------
- arch/sparc64/kernel/iommu_common.h |    1 +
- arch/sparc64/kernel/pci_sun4v.c    |    1 -
- 4 files changed, 31 insertions(+), 23 deletions(-)
+A file or file pattern specific to a maintained "subsystem".
 
-diff --git a/arch/sparc64/kernel/iommu.c b/arch/sparc64/kernel/iommu.c
-index db3ffcf..5d4e96d 100644
---- a/arch/sparc64/kernel/iommu.c
-+++ b/arch/sparc64/kernel/iommu.c
-@@ -10,7 +10,6 @@
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
- #include <linux/errno.h>
--#include <linux/scatterlist.h>
- 
- #ifdef CONFIG_PCI
- #include <linux/pci.h>
-diff --git a/arch/sparc64/kernel/iommu_common.c b/arch/sparc64/kernel/iommu_common.c
-index 12c93a3..d7ca900 100644
---- a/arch/sparc64/kernel/iommu_common.c
-+++ b/arch/sparc64/kernel/iommu_common.c
-@@ -12,18 +12,22 @@
-  */
- 
- #ifdef VERIFY_SG
--static int verify_lengths(struct scatterlist *sg, int nents, int npages)
-+static int verify_lengths(struct scatterlist *sglist, int nents, int npages)
- {
- 	int sg_len, dma_len;
- 	int i, pgcount;
-+	struct scatterlist *sg;
- 
- 	sg_len = 0;
--	for (i = 0; i < nents; i++)
--		sg_len += sg[i].length;
-+	for_each_sg(sglist, sg, nents, i)
-+		sg_len += sg->length;
- 
- 	dma_len = 0;
--	for (i = 0; i < nents && sg[i].dma_length; i++)
--		dma_len += sg[i].dma_length;
-+	for_each_sg(sglist, sg, nents, i) {
-+		if (!sg->dma_length)
-+			break;
-+		dma_len += sg->dma_length;
-+	}
- 
- 	if (sg_len != dma_len) {
- 		printk("verify_lengths: Error, different, sg[%d] dma[%d]\n",
-@@ -32,13 +36,16 @@ static int verify_lengths(struct scatterlist *sg, int nents, int npages)
- 	}
- 
- 	pgcount = 0;
--	for (i = 0; i < nents && sg[i].dma_length; i++) {
-+	for_each_sg(sglist, sg, nents, i) {
- 		unsigned long start, end;
- 
--		start = sg[i].dma_address;
-+		if (!sg->dma_length)
-+			break;
-+
-+		start = sg->dma_address;
- 		start = start & IO_PAGE_MASK;
- 
--		end = sg[i].dma_address + sg[i].dma_length;
-+		end = sg->dma_address + sg->dma_length;
- 		end = (end + (IO_PAGE_SIZE - 1)) & IO_PAGE_MASK;
- 
- 		pgcount += ((end - start) >> IO_PAGE_SHIFT);
-@@ -113,7 +120,7 @@ static int verify_one_map(struct scatterlist *dma_sg, struct scatterlist **__sg,
- 		if (dlen > 0 && ((daddr & ~IO_PAGE_MASK) == 0))
- 			iopte++;
- 
--		sg++;
-+		sg = sg_next(sg);
- 		if (--nents <= 0)
- 			break;
- 		sgaddr = (unsigned long) (page_address(sg->page) + sg->offset);
-@@ -147,7 +154,7 @@ static int verify_maps(struct scatterlist *sg, int nents, iopte_t *iopte)
- 		nents = verify_one_map(dma_sg, &sg, nents, &iopte);
- 		if (nents <= 0)
- 			break;
--		dma_sg++;
-+		dma_sg = sg_next(dma_sg);
- 		if (dma_sg->dma_length == 0)
- 			break;
- 	}
-@@ -169,22 +176,24 @@ static int verify_maps(struct scatterlist *sg, int nents, iopte_t *iopte)
- 	return 0;
- }
- 
--void verify_sglist(struct scatterlist *sg, int nents, iopte_t *iopte, int npages)
-+void verify_sglist(struct scatterlist *sglist, int nents, iopte_t *iopte, int npages)
- {
--	if (verify_lengths(sg, nents, npages) < 0 ||
--	    verify_maps(sg, nents, iopte) < 0) {
-+	struct scatterlist *sg;
-+
-+	if (verify_lengths(sglist, nents, npages) < 0 ||
-+	    verify_maps(sglist, nents, iopte) < 0) {
- 		int i;
- 
- 		printk("verify_sglist: Crap, messed up mappings, dumping, iodma at ");
--		printk("%016lx.\n", sg->dma_address & IO_PAGE_MASK);
-+		printk("%016lx.\n", sglist->dma_address & IO_PAGE_MASK);
- 
--		for (i = 0; i < nents; i++) {
-+		for_each_sg(sglist, sg, nents, i) {
- 			printk("sg(%d): page_addr(%p) off(%x) length(%x) "
--			       "dma_address[%016lx] dma_length[%016lx]\n",
-+			       "dma_address[%016x] dma_length[%016x]\n",
- 			       i,
--			       page_address(sg[i].page), sg[i].offset,
--			       sg[i].length,
--			       sg[i].dma_address, sg[i].dma_length);
-+			       page_address(sg->page), sg->offset,
-+			       sg->length,
-+			       sg->dma_address, sg->dma_length);
- 		}
- 	}
- 
-@@ -205,12 +214,12 @@ unsigned long prepare_sg(struct scatterlist *sg, int nents)
- 	while (--nents) {
- 		unsigned long addr;
- 
--		sg++;
-+		sg = sg_next(sg);
- 		addr = (unsigned long) (page_address(sg->page) + sg->offset);
- 		if (! VCONTIG(prev, addr)) {
- 			dma_sg->dma_address = dent_addr;
- 			dma_sg->dma_length = dent_len;
--			dma_sg++;
-+			dma_sg = sg_next(dma_sg);
- 
- 			dent_addr = ((dent_addr +
- 				      dent_len +
-diff --git a/arch/sparc64/kernel/iommu_common.h b/arch/sparc64/kernel/iommu_common.h
-index ad79101..75b5a58 100644
---- a/arch/sparc64/kernel/iommu_common.h
-+++ b/arch/sparc64/kernel/iommu_common.h
-@@ -8,6 +8,7 @@
- #include <linux/types.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
-+#include <linux/scatterlist.h>
- 
- #include <asm/iommu.h>
- #include <asm/scatterlist.h>
-diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
-index cacacfa..119f8ef 100644
---- a/arch/sparc64/kernel/pci_sun4v.c
-+++ b/arch/sparc64/kernel/pci_sun4v.c
-@@ -13,7 +13,6 @@
- #include <linux/irq.h>
- #include <linux/msi.h>
- #include <linux/log2.h>
--#include <linux/scatterlist.h>
- 
- #include <asm/iommu.h>
- #include <asm/irq.h>
--- 
-1.5.2.4
+Any time a subsystem file pattern matches a file,
+maintainers would be cc'd.  The matching is non-exclusive.
+Multiple subsystems can include the same file pattern.
+
+For KDUMP, maybe a file pattern should be:
+
+F:	arch/*/kernel/crash_dump.c
+F:	include/linux/crash_dump.h
+
+> Are they files that only apply to KEXEC/KDUMP,
+> or files that have KEXEC/KDUMP code and other code?
+
+I think it should be files specific to KDUMP and not
+files shared with other subsystems but perhaps it's
+maintainer taste.
+
+If the files patterns are not specific to kdump,
+the kdump maintainers will be cc'd on patches that
+change files where kdump functions aren't modified.
+
+The list of files that include crash_dump.h is pretty long.
+
+        $ grep -P -l -r --include=*.[ch] crash_dump.h *
+        arch/i386/kernel/crash_dump.c
+        arch/i386/kernel/setup.c
+        arch/ia64/hp/common/sba_iommu.c
+        arch/ia64/kernel/crash.c
+        arch/ia64/kernel/setup.c
+        arch/powerpc/kernel/crash.c
+        arch/powerpc/kernel/crash_dump.c
+        arch/sh/kernel/crash_dump.c
+        arch/x86_64/kernel/crash_dump.c
+        arch/x86_64/kernel/setup.c
+        drivers/char/mem.c
+        fs/proc/proc_misc.c
+        fs/proc/vmcore.c
+        
+The list of files that use CONFIG_CRASH_DUMP is also
+pretty long and seemingly unrelated.
+
+        $ grep -P -l -r --include=*.[ch] CONFIG_CRASH_DUMP *
+        arch/i386/kernel/apic.c
+        arch/i386/kernel/e820.c
+        arch/ia64/hp/common/sba_iommu.c
+        arch/ia64/kernel/efi.c
+        arch/powerpc/kernel/iommu.c
+        arch/powerpc/platforms/cell/ras.c
+        arch/powerpc/platforms/pseries/iommu.c
+        arch/x86_64/kernel/e820.c
+        drivers/char/mem.c
+        include/asm-powerpc/kdump.h
+        include/linux/bootmem.h
+        include/linux/crash_dump.h
+        mm/bootmem.c
+
+
 
