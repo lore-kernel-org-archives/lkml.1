@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbXJQJKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933443AbXJQJNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933279AbXJQJKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbXJQJKj
+	id S933443AbXJQJNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbXJQJM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:10:39 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:53822 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754396AbXJQJKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:10:38 -0400
-Date: Wed, 17 Oct 2007 11:10:23 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-mm1
-In-Reply-To: <20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0710171108090.18815@twin.jikos.cz>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
- <20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 17 Oct 2007 05:12:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55384
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754918AbXJQJMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:12:55 -0400
+Date: Wed, 17 Oct 2007 02:13:05 -0700 (PDT)
+Message-Id: <20071017.021305.74746838.davem@davemloft.net>
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071017084528.GI5043@kernel.dk>
+References: <20071017.013325.74747630.davem@davemloft.net>
+	<20071017.014211.41637735.davem@davemloft.net>
+	<20071017084528.GI5043@kernel.dk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007, KAMEZAWA Hiroyuki wrote:
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Wed, 17 Oct 2007 10:45:28 +0200
 
-> I noticed 32bit binary on x86_64 behavior is changed on 2.6.23-mm1.
-> This is a result of pmap after process returns -ENOMEM.(see attached program)
-> == on 2.6.23 ==
-[...]
->  total          4193272K
-> ==
-> == on 2.6.23-mm1==
-[...]
->  total          2796560K
-> ==
-> Maybe get_unmapped_area() had some change. Is this intended ?
+> Righto, it's invalid to call sg_next() on the last entry!
 
-Hi,
+Unfortunately, that's what the sparc64 code wanted to do, this
+transformation in the sparc64 sg chaining patch is not equilavent:
 
-hm, I guess this is probably due to pie-randomization patch, right? (could 
-you please try reverting it, to see whether things get back to normal).
+-	struct scatterlist *sg_end = sg + nelems;
++	struct scatterlist *sg_end = sg_last(sg, nelems);
+ ...
+-			while (sg < sg_end &&
++			while (sg != sg_end &&
 
-Oh well, this causes more trouble that I have ever imagined ... I will 
-look into it, thanks a lot for the report. Andrew, please drop this one 
-again, I will fix it up.
+No, that's not what the code was doing.  The while loop
+has to process the last entry in the list,
 
-Thanks,
+We really needed "sg_end" to be "one past the last element",
+rather than "the last element".
 
--- 
-Jiri Kosina
+Since you say that sg_next() on the last entry is illegal,
+and that's what this code would have done to try and reach
+loop termination (it doesn't actually derefrence that
+"end plus one" scatterlist entry) I'll try to code this up
+some other way.
+
+Besides, sg_last() is so absurdly expensive, it has to walk the entire
+chain in the chaining case.  So better to implement this without it.
+
+I would suggest that other sg_last() uses be audited for the same bug.
