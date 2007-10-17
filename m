@@ -1,82 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbXJQLhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbXJQLi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764864AbXJQLhG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXJQLgy
+	id S933308AbXJQLi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760034AbXJQLiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:36:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41696 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753874AbXJQLgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:36:53 -0400
-Date: Wed, 17 Oct 2007 13:36:51 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       akpm@linux-foundation.org, ak@suse.de
-Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
-Message-ID: <20071017113651.GA6963@suse.de>
-Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
-	linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-	akpm@linux-foundation.org, ak@suse.de
-References: <20071016162857.635479952@strauss.suse.de> <20071016162858.545617122@strauss.suse.de> <20071017110550.GB17565@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017110550.GB17565@in.ibm.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 17 Oct 2007 07:38:18 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:48379 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754511AbXJQLiR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:38:17 -0400
+To: jens.axboe@oracle.com
+Cc: davem@davemloft.net, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, tomof@acm.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071017110142.GU5043@kernel.dk>
+References: <20071017.035441.74746708.davem@davemloft.net>
+	<20071017105840.GT5043@kernel.dk>
+	<20071017110142.GU5043@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071017203758E.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 17 Oct 2007 20:37:58 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@in.ibm.com> [2007-10-17 13:05]:
+On Wed, 17 Oct 2007 13:01:42 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Wed, Oct 17 2007, Jens Axboe wrote:
+> > On Wed, Oct 17 2007, David Miller wrote:
+> > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > Date: Wed, 17 Oct 2007 11:16:29 +0200
+> > > 
+> > > > On Wed, Oct 17 2007, David Miller wrote:
+> > > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > > Date: Wed, 17 Oct 2007 10:45:28 +0200
+> > > > > 
+> > > > > > Righto, it's invalid to call sg_next() on the last entry!
+> > > > > 
+> > > > > Unfortunately, that's what the sparc64 code wanted to do, this
+> > > > > transformation in the sparc64 sg chaining patch is not equilavent:
+> > > > > 
+> > > > > -	struct scatterlist *sg_end = sg + nelems;
+> > > > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
+> > > > >  ...
+> > > > > -			while (sg < sg_end &&
+> > > > > +			while (sg != sg_end &&
+> > > > 
+> > > > Auch indeed. That'd probably be better as a
+> > > > 
+> > > >         do {
+> > > >                 ...
+> > > >         } while (sg != sg_end);
+> > > 
+> > > Ok, next bug, introduced by this change:
+> > > 
+> > > commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
+> > > Author: Jens Axboe <jens.axboe@oracle.com>
+> > > Date:   Fri Sep 21 10:44:19 2007 +0200
+> > > 
+> > >     block: convert to using sg helpers
+> > >     
+> > >     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
+> > >     
+> > >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > 
+> > > Specifically this part:
+> > > 
+> > >  new_segment:
+> > > -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
+> > > -			sg[nsegs].page = bvec->bv_page;
+> > > -			sg[nsegs].length = nbytes;
+> > > -			sg[nsegs].offset = bvec->bv_offset;
+> > > +			sg = next_sg;
+> > > +			next_sg = sg_next(sg);
+> > >  
+> > > +			sg->page = bvec->bv_page;
+> > > +			sg->length = nbytes;
+> > > +			sg->offset = bvec->bv_offset;
+> > > 
+> > > You can't remove that memset(), it's there for a reason.  The IOMMU
+> > > layers depended upon the code zero'ing out the whole scatterlist
+> > > struct, there might be more to it than page, length and offset :-)
+> > 
+> > I realize that, and I was pretty worried about this specific change. But
+> > there's only been one piece of fallout because if it until now - well
+> > two, with the sparc64 stuff.
+> > 
+> > The problem is that you cannot zero the entire sg entry, because then
+> > you'd potentially overwrite the chain pointer.
+> > 
+> > I'd propose just adding a
+> > 
+> >         sg_dma_address(sg) = 0;
+> >         sg_dma_len(sg) = 0;
+> > 
+> > there for now, or provide an arch_clear_sg_entry() helper if we need
+> > more killed.
 > 
-> [..]
-> > +/*
-> > + * If flags is 0, then the return value is always 0 (success). If
-> > + * flags contains BOOTMEM_EXCLUSIVE, then -EBUSY is returned if the
-> > + * memory already was reserved.
-> > + */
-> > +extern int reserve_bootmem(unsigned long addr, unsigned long size, int flags);
-> >  #define alloc_bootmem(x) \
-> >  	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-> >  #define alloc_bootmem_low(x) \
-> > --- a/mm/bootmem.c
-> > +++ b/mm/bootmem.c
-> > @@ -111,8 +111,8 @@ static unsigned long __init init_bootmem
-> >   * might be used for boot-time allocations - or it might get added
-> >   * to the free page pool later on.
-> >   */
-> > -static void __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
-> > -					unsigned long size)
-> > +static int __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
-> > +					unsigned long size, int flags)
-> >  {
-> >  	unsigned long sidx, eidx;
-> >  	unsigned long i;
-> > @@ -133,7 +133,11 @@ static void __init reserve_bootmem_core(
-> >  #ifdef CONFIG_DEBUG_BOOTMEM
-> >  			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
-> >  #endif
-> > +			if (flags & BOOTMEM_EXCLUSIVE)
-> > +				return -EBUSY;
+> Actually, just clearing AFTER sg_next() would be fine, since we know
+> that is not a link entry. Duh...
 > 
-> I think we should unreserve the chunks of memory we have reserved so
-> far (Memory reserved from sidx to i), in case of error.
+> diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+> index 9eabac9..1014d34 100644
+> --- a/block/ll_rw_blk.c
+> +++ b/block/ll_rw_blk.c
+> @@ -1352,6 +1352,7 @@ new_segment:
+>  			sg = next_sg;
+>  			next_sg = sg_next(sg);
+>  
+> +			memset(sg, 0, sizeof(*sg));
+>  			sg->page = bvec->bv_page;
+>  			sg->length = nbytes;
+>  			sg->offset = bvec->bv_offset;
+> 
+> -- 
 
-Unfortunately, that's not possible without using a lock (or counters
-instead of a bitmap) any more. If we just do
-
-	for (i--; i >= sidx; i--)
-		clear_bit(i, bdata->node_bootmem_map);
-
-then another thread of execution could reserve the memory (without
-BOOTMEM_EXCLUSIVE) in between -- and the code would free the memory
-which is already reserved.
-
-I think that could be modelled with a rwlock, not changing the default
-case where BOOTMEM_EXCLUSIVE is not specified.
+So now how about removing zero'ing out sglist in scsi-ml?
 
 
-Thanks,
-   Bernhard
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index aac8a02..0c86be7 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -764,8 +764,6 @@ struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
+ 		if (unlikely(!sgl))
+ 			goto enomem;
+ 
+-		memset(sgl, 0, sizeof(*sgl) * sgp->size);
+-
+ 		/*
+ 		 * first loop through, set initial index and return value
+ 		 */
