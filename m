@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933443AbXJQJNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763609AbXJQJRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933443AbXJQJNO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbXJQJM4
+	id S1763609AbXJQJRP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXJQJQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:12:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55384
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754918AbXJQJMz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:12:55 -0400
-Date: Wed, 17 Oct 2007 02:13:05 -0700 (PDT)
-Message-Id: <20071017.021305.74746838.davem@davemloft.net>
-To: jens.axboe@oracle.com
+	Wed, 17 Oct 2007 05:16:58 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:20066 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751830AbXJQJQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:16:57 -0400
+Date: Wed, 17 Oct 2007 11:16:29 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
 Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org
 Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071017084528.GI5043@kernel.dk>
-References: <20071017.013325.74747630.davem@davemloft.net>
-	<20071017.014211.41637735.davem@davemloft.net>
-	<20071017084528.GI5043@kernel.dk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071017091629.GK5043@kernel.dk>
+References: <20071017.013325.74747630.davem@davemloft.net> <20071017.014211.41637735.davem@davemloft.net> <20071017084528.GI5043@kernel.dk> <20071017.021305.74746838.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017.021305.74746838.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Date: Wed, 17 Oct 2007 10:45:28 +0200
+On Wed, Oct 17 2007, David Miller wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Wed, 17 Oct 2007 10:45:28 +0200
+> 
+> > Righto, it's invalid to call sg_next() on the last entry!
+> 
+> Unfortunately, that's what the sparc64 code wanted to do, this
+> transformation in the sparc64 sg chaining patch is not equilavent:
+> 
+> -	struct scatterlist *sg_end = sg + nelems;
+> +	struct scatterlist *sg_end = sg_last(sg, nelems);
+>  ...
+> -			while (sg < sg_end &&
+> +			while (sg != sg_end &&
 
-> Righto, it's invalid to call sg_next() on the last entry!
+Auch indeed. That'd probably be better as a
 
-Unfortunately, that's what the sparc64 code wanted to do, this
-transformation in the sparc64 sg chaining patch is not equilavent:
+        do {
+                ...
+        } while (sg != sg_end);
 
--	struct scatterlist *sg_end = sg + nelems;
-+	struct scatterlist *sg_end = sg_last(sg, nelems);
- ...
--			while (sg < sg_end &&
-+			while (sg != sg_end &&
+> No, that's not what the code was doing.  The while loop
+> has to process the last entry in the list,
+> 
+> We really needed "sg_end" to be "one past the last element",
+> rather than "the last element".
+> 
+> Since you say that sg_next() on the last entry is illegal,
+> and that's what this code would have done to try and reach
+> loop termination (it doesn't actually derefrence that
+> "end plus one" scatterlist entry) I'll try to code this up
+> some other way.
+> 
+> Besides, sg_last() is so absurdly expensive, it has to walk the entire
+> chain in the chaining case.  So better to implement this without it.
 
-No, that's not what the code was doing.  The while loop
-has to process the last entry in the list,
+It is, sg_last() should really not be used a lot since it'll leaf
+through the entire sg list. People should either keep count of the
+number of entries so that they know when they are dealing with the last
+valid entry. Or use the for_each_sg() loop helper, if possible.
 
-We really needed "sg_end" to be "one past the last element",
-rather than "the last element".
+Drivers are usually very simple, the iommu code does more sg tricks and
+thus is more complex to audit.
 
-Since you say that sg_next() on the last entry is illegal,
-and that's what this code would have done to try and reach
-loop termination (it doesn't actually derefrence that
-"end plus one" scatterlist entry) I'll try to code this up
-some other way.
+> I would suggest that other sg_last() uses be audited for the same bug.
 
-Besides, sg_last() is so absurdly expensive, it has to walk the entire
-chain in the chaining case.  So better to implement this without it.
+Agree.
 
-I would suggest that other sg_last() uses be audited for the same bug.
+-- 
+Jens Axboe
+
