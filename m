@@ -1,102 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbXJQXaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXJQXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761442AbXJQXaE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbXJQX3y
+	id S1757376AbXJQXfi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 19:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXJQXf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:29:54 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50929 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756124AbXJQX3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:29:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	<1192648456.15717.7.camel@think.oraclecorp.com>
-	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-	<1192654481.15717.16.camel@think.oraclecorp.com>
-	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
-	<1192661889.15717.27.camel@think.oraclecorp.com>
-Date: Wed, 17 Oct 2007 17:28:51 -0600
-In-Reply-To: <1192661889.15717.27.camel@think.oraclecorp.com> (Chris Mason's
-	message of "Wed, 17 Oct 2007 18:58:09 -0400")
-Message-ID: <m16415cocs.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Oct 2007 19:35:28 -0400
+Received: from mail.tmr.com ([64.65.253.246]:50700 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756182AbXJQXf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 19:35:27 -0400
+Message-ID: <47169E12.2080108@tmr.com>
+Date: Wed, 17 Oct 2007 19:43:14 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>
+CC: Greg KH <greg@kroah.com>, Rob Landley <rob@landley.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+Subject: Re: What still uses the block layer?
+References: <200710112011.22000.rob@landley.net> <200710141845.44750.rob@landley.net> <20071015060015.GB32268@kroah.com> <200710150336.15774.rob@landley.net> <20071015172513.GA5738@kroah.com> <4713B58B.9050905@garzik.org>
+In-Reply-To: <4713B58B.9050905@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+Jeff Garzik wrote:
 
-> So, the problem is using the Dirty bit to indicate pinned.  You're
-> completely right that our current setup of buffer heads and pages and
-> filesystpem metadata is complex and difficult.
->
-> But, moving the buffer heads off of the page cache pages isn't going to
-> make it any easier to use dirty as pinned, especially in the face of
-> buffer_head users for file data pages.
+>> But again, please remember that these USB devices are really SCSI
+>> devices.  Same for SATA devices.  There is a reason they are using the
+>> SCSI layer, and it isn't just because the developers felt like it :)
+> 
+> /somewhat/ true I'm afraid:  libata uses the SCSI layer for ATAPI 
+> devices because they are essentially bridges to SCSI devices.  It uses 
+> the SCSI layer for ATA devices because the SCSI layer provided a huge 
+> amount of infrastructure that would need to have been otherwise 
+> duplicated, /then/ massaged into coordinating between <jgarzik's ATA 
+> layer> and <SCSI layer> when dealing with ATAPI.
+> 
+> There is also a detail that was of /huge/ value when introducing a new 
+> device class:  distro installers automatically work, if you use SCSI. If 
+> you use a new block device type, that behaves differently from other 
+> types and is on a different major, you have to poke the distros into 
+> action or do it yourself.
+> 
+> IOW, it was the high Just Works(tm) value of the SCSI layer when it came 
+> to ATA (not ATAPI) devices.
+> 
+> For the future, ATA will eventually be more independent (though the SCSI 
+> simulator will be available as an option, for compat), but the value is 
+> big enough to put that task on the back-burner.
+> 
+I remember being told that I didn't understand the problem when I 
+suggested using ide-scsi for everything and just hiding the transport. I 
+get great pleasure from having been (mostly) right on that one. I still 
+have old systems running ZIP drives as scsi...
 
-Let me specific.  Not moving buffer_heads off of page cache pages,
-moving buffer_heads off of the block devices page cache pages.
-
-My problem is the coupling of how block devices are cached and the
-implementation of buffer heads, and by removing that coupling
-we can generally make things better.  Currently that coupling
-means silly things like all block devices are cached in low memory.
-Which probably isn't what you want if you actually have a use
-for block devices.
-
-For the ramdisk case in particular what this means is that there
-are no more users that create buffer_head mappings on the block
-device cache so using the dirty bit will be safe. 
-
-Further it removes the nasty possibility of user space messing with
-metadata buffer head state.  So the only way those cases can happen is
-a code bug, or a hardware bug.
-
-So I think by removing these unnecessary code paths things will
-become easier to work with.
-
-> You've already seen Nick fsblock code, but you can see my general
-> approach to replacing buffer heads here:
->
-> http://oss.oracle.com/mercurial/mason/btrfs-unstable/file/f89e7971692f/extent_map.h
->
-> (alpha quality implementation in extent_map.c and users in inode.c)  The
-> basic idea is to do extent based record keeping for mapping and state of
-> things in the filesystem, and to avoid attaching these things to the
-> page.
-
-Interesting.  Something to dig into.
-
-> Don't get me wrong, I'd love to see a simple and coherent fix for what
-> reiserfs and ext3 do with buffer head state, but I think for the short
-> term you're best off pinning the ramdisk pages via some other means.
-
-Yes.  And the problem is hard enough to trigger that a short term fix
-is actually of debatable value.  The reason this hasn't shown up more
-frequently is that it only ever triggers if you are in the buffer head
-reclaim state, which on a 64bit box means you have to use < 4K buffers
-and have your ram cache another block device.  That plus most people
-use initramfs these days.
-
-For the short term we have Christian's other patch which simply
-disables calling try_to_free_buffers.  Although that really feels
-like a hack to me.
-
-For 2.6.25 I think I have a shot at fixing these things cleanly.
-
-Eric
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
