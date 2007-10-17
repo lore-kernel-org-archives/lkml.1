@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbXJQTt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbXJQTua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762677AbXJQTt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXJQTtu
+	id S1762981AbXJQTua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXJQTuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:49:50 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:18239 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbXJQTtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:49:49 -0400
-Date: Wed, 17 Oct 2007 21:49:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071017194944.GB15552@kernel.dk>
-References: <20071017170804.GG15552@kernel.dk> <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk>
+	Wed, 17 Oct 2007 15:50:10 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44388 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755728AbXJQTuI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:50:08 -0400
+Date: Wed, 17 Oct 2007 21:50:36 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] hwmon/ibmpex.c: fix NULL dereference
+Message-ID: <20071017195036.GC3778@stusta.de>
+References: <20071017192902.GB3778@stusta.de> <29495f1d0710171239i30776a2ci6db65c4f135b0754@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071017193542.GA15552@kernel.dk>
+In-Reply-To: <29495f1d0710171239i30776a2ci6db65c4f135b0754@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, Jens Axboe wrote:
-> On Wed, Oct 17 2007, Linus Torvalds wrote:
-> > 
-> > 
-> > On Wed, 17 Oct 2007, Ingo Molnar wrote:
-> > > 
-> > > nope, this did not help. First bootup went fine, second bootup crashed 
-> > > again (see below), without hitting the BUG_ON().
-> > 
-> > I think you'll always hit it if you have a scatter-gather list that is 
-> > exactly filled up.
-> > 
-> > Why? Because those things do "sg_next()" on the last entry, and as 
-> > mentioned, that ends up actually accessing one past the end - even if the 
-> > end result is not actually ever *used* (because we just effectively 
-> > incremented it to past the last entry when the code was done with the SG 
-> > list).
+On Wed, Oct 17, 2007 at 12:39:59PM -0700, Nish Aravamudan wrote:
+> On 10/17/07, Adrian Bunk <bunk@kernel.org> wrote:
+> > Don't dereference "data" when we know for sure it's NULL.
+> >
+> > Spotted by the Coverity checker.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> >
+> > ---
+> > 66bec2ef5c6d55fc30ef6ac5bb97fdfcfaf394f2
+> > diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
+> > index c462824..e14ce3d 100644
+> > --- a/drivers/hwmon/ibmpex.c
+> > +++ b/drivers/hwmon/ibmpex.c
+> > @@ -457,7 +457,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+> >         data = kzalloc(sizeof(*data), GFP_KERNEL);
+> >         if (!data) {
+> >                 printk(KERN_ERR DRVNAME ": Insufficient memory for BMC "
+> > -                      "interface %d.\n", data->interface);
+> > +                      "interface.\n");
+> 
+> Hrm but what data->interface would be is specified by the iface
+> parameter? Just spit that out instead?
 
-Well, hang on - where does it end up doing sg_next() on the LAST sg
-entry? I'd argue that this is a bug, like it was in ll_rw_blk.c. I still
-agree that I should make the interface more robust, I just don't see
-where libata ends up doing the sg_next() on the last entry.
+This is only a symptom of the problem that kzalloc() failed, and when 
+you are getting into such a situation here you have bigger problems - 
+and these are not related to this driver.
 
-I'm assuming that Ingo is using the previous patches, so that
-blk_rq_map_sg() is using this construct:
+Feel free to send a different patch, but IMHO "Insufficient memory" 
+alone is enough information in this case.
 
-new_segment:
-       if (!sg)
-               sg = sglist;
-       else
-               sg = sg_next(sg);
+> Thanks,
+> Nish
 
-and the memset() in scsi_alloc_sgtable(), which I'm pretty sure he is.
-I'm assuming we're not hitting pio paths, so there are no manual
-sg_next() calls. Ingo, if you care, can you test this one as well?
-
-No rush, as mentioned I'll be back tomorrow morning...
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index bbaa545..0246b61 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4664,7 +4664,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
- {
- 	struct ata_port *ap = qc->ap;
- 	struct scatterlist *sg = qc->__sg;
--	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
-+	struct scatterlist *lsg = &qc->__sg[qc->n_elem - 1];
- 	int n_elem, pre_n_elem, dir, trim_sg = 0;
- 
- 	VPRINTK("ENTER, ata%u\n", ap->print_id);
+cu
+Adrian
 
 -- 
-Jens Axboe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
