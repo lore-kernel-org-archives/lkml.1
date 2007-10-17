@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936206AbXJQDVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbXJQDX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936206AbXJQDVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760704AbXJQDVl
+	id S936302AbXJQDX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761748AbXJQDXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:21:41 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:31776 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753406AbXJQDVl (ORCPT
+	Tue, 16 Oct 2007 23:23:19 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46117 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760335AbXJQDXS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:21:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=FKvsgMbBc8iRlYDvGMV1hhcrqEL60jXH6QIfkyX1j/lEpT0zwbMFvGISHEJynZd0tdc6HeuWmuTIF9EhJ1ZDOXmpsLlqOpw0GuxtoG8DjWA9o3VeDTUnTcJPzu5feMkrhPkqROrdy0Og9dpPltqaroNFUgInVewGg1a1KEpk7l4=  ;
-X-YMail-OSG: Ewl1oVkVM1m9ociyb99hJs1.xKYidog3QC84r6ghRjSSg_aPVet0.HAICxI0YkwAVfMUgz4qLQ--
-Date: Tue, 16 Oct 2007 20:21:38 -0700
-From: David Brownell <david-b@pacbell.net>
-To: viro@ftp.linux.org.uk
-Subject: Re: [PATCH] missing include in mmc
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20071017000907.GF8181@ftp.linux.org.uk>
- <20071017002551.3577B23B309@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20071017020445.GG8181@ftp.linux.org.uk>
-In-Reply-To: <20071017020445.GG8181@ftp.linux.org.uk>
+	Tue, 16 Oct 2007 23:23:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=IFW/1co/uZPWdVLHLgiEGvPpjuTAHLbJAWFOjEPxZzMYZFjEn76R4LGumrnqY/Nt6
+	yCAQi+iCPx4JGCcVAdwSw==
+Date: Tue, 16 Oct 2007 20:22:55 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Subject: Re: [PATCH 4/6] Have zonelist contains structs with both a zone
+ pointer and zone_idx
+In-Reply-To: <20070928142446.16783.9970.sendpatchset@skynet.skynet.ie>
+Message-ID: <alpine.DEB.0.9999.0710162022220.2326@chino.kir.corp.google.com>
+References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie> <20070928142446.16783.9970.sendpatchset@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071017032139.17D6323A687@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > AFAICS, fallout from repacing include of blkdev.h with include of bio.h.
-> > 
-> > Out of curiousity, which architecture(s) need this?
->
-> Umm...   IIRC, m32r had been the first build to step into that, at which point
-> the missing include had been added; the rest had reached that point later, so
-> I'm not sure which ones would trigger the same crap.  Not hard to test,
-> though...
->
-> Aha.  m68k as well.
+On Fri, 28 Sep 2007, Mel Gorman wrote:
 
-FWIW this driver originally started out on ColdFire (m68k derived),
-a few years back.  :)
+> 
+> Filtering zonelists requires very frequent use of zone_idx(). This is costly
+> as it involves a lookup of another structure and a substraction operation. As
+> the zone_idx is often required, it should be quickly accessible.  The node
+> idx could also be stored here if it was found that accessing zone->node is
+> significant which may be the case on workloads where nodemasks are heavily
+> used.
+> 
+> This patch introduces a struct zoneref to store a zone pointer and a zone
+> index.  The zonelist then consists of an array of this struct zonerefs which
+> are looked up as necessary. Helpers are given for accessing the zone index
+> as well as the node index.
+> 
+> [kamezawa.hiroyu@jp.fujitsu.com: Suggested struct zoneref instead of embedding information in pointers]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Christoph Lameter <clameter@sgi.com>
 
-Every time I seee a case where architectures don't act the same
-with respect to #includes, I count it as an unpleasant surprise.
-Not one that's very easy to avoid, unfortunately, but I think it's
-been happening less often lately.
+OOM locking looks good, thanks.
 
-Thanks for the fix.
-
-- Dave
-
+Acked-by: David Rientjes <rientjes@google.com>
