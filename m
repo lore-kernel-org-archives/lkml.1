@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936180AbXJQBVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935276AbXJQBcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936180AbXJQBVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 21:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934505AbXJQBVq
+	id S935276AbXJQBcJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 21:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXJQBb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 21:21:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41721 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934487AbXJQBVp (ORCPT
+	Tue, 16 Oct 2007 21:31:56 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:42841 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbXJQBbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 21:21:45 -0400
-Date: Tue, 16 Oct 2007 18:21:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix adbhid mismerge
-In-Reply-To: <20071017000246.GE8181@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.999.0710161751070.26902@woody.linux-foundation.org>
-References: <20071017000246.GE8181@ftp.linux.org.uk>
+	Tue, 16 Oct 2007 21:31:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kz/T5u+/51JZUfFCmBSTOagi2OgQwf56O4UZwaIuOSjrHu9wNzplemLBNYEZ1/OIo64J7EXxwuglyYxWe1IlDXCr6Cqt/1izeGZJr+ZUWF0vo0NJyNkI76gYxuNMlPnEI9SmrnJ6iHMVNVrRv7wov3bA2siv+IQOiecYMYvayTM=
+Message-ID: <a8e1da0710161831o4029d691y5b2b12e99592b901@mail.gmail.com>
+Date: Wed, 17 Oct 2007 09:31:54 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <greg@kroah.com>,
+       "Dave Young" <hidave.darkstar@gmail.com>, bbpetkov@yahoo.de,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
+In-Reply-To: <20071016191323.GC24082@one-eyed-alien.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071016163348.GB24082@one-eyed-alien.net>
+	 <Pine.LNX.4.44L0.0710161355150.9662-100000@iolanthe.rowland.org>
+	 <20071016191323.GC24082@one-eyed-alien.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 17 Oct 2007, Al Viro wrote:
+>On 10/17/07, Matthew Dharm <mdharm-kernel@one-eyed-alien.net> wrote:
+> On Tue, Oct 16, 2007 at 02:04:43PM -0400, Alan Stern wrote:
+> > On Tue, 16 Oct 2007, Matthew Dharm wrote:
+> >
+> > > I haven't looked at this code at all, but neither approach feels right to
+> > > me.
+> > >
+> > > How does this work at all?  Even if you load a driver later, wouldn't it
+> > > call usb_set_interface(), which would call usb_create_sysfs_intf_files()
+> > > and hit the same issue?
+> >
+> > usb_set_interface() is smart enough to remove the old interface files
+> > before creating new ones, since it expects them to exist already.
+> > Hence there's no problem in that scenario.
+> >
+> > But usb_set_configuration doesn't expect there to be any pre-existing
+> > interface files, because there isn't even an interface until the
+> > registration is performed.
 >
-> 	Something really odd has happened: the last couple of changesets
-> have
-> -       int up_flag;
-> +       int keycode, up_flag;
-> and
-> -       int up_flag;
-> +       int up_flag, key;
-> in another, both in adb_input_keycode().  Even with -m passed to
-> git-whatchanged there's no sign of anything in that area.
+> And I'm guessing that you can't call usb_create_sysfs_intf_files() until
+> registration is performed, right?
+>
+> > The most important reason has to do with the endpoint pseudo-devices.
+> > Different altsettings can have different endpoints, so those have to be
+> > removed and re-created whenever the altsetting changes.
+>
+> Right, altsettings.  I forgot about those.  I only ever think in terms of
+> multiple configurations.
+>
+> *grumble*
+>
+> If usb_set_interface() has to be smart enough to remove existing files
+> first already, then I guess it's reasonably symmetric to have
+> usb_set_configuration() have the same smarts.  Maybe they can share some
+> common code, even.
+>
+> Matt
+>
+> --
+> Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.net
+> Maintainer, Linux USB Mass Storage Driver
+>
+> C:  Why are you upgrading to NT?
+> AJ: It must be the sick, sadistic streak that runs through me.
+>                                         -- Chief and A.J.
+> User Friendly, 5/12/1998
+>
 
-I don't think you did anything wrong. You used both --full-history 
-(implicitly: git-whatchanged) and you made sure to see the diffs for both 
-sides of any merge (-m), and that means that you should see every single 
-diff involved.
+Hi,
+I prefer "remove then create".
 
-Looking into it, the "key" variable was declared in the commit that 
-introduced the new line
+But IMHO the sysfs or driver core layer should have such  functions to
+set some bit for the sysfs files creating.
 
-	int up_flag, key;
-	..
-	key = adbhid[id]->keycode[keycode];
-
-which is commit 555ddbb4e2191c8823df2d61525218ac39481385. But then that 
-declaration of "int key" goes away at some later time.
-
-And doing a
-
-	git whatchanged -p -m 555ddbb4e2191c8823df2d61525218ac39481385.. drivers/macintosh/adbhid.c
-
-does actually show the culprit. It's just that the "-p -m" format is so 
-damn unreadable that it's almost impossible to see.
-
-Anyway, it's b981d8b3f5e008ff10d993be633ad00564fc22cd, which had a 
-conflict in that file, and Dmitry apparently mis-merged it and edited the 
-result down so that it didn't have 'key' declared any more.
-
-So the way I found it was to just search for the line in the diffs that 
-makes that thing go away, ie just look for the line in the diffs that says
-
-	-	int up_flag, key;
-
-and then you need to look at which of those are totally bogus and are just 
-because it shows the diff against one of the earlier trees that also don't 
-have that "key = adbhid[...]" line!
-
-(And that is actually *much* less obvious than it should be, since a lot 
-of the case of those lines going away is becuase I had merged Dmitry's 
-tree in the first place)
-
-You can make git help you narrow it down a bit more by using -S, ie some 
-horrible command line from hell like this:
-
-	git whatchanged -S'int up_flag, key;' -m -p 		\
-		555ddbb4e2191c8823df2d61525218ac39481385..	\
-		drivers/macintosh/adbhid.c
-
-will actually show only those commits that add/remove a line like the one 
-you are wondering where it went. That can cut down on the noise a bit, but 
-you'll get all the same false alarms, so no, it's probably not worth it.
-
-In general, I'm afraid that merge errors are simply not very easy to find. 
-The problem in this case is in that b981d8b3f5 merge, but if you actually 
-then do a "git show b981d8b3f5" you won't even see the problem spot in the 
-default "--cc" format output, because Dmitry had resolved that problmatic 
-place to be the same as one of the parent branches, and that makes git not 
-show the diff for it (since it's "uninteresting")
-
-			Linus
+Regards
+dave
