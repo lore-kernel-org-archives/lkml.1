@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933336AbXJQJY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbXJQJ1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933336AbXJQJY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764693AbXJQJYq
+	id S1764998AbXJQJ1u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXJQJ1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:24:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47599 "EHLO mx1.suse.de"
+	Wed, 17 Oct 2007 05:27:41 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8409 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbXJQJYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:24:44 -0400
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
-References: <1192168345.17539.42.camel@caritas-dev.intel.com>
-	<1192586376.17856.26.camel@caritas-dev.intel.com>
-	<p73odeyxi3u.fsf@crumb.suse.de>
-	<1192611948.17856.39.camel@caritas-dev.intel.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 17 Oct 2007 11:24:43 +0200
-In-Reply-To: <1192611948.17856.39.camel@caritas-dev.intel.com>
-Message-ID: <p73k5pmxfdw.fsf@crumb.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1755707AbXJQJ1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:27:40 -0400
+Date: Wed, 17 Oct 2007 11:27:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+Message-ID: <20071017092713.GL5043@kernel.dk>
+References: <20071017084528.GI5043@kernel.dk> <20071017.021305.74746838.davem@davemloft.net> <20071017091629.GK5043@kernel.dk> <20071017182401X.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017182401X.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
-
-> On Wed, 2007-10-17 at 10:25 +0200, Andi Kleen wrote:
-> > "Huang, Ying" <ying.huang@intel.com> writes:
-> > 
-> > > Do you think it is a good idea to check the collision between setup data
-> > > and memory area used during kernel boot through bootmem allocator?
-> > 
-> > You can't solve this through bootmem because x86-64 allocates memory
-> > in several places before bootmem (using functions in e820.c) Right now
-> > this is quite hackish with hard coded areas to avoid conflicts.  But I
-> > recently had a need to allocate more memory that early too and changed
-> > the code to a generic early reservation interface. With that it would
-> > be relatively easy to reserve.
+On Wed, Oct 17 2007, FUJITA Tomonori wrote:
+> On Wed, 17 Oct 2007 11:16:29 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> Can you tell me what that early reservation interface is? What I find in
-> x86_64 that does early memory allocation is alloc_low_page, which gets
-> non-conflict memory area through e820 map.
+> > On Wed, Oct 17 2007, David Miller wrote:
+> > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > Date: Wed, 17 Oct 2007 10:45:28 +0200
+> > > 
+> > > > Righto, it's invalid to call sg_next() on the last entry!
+> > > 
+> > > Unfortunately, that's what the sparc64 code wanted to do, this
+> > > transformation in the sparc64 sg chaining patch is not equilavent:
+> > > 
+> > > -	struct scatterlist *sg_end = sg + nelems;
+> > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
+> > >  ...
+> > > -			while (sg < sg_end &&
+> > > +			while (sg != sg_end &&
+> > 
+> > Auch indeed. That'd probably be better as a
+> > 
+> >         do {
+> >                 ...
+> >         } while (sg != sg_end);
+> > 
+> > > No, that's not what the code was doing.  The while loop
+> > > has to process the last entry in the list,
+> > > 
+> > > We really needed "sg_end" to be "one past the last element",
+> > > rather than "the last element".
+> > > 
+> > > Since you say that sg_next() on the last entry is illegal,
+> > > and that's what this code would have done to try and reach
+> > > loop termination (it doesn't actually derefrence that
+> > > "end plus one" scatterlist entry) I'll try to code this up
+> > > some other way.
+> > > 
+> > > Besides, sg_last() is so absurdly expensive, it has to walk the entire
+> > > chain in the chaining case.  So better to implement this without it.
+> > 
+> > It is, sg_last() should really not be used a lot since it'll leaf
+> > through the entire sg list. People should either keep count of the
+> > number of entries so that they know when they are dealing with the last
+> > valid entry. Or use the for_each_sg() loop helper, if possible.
+> > 
+> > Drivers are usually very simple, the iommu code does more sg tricks and
+> > thus is more complex to audit.
+> 
+> Can we just remove sg_last?
 
-It's a new interface I only recently wrote:
+I think that would be best, we don't want to encourage use of it, it's
+not really clear to people how expensive it is unless they go and look
+at it. The absolute worst case would be someone doing a
 
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/early-reserve
+        for_each_sg(sgl, sg, nents) {
+                ...
+                if (sg == sg_last(sgl))
+                        ...
+        }
 
-Then you can use early_reserve() and the e820 allocator will not touch
-it.
+which would be absolutely awful.
 
-> Because setup data is allocated by bootloader or kernel 16-bit setup
-> code, and the e820 map is created there too, the memory area used by
-> setup data can be made reserved memory area in e820 map by bootloader or
-> kernel 16-bit setup code. This way, they will not be overwritten by
-> kernel. Do you think this works.
+But lets let things settle for a few days, then kill sg_last().
 
-It has a little of a chicken'n'egg problem because the e820 map will
-be actually in the area you want to reserve. But it might work too.
-Boot data is normally copied before other allocations in head64.c
-If you do variable size boot data that might not work though.  And might
-be a little fragile overall.
+-- 
+Jens Axboe
 
--Andi
