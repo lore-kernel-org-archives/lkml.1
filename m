@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935457AbXJQUyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbXJQU5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935457AbXJQUyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757866AbXJQUyl
+	id S1762305AbXJQU5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbXJQU5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:54:41 -0400
-Received: from khc.piap.pl ([195.187.100.11]:50698 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757409AbXJQUyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:54:40 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: VIA VT6307 OHCI version?
-References: <m3sl4ciz1h.fsf@maximus.localdomain>
-	<4714EF01.2060609@s5r6.in-berlin.de>
-	<m3d4vebylw.fsf@maximus.localdomain>
-	<471527E5.1050407@s5r6.in-berlin.de>
-	<m34pgpmszu.fsf@maximus.localdomain>
-	<47166C83.2050207@s5r6.in-berlin.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 17 Oct 2007 22:54:36 +0200
-In-Reply-To: <47166C83.2050207@s5r6.in-berlin.de> (Stefan Richter's message of "Wed, 17 Oct 2007 22:11:47 +0200")
-Message-ID: <m38x614g37.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 17 Oct 2007 16:57:11 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:56008 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757054AbXJQU5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:57:07 -0400
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+From: Chris Mason <chris.mason@oracle.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+In-Reply-To: <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	 <m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	 <200710160956.58061.borntraeger@de.ibm.com>
+	 <200710171814.01717.borntraeger@de.ibm.com>
+	 <m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	 <1192648456.15717.7.camel@think.oraclecorp.com>
+	 <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 16:54:41 -0400
+Message-Id: <1192654481.15717.16.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+On Wed, 2007-10-17 at 14:29 -0600, Eric W. Biederman wrote:
+> Chris Mason <chris.mason@oracle.com> writes:
+> 
+> > In this case, the commit block isn't allowed to be dirty before reiserfs
+> > decides it is safe to write it.  The journal code expects it is the only
+> > spot in the kernel setting buffer heads dirty, and it only does so after
+> > the rest of the log blocks are safely on disk.
+> 
+> Ok.  So the journal code here fundamentally depends on being able to
+> control the order of the writes, and something else being able to set
+> the buffer head dirty messes up that control.
+> 
 
-> What I meant was:  First revisions may have had incomplete OHCI 1.1
-> support and were sold as OHCI 1.0 chips, and as soon as they stabilized
-> it they sold them as OHCI 1.1 chips.  But that's mere speculation on my
-> part.  I can't think of any other reason though why anybody would hide
-> OHCI 1.1 compatibility.
+Right.
 
-Perhaps some MS Windows had troubles with 1.1?
-VIA has a history of similar things (e.g. some C3 CPUs).
+> >> At the same time I increasingly don't think we should allow user space
+> >> to dirty or update our filesystem metadata buffer heads.  That seems
+> >> like asking for trouble.
+> >> 
+> >
+> > Demanding trouble ;)
+> 
+> Looks like it.  There are even comments in jbd about the same class
+> of problems.  Apparently dump and tune2fs on mounted filesystems have
+> triggered some of these issues.  The practical question is any of this
+> trouble worth handling.
+> 
+> Thinking about it.  I don't believe anyone has ever intentionally built
+> a filesystem tool that depends on being able to modify a file systems
+> metadata buffer heads while the filesystem is running, and doing that
+> would seem to be fragile as it would require a lot of cooperation
+> between the tool and the filesystem about how the filesystem uses and
+> implement things.
+> 
 
-All 3 chips I have, including that dated 2002, are single
-revision "80" so I guess there are absolutely no silicon changes.
+That's right.  For example, ext2 is doing directories in the page cache
+of the directory inode, so there's a cache alias between the block
+device page cache and the directory inode page cache.
 
-> And are you going to test if and how stable OHCI 1.1 features work?
-> (Which features are these?  Right now only dual buffer reception comes
-> to my mind.)
+> Now I guess I need to see how difficult a patch would be to give
+> filesystems magic inodes to keep their metadata buffer heads in.
 
-On this old EPIA? No :-)
-At least unless I have any doubt.
+Not hard, the block device inode is already a magic inode for metadata
+buffer heads.  You could just make another one attached to the bdev.
 
-On the other machine (currently) 1.0? Sure, that's why I did it.
-Is the "dual buffer reception" involved in receiving video from
-a DV camera, using the new driver?
--- 
-Krzysztof Halasa
+But, I don't think I fully understand the problem you're trying to
+solve?
+
+-chris
+
+
