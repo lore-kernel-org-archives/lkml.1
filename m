@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935879AbXJQDRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936206AbXJQDVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935879AbXJQDRz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 23:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbXJQDRq
+	id S936206AbXJQDVt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 23:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760704AbXJQDVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 23:17:46 -0400
-Received: from fencepost.gnu.org ([140.186.70.10]:49822 "EHLO
-	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758017AbXJQDRp (ORCPT
+	Tue, 16 Oct 2007 23:21:41 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:31776 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753406AbXJQDVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 23:17:45 -0400
-Subject: Re: Distinguishing releases from pre-rc snapshots
-From: Pavel Roskin <proski@gnu.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071016224126.3679aea6@bree.surriel.com>
-References: <1192587763.3672.24.camel@dv>
-	 <20071016224126.3679aea6@bree.surriel.com>
-Content-Type: text/plain
+	Tue, 16 Oct 2007 23:21:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=FKvsgMbBc8iRlYDvGMV1hhcrqEL60jXH6QIfkyX1j/lEpT0zwbMFvGISHEJynZd0tdc6HeuWmuTIF9EhJ1ZDOXmpsLlqOpw0GuxtoG8DjWA9o3VeDTUnTcJPzu5feMkrhPkqROrdy0Og9dpPltqaroNFUgInVewGg1a1KEpk7l4=  ;
+X-YMail-OSG: Ewl1oVkVM1m9ociyb99hJs1.xKYidog3QC84r6ghRjSSg_aPVet0.HAICxI0YkwAVfMUgz4qLQ--
+Date: Tue, 16 Oct 2007 20:21:38 -0700
+From: David Brownell <david-b@pacbell.net>
+To: viro@ftp.linux.org.uk
+Subject: Re: [PATCH] missing include in mmc
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20071017000907.GF8181@ftp.linux.org.uk>
+ <20071017002551.3577B23B309@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20071017020445.GG8181@ftp.linux.org.uk>
+In-Reply-To: <20071017020445.GG8181@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Tue, 16 Oct 2007 23:17:43 -0400
-Message-Id: <1192591063.3672.46.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-2.fc8) 
+Message-Id: <20071017032139.17D6323A687@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > > AFAICS, fallout from repacing include of blkdev.h with include of bio.h.
+> > 
+> > Out of curiousity, which architecture(s) need this?
+>
+> Umm...   IIRC, m32r had been the first build to step into that, at which point
+> the missing include had been added; the rest had reached that point later, so
+> I'm not sure which ones would trigger the same crap.  Not hard to test,
+> though...
+>
+> Aha.  m68k as well.
 
-On Tue, 2007-10-16 at 22:41 -0400, Rik van Riel wrote:
-> On Tue, 16 Oct 2007 22:22:43 -0400
-> Pavel Roskin <proski@gnu.org> wrote:
-> 
-> > I'm trying to keep some external drivers up to date with the kernel,
-> > and the first two weeks after the release is the worst time for me.
-> 
-> Consider this an incentive to submit your code for inclusion
-> in the upstream kernel.  Having all the common drivers integrated
-> in the mainline kernel makes it much easier for users to use all
-> their hardware, external drivers are not just a pain for the developers.
+FWIW this driver originally started out on ColdFire (m68k derived),
+a few years back.  :)
 
-The incentive has already worked for MadWifi, which has landed in the
-wireless-2.6 repository under the name "ath5k".  Still, there is a lot
-of work to do, and some features won't appear in the kernel driver soon,
-partly because they rely on the chipset features that still need to be
-reverse engineered.
+Every time I seee a case where architectures don't act the same
+with respect to #includes, I count it as an unpleasant surprise.
+Not one that's very easy to avoid, unfortunately, but I think it's
+been happening less often lately.
 
-In the meantime, somebody has to maintain the old madwifi and release
-fixed for security and kernel compatibility.
+Thanks for the fix.
 
-Also, there are drivers that are just to unwieldy to be shaped into
-something resembling a typical Linux driver.  linux-wlan-ng is such
-project.  No matter what the incentive, it won't go to the kernel.
-Maybe somebody will write a clean driver for Prism USB devices one day,
-but it didn't happen so far.
-
-Finally, there is a little at76_usb driver, which supports quite old
-802.11b devices.  It's in wireless-2.6 as well, but I simply cannot
-expect users to test it from there.  And if I make a standalone release,
-I'd rather not make another one when 2.6.24 comes out.
-
--- 
-Regards,
-Pavel Roskin
+- Dave
 
