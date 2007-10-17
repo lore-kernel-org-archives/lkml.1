@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbXJQJJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbXJQJKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbXJQJJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbXJQJJI
+	id S933279AbXJQJKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbXJQJKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:09:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34470 "EHLO gate.crashing.org"
+	Wed, 17 Oct 2007 05:10:39 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:53822 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932221AbXJQJJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:09:06 -0400
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071017085809.GA1658@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local>
-	 <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl>
-	 <20071016062108.GB1000@ff.dom.local>
-	 <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl>
-	 <20071017085809.GA1658@ff.dom.local>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 19:08:44 +1000
-Message-Id: <1192612124.11899.165.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	id S1754396AbXJQJKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:10:38 -0400
+Date: Wed, 17 Oct 2007 11:10:23 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-mm1
+In-Reply-To: <20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0710171108090.18815@twin.jikos.cz>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+ <20071017160101.4dde7223.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Oct 2007, KAMEZAWA Hiroyuki wrote:
 
-> Btw., since, because of this patch, I've had a one more look at phy.c
-> and there are a few more doubts, so this time I'll try to bother you
-> for real:
+> I noticed 32bit binary on x86_64 behavior is changed on 2.6.23-mm1.
+> This is a result of pmap after process returns -ENOMEM.(see attached program)
+> == on 2.6.23 ==
+[...]
+>  total          4193272K
+> ==
+> == on 2.6.23-mm1==
+[...]
+>  total          2796560K
+> ==
+> Maybe get_unmapped_area() had some change. Is this intended ?
 
- .../...
+Hi,
 
-While there... is somebody interested in making the whole PHY lib
-operate a task level and use mutexes instead of spinlock ? I need that
-for drivers like EMAC (who use their own PHY layer for now), and I might
-even give a go at adapting phylib myself, but I'd like to take the
-temperature about it first.
+hm, I guess this is probably due to pie-randomization patch, right? (could 
+you please try reverting it, to see whether things get back to normal).
 
-Basically, there is nothing in phylib that is performance critical or
-such that requires it to run at irq time and/or use locks. On the other
-hand, it complicates things in various areas. The most obvious one being
-that it prevents the network driver mii access callbacks from sleeping
-which can be annoying as MDIO can be slow, and some drivers have fancy
-muxes in there that are better off mutexed than spinlocked.
+Oh well, this causes more trouble that I have ever imagined ... I will 
+look into it, thanks a lot for the report. Andrew, please drop this one 
+again, I will fix it up.
 
-Ben.
- 
+Thanks,
 
+-- 
+Jiri Kosina
