@@ -1,137 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934498AbXJQLF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935042AbXJQLG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934498AbXJQLF5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761483AbXJQLFk
+	id S935042AbXJQLG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934505AbXJQLFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:05:40 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:40330 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760212AbXJQLFi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:05:38 -0400
-To: jens.axboe@oracle.com
-Cc: davem@davemloft.net, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071017105840.GT5043@kernel.dk>
-References: <20071017091629.GK5043@kernel.dk>
-	<20071017.035441.74746708.davem@davemloft.net>
-	<20071017105840.GT5043@kernel.dk>
+	Wed, 17 Oct 2007 07:05:55 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:59434 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933636AbXJQLFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:05:54 -0400
+Date: Wed, 17 Oct 2007 16:35:51 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
+Message-ID: <20071017110550.GB17565@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20071016162857.635479952@strauss.suse.de> <20071016162858.545617122@strauss.suse.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071017200432Z.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Oct 2007 20:04:32 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071016162858.545617122@strauss.suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 12:58:40 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Wed, Oct 17 2007, David Miller wrote:
-> > From: Jens Axboe <jens.axboe@oracle.com>
-> > Date: Wed, 17 Oct 2007 11:16:29 +0200
-> > 
-> > > On Wed, Oct 17 2007, David Miller wrote:
-> > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > Date: Wed, 17 Oct 2007 10:45:28 +0200
-> > > > 
-> > > > > Righto, it's invalid to call sg_next() on the last entry!
-> > > > 
-> > > > Unfortunately, that's what the sparc64 code wanted to do, this
-> > > > transformation in the sparc64 sg chaining patch is not equilavent:
-> > > > 
-> > > > -	struct scatterlist *sg_end = sg + nelems;
-> > > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
-> > > >  ...
-> > > > -			while (sg < sg_end &&
-> > > > +			while (sg != sg_end &&
-> > > 
-> > > Auch indeed. That'd probably be better as a
-> > > 
-> > >         do {
-> > >                 ...
-> > >         } while (sg != sg_end);
-> > 
-> > Ok, next bug, introduced by this change:
-> > 
-> > commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
-> > Author: Jens Axboe <jens.axboe@oracle.com>
-> > Date:   Fri Sep 21 10:44:19 2007 +0200
-> > 
-> >     block: convert to using sg helpers
-> >     
-> >     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
-> >     
-> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > 
-> > Specifically this part:
-> > 
-> >  new_segment:
-> > -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
-> > -			sg[nsegs].page = bvec->bv_page;
-> > -			sg[nsegs].length = nbytes;
-> > -			sg[nsegs].offset = bvec->bv_offset;
-> > +			sg = next_sg;
-> > +			next_sg = sg_next(sg);
-> >  
-> > +			sg->page = bvec->bv_page;
-> > +			sg->length = nbytes;
-> > +			sg->offset = bvec->bv_offset;
-> > 
-> > You can't remove that memset(), it's there for a reason.  The IOMMU
-> > layers depended upon the code zero'ing out the whole scatterlist
-> > struct, there might be more to it than page, length and offset :-)
-> 
-> I realize that, and I was pretty worried about this specific change. But
-> there's only been one piece of fallout because if it until now - well
-> two, with the sparc64 stuff.
-> 
-> The problem is that you cannot zero the entire sg entry, because then
-> you'd potentially overwrite the chain pointer.
-> 
-> I'd propose just adding a
-> 
->         sg_dma_address(sg) = 0;
->         sg_dma_len(sg) = 0;
-> 
-> there for now, or provide an arch_clear_sg_entry() helper if we need
-> more killed.
+[..]
+> +/*
+> + * If flags is 0, then the return value is always 0 (success). If
+> + * flags contains BOOTMEM_EXCLUSIVE, then -EBUSY is returned if the
+> + * memory already was reserved.
+> + */
+> +extern int reserve_bootmem(unsigned long addr, unsigned long size, int flags);
+>  #define alloc_bootmem(x) \
+>  	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+>  #define alloc_bootmem_low(x) \
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -111,8 +111,8 @@ static unsigned long __init init_bootmem
+>   * might be used for boot-time allocations - or it might get added
+>   * to the free page pool later on.
+>   */
+> -static void __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+> -					unsigned long size)
+> +static int __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+> +					unsigned long size, int flags)
+>  {
+>  	unsigned long sidx, eidx;
+>  	unsigned long i;
+> @@ -133,7 +133,11 @@ static void __init reserve_bootmem_core(
+>  #ifdef CONFIG_DEBUG_BOOTMEM
+>  			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
+>  #endif
+> +			if (flags & BOOTMEM_EXCLUSIVE)
+> +				return -EBUSY;
 
-Except for sparc64, the IOMMU implementations do something like this,
-I think.
+I think we should unreserve the chunks of memory we have reserved so
+far (Memory reserved from sidx to i), in case of error.
 
--
-sparc64: zero out dma_length
-
-zero out dma_length in the entry immediately following the last mapped
-entry for unmap_sg.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/sparc64/kernel/iommu_common.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/sparc64/kernel/iommu_common.c b/arch/sparc64/kernel/iommu_common.c
-index d7ca900..836455d 100644
---- a/arch/sparc64/kernel/iommu_common.c
-+++ b/arch/sparc64/kernel/iommu_common.c
-@@ -234,6 +234,11 @@ unsigned long prepare_sg(struct scatterlist *sg, int nents)
- 	dma_sg->dma_address = dent_addr;
- 	dma_sg->dma_length = dent_len;
- 
-+	if (dma_sg != sg) {
-+		dma_sg = next_sg(dma_sg);
-+		dma_sg->dma_length = 0;
-+	}
-+
- 	return ((unsigned long) dent_addr +
- 		(unsigned long) dent_len +
- 		(IO_PAGE_SIZE - 1UL)) >> IO_PAGE_SHIFT;
--- 
-1.5.2.4
-
-
+Thanks
+Vivek
