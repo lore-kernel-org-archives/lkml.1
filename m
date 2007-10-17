@@ -1,150 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765440AbXJQL5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbXJQL6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765440AbXJQL5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXJQL5d
+	id S1761511AbXJQL6E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761614AbXJQL5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:57:33 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:54954 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756212AbXJQL5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:57:32 -0400
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, tomof@acm.org
-Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071017114117.GA5043@kernel.dk>
-References: <20071017110142.GU5043@kernel.dk>
-	<20071017203758E.fujita.tomonori@lab.ntt.co.jp>
-	<20071017114117.GA5043@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 17 Oct 2007 07:57:39 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:45641 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761226AbXJQL5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:57:38 -0400
+Message-ID: <4715F8B0.6080107@free.fr>
+Date: Wed, 17 Oct 2007 13:57:36 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Martin Mares <mj@ucw.cz>
+CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: Understanding lspci output
+References: <4715D119.7000508@free.fr> <mj+md-20071017.110231.1634.nikam@ucw.cz>
+In-Reply-To: <mj+md-20071017.110231.1634.nikam@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071017205717Q.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Oct 2007 20:57:17 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 13:41:17 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Hello Martin,
 
-> On Wed, Oct 17 2007, FUJITA Tomonori wrote:
-> > On Wed, 17 Oct 2007 13:01:42 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Wed, Oct 17 2007, Jens Axboe wrote:
-> > > > On Wed, Oct 17 2007, David Miller wrote:
-> > > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Date: Wed, 17 Oct 2007 11:16:29 +0200
-> > > > > 
-> > > > > > On Wed, Oct 17 2007, David Miller wrote:
-> > > > > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > > > > Date: Wed, 17 Oct 2007 10:45:28 +0200
-> > > > > > > 
-> > > > > > > > Righto, it's invalid to call sg_next() on the last entry!
-> > > > > > > 
-> > > > > > > Unfortunately, that's what the sparc64 code wanted to do, this
-> > > > > > > transformation in the sparc64 sg chaining patch is not equilavent:
-> > > > > > > 
-> > > > > > > -	struct scatterlist *sg_end = sg + nelems;
-> > > > > > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
-> > > > > > >  ...
-> > > > > > > -			while (sg < sg_end &&
-> > > > > > > +			while (sg != sg_end &&
-> > > > > > 
-> > > > > > Auch indeed. That'd probably be better as a
-> > > > > > 
-> > > > > >         do {
-> > > > > >                 ...
-> > > > > >         } while (sg != sg_end);
-> > > > > 
-> > > > > Ok, next bug, introduced by this change:
-> > > > > 
-> > > > > commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
-> > > > > Author: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Date:   Fri Sep 21 10:44:19 2007 +0200
-> > > > > 
-> > > > >     block: convert to using sg helpers
-> > > > >     
-> > > > >     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
-> > > > >     
-> > > > >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > > > 
-> > > > > Specifically this part:
-> > > > > 
-> > > > >  new_segment:
-> > > > > -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
-> > > > > -			sg[nsegs].page = bvec->bv_page;
-> > > > > -			sg[nsegs].length = nbytes;
-> > > > > -			sg[nsegs].offset = bvec->bv_offset;
-> > > > > +			sg = next_sg;
-> > > > > +			next_sg = sg_next(sg);
-> > > > >  
-> > > > > +			sg->page = bvec->bv_page;
-> > > > > +			sg->length = nbytes;
-> > > > > +			sg->offset = bvec->bv_offset;
-> > > > > 
-> > > > > You can't remove that memset(), it's there for a reason.  The IOMMU
-> > > > > layers depended upon the code zero'ing out the whole scatterlist
-> > > > > struct, there might be more to it than page, length and offset :-)
-> > > > 
-> > > > I realize that, and I was pretty worried about this specific change. But
-> > > > there's only been one piece of fallout because if it until now - well
-> > > > two, with the sparc64 stuff.
-> > > > 
-> > > > The problem is that you cannot zero the entire sg entry, because then
-> > > > you'd potentially overwrite the chain pointer.
-> > > > 
-> > > > I'd propose just adding a
-> > > > 
-> > > >         sg_dma_address(sg) = 0;
-> > > >         sg_dma_len(sg) = 0;
-> > > > 
-> > > > there for now, or provide an arch_clear_sg_entry() helper if we need
-> > > > more killed.
-> > > 
-> > > Actually, just clearing AFTER sg_next() would be fine, since we know
-> > > that is not a link entry. Duh...
-> > > 
-> > > diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-> > > index 9eabac9..1014d34 100644
-> > > --- a/block/ll_rw_blk.c
-> > > +++ b/block/ll_rw_blk.c
-> > > @@ -1352,6 +1352,7 @@ new_segment:
-> > >  			sg = next_sg;
-> > >  			next_sg = sg_next(sg);
-> > >  
-> > > +			memset(sg, 0, sizeof(*sg));
-> > >  			sg->page = bvec->bv_page;
-> > >  			sg->length = nbytes;
-> > >  			sg->offset = bvec->bv_offset;
-> > > 
-> > > -- 
-> > 
-> > So now how about removing zero'ing out sglist in scsi-ml?
-> > 
-> > 
-> > diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> > index aac8a02..0c86be7 100644
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -764,8 +764,6 @@ struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
-> >  		if (unlikely(!sgl))
-> >  			goto enomem;
-> >  
-> > -		memset(sgl, 0, sizeof(*sgl) * sgp->size);
-> > -
-> >  		/*
-> >  		 * first loop through, set initial index and return value
-> >  		 */
+Martin Mares wrote:
+
+>> I ran lspci -vvv on a system:
+>> http://linux.kernel.free.fr/halt/lspci.txt
+>>
+>> (I used lspci version 2.2.5 in case it matters.)
+>>
+>> But I'm having a hard time making sense of the output.
+>>
+>> 1. How many PCI buses are there in the system?
 > 
-> Sure, that should be quite alright then. I'll add it.
+> Two, just see the bus numbers of the devices. (However, there might be
+> additional buses with no devices present and in case these are connected
+> to a separate host bridge, they need not be visible.)
+> 
+>> 4. Does the system have a PCI-X bus?
+> 
+> Yes, the devices on bus 01 are PCI-X devices, so there is a PCI-X bus.
 
-Thanks, it would be. Before sg chaining, scsi-ml didn't zero out.
+I thought PCI-X devices could operate on a PCI bus? If that is true, 
+then the presence of a PCI-X device would not necessarily imply the 
+presence of a PCI-X bus, right?
 
-I think that it would be better that IOMMU code handles uninitialized
-sg entries (sg list can be pretty large). Execpt for sparc64, the
-IOMMU code can do, I think.
+There are no external PCI-X slots in the system, only 2 PCI slots.
+The 4 NICs are integrated to the motherboard.
+http://advantech.com/products/1U-Rackmount-Intel-Pentium-4Processor-based-Platform-with-4PCI-LAN-Ports-2-PCI-Expansion-Slots/mod_1-23A2W4.aspx
+
+>> 2. Do any of the PCI buses support 66 MHz operation?
+> 
+> Yes, PCI-X does.
+
+So the 01:0f.0 device (Multimedia video controller) is on the same bus 
+as the 4 PCI-X devices and will have to share the bus bandwidth?
+
+Does 66MHz+ in the Status line means this device is running at 66 MHz?
+
+>> 3. Do any of the PCI slots support 64-bit data path?
+> 
+> This cannot be inferred from the lspci output -- there is no way how to
+> tell if a bus has physical slots or it exists only internally.
+
+Can I use lspci to see whether a specific PCI device is using a 64-bit 
+data path? (e.g. the 01:0f.0 device)
+
+Regards.
