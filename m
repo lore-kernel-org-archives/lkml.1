@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934519AbXJQUgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXJQUhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934519AbXJQUgk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXJQUgc
+	id S933159AbXJQUhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759849AbXJQUhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:36:32 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52464 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757655AbXJQUgb (ORCPT
+	Wed, 17 Oct 2007 16:37:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56277 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759777AbXJQUhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:36:31 -0400
-Date: Wed, 17 Oct 2007 13:35:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-Cc: rjw@sisk.pl, cebbert@redhat.com, linux-kernel@vger.kernel.org,
-       david-b@pacbell.net, torvalds@linux-foundation.org,
-       nigel@nigel.suspend2.net, pavel@ucw.cz
-Subject: Re: pm_trace displays the wrong time from the RTC
-Message-Id: <20071017133549.046df71d.akpm@linux-foundation.org>
-In-Reply-To: <20071017194840.GA14530@redhat.com>
-References: <46AFA78A.9010904@redhat.com>
-	<200708011747.37932.rjw@sisk.pl>
-	<46B0CDB3.8060505@redhat.com>
-	<200708012304.35105.rjw@sisk.pl>
-	<20071017194840.GA14530@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 17 Oct 2007 16:37:05 -0400
+Date: Wed, 17 Oct 2007 21:36:58 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Tim Shimmin <tes@sgi.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.24-rc1
+Message-ID: <20071017203658.GA22073@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Tim Shimmin <tes@sgi.com>, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+	akpm@linux-foundation.org
+References: <20071017110339.D4B3158C38F1@chook.melbourne.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017110339.D4B3158C38F1@chook.melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 15:48:40 -0400
-Dave Jones <davej@redhat.com> wrote:
-
-> The patch below seems to have got dropped on the floor.
-> We've had it in Fedora since it was posted, and it does the
-> right thing, so I'm happy to give this an
+On Wed, Oct 17, 2007 at 09:03:39PM +1000, Tim Shimmin wrote:
+> Hi Linus,
 > 
-> ACKed-by: Dave Jones <davej@redhat.com>
+> Please pull from the for-linus branch:
+>     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 > 
-> if it helps it into upstream.
+> These include changes we have had scheduled for 2.6.24.
+> In particular they include Christoph's (hch's) behavior removal patches.
 
-I have it queued for 2.6.24, but the entire PM patch series is presently
-twiddling thumbs awaiting an acpi merge.
+Can you please send my '[PATCH] cleanup fid types mess' to Linus aswell?
+I have a stack of 15 patches reworking the nfs exporting code waiting
+in -mm to get in in this merge window that depend on this cleanup to
+free struct fid for generic useage.
+
+Also getting the makefile cleanup into mainline to reduce spurious difference
+would help a lot.
+
