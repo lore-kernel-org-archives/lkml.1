@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936288AbXJQCgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936358AbXJQCg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936288AbXJQCgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 22:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761090AbXJQCgA
+	id S936358AbXJQCg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 22:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762299AbXJQCgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 22:36:00 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:42054 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758509AbXJQCf7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 22:35:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=N2VtzVFtYfRSxaTR4jy1yb7Gq06qvVc57tMo8sp5p4k5XdkF6z2O1ZFGktuM+BMo3u/MtF0sihdd9iNXuaq4Dgz2V65tenVNCzD5sJ/s8ZBcFeLI1Na34J4HNq5eaBbX3iIDqZz8wdkIQOdgHuMnVys/HU9LLtaZKdgkwrBvzgQ=
-Message-ID: <2cd57c900710161935l2121bffex78475ca33f0574ca@mail.gmail.com>
-Date: Wed, 17 Oct 2007 10:35:58 +0800
-From: "Qi Yong" <qiiyoong@gmail.com>
-To: "Stefan Seyfried" <seife@suse.de>
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Len Brown" <lenb@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Starikovskiy" <alexey_y_starikovskiy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20070514075045.GA10238@suse.de>
+	Tue, 16 Oct 2007 22:36:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36046 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761090AbXJQCgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 22:36:45 -0400
+Date: Tue, 16 Oct 2007 22:36:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: Arnaud Fontaine <arnaud@andesi.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: error: Eeek! page_mapcount(page) went negative! (-1) with
+	different process and kernels
+Message-ID: <20071017023642.GB3397@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Arnaud Fontaine <arnaud@andesi.org>, linux-kernel@vger.kernel.org
+References: <sa564176ksz.fsf@Toushirou.duckcorp.org> <20071016183510.GB25480@redhat.com> <sa5ejfu64t5.fsf@Toushirou.duckcorp.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200611011323.14830.rjw@sisk.pl> <200705111121.51704.rjw@sisk.pl>
-	 <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org>
-	 <200705112208.53971.rjw@sisk.pl>
-	 <alpine.LFD.0.98.0705111550540.3986@woody.linux-foundation.org>
-	 <20070514075045.GA10238@suse.de>
-X-Google-Sender-Auth: edfa9a75e5cb87d2
+In-Reply-To: <sa5ejfu64t5.fsf@Toushirou.duckcorp.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/05/2007, Stefan Seyfried <seife@suse.de> wrote:
-> On Fri, May 11, 2007 at 03:51:38PM -0700, Linus Torvalds wrote:
-> >
-> >
-> > On Fri, 11 May 2007, Rafael J. Wysocki wrote:
-> > >
-> > > Just to clarify, the change in question isn't new.  It was introduced by the
-> > > commit 9185cfa92507d07ac787bc73d06c42222eec7239 before 2.6.20, at Seife's
-> > > request and with Pavel's acceptance.
-> >
-> > Ok, if it's that old, we migt as leave it in. Clearly there weren't many
-> > regressions, and this isn't a case of other monsters lurking behind a lack
-> > of testers.
->
-> I pushed for this since on ACPI machines, "platform" is the right thing to do,
-> and i still think it will only break on machines that have a broken ACPI BIOS.
-> (Are there machines with broken ACPI BIOS around? ;-)
->
-> Your additional "fall back to shutdown if !(ops)"-fix looks very sane,
-> however, and is definitely a good idea.
+On Wed, Oct 17, 2007 at 01:03:02AM +0200, Arnaud Fontaine wrote:
+ > >>>>> "Dave" == Dave Jones <davej@redhat.com> writes:
+ > 
+ >     Dave> Many of these that I've  seen have turned out to be a hardware
+ >     Dave> problem.  Try running memtest86+  on that machine for a while.
+ >     Dave>  It doesn't  catch all  problems, but  it will  highlight more
+ >     Dave> common memory faults.
+ > 
+ > Hello,
+ > 
+ > We ran memtest86+ before production, it  was about one month ago. Do you
+ > think it could come from that anyway?
 
-The key point is "fall back to shutdown _only_ if !ops, otherwise
-don't touch hibernation_mode". And that solves my problem.
+Not impossible. Hardware failures can occur at any time.
+Somewhat unlikely though.  As I mentioned, memtest also doesn't trap
+all hardware problems.  I have a board that passes memtest with flying
+colours, yet dies under even slight load. Examination of the board
+shows that it has leaking capacitors.
+
+	Dave
+
 -- 
-Qi Yong
+http://www.codemonkey.org.uk
