@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933822AbXJQRQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbXJQRTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933822AbXJQRQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 13:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758767AbXJQRQc
+	id S1763191AbXJQRTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 13:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXJQRTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 13:16:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41682 "EHLO ogre.sisk.pl"
+	Wed, 17 Oct 2007 13:19:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41700 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754653AbXJQRQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 13:16:31 -0400
+	id S1753542AbXJQRTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 13:19:08 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Qi Yong <qiyong@fc-cn.com>
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-Date: Wed, 17 Oct 2007 19:32:08 +0200
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+Date: Wed, 17 Oct 2007 19:35:09 +0200
 User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
-       Stefan Seyfried <seife@suse.de>
-References: <200611011323.14830.rjw@sisk.pl> <2cd57c900710161946h4396029eoe75522119370309@mail.gmail.com> <20071017034402.GA10260@virgo.fc-cn.com>
-In-Reply-To: <20071017034402.GA10260@virgo.fc-cn.com>
+Cc: "Greg KH" <greg@kroah.com>, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tejun Heo" <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+References: <200710132126.33085.rjw@sisk.pl> <200710170158.10234.rjw@sisk.pl> <3ae72650710170317m75d0a664oe2bfa98ab70298e9@mail.gmail.com>
+In-Reply-To: <3ae72650710170317m75d0a664oe2bfa98ab70298e9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710171932.09123.rjw@sisk.pl>
+Message-Id: <200710171935.09878.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 17 October 2007 05:44, Qi Yong wrote:
-> On Wed, Oct 17, 2007 at 10:46:12AM +0800, Qi Yong wrote:
-> > On 12/05/2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > On Fri, 11 May 2007, Rafael J. Wysocki wrote:
-[--snip--]
+On Wednesday, 17 October 2007 12:17, Kay Sievers wrote:
+> On 10/17/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, 16 October 2007 23:36, Greg KH wrote:
+> > > On Tue, Oct 16, 2007 at 11:13:19PM +0200, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 16 October 2007 22:50, Jens Axboe wrote:
+> > > > > On Tue, Oct 16 2007, Greg KH wrote:
+> > > > > > On Tue, Oct 16, 2007 at 10:04:51PM +0200, Rafael J. Wysocki wrote:
+> > > > > > > On Tuesday, 16 October 2007 06:50, Greg KH wrote:
+> > > > > > > > On Sat, Oct 13, 2007 at 09:26:32PM +0200, Rafael J. Wysocki wrote:
+> > > > > > > > > Hi,
+> > > > > > > > >
+> > > > > > > > > There are many traces like this in my dmesg from 2.6.23-git3 (they don't
+> > > > > > > > > appear for vanilla 2.6.23):
+> > > > > > > > >
+> > > > > > > > > <4>sysfs: duplicate filename 'ethxx1' can not be created
+> > > > > > > > > WARNING: at /home/rafael/src/linux-2.6/fs/sysfs/dir.c:425 sysfs_add_one()
+> > > > > > > > >
+> > > > > > > > > Call Trace:
+> > > > > > > > >  [<ffffffff802d1532>] sysfs_add_one+0x5c/0xc9
+> > > > > > > > >  [<ffffffff802d2411>] sysfs_create_link+0xd1/0x12c
+> > > > > > > > >  [<ffffffff803756da>] device_rename+0x17a/0x1db
+> > > > > > > > >  [<ffffffff803c903d>] dev_change_name+0x114/0x20c
+> > > > > > > > >  [<ffffffff803c9339>] dev_ifsioc+0x204/0x2d0
+> > > > > > > > >  [<ffffffff803c9925>] dev_ioctl+0x520/0x633
+> > > > > > > > >  [<ffffffff803bf445>] sk_alloc+0x37/0x10c
+> > > > > > > > >  [<ffffffff8024b977>] up_read+0x9/0xb
+> > > > > > > > >  [<ffffffff803bc65e>] sock_ioctl+0x1fe/0x20c
+> > > > > > > > >  [<ffffffff8029b34a>] do_ioctl+0x2a/0x77
+> > > > > > > > >  [<ffffffff8029b5e8>] vfs_ioctl+0x251/0x26e
+> > > > > > > > >  [<ffffffff8029b664>] sys_ioctl+0x5f/0x83
+> > > > > > > > >  [<ffffffff8020bd4e>] system_call+0x7e/0x83
+> > > > > > > > >
+> > > > > > > > > net ethxx1: device_rename: sysfs_create_symlink failed (-17)
+> > > > > > > > > sysfs: duplicate filename 'eth1' can not be created
+> > > > > > > > >
+> > > > > > > > > Everything seems to work, but this just looks fishy.
+> > > > > > > >
+> > > > > > > > This is a userspace program renaming your network device to a name that
+> > > > > > > > is already in use.  What distro and release is this?
+> > > > > > >
+> > > > > > > openSUSE 10.2, with some updates (not the most recent, though).
+> > > > > >
+> > > > > > Can you try 10.3?  I think we fixed this issue there.
+> > > > >
+> > > > > Ehm nope:
+> > > > >
+> > > > > Oct 16 19:36:27 carl kernel: sysfs: duplicate filename 'wlan0_rename'
+> > > > > can not be created
+> > > > > Oct 16 19:36:27 carl kernel: udev: renamed network interface wmaster0 to
+> > > > > eth1
+> > > > > Oct 16 19:36:27 carl kernel: WARNING: at fs/sysfs/dir.c:425
+> > > > > sysfs_add_one()
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01b2dbf>] sysfs_add_one+0x9f/0xe0
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01b3b76>] sysfs_create_link+0x86/0x110
+> > > > > Oct 16 19:36:27 carl kernel:  [<c02398ca>] device_rename+0x17a/0x1e0
+> > > > > Oct 16 19:36:27 carl kernel:  [<c015b56f>] filemap_fault+0x1ff/0x400
+> > > > > Oct 16 19:36:27 carl kernel:  [<c02b8fc0>] dev_change_name+0xb0/0x210
+> > > > > Oct 16 19:36:27 carl kernel:  [<c02b9779>] dev_ioctl+0x3c9/0x530
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01a1938>]
+> > > > > inotify_d_instantiate+0x18/0x80
+> > > > > Oct 16 19:36:27 carl kernel:  [<c0120044>] do_page_fault+0x4a4/0x6f0
+> > > > > Oct 16 19:36:27 carl kernel:  [<c02ac080>] sock_ioctl+0x0/0x220
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01851ab>] do_ioctl+0x2b/0x90
+> > > > > Oct 16 19:36:27 carl kernel:  [<c02ad50b>] sys_socket+0x2b/0x50
+> > > > > Oct 16 19:36:27 carl kernel:  [<c018542e>] vfs_ioctl+0x21e/0x2a0
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01854ed>] sys_ioctl+0x3d/0x70
+> > > > > Oct 16 19:36:27 carl kernel:  [<c01042d6>] sysenter_past_esp+0x6b/0xa1
+> > > > > Oct 16 19:36:27 carl kernel:  =======================
+> > > > > Oct 16 19:36:27 carl kernel: net wlan0_rename: device_rename:
+> > > > > sysfs_create_symlink failed (-17)
+> > > >
+> > > > Plus it doesn't happen on 2.6.23 on my system, so I count it as a regression.
+> > >
+> > > It's a new warning I've added to the kernel to catch stupid userspace
+> > > and kernel code that is quietly failing when they are doing things
+> > > incorrectly with kobjects and sysfs.
+> > >
+> > > So it's not really a "regression" in that we never notified anyone of
+> > > this kind of thing before, think of it as a new feature :)
+> >
+> > Well, it seems to be a little bit over the top, then. ;-)
 > 
-> please apply.
-> 
-> Signed-off-by: Qi Yong <qiyong@fc-cn.com>
-> ---
+> In the network renaming it's a bit noisy, yes, but for other users
+> which we discovered by this, it already exposed real bugs.
 
-With your patch applied the default for ACPI systems changes from
-HIBERNATION_PLATFORM to HIBERNATION_SHUTDOWN.  However,
-it has been HIBERNATION_PLATFORM since 2.6.20 and I'd really
-prefer it to stay this way.
-
-If HIBERNATION_PLATFORM doesn't work for you, please do
-"echo shutdown > /sys/power/disk" before hibernation or, if you use the
-userland suspend tools, change the s2disk's configuration file to use the
-"shutdown" mode.
-
-> diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-> index eb72255..95b66ee 100644
-> --- a/kernel/power/disk.c
-> +++ b/kernel/power/disk.c
-> @@ -61,9 +61,11 @@ void hibernation_set_ops(struct hibernation_ops *ops)
->  	}
->  	mutex_lock(&pm_mutex);
->  	hibernation_ops = ops;
-> -	if (ops)
-> -		hibernation_mode = HIBERNATION_PLATFORM;
-> -	else if (hibernation_mode == HIBERNATION_PLATFORM)
-> +
-> +	/*
-> +	 * Turn off HIBERNATION_PLATFORM if we no longer have any platform ops.
-> +	 */
-> +	if (!ops && hibernation_mode == HIBERNATION_PLATFORM)
->  		hibernation_mode = HIBERNATION_SHUTDOWN;
->  
->  	mutex_unlock(&pm_mutex);
+Is it possible to change udev rules to avoid the warnings on openSUSE 10.2?
 
 Greetings,
 Rafael
