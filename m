@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762996AbXJQT5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbXJQT6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762996AbXJQT5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbXJQT5H
+	id S1761921AbXJQT6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbXJQT6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:57:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5106 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750824AbXJQT5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:57:04 -0400
-Date: Wed, 17 Oct 2007 21:56:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071017195659.GD15552@kernel.dk>
-References: <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <alpine.LFD.0.999.0710171244330.26902@woody.linux-foundation.org>
+	Wed, 17 Oct 2007 15:58:10 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:12712 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754346AbXJQT6J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:58:09 -0400
+Date: Wed, 17 Oct 2007 23:57:46 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: leoli@freescale.com, jgarzik@pobox.com, paulus@samba.org
+Cc: galak@kernel.crashing.org, afleming@freescale.com, apw@shadowen.org,
+       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH][NET] gianfar: fix obviously wrong #ifdef CONFIG_GFAR_NAPI
+	placement
+Message-ID: <20071017195746.GA15592@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710171244330.26902@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 17 Oct 2007, Jens Axboe wrote:
-> > 
-> > OK, I think you have a very good point here. Ingo, can you verify it
-> > goes away if apply the below? I have to tend to Other Life stuff but
-> > will take this up again tomorrow morning and fix the sg_next() usage.
-> 
-> This one will only fix the ones that use the SCSI-lib routines, so it will 
-> leave everything else broken, no?
+Erroneous #ifdef introduced by 293c8513398657f6263fcdb03c87f2760cf61be4
+causing NAPI-less ethernet malfunctioning.
 
-Yes, it'll still crap out if you use debug page alloc for anything else
-:/
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-> > Linus, please still pull the branch I asked you to earlier. Thanks!
-> 
-> Already did.
+if (...)
+#if
+	...;
+#endif
 
-Thanks
+good candidate for checkpatch?
 
+ drivers/net/gianfar.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index cc288d8..38268d7 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -956,10 +956,12 @@ static int gfar_enet_open(struct net_device *dev)
+ 	}
+ 
+ 	err = startup_gfar(dev);
+-	if (err)
++	if (err) {
+ #ifdef CONFIG_GFAR_NAPI
+ 		napi_disable(&priv->napi);
+ #endif
++		return err;
++	}
+ 
+ 	netif_start_queue(dev);
+ 
 -- 
-Jens Axboe
-
+1.5.0.6
