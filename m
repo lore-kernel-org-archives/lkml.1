@@ -1,100 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934077AbXJQXHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761822AbXJQXMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934077AbXJQXHW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 19:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759155AbXJQXHF
+	id S1761822AbXJQXMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 19:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXJQXMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 19:07:05 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38552 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758880AbXJQXHB (ORCPT
+	Wed, 17 Oct 2007 19:12:22 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:64523 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbXJQXMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 19:07:01 -0400
-X-Sasl-enc: alcjzr8z0DSn2p85GYWEvRyAWyH9ijYEjSHv/sJyYC+1 1192662419
-Message-ID: <47169593.7060901@imap.cc>
-Date: Thu, 18 Oct 2007 01:06:59 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [2.6.23-mm1] CONFIG_LOCALVERSION handling broken
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <471142A8.40307@imap.cc>
-In-Reply-To: <471142A8.40307@imap.cc>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig374363E89DE44D09DE6FFF34"
+	Wed, 17 Oct 2007 19:12:21 -0400
+To: jens.axboe@oracle.com
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, tomof@acm.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071017203758E.fujita.tomonori@lab.ntt.co.jp>
+References: <20071017105840.GT5043@kernel.dk>
+	<20071017110142.GU5043@kernel.dk>
+	<20071017203758E.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071018080110O.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 18 Oct 2007 08:01:10 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig374363E89DE44D09DE6FFF34
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 17 Oct 2007 20:37:58 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Am 14.10.2007 00:11 schrieb Tilman Schmidt:
-> CONFIG_LOCALVERSION=3D"-testing"
-[...]
-> has worked fine for all of 2.6.23{-rc?{,-mm?},}. For 2.6.23-mm1
-> [there is] "make modules_install" installing the
-> modules into /lib/modules/2.6.23-mm1 instead of
-> /lib/modules/2.6.23-mm1-testing, and "make install" passing
-> "2.6.23-mm1" without the "-testing" suffix to the install.sh
-> script, but mkinitrd [...] looks for modules in
-> /lib/modules/2.6.23-mm1-testing, so initrd creation fails.
+> On Wed, 17 Oct 2007 13:01:42 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Oct 17 2007, Jens Axboe wrote:
+> > > On Wed, Oct 17 2007, David Miller wrote:
+> > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > Date: Wed, 17 Oct 2007 11:16:29 +0200
+> > > > 
+> > > > > On Wed, Oct 17 2007, David Miller wrote:
+> > > > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > > > Date: Wed, 17 Oct 2007 10:45:28 +0200
+> > > > > > 
+> > > > > > > Righto, it's invalid to call sg_next() on the last entry!
+> > > > > > 
+> > > > > > Unfortunately, that's what the sparc64 code wanted to do, this
+> > > > > > transformation in the sparc64 sg chaining patch is not equilavent:
+> > > > > > 
+> > > > > > -	struct scatterlist *sg_end = sg + nelems;
+> > > > > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
+> > > > > >  ...
+> > > > > > -			while (sg < sg_end &&
+> > > > > > +			while (sg != sg_end &&
+> > > > > 
+> > > > > Auch indeed. That'd probably be better as a
+> > > > > 
+> > > > >         do {
+> > > > >                 ...
+> > > > >         } while (sg != sg_end);
+> > > > 
+> > > > Ok, next bug, introduced by this change:
+> > > > 
+> > > > commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
+> > > > Author: Jens Axboe <jens.axboe@oracle.com>
+> > > > Date:   Fri Sep 21 10:44:19 2007 +0200
+> > > > 
+> > > >     block: convert to using sg helpers
+> > > >     
+> > > >     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
+> > > >     
+> > > >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > > 
+> > > > Specifically this part:
+> > > > 
+> > > >  new_segment:
+> > > > -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
+> > > > -			sg[nsegs].page = bvec->bv_page;
+> > > > -			sg[nsegs].length = nbytes;
+> > > > -			sg[nsegs].offset = bvec->bv_offset;
+> > > > +			sg = next_sg;
+> > > > +			next_sg = sg_next(sg);
+> > > >  
+> > > > +			sg->page = bvec->bv_page;
+> > > > +			sg->length = nbytes;
+> > > > +			sg->offset = bvec->bv_offset;
+> > > > 
+> > > > You can't remove that memset(), it's there for a reason.  The IOMMU
+> > > > layers depended upon the code zero'ing out the whole scatterlist
+> > > > struct, there might be more to it than page, length and offset :-)
+> > > 
+> > > I realize that, and I was pretty worried about this specific change. But
+> > > there's only been one piece of fallout because if it until now - well
+> > > two, with the sparc64 stuff.
+> > > 
+> > > The problem is that you cannot zero the entire sg entry, because then
+> > > you'd potentially overwrite the chain pointer.
+> > > 
+> > > I'd propose just adding a
+> > > 
+> > >         sg_dma_address(sg) = 0;
+> > >         sg_dma_len(sg) = 0;
+> > > 
+> > > there for now, or provide an arch_clear_sg_entry() helper if we need
+> > > more killed.
+> > 
+> > Actually, just clearing AFTER sg_next() would be fine, since we know
+> > that is not a link entry. Duh...
+> > 
+> > diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+> > index 9eabac9..1014d34 100644
+> > --- a/block/ll_rw_blk.c
+> > +++ b/block/ll_rw_blk.c
+> > @@ -1352,6 +1352,7 @@ new_segment:
+> >  			sg = next_sg;
+> >  			next_sg = sg_next(sg);
+> >  
+> > +			memset(sg, 0, sizeof(*sg));
+> >  			sg->page = bvec->bv_page;
+> >  			sg->length = nbytes;
+> >  			sg->offset = bvec->bv_offset;
+> > 
+> > -- 
+> 
+> So now how about removing zero'ing out sglist in scsi-ml?
 
-I have investigated a bit more, and stumbled on this:
-
-ts@xenon:~/kernel/linux-2.6.23-mm1-work> make include/config/kernel.relea=
-se
-ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.releas=
-e
-2.6.23-mm1-testing
-ts@xenon:~/kernel/linux-2.6.23-mm1-work> make
-  Using ARCH=3Di386 CROSS_COMPILE=3D
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-[...]
-Kernel: arch/i386/boot/bzImage is ready  (#1)
-  Building modules, stage 2.
-  MODPOST 1085 modules
-ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.releas=
-e
-2.6.23-mm1
-ts@xenon:~/kernel/linux-2.6.23-mm1-work>
-
-Hmmm. "Curiouser and curiouser", said Alice.
-
-So the content of the file include/config/kernel.release generated
-by "make" varies depending on whether I ask "make" to create just
-that file, or an entire kernel!? That runs against everything I
-ever learned about "make"!
-
-My ability to comprehend the inner workings of Kbuild ends here.
-I'll just skip this -mm release and wait for 2.6.24-rc1, hoping
-it won't have the same problem.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig374363E89DE44D09DE6FFF34
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHFpWdMdB4Whm86/kRAmMDAJ9MQZ55Dh5YZb81fc63M1QWch5aZACfasEP
-XPM+GiZXhwdwqZtrr20Ztq4=
-=BV1C
------END PGP SIGNATURE-----
-
---------------enig374363E89DE44D09DE6FFF34--
+Really sorry, I must have been stoned.
