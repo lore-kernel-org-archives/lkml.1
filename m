@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764218AbXJQH0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765693AbXJQH0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764218AbXJQH0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbXJQHZ6
+	id S1765693AbXJQH0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764210AbXJQH0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:25:58 -0400
-Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7]:32771 "EHLO
-	opal.biophys.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751292AbXJQHZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:25:57 -0400
-X-Greylist: delayed 735 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 03:25:57 EDT
-Date: Wed, 17 Oct 2007 09:13:32 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-X-X-Sender: schmitz@zirkon.biophys.uni-duesseldorf.de
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       <linux-input@atrey.karlin.mff.cz>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Atari keyboard: incorporate additional review comments
-In-Reply-To: <Pine.LNX.4.64.0710152150260.22973@anakin>
-Message-ID: <Pine.LNX.4.44.0710170910430.10134-100000@zirkon.biophys.uni-duesseldorf.de>
+	Wed, 17 Oct 2007 03:26:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59801 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764158AbXJQH0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 03:26:13 -0400
+Date: Wed, 17 Oct 2007 09:25:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, shemminger@linux-foundation.org
+Subject: Re: [patch] forcedeth: fix the NAPI poll function
+Message-ID: <20071017072551.GD18044@elte.hu>
+References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <47152B32.9020905@pobox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (opal.biophys.uni-duesseldorf.de [134.99.176.7]); Wed, 17 Oct 2007 09:13:37 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47152B32.9020905@pobox.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Geert Uytterhoeven wrote:
 
-> Atari keyboard: incorporate additional review comments:
->   o Kill reference to source file name
->   o Return error value from input_register_device() instead of -ENOMEM
->
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+* Jeff Garzik <jgarzik@pobox.com> wrote:
 
-Ack, Ack  ...
+> Would the attached patch be ok with people?
+> 
+> It's basically the same thing, except that it aligns a bit more 
+> closely with forcedeth rework stuff I'm doing.
+> 
+> I'll send upstream today unless people scream...
 
-Thanks, Geert! Can't wait to get my Falcon back outta the container ...
+looks good to me.
 
-	Michael
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-
+	Ingo
