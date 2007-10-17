@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764774AbXJQJEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbXJQJF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764774AbXJQJEZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXJQJER
+	id S1765285AbXJQJF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXJQJFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:04:17 -0400
-Received: from mga02.intel.com ([134.134.136.20]:54407 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbXJQJEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:04:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,289,1188802800"; 
-   d="scan'208";a="249022487"
-Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <p73odeyxi3u.fsf@crumb.suse.de>
-References: <1192168345.17539.42.camel@caritas-dev.intel.com>
-	 <1192586376.17856.26.camel@caritas-dev.intel.com>
-	 <p73odeyxi3u.fsf@crumb.suse.de>
-Content-Type: text/plain
+	Wed, 17 Oct 2007 05:05:15 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:32816 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbXJQJFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 05:05:13 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: possible circular lock dependency in reiserfs
+Date: Wed, 17 Oct 2007 11:05:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 17 Oct 2007 17:05:47 +0800
-Message-Id: <1192611948.17856.39.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 17 Oct 2007 09:03:20.0877 (UTC) FILETIME=[90B4CDD0:01C8109C]
+Content-Disposition: inline
+Message-Id: <200710171105.13889.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 10:25 +0200, Andi Kleen wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
-> 
-> > Do you think it is a good idea to check the collision between setup data
-> > and memory area used during kernel boot through bootmem allocator?
-> 
-> You can't solve this through bootmem because x86-64 allocates memory
-> in several places before bootmem (using functions in e820.c) Right now
-> this is quite hackish with hard coded areas to avoid conflicts.  But I
-> recently had a need to allocate more memory that early too and changed
-> the code to a generic early reservation interface. With that it would
-> be relatively easy to reserve.
+Hi,
 
-Can you tell me what that early reservation interface is? What I find in
-x86_64 that does early memory allocation is alloc_low_page, which gets
-non-conflict memory area through e820 map.
+I got the following report in syslog:
 
-Because setup data is allocated by bootloader or kernel 16-bit setup
-code, and the e820 map is created there too, the memory area used by
-setup data can be made reserved memory area in e820 map by bootloader or
-kernel 16-bit setup code. This way, they will not be overwritten by
-kernel. Do you think this works.
-
-Best Regards,
-Huang Ying
+Oct 17 10:56:35 oenone kernel: =============================================
+Oct 17 10:56:35 oenone kernel: [ INFO: possible recursive locking detected ]
+Oct 17 10:56:35 oenone kernel: 2.6.23-default #1
+Oct 17 10:56:35 oenone kernel: ---------------------------------------------
+Oct 17 10:56:35 oenone kernel: beagled/4092 is trying to acquire lock:
+Oct 17 10:56:35 oenone kernel:  (&inode->i_mutex){--..}, at: [<ffffffff88090081>] reiserfs_xattr_set+0xf3/0x30e [reiserfs]
+Oct 17 10:56:35 oenone kernel:
+Oct 17 10:56:35 oenone kernel: but task is already holding lock:
+Oct 17 10:56:35 oenone kernel:  (&inode->i_mutex){--..}, at: [<ffffffff802adef5>] vfs_setxattr+0x4d/0x1e0
+Oct 17 10:56:35 oenone kernel:
+Oct 17 10:56:35 oenone kernel: other info that might help us debug this:
+Oct 17 10:56:35 oenone kernel: 3 locks held by beagled/4092:
+Oct 17 10:56:35 oenone kernel:  #0:  (&inode->i_mutex){--..}, at: [<ffffffff802adef5>] vfs_setxattr+0x4d/0x1e0
+Oct 17 10:56:35 oenone kernel:  #1:  (&REISERFS_I(inode)->xattr_sem){----}, at: [<ffffffff8808fb56>] reiserfs_setxattr+0x6b/0x11f [reiserfs]
+Oct 17 10:56:35 oenone kernel:  #2:  (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffff8808fb89>] reiserfs_setxattr+0x9e/0x11f [reiserfs]
+Oct 17 10:56:35 oenone kernel:
+Oct 17 10:56:35 oenone kernel: stack backtrace:
+Oct 17 10:56:35 oenone kernel:
+Oct 17 10:56:35 oenone kernel: Call Trace:
+Oct 17 10:56:35 oenone kernel:  [<ffffffff80250528>] __lock_acquire+0x1b7/0xcaf
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8025140d>] lock_acquire+0x51/0x6c
+Oct 17 10:56:35 oenone kernel:  [<ffffffff88090081>] :reiserfs:reiserfs_xattr_set+0xf3/0x30e
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8024ddd1>] debug_mutex_lock_common+0x16/0x23
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8044b824>] __mutex_lock_slowpath+0xe1/0x277
+Oct 17 10:56:35 oenone kernel:  [<ffffffff88090081>] :reiserfs:reiserfs_xattr_set+0xf3/0x30e
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8024feec>] trace_hardirqs_on+0x115/0x139
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8044d1f4>] _spin_unlock_irq+0x24/0x27
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8044c85a>] __down_write_nested+0x34/0x9e
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8808fbb2>] :reiserfs:reiserfs_setxattr+0xc7/0x11f
+Oct 17 10:56:35 oenone kernel:  [<ffffffff802adf56>] vfs_setxattr+0xae/0x1e0
+Oct 17 10:56:35 oenone kernel:  [<ffffffff802ae148>] setxattr+0xc0/0xdd
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8028f376>] kmem_cache_free+0x1c4/0x1d6
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8024feec>] trace_hardirqs_on+0x115/0x139
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8029dae5>] do_path_lookup+0x1ae/0x22c
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8029e340>] __user_walk_fd+0x41/0x4c
+Oct 17 10:56:35 oenone kernel:  [<ffffffff802ae1ae>] sys_lsetxattr+0x49/0x6a
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8020bdfa>] tracesys+0x71/0xe1
+Oct 17 10:56:35 oenone kernel:  [<ffffffff8020be65>] tracesys+0xdc/0xe1
+Oct 17 10:56:35 oenone kernel:
