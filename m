@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933814AbXJQPin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934468AbXJQPpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933814AbXJQPin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 11:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760202AbXJQPig
+	id S934468AbXJQPpJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 11:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbXJQPoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 11:38:36 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:45965 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758574AbXJQPif convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 11:38:35 -0400
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: 2.6.23-git11 compile issues
-Date: Wed, 17 Oct 2007 18:38:52 +0300
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <1192635199.14504.2.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1192635199.14504.2.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710171838.52243.ismail@pardus.org.tr>
+	Wed, 17 Oct 2007 11:44:55 -0400
+Received: from pat.uio.no ([129.240.10.15]:37274 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755164AbXJQPoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 11:44:54 -0400
+Subject: Re: [PATCH] nfs: fix nfs_writepage()
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1192635028.27435.137.camel@twins>
+References: <1192628458.27435.119.camel@twins>
+	 <1192634702.7573.10.camel@heimdal.trondhjem.org>
+	 <1192635028.27435.137.camel@twins>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 11:45:17 -0400
+Message-Id: <1192635917.7573.24.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.242)
+X-UiO-Scanned: 08F9777868A3EA74A24492196AC8E7041CA1277D
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 720 total 4555575 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wednesday 17 October 2007 Tarihinde 18:33:18 yazmıştı:
-> Known issue ?
->
->
-> Thanks,
-> Badari
->
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CC      arch/x86/kernel/asm-offsets.s
-> In file included from arch/x86/kernel/asm-offsets_64.c:7,
->                  from arch/x86/kernel/asm-offsets.c:4:
-> include/linux/crypto.h:20:24: error: asm/atomic.h: No such file or
-> directory In file included from include/linux/types.h:14,
 
-Please try running make mrproper.
+On Wed, 2007-10-17 at 17:30 +0200, Peter Zijlstra wrote:
 
-/ismail
+> The thing is, swapper_space just calls ->writepage() and expects the
+> page to be written out. So either the a_ops usage of swapper_space is
+> deviant or NFS' is.
 
--- 
-Faith is believing what you know isn't so -- Mark Twain
+Could somebody please document WTF writepage() is supposed to do, and
+WTF page_mkwrite() is for?
+
+I thought that page_mkwrite() was supposed to finally allow us to deal
+with dirty pages in a clean manner: the caller gets to tell the
+filesystem that it wants the entire page written out, and then dirties
+the page. What is the point if the VM then expects to be able to
+circumvent this?
+
+Trond
+
