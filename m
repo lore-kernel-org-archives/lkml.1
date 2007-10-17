@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbXJQHXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764749AbXJQHYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763804AbXJQHXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXJQHX2
+	id S1764749AbXJQHYF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbXJQHXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:23:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38583 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754270AbXJQHX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:23:28 -0400
-Date: Wed, 17 Oct 2007 09:23:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] sched: schedstat needs a diet
-Message-ID: <20071017072323.GB18044@elte.hu>
-References: <b040c32a0710161337l24d61d45h61be0ded72b54a9f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0710161337l24d61d45h61be0ded72b54a9f@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 17 Oct 2007 03:23:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48125 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757867AbXJQHXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 03:23:51 -0400
+Date: Wed, 17 Oct 2007 00:23:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [BUG] 2.6.23-rc9 kernel panic - simple_map_write+0x4e/0x75
+Message-Id: <20071017002317.7ae2cbf4.akpm@linux-foundation.org>
+In-Reply-To: <4715B5A5.9050005@linux.vnet.ibm.com>
+References: <4710686C.8060603@linux.vnet.ibm.com>
+	<20071016134620.7b3ce56f.akpm@linux-foundation.org>
+	<4715B5A5.9050005@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Oct 2007 12:41:33 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-* Ken Chen <kenchen@google.com> wrote:
-
-> schedstat is useful in investigating CPU scheduler behavior.  Ideally, 
-> I think it is beneficial to have it on all the time.  However, the 
-> cost of turning it on in production system is quite high, largely due 
-> to number of events it collects and also due to its large memory 
-> footprint.
+> >> [  321.592882] Code: 83 f8 01 75 0a 03 7b 10 8b 45 d4 88 07 eb 35 83 f8 02 75 0c
+> >> 0f b7 45 d4 03 7b 10 66 89 07 eb 24 83 f8 04 75 0a 03 7b 10 8b 45 d4 <89> 07 eb
+> >> 15 7e 13 03 7b 10 89 c1 c1 e9 02 f3 a5 89 c1 83 e1 03 
+> >> [  321.668990] EIP: [<c0d7e4e2>] simple_map_write+0x4e/0x75 SS:ESP 0068:c3ca8d6c
+> >> [  321.695750] Kernel panic - not syncing: Attempted to kill init!
+> > 
+> > Would I be correct in assuming that the machine has no mtd devices, but
+> > you happened to link that driver into your vmlinux?
+> > 
 > 
-> Most of the fields probably don't need to be full 64-bit on 64-bit 
-> arch.  Rolling over 4 billion events will most like take a long time 
-> and user space tool can be made to accommodate that.  I'm proposing 
-> kernel to cut back most of variable width on 64-bit system.  (note, 
-> the following patch doesn't affect 32-bit system).
+> Hi Andrew,
+> 
+> The machine do not have the mtd device, and the mtd is compiled into the vmlinuz.
+> This configuration works fine for other kernels and is reproducible with
+> 2.6.23-rc9 only.
 
-thanks, applied.
-
-note that current -git has a whole bunch of new schedstats fields in 
-/proc/<PID>/sched which can be used to track the exact balancing 
-behavior of tasks. It can be cleared via echoing 0 to the file - so 
-overflow is not an issue. Most of those new fields should probably be 
-unsigned int too. (they are u64 right now.)
-
-	Ingo
+So 2.6.23 is OK?
