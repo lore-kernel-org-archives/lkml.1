@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763080AbXJQNqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXJQNte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763080AbXJQNqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757751AbXJQNqr
+	id S932207AbXJQNte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 09:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXJQNt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:46:47 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:34840 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757655AbXJQNqq (ORCPT
+	Wed, 17 Oct 2007 09:49:26 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:42713 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbXJQNtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:46:46 -0400
-Message-ID: <47161243.6060007@tiscali.nl>
-Date: Wed, 17 Oct 2007 15:46:43 +0200
+	Wed, 17 Oct 2007 09:49:25 -0400
+Message-ID: <471612E1.2050907@tiscali.nl>
+Date: Wed, 17 Oct 2007 15:49:21 +0200
 From: Roel Kluin <12o3l@tiscali.nl>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
 To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] fix not-and/or errors
+Subject: [PATCH 2/4] fix not-and/or errors
+References: <47161243.6060007@tiscali.nl>
+In-Reply-To: <47161243.6060007@tiscali.nl>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,128 +26,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
     if(!x & y) should either be if(!(x & y)) or if(!x && y)
     I made changes as seemed appropriate, but please review
-    this is against current git.
+    
+    several changes to drivers/net/
     
     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-index f569b00..46f156f 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-@@ -410,7 +410,7 @@ static int parse_mtoken(const char *ptr,unsigned int len,
- 	int msk;
- 	*valptr = 0;
- 	for (idx = 0, msk = 1; valid_bits; idx++, msk <<= 1) {
--		if (!msk & valid_bits) continue;
-+		if (!(msk & valid_bits)) continue;
- 		valid_bits &= ~msk;
- 		if (!names[idx]) continue;
- 		slen = strlen(names[idx]);
-diff --git a/drivers/misc/asus-laptop.c b/drivers/misc/asus-laptop.c
-index 7dce318..65c67d1 100644
---- a/drivers/misc/asus-laptop.c
-+++ b/drivers/misc/asus-laptop.c
-@@ -322,7 +322,7 @@ static void write_status(acpi_handle handle, int out, int mask)
- 
- 	switch (mask) {
- 	case MLED_ON:
--		out = !out & 0x1;
-+		out = !(out & 0x1);
+
+diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
+index cf70522..14141a5 100644
+--- a/drivers/net/e1000e/82571.c
++++ b/drivers/net/e1000e/82571.c
+@@ -283,7 +283,7 @@ static s32 e1000_get_invariants_82571(struct e1000_adapter *adapter)
+ 			adapter->flags &= ~FLAG_HAS_WOL;
+ 		/* quad ports only support WoL on port A */
+ 		if (adapter->flags & FLAG_IS_QUAD_PORT &&
+-		    (!adapter->flags & FLAG_IS_QUAD_PORT_A))
++		    (!(adapter->flags & FLAG_IS_QUAD_PORT_A)))
+ 			adapter->flags &= ~FLAG_HAS_WOL;
  		break;
- 	case GLED_ON:
- 		out = (out & 0x1) + 1;
-diff --git a/drivers/s390/cio/cmf.c b/drivers/s390/cio/cmf.c
-index b960f66..6de9d7e 100644
---- a/drivers/s390/cio/cmf.c
-+++ b/drivers/s390/cio/cmf.c
-@@ -343,10 +343,10 @@ static int cmf_copy_block(struct ccw_device *cdev)
  
- 	if (sch->schib.scsw.fctl & SCSW_FCTL_START_FUNC) {
- 		/* Don't copy if a start function is in progress. */
--		if ((!sch->schib.scsw.actl & SCSW_ACTL_SUSPENDED) &&
-+		if ((!(sch->schib.scsw.actl & SCSW_ACTL_SUSPENDED)) &&
- 		    (sch->schib.scsw.actl &
- 		     (SCSW_ACTL_DEVACT | SCSW_ACTL_SCHACT)) &&
--		    (!sch->schib.scsw.stctl & SCSW_STCTL_SEC_STATUS))
-+		    (!(sch->schib.scsw.stctl & SCSW_STCTL_SEC_STATUS)))
- 			return -EBUSY;
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index 074055e..e3eca6d 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -6407,7 +6407,7 @@ static int airo_set_encode(struct net_device *dev,
+ 			set_wep_key(local, index, NULL, 0, perm, 1);
+ 		} else
+ 			/* Don't complain if only change the mode */
+-			if(!dwrq->flags & IW_ENCODE_MODE) {
++			if(!(dwrq->flags & IW_ENCODE_MODE)) {
+ 				return -EINVAL;
+ 			}
  	}
- 	cmb_data = cdev->private->cmb;
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index 73c44cb..81943ef 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -2882,7 +2882,7 @@ static int st_int_ioctl(struct scsi_tape *STp, unsigned int cmd_in, unsigned lon
- 			    !(STp->use_pf & PF_TESTED)) {
- 				/* Try the other possible state of Page Format if not
- 				   already tried */
--				STp->use_pf = !STp->use_pf | PF_TESTED;
-+				STp->use_pf = !(STp->use_pf | PF_TESTED);
- 				st_release_request(SRpnt);
- 				SRpnt = NULL;
- 				return st_int_ioctl(STp, cmd_in, arg);
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 60a8f55..b64309e 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -335,7 +335,7 @@ static void kick_khubd(struct usb_hub *hub)
- 	to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
- 
- 	spin_lock_irqsave(&hub_event_lock, flags);
--	if (!hub->disconnected & list_empty(&hub->event_list)) {
-+	if (!hub->disconnected && list_empty(&hub->event_list)) {
- 		list_add_tail(&hub->event_list, &hub_event_list);
- 		wake_up(&khubd_wait);
+diff --git a/drivers/net/wireless/atmel.c b/drivers/net/wireless/atmel.c
+index 059ce3f..57cc7e5 100644
+--- a/drivers/net/wireless/atmel.c
++++ b/drivers/net/wireless/atmel.c
+@@ -1759,7 +1759,7 @@ static int atmel_set_encode(struct net_device *dev,
+ 			priv->default_key = index;
+ 		} else
+ 			/* Don't complain if only change the mode */
+-			if (!dwrq->flags & IW_ENCODE_MODE) {
++			if (!(dwrq->flags & IW_ENCODE_MODE)) {
+ 				return -EINVAL;
+ 			}
  	}
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 1a7d778..1d13dd0 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 
--	if (!par->dev_flags & LOCKUP)
-+	if (!(par->dev_flags & LOCKUP))
- 		return -ENXIO;
- 
- 	if (cursor->image.width > 64 || cursor->image.height > 64)
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 4ba7f0b..ce62c15 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -3946,7 +3946,7 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
- 	struct ocfs2_merge_ctxt ctxt;
- 	struct ocfs2_extent_list *rightmost_el;
- 
--	if (!rec->e_flags & OCFS2_EXT_UNWRITTEN) {
-+	if (!(rec->e_flags & OCFS2_EXT_UNWRITTEN)) {
- 		ret = -EIO;
- 		mlog_errno(ret);
- 		goto out;
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 41c76ff..ef09fd2 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -670,7 +670,7 @@ static inline void ocfs2_generic_handle_attach_action(struct ocfs2_lock_res *loc
- {
- 	mlog_entry_void();
- 
--	BUG_ON((!lockres->l_flags & OCFS2_LOCK_BUSY));
-+	BUG_ON((!(lockres->l_flags & OCFS2_LOCK_BUSY)));
- 	BUG_ON(lockres->l_flags & OCFS2_LOCK_ATTACHED);
- 
- 	if (lockres->l_requested > LKM_NLMODE &&
-diff --git a/net/ieee80211/ieee80211_wx.c b/net/ieee80211/ieee80211_wx.c
-index 9b58dd6..bc67230 100644
---- a/net/ieee80211/ieee80211_wx.c
-+++ b/net/ieee80211/ieee80211_wx.c
-@@ -709,7 +709,7 @@ int ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
- 	} else
- 		idx = ieee->tx_keyidx;
+diff --git a/drivers/net/wireless/libertas/wext.c b/drivers/net/wireless/libertas/wext.c
+index c6f5aa3..d93438c 100644
+--- a/drivers/net/wireless/libertas/wext.c
++++ b/drivers/net/wireless/libertas/wext.c
+@@ -1380,7 +1380,7 @@ static int wlan_get_encodeext(struct net_device *dev,
+ 		index = adapter->wep_tx_keyidx;
+ 	}
  
 -	if (!ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY &&
 +	if (!(ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY) &&
- 	    ext->alg != IW_ENCODE_ALG_WEP)
- 		if (idx != 0 || ieee->iw_mode != IW_MODE_INFRA)
- 			return -EINVAL;
+ 	    ext->alg != IW_ENCODE_ALG_WEP) {
+ 		if (index != 0 || adapter->mode != IW_MODE_INFRA)
+ 			goto out;
+diff --git a/drivers/net/wireless/p54common.c b/drivers/net/wireless/p54common.c
+index 2c63cf0..b67a31e 100644
+--- a/drivers/net/wireless/p54common.c
++++ b/drivers/net/wireless/p54common.c
+@@ -374,7 +374,7 @@ static void p54_rx_frame_sent(struct ieee80211_hw *dev, struct sk_buff *skb)
+ 			if ((entry_hdr->magic1 & cpu_to_le16(0x4000)) != 0)
+ 				pad = entry_data->align[0];
+ 
+-			if (!status.control.flags & IEEE80211_TXCTL_NO_ACK) {
++			if (!(status.control.flags & IEEE80211_TXCTL_NO_ACK)) {
+ 				if (!(payload->status & 0x01))
+ 					status.flags |= IEEE80211_TX_STATUS_ACK;
+ 				else
+diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
+index 6d80ca4..b9d0073 100644
+--- a/drivers/net/wireless/prism54/isl_ioctl.c
++++ b/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -1118,7 +1118,7 @@ prism54_set_encode(struct net_device *ndev, struct iw_request_info *info,
+ 			    mgt_set_request(priv, DOT11_OID_DEFKEYID, 0,
+ 					    &index);
+ 		} else {
+-			if (!dwrq->flags & IW_ENCODE_MODE) {
++			if (!(dwrq->flags & IW_ENCODE_MODE)) {
+ 				/* we cannot do anything. Complain. */
+ 				return -EINVAL;
+ 			}
+@@ -2610,7 +2610,7 @@ prism2_ioctl_set_encryption(struct net_device *dev,
+ 			    mgt_set_request(priv, DOT11_OID_DEFKEYID, 0,
+ 					    &index);
+ 		} else {
+-			if (!param->u.crypt.flags & IW_ENCODE_MODE) {
++			if (!(param->u.crypt.flags & IW_ENCODE_MODE)) {
+ 				/* we cannot do anything. Complain. */
+ 				return -EINVAL;
+ 			}
+diff --git a/drivers/net/wireless/zd1211rw/zd_rf_uw2453.c b/drivers/net/wireless/zd1211rw/zd_rf_uw2453.c
+index 857dcf3..3c1cca4 100644
+--- a/drivers/net/wireless/zd1211rw/zd_rf_uw2453.c
++++ b/drivers/net/wireless/zd1211rw/zd_rf_uw2453.c
+@@ -403,7 +403,7 @@ static int uw2453_init_hw(struct zd_rf *rf)
+ 		if (r)
+ 			return r;
+ 
+-		if (!intr_status & 0xf) {
++		if (!(intr_status & 0xf)) {
+ 			dev_dbg_f(zd_chip_dev(chip),
+ 				"PLL locked on configuration %d\n", i);
+ 			found_config = i;
