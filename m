@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXJQOxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbXJQO7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbXJQOxQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 10:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765906AbXJQOws
+	id S1764181AbXJQO7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 10:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbXJQO7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 10:52:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55408 "EHLO mx2.suse.de"
+	Wed, 17 Oct 2007 10:59:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40494 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763810AbXJQOwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 10:52:44 -0400
-Message-ID: <47162247.1070006@suse.com>
-Date: Wed, 17 Oct 2007 10:55:03 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1755106AbXJQO7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 10:59:45 -0400
+Date: Wed, 17 Oct 2007 16:59:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20071017145933.GA24035@elte.hu>
+References: <20071017142935.GA10766@elte.hu>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Jeff Mahoney <jeffm@suse.com>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-Subject: Re: 2.6.23-mm1: BUG in reiserfs_delete_xattrs
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47129992.4040903@free.fr> <20071015084052.GA21870@infradead.org> <4713B1E7.2010504@suse.com> <20071017085832.GA8072@infradead.org>
-In-Reply-To: <20071017085832.GA8072@infradead.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017142935.GA10766@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Christoph Hellwig wrote:
-> On Mon, Oct 15, 2007 at 02:31:03PM -0400, Jeff Mahoney wrote:
->> Here's a patch I worked up the other night that kills off struct file
->> completely from the xattr code. I've tested it locally.
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> Linus, please pull the latest scheduler git tree from:
 > 
-> Looks like a merge of Dave's and my patch :)
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 > 
-> ACK from me, I don't care whether it's one or two patches.
+> 4 fixes - and one of the fixes could resolve the group-scheduler crashes 
+> that were reported. Thanks,
 
-Yeah, it probably is. I did it from scratch since it was my mess, and
-the patches I saw were against -mm.
+update: i've replaced this one:
 
-*shrug* Likewise, I don't care if it's one or two.
+> Ingo Molnar (1):
+>       sched: fix new task startup crash
 
-- -Jeff
+with the better fix from Srivatsa Vaddagiri:
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+  Srivatsa Vaddagiri (1):
+        sched: fix new task startup crash
 
-iD8DBQFHFiJHLPWxlyuTD7IRAojqAJwKS+eL1yCtUVHzBSFUxjjkW6KgPwCcDRUE
-Q1V7tCPcT9h0a8ahVmYn+ms=
-=5kMt
------END PGP SIGNATURE-----
+Updated shortlog below.
+
+(if you pulled already that's not a problem either as both trees are 
+fine - i'll sort it out)
+
+	Ingo
+
+git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+------------------>
+Dhaval Giani (1):
+      sched: fix !SYSFS build breakage
+
+Ken Chen (1):
+      sched: fix improper load balance across sched domain
+
+Milton Miller (1):
+      sched: more robust sd-sysctl entry freeing
+
+Srivatsa Vaddagiri (1):
+      sched: fix new task startup crash
+
+ include/linux/sched.h |    2 ++
+ kernel/sched.c        |   38 +++++++++++++++++++++++++++++++-------
+ kernel/sched_fair.c   |    6 +-----
+ kernel/user.c         |   23 +++++++++++++++--------
+ 4 files changed, 49 insertions(+), 20 deletions(-)
