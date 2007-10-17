@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765693AbXJQH0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761820AbXJQHas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765693AbXJQH0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 03:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764210AbXJQH0P
+	id S1761820AbXJQHas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 03:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbXJQHal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 03:26:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59801 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764158AbXJQH0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 03:26:13 -0400
-Date: Wed, 17 Oct 2007 09:25:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, shemminger@linux-foundation.org
-Subject: Re: [patch] forcedeth: fix the NAPI poll function
-Message-ID: <20071017072551.GD18044@elte.hu>
-References: <20071015112430.GA30006@elte.hu> <20071015.125731.79447899.davem@davemloft.net> <20071015220357.GA7174@elte.hu> <20071015220720.GA16101@elte.hu> <20071015223009.GA27425@elte.hu> <47152B32.9020905@pobox.com>
+	Wed, 17 Oct 2007 03:30:41 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53639 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbXJQHak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 03:30:40 -0400
+Message-ID: <4715B9C4.8000904@linux.vnet.ibm.com>
+Date: Wed, 17 Oct 2007 12:59:08 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47152B32.9020905@pobox.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [BUG] 2.6.23-rc9 kernel panic - simple_map_write+0x4e/0x75
+References: <4710686C.8060603@linux.vnet.ibm.com> <20071016134620.7b3ce56f.akpm@linux-foundation.org> <4715B5A5.9050005@linux.vnet.ibm.com> <20071017002317.7ae2cbf4.akpm@linux-foundation.org>
+In-Reply-To: <20071017002317.7ae2cbf4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeff Garzik <jgarzik@pobox.com> wrote:
-
-> Would the attached patch be ok with people?
+Andrew Morton wrote:
+> On Wed, 17 Oct 2007 12:41:33 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> It's basically the same thing, except that it aligns a bit more 
-> closely with forcedeth rework stuff I'm doing.
+>>>> [  321.592882] Code: 83 f8 01 75 0a 03 7b 10 8b 45 d4 88 07 eb 35 83 f8 02 75 0c
+>>>> 0f b7 45 d4 03 7b 10 66 89 07 eb 24 83 f8 04 75 0a 03 7b 10 8b 45 d4 <89> 07 eb
+>>>> 15 7e 13 03 7b 10 89 c1 c1 e9 02 f3 a5 89 c1 83 e1 03 
+>>>> [  321.668990] EIP: [<c0d7e4e2>] simple_map_write+0x4e/0x75 SS:ESP 0068:c3ca8d6c
+>>>> [  321.695750] Kernel panic - not syncing: Attempted to kill init!
+>>> Would I be correct in assuming that the machine has no mtd devices, but
+>>> you happened to link that driver into your vmlinux?
+>>>
+>> Hi Andrew,
+>>
+>> The machine do not have the mtd device, and the mtd is compiled into the vmlinuz.
+>> This configuration works fine for other kernels and is reproducible with
+>> 2.6.23-rc9 only.
 > 
-> I'll send upstream today unless people scream...
+> So 2.6.23 is OK?
 
-looks good to me.
+Hi Andrew,
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+The kernel panic is not seen in 2.6.23 kernel with CONFIG_MTD set.
 
-	Ingo
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
