@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936123AbXJQVGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934609AbXJQVKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936123AbXJQVGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbXJQVGe
+	id S934609AbXJQVKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759904AbXJQVKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:06:34 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37085 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758808AbXJQVGd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:06:33 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47167952.8010903@s5r6.in-berlin.de>
-Date: Wed, 17 Oct 2007 23:06:26 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Wed, 17 Oct 2007 17:10:38 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:36816 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758606AbXJQVKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 17:10:37 -0400
+Date: Wed, 17 Oct 2007 14:10:04 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] hwmon/ibmpex.c: fix NULL dereference
+Message-ID: <20071017211004.GA31309@tree.beaverton.ibm.com>
+References: <20071017192902.GB3778@stusta.de>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: VIA VT6307 OHCI version?
-References: <m3sl4ciz1h.fsf@maximus.localdomain>	<4714EF01.2060609@s5r6.in-berlin.de>	<m3d4vebylw.fsf@maximus.localdomain>	<471527E5.1050407@s5r6.in-berlin.de>	<m34pgpmszu.fsf@maximus.localdomain>	<47166C83.2050207@s5r6.in-berlin.de> <m38x614g37.fsf@maximus.localdomain>
-In-Reply-To: <m38x614g37.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017192902.GB3778@stusta.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Is the "dual buffer reception" involved in receiving video from
-> a DV camera, using the new driver?
+On Wed, Oct 17, 2007 at 09:29:02PM +0200, Adrian Bunk wrote:
+> Don't dereference "data" when we know for sure it's NULL.
+> 
+> Spotted by the Coverity checker.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 66bec2ef5c6d55fc30ef6ac5bb97fdfcfaf394f2 
+> diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
+> index c462824..e14ce3d 100644
+> --- a/drivers/hwmon/ibmpex.c
+> +++ b/drivers/hwmon/ibmpex.c
+> @@ -457,7 +457,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+>  	data = kzalloc(sizeof(*data), GFP_KERNEL);
+>  	if (!data) {
+>  		printk(KERN_ERR DRVNAME ": Insufficient memory for BMC "
+> -		       "interface %d.\n", data->interface);
+> +		       "interface.\n");
+>  		return;
+>  	}
+> 
+> 
+ACK.
 
-Yes, isochronous reception (and thus DV) with the new drivers currently
-requires dual buffer mode.
--- 
-Stefan Richter
--=====-=-=== =-=- =---=
-http://arcgraph.de/sr/
+--D
