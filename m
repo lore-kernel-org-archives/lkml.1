@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761907AbXJQV2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbXJQVdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761907AbXJQV2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXJQV2m
+	id S1758338AbXJQVdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXJQVc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:28:42 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40851 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753864AbXJQV2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:28:42 -0400
-Date: Wed, 17 Oct 2007 23:30:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>
-Subject: [RFT] kbuild: check asm symlink when building a kernel
-Message-ID: <20071017213014.GA13174@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Wed, 17 Oct 2007 17:32:59 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50418 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753699AbXJQVc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 17:32:58 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<1192648456.15717.7.camel@think.oraclecorp.com>
+	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+	<1192654481.15717.16.camel@think.oraclecorp.com>
+Date: Wed, 17 Oct 2007 15:30:19 -0600
+In-Reply-To: <1192654481.15717.16.camel@think.oraclecorp.com> (Chris Mason's
+	message of "Wed, 17 Oct 2007 16:54:41 -0400")
+Message-ID: <m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We often hit the situation where the asm symlink
-in include/ points to the wrong architecture.
-In 9 out of 10 cases thats because we forgot to set
-ARCH but sometimes we just reused the same tree
-for another ARCH. For the merged x86 tree we need
-to create a new symlink but this is not obvious.
-So with the following patch we check if the symlink
-points to the correct architecture and error
-out if this is not the case.
+Chris Mason <chris.mason@oracle.com> writes:
 
-For x86 a "rm include/asm" is enough but we
-recommend make mrproper for the general case.
+>> Thinking about it.  I don't believe anyone has ever intentionally built
+>> a filesystem tool that depends on being able to modify a file systems
+>> metadata buffer heads while the filesystem is running, and doing that
+>> would seem to be fragile as it would require a lot of cooperation
+>> between the tool and the filesystem about how the filesystem uses and
+>> implement things.
+>> 
+>
+> That's right.  For example, ext2 is doing directories in the page cache
+> of the directory inode, so there's a cache alias between the block
+> device page cache and the directory inode page cache.
+>
+>> Now I guess I need to see how difficult a patch would be to give
+>> filesystems magic inodes to keep their metadata buffer heads in.
+>
+> Not hard, the block device inode is already a magic inode for metadata
+> buffer heads.  You could just make another one attached to the bdev.
+>
+> But, I don't think I fully understand the problem you're trying to
+> solve?
 
-The patch survives my testing but before pushing
-it to -mm or -linus I would like a few more to
-test it in their environment.
-I am a bit unsafe with the use of readlink and cut since
-they are not widely used by the kernel
-build today.
 
-Any feedback good/bad appreciated!
+So the start:
+When we write buffers from the buffer cache we clear buffer_dirty
+but not PageDirty
 
-PS - I know that the lines are too long in the patch but
-     breaking them would hurt readability.
+So try_to_free_buffers() will mark any page with clean buffer_heads
+that is not clean itself clean.
 
-	Sam
+The ramdisk set pages dirty to keep them from being removed from the
+page cache, just like ramfs.
 
-diff --git a/Makefile b/Makefile
-index ed65de7..136d7c2 100644
---- a/Makefile
-+++ b/Makefile
-@@ -903,14 +903,24 @@ prepare: prepare0
- 
- export CPPFLAGS_vmlinux.lds += -P -C -U$(ARCH)
- 
--# FIXME: The asm symlink changes when $(ARCH) changes. That's
--# hard to detect, but I suppose "make mrproper" is a good idea
--# before switching between archs anyway.
--
--include/asm:
--	@echo '  SYMLINK $@ -> include/asm-$(SRCARCH)'
--	$(Q)if [ ! -d include ]; then mkdir -p include; fi;
--	@ln -fsn asm-$(SRCARCH) $@
-+# The asm symlink changes when $(ARCH) changes.
-+# Detect this and ask user to run make mrproper
-+
-+include/asm: FORCE
-+	$(Q)set -e; asmlink=`readlink include/asm | cut -d '-' -f 2`;   \
-+	if [ -L include/asm ]; then                                     \
-+		if [ "$$asmlink" != "$(SRCARCH)" ]; then                \
-+			echo "ERROR: the symlink $@ points to asm-$$asmlink but asm-$(SRCARCH) was expected"; \
-+			echo "       save .config and run 'make mrproper' to fix it";                         \
-+			exit 1;                                         \
-+		fi;                                                     \
-+	else                                                            \
-+		echo '  SYMLINK $@ -> include/asm-$(SRCARCH)';          \
-+		if [ ! -d include ]; then                               \
-+			mkdir -p include;                               \
-+		fi;                                                     \
-+		ln -fsn asm-$(SRCARCH) $@;                              \
-+	fi
- 
- # Generate some files
- # ---------------------------------------------------------------------------
+Unfortunately when those dirty ramdisk pages get buffers on them and
+those buffers all go clean and we are trying to reclaim buffer_heads
+we drop those pages from the page cache.   Ouch!
+
+We can fix the ramdisk by setting making certain that buffer_heads
+on ramdisk pages stay dirty as well.  The problem is this breaks
+filesystems like reiserfs and ext3 that expect to be able to make 
+buffer_heads clean sometimes.
+
+There are other ways to solve this for ramdisks, such as changing
+where ramdisks are stored.  However fixing the ramdisks this way
+still leaves the general problem that there are other paths to the
+filesystem metadata buffers, and those other paths cause the code
+to be complicated and buggy.
+
+So I'm trying to see if we can untangle this Gordian knot, so the
+code because more easily maintainable.  
+
+To make the buffer cache a helper library instead of require
+infrastructure, it looks like two things need to happen.
+- Move metadata buffer heads off block devices page cache entries, 
+- Communicate the mappings of data pages to block device sectors
+  in a generic way without buffer heads.
+
+How we ultimately fix the ramdisk tends to depend on how we untangle
+the buffer head problem.  Right now the only simple solution is to
+suppress try_to_free_buffers, which is a bit ugly.  We can also come
+up with a completely separate store for the pages in the buffer cache
+but if we wind up moving the metadata buffer heads anyway then that
+should not be necessary.
+
+Eric
