@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935177AbXJQUp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbXJQUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935177AbXJQUp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbXJQUpN
+	id S933304AbXJQUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbXJQUsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:45:13 -0400
-Received: from narury.org ([84.16.240.217]:34848 "EHLO narury.org"
+	Wed, 17 Oct 2007 16:48:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40842 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754822AbXJQUpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:45:11 -0400
-Date: Wed, 17 Oct 2007 23:45:08 +0300
-From: Riku Voipio <riku.voipio@iki.fi>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: hwmon/f75375s.c: buggy if()
-Message-ID: <20071017204508.GA32110@kos.to>
-References: <20071017195439.GD3778@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017195439.GD3778@stusta.de>
-X-message-flag: Warning: message not sent with a DRM-Certified client
-User-Agent: Mutt/1.5.11+cvs20060126
+	id S1756542AbXJQUsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:48:50 -0400
+Subject: Re: [GIT PULL] MMC updates
+From: Dan Williams <dcbw@redhat.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071017224422.78c082ec@poseidon.drzeus.cx>
+References: <20071017224422.78c082ec@poseidon.drzeus.cx>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 16:48:54 -0400
+Message-Id: <1192654134.15090.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> <--  snip  -->
+On Wed, 2007-10-17 at 22:44 +0200, Pierre Ossman wrote:
+> Linus, please pull from
 > 
-> ...
-> static ssize_t set_pwm_mode(struct device *dev, struct device_attribute *attr,
->                 const char *buf, size_t count)
-> {
-> ...
->         if (val != 0 || val != 1 || data->kind == f75373)
->                 return -EINVAL;
-> ...
+>         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
 > 
-> <--  snip  -->
+> The set includes one rare memory leak and some cleanup. It also includes a new frontend for the libertas driver. It is going via my tree because of interdependencies between my tree and the libertas/netdev tree.
+> 
+>  drivers/mmc/core/mmc.c                  |    3 +-
+>  drivers/mmc/host/at91_mci.c             |    4 +-
+>  drivers/net/wireless/Kconfig            |    6 +
+>  drivers/net/wireless/libertas/Makefile  |    2 +
+>  drivers/net/wireless/libertas/defs.h    |    2 +
+>  drivers/net/wireless/libertas/if_sdio.c | 1072 +++++++++++++++++++++++++++++++
+>  drivers/net/wireless/libertas/if_sdio.h |   45 ++
 
-> I'm not sure what exactly was intended, but it was for sure not intended 
-> to always return -EINVAL...
+Libertas bits:
 
-Aiee. val should be 1 or 0, and kind must not be f75373.
+Acked-by: Dan Williams <dcbw@redhat.com>
 
-Signed-off-by: Riku Voipio <riku.voipio@iki.fi>
----
- drivers/hwmon/f75375s.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
-index f1df57a..885bfe9 100644
---- a/drivers/hwmon/f75375s.c
-+++ b/drivers/hwmon/f75375s.c
-@@ -344,7 +344,7 @@ static ssize_t set_pwm_mode(struct device *dev, struct device_attribute *attr,
-    int val = simple_strtoul(buf, NULL, 10);
-    u8 conf = 0;
-
--   if (val != 0 || val != 1 || data->kind == f75373)
-+   if (!(val == 0 || val == 1 ) || data->kind == f75373)
-        return -EINVAL;
-
-    mutex_lock(&data->update_lock);
---
-1.5.3.1
+>  include/linux/mmc/sdio_ids.h            |    6 +
+>  8 files changed, 1136 insertions(+), 4 deletions(-)
+> 
+> Andrew Victor (1):
+>       mmc: at91_mci: cleanup: use MCI_ERRORS
+> 
+> Florin Malita (1):
+>       mmc: possible leak in mmc_read_ext_csd
+> 
+> Pierre Ossman (1):
+>       net: libertas sdio driver
+> 
+> Rgds
+> 
 
