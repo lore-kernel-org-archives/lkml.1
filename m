@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXJQJin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbXJQJps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763732AbXJQJin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 05:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbXJQJig
+	id S1760192AbXJQJps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 05:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXJQJph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 05:38:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39712 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755338AbXJQJif (ORCPT
+	Wed, 17 Oct 2007 05:45:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36363
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753869AbXJQJpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 05:38:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v5 0/3] i386/x86_64 boot: 32-bit boot protocol
-References: <1192168345.17539.42.camel@caritas-dev.intel.com>
-Date: Wed, 17 Oct 2007 03:38:10 -0600
-In-Reply-To: <1192168345.17539.42.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Fri, 12 Oct 2007 13:52:25 +0800")
-Message-ID: <m1abqif5dp.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 17 Oct 2007 05:45:36 -0400
+Date: Wed, 17 Oct 2007 02:45:47 -0700 (PDT)
+Message-Id: <20071017.024547.74747794.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071017182401X.fujita.tomonori@lab.ntt.co.jp>
+References: <20071017.021305.74746838.davem@davemloft.net>
+	<20071017091629.GK5043@kernel.dk>
+	<20071017182401X.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 17 Oct 2007 18:24:01 +0900
 
-> This patchset defines a 32-bit boot protocol for i386/x86_64 platform,
-> adds an extensible boot parameter passing mechanism, export the boot
-> parameters via sysfs.
->
-> The patchset has been tested against 2.6.23-rc8-mm2 kernel on x86_64
-> and i386.
->
-> This patchset is based on the proposal of Peter Anvin.
->
->
-> Known Issues:
->
-> - Where is safe to place the linked list of setup_data?  Because the
->   length of the linked list of setup_data is variable, it can not be
->   copied into BSS segment of kernel as that of "zero page". We must
->   find a safe place for it, where it will not be overwritten by kernel
->   during booting up. The i386 kernel will overwrite some pages after
->   _end. The x86_64 kernel will overwrite some pages from 0x1000 on.
+> On Wed, 17 Oct 2007 11:16:29 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Oct 17 2007, David Miller wrote:
+> > > I would suggest that other sg_last() uses be audited for the same bug.
+> > 
+> > Agree.
+> 
+> Only libata, I think.
 
-Well there actually is no reason to copy the current data into the
-zero page.  We really should just leave it where it is until the
-kernel has managed to bootstrap it's basic services.
-
-As for the setup data can we please remove the pointers. And just
-require the that the data items be appended one after each other
-in memory.  Then we would just need a field where we could
-report an offset to the binary data from where we loaded the
-16bit code/data.  We could even specify the end by requiring
-that we fill in setup_move_size or something of that nature.
-
-Beyond that we should provide the bootloaders enough information to
-know which information the kernel will overwrite before it consults
-the e820 map and other indicators of what memory is free.
-
-Eric
+There are a few other spots, like ide-scsi
