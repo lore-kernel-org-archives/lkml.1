@@ -1,98 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762991AbXJQK7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXJQLCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762991AbXJQK7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 06:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbXJQK7K
+	id S1765325AbXJQLCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbXJQLCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 06:59:10 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:26505 "EHLO kernel.dk"
+	Wed, 17 Oct 2007 07:02:12 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26519 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758114AbXJQK7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 06:59:09 -0400
-Date: Wed, 17 Oct 2007 12:58:40 +0200
+	id S1756430AbXJQLCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:02:11 -0400
+Date: Wed, 17 Oct 2007 13:01:42 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
 To: David Miller <davem@davemloft.net>
 Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org
 Subject: Re: [PATCH] SPARC64: fix iommu sg chaining
-Message-ID: <20071017105840.GT5043@kernel.dk>
-References: <20071017084528.GI5043@kernel.dk> <20071017.021305.74746838.davem@davemloft.net> <20071017091629.GK5043@kernel.dk> <20071017.035441.74746708.davem@davemloft.net>
+Message-ID: <20071017110142.GU5043@kernel.dk>
+References: <20071017084528.GI5043@kernel.dk> <20071017.021305.74746838.davem@davemloft.net> <20071017091629.GK5043@kernel.dk> <20071017.035441.74746708.davem@davemloft.net> <20071017105840.GT5043@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017.035441.74746708.davem@davemloft.net>
+In-Reply-To: <20071017105840.GT5043@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Wed, 17 Oct 2007 11:16:29 +0200
-> 
-> > On Wed, Oct 17 2007, David Miller wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Date: Wed, 17 Oct 2007 10:45:28 +0200
-> > > 
-> > > > Righto, it's invalid to call sg_next() on the last entry!
-> > > 
-> > > Unfortunately, that's what the sparc64 code wanted to do, this
-> > > transformation in the sparc64 sg chaining patch is not equilavent:
-> > > 
-> > > -	struct scatterlist *sg_end = sg + nelems;
-> > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
-> > >  ...
-> > > -			while (sg < sg_end &&
-> > > +			while (sg != sg_end &&
+On Wed, Oct 17 2007, Jens Axboe wrote:
+> On Wed, Oct 17 2007, David Miller wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Wed, 17 Oct 2007 11:16:29 +0200
 > > 
-> > Auch indeed. That'd probably be better as a
+> > > On Wed, Oct 17 2007, David Miller wrote:
+> > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > Date: Wed, 17 Oct 2007 10:45:28 +0200
+> > > > 
+> > > > > Righto, it's invalid to call sg_next() on the last entry!
+> > > > 
+> > > > Unfortunately, that's what the sparc64 code wanted to do, this
+> > > > transformation in the sparc64 sg chaining patch is not equilavent:
+> > > > 
+> > > > -	struct scatterlist *sg_end = sg + nelems;
+> > > > +	struct scatterlist *sg_end = sg_last(sg, nelems);
+> > > >  ...
+> > > > -			while (sg < sg_end &&
+> > > > +			while (sg != sg_end &&
+> > > 
+> > > Auch indeed. That'd probably be better as a
+> > > 
+> > >         do {
+> > >                 ...
+> > >         } while (sg != sg_end);
 > > 
-> >         do {
-> >                 ...
-> >         } while (sg != sg_end);
+> > Ok, next bug, introduced by this change:
+> > 
+> > commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
+> > Author: Jens Axboe <jens.axboe@oracle.com>
+> > Date:   Fri Sep 21 10:44:19 2007 +0200
+> > 
+> >     block: convert to using sg helpers
+> >     
+> >     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
+> >     
+> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > 
+> > Specifically this part:
+> > 
+> >  new_segment:
+> > -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
+> > -			sg[nsegs].page = bvec->bv_page;
+> > -			sg[nsegs].length = nbytes;
+> > -			sg[nsegs].offset = bvec->bv_offset;
+> > +			sg = next_sg;
+> > +			next_sg = sg_next(sg);
+> >  
+> > +			sg->page = bvec->bv_page;
+> > +			sg->length = nbytes;
+> > +			sg->offset = bvec->bv_offset;
+> > 
+> > You can't remove that memset(), it's there for a reason.  The IOMMU
+> > layers depended upon the code zero'ing out the whole scatterlist
+> > struct, there might be more to it than page, length and offset :-)
 > 
-> Ok, next bug, introduced by this change:
+> I realize that, and I was pretty worried about this specific change. But
+> there's only been one piece of fallout because if it until now - well
+> two, with the sparc64 stuff.
 > 
-> commit f565913ef8a8d0cfa46a1faaf8340cc357a46f3a
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Fri Sep 21 10:44:19 2007 +0200
+> The problem is that you cannot zero the entire sg entry, because then
+> you'd potentially overwrite the chain pointer.
 > 
->     block: convert to using sg helpers
->     
->     Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
->     
->     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> I'd propose just adding a
 > 
-> Specifically this part:
+>         sg_dma_address(sg) = 0;
+>         sg_dma_len(sg) = 0;
 > 
->  new_segment:
-> -			memset(&sg[nsegs],0,sizeof(struct scatterlist));
-> -			sg[nsegs].page = bvec->bv_page;
-> -			sg[nsegs].length = nbytes;
-> -			sg[nsegs].offset = bvec->bv_offset;
-> +			sg = next_sg;
-> +			next_sg = sg_next(sg);
->  
-> +			sg->page = bvec->bv_page;
-> +			sg->length = nbytes;
-> +			sg->offset = bvec->bv_offset;
-> 
-> You can't remove that memset(), it's there for a reason.  The IOMMU
-> layers depended upon the code zero'ing out the whole scatterlist
-> struct, there might be more to it than page, length and offset :-)
+> there for now, or provide an arch_clear_sg_entry() helper if we need
+> more killed.
 
-I realize that, and I was pretty worried about this specific change. But
-there's only been one piece of fallout because if it until now - well
-two, with the sparc64 stuff.
+Actually, just clearing AFTER sg_next() would be fine, since we know
+that is not a link entry. Duh...
 
-The problem is that you cannot zero the entire sg entry, because then
-you'd potentially overwrite the chain pointer.
-
-I'd propose just adding a
-
-        sg_dma_address(sg) = 0;
-        sg_dma_len(sg) = 0;
-
-there for now, or provide an arch_clear_sg_entry() helper if we need
-more killed.
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 9eabac9..1014d34 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -1352,6 +1352,7 @@ new_segment:
+ 			sg = next_sg;
+ 			next_sg = sg_next(sg);
+ 
++			memset(sg, 0, sizeof(*sg));
+ 			sg->page = bvec->bv_page;
+ 			sg->length = nbytes;
+ 			sg->offset = bvec->bv_offset;
 
 -- 
 Jens Axboe
