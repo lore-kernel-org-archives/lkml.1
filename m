@@ -1,53 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbXJQEUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXJQE0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbXJQEUv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 00:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbXJQEUi
+	id S1757358AbXJQE0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 00:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbXJQE0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 00:20:38 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:58146 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbXJQEUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 00:20:36 -0400
-To: James.Bottomley@SteelEye.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.24
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1192421381.3429.6.camel@localhost.localdomain>
-References: <1192421381.3429.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071017132026D.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Oct 2007 13:20:26 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Wed, 17 Oct 2007 00:26:41 -0400
+Received: from thunk.org ([69.25.196.29]:42887 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823AbXJQE0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 00:26:40 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 update
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1Ii0UI-0007TW-IM@closure.thunk.org>
+Date: Wed, 17 Oct 2007 00:26:30 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 00:09:41 -0400
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
+Hi Linus,
 
-> This is the accumulated updates queued for 2.6.24.  It contains the
-> usual slew of driver updates, plus some gdth and advansys rewrites.  We
-> still have some outstanding bugs in gdth and fc4 for which I'm hoping to
-> sweep fixes into the next update.
-> 
-> The patch is available here:
-> 
-> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> 
-> The short changelog is:
+Please pull from:
 
-(snip)
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-> James Bottomley (4):
->       Fix device not ready printk
->       sg: use idr to replace static arrays
->       move ULD attachment into the prep function
->       arcmsr: fix compile problems
+It has a number random cleanups and bug fixes, and two new features.
+The first is uninitialized block groups, which allows fast mke2fs
+operations plus as well as speeding up e2fsck by allowing it to skip
+parts of the inode tables that haven't been used yet.  A checksum has
+been added to block group descriptors so we can tell detect corruption
+in that data structure, since we are depending on it being accurate so
+we know what portion of the inode table is really in use.
 
-The patch to beautify supported_mode and active_mode in sysfs?
+The second feature is flexible block groups, which allows inode tables
+and block/inode bitmaps to be grouped together outside of the block
+group that they administer, to allow contiguous regions of data blocks
+to span multiple block groups, which helps for large files significantly
+bigger than the size of a block group (i.e., 32 gigabytes on a 4k block
+filesystem).
 
-http://marc.info/?l=linux-kernel&m=119077857701415&w=2
+All of these patches have been baking in -mm for a while.
+
+Regards,
+
+							- Ted
+
+Andreas Dilger (1):
+      Ext4: Uninitialized Block Groups
+
+Aneesh Kumar K.V (8):
+      ext4: Fix sparse warnings
+      ext4: Convert bg_block_bitmap to bg_block_bitmap_lo
+      ext4: Convert bg_inode_bitmap and bg_inode_table
+      ext4: Convert s_blocks_count to s_blocks_count_lo
+      ext4: Convert s_r_blocks_count and s_free_blocks_count
+      ext4: Convert ext4_extent.ee_start to ext4_extent.ee_start_lo
+      ext4: Convert ext4_extent_idx.ei_leaf to ext4_extent_idx.ei_leaf_lo
+      ext4: sparse fixes
+
+Coly Li (1):
+      ext4: Remove (partial, never completed) fragment support
+
+Eric Sandeen (3):
+      ext4: remove #ifdef CONFIG_EXT4_INDEX
+      ext4: fix setup_new_group_blocks locking
+      ext4: lighten up resize transaction requirements
+
+Jan Kara (1):
+      jbd2: fix commit code to properly abort journal
+
+Jose R. Santos (2):
+      JBD2: debug code cleanup.
+      ext4: FLEX_BG Kernel support v2.
+
+Mingming Cao (6):
+      JBD: JBD slab allocation cleanups
+      JBD2: jbd2 slab allocation cleanups
+      JBD: replace jbd_kmalloc with kmalloc directly
+      JBD2: replace jbd_kmalloc with kmalloc directly.
+      JBD2/Ext4: Convert kmalloc to kzalloc in jbd2/ext4
+      jbd2: JBD_XXX to JBD2_XXX naming cleanup
+
+ fs/Kconfig                      |    1 +
+ fs/ext4/balloc.c                |  112 ++++++++++++++++++++++++++++-
+ fs/ext4/dir.c                   |    7 --
+ fs/ext4/extents.c               |   14 ++--
+ fs/ext4/fsync.c                 |    2 +-
+ fs/ext4/group.h                 |   27 +++++++
+ fs/ext4/ialloc.c                |  151 +++++++++++++++++++++++++++++++++++----
+ fs/ext4/inode.c                 |   18 ++----
+ fs/ext4/namei.c                 |   20 -----
+ fs/ext4/resize.c                |   59 +++++++++++-----
+ fs/ext4/super.c                 |   97 +++++++++++++++++--------
+ fs/ext4/xattr.c                 |    7 +-
+ fs/jbd/commit.c                 |    6 +-
+ fs/jbd/journal.c                |   99 ++------------------------
+ fs/jbd/transaction.c            |   12 ++--
+ fs/jbd2/commit.c                |   16 ++--
+ fs/jbd2/journal.c               |  128 ++++-----------------------------
+ fs/jbd2/recovery.c              |    2 +-
+ fs/jbd2/revoke.c                |    4 +-
+ fs/jbd2/transaction.c           |   19 +++---
+ include/linux/ext4_fs.h         |  103 ++++++++++----------------
+ include/linux/ext4_fs_extents.h |    4 +-
+ include/linux/ext4_fs_i.h       |    5 --
+ include/linux/ext4_fs_sb.h      |    3 -
+ include/linux/ext4_jbd2.h       |    6 +-
+ include/linux/jbd.h             |   17 +++--
+ include/linux/jbd2.h            |   49 +++++++------
+ include/linux/poison.h          |    3 +-
+ 28 files changed, 527 insertions(+), 464 deletions(-)
+ create mode 100644 fs/ext4/group.h
