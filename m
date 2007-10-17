@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbXJQTss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbXJQTt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762080AbXJQTss (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXJQTsl
+	id S1762677AbXJQTt7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXJQTtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:48:41 -0400
-Received: from exchange.comtrol.com ([204.73.219.163]:53052 "EHLO
-	Exchange.comtrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755579AbXJQTsk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:48:40 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 17 Oct 2007 15:49:50 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:18239 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751278AbXJQTtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:49:49 -0400
+Date: Wed, 17 Oct 2007 21:49:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071017194944.GB15552@kernel.dk>
+References: <20071017170804.GG15552@kernel.dk> <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: RocketPort Linux driver errors on module reload
-Date: Wed, 17 Oct 2007 14:48:39 -0500
-Message-ID: <B1F576FE19C55C43B8D2E31F061B50C062C3EF@exchange.comtrol.com>
-In-Reply-To: <471663EE.6090602@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: RocketPort Linux driver errors on module reload
-Thread-Index: AcgQ9ONzah1paUmVREayCinp3MkaiQAAKrXQ
-From: "Nick Thompson" <Nick.Thompson@comtrol.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017193542.GA15552@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Jiri Slaby [mailto:jirislaby@gmail.com]
->Sent: Wednesday, October 17, 2007 2:35 PM
->To: Nick Thompson
->Cc: linux-kernel@vger.kernel.org
->Subject: Re: RocketPort Linux driver errors on module reload
->
->
->On 10/17/2007 07:06 PM, Nick Thompson wrote:
->> I've been wanting to get the driver that is included in the kernel up to date, and there >>is an active project here at comtrol to get the current code (driver version 3.08 beta) up >>to Linux kernel programming standards. The driver version that is included in the kernel     >>(and has been patched a bit I'm sure since it's been in there a while)is version 2.09. The >>latest version (3.08 beta) can be obtained from: 
->
->the easiest way is to get diff -u 2.09 3.08 and port it by hand, at least I
->ususally do it this way.
->
->> ftp://ftp.comtrol.com/beta/rport/drivers/u_pci/linux/rocketport-linux-3.08.tar.gz
->> 
->> If anyone has any helpful pointers (no pun intended) or comments on the code, I'd love to >>listen. 
->
->Convert to pci probing and in-kernel firmware loading :). The code is big mess
->due to ifdefs and much unneeded material, it's likely impossible to say this is
->wrong and this not, if you won't post a patch, where people will see the changes
->you want to make. Then you will have feedback :).
->
->regards,
->-- 
->Jiri Slaby (jirislaby@gmail.com)
->Faculty of Informatics, Masaryk University
+On Wed, Oct 17 2007, Jens Axboe wrote:
+> On Wed, Oct 17 2007, Linus Torvalds wrote:
+> > 
+> > 
+> > On Wed, 17 Oct 2007, Ingo Molnar wrote:
+> > > 
+> > > nope, this did not help. First bootup went fine, second bootup crashed 
+> > > again (see below), without hitting the BUG_ON().
+> > 
+> > I think you'll always hit it if you have a scatter-gather list that is 
+> > exactly filled up.
+> > 
+> > Why? Because those things do "sg_next()" on the last entry, and as 
+> > mentioned, that ends up actually accessing one past the end - even if the 
+> > end result is not actually ever *used* (because we just effectively 
+> > incremented it to past the last entry when the code was done with the SG 
+> > list).
 
-Jiri,
- Thanks a lot for the feedback, it's very much appreciated. Like I said, there is an active project here at Comtrol to get 3.08 beta up to Linux kernel coding standards, once that gets somewhere near done, a patch will be forthcoming.
+Well, hang on - where does it end up doing sg_next() on the LAST sg
+entry? I'd argue that this is a bug, like it was in ll_rw_blk.c. I still
+agree that I should make the interface more robust, I just don't see
+where libata ends up doing the sg_next() on the last entry.
 
-Thanks for taking the time to write.
+I'm assuming that Ingo is using the previous patches, so that
+blk_rq_map_sg() is using this construct:
 
-Regards,
+new_segment:
+       if (!sg)
+               sg = sglist;
+       else
+               sg = sg_next(sg);
 
-Nick
+and the memset() in scsi_alloc_sgtable(), which I'm pretty sure he is.
+I'm assuming we're not hitting pio paths, so there are no manual
+sg_next() calls. Ingo, if you care, can you test this one as well?
 
-Nick Thompson
-Technical Support Specialist nick.thompson@comtrol.com
-Comtrol Corporation ftp://ftp.comtrol.com
-6655 Wedgwood Rd. Ste 120 http://www.comtrol.com
-Maple Grove, MN. 55311 Sales: (800)GO-ROCKET
+No rush, as mentioned I'll be back tomorrow morning...
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index bbaa545..0246b61 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4664,7 +4664,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
+ {
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg = qc->__sg;
+-	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
++	struct scatterlist *lsg = &qc->__sg[qc->n_elem - 1];
+ 	int n_elem, pre_n_elem, dir, trim_sg = 0;
+ 
+ 	VPRINTK("ENTER, ata%u\n", ap->print_id);
+
+-- 
+Jens Axboe
+
