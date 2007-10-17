@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXJQVe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbXJQVgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbXJQVe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXJQVeI
+	id S1760628AbXJQVgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbXJQVgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:34:08 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:61567 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759351AbXJQVeG (ORCPT
+	Wed, 17 Oct 2007 17:36:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59269 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755668AbXJQVgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:34:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FMSAleEoUONKZse8or58qBcNvSaen+J2rvuafRUum5YKA62ehUhAzMyny9oFKnobICNAy0/WqZikAs1a0wPYWXHhus6cQSIt4j4IzIEmBVbju1AhOFQGMcNzk9nWsrKaj5Bkb/Q43ndFoxksomQL3gpsEon/tu++WGH/IDBFjcg=
-Message-ID: <a4e6962a0710171434l5ff6cecfib1e8b231b8b610b6@mail.gmail.com>
-Date: Wed, 17 Oct 2007 16:34:02 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: torvalds@osdl.org
-Subject: [GIT PULL] 9p patches for 2.6.24 merge window
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 17:36:09 -0400
+Date: Wed, 17 Oct 2007 14:35:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 5/5] Introduce "used_vectors" bitmap which can be used
+ to reserve vectors.
+Message-Id: <20071017143536.f4e7cba1.akpm@linux-foundation.org>
+In-Reply-To: <200710172056.05123.rusty@rustcorp.com.au>
+References: <200710172046.55454.rusty@rustcorp.com.au>
+	<200710172052.47230.rusty@rustcorp.com.au>
+	<200710172054.45652.rusty@rustcorp.com.au>
+	<200710172056.05123.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the 'for-linus' branch of:
-  git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git/ for-linus
+On Wed, 17 Oct 2007 20:56:04 +1000
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-This tree contains the following:
+> This simplifies the io_apic.c __assign_irq_vector() logic and removes
+> the explicit SYSCALL_VECTOR check, and also allows for vectors to be
+> reserved by other mechanisms (ie. lguest).
 
-Latchesar Ionkov(3):
-  attach-per-user support
-  rename uid and gid parameters
-  define session flags
+I already have this one as
+x86_64-mm-introduce-used_vectors-bitmap-which-can-be-used-to-reserve-vectors.patch
+- part of the firstfloor tree.
 
-Eric Van Hensbergen(4)
-  remove sysctl code
-  fix bad kconfig cross-dependency
-  soften invalidationin loose mode
-  make transports dynamic
+Thomas is going through those patches and is getting them merged up - a large
+batch went through today.
 
-There are a few patches relating to a virtio transport support that
-I'm holding back until I know Rusty's lguest series is merged.
+So I assume he'll me merging this patch via that route, unless he has
+decided to skip it for some reason.
 
- b/Documentation/filesystems/9p.txt |   22 +
- b/fs/9p/fid.c                      |  157 +++++++++++--
- b/fs/9p/v9fs.c                     |  189 +++++++---------
- b/fs/9p/v9fs.h                     |   38 +--
- b/fs/9p/vfs_file.c                 |    6
- b/fs/9p/vfs_inode.c                |   50 ++--
- b/fs/9p/vfs_super.c                |   19 -
- b/include/net/9p/9p.h              |   21 -
- b/include/net/9p/client.h          |    9
- b/include/net/9p/conn.h            |    4
- b/include/net/9p/transport.h       |   27 +-
- b/net/9p/Kconfig                   |   10
- b/net/9p/Makefile                  |    5
- b/net/9p/client.c                  |   13 -
- b/net/9p/conv.c                    |   32 ++
- b/net/9p/mod.c                     |   71 +++++-
- b/net/9p/mux.c                     |    5
- b/net/9p/trans_fd.c                |  419 +++++++++++++++++++++++--------------
- net/9p/sysctl.c                    |   81 -------
- 19 files changed, 689 insertions(+), 489 deletions(-)
+Either way, I guess I'll hang onto the firstfloor.org leftovers until each
+one has some sort of definite disposition.
 
-
-                Thanks,
-                      -eric
