@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbXJQT0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbXJQT0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760976AbXJQT0B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 15:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXJQTZx
+	id S1761771AbXJQT0o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 15:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXJQT0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 15:25:53 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:17512 "EHLO kernel.dk"
+	Wed, 17 Oct 2007 15:26:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:33050 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbXJQTZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 15:25:52 -0400
-Date: Wed, 17 Oct 2007 21:25:47 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071017192546.GZ15552@kernel.dk>
-References: <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190422.GA12711@elte.hu> <20071017190821.GX15552@kernel.dk> <20071017191456.GA14916@elte.hu> <20071017191743.GA15870@elte.hu>
+	id S1752613AbXJQT0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 15:26:34 -0400
+Date: Wed, 17 Oct 2007 21:25:56 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: "Denis V. Lunev" <den@openvz.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] .gitignore update for x86 arch
+In-Reply-To: <20071017192149.GD11837@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.0.9999.0710172125340.24155@localhost.localdomain>
+References: <20071016072221.GA14029@iris.sw.ru> <20071017192149.GD11837@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017191743.GA15870@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17 2007, Ingo Molnar wrote:
+
+
+On Wed, 17 Oct 2007, Sam Ravnborg wrote:
+
+> Hi Thomas.
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> Another one I expect you to take in your x86 tree - OK?
+
+Thanks, applied
+ 
+	tglx
+
+> 	Sam
 > 
-> > > > drivers/scsi/scsi_lib.c:708: warning: 'index' may be used uninitialized in this function
-> > > > drivers/scsi/scsi_lib.c:708: note: 'index' was declared here
-> > > > 
-> > > > not sure it matters.
-> > > 
-> > > Hmm, I don't see them here (gcc 4.2.1). Must be the BUG(), does it go 
-> > > away if you add a index = -1 in the default: case? Just to be 
-> > > absolutely sure...
+> On Tue, Oct 16, 2007 at 11:22:21AM +0400, Denis V. Lunev wrote:
+> > This patch:
+> > - makes .gitignore files visible to git
+> > - makes arch/x86/kernel/vsyscall_32.lds and arch/i386/boot invisible
 > > 
-> > well if i initialize the variable then of course the warning goes away
-> > :)
+> > Signed-off-by: Denis V. Lunev <den@openvz.org>
 > > 
-> > NOTE: i get the same warning even without the BUG_ON() patch, and 
-> > without your other fix patch as well. I'm using gcc 4.2.2. (Do you get 
-> > the warning if you pick up the config i sent you earlier today?)
+> > diff --git a/.gitignore b/.gitignore
+> > index 27c3e83..22fb8fa 100644
+> > --- a/.gitignore
+> > +++ b/.gitignore
+> > @@ -26,6 +26,7 @@ vmlinux*
+> >  !vmlinux.lds.S
+> >  System.map
+> >  Module.symvers
+> > +!.gitignore
+> >  
+> >  #
+> >  # Generated include files
+> > diff --git a/arch/i386/.gitignore b/arch/i386/.gitignore
+> > new file mode 100644
+> > index 0000000..36ef4c3
+> > --- /dev/null
+> > +++ b/arch/i386/.gitignore
+> > @@ -0,0 +1 @@
+> > +boot
+> > diff --git a/arch/x86/kernel/.gitignore b/arch/x86/kernel/.gitignore
+> > index 40836ad..4ea38a3 100644
+> > --- a/arch/x86/kernel/.gitignore
+> > +++ b/arch/x86/kernel/.gitignore
+> > @@ -1 +1,2 @@
+> >  vsyscall.lds
+> > +vsyscall_32.lds
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> btw., i changed the initialization to -1 and the crash still occurs 
-> (as expected).
-
-Would think so, thanks for checking though.
-
--- 
-Jens Axboe
-
