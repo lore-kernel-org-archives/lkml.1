@@ -1,105 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbXJQVdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbXJQVeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbXJQVdO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 17:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXJQVc7
+	id S1759530AbXJQVeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 17:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXJQVd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 17:32:59 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50418 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753699AbXJQVc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 17:32:58 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	<1192648456.15717.7.camel@think.oraclecorp.com>
-	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-	<1192654481.15717.16.camel@think.oraclecorp.com>
-Date: Wed, 17 Oct 2007 15:30:19 -0600
-In-Reply-To: <1192654481.15717.16.camel@think.oraclecorp.com> (Chris Mason's
-	message of "Wed, 17 Oct 2007 16:54:41 -0400")
-Message-ID: <m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Oct 2007 17:33:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988AbXJQVd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 17:33:56 -0400
+Date: Wed, 17 Oct 2007 17:33:37 -0400
+From: Dave Jones <davej@redhat.com>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Subject: Re: [PATCH][try 4] architectural pstate driver for powernow-k8
+Message-ID: <20071017213337.GE9748@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Mark Langsdorf <mark.langsdorf@amd.com>,
+	linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+References: <200710091446.38432.mark.langsdorf@amd.com> <20071015154031.GA30754@redhat.com> <200710151123.45582.mark.langsdorf@amd.com> <200710151603.48489.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710151603.48489.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+On Mon, Oct 15, 2007 at 04:03:48PM -0500, Mark Langsdorf wrote:
+ > This patch should apply cleanly to the 2.6.23-git7 kernel.  It changes the
+ > powernow-k8 driver code that deals with 3rd generation Opteron, Phenom,
+ > and later processors to match the architectural pstate driver described
+ > in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18.  The
+ > initial implementation of the hardware pstate driver for PowerNow!
+ > used some processor-version specific features, and would not be
+ > maintainable in the long term as the processor features changed.
+ > This architectural driver should work on all future AMD processors.
+ >  
+ > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+ > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 
->> Thinking about it.  I don't believe anyone has ever intentionally built
->> a filesystem tool that depends on being able to modify a file systems
->> metadata buffer heads while the filesystem is running, and doing that
->> would seem to be fragile as it would require a lot of cooperation
->> between the tool and the filesystem about how the filesystem uses and
->> implement things.
->> 
->
-> That's right.  For example, ext2 is doing directories in the page cache
-> of the directory inode, so there's a cache alias between the block
-> device page cache and the directory inode page cache.
->
->> Now I guess I need to see how difficult a patch would be to give
->> filesystems magic inodes to keep their metadata buffer heads in.
->
-> Not hard, the block device inode is already a magic inode for metadata
-> buffer heads.  You could just make another one attached to the bdev.
->
-> But, I don't think I fully understand the problem you're trying to
-> solve?
+MIME damaged, can't apply.
 
+	Dave
 
-So the start:
-When we write buffers from the buffer cache we clear buffer_dirty
-but not PageDirty
-
-So try_to_free_buffers() will mark any page with clean buffer_heads
-that is not clean itself clean.
-
-The ramdisk set pages dirty to keep them from being removed from the
-page cache, just like ramfs.
-
-Unfortunately when those dirty ramdisk pages get buffers on them and
-those buffers all go clean and we are trying to reclaim buffer_heads
-we drop those pages from the page cache.   Ouch!
-
-We can fix the ramdisk by setting making certain that buffer_heads
-on ramdisk pages stay dirty as well.  The problem is this breaks
-filesystems like reiserfs and ext3 that expect to be able to make 
-buffer_heads clean sometimes.
-
-There are other ways to solve this for ramdisks, such as changing
-where ramdisks are stored.  However fixing the ramdisks this way
-still leaves the general problem that there are other paths to the
-filesystem metadata buffers, and those other paths cause the code
-to be complicated and buggy.
-
-So I'm trying to see if we can untangle this Gordian knot, so the
-code because more easily maintainable.  
-
-To make the buffer cache a helper library instead of require
-infrastructure, it looks like two things need to happen.
-- Move metadata buffer heads off block devices page cache entries, 
-- Communicate the mappings of data pages to block device sectors
-  in a generic way without buffer heads.
-
-How we ultimately fix the ramdisk tends to depend on how we untangle
-the buffer head problem.  Right now the only simple solution is to
-suppress try_to_free_buffers, which is a bit ugly.  We can also come
-up with a completely separate store for the pages in the buffer cache
-but if we wind up moving the metadata buffer heads anyway then that
-should not be necessary.
-
-Eric
+-- 
+http://www.codemonkey.org.uk
