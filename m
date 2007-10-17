@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXJQOQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbXJQORy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761465AbXJQOQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 10:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXJQOQS
+	id S1764108AbXJQORy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 10:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbXJQORr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 10:16:18 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35153 "EHLO il.qumranet.com"
+	Wed, 17 Oct 2007 10:17:47 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51668 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754252AbXJQOQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 10:16:17 -0400
-Message-ID: <4716192E.7040402@qumranet.com>
-Date: Wed, 17 Oct 2007 16:16:14 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1754423AbXJQORq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 10:17:46 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] fix not-and/or errors
+References: <47161243.6060007@tiscali.nl>
+X-Yow: I predict that by 1993 everyone will live in and around LAS VEGAS and
+ wear BEATLE HAIRCUTS!
+Date: Wed, 17 Oct 2007 16:17:44 +0200
+In-Reply-To: <47161243.6060007@tiscali.nl> (Roel Kluin's message of "Wed\, 17
+	Oct 2007 15\:46\:43 +0200")
+Message-ID: <jemyuhj053.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, borntraeger@de.ibm.com
-Subject: Re: [PATCH] clear PF_VCPU in kvm_guest_exit()
-References: <47135D1B.1060004@bull.net> <11926264852739-git-send-email-Laurent.Vivier@bull.net>
-In-Reply-To: <11926264852739-git-send-email-Laurent.Vivier@bull.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 17 Oct 2007 16:16:14 +0200 (IST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> clear PF_VCPU in kvm_guest_exit() and move kvm_guest_exit() after 
-> local_irq_enable().
->
-> According comments from Avi, we can clear PF_VCPU in kvm_guest_exit if we move 
-> it after local_irq_enable().
->
-> http://lkml.org/lkml/2007/10/15/114
->
-> To simplify s390 port, we don't clear it in account_system_time().
->
-> http://lkml.org/lkml/2007/10/15/183
->
-> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
-> ---
->  drivers/kvm/kvm.h      |    1 +
->  drivers/kvm/kvm_main.c |    3 ++-
->  kernel/sched.c         |    1 -
->  3 files changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-> index e9dbf67..e8b4902 100644
-> --- a/drivers/kvm/kvm.h
-> +++ b/drivers/kvm/kvm.h
-> @@ -677,6 +677,7 @@ static inline void kvm_guest_enter(void)
->  
->  static inline void kvm_guest_exit(void)
->  {
-> +	current->flags &= ~PF_VCPU;
->  }
->   
+Roel Kluin <12o3l@tiscali.nl> writes:
 
+> diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+> index 73c44cb..81943ef 100644
+> --- a/drivers/scsi/st.c
+> +++ b/drivers/scsi/st.c
+> @@ -2882,7 +2882,7 @@ static int st_int_ioctl(struct scsi_tape *STp, unsigned int cmd_in, unsigned lon
+>  			    !(STp->use_pf & PF_TESTED)) {
+>  				/* Try the other possible state of Page Format if not
+>  				   already tried */
+> -				STp->use_pf = !STp->use_pf | PF_TESTED;
+> +				STp->use_pf = !(STp->use_pf | PF_TESTED);
 
-Ingo already added this.
+This does not make sense.  Since PF_TESTED is non-zero the expression
+will always be zero.
 
->  
->  static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
-> diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-> index 87275be..a9db477 100644
-> --- a/drivers/kvm/kvm_main.c
-> +++ b/drivers/kvm/kvm_main.c
-> @@ -2194,12 +2194,13 @@ again:
->  
->  	kvm_x86_ops->run(vcpu, kvm_run);
->  
-> -	kvm_guest_exit();
->  	vcpu->guest_mode = 0;
->  	local_irq_enable();
->  
->  	++vcpu->stat.exits;
->  
->   
+Looking at the context the original expression is likely to be the
+intended one.  use_pf at this point can either be 0 or 1 (USE_PF), and
+the result is supposed to be (1|PF_TESTED) or (0|PF_TESTED), resp.
 
-Need a barrier() here.  Otherwise the compiler may reorder
-"kvm_guest_exit();" and "++vcpu->stats.exits;", making kvm_guest_exit()
-right after local_irq_enable().  If it inlines kvm_guest_exit(), and
-further encodes it in one instruction (both likely) we get:
-
-         sti
-         andl $something, (something_else)
-
-The andl executes in interrupt shadow (that is, interrupts are still
-disabled) and the timer tick won't see PF_VCPU.
-
-> +	kvm_guest_exit();
-> +
->  	preempt_enable();
->  
->  	/*
->   
-
-
-Please copy kvm-devel on kvm patches.
+Andreas.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
