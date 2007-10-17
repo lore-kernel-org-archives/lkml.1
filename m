@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934918AbXJQL25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764509AbXJQLdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934918AbXJQL25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbXJQL2p
+	id S1764509AbXJQLdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbXJQLdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:28:45 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:65488 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759648AbXJQL2o (ORCPT
+	Wed, 17 Oct 2007 07:33:14 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:26505 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759448AbXJQLdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:28:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=FHklmOsd8dNJZoOgjFhr0U2AwcNpBloaNpTjErzUYjCDVWb+r1WESDd3z7okbk9yhKe5exAHDOqV78t/OYDWDobjby6lswj7PA0J491OfYyVJQRq+8rXnKu8VqZIQ4Vy5XoIN/bb4fixwcHLkv1KwWXbSVVk3yNTKqpjCTqSqHQ=
-Message-ID: <cffacb0a0710170428q6982298cyb3d1cd3f4d4943ba@mail.gmail.com>
-Date: Wed, 17 Oct 2007 21:28:42 +1000
-From: "Szabolcs Feczak" <sub@sierraforce.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Community research
-In-Reply-To: <cffacb0a0710140457q70e6bc61mec67dc0ef0bd3f2c@mail.gmail.com>
+	Wed, 17 Oct 2007 07:33:13 -0400
+Message-ID: <4715F2E5.6000104@panasas.com>
+Date: Wed, 17 Oct 2007 13:32:53 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: slight annoyance with new x86 arch
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cffacb0a0710140457q70e6bc61mec67dc0ef0bd3f2c@mail.gmail.com>
-X-Google-Sender-Auth: e60ffac6ce3f6b0d
+X-OriginalArrivalTime: 17 Oct 2007 11:32:54.0712 (UTC) FILETIME=[75875B80:01C810B1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for everyone who filled out the survey
+Make system is a bit broken in the sense that it recompiles and links right after
+a build even if nothing changed.
 
-19 hours left till closing, so be quick if you want to raise the
-percentage of your country :)
-the participating subjects by countries so far:
+I have 
+# CONFIG_LOCALVERSION_AUTO is not set
 
-536 total / 472 from Hungary / 4 United States / 1 Ukraine / 1 UK / 1
-Turkey / 2 Sweden / 4 Slovakia / 1 Singapore / 2 Serbia / 2 Russia / 7
-Romania / 1 Poland / 1 Philippines / 1 Norway / 1 New Zealand / 1
-Netherlands / 1 Malawi / 1 Indonesia / 3 India / 11 Germany / 2 France
-/ 1 Finland / 2 Denmark / 1 Columbia / 10 Australia / 1 Albania
+make output after a fully built tree:
+{ // these are expected off course 
+GEN /usr0/export/dev/bharrosh/git/pub/linux-2.6-block/.build_i386/Makefile
+CHK include/linux/version.h
+CHK include/linux/utsrelease.h
+Using /usr0/export/dev/bharrosh/git/pub/linux-2.6-block as source for kernel
+CALL /usr0/export/dev/bharrosh/git/pub/linux-2.6-block/scripts/checksyscalls.sh
+CHK include/linux/compile.h
+}
+{ // these cause a recompilation and relink
+AS arch/x86/kernel/vsyscall-int80_32.o
+AS arch/x86/kernel/vsyscall-sysenter_32.o
+SYSCALL arch/x86/kernel/vsyscall-syms.o
+SYSCALL arch/x86/kernel/vsyscall-int80_32.so
+SYSCALL arch/x86/kernel/vsyscall-sysenter_32.so
+AS arch/x86/kernel/vsyscall_32.o
+}
 
-Cheers
+LD arch/x86/kernel/built-in.o
+GEN .version
+...
+CC init/version.o
+LD init/built-in.o
+LD .tmp_vmlinux1
+KSYM .tmp_kallsyms1.S
+AS .tmp_kallsyms1.o
+LD .tmp_vmlinux2
+KSYM .tmp_kallsyms2.S
+AS .tmp_kallsyms2.o
+LD .tmp_vmlinux3
+KSYM .tmp_kallsyms3.S
+AS .tmp_kallsyms3.o
+LD vmlinux.o
+MODPOST vmlinux.o
+....
 
-Sub
 
-On 10/14/07, Szabolcs Feczak <sub@sierraforce.com> wrote:
-> Hi everybody,
->
-> I know it is a bit off-topic, but I am doing a research at uni
-> about online communities (like the Linux community itself),
-> and I need primary data, so if some of you would kind enough
-> to donate his time and take my survey at:
->
-> http://q.sierraforce.com/
->
-> Would be greatly appreciated.
->
-> Thank you all,
->
-> keep up the good work
->
-> Cheers
->
-> Sub
->
+I'm cross compiling on an x86_64 fedora7 machine. with
+make ARCH=i386 KBUILD_OUTPUT=.build_i386 allmodconfig
+and
+make ARCH=i386 KBUILD_OUTPUT=.build_i386
+
+Other wise after an mrproper all is well and booting
+and the dir structure looks much better
+
+Thanks
+Boaz
