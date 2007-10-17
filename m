@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXJQKkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765660AbXJQKkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbXJQKkj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 06:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757742AbXJQKka
+	id S1765660AbXJQKkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 06:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761511AbXJQKkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 06:40:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42263 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757190AbXJQKk2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 06:40:28 -0400
-Date: Wed, 17 Oct 2007 11:43:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty_ioctl: Fix the baud_table check in encode_baud_rate
-Message-ID: <20071017114358.3d2b166f@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64N.0710161857280.22596@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0710161857280.22596@blysk.ds.pg.gda.pl>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Oct 2007 06:40:37 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:59090 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757639AbXJQKkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 06:40:36 -0400
+X-Greylist: delayed 2800 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Oct 2007 06:40:29 EDT
+Message-ID: <4715DBA4.1020005@atmel.com>
+Date: Wed, 17 Oct 2007 11:53:40 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: Andrew Victor <andrew@sanpeople.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Subject: [PATCH] mmc: at91_mci: cleanup: use MCI_ERRORS
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 19:12:11 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+From: Andrew Victor <andrew@sanpeople.com>
 
->  The tty_termios_encode_baud_rate() function as defined by tty_ioctl.c has 
-> a problem with the baud_table within.  The comparison operators are 
-> reversed and as a result this table's entries never match and BOTHER is 
-> always used.
+A small MMC driver cleanup.
 
-Oops. I thought I'd fixed that one. Bit bothersome its been in -mm that
-long before anyone noticed. 
+Use the defined AT91_MCI_ERRORS in at91_mci_completed_command() instead
+of specifying all the error bits individually.
 
-ACK the first bit.
-
->  Additionally this function's prototype is not exported unlike the 
-> function itself.
-
-That bit seems out of date and a prototype was added later in -mm
-
+Signed-off-by: Andrew Victor <andrew@sanpeople.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+Index: linux-2.6-snapshot/drivers/mmc/host/at91_mci.c
+===================================================================
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -581,9 +581,7 @@
+ 	pr_debug("Status = %08X [%08X %08X %08X %08X]\n",
+ 		 status, cmd->resp[0], cmd->resp[1], cmd->resp[2], cmd->resp[3]);
+ 
+-	if (status & (AT91_MCI_RINDE | AT91_MCI_RDIRE | AT91_MCI_RCRCE |
+-			AT91_MCI_RENDE | AT91_MCI_RTOE | AT91_MCI_DCRCE |
+-			AT91_MCI_DTOE | AT91_MCI_OVRE | AT91_MCI_UNRE)) {
++	if (status & AT91_MCI_ERRORS) {
+ 		if ((status & AT91_MCI_RCRCE) && !(mmc_resp_type(cmd) & MMC_RSP_CRC)) {
+ 			cmd->error = 0;
+ 		}
