@@ -1,93 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbXJQNA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbXJQNAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765431AbXJQNA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 09:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbXJQNAQ
+	id S932745AbXJQNAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 09:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765189AbXJQNA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 09:00:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48528 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754949AbXJQNAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 09:00:15 -0400
-Date: Wed, 17 Oct 2007 13:53:58 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Mike Anderson <andmike@linux.vnet.ibm.com>
-Subject: [2.6.24 PATCH 01/04] dm: export name and uuid
-Message-ID: <20071017125358.GM24157@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Mike Anderson <andmike@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Wed, 17 Oct 2007 09:00:27 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54347 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764998AbXJQNA0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 09:00:26 -0400
+Date: Wed, 17 Oct 2007 09:00:25 -0400
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Valdis.Kletnieks@vt.edu, 7eggert@gmx.de, prasad@linux.vnet.ibm.com,
+       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: gigabit ethernet power consumption
+Message-ID: <20071017130025.GN4000@csclub.uwaterloo.ca>
+References: <9c8XH-7gs-13@gated-at.bofh.it> <9c9qN-7Rn-19@gated-at.bofh.it> <9cs0n-3Dc-9@gated-at.bofh.it> <9csjH-43E-33@gated-at.bofh.it> <9d4yC-5hT-7@gated-at.bofh.it> <9d7ZJ-2mI-11@gated-at.bofh.it> <E1Ig9wz-0000sg-Ep@be1.lrz> <470FA243.6030908@intel.com> <12419.1192221016@turing-police.cc.vt.edu> <470FDD29.9030708@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <470FDD29.9030708@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Anderson <andmike@linux.vnet.ibm.com>
+On Fri, Oct 12, 2007 at 01:46:33PM -0700, Kok, Auke wrote:
+> I would assume that that is true for all PHY's - if there is no link to keep the
+> carrier active on I would think that the power consumption is nominal across the
+> board. Once the PHY detects link pulses it should obviously use different power
+> levels to negotiate the link for each speed.
+> 
+> PHY autonegotiation just works the same across the board - the PHY's send out
+> little pulses (iow nominal power consumption) to detect a link partner, and only
+> when one is found do they engage in more aggressive conversation to establish
+> capabilities across the link.
 
-This patch adds a function to obtain a copy of a mapped device's name and uuid.
+Too bad not much can be done about fibre ports, but then again you can't
+even change speeds on those.  Then again those are not on laptops or
+other low power devices in the first place.
 
-Signed-off-by: Mike Anderson <andmike@linux.vnet.ibm.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
-
- drivers/md/dm-ioctl.c         |   32 ++++++++++++++++++++++++++++++++
- include/linux/device-mapper.h |    1 +
- 2 files changed, 33 insertions(+)
-
-Index: linux-2.6.23/drivers/md/dm-ioctl.c
-===================================================================
---- linux-2.6.23.orig/drivers/md/dm-ioctl.c	2007-10-14 00:08:12.000000000 +0100
-+++ linux-2.6.23/drivers/md/dm-ioctl.c	2007-10-16 13:09:27.000000000 +0100
-@@ -1515,3 +1515,35 @@ void dm_interface_exit(void)
- 
- 	dm_hash_exit();
- }
-+
-+/**
-+ * dm_copy_name_and_uuid - Copy mapped device name & uuid into supplied buffers
-+ * @md: Pointer to mapped_device
-+ * @name: Buffer (size DM_NAME_LEN) for name
-+ * @uuid: Buffer (size DM_UUID_LEN) for uuid or empty string if uuid not defined
-+ */
-+int dm_copy_name_and_uuid(struct mapped_device *md, char *name, char *uuid)
-+{
-+	int r = 0;
-+	struct hash_cell *hc;
-+
-+	if (!md)
-+		return -ENXIO;
-+
-+	dm_get(md);
-+	down_read(&_hash_lock);
-+	hc = dm_get_mdptr(md);
-+	if (!hc || hc->md != md) {
-+		r = -ENXIO;
-+		goto out;
-+	}
-+
-+	strcpy(name, hc->name);
-+	strcpy(uuid, hc->uuid ? : "");
-+
-+out:
-+	up_read(&_hash_lock);
-+	dm_put(md);
-+
-+	return r;
-+}
-Index: linux-2.6.23/include/linux/device-mapper.h
-===================================================================
---- linux-2.6.23.orig/include/linux/device-mapper.h	2007-10-09 21:31:38.000000000 +0100
-+++ linux-2.6.23/include/linux/device-mapper.h	2007-10-14 00:08:31.000000000 +0100
-@@ -188,6 +188,7 @@ int dm_wait_event(struct mapped_device *
-  * Info functions.
-  */
- const char *dm_device_name(struct mapped_device *md);
-+int dm_copy_name_and_uuid(struct mapped_device *md, char *name, char *uuid);
- struct gendisk *dm_disk(struct mapped_device *md);
- int dm_suspended(struct mapped_device *md);
- int dm_noflush_suspending(struct dm_target *ti);
+--
+Len Sorensen
