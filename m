@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764509AbXJQLdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbXJQLhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764509AbXJQLdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 07:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbXJQLdO
+	id S1764864AbXJQLhG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 07:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXJQLgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 07:33:14 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:26505 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759448AbXJQLdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 07:33:13 -0400
-Message-ID: <4715F2E5.6000104@panasas.com>
-Date: Wed, 17 Oct 2007 13:32:53 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 17 Oct 2007 07:36:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41696 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753874AbXJQLgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 07:36:53 -0400
+Date: Wed, 17 Oct 2007 13:36:51 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
+Message-ID: <20071017113651.GA6963@suse.de>
+Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
+	linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+	akpm@linux-foundation.org, ak@suse.de
+References: <20071016162857.635479952@strauss.suse.de> <20071016162858.545617122@strauss.suse.de> <20071017110550.GB17565@in.ibm.com>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: slight annoyance with new x86 arch
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Oct 2007 11:32:54.0712 (UTC) FILETIME=[75875B80:01C810B1]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017110550.GB17565@in.ibm.com>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make system is a bit broken in the sense that it recompiles and links right after
-a build even if nothing changed.
+* Vivek Goyal <vgoyal@in.ibm.com> [2007-10-17 13:05]:
+> 
+> [..]
+> > +/*
+> > + * If flags is 0, then the return value is always 0 (success). If
+> > + * flags contains BOOTMEM_EXCLUSIVE, then -EBUSY is returned if the
+> > + * memory already was reserved.
+> > + */
+> > +extern int reserve_bootmem(unsigned long addr, unsigned long size, int flags);
+> >  #define alloc_bootmem(x) \
+> >  	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+> >  #define alloc_bootmem_low(x) \
+> > --- a/mm/bootmem.c
+> > +++ b/mm/bootmem.c
+> > @@ -111,8 +111,8 @@ static unsigned long __init init_bootmem
+> >   * might be used for boot-time allocations - or it might get added
+> >   * to the free page pool later on.
+> >   */
+> > -static void __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+> > -					unsigned long size)
+> > +static int __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+> > +					unsigned long size, int flags)
+> >  {
+> >  	unsigned long sidx, eidx;
+> >  	unsigned long i;
+> > @@ -133,7 +133,11 @@ static void __init reserve_bootmem_core(
+> >  #ifdef CONFIG_DEBUG_BOOTMEM
+> >  			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
+> >  #endif
+> > +			if (flags & BOOTMEM_EXCLUSIVE)
+> > +				return -EBUSY;
+> 
+> I think we should unreserve the chunks of memory we have reserved so
+> far (Memory reserved from sidx to i), in case of error.
 
-I have 
-# CONFIG_LOCALVERSION_AUTO is not set
+Unfortunately, that's not possible without using a lock (or counters
+instead of a bitmap) any more. If we just do
 
-make output after a fully built tree:
-{ // these are expected off course 
-GEN /usr0/export/dev/bharrosh/git/pub/linux-2.6-block/.build_i386/Makefile
-CHK include/linux/version.h
-CHK include/linux/utsrelease.h
-Using /usr0/export/dev/bharrosh/git/pub/linux-2.6-block as source for kernel
-CALL /usr0/export/dev/bharrosh/git/pub/linux-2.6-block/scripts/checksyscalls.sh
-CHK include/linux/compile.h
-}
-{ // these cause a recompilation and relink
-AS arch/x86/kernel/vsyscall-int80_32.o
-AS arch/x86/kernel/vsyscall-sysenter_32.o
-SYSCALL arch/x86/kernel/vsyscall-syms.o
-SYSCALL arch/x86/kernel/vsyscall-int80_32.so
-SYSCALL arch/x86/kernel/vsyscall-sysenter_32.so
-AS arch/x86/kernel/vsyscall_32.o
-}
+	for (i--; i >= sidx; i--)
+		clear_bit(i, bdata->node_bootmem_map);
 
-LD arch/x86/kernel/built-in.o
-GEN .version
-...
-CC init/version.o
-LD init/built-in.o
-LD .tmp_vmlinux1
-KSYM .tmp_kallsyms1.S
-AS .tmp_kallsyms1.o
-LD .tmp_vmlinux2
-KSYM .tmp_kallsyms2.S
-AS .tmp_kallsyms2.o
-LD .tmp_vmlinux3
-KSYM .tmp_kallsyms3.S
-AS .tmp_kallsyms3.o
-LD vmlinux.o
-MODPOST vmlinux.o
-....
+then another thread of execution could reserve the memory (without
+BOOTMEM_EXCLUSIVE) in between -- and the code would free the memory
+which is already reserved.
+
+I think that could be modelled with a rwlock, not changing the default
+case where BOOTMEM_EXCLUSIVE is not specified.
 
 
-I'm cross compiling on an x86_64 fedora7 machine. with
-make ARCH=i386 KBUILD_OUTPUT=.build_i386 allmodconfig
-and
-make ARCH=i386 KBUILD_OUTPUT=.build_i386
-
-Other wise after an mrproper all is well and booting
-and the dir structure looks much better
-
-Thanks
-Boaz
+Thanks,
+   Bernhard
