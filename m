@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935344AbXJQUbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbXJQUcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935344AbXJQUbh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 16:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbXJQUb2
+	id S933724AbXJQUcA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 16:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933357AbXJQUbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 16:31:28 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39901 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757149AbXJQUb2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 16:31:28 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	<1192648456.15717.7.camel@think.oraclecorp.com>
-Date: Wed, 17 Oct 2007 14:29:20 -0600
-In-Reply-To: <1192648456.15717.7.camel@think.oraclecorp.com> (Chris Mason's
-	message of "Wed, 17 Oct 2007 15:14:16 -0400")
-Message-ID: <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Oct 2007 16:31:48 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:20375 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760919AbXJQUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 16:31:46 -0400
+Date: Wed, 17 Oct 2007 22:31:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071017203140.GF15552@kernel.dk>
+References: <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <alpine.LFD.0.999.0710171244330.26902@woody.linux-foundation.org> <20071017195659.GD15552@kernel.dk> <20071017200638.GE15552@kernel.dk> <alpine.LFD.0.999.0710171321400.26902@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710171321400.26902@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+On Wed, Oct 17 2007, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 17 Oct 2007, Jens Axboe wrote:
+> > 
+> > So until that is fixed up, how about this? Should cover all block
+> > devices, and I don't think sg_next()/for_each_sg() has spread outside of
+> > that yet.
+> 
+> Heh. Not good. There are drivers that set max phys segmsnts to 1. Either 
+> through some host-specific setting (MMC), or explicitly (eg a grep shows 
+> viodasd uses just a constant 1 there).
 
-> In this case, the commit block isn't allowed to be dirty before reiserfs
-> decides it is safe to write it.  The journal code expects it is the only
-> spot in the kernel setting buffer heads dirty, and it only does so after
-> the rest of the log blocks are safely on disk.
+That would hurt... Care to commit your for_each_sg() uglification fixup
+for now then? Or disable the allocation debug config entry, so that the
+sg+1 deref wont crash? Whichever your prefer, just don't want to cause
+crash pains for the unfortunate souls that happen to run into this
+before the real fix is done.
 
-Ok.  So the journal code here fundamentally depends on being able to
-control the order of the writes, and something else being able to set
-the buffer head dirty messes up that control.
+-- 
+Jens Axboe
 
-> Given this is a ramdisk, the check can be ignored, but I'd rather not
-> sprinkle if (ram_disk) into the FS code....
-
-It makes no sense to implement a ramdisk in a way that requires this.
-
-
->> At the same time I increasingly don't think we should allow user space
->> to dirty or update our filesystem metadata buffer heads.  That seems
->> like asking for trouble.
->> 
->
-> Demanding trouble ;)
-
-Looks like it.  There are even comments in jbd about the same class
-of problems.  Apparently dump and tune2fs on mounted filesystems have
-triggered some of these issues.  The practical question is any of this
-trouble worth handling.
-
-Thinking about it.  I don't believe anyone has ever intentionally built
-a filesystem tool that depends on being able to modify a file systems
-metadata buffer heads while the filesystem is running, and doing that
-would seem to be fragile as it would require a lot of cooperation
-between the tool and the filesystem about how the filesystem uses and
-implement things.
-
-Now I guess I need to see how difficult a patch would be to give
-filesystems magic inodes to keep their metadata buffer heads in.
-
-Eric
