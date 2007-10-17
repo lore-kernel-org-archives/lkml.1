@@ -1,156 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbXJQMsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbXJQMuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760779AbXJQMsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 08:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbXJQMsE
+	id S1763019AbXJQMuG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 08:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXJQMty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 08:48:04 -0400
-Received: from ns.suse.de ([195.135.220.2]:35363 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754356AbXJQMsC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 08:48:02 -0400
-Date: Wed, 17 Oct 2007 14:48:00 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de
-Subject: [PATCH] [ISDN] fix random freezes with AVM B1 drivers
-Message-ID: <20071017124759.GA18573@pingi.kke.suse.de>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 17 Oct 2007 08:49:54 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:41565 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753874AbXJQMtx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 08:49:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Gcvy2H940MSznwWKl0KXIlZmIt/DXAwQBnrBx4BTVCofzNnN/tMcjoF4nfgGnm/6fsF8+VW1+wEAyHjZfXc+Figfb7gHK/hgzFFBXE0fO+DqyNrvX1fSio6dkQQdSZnGiibFJcvSpUVOJnXCarnBZzrU+xqw83zwQM1rHUD7dLY=  ;
+X-YMail-OSG: ZBuVBtMVM1m1lU1EjPS4Wc2JTI2kdY5CCXOQeswk_CqUcIzuyIGAG6ddzMA_YkpS3gxGWqhMeg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch][rfc] rewrite ramdisk
+Date: Wed, 17 Oct 2007 22:49:13 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <200710151028.34407.borntraeger@de.ibm.com> <200710161747.12968.nickpiggin@yahoo.com.au> <m16416f2y8.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m16416f2y8.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+Message-Id: <200710172249.13877.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fix the same issue which was debbuged for the C4
-controller for the B1 versions.
-The capilib_ function modify or traverse a linked
-list without locking.
-This patch extend the existing locking
-to the calls of these function to prevent access
-to a list which is in the middle of a modification.
+On Wednesday 17 October 2007 20:30, Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > On Tuesday 16 October 2007 18:08, Nick Piggin wrote:
+> >> On Tuesday 16 October 2007 14:57, Eric W. Biederman wrote:
+> >> > > What magic restrictions on page allocations? Actually we have
+> >> > > fewer restrictions on page allocations because we can use
+> >> > > highmem!
+> >> >
+> >> > With the proposed rewrite yes.
+> >
+> > Here's a quick first hack...
+> >
+> > Comments?
+>
+> I have beaten my version of this into working shape, and things
+> seem ok.
+>
+> However I'm beginning to think that the real solution is to remove
+> the dependence on buffer heads for caching the disk mapping for
+> data pages, and move the metadata buffer heads off of the block
+> device page cache pages.  Although I am just a touch concerned
+> there may be an issue with using filesystem tools while the
+> filesystem is mounted if I move the metadata buffer heads.
+>
+> If we were to move the metadata buffer heads (assuming I haven't
+> missed some weird dependency) then I think there a bunch of
+> weird corner cases that would be simplified.
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
----
- drivers/isdn/hardware/avm/b1.c |   28 +++++++++++++---------------
- 1 files changed, 13 insertions(+), 15 deletions(-)
+I'd prefer just to go along the lines of what I posted. It's
+a pure block device driver which knows absolutely nothing about
+vm or vfs.
 
-diff --git a/drivers/isdn/hardware/avm/b1.c b/drivers/isdn/hardware/avm/b1.c
-index 7a69a18..4484a64 100644
---- a/drivers/isdn/hardware/avm/b1.c
-+++ b/drivers/isdn/hardware/avm/b1.c
-@@ -321,12 +321,15 @@ void b1_reset_ctr(struct capi_ctr *ctrl)
- 	avmctrl_info *cinfo = (avmctrl_info *)(ctrl->driverdata);
- 	avmcard *card = cinfo->card;
- 	unsigned int port = card->port;
-+	unsigned long flags;
- 
- 	b1_reset(port);
- 	b1_reset(port);
- 
- 	memset(cinfo->version, 0, sizeof(cinfo->version));
-+	spin_lock_irqsave(&card->lock, flags);
- 	capilib_release(&cinfo->ncci_head);
-+	spin_unlock_irqrestore(&card->lock, flags);
- 	capi_ctr_reseted(ctrl);
- }
- 
-@@ -361,9 +364,8 @@ void b1_release_appl(struct capi_ctr *ctrl, u16 appl)
- 	unsigned int port = card->port;
- 	unsigned long flags;
- 
--	capilib_release_appl(&cinfo->ncci_head, appl);
--
- 	spin_lock_irqsave(&card->lock, flags);
-+	capilib_release_appl(&cinfo->ncci_head, appl);
- 	b1_put_byte(port, SEND_RELEASE);
- 	b1_put_word(port, appl);
- 	spin_unlock_irqrestore(&card->lock, flags);
-@@ -380,27 +382,27 @@ u16 b1_send_message(struct capi_ctr *ctrl, struct sk_buff *skb)
- 	u8 subcmd = CAPIMSG_SUBCOMMAND(skb->data);
- 	u16 dlen, retval;
- 
-+	spin_lock_irqsave(&card->lock, flags);
- 	if (CAPICMD(cmd, subcmd) == CAPI_DATA_B3_REQ) {
- 		retval = capilib_data_b3_req(&cinfo->ncci_head,
- 					     CAPIMSG_APPID(skb->data),
- 					     CAPIMSG_NCCI(skb->data),
- 					     CAPIMSG_MSGID(skb->data));
--		if (retval != CAPI_NOERROR) 
-+		if (retval != CAPI_NOERROR) {
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			return retval;
-+		}
- 
- 		dlen = CAPIMSG_DATALEN(skb->data);
- 
--	 	spin_lock_irqsave(&card->lock, flags);
- 		b1_put_byte(port, SEND_DATA_B3_REQ);
- 		b1_put_slice(port, skb->data, len);
- 		b1_put_slice(port, skb->data + len, dlen);
--		spin_unlock_irqrestore(&card->lock, flags);
- 	} else {
--	 	spin_lock_irqsave(&card->lock, flags);
- 		b1_put_byte(port, SEND_MESSAGE);
- 		b1_put_slice(port, skb->data, len);
--		spin_unlock_irqrestore(&card->lock, flags);
- 	}
-+	spin_unlock_irqrestore(&card->lock, flags);
- 
- 	dev_kfree_skb_any(skb);
- 	return CAPI_NOERROR;
-@@ -534,17 +536,17 @@ irqreturn_t b1_interrupt(int interrupt, void *devptr)
- 
- 		ApplId = (unsigned) b1_get_word(card->port);
- 		MsgLen = b1_get_slice(card->port, card->msgbuf);
--		spin_unlock_irqrestore(&card->lock, flags);
- 		if (!(skb = alloc_skb(MsgLen, GFP_ATOMIC))) {
- 			printk(KERN_ERR "%s: incoming packet dropped\n",
- 					card->name);
-+			spin_unlock_irqrestore(&card->lock, flags);
- 		} else {
- 			memcpy(skb_put(skb, MsgLen), card->msgbuf, MsgLen);
- 			if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_CONF)
- 				capilib_data_b3_conf(&cinfo->ncci_head, ApplId,
- 						     CAPIMSG_NCCI(skb->data),
- 						     CAPIMSG_MSGID(skb->data));
--
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			capi_ctr_handle_message(ctrl, ApplId, skb);
- 		}
- 		break;
-@@ -554,21 +556,17 @@ irqreturn_t b1_interrupt(int interrupt, void *devptr)
- 		ApplId = b1_get_word(card->port);
- 		NCCI = b1_get_word(card->port);
- 		WindowSize = b1_get_word(card->port);
--		spin_unlock_irqrestore(&card->lock, flags);
--
- 		capilib_new_ncci(&cinfo->ncci_head, ApplId, NCCI, WindowSize);
--
-+		spin_unlock_irqrestore(&card->lock, flags);
- 		break;
- 
- 	case RECEIVE_FREE_NCCI:
- 
- 		ApplId = b1_get_word(card->port);
- 		NCCI = b1_get_word(card->port);
--		spin_unlock_irqrestore(&card->lock, flags);
--
- 		if (NCCI != 0xffffffff)
- 			capilib_free_ncci(&cinfo->ncci_head, ApplId, NCCI);
--	       
-+		spin_unlock_irqrestore(&card->lock, flags);
- 		break;
- 
- 	case RECEIVE_START:
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+What are you guys using rd for, and is it really important to
+have this supposed buffercache optimisation?
+
+
+> I guess that is where I look next.
+>
+> Oh for what it is worth I took a quick look at fsblock and I don't think
+> struct fsblock makes much sense as a block mapping translation layer for
+> the data path where the current page caches works well.
+
+Except the page cache doesn't store any such translation. fsblock
+works very nicely as a buffer_head and nobh-mode replacement there,
+but we could probably go one better (for many filesystems) by using
+a tree.
+
+
+> For less 
+> then the cost of 1 fsblock I can cache all of the translations for a
+> 1K filesystem on a 4K page.
+
+I'm not exactly sure what you mean, unless you're talking about an
+extent based data structure. fsblock is fairly slim as far as a
+generic solution goes. You could probably save 4 or 8 bytes in it,
+but I don't know if it's worth the trouble.
+
+
+> I haven't looked to see if fsblock makes sense to use as a buffer head
+> replacement yet.
+
+Well I don't want to get too far off topic on the subject of fsblock,
+and block mappings (because I think the ramdisk driver simply should
+have nothing to do with any of that)... but fsblock is exactly a
+buffer head replacement (so if it doesn't make sense, then I've
+screwed something up badly! ;))
