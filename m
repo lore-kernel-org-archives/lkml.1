@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935639AbXJQBsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXJQBxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935639AbXJQBsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Oct 2007 21:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761546AbXJQBsQ
+	id S965483AbXJQBxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Oct 2007 21:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbXJQBx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Oct 2007 21:48:16 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:46336 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753617AbXJQBsQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Oct 2007 21:48:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=IJc/suSOztTA1cda+zf/6CXL2z83TTv7A8pkDR8J3s+LmLTmu2NDSN/LauFILb9LuDC16LIjC9kG1FbyOjkeIfzriS50dHqFmunWTZgb6ZOZp3TvHJAC/6CjCQKYIlVUTq7q9FboiWj054okgWtdjERrd4r42cy+AcadWL2CABQ=  ;
-X-YMail-OSG: 3sZa7L8VM1lDvrpcoZ0OZpqu8VgsoqtjuCIdFsWA6AfNUJul.IoG2oZiAQtby4nrPfM3xRCPLg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch][rfc] rewrite ramdisk
-Date: Wed, 17 Oct 2007 11:47:48 +1000
-User-Agent: KMail/1.9.5
-Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710171028.23226.nickpiggin@yahoo.com.au> <m1ir56fsq8.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ir56fsq8.fsf@ebiederm.dsl.xmission.com>
+	Tue, 16 Oct 2007 21:53:26 -0400
+Received: from rtr.ca ([76.10.145.34]:3399 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760560AbXJQBx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Oct 2007 21:53:26 -0400
+Message-ID: <47156B14.2080608@rtr.ca>
+Date: Tue, 16 Oct 2007 21:53:24 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710171147.48364.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>, pcihpd-discuss@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>
+Subject: [PATCH 0/4] Fix PCIe hotplug for non-ACPI ExpressCard slots (version
+ 2)
+References: <4714C0A6.1030204@rtr.ca> <4714D700.7060008@rtr.ca> <20071016084634.8a0d695a.kristen.c.accardi@intel.com> <47150565.5090102@rtr.ca> <20071016114328.a96e8bcb.kristen.c.accardi@intel.com> <47150982.6050102@rtr.ca> <471509FE.7080505@rtr.ca> <47151191.40406@rtr.ca> <20071016130757.ed2f2ce4.kristen.c.accardi@intel.com> <4715217D.2000803@rtr.ca> <20071016214143.GC21815@kroah.com> <471533AF.60100@rtr.ca>
+In-Reply-To: <471533AF.60100@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 October 2007 11:13, Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+Original single patch is now broken out into tiny pieces for easier review.
 
-> > We have 2 problems. First is that, for testing/consistency, we
-> > don't want BLKFLSBUF to throw out the data. Maybe hardly anything
-> > uses BLKFLSBUF now, so it could be just a minor problem, but still
-> > one to fix.
->
-> Hmm.  This is interesting because we won't be doing anything that
-> effects correctness if we don't special case BLKFLSBUF just something
-> that effects efficiency.  So I think we can get away with just
-> changing blkflsbuf as long as there is a way to get rid of
-> the data.
+Also, valuable feedback from Ted has been incorporated,
+to avoid any possible side effects on regular use of
+the PCIe hotplug stuff (when used without pciehp_force=1 mod parm).
 
-Technically, it does change correctness: after BLKFLSBUF, the
-ramdisk should contain zeroes.
+* * *
 
-I'm assuming it would also cause problems in tight embedded
-environments if ramdisk ram is supposed to be thrown away but
-isn't. So maybe not technically a correctness problem, but could
-be the difference between working and not working.
+Fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks
+in conjunction with the modparam of pciehp_force=1.
 
+The PCIe Hotplug driver has two shortcomings when used on Dell notebooks
+which lack ACPI BIOS support for PCIe hotplug:
 
-> > Second is actually throwing out the ramdisk data. dd from /dev/null
-> > isn't trivial because it isn't a "command" from the kernel's POV.
-> > rd could examine the writes to see if they are zero and page aligned,
-> > I suppose... but if you're transitioning everyone over to a new
-> > method anyway, might as well make it a nice one ;)
->
-> Well I was thinking you can examine the page you just wrote to
-> and if it is all zero's you don't need to cache that page anymore.
-> Call it intelligent compression.
->
-> Further it does make forwards and backwards compatibility simple
-> because all you would have to do to reliably free a ramdisk is:
->
-> dd if=/dev/zero of=/dev/ramX
-> blockdev --flushbufs /dev/ramX
+1. The driver does not recognise cards that were inserted prior
+to the driver being modprobe'd.
 
-Sure, you could do that, but you still presumably need to support
-the old behaviour.
+2. The driver stops functioning after a suspend/resume (RAM) cycle,
+and needs to be rmmod'd and modprobe'd to get it working again.
 
-As a test vehicle for filesystems, I'd much rather it didn't do this
-of course, because subsequent writes would need to reallocate the
-page again.
+This patch series addresses those issues, resulting in a completely
+functional PCIe Hotplug driver for Dell notebooks, and probably others
+as well, which may lack ACPI BIOS support for this.
+
+There are four patches in this series:
+
+	01_pciehp_cosmetic_fixes.patch
+		-- cosmetic fixes, mostly to keep checkpatch.pl happy
+
+	02_pciehp_handle_preinserted_card.patch
+		-- fixes problem number 1 (above).
+
+	03_pciehp_split_pcie_init.patch
+		-- preparation for the resume patch.
+
+	04_pciehp_resume.patch
+		-- fixes problem number 2 (above).
+
+diffstat summary for 01_pciehp_cosmetic_fixes.patch only:
+ drivers/pci/hotplug/pciehp_core.c |    6 -
+ drivers/pci/hotplug/pciehp_ctrl.c |    2
+ drivers/pci/hotplug/pciehp_hpc.c  |  119 ++++++++++++++--------------
+ 3 files changed, 65 insertions(+), 62 deletions(-)
+
+diffstat summary for the other three patches combined:
+ drivers/pci/hotplug/pciehp.h      |    3
+ drivers/pci/hotplug/pciehp_core.c |   21 ++-
+ drivers/pci/hotplug/pciehp_ctrl.c |    2
+ drivers/pci/hotplug/pciehp_hpc.c  |  194 ++++++++++++++++------------
+ 4 files changed, 134 insertions(+), 86 deletions(-)
+
+Cheers
+--
+Mark Lord <mlord@pobox.com>
