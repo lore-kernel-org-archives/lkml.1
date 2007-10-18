@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbXJRABi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXJRAEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760833AbXJRABi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXJRABa
+	id S932810AbXJRAEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbXJRAEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:01:30 -0400
-Received: from mga02.intel.com ([134.134.136.20]:22323 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758006AbXJRAB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:01:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,291,1188802800"; 
-   d="scan'208";a="249599172"
-Date: Wed, 17 Oct 2007 16:54:16 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [Pcihpd-discuss] [PATCH 2/4] Fix PCIe hotplug for non-ACPI
- ExpressCard slots (version 2)
-Message-Id: <20071017165416.3099059b.kristen.c.accardi@intel.com>
-In-Reply-To: <47156B62.3070807@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-	<47150982.6050102@rtr.ca>
-	<471509FE.7080505@rtr.ca>
-	<47151191.40406@rtr.ca>
-	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>
-	<4715217D.2000803@rtr.ca>
-	<20071016214143.GC21815@kroah.com>
-	<471533AF.60100@rtr.ca>
-	<47156B14.2080608@rtr.ca>
-	<47156B40.4060006@rtr.ca>
-	<47156B62.3070807@rtr.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Wed, 17 Oct 2007 20:04:45 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45942 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbXJRAEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:04:44 -0400
+Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
+From: Chris Mason <chris.mason@oracle.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+In-Reply-To: <m16415cocs.fsf@ebiederm.dsl.xmission.com>
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	 <m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	 <200710160956.58061.borntraeger@de.ibm.com>
+	 <200710171814.01717.borntraeger@de.ibm.com>
+	 <m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	 <1192648456.15717.7.camel@think.oraclecorp.com>
+	 <m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+	 <1192654481.15717.16.camel@think.oraclecorp.com>
+	 <m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+	 <1192661889.15717.27.camel@think.oraclecorp.com>
+	 <m16415cocs.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 20:03:05 -0400
+Message-Id: <1192665785.15717.34.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 21:54:42 -0400
-Mark Lord <lkml@rtr.ca> wrote:
-
-> Fix pciehp_probe() to deal with pre-inserted ExpressCard cards,
-> but only when pciehp_force==1.  Otherwise behaviour is unmodified.
-
-I think it would be ok to try allowing the slot to be enabled when not
-using pciehp_force mode.  We can wrap it later if it proves to break 
-things, however, see my comment below:
-
+On Wed, 2007-10-17 at 17:28 -0600, Eric W. Biederman wrote:
+> Chris Mason <chris.mason@oracle.com> writes:
 > 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> ---
-> --- old/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:14:44.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:16:36.000000000 -0400
-> @@ -37,7 +37,6 @@
->  #include "pciehp.h"
->  
->  static void interrupt_event_handler(struct work_struct *work);
-> -static int pciehp_enable_slot(struct slot *p_slot);
->  static int pciehp_disable_slot(struct slot *p_slot);
->  
->  static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
-> --- old/drivers/pci/hotplug/pciehp.h	2007-10-12 12:43:44.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp.h	2007-10-16 21:16:06.000000000 -0400
-> @@ -161,6 +161,7 @@
->  extern int pciehp_unconfigure_device(struct slot *p_slot);
->  extern void pciehp_queue_pushbutton_work(struct work_struct *work);
->  int pcie_init(struct controller *ctrl, struct pcie_device *dev);
-> +int pciehp_enable_slot(struct slot *p_slot);
->  
->  static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
->  {
-> --- old/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:14:44.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:15:56.000000000 -0400
-> @@ -477,7 +477,8 @@
->  		rc = t_slot->hpc_ops->power_off_slot(t_slot);
->  		if (rc)
->  			goto err_out_free_ctrl_slot;
-> -	}
-> +	} else if (pciehp_force)
-> +		pciehp_enable_slot(t_slot);
-
-Here it seems like what you want to do just go ahead and try to call
-pciehp_enable_slot always, but check the return value.  If an adapter is
-not present, it will return -ENODEV, and then you can check to see if
-you have the ability to power off the slot, and try to power it off.
-Please fix CodingStyle issues too.
-
->  
->  	return 0;
->  
+> > So, the problem is using the Dirty bit to indicate pinned.  You're
+> > completely right that our current setup of buffer heads and pages and
+> > filesystpem metadata is complex and difficult.
+> >
+> > But, moving the buffer heads off of the page cache pages isn't going to
+> > make it any easier to use dirty as pinned, especially in the face of
+> > buffer_head users for file data pages.
 > 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >> http://get.splunk.com/
-> _______________________________________________
-> Pcihpd-discuss mailing list
-> Pcihpd-discuss@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/pcihpd-discuss
+> Let me specific.  Not moving buffer_heads off of page cache pages,
+> moving buffer_heads off of the block devices page cache pages.
 > 
+> My problem is the coupling of how block devices are cached and the
+> implementation of buffer heads, and by removing that coupling
+> we can generally make things better.  Currently that coupling
+> means silly things like all block devices are cached in low memory.
+> Which probably isn't what you want if you actually have a use
+> for block devices.
+> 
+> For the ramdisk case in particular what this means is that there
+> are no more users that create buffer_head mappings on the block
+> device cache so using the dirty bit will be safe.
+
+Ok, we move the buffer heads off to a different inode, and that indoe
+has pages.  The pages on the inode still need to get pinned, how does
+that pinning happen?
+
+The problem you described where someone cleans a page because the buffer
+heads are clean happens already without help from userland.  So, keeping
+the pages away from userland won't save them from cleaning.
+
+Sorry if I'm reading your suggestion wrong...
+
+-chris
+
+
