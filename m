@@ -1,45 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXJRXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXJRXl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933069AbXJRXiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXJRXiK
+	id S933447AbXJRXl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 19:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbXJRXlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:38:10 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:55056 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758028AbXJRXiI (ORCPT
+	Thu, 18 Oct 2007 19:41:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48865 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752870AbXJRXlu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:38:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=IqJvcobSbGNH0cxIllXbRHajvtUrVjojmsXxh/tEB44FeDMKSErvrCRrW0j9RGn3+MtmvWuAVDJiTD1NVZPmZX8YhdNlDSg63b4rI1OvaFANbmu2TZphuHEq5BFWzp2zr9PGPQZYMEpEuqeNH+Q5CWx/XDa5t3PJNYBlvXX0seg=
-Date: Fri, 19 Oct 2007 01:37:36 -0700
-To: Russell King <linux@arm.linux.org.uk>
-Cc: Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: PDA Suspend SA1100
-Message-Id: <20071019013736.11dec046.Kristoffer.ericson@gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Thu, 18 Oct 2007 19:41:50 -0400
+Date: Thu, 18 Oct 2007 16:39:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+In-Reply-To: <1192749449.7367.51.camel@pasglop>
+Message-ID: <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>  <1192745137.7367.40.camel@pasglop>
+  <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+ <1192749449.7367.51.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
 
-I've been trying to implement proper suspend on my jornada 720 machine. But as far as I can see it never reaches
-the sa11x0_suspend code.
 
-I've linked power button event to produce APM_SUSPEND and I can see that it says "Stopping TASKS ======". It then
-blanks screen but keeps LCD powerd. I know it goes into resume again since removing backlight code in resume function
-effectivly turns off the LCD.
+On Fri, 19 Oct 2007, Benjamin Herrenschmidt wrote:
+> 
+> I agree and you can see that in fact, we don't have enough barrier on
+> the other side since spin_unlock doesn't prevent subsequent loads from
+> crossing a previous store...
+> 
+> I wonder if that's worth trying to address, adding a barrier in
+> handle_IRQ_event for example, or we can continue ignoring the barrier
+> and let some drivers do their own fixes in fancy ways.
 
-Im assuming that it tries to suspend but fails at some point and tries to return into normal operations?
-Exactly what is needed to get the suspend procedure happy? Does every driver need to have suspend/resume code?
+So how about something like this (untested! not necessarily very well 
+thought through either!)
 
-Best wishes
-Kristoffer Ericson
+Basic notion: the only thing that serializes the IRQ_INPROGRESS flag is 
+the descriptor lock. And we don't have to (or even want to!) hold it while 
+waiting for the thing, but we want to *have*held*it* in between whatever 
+we're synchronizing with.
+
+The internal irq handler functions already held the lock when they did 
+whatever they need to serialize - and they are possibly performance 
+critical too - so they use the "internal" function that doesn't get the 
+lock unnecessarily again.
+
+Hmm? 
+
+		Linus
+
+---
+ kernel/irq/manage.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 80eab7a..f3e9575 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -14,6 +14,18 @@
+ 
+ #include "internals.h"
+ 
++/*
++ * Internally wait for IRQ_INPROGRESS to go away on other CPU's,
++ * after having serialized with the descriptor lock.
++ */
++static inline void do_synchronize_irq(struct irq_desc *desc)
++{
++#ifdef CONFIG_SMP
++	while (desc->status & IRQ_INPROGRESS)
++		cpu_relax();
++#endif
++}
++
+ #ifdef CONFIG_SMP
+ 
+ /**
+@@ -28,13 +40,15 @@
+  */
+ void synchronize_irq(unsigned int irq)
+ {
++	unsigned long flags;
+ 	struct irq_desc *desc = irq_desc + irq;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	spin_lock_irqsave(&desc->lock, flags);
++	spin_unlock_irqrestore(&desc->lock, flags);
++	do_synchronize_irq(desc);
+ }
+ EXPORT_SYMBOL(synchronize_irq);
+ 
+@@ -129,7 +143,7 @@ void disable_irq(unsigned int irq)
+ 
+ 	disable_irq_nosync(irq);
+ 	if (desc->action)
+-		synchronize_irq(irq);
++		do_synchronize_irq(desc);
+ }
+ EXPORT_SYMBOL(disable_irq);
+ 
+@@ -443,7 +457,7 @@ void free_irq(unsigned int irq, void *dev_id)
+ 			unregister_handler_proc(irq, action);
+ 
+ 			/* Make sure it's not being used on another CPU */
+-			synchronize_irq(irq);
++			do_synchronize_irq(desc);
+ #ifdef CONFIG_DEBUG_SHIRQ
+ 			/*
+ 			 * It's a shared IRQ -- the driver ought to be
