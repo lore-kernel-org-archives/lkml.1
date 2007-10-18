@@ -1,109 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933464AbXJRTZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934136AbXJRTZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933464AbXJRTZY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbXJRTZG
+	id S934136AbXJRTZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933520AbXJRTZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:25:06 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43802 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757317AbXJRTZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:25:05 -0400
-Date: Thu, 18 Oct 2007 21:26:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Deepak Saxena <dsaxena@plexity.net>
-Cc: linux-kernel@vger.kernel.org, Armin Kuster <akuster@mvista.com>,
-       protasnb@gmail.com, nafallo@magicalforest.se
-Subject: Re: [PATCH] kbuild: Disable depmod in cross-compile kernel build
-Message-ID: <20071018192600.GA22658@uranus.ravnborg.org>
-References: <20071018180157.GA11408@plexity.net>
-Mime-Version: 1.0
+	Thu, 18 Oct 2007 15:25:25 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1717 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933382AbXJRTZX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:25:23 -0400
+Date: Thu, 18 Oct 2007 20:25:21 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: latest checkpatch
+Message-ID: <20071018192521.GC21136@shadowen.org>
+References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071018180157.GA11408@plexity.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071018111352.GA17039@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 11:01:57AM -0700, Deepak Saxena wrote:
+On Thu, Oct 18, 2007 at 01:13:52PM +0200, Ingo Molnar wrote:
 > 
-> When building embedded systems in a cross-compile environment and
-> populating a target's file system image, we don't want to run the 
-> depmod on the host as we may be building for a completely different
-> architecture. Since there's no such thing as a cross-depmod, we
-> just disable running depmod in the cross-compile case and we just
-> run depmod on the target at bootup.
+> latest checkpatch.pl works really well on sched.c.
 > 
-> Signed-off-by: Armin Kuster <akuster@mvista.com>
-> Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
+> there's only one problem left, this bogus false positive warning 
+> reappeared:
+> 
+>   WARNING: braces {} are not necessary for single statement blocks
+>   #5710: FILE: sched.c:5710:
+>   +       if (parent->groups == parent->groups->next) {
+>   +               pflags &= ~(SD_LOAD_BALANCE |
+>   +                               SD_BALANCE_NEWIDLE |
+>   +                               SD_BALANCE_FORK |
+>   +                               SD_BALANCE_EXEC |
+>   +                               SD_SHARE_CPUPOWER |
+>   +                               SD_SHARE_PKG_RESOURCES);
+>   +       }
+> 
+> (there's another place in sched.c that trips this up too.)
 
-The root problem is depmod that should understand more targets.
-But testing for CROSS_COMPILE is not good enough - we should
-test is host target and buildtarget differs.
+It actually never went away, some of the wronger reports went away such
+as counting a commented statement as a single statement.  The check for
+length didn't make the cut for 0.11, as I was still thinking about
+whether we wanted a subjective check on statements over and above the
+"real" check for lines.
 
-I took a look at it and came up with the attached patch.
-This btw solves:
-http://bugzilla.kernel.org/show_bug.cgi?id=3881
+> i think it has been pointed out numerous times that it is perfectly fine 
+> to use curly braces for multi-line single-statement blocks. That 
+> includes simple cases like this too:
+> 
+> 	if (x) {
+> 		/* do y() */
+> 		y();
+> 	}
 
+Yes and the comment in there actually counts as a statement for counting
+statement purposes.  
 
-	Sam
+The plan is to move to counting lines and only winge on exactly one
+line.  I have half a mind to make a subjective check on statements and a
+full check on lines.  But probabally it will just move to lines.
 
-diff --git a/Makefile b/Makefile
-index e8ace82..784903a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1030,19 +1030,12 @@ _modinst_:
- 	fi
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
- 
--# If System.map exists, run depmod.  This deliberately does not have a
--# dependency on System.map since that would run the dependency tree on
--# vmlinux.  This depmod is only for convenience to give the initial
-+# This depmod is only for convenience to give the initial
- # boot a modules.dep even before / is mounted read-write.  However the
- # boot script depmod is the master version.
--ifeq "$(strip $(INSTALL_MOD_PATH))" ""
--depmod_opts	:=
--else
--depmod_opts	:= -b $(INSTALL_MOD_PATH) -r
--endif
- PHONY += _modinst_post
- _modinst_post: _modinst_
--	if [ -r System.map -a -x $(DEPMOD) ]; then $(DEPMOD) -ae -F System.map $(depmod_opts) $(KERNELRELEASE); fi
-+	$(call cmd,depmod)
- 
- else # CONFIG_MODULES
- 
-@@ -1259,15 +1252,6 @@ _emodinst_:
- 	$(Q)mkdir -p $(MODLIB)/$(install-dir)
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
- 
--# Run depmod only is we have System.map and depmod is executable
--quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
--      cmd_depmod = if [ -r System.map -a -x $(DEPMOD) ]; then \
--                      $(DEPMOD) -ae -F System.map             \
--                      $(if $(strip $(INSTALL_MOD_PATH)),      \
--		      -b $(INSTALL_MOD_PATH) -r)              \
--		      $(KERNELRELEASE);                       \
--                   fi
--
- PHONY += _emodinst_post
- _emodinst_post: _emodinst_
- 	$(call cmd,depmod)
-@@ -1516,6 +1500,16 @@ quiet_cmd_rmdirs = $(if $(wildcard $(rm-dirs)),CLEAN   $(wildcard $(rm-dirs)))
- quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files)))
-       cmd_rmfiles = rm -f $(rm-files)
- 
-+# Run depmod only is we have System.map and depmod is executable
-+# and we build for the host arch
-+quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
-+      cmd_depmod = \
-+	if [ -r System.map -a -x $(DEPMOD) -a "$(SUBARCH)" == "$(ARCH)" ]; then \
-+		$(DEPMOD) -ae -F System.map                                     \
-+		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) -r)   \
-+		$(KERNELRELEASE);                                               \
-+	fi
-+
- 
- a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
- 	  $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
+> it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
+> wants to make any noise about such constructs it should warn about the 
+> _lack_ of curly braces in every multi-line condition block _except_ the 
+> only safe single-line statement:
+> 
+> 	if (x)
+> 		y();
+
+Indeed.  We should probabally do more on the indentation checks in
+general.  The current direct check for:
+
+	if (foo);
+		bar();
+
+Could probabally be generalised to look for this kind of error:
+
+	if (foo)
+		bar();
+		baz();
+	one();
+
+-apw
