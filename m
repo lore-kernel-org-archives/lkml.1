@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbXJRQTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbXJRQTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765485AbXJRQTV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762649AbXJRQTG
+	id S933932AbXJRQTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765536AbXJRQTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:19:06 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52922 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765288AbXJRQTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:19:04 -0400
-Date: Thu, 18 Oct 2007 09:08:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-git12: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-Message-ID: <20071018160829.GE13346@suse.de>
-References: <4716F134.2060002@rtr.ca>
+	Thu, 18 Oct 2007 12:19:22 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38002 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933103AbXJRQTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 12:19:20 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX1+bVjt/nWGbXv7SxQANGJTnbTBk/WpLNCtHukaodR
+	nk9iy7OP1oCLi3
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] hda-intel: no soundcard with current linus' =?iso-8859-1?q?git=09tree?=
+Date: Thu, 18 Oct 2007 18:19:25 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <471538C2.80806@m3y3r.de> <200710181705.18265.dl9pf@gmx.de> <s5hzlygzdu1.wl%tiwai@suse.de>
+In-Reply-To: <s5hzlygzdu1.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4716F134.2060002@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200710181819.25496.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 01:37:56AM -0400, Mark Lord wrote:
->
-> usb 5-1: new high speed USB device using ehci_hcd and address 2
-> usb 5-1: configuration #1 chosen from 1 choice
-> hub 5-1:1.0: USB hub found
-> hub 5-1:1.0: 4 ports detected
-> sysfs: duplicate filename 'bInterfaceNumber' can not be created
 
-Known issue, people are working on it, there's already a proposed patch
-on lkml for this.
+Tried you patch. Now the card works even without any model selected. Also the 
+speakers sound "better" now :D . Bass is nearly too loud.
 
-thanks,
+Tnx for looking into this!
+Just on question: is it possible to mute the main speakers when headphones get 
+plugged in ? Atm the internal speakers stay on.
 
-greg k-h
+Best regards
+Jan-Simon
