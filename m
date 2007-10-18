@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765924AbXJRRGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933186AbXJRRGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765924AbXJRRGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763773AbXJRRGM
+	id S933186AbXJRRGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765985AbXJRRGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:06:12 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:39124 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756776AbXJRRGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:06:11 -0400
-Date: Thu, 18 Oct 2007 19:06:09 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Nick Piggin <npiggin@suse.de>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LFENCE instruction (was: [rfc][patch 3/3] x86: optimise barriers)
-In-Reply-To: <20071017122435.GA14401@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0710181904540.29362@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0710152204060.30307@artax.karlin.mff.cuni.cz>
- <20071015143732.01d99af8@laptopd505.fenrus.org>
- <Pine.LNX.4.64.0710160004500.2604@artax.karlin.mff.cuni.cz>
- <20071016002229.GA5851@wotan.suse.de> <Pine.LNX.4.64.0710161221300.1315@artax.karlin.mff.cuni.cz>
- <20071016222921.GA29378@wotan.suse.de> <Pine.LNX.4.64.0710170049450.19210@artax.karlin.mff.cuni.cz>
- <20071016232153.GC29378@wotan.suse.de> <Pine.LNX.4.64.0710170212090.15954@artax.karlin.mff.cuni.cz>
- <20071017122435.GA14401@wotan.suse.de>
-X-Personality-Disorder: Schizoid
+	Thu, 18 Oct 2007 13:06:24 -0400
+Received: from rtr.ca ([76.10.145.34]:2396 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765930AbXJRRGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 13:06:23 -0400
+Message-ID: <4717928D.6070703@rtr.ca>
+Date: Thu, 18 Oct 2007 13:06:21 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [PATCH 0/3] Fix two PEIe hotplug issues
+References: <4716CB9D.6080503@rtr.ca>	<4716CE79.7040201@rtr.ca> <20071018091347.4b94faf8.kristen.c.accardi@intel.com>
+In-Reply-To: <20071018091347.4b94faf8.kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > You already must not place any data structures into WC memory --- for 
-> > > > example, spinlocks wouldn't work there.
-> > > 
-> > > What do you mean "already"?
-> > 
-> > I mean "in current kernel" (I checked it in 2.6.22)
+Kristen Carlson Accardi wrote:
+> On Wed, 17 Oct 2007 23:09:45 -0400
+> Mark Lord <lkml@rtr.ca> wrote:
 > 
-> Ahh, that's not "current kernel", though ;)
+>> Mark Lord wrote:
+>>> Fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks
+>>> (and others?) in conjunction with the modparam of pciehp_force=1.
+>>
+>> To make things simpler for distro people, I'm contemplating another patch
+>> in this series, to allow something like:  pciehp_force=2
+>>
+>> This would then *try* the ACPI BIOS calls, and only fall back to pcie_force=1
+>> if the BIOS support fails.  This would be an ideal default for most desktop/notebook
+>> distros to consider using.
+>>
+>> Without this, they don't have any good choice:  use the defaults, and things fail
+>> on the most popular brand of machines in the marketplace.  Use pciehp_force=1,
+>> and they may break (?) on other brands.
+>>
+>> So a hybrid of the two seems best.  Pity it couldn't be the default behaviour, though.
+>> Or could it?  We're early enough in the 2.6.24 cycle for it..
+>>
+>> Opinions?
+>>
 > 
-> 4071c718555d955a35e9651f77086096ad87d498
->
-> > So drivers can't assume that wmb() works on write-combining memory.
-> 
-> Drivers should be able to assume that wmb() orders _everything_ (except
-> some whacky Altix thing, which I really want to fold under wmb at some
-> point anyway).
-> 
-> So I decided that old x86 semantics isn't right, and now it really is a
-> lock op / sfence everywhere.
+> NAK!  Absolutely no way will I take a patch that does this.  
 
-I see. I'm just curious --- is there any real usage for WC memory, except 
-graphics card memory?
 
-Mikulas
+No big deal.  I personally don't have a distro to maintain,
+so no pain for me here.
+
+> I've been actually having philosophical issues with
+> even having pciehp_force as a module parameter at all.  As I said before,
+> using pciehp_force violates the PCI spec.
+
+No, it just provides a way to use the hardware when the vendor
+didn't include BIOS functionality for it.
+
+These notebooks fully support hotplug in the external ExpressCard slot
+(which is the *whole point* of an external slot), and according to Dell
+they work just fine with that other OS.  I don't use the "other OS" here,
+but the hardware also works just fine with Linux now.
+
+I'm guessing they just left out the BIOS functionality because
+it was one of the very first machines to market with such slots,
+and the BIOS wasn't mature enough.   So they rely upon more easily
+updated software drivers instead.  The only gotcha is they do specify
+that booting from the slot is not possible (because no BIOS support).
+
+Cheers
