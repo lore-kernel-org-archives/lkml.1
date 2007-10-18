@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXJRUwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbXJRUwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764138AbXJRUwd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762451AbXJRUwX
+	id S1764692AbXJRUwz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbXJRUwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:52:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43063 "EHLO mail.dvmed.net"
+	Thu, 18 Oct 2007 16:52:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59094 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762485AbXJRUwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:52:22 -0400
-Message-ID: <4717C776.5020809@garzik.org>
-Date: Thu, 18 Oct 2007 16:52:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
-Subject: Re: libata crash
-References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk> <20071018195903.GA29567@elte.hu> <20071018204111.GN10674@kernel.dk>
-In-Reply-To: <20071018204111.GN10674@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1758172AbXJRUwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:52:44 -0400
+Date: Thu, 18 Oct 2007 16:52:38 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+Subject: Re: OOM notifications
+Message-ID: <20071018165238.0537eaa6@bree.surriel.com>
+In-Reply-To: <4717C43D.6030204@keyaccess.nl>
+References: <20071018202504.GA2854@dmt>
+	<4717C43D.6030204@keyaccess.nl>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Oct 18 2007, Ingo Molnar wrote:
->> * Jens Axboe <jens.axboe@oracle.com> wrote:
->>
->>> I'll see if I can spend some time tonight chopping the patch into 
->>> digestable pieces, unfortunately I'll be away the next three days. And 
->>> it would be nice to get this thing merged asap.
->> and make sure it builds:
->>
->> drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
->> drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
->> drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
->> drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
->> drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
->> drivers/scsi/in2000.c: In function 'in2000_queuecommand':
->> drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
->> drivers/scsi/in2000.c: In function 'transfer_bytes':
->> drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
+On Thu, 18 Oct 2007 22:38:21 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
+
+> On 10/18/2007 10:25 PM, Marcelo Tosatti wrote:
 > 
-> Oops, wonder why they were missed in the allyes/modconfig. Fixed now,
-> thanks!
+> > AIX contains the SIGDANGER signal to notify applications to free up
+> > some unused cached memory:
+> > 
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
+> > 
+> > There have been a few discussions on implementing such an idea on
+> > Linux, but nothing concrete has been achieved.
+> > 
+> > On the kernel side Rik suggested two notification points: "about to
+> > swap" (for desktop scenarios) and "about to OOM" (for embedded-like
+> > scenarios).
+> > 
+> > With that assumption in mind it would be necessary to either have
+> > two special devices for notification, or somehow indicate both
+> > events through the same file descriptor.
+> > 
+> > Comments are more than welcome.
+> 
+> Given the desktop/embedded distinction you made, do you need both
+> scenarios active at the same time? If not, it seems something like a
+> 
+> 	echo -n <level> >/proc/sys/vm/danger
+> 
+> could do with just one sigdanger notification point? (with <level>
+> suitably defined as or in terms of the used threshold value).
 
-Building on x86-64, I'm betting?  :)
+If you do that, how are applications to know which of the two
+scenarios is happening when they get a signal?
 
-I fell victim to the same thing a few days ago, missing some compile 
-breakage that only appeared with
-
-     make ARCH=i386 allmodconfig && make ARCH=i386 -sj9
-
-Though am I alone in dreaming of a kernel.org service that would permit 
-all-arch build testing of a git URL?
-
-Regards,
-
-	Jeff
-
-
-
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
