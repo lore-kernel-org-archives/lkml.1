@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXJRWA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbXJRWEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbXJRWA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXJRWAv
+	id S1763525AbXJRWEB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXJRWDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:00:51 -0400
-Received: from ns2.suse.de ([195.135.220.15]:47970 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756593AbXJRWAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:00:50 -0400
-Date: Fri, 19 Oct 2007 00:00:48 +0200
-From: Andi Kleen <ak@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Bernhard Walle <bwalle@suse.de>, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org, vgoyal@in.ibm.com
-Subject: Re: [patch 1/3] Add BSS to resource tree
-Message-ID: <20071018220048.GB3459@bingen.suse.de>
-References: <20071018111535.356215664@strauss.suse.de> <20071018111535.883533731@strauss.suse.de> <20071018142642.5b3f6ba4.akpm@linux-foundation.org> <20071018214836.GA3459@bingen.suse.de> <20071018215827.GB23708@uranus.ravnborg.org>
+	Thu, 18 Oct 2007 18:03:54 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:44859 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757135AbXJRWDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:03:53 -0400
+Message-ID: <4717D7B6.40102@keyaccess.nl>
+Date: Fri, 19 Oct 2007 00:01:26 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018215827.GB23708@uranus.ravnborg.org>
+To: Rik van Riel <riel@redhat.com>
+CC: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+Subject: Re: OOM notifications
+References: <20071018202504.GA2854@dmt>	<4717C43D.6030204@keyaccess.nl>	<20071018165238.0537eaa6@bree.surriel.com>	<4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com>
+In-Reply-To: <20071018171857.409255de@bree.surriel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 11:58:27PM +0200, Sam Ravnborg wrote:
-> On Thu, Oct 18, 2007 at 11:48:37PM +0200, Andi Kleen wrote:
-> > > > +extern char _text[], _end[], _etext[], _edata[], _bss[];
-> > > 
-> > > These should be in a header file.
-> > 
-> > Normally the "no externs in .c" rule doesn't apply to assembler or linker 
-> > script defined labels. That's because the point of the header file is to 
-> > type check them, but there is nothing to type check here.
-> 
-> For linker generated symbols we have sections.h for this purpose.
-> The above symbols are all available if we do an:
-> #include <asm/sections.h>
-> 
-> This is the right fix in this case.
+On 10/18/2007 11:18 PM, Rik van Riel wrote:
 
-The problem is that they're often the wrong type here. E.g. wrong signedness 
-etc. I ran into problems in the past where using this required ugly casts.
+> On Thu, 18 Oct 2007 23:06:52 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
+> 
+>> They don't -- that's why I asked if you need both scenario's active
+>> at the same time. SIGDANGER would just be SIGPLEASEFREEALLYOUCAN with
+>> the operator deciding through setting the level at which point
+>> applications get it.
+>>
+>> Or put differently; what's the additional value of notifying an
+>> application that the system is about to go balistic when you've
+>> already asked it to free all it could earlier? SIGSEEDAMNITITOLDYOUSO?
+> 
+> The first threshold - "we are about to swap" - means the application
+> frees memory that it can.  Eg. free()d memory that glibc has not yet
+> given back to the kernel, or JVM running the garbage collector, or ...
+> 
+> The second threshold - "we are out of memory" - means that the first
+> approach has failed and the system needs to do something else. On an
+> embedded system, I would expect some application to exit or maybe
+> restart itself.
 
--Andi
+That first threshold sounds fine yes. To me, the second mostly sounds like a 
+job for SIGTERM though.
+
+The OOM killer could after it selected the task for killing first try a TERM 
+on it to give a chance to exit gracefully and only when that doesn't help 
+make it eligible for killing on a second round through the badness calculation.
+
+You could moreover _never_ make a task eligible for killing before it 
+received a SIGTERM, thereby guaranteeing that everyone got the SIGTERM 
+before killing anything, and it seems SIGTERM would be a more focussed 
+version of SIGDANGER2 then.
+
+Would at least forego any need for multiplexing the DANGER signal.
+
+Rene.
+
