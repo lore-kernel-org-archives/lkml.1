@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbXJRQC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933668AbXJRQFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933374AbXJRQC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbXJRQCt
+	id S933668AbXJRQFf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757747AbXJRQFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:02:49 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:13742 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756464AbXJRQCs (ORCPT
+	Thu, 18 Oct 2007 12:05:24 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54872 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756953AbXJRQFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:02:48 -0400
-Message-ID: <47178308.9030903@panasas.com>
-Date: Thu, 18 Oct 2007 18:00:08 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 18 Oct 2007 12:05:23 -0400
+Date: Thu, 18 Oct 2007 18:05:21 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: jaroslav.sykora@gmail.com
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/5] Shadow directories
+In-Reply-To: <200710181721.09201.jara@sin.cvut.cz>
+Message-ID: <Pine.LNX.4.64.0710181802300.2936@fbirervta.pbzchgretzou.qr>
+References: <200710181721.09201.jara@sin.cvut.cz>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use relative symbolic links for bzImge in x86 ARCHs
-References: <4715F2E5.6000104@panasas.com> <20071017191633.GB11837@uranus.ravnborg.org> <47177C28.5010609@panasas.com> <20071018155459.GA20698@uranus.ravnborg.org>
-In-Reply-To: <20071018155459.GA20698@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Oct 2007 16:00:09.0284 (UTC) FILETIME=[F54AA040:01C8119F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007 at 17:54 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Hi Benny.
-> 
->> use relative paths in the symlink to bzImage
->> to make it NFS export safe.
->>
->> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
-> 
-> Your patch looks perfect - but you are a few hours too late.
-> 
-> See:
-> http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-x86.git;a=commit;h=a0075a509bd955ff6fc6e071efabb926e14bf19c
-> 
-> This is in the mm branch awaiting some more testing
-> before Thomas push it to Linus.
-> 
-> 	Sam
-NP,
-as long as it's fixed I'm happy
 
-Tested-by: Boaz Harrosh <bharrosh@panasas.com>
+On Oct 18 2007 17:21, Jaroslav Sykora wrote:
+>Hello,
+>
+>Let's say we have an archive file "hello.zip" with a hello world program source
+>code. We want to do this:
+>	cat hello.zip^/hello.c
+>	gcc hello.zip^/hello.c -o hello
+>	etc..
+>
+>The '^' is an escape character and it tells the computer to treat the file as a directory.
 
-Thanks
+Too bad, since ^ is a valid character in a *file*name. Everything is, with
+the exception of '\0' and '/'. At the end of the day, there are no control
+characters you could use.
+
+But what you could do is: write a FUSE fs that mirrors the lower content
+(lofs/fuseloop/however it was named) and expands .zip files as
+directories are readdir'ed or the zip files stat'ed. That saves us
+from cluttering up the Linux VFS with such stuff.
