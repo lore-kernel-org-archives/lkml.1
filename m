@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933958AbXJRROm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXJRRWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933958AbXJRROm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXJRROf
+	id S1764227AbXJRRWd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbXJRRWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:14:35 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:9809 "EHLO kernel.dk"
+	Thu, 18 Oct 2007 13:22:22 -0400
+Received: from palrel10.hp.com ([156.153.255.245]:34626 "EHLO palrel10.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756754AbXJRROe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:14:34 -0400
-Date: Thu, 18 Oct 2007 19:14:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018171429.GH10674@kernel.dk>
-References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <20071018082145.GK5063@kernel.dk> <alpine.LFD.0.999.0710180952070.26902@woody.linux-foundation.org> <20071018101005.5681a365@laptopd505.fenrus.org>
+	id S1752647AbXJRRWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 13:22:21 -0400
+Message-ID: <4717964A.8080100@hp.com>
+Date: Thu, 18 Oct 2007 10:22:18 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018101005.5681a365@laptopd505.fenrus.org>
+To: Felix von Leitner <felix-linuxkernel@fefe.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: bizarre network timing problem
+References: <20071017205127.GA21334@codeblau.de> <47167BDE.4000103@redhat.com>	<20071017220019.GA22765@codeblau.de> <471689BF.2040909@hp.com> <20071018094230.GA2978@codeblau.de>
+In-Reply-To: <20071018094230.GA2978@codeblau.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Arjan van de Ven wrote:
-> On Thu, 18 Oct 2007 09:55:04 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Felix von Leitner wrote:
+>>the packet trace was a bit too cooked perhaps, but there were indications 
+>>that at times the TCP window was going to zero - perhaps something with 
+>>window updates or persist timers?
 > 
-> > 
-> > 
-> > On Thu, 18 Oct 2007, Jens Axboe wrote:
-> > > -		unsigned long addr = page_to_phys(s->page) +
-> > > s->offset; 
-> > > +		unsigned long addr = page_to_phys(sg_page(s)) +
-> > > s->offset; 
-> > 
-> > Umm. May I suggest (I haven't read the whole thread yet, maybe
-> > somebody else already did) that
-> > 
-> > 	static inline unsigned long sg_phys(struct scatterlist *sg)
-> > 	{
-> > 		return 	page_to_phys(sg_page(sg)) + sg->offset;
-> > 	}
-> > 
-> > would be a good thing to have?
-> > 
-> > Very few drivers should care so much about the *page* itself (or the 
-> > offset). That's something that the generic allocation code etc cares 
-> > about, but the driver is almost bound to care mostly about the actual
-> > DMA address
 > 
-> .... but will that work for systems with IOMMU ? or is it fundamentally
-> the wrong interface
+> Does TCP use different window sizes on loopback?  Why is this not
+> happening on ethernet?
 
-They use foo_to_bus() on the address. sg_phys() should of course only be
-used where the user previously did page_to_phys() on the sg page.
+I don't think it uses different window sizes on loopback, but with the 
+autotuning it can be difficult to say a priori what the window size will be. 
+What one can say with confidence is that the MTU and thus the MSS will be 
+different between loopback and ethernet.
 
--- 
-Jens Axboe
+> 
+> How could I test this theory?
+
+Can you take another trace that isn't so "cooked?"  One that just sticks with 
+TCP-level and below stuff?
+
+If SMB is a one-request-at-a-time protocol (I can never remember), you could 
+simulate it with a netperf TCP_RR test by passing suitable values to the 
+test-specific -r option:
+
+netperf -H <remote> -t TCP_RR -- -r <req>,<rsp>
+
+If that shows similar behaviour then you can ass-u-me it isn't your application. 
+  One caveat though is that TCP_CORK mode in netperf is very primitive and may 
+not match what you are doing, however, that may be a good thing.
+
+http://www.netperf.org/svn/netperf2/tags/netperf-2.4.4/  or
+ftp://ftp.netperf.org/netperf/
+
+to get the current netperf bits.  It is also possible to get multiple 
+transactions in flight at one time if you configure netperf with --enable-burst, 
+which will then enable a test-specific -b option.  With the latest netperf you 
+cna also switch the output of a TCP_RR test to bits or bytes per second a la the 
+_STREAM tests.
+
+rick jones
+
+> 
+> My initial idea was that it has something todo with the different MTU on
+> loopback.  My initial block size was 16k, but the problem stayed when I
+> changed it to 64k.
+> 
+> Felix
 
