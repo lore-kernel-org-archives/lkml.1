@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933818AbXJRD27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764516AbXJRDc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933818AbXJRD27 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 23:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759480AbXJRD2v
+	id S1764516AbXJRDc1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 23:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbXJRDcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 23:28:51 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60048 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbXJRD2u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 23:28:50 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	<1192648456.15717.7.camel@think.oraclecorp.com>
-	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-	<1192654481.15717.16.camel@think.oraclecorp.com>
-	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
-	<1192661889.15717.27.camel@think.oraclecorp.com>
-	<m16415cocs.fsf@ebiederm.dsl.xmission.com>
-	<1192665785.15717.34.camel@think.oraclecorp.com>
-Date: Wed, 17 Oct 2007 21:27:49 -0600
-In-Reply-To: <1192665785.15717.34.camel@think.oraclecorp.com> (Chris Mason's
-	message of "Wed, 17 Oct 2007 20:03:05 -0400")
-Message-ID: <m1zlyhayq2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Oct 2007 23:32:19 -0400
+Received: from rtr.ca ([76.10.145.34]:4389 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757548AbXJRDcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 23:32:18 -0400
+Message-ID: <4716D3C0.20808@rtr.ca>
+Date: Wed, 17 Oct 2007 23:32:16 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: kristen.c.accardi@intel.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [PATCH 1/3] pciehp: hotplug: deal with pre-inserted ExpressCards
+References: <4716CB9D.6080503@rtr.ca>
+In-Reply-To: <4716CB9D.6080503@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+(repost to conform with akpm's subject line conventions)
 
-> On Wed, 2007-10-17 at 17:28 -0600, Eric W. Biederman wrote:
->> Chris Mason <chris.mason@oracle.com> writes:
->> 
->> > So, the problem is using the Dirty bit to indicate pinned.  You're
->> > completely right that our current setup of buffer heads and pages and
->> > filesystpem metadata is complex and difficult.
->> >
->> > But, moving the buffer heads off of the page cache pages isn't going to
->> > make it any easier to use dirty as pinned, especially in the face of
->> > buffer_head users for file data pages.
->> 
->> Let me specific.  Not moving buffer_heads off of page cache pages,
->> moving buffer_heads off of the block devices page cache pages.
->> 
->> My problem is the coupling of how block devices are cached and the
->> implementation of buffer heads, and by removing that coupling
->> we can generally make things better.  Currently that coupling
->> means silly things like all block devices are cached in low memory.
->> Which probably isn't what you want if you actually have a use
->> for block devices.
->> 
->> For the ramdisk case in particular what this means is that there
->> are no more users that create buffer_head mappings on the block
->> device cache so using the dirty bit will be safe.
->
-> Ok, we move the buffer heads off to a different inode, and that indoe
-> has pages.  The pages on the inode still need to get pinned, how does
-> that pinning happen?
+One of three patches to fix PCIe Hotplug so that it works with ExpressCard slots
+on Dell notebooks (and others?) in conjunction with modparam of pciehp_force=1.
 
-> The problem you described where someone cleans a page because the buffer
-> heads are clean happens already without help from userland.  So, keeping
-> the pages away from userland won't save them from cleaning.
->
-> Sorry if I'm reading your suggestion wrong...
+Fix pciehp_probe() to deal with ExpressCard cards
+that were inserted prior to the driver being loaded.
 
-Yes.  I was suggesting to continue to pin the pages for the page
-cache pages block device inode, and having the buffer cache live
-on some other inode.  Thus not causing me problems by adding clean
-buffer_heads to my dirty pages.
-
-Eric
-
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
+--- a/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-17 22:30:19.000000000 -0400
++++ b/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-17 22:29:59.000000000 -0400
+@@ -37,7 +37,6 @@
+ #include "pciehp.h"
+ 
+ static void interrupt_event_handler(struct work_struct *work);
+-static int pciehp_enable_slot(struct slot *p_slot);
+ static int pciehp_disable_slot(struct slot *p_slot);
+ 
+ static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
+--- git12/drivers/pci/hotplug/pciehp.h	2007-10-17 22:30:19.000000000 -0400
++++ linux/drivers/pci/hotplug/pciehp.h	2007-10-17 22:29:59.000000000 -0400
+@@ -161,6 +161,7 @@
+ extern int pciehp_unconfigure_device(struct slot *p_slot);
+ extern void pciehp_queue_pushbutton_work(struct work_struct *work);
+ int pcie_init(struct controller *ctrl, struct pcie_device *dev);
++int pciehp_enable_slot(struct slot *p_slot);
+ 
+ static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
+ {
+--- git12/drivers/pci/hotplug/pciehp_core.c	2007-10-17 22:30:19.000000000 -0400
++++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-17 22:36:06.000000000 -0400
+@@ -471,6 +471,11 @@
+ 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+ 
+ 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
++	if (value) {
++		rc = pciehp_enable_slot(t_slot);
++		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
++			value = 0;
++	}
+ 	if ((POWER_CTRL(ctrl->ctrlcap)) && !value) {
+ 		rc = t_slot->hpc_ops->power_off_slot(t_slot); /* Power off slot if not occupied*/
+ 		if (rc)
