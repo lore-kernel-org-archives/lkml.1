@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764553AbXJRVM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765567AbXJRVNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764553AbXJRVM5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 17:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbXJRVMt
+	id S1765567AbXJRVNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 17:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbXJRVNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 17:12:49 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56134 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755118AbXJRVMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 17:12:47 -0400
-Date: Thu, 18 Oct 2007 23:14:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Finn Thain <fthain@telegraphics.com.au>, Rob Landley <rob@landley.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-Message-ID: <20071018211420.GA23397@uranus.ravnborg.org>
-References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710111707270.3729@anakin> <Pine.LNX.4.64.0710120211130.4083@loopy.telegraphics.com.au> <200710111614.39879.rob@landley.net> <Pine.LNX.4.64.0710120849480.11634@anakin> <Pine.LNX.4.64.0710121731110.17887@loopy.telegraphics.com.au> <Pine.LNX.4.64.0710121046020.7335@anakin> <20071012102124.GA18959@uranus.ravnborg.org> <Pine.LNX.4.64.0710152217150.16889@anakin>
+	Thu, 18 Oct 2007 17:13:15 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:32756 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758027AbXJRVNN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 17:13:13 -0400
+Date: Thu, 18 Oct 2007 14:12:15 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] kernel-api docbook: fix content problems
+Message-Id: <20071018141215.06ebe3d3.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710152217150.16889@anakin>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Anyway, here's a try to make it autodetect m68k-linux-gnu-gcc and
-> m68k-linux-gcc. Perhaps it can be generalized in kbuild, to allow
-> arch/*/Makefile to set a list of possible cross-compiler prefixes?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Here is my first try.
-We only touch CROSS_COMPILE is empty and building for another arch.
+Fix kernel-api docbook contents problems.
 
-I can obviously move crossgcc part of this to core kbuild.
-Any better name?
+docproc: linux-2.6.23-git13/include/asm-x86/unaligned_32.h: No such file or directory
+Warning(linux-2.6.23-git13//include/linux/list.h:482): bad line: 			of list entry
+Warning(linux-2.6.23-git13//mm/filemap.c:864): No description found for parameter 'ra'
+Warning(linux-2.6.23-git13//block/ll_rw_blk.c:3760): No description found for parameter 'req'
+Warning(linux-2.6.23-git13//include/linux/input.h:1077): No description found for parameter 'private'
+Warning(linux-2.6.23-git13//include/linux/input.h:1077): No description found for parameter 'cdev'
 
-	Sam
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/kernel-api.tmpl |    2 +-
+ block/ll_rw_blk.c                     |    2 +-
+ include/linux/input.h                 |    4 +++-
+ include/linux/list.h                  |    3 +--
+ mm/filemap.c                          |    2 +-
+ 5 files changed, 7 insertions(+), 6 deletions(-)
 
-
-diff --git a/arch/m68k/Makefile b/arch/m68k/Makefile
-index 4a1bd44..6465bbe 100644
---- a/arch/m68k/Makefile
-+++ b/arch/m68k/Makefile
-@@ -13,17 +13,26 @@
- # Copyright (C) 1994 by Hamish Macdonald
- #
+--- linux-2.6.23-git13.orig/Documentation/DocBook/kernel-api.tmpl
++++ linux-2.6.23-git13/Documentation/DocBook/kernel-api.tmpl
+@@ -46,7 +46,7 @@
  
--# test for cross compiling
--COMPILE_ARCH = $(shell uname -m)
-+# usage:
-+# CROSS_COMPILE := $(call crossgcc, foo bar /usr/bin/)
-+# CROSS_COMPILE will be assinged the first prefix that point
-+# to a gcc in the path
-+crossgcc =  $(word 1, $(foreach c,$(1),                               \
-+		$(shell set -e;                                       \
-+		if (which $(strip $(c))$(CC)) > /dev/null 2>&1 ; then \
-+			echo $(c);                                    \
-+		fi)))
-+
-+ifneq ($(SUBARCH),$(ARCH))
-+        ifeq ($(CROSS_COMPILE),)
-+                CROSS_COMPILE := $(call crossgcc, m68k-linux-gnu-)
-+        endif
-+endif
+      <sect1><title>Atomic and pointer manipulation</title>
+ !Iinclude/asm-x86/atomic_32.h
+-!Iinclude/asm-x86/unaligned_32.h
++!Iinclude/asm-x86/unaligned.h
+      </sect1>
  
- # override top level makefile
- AS += -m68020
- LDFLAGS := -m m68kelf
- LDFLAGS_MODULE += -T $(srctree)/arch/m68k/kernel/module.lds
--ifneq ($(COMPILE_ARCH),$(ARCH))
--	# prefix for cross-compiling binaries
--	CROSS_COMPILE = m68k-linux-gnu-
--endif
+      <sect1><title>Delaying, scheduling, and timer routines</title>
+--- linux-2.6.23-git13.orig/include/linux/list.h
++++ linux-2.6.23-git13/include/linux/list.h
+@@ -478,8 +478,7 @@ static inline void list_splice_init_rcu(
+ 		pos = n, n = pos->next)
  
- ifdef CONFIG_SUN3
- LDFLAGS_vmlinux = -N
+ /**
+- * list_for_each_prev_safe - iterate over a list backwards safe against removal
+-			of list entry
++ * list_for_each_prev_safe - iterate over a list backwards safe against removal of list entry
+  * @pos:	the &struct list_head to use as a loop cursor.
+  * @n:		another &struct list_head to use as temporary storage
+  * @head:	the head for your list.
+--- linux-2.6.23-git13.orig/mm/filemap.c
++++ linux-2.6.23-git13/mm/filemap.c
+@@ -840,7 +840,7 @@ static void shrink_readahead_size_eio(st
+ /**
+  * do_generic_mapping_read - generic file read routine
+  * @mapping:	address_space to be read
+- * @_ra:	file's readahead state
++ * @ra:		file's readahead state
+  * @filp:	the file to read
+  * @ppos:	current file position
+  * @desc:	read_descriptor
+--- linux-2.6.23-git13.orig/block/ll_rw_blk.c
++++ linux-2.6.23-git13/block/ll_rw_blk.c
+@@ -3739,7 +3739,7 @@ EXPORT_SYMBOL(end_dequeued_request);
+ 
+ /**
+  * end_request - end I/O on the current segment of the request
+- * @rq:		the request being processed
++ * @req:	the request being processed
+  * @uptodate:	error value or 0/1 uptodate flag
+  *
+  * Description:
+--- linux-2.6.23-git13.orig/include/linux/input.h
++++ linux-2.6.23-git13/include/linux/input.h
+@@ -1005,13 +1005,15 @@ struct ff_effect {
+  * @going_away: marks devices that are in a middle of unregistering and
+  *	causes input_open_device*() fail with -ENODEV.
+  * @dev: driver model's view of this device
++ * @cdev: union for struct device pointer
+  * @h_list: list of input handles associated with the device. When
+  *	accessing the list dev->mutex must be held
+  * @node: used to place the device onto input_dev_list
+  */
+ struct input_dev {
+-
++	/* private: */
+ 	void *private;	/* do not use */
++	/* public: */
+ 
+ 	const char *name;
+ 	const char *phys;
