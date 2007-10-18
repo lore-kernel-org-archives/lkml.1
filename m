@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762760AbXJRUPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763718AbXJRUQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762760AbXJRUPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbXJRUPb
+	id S1763718AbXJRUQQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758677AbXJRUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:15:31 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:60751 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753692AbXJRUPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:15:30 -0400
-Date: Thu, 18 Oct 2007 16:15:31 -0400
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: linux-kernel@vger.kernel.org
-Cc: drepper@redhat.com, riel@redhat.com
-Subject: OOM notifications
-Message-ID: <20071018201531.GA5938@dmt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 18 Oct 2007 16:16:01 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:6874 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbXJRUQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:16:00 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: 2.6.23-mm1 s390 driver problem
+Date: Thu, 18 Oct 2007 22:15:56 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       cornelia.huck@de.ibm.com, heiko.carstens@de.ibm.com, sam@ravnborg.org,
+       schwidefsky@de.ibm.com
+References: <20071018200148.GA14234@vino.hallyn.com>
+In-Reply-To: <20071018200148.GA14234@vino.hallyn.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710182215.56428.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Donnerstag, 18. Oktober 2007 schrieb Serge E. Hallyn:
+> Sigh, well this turned out less informative than I'd liked.
+> After bisecting 2.6.23 to 2.6.23-mm1, I found that
+> git-s390.patch is the one breaking my s390 boot :(
+> (Frown bc it's a conglomeration of patches0
+> 
+> Symptom is:
+> 	"Cannot open root device "dasdd2" or unknown-block(94,14)"
+> even though dasdd2 appeared to be found earlier in the boot.  I also
+> get
 
-AIX contains the SIGDANGER signal to notify applications to free up some
-unused cached memory:
+Can you post the full console output from IPL to the unsuccessful end?
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
+Thanks
 
-There have been a few discussions on implementing such an idea on Linux,
-but nothing concrete has been achieved.
-
-On the kernel side Rik suggested two notification points: "about to
-swap" (for desktop scenarios) and "about to OOM" (for embedded-like
-scenarios).
-
-With that assumption in mind it would be necessary to either have two
-special devices for notification, or somehow indicate both events
-through the same file descriptor.
-
-Comments are more than welcome.
-
+Christian
