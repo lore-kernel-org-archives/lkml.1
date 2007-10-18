@@ -1,99 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763687AbXJRJRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXJRJVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763687AbXJRJRz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbXJRJRo
+	id S1763481AbXJRJVe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760268AbXJRJVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:17:44 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23077 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761688AbXJRJRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:17:43 -0400
-Date: Thu, 18 Oct 2007 11:17:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018091706.GO5063@kernel.dk>
-References: <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <20071018070706.GA7435@elte.hu> <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org>
+	Thu, 18 Oct 2007 05:21:25 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41645 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755893AbXJRJVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 05:21:24 -0400
+Date: Thu, 18 Oct 2007 18:20:50 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch](memory hotplug) Make kmem_cache_node for SLUB on memory online to avoid panic(take 3)
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20071017204651.aefcece7.akpm@linux-foundation.org>
+References: <20071018122345.514F.Y-GOTO@jp.fujitsu.com> <20071017204651.aefcece7.akpm@linux-foundation.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071018173526.515B.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471720FE.4090004@garzik.org>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Jeff Garzik wrote:
-> Jens Axboe wrote:
->> index 4df8311..b858183 100644
->> --- a/drivers/ata/sata_mv.c
->> +++ b/drivers/ata/sata_mv.c
->> @@ -1139,6 +1139,7 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
->>  	struct mv_port_priv *pp = qc->ap->private_data;
->>  	struct scatterlist *sg;
->>  	struct mv_sg *mv_sg;
->> +	int end_marked = 0;
->>   	mv_sg = pp->sg_tbl;
->>  	ata_for_each_sg(sg, qc) {
->> @@ -1159,13 +1160,15 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
->>  			sg_len -= len;
->>  			addr += len;
->>  -			if (!sg_len && ata_sg_is_last(sg, qc))
->> +			if (!sg_len && ata_sg_is_last(sg, qc)) {
->>  				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
->> +				end_marked++;
->> +			}
->>   			mv_sg++;
->>  		}
->> -
->>  	}
->> +	BUG_ON(end_marked != 1);
->
->
-> Your BUG_ON() does indeed trip, here.
->
-> Its surprising that other folks don't explode, considering that 
-> mv_fill_sg() intentionally mirrors the logic in ata_fill_sg().
+> On Thu, 18 Oct 2007 12:25:37 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > 
+> > This patch fixes panic due to access NULL pointer
+> > of kmem_cache_node at discard_slab() after memory online.
+> > 
+> > When memory online is called, kmem_cache_nodes are created for
+> > all SLUBs for new node whose memory are available.
+> > 
+> > slab_mem_going_online_callback() is called to make kmem_cache_node()
+> > in callback of memory online event. If it (or other callbacks) fails,
+> > then slab_mem_offline_callback() is called for rollback.
+> > 
+> > In memory offline, slab_mem_going_offline_callback() is called to
+> > shrink all slub cache, then slab_mem_offline_callback() is called later.
+> > 
+> > This patch is tested on my ia64 box.
+> > 
+> > ...
+> >  
+> > +#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
+> 
+> hm.  There should be no linkage between memory hotpluggability and
+> NUMA, surely?
 
-The sata_mv construct looks a bit odd. Does this work? That last
-end_mv_sg test should always be true, just being paranoid...
+Sure. IBM's powerpc boxes have to support memory hotplug even if it 
+is non-numa machine. They have the Dynamic Logical Partitioning feature.
 
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 4df8311..5397eea 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -1138,8 +1138,9 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
- {
- 	struct mv_port_priv *pp = qc->ap->private_data;
- 	struct scatterlist *sg;
--	struct mv_sg *mv_sg;
-+	struct mv_sg *mv_sg, *end_mv_sg;
- 
-+	end_mv_sg = NULL;
- 	mv_sg = pp->sg_tbl;
- 	ata_for_each_sg(sg, qc) {
- 		dma_addr_t addr = sg_dma_address(sg);
-@@ -1158,14 +1159,12 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
- 
- 			sg_len -= len;
- 			addr += len;
--
--			if (!sg_len && ata_sg_is_last(sg, qc))
--				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
--
-+			end_mv_sg = mv_sg;
- 			mv_sg++;
- 		}
--
- 	}
-+	if (end_mv_sg)
-+		end_mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
- }
- 
- static inline void mv_crqb_pack_cmd(__le16 *cmdw, u8 data, u8 addr, unsigned last)
+> > +	down_read(&slub_lock);
+> > +	list_for_each_entry(s, &slab_caches, list) {
+> > +		n = get_node(s, offline_node);
+> > +		if (n) {
+> > +			/*
+> > +			 * if n->nr_slabs > 0, slabs still exist on the node
+> > +			 * that is going down. We were unable to free them,
+> > +			 * and offline_pages() function shoudn't call this
+> > +			 * callback. So, we must fail.
+> > +			 */
+> > +			BUG_ON(atomic_read(&n->nr_slabs));
+> 
+> Expereince tells us that WARN_ON is preferred for newly added code ;)
+
+Oh... Ok!
+
+> > +			s->node[offline_node] = NULL;
+> > +			kmem_cache_free(kmalloc_caches, n);
+> > +		}
+> > +	}
+> > +	up_read(&slub_lock);
+> > +}
+> > +
+> > +static int slab_mem_going_online_callback(void *arg)
+> > +{
+> > +	struct kmem_cache_node *n;
+> > +	struct kmem_cache *s;
+> > +	struct memory_notify *marg = arg;
+> > +	int nid = marg->status_change_nid;
+> > +
+> > +	/*
+> > +	 * If the node's memory is already available, then kmem_cache_node is
+> > +	 * already created. Nothing to do.
+> > +	 */
+> > +	if (nid < 0)
+> > +		return 0;
+> > +
+> > +	/*
+> > +	 * We are bringing a node online. No memory is availabe yet. We must
+> > +	 * allocate a kmem_cache_node structure in order to bring the node
+> > +	 * online.
+> > +	 */
+> > +	down_read(&slub_lock);
+> > +	list_for_each_entry(s, &slab_caches, list) {
+> > +  		/*
+> > +		 * XXX: kmem_cache_alloc_node will fallback to other nodes
+> > +		 *      since memory is not yet available from the node that
+> > +		 *      is brought up.
+> > +  		 */
+> > +		n = kmem_cache_alloc(kmalloc_caches, GFP_KERNEL);
+> > +		if (!n)
+> > +			return -ENOMEM;
+> 
+> err, we forgot slub_lock.  I'll fix that.
+
+Oops. Indeed. Thanks for your check.
+
+Bye.
 
 -- 
-Jens Axboe
+Yasunori Goto 
+
 
