@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934592AbXJRWzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934939AbXJRW5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934592AbXJRWzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbXJRWzn
+	id S934939AbXJRW5s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759875AbXJRW5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:55:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52724 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757956AbXJRWzm (ORCPT
+	Thu, 18 Oct 2007 18:57:40 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:30227 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbXJRW5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:55:42 -0400
-Date: Thu, 18 Oct 2007 15:48:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Dave Young <hidave.darkstar@gmail.com>, bbpetkov@yahoo.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename
-	'bInterfaceNumber'
-Message-ID: <20071018224844.GA7665@kroah.com>
-References: <20071016191323.GC24082@one-eyed-alien.net> <Pine.LNX.4.44L0.0710171040440.4468-100000@iolanthe.rowland.org>
+	Thu, 18 Oct 2007 18:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ZIONJ/R1Ed1kbENJ2BmJQS0hau6TaFZneqY1EKHq47mdI4jiJsJVCXwFoX+ihz5o2
+	ImhTIl/4XYAqCoF97D0Tw==
+Message-ID: <b040c32a0710181557x4741b9ddxeb01edc788defb6@mail.gmail.com>
+Date: Thu, 18 Oct 2007 15:57:35 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch] sched: schedstat needs a diet
+Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071018221957.GA31609@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0710171040440.4468-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <b040c32a0710161337l24d61d45h61be0ded72b54a9f@mail.gmail.com>
+	 <20071017072323.GB18044@elte.hu> <1192613387.27435.114.camel@twins>
+	 <20071018221957.GA31609@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 10:48:52AM -0400, Alan Stern wrote:
-> On Tue, 16 Oct 2007, Matthew Dharm wrote:
-> 
-> > On Tue, Oct 16, 2007 at 02:04:43PM -0400, Alan Stern wrote:
-> > > On Tue, 16 Oct 2007, Matthew Dharm wrote:
-> > > 
-> > > > I haven't looked at this code at all, but neither approach feels right to
-> > > > me.
-> > > > 
-> > > > How does this work at all?  Even if you load a driver later, wouldn't it
-> > > > call usb_set_interface(), which would call usb_create_sysfs_intf_files()
-> > > > and hit the same issue?
-> > > 
-> > > usb_set_interface() is smart enough to remove the old interface files
-> > > before creating new ones, since it expects them to exist already.  
-> > > Hence there's no problem in that scenario.
-> > > 
-> > > But usb_set_configuration doesn't expect there to be any pre-existing
-> > > interface files, because there isn't even an interface until the
-> > > registration is performed.
-> > 
-> > And I'm guessing that you can't call usb_create_sysfs_intf_files() until
-> > registration is performed, right?
-> 
-> Right.
-> 
-> > > The most important reason has to do with the endpoint pseudo-devices.  
-> > > Different altsettings can have different endpoints, so those have to be
-> > > removed and re-created whenever the altsetting changes.
-> > 
-> > Right, altsettings.  I forgot about those.  I only ever think in terms of
-> > multiple configurations.
-> > 
-> > *grumble*
-> > 
-> > If usb_set_interface() has to be smart enough to remove existing files
-> > first already, then I guess it's reasonably symmetric to have
-> > usb_set_configuration() have the same smarts.  Maybe they can share some
-> > common code, even.
-> 
-> It's not a big deal to remove the files first.  In fact, here's a patch 
-> to do it.  Dave, see if this doesn't fix your problem.  I don't like it 
-> much because it does an unnecessary remove/create cycle, but that's 
-> better than doing something wrong.
-> 
-> It's slightly odd that the sysfs core logs an error when you try to 
-> create the same file twice but it doesn't when you try to remove a 
-> non-existent file (or try to remove an existing file twice).  Oh 
-> well...
+On 10/18/07, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> Good question indeed. How large is this memory footprint exactly ? If it
+> is as small as you say, I suspect that the real issue could be that
+> these variable are accessed by the scheduler critical paths and
+> therefore trash the caches.
 
-I used to have the 'remove a non-existant file' warning, but that just
-triggered _way_ too many responses :)
+Maybe my wording was ambiguous, I meant to reduce cache line pollution
+when accessing these schedstat fields.
 
+With unsigned long, on x86_64, schedstat consumes 288 bytes for each
+sched_domain and 128 bytes in struct rq.  On a extremely small system
+that has a couple of CPU sockets with one level of numa node, there
+will be 704 bytes per CPU for schedstat.  Given the sparseness of
+them, we are probably talking about 11-12 cache line eviction on
+several heavily used scheduler functions.  Reduce cache line pollution
+is the primary goal, actual memory consumption isn't really a concern.
 
-> Index: usb-2.6/drivers/usb/core/message.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/core/message.c
-> +++ usb-2.6/drivers/usb/core/message.c
-> @@ -1643,7 +1643,13 @@ free_interfaces:
->  				intf->dev.bus_id, ret);
->  			continue;
->  		}
-> -		usb_create_sysfs_intf_files (intf);
-> +
-> +		/* The driver's probe method can call usb_set_interface(),
-> +		 * which would mean the interface's sysfs files are already
-> +		 * created.  Just in case, we'll remove them first.
-> +		 */
-> +		usb_remove_sysfs_intf_files(intf);
-> +		usb_create_sysfs_intf_files(intf);
->  	}
-
-If this fixes the problem, care to resend it with a signed-off-by:?
-
-Yeah, it's not the nicest solution, but I can't think of any other one
-either right now :(
-
-thanks,
-
-greg k-h
+- Ken
