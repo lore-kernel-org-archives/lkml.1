@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbXJREJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXJREKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761968AbXJREJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 00:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbXJREJe
+	id S1764226AbXJREKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 00:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXJREKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 00:09:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49110 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750990AbXJREJc (ORCPT
+	Thu, 18 Oct 2007 00:10:43 -0400
+Received: from hu-out-0506.google.com ([72.14.214.234]:49973 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbXJREKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 00:09:32 -0400
-Date: Wed, 17 Oct 2007 21:09:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: cmm@us.ibm.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sho@tnes.nec.co.jp, clameter@sgi.com
-Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
-Message-Id: <20071017210925.c3c66de5.akpm@linux-foundation.org>
-In-Reply-To: <20071011111849.GC7125@duck.suse.cz>
-References: <20070828190551.415127746@sgi.com>
-	<20070828190735.292638294@sgi.com>
-	<1188432669.3799.35.camel@localhost.localdomain>
-	<1188434857.3799.76.camel@localhost.localdomain>
-	<1191285346.11737.58.camel@localhost.localdomain>
-	<20071004131207.65406a7b.akpm@linux-foundation.org>
-	<20071011111849.GC7125@duck.suse.cz>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Oct 2007 00:10:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GHgsJoMG0iMte3EvYzU6bQmZrnDYLEv/1hcQM+eIZHMvrnULXKkpYqlAGEOaYMkhLwmEVKUNQENr4ZcPjdiQrJ7Aks73R8Q6xL9KVLbycdlZEASRbYJhVRAbxAL71MpzeTcj5Werk3MLsXvmRQz9PesY9eldN/8iirApH1rlCPs=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: hda-intel: no soundcard with current linus' git tree
+Date: Thu, 18 Oct 2007 06:10:12 +0200
+User-Agent: KMail/1.9.6
+Cc: Thomas Meyer <thomas@m3y3r.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>
+References: <471538C2.80806@m3y3r.de> <200710180536.18611.maximlevitsky@gmail.com> <4716D51E.2010509@garzik.org>
+In-Reply-To: <4716D51E.2010509@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710180610.13051.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 13:18:49 +0200 Jan Kara <jack@suse.cz> wrote:
+On Thursday 18 October 2007 05:38:06 Jeff Garzik wrote:
+> Maxim Levitsky wrote:
+> > What sound codec do you have?
+> > cat /proc/asound/Intel/codec*
+> 
+> Attached.
+> 
+> I'm on x86-64/Fedora 7 FWIW.
+> 
+> 
+> > You probably have different issue, since your card is probed correctly
+> 
+> Agreed (though I was surprised that a correct probe did not yield a 
+> single printk).
+> 
+> 	Jeff
+> 
+> 
+> 
 
-> With 64KB blocksize, a directory entry can have size 64KB which does not fit
-> into 16 bits we have for entry lenght. So we store 0xffff instead and convert
-> value when read from / written to disk.
 
-btw, this changes ext2's on-disk format.
+Thanks.
 
-a) is the ext2 format documented anywhere?  If so, that document will
-   need updating.
+Probably everything is fine.
 
-b) what happens when an old ext2 driver tries to read and/or write this
-   directory entry?  Do we need a compat flag for it?
+I added a new mixer control called "Master Volume"
+it is a VolumeKnob.
 
-c) what happens when old and new ext3 or ext4 try to read/write this
-   directory entry?
+It is a hardware control, that was unused in the driver before.
+
+It affects the volume of all DACs
+check if it is enabled, and set to maximum value.
+
+This control affects the volume quite a lot, for example on my system
+if I set it to middle, I almost hear no sound.
+
+Maybe something else unrelated to my patches broke your sound too.
 
 
+Regards,
+	Maxim Levitsky
