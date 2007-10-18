@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbXJRG0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbXJRG2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbXJRG0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 02:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXJRG0B
+	id S1761255AbXJRG2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 02:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXJRG14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 02:26:01 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55588 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756367AbXJRGZ7 (ORCPT
+	Thu, 18 Oct 2007 02:27:56 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35383 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751745AbXJRG1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 02:25:59 -0400
-Date: Wed, 17 Oct 2007 23:25:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [Patch](memory hotplug) Make kmem_cache_node for SLUB on memory
- online to avoid panic(take 3)
-In-Reply-To: <20071017204651.aefcece7.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710172321550.11401@schroedinger.engr.sgi.com>
-References: <20071018122345.514F.Y-GOTO@jp.fujitsu.com>
- <20071017204651.aefcece7.akpm@linux-foundation.org>
+	Thu, 18 Oct 2007 02:27:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=c84c5Tj4kLTZjFL0/dlD8viLuI1l1xlaYYhrJx5SbpVf2qQoOajz1+JRxNUp9cWUSpcOzNDQ0bQYzQZiPv9fbt6YWFb6+xHf6tIkhYkuz7GhTCPes4fSa+xuQlb1eyPP3Bita6E0hBn8eBH4K1cllmLxCEvpu/vvI4G8JfRInP0=  ;
+X-YMail-OSG: V0ihsOIVM1ms_pj7_TPV2jndwEq1XOugS33aVAc8lXd.ksdidb3tmKeSM._V1ELOCskSmJiudhleom7tqvU03t_r94Je89lZnVVqJv.RsXmZEd1SkHSfjmCvhVyQ3A--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Vasily Averin <vvs@sw.ru>
+Subject: Re: How Inactive may be much greather than cached?
+Date: Thu, 18 Oct 2007 16:27:27 +1000
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, devel@openvz.org
+References: <4716FC04.6070107@sw.ru>
+In-Reply-To: <4716FC04.6070107@sw.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710181627.27827.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007, Andrew Morton wrote:
+Hi,
 
-> > +#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
-> 
-> hm.  There should be no linkage between memory hotpluggability and
-> NUMA, surely?
+On Thursday 18 October 2007 16:24, Vasily Averin wrote:
+> Hi all,
+>
+> could anybody explain how "inactive" may be much greater than "cached"?
+> stress test (http://weather.ou.edu/~apw/projects/stress/) that writes into
+> removed files in cycle puts the node to the following state:
+>
+> MemTotal: 16401648 kB
+> MemFree: 636644 kB
+> Buffers: 1122556 kB
+> Cached: 362880 kB
+> SwapCached: 700 kB
+> Active: 1604180 kB
+> Inactive: 13609828 kB
+>
+> At the first glance memory should be freed on file closing, nobody refers
+> to file and ext3_delete_inode() truncates inode. We can see that memory is
+> go away from "cached", however could somebody explain why it become
+> "invalid" instead be freed? Who holds the references to these pages?
 
-NUMA support in the slab allocators requires allocation of per node 
-structures. The per node structures are folded into the global structure 
-for non NUMA.
-
-> > +			/*
-> > +			 * if n->nr_slabs > 0, slabs still exist on the node
-> > +			 * that is going down. We were unable to free them,
-> > +			 * and offline_pages() function shoudn't call this
-> > +			 * callback. So, we must fail.
-> > +			 */
-> > +			BUG_ON(atomic_read(&n->nr_slabs));
-> 
-> Expereince tells us that WARN_ON is preferred for newly added code ;)
-
-It would be bad to just zap a per node array while there is still data in 
-there. This will cause later failures when an attempt is made to free the 
-objects that now have no per node structure anymore.
-
-> > +  		/*
-> > +		 * XXX: kmem_cache_alloc_node will fallback to other nodes
-> > +		 *      since memory is not yet available from the node that
-> > +		 *      is brought up.
-> > +  		 */
-> > +		n = kmem_cache_alloc(kmalloc_caches, GFP_KERNEL);
-> > +		if (!n)
-> > +			return -ENOMEM;
-> 
-> err, we forgot slub_lock.  I'll fix that.
-
-Right.
-
-> So that's slub.  Does slab already have this functionality or are you
-> not bothering to maintain slab in this area?
-
-Slab brings up a per node structure when the corresponding cpu is brought 
-up. That was sufficient as long as we did not have any memoryless nodes. 
-Now we may have to fix some things over there as well.
-
+Buffers, swap cache, and anonymous.
