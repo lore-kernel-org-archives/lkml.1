@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXJRKS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764369AbXJRKSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764164AbXJRKS0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbXJRKSR
+	id S1764369AbXJRKSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbXJRKSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:18:17 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14101 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084AbXJRKSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:18:16 -0400
-Date: Thu, 18 Oct 2007 12:17:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018101739.GS5063@kernel.dk>
-References: <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org> <20071018091706.GO5063@kernel.dk> <4717281B.6070301@garzik.org> <20071018094128.GP5063@kernel.dk> <47172FB1.5020704@garzik.org> <20071018100959.GQ5063@kernel.dk> <20071018101348.GA29296@elte.hu> <20071018101650.GR5063@kernel.dk>
+	Thu, 18 Oct 2007 06:18:33 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:43955 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1764226AbXJRKSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:18:31 -0400
+Message-ID: <4717312B.5050408@dev.rtsoft.ru>
+Date: Thu, 18 Oct 2007 14:10:51 +0400
+From: Dmitry Antipov <antipov@dev.rtsoft.ru>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018101650.GR5063@kernel.dk>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] SIGIO-driven I/O with inotify queues
+Content-Type: multipart/mixed;
+ boundary="------------030402080509010801060507"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Jens Axboe wrote:
-> On Thu, Oct 18 2007, Ingo Molnar wrote:
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > > Of course, this doesn't explain why ata_sg_is_last() was broken, but 
-> > > > since it's working _and_ slightly more efficient, I don't really 
-> > > > care :)
-> > > 
-> > > Tomo and I agreed to kill sg_last() a few days ago anyways, so this is 
-> > > perfectly fine with me.
-> > 
-> > it would still be nice to figure out exactly why it was broken.
-> 
-> It would always be nice. For this case I don't think it's very
-> interesting, if we pursue the improved sg iteration setup.
+This is a multi-part message in MIME format.
+--------------030402080509010801060507
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-BTW, I think it's pretty clear that ata_sg_is_last() is broken. It's
-likely a one-off in the n_iter test.
+This patch proposes SIGIO-driven I/O for descriptors returned by
+inotify_init(). The thing may be enabled by convenient
+fcntl (fd, F_SETFL, O_ASYNC) call.
 
--- 
-Jens Axboe
+Dmitry
 
+
+--------------030402080509010801060507
+Content-Type: text/x-patch;
+ name="2.6.23-inotify-fasync.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="2.6.23-inotify-fasync.patch"
+
+Signed-off-by: Dmitry Antipov <antipov@dev.rtsoft.ru>
+
+diff -ur -X /tmp/dontdiff .orig-2.6.23/fs/inotify_user.c 2.6.23/fs/inotify_user.c
+--- .orig-2.6.23/fs/inotify_user.c	2007-10-10 00:31:38.000000000 +0400
++++ 2.6.23/fs/inotify_user.c	2007-10-18 14:06:38.000000000 +0400
+@@ -78,6 +78,7 @@
+ 	atomic_t		count;		/* reference count */
+ 	struct user_struct	*user;		/* user who opened this dev */
+ 	struct inotify_handle	*ih;		/* inotify handle */
++	struct fasync_struct    *fa;            /* async notification */
+ 	unsigned int		queue_size;	/* size of the queue (bytes) */
+ 	unsigned int		event_count;	/* number of pending events */
+ 	unsigned int		max_events;	/* maximum number of events */
+@@ -301,6 +302,7 @@
+ 	dev->queue_size += sizeof(struct inotify_event) + kevent->event.len;
+ 	list_add_tail(&kevent->list, &dev->events);
+ 	wake_up_interruptible(&dev->wq);
++	kill_fasync(&dev->fa, SIGIO, POLL_IN);
+ 
+ out:
+ 	mutex_unlock(&dev->ev_mutex);
+@@ -489,6 +491,13 @@
+ 	return ret;
+ }
+ 
++static int inotify_fasync(int fd, struct file *file, int on)
++{
++	struct inotify_device *dev = file->private_data;
++
++	return fasync_helper(fd, file, on, &dev->fa) >= 0 ? 0 : -EIO;
++}
++
+ static int inotify_release(struct inode *ignored, struct file *file)
+ {
+ 	struct inotify_device *dev = file->private_data;
+@@ -501,6 +510,9 @@
+ 		inotify_dev_event_dequeue(dev);
+ 	mutex_unlock(&dev->ev_mutex);
+ 
++	if (file->f_flags & FASYNC)
++		inotify_fasync(-1, file, 0);
++
+ 	/* free this device: the put matching the get in inotify_init() */
+ 	put_inotify_dev(dev);
+ 
+@@ -529,6 +541,7 @@
+ static const struct file_operations inotify_fops = {
+ 	.poll           = inotify_poll,
+ 	.read           = inotify_read,
++	.fasync         = inotify_fasync,
+ 	.release        = inotify_release,
+ 	.unlocked_ioctl = inotify_ioctl,
+ 	.compat_ioctl	= inotify_ioctl,
+@@ -576,6 +589,7 @@
+ 		goto out_free_dev;
+ 	}
+ 	dev->ih = ih;
++	dev->fa = NULL;
+ 
+ 	filp->f_op = &inotify_fops;
+ 	filp->f_path.mnt = mntget(inotify_mnt);
+
+--------------030402080509010801060507--
